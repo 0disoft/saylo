@@ -1,5 +1,5 @@
 // @ts-check
-import { createBaseSchema, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
+import { createBaseSchema, createStore, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
 
 const parsed = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
 const base = createBaseSchema(parsed);
@@ -25,3 +25,12 @@ function unionKey(key) {
   if (key === 'cart:items') typed.t(key, { count: 3 }); else typed.t(key);
 }
 void unionKey;
+
+/** @type {import('@saylo/core').Store<AppSchema>} */
+const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' })] });
+store.t('cart:items', { count: 3 });
+store.subscribe(snapshot => {
+  snapshot.t('cart:title');
+  // @ts-expect-error snapshot arg checking in JS
+  snapshot.t('cart:items');
+});

@@ -1,4 +1,4 @@
-import { CatalogError, createBaseSchema, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
+import { CatalogError, createBaseSchema, createStore, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
 import type { ArgumentType, CatalogSchema, ParsedCatalog } from '@saylo/core';
 
 const parsed: ParsedCatalog = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
@@ -42,3 +42,19 @@ typed.t(key, { count: 3 });
 if (key === 'cart:items') typed.t(key, { count: 3 }); else typed.t(key);
 const untyped = createTranslator({ locale: 'ko', baseCatalogs: [parsed] });
 untyped.t('dynamic:key', { value: 3 });
+
+const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog] });
+store.t('cart:items', { count: 3 });
+store.getSnapshot().t('cart:title');
+const unsubscribe = store.subscribe(snapshot => {
+  snapshot.t('cart:items', { count: 3 });
+  // @ts-expect-error snapshot preserves argument types
+  snapshot.t('cart:items');
+});
+unsubscribe();
+// @ts-expect-error live store preserves argument types
+store.t('cart:items', { count: '3' });
+// @ts-expect-error union key still needs narrowing
+store.t(key);
+// @ts-expect-error immutable snapshot
+store.getSnapshot().stateRevision = 10;

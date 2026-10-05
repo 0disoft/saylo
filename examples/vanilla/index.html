@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Saylo · 상태 보존 데모</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="/">Saylo <span>vanilla demo</span></a>
+        <label class="locale-control">화면 언어 <select id="locale" aria-label="화면 언어"></select></label>
+      </header>
+      <section class="intro">
+        <p class="eyebrow">LIVE CATALOG PREVIEW</p>
+        <h1 data-message="demo:heading"></h1>
+        <p data-message="demo:description"></p>
+      </section>
+      <div class="layout">
+        <section class="panel preview">
+          <div class="panel-header"><h2 data-message="demo:formTitle"></h2><span id="revision" class="badge"></span></div>
+          <form id="order-form">
+            <label><span data-message="demo:name"></span><input id="name" name="name" autocomplete="off" data-placeholder="demo:namePlaceholder"></label>
+            <label><span data-message="demo:note"></span><textarea id="note" name="note" rows="4" data-placeholder="demo:notePlaceholder"></textarea></label>
+            <label><span data-message="demo:count"></span><input id="count" name="count" type="number" min="0" max="100" value="2"></label>
+            <p id="summary" class="summary" aria-live="polite"></p>
+            <button type="submit" data-message="demo:openDialog"></button>
+          </form>
+          <p class="hint">입력값과 포커스는 유지하고, 번역 텍스트만 바꿉니다.</p>
+        </section>
+        <section class="panel editor">
+          <div class="panel-header"><h2>문구 편집</h2><span class="badge">JSON</span></div>
+          <p class="hint">JSON을 수정한 뒤 적용하세요. 확인 창 안에서도 <kbd>Ctrl</kbd> + <kbd>Enter</kbd>로 적용할 수 있습니다.</p>
+          <label>기준 문구 · 한국어<textarea id="ko-editor" class="code" rows="12" spellcheck="false" aria-label="한국어 카탈로그"></textarea></label>
+          <label>번역 문구 · English<textarea id="en-editor" class="code" rows="12" spellcheck="false" aria-label="영어 카탈로그"></textarea></label>
+          <div class="actions"><button id="apply" type="button">문구 적용</button><button id="restore" class="secondary" type="button">샘플 복원</button></div>
+          <p id="status" class="hint" role="status">아직 수정하지 않았습니다.</p>
+          <pre id="error" role="alert"></pre>
+          <p class="footnote">현재는 화면에서 카탈로그를 교체하는 데모입니다. 파일 저장 자동 반영은 다음 단계에서 연결합니다.</p>
+        </section>
+      </div>
+    </main>
+    <dialog id="confirmation">
+      <form method="dialog">
+        <h2 data-message="demo:dialogTitle"></h2>
+        <label><span data-message="demo:dialogNote"></span><input id="confirmation-note" autocomplete="off"></label>
+        <button data-message="demo:closeDialog"></button>
+        <p class="hint">Ctrl + Enter로 새 문구를 적용해도 이 창은 열린 채 유지됩니다.</p>
+      </form>
+    </dialog>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

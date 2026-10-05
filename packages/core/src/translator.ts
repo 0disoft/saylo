@@ -39,6 +39,11 @@ function validateArguments(key: string, schema: MessageSchema, args: Record<stri
 
 /** Pure lookup/formatting stage; no locale setter, store subscription or loading yet. */
 export function createTranslator<S extends Schema = Schema>(options: TranslatorOptions): Translator<S> {
+  return createBoundTranslator<S>(options);
+}
+
+/** Internal hook for an eager store to retain formatter caches across snapshots. */
+export function createBoundTranslator<S extends Schema = Schema>(options: TranslatorOptions, sharedFormat?: ReturnType<typeof createTextFormatter>): Translator<S> {
   const locale = Intl.getCanonicalLocales(options.locale)[0];
   if (!locale) throw new RangeError('A translator requires a nonempty locale.');
   const first = options.baseCatalogs[0];
@@ -62,7 +67,7 @@ export function createTranslator<S extends Schema = Schema>(options: TranslatorO
     validateTranslation(schema, catalog);
     translations.set(catalog.namespace, catalog);
   }
-  const format = createTextFormatter(timeZone);
+  const format = sharedFormat ?? createTextFormatter(timeZone);
   const translate = (key: string, args?: Record<string, unknown>): string => {
     if (typeof key !== 'string') throw new UnknownMessageError(String(key));
     const separator = key.indexOf(':');

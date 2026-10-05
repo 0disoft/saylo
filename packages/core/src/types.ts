@@ -81,6 +81,32 @@ export interface Translator<S extends Schema = Schema> {
   readonly t: Translate<S>;
 }
 
+/** Eager prototype: every namespace is loaded, with no transport metadata. */
+export interface StoreSnapshot<S extends Schema = Schema> extends Translator<S> {
+  readonly stateRevision: number;
+  readonly availableLocales: readonly string[];
+  readonly availableNamespaces: readonly string[];
+  readonly loadedNamespaces: readonly string[];
+}
+
+export interface StoreOptions {
+  readonly baseLocale: string;
+  readonly locale: string;
+  readonly catalogs: readonly ParsedCatalog[];
+  readonly timeZone?: string;
+}
+
+export interface Store<S extends Schema = Schema> {
+  /** Reads the latest committed snapshot; snapshot.t stays bound to that snapshot. */
+  readonly t: Translate<S>;
+  getSnapshot(): StoreSnapshot<S>;
+  subscribe(listener: (snapshot: StoreSnapshot<S>) => void): () => void;
+  /** Replaces the whole eager registry. Invalid candidates leave the current state intact. */
+  replaceCatalogs(catalogs: readonly ParsedCatalog[]): void;
+  setLocale(locale: string): void;
+  dispose(): void;
+}
+
 export interface CatalogDiagnostic {
   readonly code: DiagnosticCode;
   readonly message: string;

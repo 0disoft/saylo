@@ -1,0 +1,15 @@
+{
+  "heading": "New words. Same input.",
+  "description": "Edit the messages while keeping your form and confirmation open.",
+  "formTitle": "Order preview",
+  "name": "Name",
+  "namePlaceholder": "Recipient's name",
+  "note": "Delivery note",
+  "notePlaceholder": "Please leave it by the door",
+  "count": "Items",
+  "summary": "{count, plural, one {# item} other {# items}}",
+  "openDialog": "Open confirmation",
+  "dialogTitle": "Review your input",
+  "dialogNote": "Confirmation note",
+  "closeDialog": "Close"
+}
