@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@saylo/core';
+import { freeze } from '../dist/diagnostics.js';
 
 const options = { locale: 'ko', namespace: 'cart', sourceName: 'locales/ko/cart.json' };
 const catalog = (messages, locale = 'ko') => parseCatalog(JSON.stringify(messages), { ...options, locale });
@@ -143,4 +144,22 @@ test('parsed AST, schemas and diagnostics are deeply immutable', () => {
     assert.ok(Object.isFrozen(error.diagnostics[0]));
     return true;
   });
+});
+
+test('schema reuse follows deep immutability and mutable inputs never keep a stale schema', () => {
+  const parsed = catalog({ x: '{n, number}' });
+  assert.equal(createBaseSchema(parsed), createBaseSchema(parsed));
+  const mutable = { ...parsed, messages: { ...parsed.messages } };
+  const first = createBaseSchema(mutable);
+  mutable.messages.extra = catalog({ extra: '{name}' }).messages.extra;
+  assert.notEqual(createBaseSchema(mutable).fingerprint, first.fingerprint);
+  freeze(mutable);
+  assert.equal(createBaseSchema(mutable), createBaseSchema(mutable));
+});
+
+test('deep freeze visits children of an externally shallow-frozen object', () => {
+  const value = Object.freeze({ nested: { values: ['before'] } });
+  freeze(value);
+  assert.throws(() => { value.nested.values.push('after'); }, TypeError);
+  assert.equal(freeze(value), value);
 });

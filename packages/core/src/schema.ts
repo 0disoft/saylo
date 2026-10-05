@@ -1,6 +1,6 @@
 import { TYPE } from '@formatjs/icu-messageformat-parser';
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
-import { CatalogError, freeze } from './diagnostics.js';
+import { CatalogError, freeze, isDeepFrozen } from './diagnostics.js';
 import type { ArgumentType, CatalogDiagnostic, CatalogSchema, MessageSchema, ParsedCatalog } from './types.js';
 
 export function inferArguments(
@@ -40,14 +40,21 @@ export function inferArguments(
   return freeze(schema);
 }
 
+const schemas = new WeakMap<ParsedCatalog, CatalogSchema>();
+
 export function createBaseSchema(catalog: ParsedCatalog): CatalogSchema {
+  const cacheable = isDeepFrozen(catalog);
+  const cached = cacheable ? schemas.get(catalog) : undefined;
+  if (cached) return cached;
   const keys: Record<string, MessageSchema> = Object.create(null);
   for (const [id, message] of Object.entries(catalog.messages)) keys[id] = message.arguments;
   const canonical = Object.keys(keys).sort().map(id => [id,
     Object.keys(keys[id]!).sort().map(name => [name, [...keys[id]![name]!.acceptedTypes].sort()]),
   ]);
-  return freeze({ baseLocale: catalog.locale, namespace: catalog.namespace,
+  const schema = freeze({ baseLocale: catalog.locale, namespace: catalog.namespace,
     fingerprint: `saylo-schema-v1:${JSON.stringify([catalog.namespace, canonical])}`, keys });
+  if (cacheable) schemas.set(catalog, schema);
+  return schema;
 }
 
 /** Missing keys/arguments are allowed; supplied translations cannot narrow the base. */

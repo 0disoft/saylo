@@ -19,6 +19,7 @@ export function parseCatalog(source: string, options: CatalogOptions): ParsedCat
   const positionAt = createPositionLocator(source);
   const diagnostics: CatalogDiagnostic[] = [];
   const messages: Record<string, ParsedMessage> = Object.create(null);
+  const locale = new Intl.Locale(context.locale);
   for (const entry of entries) {
     const details = { ...context, id: entry.id };
     if (entry.id.length === 0 || entry.id.includes(':')) {
@@ -26,7 +27,7 @@ export function parseCatalog(source: string, options: CatalogOptions): ParsedCat
       continue;
     }
     try {
-      const ast = parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale: new Intl.Locale(context.locale) });
+      const ast = parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
         position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }));
       messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast, arguments: argumentsSchema });

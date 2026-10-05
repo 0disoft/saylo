@@ -1,9 +1,15 @@
 import type { CatalogDiagnostic, DeepReadonly, SourcePosition } from './types.js';
 
+// Only objects traversed by this helper are trusted to be deeply frozen.
+const frozen = new WeakSet<object>();
+export const isDeepFrozen = (value: object) => frozen.has(value);
+
 export function freeze<T>(value: T): DeepReadonly<T> {
   if (value !== null && typeof value === 'object') {
+    if (frozen.has(value)) return value as DeepReadonly<T>;
     for (const child of Object.values(value)) freeze(child);
     Object.freeze(value);
+    frozen.add(value);
   }
   return value as DeepReadonly<T>;
 }
