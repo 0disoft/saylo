@@ -5,8 +5,17 @@ import type { CatalogPatch, CatalogStamp } from './catalog-patch.js';
 
 const id = (key: CatalogKey) => JSON.stringify([key.locale, key.namespace]);
 // Positions belong to the version too, so a delta always has an exact baseline.
-const signature = (catalog: ParsedCatalog) => JSON.stringify([catalog.sourceName,
-  Object.keys(catalog.messages).sort().map(k => [k, catalog.messages[k]!.source, catalog.messages[k]!.position])]);
+function equivalent(before: ParsedCatalog, after: ParsedCatalog) {
+  if (before.sourceName !== after.sourceName || Object.keys(before.messages).length !== Object.keys(after.messages).length) return false;
+  for (const key in after.messages) {
+    if (!Object.hasOwn(after.messages, key)) continue;
+    const previous = Object.hasOwn(before.messages, key) ? before.messages[key] : undefined;
+    const message = after.messages[key]!;
+    if (!previous || previous.source !== message.source || previous.position.offset !== message.position.offset ||
+        previous.position.line !== message.position.line || previous.position.column !== message.position.column) return false;
+  }
+  return true;
+}
 
 /** Accepted registry only. Missing tombstones survive deletion and re-creation. */
 export class CatalogRegistry {
@@ -26,7 +35,7 @@ export class CatalogRegistry {
       const before = this.records.get(key);
       const after = next.get(key);
       const known = this.versions.get(key);
-      if (!known || !before || !after || (before !== after && signature(before) !== signature(after))) {
+      if (!known || !before || !after || (before !== after && !equivalent(before, after))) {
         if (known && before && after) this.previous.set(key, { version: known.version, catalog: before });
         else this.previous.delete(key);
         const catalog = after ?? before!;

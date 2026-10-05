@@ -45,6 +45,22 @@ test('source-only reformatting advances pair versions and produces exact positio
   assert.deepEqual(applyCatalogPatch(baseline, patch).catalog, after);
 });
 
+test('uniform source movement is encoded once and reconstructs exact positions for unchanged AST', () => {
+  const before = parse('{"probe":"a","x":"{name}","y":"text"}');
+  const after = parse('{"probe":"longer","x":"{name}","y":"text"}');
+  const registry = new CatalogRegistry('one', 'ko', [before]);
+  const baseline = registry.load('ko', 'demo');
+  registry.replace([after]);
+  const patch = registry.loadDelta('ko', 'demo', stamp(baseline));
+  assert.deepEqual(patch.positionShift, { offsetDelta: 5, lineDelta: 0, columnDelta: 5 });
+  assert.equal(patch.positions.length, 0);
+  const merged = applyCatalogPatch(baseline, JSON.parse(JSON.stringify(patch)));
+  assert.deepEqual(JSON.parse(JSON.stringify(merged.catalog)), JSON.parse(JSON.stringify(after)));
+  assert.equal(merged.catalog.messages.x.ast, before.messages.x.ast);
+  assert.throws(() => applyCatalogPatch(baseline, { ...patch, messageCount: 99 }), /count/);
+  assert.throws(() => applyCatalogPatch(baseline, { ...patch, positionShift: { ...patch.positionShift, lineDelta: -99 } }), /outside/);
+});
+
 test('older baselines, new sessions, dense edits and deleted/recreated pairs fall back to full outcomes', () => {
   const messages = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`m${i}`, 'initial']));
   const before = parse(JSON.stringify(messages));

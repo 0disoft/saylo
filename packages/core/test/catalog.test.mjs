@@ -125,6 +125,24 @@ test('translation rejects new keys, new arguments and narrower argument types', 
   rejectsCode(() => validateTranslation(base, parseCatalog('{}', { locale: 'en', namespace: 'other' })), 'NAMESPACE_MISMATCH');
 });
 
+test('validation reuse follows immutable argument contracts, never stale keys or mutable schemas', () => {
+  const base = createBaseSchema(catalog({ x: '{n, number}' }));
+  const translation = catalog({ x: '{n}' }, 'en');
+  validateTranslation(base, translation);
+  validateTranslation(base, translation);
+  rejectsCode(() => validateTranslation(createBaseSchema(catalog({ x: '{other}' })), translation), 'UNKNOWN_ARGUMENT');
+  rejectsCode(() => validateTranslation(createBaseSchema(catalog({ y: '{n, number}' })), translation), 'UNKNOWN_MESSAGE');
+  const mutableBase = { ...base, keys: { x: { n: { required: true, acceptedTypes: ['number'] } } } };
+  validateTranslation(mutableBase, translation);
+  mutableBase.keys.x.n.acceptedTypes = ['date'];
+  rejectsCode(() => validateTranslation(mutableBase, translation), 'ARGUMENT_TYPE_NARROWING');
+  const mutableTranslation = { ...translation, messages: { x: { ...translation.messages.x,
+    arguments: { n: { required: true, acceptedTypes: ['number', 'string'] } } } } };
+  validateTranslation(base, mutableTranslation);
+  mutableTranslation.messages.x.arguments.n.acceptedTypes = ['string'];
+  rejectsCode(() => validateTranslation(base, mutableTranslation), 'ARGUMENT_TYPE_NARROWING');
+});
+
 test('fingerprint depends on namespace and argument contract, not text or key order', () => {
   const first = createBaseSchema(catalog({ title: 'Cart', x: '{n, number}' }));
   const edited = createBaseSchema(catalog({ x: 'Total {n, number}', title: 'Edited' }));

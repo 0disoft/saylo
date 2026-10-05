@@ -280,3 +280,22 @@ test('reconnecting with a patch pending uses the new session and retains the las
   await tick();
   assert.equal(f.instance.t('demo:title'), 'latest after restart');
 });
+
+test('base and translation schema deltas publish together after both current pairs arrive', async t => {
+  const f = fixture(t);
+  connectDev(f.instance, { catalogSource: f.source });
+  await f.instance.setLocale('en');
+  const previous = f.instance.getSnapshot();
+  f.delay(true);
+  f.replace([catalog('{n, number}'), catalog('items', 'en'), ...f.records().filter(c => c.namespace !== 'demo')]);
+  await tick();
+  assert.equal(f.delayed.length, 2);
+  assert.ok(f.delayed.every(reply => reply.result.status === 'patch'));
+  f.hot.emit(CATALOG_EVENT, f.delayed[0]);
+  await tick();
+  assert.equal(f.instance.getSnapshot(), previous);
+  f.hot.emit(CATALOG_EVENT, f.delayed[1]);
+  await tick();
+  assert.equal(f.instance.t('demo:title', { n: 3 }), 'items');
+  assert.throws(() => f.instance.t('demo:title'), /argument/i);
+});

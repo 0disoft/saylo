@@ -5,6 +5,11 @@ export interface CatalogStamp {
   readonly sessionId: string;
   readonly catalogVersion: number;
 }
+interface PositionShift {
+  readonly offsetDelta: number;
+  readonly lineDelta: number;
+  readonly columnDelta: number;
+}
 /** Request-scoped delta. Core still receives a complete immutable CatalogOutcome. */
 export interface CatalogPatch extends CatalogStamp {
   readonly status: 'patch';
@@ -12,9 +17,12 @@ export interface CatalogPatch extends CatalogStamp {
   readonly namespaceSchemaFingerprint: string;
   readonly base: CatalogStamp;
   readonly sourceName: string;
+  readonly messageCount: number;
   readonly upsert: readonly (readonly [string, ParsedMessage])[];
   readonly remove: readonly string[];
   readonly positions: readonly (readonly [string, SourcePosition])[];
+  /** Uniform movement of unchanged messages, with positions overriding individual IDs. */
+  readonly positionShift?: PositionShift;
 }
 
 const samePosition = (a: SourcePosition, b: SourcePosition) =>
@@ -23,15 +31,26 @@ const samePosition = (a: SourcePosition, b: SourcePosition) =>
 export function createCatalogPatch(before: ParsedCatalog, after: PresentCatalog, base: CatalogStamp): CatalogPatch {
   const upsert: [string, ParsedMessage][] = [];
   const positions: [string, SourcePosition][] = [];
+  let shift: PositionShift | undefined;
+  let uniform = true;
+  let count = 0;
   const remove = Object.keys(before.messages).filter(id => !Object.hasOwn(after.catalog.messages, id));
   for (const [id, message] of Object.entries(after.catalog.messages)) {
+    count++;
     const previous = Object.hasOwn(before.messages, id) ? before.messages[id] : undefined;
     if (!previous || previous.source !== message.source) upsert.push([id, message]);
-    else if (!samePosition(previous.position, message.position)) positions.push([id, message.position]);
+    else {
+      const nextShift = { offsetDelta: message.position.offset - previous.position.offset,
+        lineDelta: message.position.line - previous.position.line, columnDelta: message.position.column - previous.position.column };
+      if (!shift) shift = nextShift;
+      else if (shift.offsetDelta !== nextShift.offsetDelta || shift.lineDelta !== nextShift.lineDelta || shift.columnDelta !== nextShift.columnDelta) uniform = false;
+      if (!samePosition(previous.position, message.position)) positions.push([id, message.position]);
+    }
   }
+  const compressed = uniform && positions.length > 1 ? shift : undefined;
   return { status: 'patch', sessionId: after.sessionId, key: after.key, catalogVersion: after.catalogVersion,
     namespaceSchemaFingerprint: after.namespaceSchemaFingerprint, base, sourceName: after.catalog.sourceName,
-    upsert, remove, positions };
+    messageCount: count, upsert, remove, positions: compressed ? [] : positions, ...(compressed ? { positionShift: compressed } : {}) };
 }
 
 function position(value: SourcePosition) {
@@ -44,7 +63,8 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
   if (!before || patch.base?.sessionId !== before.sessionId || patch.base.catalogVersion !== before.catalogVersion ||
       patch.sessionId !== before.sessionId || patch.catalogVersion < before.catalogVersion ||
       patch.key?.locale !== before.key.locale || patch.key.namespace !== before.key.namespace ||
-      typeof patch.sourceName !== 'string' || !Array.isArray(patch.upsert) || !Array.isArray(patch.remove) || !Array.isArray(patch.positions))
+      typeof patch.sourceName !== 'string' || !Number.isSafeInteger(patch.messageCount) || patch.messageCount < 0 ||
+      !Array.isArray(patch.upsert) || !Array.isArray(patch.remove) || !Array.isArray(patch.positions))
     throw new Error('Catalog patch has no matching immutable baseline.');
   const messages: Record<string, ParsedMessage> = Object.assign(Object.create(null), before.catalog.messages);
   const seen = new Set<string>();
@@ -73,6 +93,18 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
     if (!Object.hasOwn(messages, id) || !position(nextPosition)) throw new Error('Invalid catalog patch source position.');
     messages[id] = { ...messages[id]!, position: nextPosition };
   }
+  if (patch.positionShift !== undefined) {
+    const shift = patch.positionShift;
+    if (!shift || !Number.isSafeInteger(shift.offsetDelta) || !Number.isSafeInteger(shift.lineDelta) || !Number.isSafeInteger(shift.columnDelta))
+      throw new Error('Invalid uniform catalog position shift.');
+    for (const [id, message] of Object.entries(messages)) if (!seen.has(id)) {
+      const next = { offset: message.position.offset + shift.offsetDelta, line: message.position.line + shift.lineDelta,
+        column: message.position.column + shift.columnDelta };
+      if (!position(next)) throw new Error('Catalog position shift moves outside the source.');
+      messages[id] = { ...message, position: next };
+    }
+  }
+  if (Object.keys(messages).length !== patch.messageCount) throw new Error('Catalog patch message count differs.');
   return { status: 'present', sessionId: patch.sessionId, key: patch.key, catalogVersion: patch.catalogVersion,
     namespaceSchemaFingerprint: patch.namespaceSchemaFingerprint,
     catalog: { locale: patch.key.locale, namespace: patch.key.namespace, sourceName: patch.sourceName, messages } };

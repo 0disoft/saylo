@@ -59,6 +59,8 @@ export function createBaseSchema(catalog: ParsedCatalog): CatalogSchema {
   return schema;
 }
 
+const validatedArguments = new WeakMap<MessageSchema, { id: string; base: MessageSchema }>();
+
 /** Missing keys/arguments are allowed; supplied translations cannot narrow the base. */
 export function validateTranslation(base: CatalogSchema, translation: ParsedCatalog): void {
   const context = { locale: translation.locale, namespace: translation.namespace, sourceName: translation.sourceName };
@@ -72,6 +74,10 @@ export function validateTranslation(base: CatalogSchema, translation: ParsedCata
       diagnostics.push({ ...context, id, position: message.position, code: 'UNKNOWN_MESSAGE', message: 'Translation introduces a key absent from the base catalog.' });
       continue;
     }
+    const cacheable = isDeepFrozen(message.arguments) && isDeepFrozen(original);
+    const cached = cacheable ? validatedArguments.get(message.arguments) : undefined;
+    if (cached?.id === id && cached.base === original) continue;
+    const start = diagnostics.length;
     for (const [argument, translated] of Object.entries(message.arguments)) {
       const accepted = Object.hasOwn(original, argument) ? original[argument] : undefined;
       if (!accepted) {
@@ -81,6 +87,7 @@ export function validateTranslation(base: CatalogSchema, translation: ParsedCata
           message: `Translation argument ${JSON.stringify(argument)} must accept all base types (${accepted.acceptedTypes.join(' | ')}). If it needs a numeric contract, express that in the base message first.` });
       }
     }
+    if (cacheable && diagnostics.length === start) validatedArguments.set(message.arguments, { id, base: original });
   }
   if (diagnostics.length) throw new CatalogError(diagnostics);
 }

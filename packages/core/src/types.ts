@@ -43,7 +43,7 @@ export interface ParsedCatalog {
 export interface CatalogSchema {
   readonly baseLocale: string;
   readonly namespace: string;
-  /** Canonical schema encoding: exact equality, independent of message text. */
+  /** SHA-256 of the canonical namespace/key/argument schema, independent of message text. */
   readonly fingerprint: string;
   readonly keys: Readonly<Record<string, MessageSchema>>;
 }
