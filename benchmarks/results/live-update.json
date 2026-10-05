@@ -1,0 +1,210 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-05T15:01:34.271Z",
+  "gitRevision": "143215f4d336dbe45c00ad031e6f6acbcb6443db",
+  "settings": {
+    "samples": 50,
+    "warmup": 5,
+    "calibrations": 25,
+    "timeoutMs": 30000
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26200",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+  "results": [
+    {
+      "id": "1k-3-locales",
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "namespaces": 1,
+      "catalogFiles": 3,
+      "catalogBytes": 110292,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 587.8916,
+      "browserBootMs": 1899.8654999999999,
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 161.54030000000057,
+          "p95Ms": 191.2473,
+          "minMs": 123.72860000000037,
+          "maxMs": 202.96860000000015
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 108.41989999999987,
+          "p95Ms": 132.67959999999948,
+          "minMs": 84.29969999999958,
+          "maxMs": 140.1938
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 16.799999952316284,
+          "p95Ms": 21.100000023841858,
+          "minMs": 11,
+          "maxMs": 23.399999976158142
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.10000002384185791,
+          "minMs": 0,
+          "maxMs": 0.10000002384185791
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 7.264199999999619,
+          "p95Ms": 9.264599999999518,
+          "minMs": 3.6968999999990046,
+          "maxMs": 10.513699999999517
+        }
+      },
+      "controlRoundTrip": {
+        "count": 25,
+        "p50Ms": 4.867899999999736,
+        "p95Ms": 10.510600000000068,
+        "minMs": 3.232600000000275,
+        "maxMs": 10.801899999999932
+      },
+      "controlRoundTripsMs": [
+        10.801899999999932,
+        4.212399999999889,
+        10.510600000000068,
+        4.117500000000291,
+        4.165199999999913,
+        3.7535000000002583,
+        5.590700000000197,
+        5.604800000000068,
+        3.656500000000051,
+        3.787800000000061,
+        5.288700000000063,
+        3.6082000000001244,
+        10.200200000000223,
+        6.2202000000002045,
+        6.641200000000026,
+        3.3704999999999927,
+        8.352800000000116,
+        4.379399999999805,
+        9.281300000000101,
+        6.641399999999976,
+        3.232600000000275,
+        4.867899999999736,
+        4.696300000000065,
+        3.8092999999998938,
+        6.38760000000002
+      ],
+      "samplesFile": "live-update.1k-3-locales.samples.json"
+    },
+    {
+      "id": "10k-20-locales",
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "namespaces": 1,
+      "catalogFiles": 20,
+      "catalogBytes": 7755280,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 10318.9282,
+      "browserBootMs": 13365.172000000002,
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 1180.274599999997,
+          "p95Ms": 1693.9766999999993,
+          "minMs": 553.5391999999993,
+          "maxMs": 1843.6620000000112
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 458.9953000000096,
+          "p95Ms": 722.2602999999945,
+          "minMs": 216.7511999999988,
+          "maxMs": 829.5175000000017
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 218.80000007152557,
+          "p95Ms": 299.90000009536743,
+          "minMs": 97.80000007152557,
+          "maxMs": 306.2000000476837
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.09999990463256836,
+          "minMs": 0,
+          "maxMs": 0.10000002384185791
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 7.148399999990943,
+          "p95Ms": 9.560300000011921,
+          "minMs": 3.5786000000007334,
+          "maxMs": 10.054900000002817
+        }
+      },
+      "controlRoundTrip": {
+        "count": 25,
+        "p50Ms": 7.176399999996647,
+        "p95Ms": 39.68540000000212,
+        "minMs": 3.7710000000006403,
+        "maxMs": 219.4105000000054
+      },
+      "controlRoundTripsMs": [
+        5.834200000004785,
+        7.368300000001909,
+        8.375399999997171,
+        7.176399999996647,
+        11.707699999999022,
+        219.4105000000054,
+        39.68540000000212,
+        4.32560000000376,
+        3.7710000000006403,
+        5.550699999999779,
+        4.365499999999884,
+        3.8487999999997555,
+        9.820199999994657,
+        4.696600000002945,
+        12.444700000000012,
+        7.43930000000546,
+        16.177199999998265,
+        3.841899999999441,
+        3.899700000001758,
+        9.35899999999674,
+        3.8608000000022002,
+        8.423899999994319,
+        5.369800000000396,
+        4.732700000000477,
+        7.363699999994424
+      ],
+      "samplesFile": "live-update.10k-20-locales.samples.json"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 패키지는 아직 비공개이며 npm에 배포하지 않았다.
 - 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR boot serializer·요청별 instance·React hydration 어댑터를 구현했고 전체 check와 실제 브라우저 검증을 마쳤다.
-- 성능 수치는 전부 목표치다. 측정 결과가 아니며, 벤치마크도 아직 없다.
+- 성능 목표는 [검증과 로드맵](docs/06-validation-and-roadmap.md)에 있다. 라이브 갱신 벤치마크는 `npm run bench:live`로 돌리고 결과는 [benchmarks/results/live-update.json](benchmarks/results/live-update.json)에 남는다. 방법과 조건은 [benchmarks/live-update/README.md](benchmarks/live-update/README.md)에 정리했다. 이번 로컬 측정은 두 시나리오 모두 p95 목표에 못 미쳤다.
 - 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
 - npm 패키지 이름 `saylo`의 사용 가능 여부는 확인하지 않았다. 라이선스도 아직 정하지 않았다.
 - docs의 전체 모듈 구조, 이벤트 이름, i18n API 시그니처는 설계 제안이다. 현재 구현된 파싱 API와 구분하며 구현 과정에서 바뀔 수 있다.

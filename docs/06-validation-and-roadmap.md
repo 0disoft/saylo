@@ -2,9 +2,9 @@
 
 이 문서는 성능 목표와 측정 정의, 인수 사례, 빌드 순서, 개발 로드맵을 정한다.
 
-## 성능 목표 (임시, 미측정)
+## 성능 목표
 
-아래 수치는 목표이며 아직 측정하지 않았다. 벤치마크도 아직 없다.
+아래 수치는 목표다. 로컬 벤치마크로 일부를 측정했고, 결과와 한계는 아래 실측 기록에 남겼다. 어느 시나리오도 p95 목표를 달성하지 못했다.
 
 | 항목 | 목표 | 조건 |
 | --- | --- | --- |
@@ -24,6 +24,21 @@
 - 작은 규모에서만 돌린 벤치마크로 일반화하지 않는다. 규모를 나눠 측정한다. 예: 메시지 1k/10k, 로케일 3/20.
 - typegen 비용과 cold startup은 수정 반영 수치에서 분리해 별도로 잰다.
 - CI에서 광범위한 매트릭스로 비용을 부풀리지 않는다. 필요한 조합만 돌린다.
+
+### 실측 기록 (로컬)
+
+`npm run bench:live`로 측정했다. 결과 요약은 [benchmarks/results/live-update.json](../benchmarks/results/live-update.json)에 남겼고, 시나리오별 raw sample은 그 파일이 가리키는 `live-update.<case>.samples.json`에 따로 둔다. 방법·조건·재실행 옵션은 [benchmarks/live-update/README.md](../benchmarks/live-update/README.md)에 있다.
+
+조건은 warmup 5회를 뺀 50 샘플, control 왕복 25회다. namespace 1, 렌더 메시지 2(바뀐 키 1 + 바뀌지 않은 키 1), loaded base `ko` + target `en`, `en` 본문 키 1개 수정이다. Chromium headless, React 개발 모드, paint 계측 없음. 환경은 Windows x64, Node v24.18.0, Vite 8.3.2, AMD Ryzen 5 7430U, logical CPU 12, memory 31.3GiB다.
+
+| 시나리오 | 카탈로그 | save→DOM ack p50 | save→DOM ack p95 | save→manifest broadcast p95 | receive→commit p95 | control 왕복 p95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1k×3 로케일 | 3 파일, 110,292 B | 161.54ms | 191.25ms | 132.68ms | 21.10ms | 10.51ms |
+| 10k×20 로케일 | 20 파일, 7,755,280 B | 1180.27ms | 1693.98ms | 722.26ms | 299.90ms | 39.69ms |
+
+두 시나리오 모두 save→DOM ack p95가 목표 p95 ≤ 100ms를 넘었다. 파일 쓰기 p95는 small 9.26ms, large 9.56ms로 따로 기록하며 종단 간 값에 더하지 않는다. 단계별 p95를 더해 종단 간 값으로 쓰지 않고, control 왕복도 전체 latency에서 빼지 않고 참고로만 병기한다. 서버·브라우저 clock을 서로 빼지 않는다. 단계 값을 보면 서버 처리 구간과 큰 payload의 브라우저 수신→commit 구간이 개선 대상으로 보이지만, 프로파일링으로 원인을 확정하지는 않았다.
+
+이 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 이 수치는 로컬 단일 run 실측이며 일반 보장이 아니다. 로케일 추가·삭제와 paint, 번들 크기는 아직 측정하지 않았다.
 
 ## 인수 사례
 
@@ -69,7 +84,7 @@
 
 - 문서와 구현을 함께 갱신한다. 공개 타입 선언과 소비 fixture 검사, 실제 production build·정적 loader 검증을 수행하고, Markdown 링크·JSON 예제·코드 블록·파일 크기도 확인한다. 현재 구현의 결과는 이 문서의 단계별 검증 기록에 남긴다. 문서 설계 리뷰는 [리뷰 반영 기록](../review/feedback-resolution.ko.md)을 참고한다.
 - 실행하지 않은 검사는 pass가 아니다. 문서 링크 확인도 항목별로 남긴다.
-- 검증하지 않은 항목은 미검증으로 유지한다. 성능 수치는 전부 목표치다.
+- 검증하지 않은 항목은 미검증으로 유지한다. 성능은 로컬 실측 기록과 목표를 구분해 적는다.
 
 ## 로드맵
 
