@@ -13,6 +13,11 @@
   },
   "devDependencies": {
     "@types/node": "24",
+    "@types/react": "19",
+    "@types/react-dom": "19",
+    "jsdom": "30",
+    "react": "19",
+    "react-dom": "19",
     "typescript": "7",
     "vite": "8"
   }
