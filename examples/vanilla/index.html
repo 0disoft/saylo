@@ -28,6 +28,7 @@
             <button type="submit" data-message="demo:openDialog"></button>
           </form>
           <p class="hint">입력값과 포커스는 유지하고, 번역 텍스트만 바꿉니다.</p>
+          <p class="hint">사용 가능한 namespace: <span id="namespaces"></span></p>
         </section>
         <section class="panel editor">
           <div class="panel-header"><h2>현재 파일 문구</h2><span class="badge">JSON</span></div>
@@ -36,7 +37,7 @@
           <label>번역 문구 · English<textarea id="en-editor" class="code" rows="12" spellcheck="false" aria-label="영어 카탈로그" readonly></textarea></label>
           <p id="status" class="hint" role="status">개발 서버에 연결 중입니다.</p>
           <pre id="error" role="alert"></pre>
-          <p class="footnote">현재는 기존 파일 수정만 자동 반영합니다. 파일 추가·삭제는 다음 단계에서 연결합니다.</p>
+          <p class="footnote">로케일 폴더나 namespace JSON 파일을 추가·삭제하면 목록도 자동으로 바뀝니다. 현재 언어의 모든 파일을 삭제하면 기준 언어로 전환합니다.</p>
         </section>
       </div>
     </main>

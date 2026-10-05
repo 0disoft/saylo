@@ -23,6 +23,7 @@ function render(snapshot) {
   for (const [node, value] of attributes) node.placeholder = value;
   element('summary').textContent = summary;
   element('revision').textContent = `revision ${snapshot.stateRevision}`;
+  element('namespaces').textContent = snapshot.availableNamespaces.join(', ');
   document.documentElement.lang = snapshot.locale;
   const nextList = snapshot.availableLocales.join(',');
   if (nextList !== localeList) {
@@ -33,6 +34,7 @@ function render(snapshot) {
 }
 
 function showCatalogs(catalogs) {
+  for (const editor of Object.values(editors)) editor.value = '';
   for (const catalog of catalogs) {
     const editor = editors[catalog.locale];
     if (catalog.namespace !== 'demo' || !editor) continue;

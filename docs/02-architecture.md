@@ -51,7 +51,7 @@ delete, rename, add도 같은 경로를 탄다. 파일 삭제·이름 변경·�
 
 첫 개발 서버 구현은 Vite plugin이다.
 
-- 커스텀 이벤트 전달은 Vite 공식 방식인 `handleHotUpdate`에서 처리한다. 영향받은 카탈로그 정보를 담은 커스텀 이벤트를 보낸 뒤 빈 배열(`[]`)을 반환해 기본 HMR 전파를 막는다. 이 `[]` 반환은 그 훅 처리 범위의 공식 방식이다. 전체 모듈 그래프나 다른 plugin의 watch 경로까지 통제한다는 보장은 아니다. 근거는 [Vite HMR API](https://vite.dev/guide/api-hmr)다.
+- 현재 Vite 8 구현은 create/update/delete를 함께 받는 `hotUpdate`를 사용한다. 관리 경로에서 빈 배열(`[]`)을 반환하고, 모아 둔 파일 이벤트를 판정한 뒤 custom event로 반영한다. `[]`는 해당 훅의 기본 HMR 전파를 막으며 다른 plugin의 watch 경로는 각 plugin의 책임이다. 근거는 [Vite HMR API](https://vite.dev/guide/api-hmr)다.
 - 파일 추가·삭제(`add`/`unlink`)는 change와 경로가 다르므로 watcher 이벤트를 별도로 등록해 처리한다.
 - 같은 파일 change가 짧은 시간에 중복으로 들어오면 중복 커밋을 만들지 않는다. debounce로 최종 상태에 수렴시키고, 반영할 payload의 content hash가 실제로 달라진 경우에만 revision을 올린다.
 - 카탈로그 소스 파일을 앱 코드에서 직접 import하거나 glob으로 묶지 않는다. 그렇게 묶인 카탈로그는 Saylo plugin 관리 경로 밖이고 일반 Vite HMR을 따른다. Saylo 경로는 virtual module과 catalog source를 통한다. 직접 import나 glob이 감지되면 warning 진단으로 알린다.
@@ -64,6 +64,8 @@ delete, rename, add도 같은 경로를 탄다. 파일 삭제·이름 변경·�
 - Vite dev server가 watcher와 websocket을 소유한다. Saylo plugin은 자신이 등록한 listener, route, channel binding만 소유하고 해제한다. 공유 watcher와 socket은 닫지 않는다.
 - `instance.dispose`는 그 instance가 붙인 bridge 구독을 해제한다. HMR `hot.dispose`와 prune 정리 경로에서도 Saylo가 등록한 listener만 해제하고 공유 server websocket은 유지한다.
 - plugin은 dev 서버 종료 시 자신이 등록한 listener, route, channel binding만 정리한다.
+
+현재 eager 프로토타입은 `store.onDispose(cleanup)`을 통해 bridge를 정리한다. Vite watcher의 add/unlink listener, pending timer, 진행 중 읽기의 늦은 게시도 종료 시 해제·차단한다. 해제 후 `connectDev`를 다시 호출하면 최신 전체 snapshot과 현재 진단을 요청한다. 부분 전송과 자동 재연결의 세션·갭 처리는 이후 프로토콜 단계에서 구현한다.
 
 ## 시작 핸드셰이크
 

@@ -5,7 +5,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 ## 현재 상태
 
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 패키지는 아직 비공개이며 npm에 배포하지 않았다.
-- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`와 오류 클래스들이다. `packages/vite`는 기존 카탈로그 파일 수정과 `virtual:saylo`·`connectDev` 연결을 지원한다. `examples/vanilla`에서 파일 저장 후 폼과 모달을 유지하며 문구를 갱신한다. 파일 추가·삭제, React 연결, typegen과 SSR은 이후 구현한다.
+- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`와 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제와 `virtual:saylo`·`connectDev` 연결을 지원한다. `examples/vanilla`에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. React 연결, typegen과 SSR은 이후 구현한다.
 - 성능 수치는 전부 목표치다. 측정 결과가 아니며, 벤치마크도 아직 없다.
 - 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
 - npm 패키지 이름 `saylo`의 사용 가능 여부는 확인하지 않았다. 라이선스도 아직 정하지 않았다.
@@ -25,9 +25,11 @@ npm run check
 
 폼 데모는 `npm run dev`로 실행한 뒤 터미널에 표시되는 로컬 주소를 연다. 편집기에서 `examples/vanilla/locales/ko/demo.json` 또는 `en/demo.json`의 문구를 수정하고 저장한다. 입력값·포커스·커서·스크롤과 열린 모달이 유지되는지 확인할 수 있다. JSON이 깨지거나 번역 계약이 어긋나면 마지막 정상 상태와 파일별 진단을 유지한다. `npm run build:demo`는 현재 디스크의 카탈로그를 검증해 데모를 빌드한다.
 
-Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@saylo/vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수를 store dispose 전에 호출한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@saylo/vite/virtual`을 포함한다.
+Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@saylo/vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수로 연결을 끊고 다시 연결할 수 있다. `store.dispose()`와 Vite dispose·prune도 연결을 정리한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@saylo/vite/virtual`을 포함한다.
 
-현재 개발 전송은 임시 전체 eager snapshot이다. 변경 파일만 파싱하고 기준 스키마 변경 시 해당 namespace의 번역을 재검증한 뒤, Vite custom event로 registry 전체를 전달한다. 라이브 문구 갱신은 앱 모듈을 교체하지 않는다. 파일 추가·삭제, 부분 전송과 로드 범위별 resync는 이후 단계이며, Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
+현재 개발 전송은 임시 전체 eager snapshot이다. 변경 파일만 파싱하고 기준 스키마 변경 시 해당 namespace의 번역을 재검증한 뒤, Vite custom event로 registry 전체를 전달한다. 라이브 문구 갱신은 앱 모듈을 교체하지 않는다. 부분 전송과 로드 범위별 resync는 이후 단계이며, Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
+
+파일 이벤트는 40ms quiet window로 묶고, 이벤트가 계속 들어오면 최대 200ms 뒤 읽기를 시작한다. 임시 파일 교체 저장은 최종 경로의 상태로 판단한다. 현재 로케일의 모든 카탈로그를 삭제하면 기준 언어로 전환한다. 기준 namespace 삭제는 목록에서 제거하고 남은 번역 파일은 기준 namespace가 복원될 때 다시 검증한다. 운영 빌드는 기준 없는 번역 파일을 엄격히 거부하므로 namespace를 제거할 때 번역 파일도 함께 정리한다. 기준 로케일의 모든 카탈로그 삭제는 거부하고 마지막 정상 상태를 유지한다. 새 번역 파일이 기준 파일보다 먼저 도착해 검증에 실패해도, 기준 파일이 생기면 후보를 자동 재검증한다. `.d.ts`, 숨김 JSON과 `.json.tmp` 파일은 Saylo 카탈로그 범위에서 제외한다.
 
 ```js
 import { parseCatalog, createBaseSchema, validateTranslation, createTranslator } from '@saylo/core';
@@ -74,7 +76,7 @@ store.dispose();
 
 `createStore`는 모든 카탈로그를 미리 싣는 동기 프로토타입이다. `getSnapshot()`은 UI 상태가 같으면 같은 객체를 반환한다. `store.t`는 최신 상태를 읽고, 이전 snapshot의 `t`는 이전 상태를 계속 읽는다. `replaceCatalogs`는 registry 전체 교체이며 현재 로케일이 삭제되면 baseLocale로 전환한다. 같은 문구를 다시 전달하거나 기존 비활성 로케일의 문구만 바꾸면 UI를 다시 통지하지 않는다. 로케일·namespace 목록 변경은 통지한다. 카탈로그 수정 후에도 같은 시간대의 메시지·Intl 캐시를 재사용한다.
 
-후보는 모든 번역 계약을 검증한 뒤 게시하고, 구독자는 트랜잭션당 한 번 통지한다. 구독 중 요청한 다음 변경은 현재 snapshot의 모든 구독자가 끝난 뒤 게시한다. 구독자 오류는 나머지 구독자 통지를 마친 뒤 `AggregateError`로 전달하며 이미 게시한 상태를 되돌리지 않는다. `unsubscribe`와 `dispose`는 반복 호출해도 안전하다. 지연 로딩·부분 전송·secondary quarantine은 이후 단계의 계약이며, 현재 eager store는 잘못된 후보 전체를 거부한다. 키 삭제·필수 인자 추가로 기존 화면 호출이 깨지는 편집은 DOM 보존 범위에 포함하지 않는다.
+후보는 모든 번역 계약을 검증한 뒤 게시하고, 구독자는 트랜잭션당 한 번 통지한다. 구독 중 요청한 다음 변경은 현재 snapshot의 모든 구독자가 끝난 뒤 게시한다. 구독자 오류는 나머지 구독자 통지를 마친 뒤 `AggregateError`로 전달하며 이미 게시한 상태를 되돌리지 않는다. `unsubscribe`와 `dispose`는 반복 호출해도 안전하다. 어댑터는 `store.onDispose(cleanup)`으로 소유 자원의 정리를 등록하고, 반환된 함수로 등록을 해제한다. 정리 중 오류가 나도 나머지 정리를 마친 뒤 `AggregateError`로 전달한다. 지연 로딩·부분 전송·secondary quarantine은 이후 단계의 계약이며, 현재 eager store는 잘못된 후보 전체를 거부한다. 키 삭제·필수 인자 추가로 기존 화면 호출이 깨지는 편집은 DOM 보존 범위에 포함하지 않는다.
 
 ## 설계 방향 한 줄 요약
 
