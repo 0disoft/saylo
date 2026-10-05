@@ -6,6 +6,19 @@ const catalog = (title, locale = 'ko', namespace = 'cart') => parseCatalog(JSON.
 const initial = () => [catalog('장바구니'), catalog('Cart', 'en'), catalog('Panier', 'fr')];
 const store = () => createStore({ baseLocale: 'ko', locale: 'en', catalogs: initial() });
 
+test('disposal releases all adapter resources once, including after a cleanup failure', () => {
+  const i18n = store();
+  const calls = [];
+  const remove = i18n.onDispose(() => calls.push('removed'));
+  remove(); remove();
+  i18n.onDispose(() => { calls.push('first'); i18n.dispose(); throw new Error('cleanup failed'); });
+  i18n.onDispose(() => calls.push('second'));
+  assert.throws(() => i18n.dispose(), AggregateError);
+  assert.deepEqual(calls, ['first', 'second']);
+  i18n.dispose();
+  assert.throws(() => i18n.onDispose(() => {}), /disposed/);
+});
+
 test('snapshots are stable, immutable and keep their own translator after replacement', () => {
   const i18n = store();
   const before = i18n.getSnapshot();

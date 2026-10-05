@@ -67,6 +67,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   let notifying = false;
   const pending: StoreSnapshot<S>[] = [];
   const listeners = new Set<{ callback: (snapshot: StoreSnapshot<S>) => void }>();
+  const disposers = new Set<{ callback: () => void }>();
   function assertActive() { if (disposed) throw new Error('Store is disposed.'); }
   function publish(nextRegistry: Registry, nextLocale: string) {
     const nextSignature = visibleSignature(nextRegistry, baseLocale, nextLocale);
@@ -101,6 +102,12 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
       listeners.add(listener);
       return () => { listeners.delete(listener); };
     },
+    onDispose: (callback: () => void) => {
+      assertActive();
+      const listener = { callback };
+      disposers.add(listener);
+      return () => { disposers.delete(listener); };
+    },
     replaceCatalogs: (catalogs: readonly ParsedCatalog[]) => {
       assertActive();
       const nextRegistry = validateRegistry(catalogs, baseLocale);
@@ -112,6 +119,18 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
       if (!registry.locales.includes(canonical)) throw new RangeError('Locale is outside the eager registry.');
       publish(registry, canonical);
     },
-    dispose: () => { disposed = true; listeners.clear(); pending.length = 0; },
+    dispose: () => {
+      if (disposed) return;
+      disposed = true;
+      listeners.clear();
+      pending.length = 0;
+      const errors: unknown[] = [];
+      for (const listener of [...disposers]) {
+        if (!disposers.has(listener)) continue;
+        disposers.delete(listener);
+        try { listener.callback(); } catch (error) { errors.push(error); }
+      }
+      if (errors.length) throw new AggregateError(errors, 'Failures during store disposal; all owned cleanup was attempted.');
+    },
   });
 }

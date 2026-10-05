@@ -101,6 +101,8 @@ export interface Store<S extends Schema = Schema> {
   readonly t: Translate<S>;
   getSnapshot(): StoreSnapshot<S>;
   subscribe(listener: (snapshot: StoreSnapshot<S>) => void): () => void;
+  /** Adapters register owned resource cleanup; removing the listener is idempotent. */
+  onDispose(listener: () => void): () => void;
   /** Replaces the whole eager registry. Invalid candidates leave the current state intact. */
   replaceCatalogs(catalogs: readonly ParsedCatalog[]): void;
   setLocale(locale: string): void;
