@@ -1,6 +1,6 @@
 # 01. 제품과 범위
 
-이 문서는 Saylo가 풀려는 문제와 다루지 않는 범위를 정한다.
+이 문서는 Saylo가 풀려는 문제와 다루지 않는 범위, DOM 상태 보존 범위를 정한다.
 
 ## 문제
 
@@ -21,6 +21,14 @@
 파일 watch → 수정 파일 parse/validate → 로케일+namespace 단위 catalog transaction → Vite custom event로 snapshot/patch 전달 → 클라이언트 store 갱신 → 프레임워크 구독 재렌더.
 
 이 경로는 JS 산출물 생성 완료, 전체 앱 모듈 무효화, full reload, typegen 완료를 기다리지 않는다. 없애려는 것은 코드 생성 대기와 전체 리로드다. 파싱과 검증에 드는 시간은 남는다.
+
+## DOM 상태 보존 범위
+
+- 문구 값 수정과 로케일 추가는 기존 DOM 상태를 보장한다.
+- schema-compatible 편집(값만 바꾸는 키 편집)은 기존 DOM 상태를 보장한다.
+- schema-breaking 편집(키 삭제, 필수 인자 추가)은 새 schema를 즉시 적용하고 진단과 typegen을 함께 낸다. 기존 호출부는 `InvalidArgumentError`를 낼 수 있고, 그 편집의 DOM 상태는 보장하지 않는다. 자세한 규칙은 [04-live-update-and-types.md](04-live-update-and-types.md)를 따른다.
+- Vite dev server 재시작이나 websocket 재연결에서 Vite client가 스스로 full reload를 하는 경우는 이 보장 범위 밖이다. 자세한 내용은 [05-build-and-ssr.md](05-build-and-ssr.md)를 따른다.
+- Saylo가 DOM을 다시 만들지 않아도 문구 길이 변화로 레이아웃과 스크롤 위치가 달라질 수 있다. 상태 보존 인수 검사는 같은 레이아웃 조건에서 수행한다.
 
 ## 비목표
 
@@ -45,8 +53,10 @@
 | --- | --- |
 | catalog | 한 로케일 안의 한 namespace에 해당하는 메시지 집합 |
 | namespace | 카탈로그를 나누는 파일 단위. 예: `common`, `cart` |
-| revision | 카탈로그 상태를 식별하는 단조 증가 번호 |
-| snapshot | 특정 revision의 카탈로그 전체 상태 |
+| registry revision | 세션 안에서 전송 순서를 식별하는 단조 증가 번호 |
+| catalogVersion | 로케일+namespace별 카탈로그와 삭제 상태의 버전 |
+| stateRevision | 공개 UI snapshot의 변경을 식별하는 번호 |
+| snapshot | 특정 시점의 불변 상태. UI·boot·전송 snapshot은 용도가 다르다. |
 | patch | base revision에서 새 revision으로 가는 변경 묶음 |
 | base locale | 기준 로케일. 키와 argument 스키마의 원본이다. |
 | generated types | 기준 스키마에서 만드는 타입 선언 |
