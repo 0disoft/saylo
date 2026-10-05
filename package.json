@@ -9,6 +9,7 @@
     "demo:lazy": "npm run build --workspace=@saylo/core && node examples/lazy/main.mjs",
     "demo:ssr": "npm run build && node examples/ssr/demo.mjs",
     "bench:live": "npm run build && node benchmarks/live-update/run.mjs",
+    "verify:pack": "npm run build && node scripts/pack-smoke.mjs",
     "dev:ssr": "npm run build && node examples/ssr/server.mjs",
     "dev": "npm run build && vite --config examples/vanilla/vite.config.mjs --host 127.0.0.1",
     "build:demo": "npm run build && vite build --config examples/vanilla/vite.config.mjs",

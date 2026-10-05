@@ -7,10 +7,11 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 패키지는 아직 비공개이며 npm에 배포하지 않았다.
 - 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR boot serializer·요청별 instance·React hydration 어댑터를 구현했고 전체 check와 실제 브라우저 검증을 마쳤다.
 - 성능 목표는 [검증과 로드맵](docs/06-validation-and-roadmap.md)에 있다. 라이브 갱신 벤치마크는 `npm run bench:live`로 돌리고 결과는 [benchmarks/results/live-update.json](benchmarks/results/live-update.json), 최적화 후 재측정은 [benchmarks/results/live-update-optimized.json](benchmarks/results/live-update-optimized.json), request-scoped patch 적용 후 첫 run과 재실행은 [benchmarks/results/live-update-patch.json](benchmarks/results/live-update-patch.json)·[benchmarks/results/live-update-patch-repeat.json](benchmarks/results/live-update-patch-repeat.json)에 남는다. 방법과 조건은 [benchmarks/live-update/README.md](benchmarks/live-update/README.md)에 정리했다. request-scoped patch 뒤 small은 재실행에서 p95 목표 안에 들어왔지만 같은 코드의 첫 run은 넘었고, large는 두 run 모두 목표 p95 ≤ 100ms를 넘었다.
+- `npm run verify:pack`으로 외부 JS/TS 소비를 검증한다. 2026-10-06 Node 24.18.0·Vite 8.3.2에서 exit 0으로 통과했다. 스크립트는 [scripts/pack-smoke.mjs](scripts/pack-smoke.mjs)에 있다.
 - 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
 - npm 패키지 이름 `saylo`의 사용 가능 여부는 확인하지 않았다. 라이선스도 아직 정하지 않았다.
 - docs의 전체 모듈 구조, 이벤트 이름, i18n API 시그니처는 설계 제안이다. 현재 구현된 파싱 API와 구분하며 구현 과정에서 바뀔 수 있다.
-- 문서 기준일: 2026-10-05
+- 문서 기준일: 2026-10-06
 
 ## 로컬 실행
 
@@ -22,6 +23,8 @@ npm run check
 ```
 
 `check`는 ESM·선언 파일 빌드, 카탈로그 검증 테스트, TS와 checkJs 소비 타입 검사를 수행한다. 빌드만 하려면 `npm run build`, 빌드와 실행 테스트는 `npm test`를 쓴다.
+
+pack 소비 검증은 `npm run verify:pack`으로 돌린다. workspace 패키지를 tarball로 묶어 저장소 밖 임시 디렉터리의 JS·TS 앱에 설치하고, 설치된 `saylo-typegen` 타입 생성, JS checkJs와 TS strict 타입 검사, Node 번역·인자 거부·React SSR, public subpath import, Vite production lazy chunk 빌드를 확인한 뒤 임시 디렉터리를 지운다. peer와 도구는 npm registry에서 설치하므로 네트워크가 필요하다.
 
 폼 데모는 `npm run dev`로 실행한 뒤 터미널에 표시되는 로컬 주소를 연다. 편집기에서 `examples/vanilla/locales/ko/demo.json` 또는 `en/demo.json`의 문구를 수정하고 저장한다. 입력값·포커스·커서·스크롤과 열린 모달이 유지되는지 확인할 수 있다. JSON이 깨지거나 번역 계약이 어긋나면 마지막 정상 상태와 파일별 진단을 유지한다. `npm run build:demo`는 현재 디스크의 카탈로그를 검증해 데모를 빌드한다.
 
