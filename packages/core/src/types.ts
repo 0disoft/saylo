@@ -52,7 +52,34 @@ export type DiagnosticCode =
   | 'INVALID_LOCALE' | 'INVALID_NAMESPACE' | 'INVALID_JSON'
   | 'INVALID_CATALOG' | 'INVALID_ID' | 'DUPLICATE_ID'
   | 'INVALID_ICU' | 'ARGUMENT_CONFLICT' | 'NAMESPACE_MISMATCH'
-  | 'UNKNOWN_MESSAGE' | 'UNKNOWN_ARGUMENT' | 'ARGUMENT_TYPE_NARROWING';
+  | 'UNKNOWN_MESSAGE' | 'UNKNOWN_ARGUMENT' | 'ARGUMENT_TYPE_NARROWING'
+  | 'DUPLICATE_CATALOG' | 'LOCALE_MISMATCH';
+
+export type Schema = Record<string, Record<string, unknown>>;
+
+export type TypedCall<S extends Schema> = {
+  [K in keyof S & string]: keyof S[K] extends never ? [key: K] : [key: K, args: S[K]]
+}[keyof S & string];
+
+export type Translate<S extends Schema> = string extends keyof S
+  ? (key: string, args?: Record<string, unknown>) => string
+  : (...call: TypedCall<S>) => string;
+
+/** A synchronous translator bound to one set of immutable parsed catalogs. */
+export interface TranslatorOptions {
+  readonly locale: string;
+  readonly baseCatalogs: readonly ParsedCatalog[];
+  /** Only catalogs for the selected locale; missing namespaces fall back to base. */
+  readonly translations?: readonly ParsedCatalog[];
+  readonly timeZone?: string;
+}
+
+export interface Translator<S extends Schema = Schema> {
+  readonly locale: string;
+  readonly baseLocale: string;
+  readonly timeZone: string;
+  readonly t: Translate<S>;
+}
 
 export interface CatalogDiagnostic {
   readonly code: DiagnosticCode;

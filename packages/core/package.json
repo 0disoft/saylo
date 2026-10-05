@@ -9,13 +9,16 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test test/catalog.test.mjs",
+    "test": "node --test test/catalog.test.mjs test/translator.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": {
-    "@formatjs/icu-messageformat-parser": "3"
+    "@formatjs/icu-messageformat-parser": "3",
+    "intl-messageformat": "12"
   }
 }
