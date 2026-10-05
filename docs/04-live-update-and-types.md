@@ -114,6 +114,8 @@ schema-breaking 편집은 기존 호출부가 `InvalidArgumentError`를 낼 수 
 - typegen은 배경 작업으로 돌리고 generation token으로 오래된 작업이 최신 생성물을 덮어쓰지 못하게 한다. 생성 결과는 내용이 실제로 바뀐 경우에만 원자적으로 쓴다.
 - build는 typegen 완료를 기다린다. 초기 schema readiness는 dev serve 시작 시점에 typegen을 먼저 끝내 소비자보다 앞서도록 한다.
 
+현재 구현은 `@saylo/typegen`의 선언 renderer·CLI·worker와 `@saylo/vite`의 `typegen.outFile` 옵션이다. Vite는 accepted baseline schema를 전달하며 라이브 snapshot을 전송한 뒤 배경 생성을 요청한다. 대기 중인 작업은 최신 generation으로 합치고, 오래된 결과는 원자적 파일 교체 전에 다시 확인한다. 초기 생성 실패는 startup을 중단하고 라이브 생성 실패는 서버 로그에 남긴다. CLI는 디스크 카탈로그 전체의 strict 검증을 완료한 뒤 선언을 생성한다. React 데모의 build 순서는 generate → consumer tsc → Vite build다. `.d.ts`와 해당 generator의 임시 파일만 watch/HMR에서 제외하며, 무관한 타입 파일은 그대로 감시한다.
+
 ## 캐시
 
 - 메시지 formatter 캐시와 `Intl` 캐시를 분리한다. 키와 무효화 규칙은 [03-catalog-and-api.md](03-catalog-and-api.md)의 포맷 캐시 표를 따른다.
