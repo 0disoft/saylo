@@ -1,14 +1,14 @@
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createI18n } from '@saylo/core';
-import { createSayloReact } from '@saylo/react';
-import { connectDev } from '@saylo/vite/client';
+import { createI18n } from '@0disoft/saylo-core';
+import { createSayloReact } from '@0disoft/saylo-react';
+import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
 
 /** @typedef {import('../generated.js').AppSchema} AppSchema */
-/** @type {import('@saylo/core').I18n<AppSchema>} */
+/** @type {import('@0disoft/saylo-core').I18n<AppSchema>} */
 const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });
-/** @type {import('@saylo/react').SayloReactBindings<AppSchema>} */
+/** @type {import('@0disoft/saylo-react').SayloReactBindings<AppSchema>} */
 const bindings = createSayloReact();
 connectDev(instance, { catalogSource });
 function View() {
@@ -19,7 +19,7 @@ const element = document.getElementById('app');
 if (!element) throw new Error('Missing app element.');
 createRoot(element).render(createElement(bindings.SayloProvider, { instance }, createElement(View)));
 
-/** @param {import('@saylo/core').I18n<AppSchema>} typed */
+/** @param {import('@0disoft/saylo-core').I18n<AppSchema>} typed */
 export function checkTypes(typed) {
   typed.t('demo:items', { count: 2 });
   // @ts-expect-error required argument

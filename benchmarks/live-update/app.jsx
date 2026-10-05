@@ -1,8 +1,8 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createI18n } from '@saylo/core';
-import { createSayloReact } from '@saylo/react';
-import { connectDev } from '@saylo/vite/client';
+import { createI18n } from '@0disoft/saylo-core';
+import { createSayloReact } from '@0disoft/saylo-react';
+import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
 
 const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });

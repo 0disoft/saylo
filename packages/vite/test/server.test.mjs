@@ -20,7 +20,7 @@ async function fixture(t) {
     await writeFile(path.join(root, 'locales', locale, 'demo.json'), JSON.stringify({ title: `${locale}_SSR` }));
   }
   await writeFile(path.join(root, 'main.mjs'), `import { createRequestI18n, catalogSource } from 'virtual:saylo/server';
-import { serializeBootSnapshot } from '@saylo/core';
+import { serializeBootSnapshot } from '@0disoft/saylo-core';
 export { catalogSource };
 export async function render(locale) {
   const instance = await createRequestI18n({ locale });
@@ -55,7 +55,7 @@ test('Vite SSR dev requests see current catalogs without invalidating the server
 test('Vite production SSR bundle prepares independent requests using static catalog imports', async t => {
   const { root, config } = await fixture(t);
   const result = await build({ ...config, build: { ssr: path.join(root, 'main.mjs'), minify: false,
-    rolldownOptions: { external: [], preserveEntrySignatures: 'strict' } }, ssr: { noExternal: ['@saylo/core', '@saylo/vite/client'] } });
+    rolldownOptions: { external: [], preserveEntrySignatures: 'strict' } }, ssr: { noExternal: ['@0disoft/saylo-core', '@0disoft/saylo-vite/client'] } });
   const chunks = result.output.filter(o => o.type === 'chunk');
   assert.equal(chunks.filter(o => o.isDynamicEntry).length, 1);
   const entry = chunks.find(o => o.isEntry);

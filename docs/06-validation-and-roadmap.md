@@ -195,6 +195,8 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 
 이 검증은 npm registry에서 peer·도구를 설치하므로 네트워크가 필요하고, 소비 앱은 루트 `devDependencies`의 major 범위(react 19, vite 8, typescript 7, @types/*)를 쓴다. 설치는 `--ignore-scripts`로 하고 상속된 `npm_config_allow_scripts`는 스크립트가 걸러 내므로 전역 npm 설정을 바꾸지 않는다. tarball 설치는 배포가 아니며 실제 브라우저·HMR·SSR hydration은 여기서 확인하지 않는다. `npm run check`는 새 core 변경이 없어 이전 커밋의 140개 pass를 그대로 둔다.
 
+패키지 이름을 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite`로 정리했고 문서의 샘플·import·`compilerOptions.types`도 이 이름으로 통일했다. 제품명 Saylo, `virtual:saylo/*`, CLI `saylo-typegen`은 그대로다. 2026-10-05T17:38:29Z(KST 2026-10-06)에 npm 공개 registry에서 네 이름을 Node `fetch`로 조회해 모두 HTTP 404를 받았는데, 공개 등록이 아직 없다는 뜻이며 이름 예약이나 실제 배포 권한 검증이 아니다. package.json은 `private: true`·version 0.0.0을 유지하고 아직 공개 배포하지 않았다. 배포는 Mensor의 workflow_dispatch·Node 24·id-token: write·npm publish --provenance 구성을 참고했지만 Saylo 배포 workflow와 Trusted Publisher 설정은 아직 구성하지 않았고 확인되지 않았다. 이번 변경에서 워크플로 파일은 추가하지 않았다. 스코프 이름에서는 `pack.name.split('/')[1]`이 디렉터리명과 달라지므로 pack 스크립트가 논리 이름에서 `packages/<dir>`로 매핑하도록 고쳤다. 이름 변경 뒤 다시 돌린 `npm run check`는 140개 테스트와 JS/TS 소비 검사·React TS가, `npm run verify:pack`은 새 이름 tarball 4개의 JS/TS 앱 설치와 installed CLI·checkJs·TS·runtime·React SSR·public subpath·Vite production chunk가 모두 exit 0으로 통과했다. offline 설치에서 4개 추가·4개 제거로 workspace 링크와 lock이 갱신됐고 third-party 버전은 그대로다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |

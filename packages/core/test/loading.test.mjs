@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CatalogLoadError, I18nDisposedError, NamespaceNotLoadedError, SupersededRequestError,
-  UnknownMessageError, createBaseSchema, createI18n, parseCatalog } from '@saylo/core';
+  UnknownMessageError, createBaseSchema, createI18n, parseCatalog } from '@0disoft/saylo-core';
 
 const catalog = (text, locale = 'ko', namespace = 'common') => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
 const id = (locale, namespace) => `${locale}/${namespace}`;

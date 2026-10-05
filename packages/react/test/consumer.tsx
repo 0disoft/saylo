@@ -1,6 +1,6 @@
-import { createStore, parseCatalog } from '@saylo/core';
-import type { I18n } from '@saylo/core';
-import { createSayloReact } from '@saylo/react';
+import { createStore, parseCatalog } from '@0disoft/saylo-core';
+import type { I18n } from '@0disoft/saylo-core';
+import { createSayloReact } from '@0disoft/saylo-react';
 
 type AppSchema = {
   'cart:title': {};
@@ -41,7 +41,7 @@ const other = createStore<{ 'other:title': {} }>({ baseLocale: 'en', locale: 'en
 // @ts-expect-error provider instance must use this factory's schema
 export const wrongApp = <SayloProvider instance={other} />;
 
-import { createHydrationAdapter } from '@saylo/react';
+import { createHydrationAdapter } from '@0disoft/saylo-react';
 const hydration = createHydrationAdapter(lazy);
 export const hydratedApp = <SayloProvider instance={hydration}><Cart /></SayloProvider>;
 hydration.getServerSnapshot().t('cart:items', { count: 1 });

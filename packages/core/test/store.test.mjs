@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { CatalogError, createStore, parseCatalog } from '@saylo/core';
+import { CatalogError, createStore, parseCatalog } from '@0disoft/saylo-core';
 
 const catalog = (title, locale = 'ko', namespace = 'cart') => parseCatalog(JSON.stringify({ title }), { locale, namespace });
 const initial = () => [catalog('장바구니'), catalog('Cart', 'en'), catalog('Panier', 'fr')];

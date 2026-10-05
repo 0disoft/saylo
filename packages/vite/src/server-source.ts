@@ -1,4 +1,4 @@
-import type { CatalogSource } from '@saylo/core';
+import type { CatalogSource } from '@0disoft/saylo-core';
 
 // Node module shared by the plugin and externalized Vite SSR imports. Entries own no request locale state.
 const sources = new Map<string, CatalogSource>();

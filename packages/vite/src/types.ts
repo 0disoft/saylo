@@ -1,4 +1,4 @@
-import type { CatalogDiagnostic, CatalogLoadResult, CatalogManifest, ParsedCatalog } from '@saylo/core';
+import type { CatalogDiagnostic, CatalogLoadResult, CatalogManifest, ParsedCatalog } from '@0disoft/saylo-core';
 import type { CatalogPatch, CatalogStamp } from './catalog-patch.js';
 
 export interface SayloViteOptions {

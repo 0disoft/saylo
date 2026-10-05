@@ -1,4 +1,4 @@
-import { createStore } from '@saylo/core';
+import { createStore } from '@0disoft/saylo-core';
 import type { AppSchema } from './generated.js';
 import { fixtureCatalog } from './fixture.mjs';
 

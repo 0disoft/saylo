@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
-import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@saylo/core';
+import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
 import { freeze } from '../dist/diagnostics.js';
 
 const options = { locale: 'ko', namespace: 'cart', sourceName: 'locales/ko/cart.json' };

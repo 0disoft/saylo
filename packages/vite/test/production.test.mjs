@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { build } from 'vite';
-import { parseCatalog } from '@saylo/core';
+import { parseCatalog } from '@0disoft/saylo-core';
 import saylo from '../dist/index.js';
 import { createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
@@ -88,14 +88,14 @@ test('real production build emits scoped AST chunks, executes lazy imports, and 
       JSON.stringify({ title: `${locale === 'ko' && namespace === 'demo' ? 'BOOT' : 'LAZY'}_${locale}_${namespace}` }));
   }
   await writeFile(path.join(root, 'locales', 'en', 'help.json'), '{}'); // Key fallback inside a present chunk.
-  await writeFile(path.join(root, 'main.js'), `import { createI18n } from '@saylo/core';
+  await writeFile(path.join(root, 'main.js'), `import { createI18n } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
 export const source = catalogSource;
 export const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });`);
   const config = () => ({ configFile: false, root, logLevel: 'silent',
     plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', initialNamespaces: ['demo'], typegen: { outFile: 'generated.d.ts' } })],
-    resolve: { alias: { '@saylo/core': fileURLToPath(new URL('../../core/dist/index.js', import.meta.url)),
-      '@saylo/vite/client': fileURLToPath(new URL('../dist/client.js', import.meta.url)) } },
+    resolve: { alias: { '@0disoft/saylo-core': fileURLToPath(new URL('../../core/dist/index.js', import.meta.url)),
+      '@0disoft/saylo-vite/client': fileURLToPath(new URL('../dist/client.js', import.meta.url)) } },
     build: { minify: false, modulePreload: false,
       rolldownOptions: { input: path.join(root, 'main.js'), preserveEntrySignatures: 'strict' } } });
   const result = await build(config());

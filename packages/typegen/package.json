@@ -1,5 +1,5 @@
 {
-  "name": "@saylo/typegen", "version": "0.0.0", "private": true, "type": "module",
+  "name": "@0disoft/saylo-typegen", "version": "0.0.0", "private": true, "type": "module",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./catalog-files": { "types": "./dist/catalog-files.d.ts", "import": "./dist/catalog-files.js" }
@@ -9,5 +9,5 @@
     "build": "tsc -p tsconfig.json", "test": "node --test test/typegen.test.mjs",
     "typecheck:consumers": "node test/generate-fixture.mjs && tsc -p test/tsconfig.json"
   },
-  "dependencies": { "@saylo/core": "0" }
+  "dependencies": { "@0disoft/saylo-core": "0" }
 }

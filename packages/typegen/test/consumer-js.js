@@ -1,6 +1,6 @@
-import { createStore } from '@saylo/core';
+import { createStore } from '@0disoft/saylo-core';
 import { fixtureCatalog } from './fixture.mjs';
-/** @type {import('@saylo/core').Store<import('./generated.js').AppSchema>} */
+/** @type {import('@0disoft/saylo-core').Store<import('./generated.js').AppSchema>} */
 const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [fixtureCatalog] });
 store.t('cart:when', { at: new Date() });
 store.t('cart:amount', { count: 3 });

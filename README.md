@@ -9,7 +9,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - 성능 목표는 [검증과 로드맵](docs/06-validation-and-roadmap.md)에 있다. 라이브 갱신 벤치마크는 `npm run bench:live`로 돌리고 결과는 [benchmarks/results/live-update.json](benchmarks/results/live-update.json), 최적화 후 재측정은 [benchmarks/results/live-update-optimized.json](benchmarks/results/live-update-optimized.json), request-scoped patch 적용 후 첫 run과 재실행은 [benchmarks/results/live-update-patch.json](benchmarks/results/live-update-patch.json)·[benchmarks/results/live-update-patch-repeat.json](benchmarks/results/live-update-patch-repeat.json)에 남는다. 방법과 조건은 [benchmarks/live-update/README.md](benchmarks/live-update/README.md)에 정리했다. request-scoped patch 뒤 small은 재실행에서 p95 목표 안에 들어왔지만 같은 코드의 첫 run은 넘었고, large는 두 run 모두 목표 p95 ≤ 100ms를 넘었다.
 - `npm run verify:pack`으로 외부 JS/TS 소비를 검증한다. 2026-10-06 Node 24.18.0·Vite 8.3.2에서 exit 0으로 통과했다. 스크립트는 [scripts/pack-smoke.mjs](scripts/pack-smoke.mjs)에 있다.
 - 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
-- npm 패키지 이름 `saylo`의 사용 가능 여부는 확인하지 않았다. 라이선스도 아직 정하지 않았다.
+- 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개로 정했다. 2026-10-06 npm 공개 registry에서 네 이름을 조회해 모두 HTTP 404를 받았고, 이는 공개 등록이 아직 없다는 조회 기록이다. 라이선스는 아직 정하지 않았다.
 - docs의 전체 모듈 구조, 이벤트 이름, i18n API 시그니처는 설계 제안이다. 현재 구현된 파싱 API와 구분하며 구현 과정에서 바뀔 수 있다.
 - 문서 기준일: 2026-10-06
 
@@ -28,7 +28,7 @@ pack 소비 검증은 `npm run verify:pack`으로 돌린다. workspace 패키지
 
 폼 데모는 `npm run dev`로 실행한 뒤 터미널에 표시되는 로컬 주소를 연다. 편집기에서 `examples/vanilla/locales/ko/demo.json` 또는 `en/demo.json`의 문구를 수정하고 저장한다. 입력값·포커스·커서·스크롤과 열린 모달이 유지되는지 확인할 수 있다. JSON이 깨지거나 번역 계약이 어긋나면 마지막 정상 상태와 파일별 진단을 유지한다. `npm run build:demo`는 현재 디스크의 카탈로그를 검증해 데모를 빌드한다.
 
-Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@saylo/vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수로 연결을 끊고 다시 연결할 수 있다. `store.dispose()`와 Vite dispose·prune도 연결을 정리한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@saylo/vite/virtual`을 포함한다.
+Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@0disoft/saylo-vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수로 연결을 끊고 다시 연결할 수 있다. `store.dispose()`와 Vite dispose·prune도 연결을 정리한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@0disoft/saylo-vite/virtual`을 포함한다.
 
 개발 전송은 eager와 lazy 경로를 함께 지원한다. `virtual:saylo`는 기존 전체 registry를 제공하며 eager 갱신은 그 연결을 요청한 Vite client에만 보낸다. `virtual:saylo/lazy`는 초기 기준·대상 pair만 싣고, 이후에는 문구 없는 manifest를 받아 변경된 loaded pair만 조회한다. 매니페스트를 적용하면 현재 원하는 범위를 다시 조회하며, 직전에 받은 pair 버전이 서버 기록과 맞으면 그 버전을 기준으로 바뀐 메시지 delta를 받고, 그 외에는 전체 present/missing 응답을 받는다. delta는 메시지 단위 upsert·remove·위치 갱신이고, 클라이언트는 요청마다 기준을 고정해 여러 instance의 응답 순서와 무관하게 한 번에 게시한다. 위치가 일괄로 이동하면 목록 대신 shift 하나로 압축할 수 있다. 미로드 namespace·비활성 로케일 수정은 AST를 받지 않으며 새 namespace도 범용 조회로 로드한다. 처음 연결, revision gap, 새 세션과 재연결은 요청 ID·generation을 가진 manifest handshake로 복구한다. 늦은 pair 응답은 현재 session·version·schema로 판정한다. 라이브 갱신은 앱 모듈을 교체하지 않는다. Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
 
@@ -37,7 +37,7 @@ Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그
 React 데모는 `npm run dev:react`로 실행한다. `examples/vanilla/locales`의 같은 카탈로그와 기존 스타일을 공유하고, 입력값·수량·모달은 React state로 관리한다. 처음에는 한국어 `demo`만 싣고 영어 선택 시 영어 pair를 조회한다. 새 namespace는 목록에 나타나고 버튼을 눌러 명시적으로 로드한다. `npm run typegen:react`는 타입만 생성한다. `npm run build:react`는 패키지 빌드 → 현재 디스크 검증과 타입 생성 → 데모 TS 검사 → Vite production 빌드 순서로 실행한다.
 
 ```js
-import { parseCatalog, createBaseSchema, validateTranslation, createTranslator } from '@saylo/core';
+import { parseCatalog, createBaseSchema, validateTranslation, createTranslator } from '@0disoft/saylo-core';
 
 const base = parseCatalog('{"items":"{count, number}개"}', {
   locale: 'ko', namespace: 'cart', sourceName: 'locales/ko/cart.json'
@@ -67,7 +67,7 @@ TypeScript는 `createTranslator<AppSchema>(options)`, JS는 JSDoc의 `Translator
 ## Eager store
 
 ```js
-import { createStore } from '@saylo/core';
+import { createStore } from '@0disoft/saylo-core';
 
 const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: [base, translation] });
 const initialSnapshot = store.getSnapshot();
@@ -96,8 +96,8 @@ store.dispose();
 lazy 앱은 아래처럼 연결한다. Vite의 `initialNamespaces` 옵션으로 부팅 범위를 정하며, 생략하면 기준 namespace 전체다. source는 여러 instance가 공유할 수 있고 마지막 연결 해제 후 자신이 등록한 HMR listener를 정리한다.
 
 ```js
-import { createI18n } from '@saylo/core';
-import { connectDev } from '@saylo/vite/client';
+import { createI18n } from '@0disoft/saylo-core';
+import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces, timeZone } from 'virtual:saylo/lazy';
 
 const i18n = createI18n({ catalogSource, locale: initialLocale, initialNamespaces, initialCatalogs, timeZone });
@@ -138,9 +138,9 @@ React 19에서 검증했다. factory는 모듈에서 한 번 만들고, 같은 f
 
 ```tsx
 import { createRoot } from 'react-dom/client';
-import { createStore } from '@saylo/core';
-import { createSayloReact } from '@saylo/react';
-import { connectDev } from '@saylo/vite/client';
+import { createStore } from '@0disoft/saylo-core';
+import { createSayloReact } from '@0disoft/saylo-react';
+import { connectDev } from '@0disoft/saylo-vite/client';
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 import type { AppSchema } from './generated';
 
@@ -167,7 +167,7 @@ const disconnect = connectDev(store);
 
 Provider는 `createStore`와 `createI18n`을 모두 받는다. hook의 `setLocale` 반환 타입은 `void | Promise<void>`이며 lazy 호출의 실패는 await/catch로 처리한다. lazy instance에서는 `loadNamespace`도 같은 함수 참조로 제공하고 eager instance에는 그 함수가 없다. 필요한 pair를 준비하는 동안 hook은 이전 snapshot을 읽으며, 준비가 끝나면 한 번 게시한다.
 
-JS/checkJs에서는 `SayloReactBindings<AppSchema>`와 `Store<AppSchema>` JSDoc으로 같은 키·인자 검사를 연결할 수 있다. 소비 예제는 `packages/react/test/consumer-js.js`와 `consumer.tsx`에 있다. `createSayloReact`의 hook은 `useSyncExternalStore` 세 번째 인자로 `getServerSnapshot`을 연결한다. SSR hydration은 `@saylo/react`의 `createHydrationAdapter`를 `instance` 대신 Provider에 넘기는 방식으로 지원한다.
+JS/checkJs에서는 `SayloReactBindings<AppSchema>`와 `Store<AppSchema>` JSDoc으로 같은 키·인자 검사를 연결할 수 있다. 소비 예제는 `packages/react/test/consumer-js.js`와 `consumer.tsx`에 있다. `createSayloReact`의 hook은 `useSyncExternalStore` 세 번째 인자로 `getServerSnapshot`을 연결한다. SSR hydration은 `@0disoft/saylo-react`의 `createHydrationAdapter`를 `instance` 대신 Provider에 넘기는 방식으로 지원한다.
 
 ## SSR
 
@@ -178,7 +178,7 @@ JS/checkJs에서는 `SayloReactBindings<AppSchema>`와 `Store<AppSchema>` JSDoc�
 ```js
 import { createElement as h } from 'react';
 import { renderToString } from 'react-dom/server';
-import { serializeBootSnapshot } from '@saylo/core';
+import { serializeBootSnapshot } from '@0disoft/saylo-core';
 import { createRequestI18n } from 'virtual:saylo/server';
 import { App, SayloProvider } from './app.mjs'; // examples/ssr의 공유 컴포넌트
 
@@ -193,9 +193,9 @@ try {
 ```js
 import { createElement as h } from 'react';
 import { hydrateRoot } from 'react-dom/client';
-import { createI18n, decodeBootSnapshot } from '@saylo/core';
-import { createHydrationAdapter } from '@saylo/react';
-import { connectDev } from '@saylo/vite/client';
+import { createI18n, decodeBootSnapshot } from '@0disoft/saylo-core';
+import { createHydrationAdapter } from '@0disoft/saylo-react';
+import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource } from 'virtual:saylo/lazy';
 import { App, SayloProvider } from './app.mjs';
 

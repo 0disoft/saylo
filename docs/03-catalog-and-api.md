@@ -353,7 +353,7 @@ declare function createI18n<S extends Schema = UntypedSchema>(
 ```ts
 // vite.config.ts
 import { defineConfig } from "vite";
-import saylo from "@saylo/vite";
+import saylo from "@0disoft/saylo-vite";
 
 export default defineConfig({
   plugins: [
@@ -376,7 +376,7 @@ TS, generated 타입 사용:
 
 ```ts
 // src/i18n/client.ts
-import { createI18n } from "@saylo/core";
+import { createI18n } from "@0disoft/saylo-core";
 import { initialSnapshot, catalogSource } from "virtual:saylo";
 import type { AppSchema } from "./generated";
 
@@ -408,10 +408,10 @@ JS, `checkJs`와 JSDoc으로 typed 사용. 타입 없는 경로가 아니라 선
 ```js
 // src/i18n/client.js
 // @ts-check
-import { createI18n } from "@saylo/core";
+import { createI18n } from "@0disoft/saylo-core";
 import { initialSnapshot, catalogSource } from "virtual:saylo";
 
-/** @type {import('@saylo/core').I18n<import('./generated').AppSchema>} */
+/** @type {import('@0disoft/saylo-core').I18n<import('./generated').AppSchema>} */
 export const i18n = createI18n({ initialSnapshot, catalogSource, timeZone: "UTC" });
 ```
 
@@ -425,7 +425,7 @@ await i18n.setLocale("en");   // subscribe가 이미 render하므로 다시 부�
 
 ```ts
 // src/i18n/dev.ts  (개발 엔트리에서만 import)
-import { connectDev } from "@saylo/vite/client";
+import { connectDev } from "@0disoft/saylo-vite/client";
 import { i18n } from "./client";
 
 connectDev(i18n);
@@ -435,7 +435,7 @@ React, factory가 같은 context로 Provider와 hook을 만든다:
 
 ```tsx
 // src/i18n/react.ts
-import { createSayloReact } from "@saylo/react";
+import { createSayloReact } from "@0disoft/saylo-react";
 import type { AppSchema } from "./generated";
 
 export const { SayloProvider, useI18n } = createSayloReact<AppSchema>();

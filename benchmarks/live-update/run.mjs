@@ -9,7 +9,7 @@ import { performance } from 'node:perf_hooks';
 import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
 import { createServer } from 'vite';
-import saylo from '@saylo/vite';
+import saylo from '@0disoft/saylo-vite';
 import { createChannel } from './channel.mjs';
 import { createFixture, scenarios } from './fixture.mjs';
 import { summarize } from './statistics.mjs';
@@ -84,7 +84,7 @@ async function runScenario(scenario) {
       plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', initialNamespaces: ['bench'],
         ...(values['no-typegen'] ? {} : { typegen: { outFile: 'generated.d.ts' } }) }), channel.plugin],
       server: { host: '127.0.0.1', port: 0, strictPort: true },
-      optimizeDeps: { include: ['react', 'react-dom/client', '@saylo/core', '@saylo/react'] } });
+      optimizeDeps: { include: ['react', 'react-dom/client', '@0disoft/saylo-core', '@0disoft/saylo-react'] } });
     await vite.listen();
     if (cancelled) throw new Error('Benchmark interrupted.');
     const serverStartupMs = performance.now() - startupAt;

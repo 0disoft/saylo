@@ -1,4 +1,4 @@
-import { createBaseSchema, parseCatalog } from '@saylo/core';
+import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
 
 export const fixtureCatalog = parseCatalog(JSON.stringify(Object.fromEntries([
   ['plain', 'Hello'], ['amount', '{count, plural, one {# item} other {# items}}'],

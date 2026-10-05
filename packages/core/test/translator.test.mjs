@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import {
   CatalogError, InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError,
   createTranslator, parseCatalog,
-} from '@saylo/core';
+} from '@0disoft/saylo-core';
 
 const catalog = (messages, locale = 'ko', namespace = 'cart') =>
   parseCatalog(JSON.stringify(messages), { locale, namespace, sourceName: `${locale}/${namespace}.json` });

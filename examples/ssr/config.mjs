@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import saylo from '@saylo/vite';
+import saylo from '@0disoft/saylo-vite';
 
 export const config = {
   configFile: false,

@@ -1,5 +1,5 @@
 import { createElement as h, useEffect, useState } from 'react';
-import { createSayloReact } from '@saylo/react';
+import { createSayloReact } from '@0disoft/saylo-react';
 
 export const { SayloProvider, useI18n } = createSayloReact();
 

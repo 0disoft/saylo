@@ -1,4 +1,4 @@
-import type { CatalogOutcome, ParsedCatalog, ParsedMessage, SourcePosition } from '@saylo/core';
+import type { CatalogOutcome, ParsedCatalog, ParsedMessage, SourcePosition } from '@0disoft/saylo-core';
 
 export type PresentCatalog = Extract<CatalogOutcome, { status: 'present' }>;
 export interface CatalogStamp {

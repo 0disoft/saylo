@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createBaseSchema, parseCatalog } from '@saylo/core';
+import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
 import { applyCatalogPatch } from '../dist/catalog-patch.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
 import { isCatalogRequest } from '../dist/types.js';

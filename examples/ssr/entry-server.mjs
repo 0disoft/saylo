@@ -1,6 +1,6 @@
 import { createElement as h } from 'react';
 import { renderToString } from 'react-dom/server';
-import { serializeBootSnapshot } from '@saylo/core';
+import { serializeBootSnapshot } from '@0disoft/saylo-core';
 import { createRequestI18n } from 'virtual:saylo/server';
 import { App, SayloProvider } from './app.mjs';
 

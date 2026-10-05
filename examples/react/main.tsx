@@ -1,8 +1,8 @@
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { connectDev } from '@saylo/vite/client';
-import type { LiveDiagnostic } from '@saylo/vite/client';
-import type { ParsedCatalog } from '@saylo/core';
+import { connectDev } from '@0disoft/saylo-vite/client';
+import type { LiveDiagnostic } from '@0disoft/saylo-vite/client';
+import type { ParsedCatalog } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs } from 'virtual:saylo/lazy';
 import { SayloProvider, store, useI18n } from './i18n';
 import '../vanilla/style.css';

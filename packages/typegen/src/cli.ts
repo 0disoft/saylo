@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { createBaseSchema, createStore } from '@saylo/core';
+import { createBaseSchema, createStore } from '@0disoft/saylo-core';
 import { scanCatalogs } from './catalog-files.js';
 import { renderTypes } from './render.js';
 import { writeGenerated } from './write.js';

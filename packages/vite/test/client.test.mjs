@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
-import { createStore, parseCatalog } from '@saylo/core';
+import { createStore, parseCatalog } from '@0disoft/saylo-core';
 import { connectDev } from '../dist/client.js';
 import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from '../dist/types.js';
 

@@ -1,8 +1,8 @@
 import { createElement as h, StrictMode } from 'react';
 import { hydrateRoot } from 'react-dom/client';
-import { createI18n, decodeBootSnapshot } from '@saylo/core';
-import { createHydrationAdapter } from '@saylo/react';
-import { connectDev } from '@saylo/vite/client';
+import { createI18n, decodeBootSnapshot } from '@0disoft/saylo-core';
+import { createHydrationAdapter } from '@0disoft/saylo-react';
+import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource } from 'virtual:saylo/lazy';
 import { App, SayloProvider } from './app.mjs';
 

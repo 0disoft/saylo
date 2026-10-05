@@ -1,5 +1,5 @@
-import { CatalogLoadError, validateCatalogManifest } from '@saylo/core';
-import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, CatalogSource, ParsedCatalog } from '@saylo/core';
+import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
+import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
 import { EagerSync } from './dev-sync.js';
 import { catalogId as id, immutable, matches } from './catalog-outcome.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';

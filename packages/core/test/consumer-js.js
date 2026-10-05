@@ -1,5 +1,5 @@
 // @ts-check
-import { createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
+import { createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
 
 const parsed = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
 const base = createBaseSchema(parsed);
@@ -10,7 +10,7 @@ parseCatalog('{}', { locale: 'ko' });
 base.keys.x.n.acceptedTypes.push('string');
 
 /** @typedef {{ 'cart:title': {}, 'cart:items': { count: number } }} AppSchema */
-/** @type {import('@saylo/core').Translator<AppSchema>} */
+/** @type {import('@0disoft/saylo-core').Translator<AppSchema>} */
 const typed = createTranslator({ locale: 'ko', baseCatalogs: [parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' })] });
 typed.t('cart:title');
 typed.t('cart:items', { count: 3 });
@@ -26,7 +26,7 @@ function unionKey(key) {
 }
 void unionKey;
 
-/** @type {import('@saylo/core').Store<AppSchema>} */
+/** @type {import('@0disoft/saylo-core').Store<AppSchema>} */
 const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' })] });
 store.t('cart:items', { count: 3 });
 store.subscribe(snapshot => {
@@ -36,16 +36,16 @@ store.subscribe(snapshot => {
 });
 
 const lazyCatalog = parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' });
-/** @type {import('@saylo/core').CatalogOutcome} */
+/** @type {import('@0disoft/saylo-core').CatalogOutcome} */
 const bootPair = { status: 'present', sessionId: 'one', key: { locale: 'ko', namespace: 'cart' },
   catalogVersion: 1, namespaceSchemaFingerprint: createBaseSchema(lazyCatalog).fingerprint, catalog: lazyCatalog };
-/** @type {import('@saylo/core').CatalogSource} */
+/** @type {import('@0disoft/saylo-core').CatalogSource} */
 const source = {
   readManifest: () => ({ sessionId: 'one', registryRevision: 0, baseLocale: 'ko',
     availableLocales: ['ko', 'en'], availableNamespaces: ['cart'], catalogs: [bootPair] }),
   loadCatalog: async (locale, namespace) => ({ status: 'missing', sessionId: 'one', key: { locale, namespace }, catalogVersion: 0 }),
 };
-/** @type {import('@saylo/core').I18n<AppSchema>} */
+/** @type {import('@0disoft/saylo-core').I18n<AppSchema>} */
 const lazy = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
 /** @type {Promise<void>} */
 const transition = lazy.setLocale('en');

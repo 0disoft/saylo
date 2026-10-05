@@ -5,8 +5,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { createBaseSchema, parseCatalog } from '@saylo/core';
-import { renderTypes, TypeGenerator, writeGenerated, isGeneratedFile } from '@saylo/typegen';
+import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
+import { renderTypes, TypeGenerator, writeGenerated, isGeneratedFile } from '@0disoft/saylo-typegen';
 import { fixtureSchema } from './fixture.mjs';
 
 const schema = (messages, namespace = 'demo') => createBaseSchema(parseCatalog(JSON.stringify(messages), { locale: 'ko', namespace }));

@@ -3,8 +3,8 @@ import { after, test } from 'node:test';
 import { JSDOM } from 'jsdom';
 import { act, createElement as h, StrictMode, useState } from 'react';
 import { renderToString } from 'react-dom/server';
-import { createBaseSchema, createI18n, createStore, decodeBootSnapshot, parseCatalog, serializeBootSnapshot } from '@saylo/core';
-import { createHydrationAdapter, createSayloReact } from '@saylo/react';
+import { createBaseSchema, createI18n, createStore, decodeBootSnapshot, parseCatalog, serializeBootSnapshot } from '@0disoft/saylo-core';
+import { createHydrationAdapter, createSayloReact } from '@0disoft/saylo-react';
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'http://localhost/' });
 globalThis.window = dom.window;

@@ -1,5 +1,5 @@
-import { CatalogError, createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
-import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog } from '@saylo/core';
+import { CatalogError, createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
+import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
 
 const parsed: ParsedCatalog = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
 const base: CatalogSchema = createBaseSchema(parsed);

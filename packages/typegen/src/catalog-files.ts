@@ -1,7 +1,7 @@
 import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { parseCatalog } from '@saylo/core';
-import type { ParsedCatalog } from '@saylo/core';
+import { parseCatalog } from '@0disoft/saylo-core';
+import type { ParsedCatalog } from '@0disoft/saylo-core';
 
 export interface CatalogFile {
   readonly file: string;

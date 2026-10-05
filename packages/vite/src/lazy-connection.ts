@@ -1,4 +1,4 @@
-import type { I18n, ParsedCatalog, Schema } from '@saylo/core';
+import type { I18n, ParsedCatalog, Schema } from '@0disoft/saylo-core';
 import type { DevCatalogSource } from './catalog-source.js';
 import type { LiveDiagnostic } from './types.js';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@saylo/vite",
+  "name": "@0disoft/saylo-vite",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,6 +15,6 @@
     "test": "node --test test/plugin.test.mjs test/client.test.mjs test/lazy.test.mjs test/patch.test.mjs test/production.test.mjs test/server.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
-  "dependencies": { "@saylo/core": "0", "@saylo/typegen": "0" },
+  "dependencies": { "@0disoft/saylo-core": "0", "@0disoft/saylo-typegen": "0" },
   "peerDependencies": { "vite": "8" }
 }

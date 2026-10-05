@@ -1,5 +1,5 @@
-import { CatalogLoadError, validateCatalogManifest } from '@saylo/core';
-import type { CatalogKey, CatalogManifest, CatalogOutcome } from '@saylo/core';
+import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
+import type { CatalogKey, CatalogManifest, CatalogOutcome } from '@0disoft/saylo-core';
 import { catalogId as id, immutable, matches } from './catalog-outcome.js';
 import type { DevCatalogSource } from './catalog-source.js';
 

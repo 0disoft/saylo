@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createBaseSchema, createBootSnapshot, createI18n, createServerI18n, decodeBootSnapshot, parseCatalog, serializeBootSnapshot } from '@saylo/core';
+import { createBaseSchema, createBootSnapshot, createI18n, createServerI18n, decodeBootSnapshot, parseCatalog, serializeBootSnapshot } from '@0disoft/saylo-core';
 
 function fixture() {
   const parse = (locale, namespace, messages) => parseCatalog(JSON.stringify(messages), { locale, namespace, sourceName: `${locale}/${namespace}.json` });

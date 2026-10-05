@@ -1,4 +1,4 @@
-import type { CatalogKey, CatalogManifest, CatalogOutcome } from '@saylo/core';
+import type { CatalogKey, CatalogManifest, CatalogOutcome } from '@0disoft/saylo-core';
 import { freezeCatalogs } from './freeze.js';
 
 export const catalogId = (key: CatalogKey) => JSON.stringify([key.locale, key.namespace]);

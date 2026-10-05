@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createBaseSchema, createI18n, parseCatalog } from '@saylo/core';
+import { createBaseSchema, createI18n, parseCatalog } from '@0disoft/saylo-core';
 
 // Simulated transport: only the requested pair is returned to the instance.
 const catalogs = [

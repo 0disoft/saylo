@@ -1,5 +1,5 @@
-import { createI18n } from '@saylo/core';
-import { createSayloReact } from '@saylo/react';
+import { createI18n } from '@0disoft/saylo-core';
+import { createSayloReact } from '@0disoft/saylo-react';
 import { catalogSource, initialCatalogs, initialNamespaces, initialLocale, timeZone } from 'virtual:saylo/lazy';
 
 import type { AppSchema } from './generated';

@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import saylo from '../dist/index.js';
-import { createStore } from '@saylo/core';
+import { createStore } from '@0disoft/saylo-core';
 import { assertInside, scanCatalogs } from '../dist/catalog-files.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
   REQUEST_EVENT, SNAPSHOT_EVENT } from '../dist/types.js';

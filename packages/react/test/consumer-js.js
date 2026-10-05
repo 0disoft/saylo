@@ -1,12 +1,12 @@
 import { createElement } from 'react';
-import { createStore, parseCatalog } from '@saylo/core';
-import { createSayloReact } from '@saylo/react';
+import { createStore, parseCatalog } from '@0disoft/saylo-core';
+import { createSayloReact } from '@0disoft/saylo-react';
 
 /** @typedef {{ 'cart:title': {}, 'cart:items': { count: number } }} AppSchema */
 const catalog = parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'en', namespace: 'cart' });
-/** @type {import('@saylo/core').Store<AppSchema>} */
+/** @type {import('@0disoft/saylo-core').Store<AppSchema>} */
 const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
-/** @type {import('@saylo/react').SayloReactBindings<AppSchema>} */
+/** @type {import('@0disoft/saylo-react').SayloReactBindings<AppSchema>} */
 const bindings = createSayloReact();
 
 function Cart() {
@@ -22,11 +22,11 @@ function Cart() {
   return createElement('p', null, t('cart:title'));
 }
 export const app = createElement(bindings.SayloProvider, { instance: store }, createElement(Cart));
-/** @param {import('@saylo/core').I18n<AppSchema>} instance */
+/** @param {import('@0disoft/saylo-core').I18n<AppSchema>} instance */
 export function lazyApp(instance) { return createElement(bindings.SayloProvider, { instance }, createElement(Cart)); }
 
-import { createHydrationAdapter } from '@saylo/react';
-/** @param {import('@saylo/core').I18n<AppSchema>} instance */
+import { createHydrationAdapter } from '@0disoft/saylo-react';
+/** @param {import('@0disoft/saylo-core').I18n<AppSchema>} instance */
 export function hydratedApp(instance) {
   const adapter = createHydrationAdapter(instance);
   adapter.getServerSnapshot().t('cart:items', { count: 1 });

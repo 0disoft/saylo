@@ -1,14 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
-import { createBaseSchema, createStore } from '@saylo/core';
-import { isGeneratedFile, TypeGenerator } from '@saylo/typegen';
+import { createBaseSchema, createStore } from '@0disoft/saylo-core';
+import { isGeneratedFile, TypeGenerator } from '@0disoft/saylo-typegen';
 import type { Plugin, ViteDevServer, WebSocketClient } from 'vite';
 import { CatalogRegistry } from './catalog-registry.js';
 import { scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
 import { catalogId } from './catalog-outcome.js';
-import type { CatalogOutcome } from '@saylo/core';
+import type { CatalogOutcome } from '@0disoft/saylo-core';
 import { registerServerSource } from './server-source.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
   REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest, isSnapshotRequest } from './types.js';
@@ -89,7 +89,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
     enforce: 'pre',
     config(config) {
       generatedOut = options.typegen ? path.resolve(config.root ?? process.cwd(), options.typegen.outFile) : undefined;
-      return { optimizeDeps: { exclude: ['@saylo/vite/client'] }, ssr: { external: ['@saylo/vite/server'] },
+      return { optimizeDeps: { exclude: ['@0disoft/saylo-vite/client'] }, ssr: { external: ['@0disoft/saylo-vite/server'] },
         ...(generatedOut ? { server: { watch: { ignored: [(file: string) => isTypegenFile(file)] } } } : {}) };
     },
     async configResolved(config) {
@@ -122,8 +122,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
       const chunk = chunks.get(id.startsWith('\0') ? id.slice(1) : id);
       if (chunk) return `export default ${encode(chunk)};`;
       if (id === RESOLVED_SERVER && this.environment?.name === 'client') throw new Error('virtual:saylo/server is a server-only entry.');
-      if (id === RESOLVED_SERVER && !production) return `import { getServerCatalogSource } from '@saylo/vite/server';
-import { createServerI18n } from '@saylo/core';
+      if (id === RESOLVED_SERVER && !production) return `import { getServerCatalogSource } from '@0disoft/saylo-vite/server';
+import { createServerI18n } from '@0disoft/saylo-core';
 export const catalogSource = getServerCatalogSource(${encode(sessionId)});
 export const createRequestI18n = (options = {}) => createServerI18n({
   locale: ${encode(initialLocale)}, timeZone: ${encode(timeZone)},
@@ -139,20 +139,20 @@ export const createRequestI18n = (options = {}) => createServerI18n({
         const bootPairs = new Set(outcomes.map(outcome => catalogId(outcome.key)));
         const loaders = [...chunks].filter(([, outcome]) => !bootPairs.has(catalogId(outcome.key)))
           .map(([moduleId, outcome]) => `{ key: ${encode(outcome.key)}, load: () => import(${encode(moduleId)}).then(module => module.default) }`);
-        return `import { ${production ? 'createStaticCatalogSource' : 'createDevCatalogSource'} } from '@saylo/vite/client';
+        return `import { ${production ? 'createStaticCatalogSource' : 'createDevCatalogSource'} } from '@0disoft/saylo-vite/client';
 export const initialCatalogs = ${encode(outcomes)};
 export const initialLocale = ${encode(locale)};
 export const initialNamespaces = ${encode(namespaces)};
 export const timeZone = ${encode(timeZone)};
 export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, initialCatalogs, [${loaders.join(',\n')}])`
           : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot })`};
-${id === RESOLVED_SERVER ? `import { createServerI18n } from '@saylo/core';
+${id === RESOLVED_SERVER ? `import { createServerI18n } from '@0disoft/saylo-core';
 export const createRequestI18n = (options = {}) => createServerI18n({ locale: initialLocale, timeZone,
   initialNamespaces, ...options, catalogSource });` : ''}`;
       }
       if (id !== RESOLVED) return;
       const catalogs = JSON.stringify(snapshot().catalogs).replace(/</g, '\\u003c');
-      return `import { freezeCatalogs } from '@saylo/vite/client';
+      return `import { freezeCatalogs } from '@0disoft/saylo-vite/client';
 export const initialCatalogs = freezeCatalogs(${catalogs});
 export const baseLocale = ${JSON.stringify(baseLocale)};
 export const initialLocale = ${JSON.stringify(snapshot().catalogs.some(c => c.locale === initialLocale) ? initialLocale : baseLocale)};

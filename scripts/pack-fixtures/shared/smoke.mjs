@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
-import { createBaseSchema, createStore, InvalidArgumentError } from '@saylo/core';
-import { createSayloReact, createHydrationAdapter } from '@saylo/react';
-import { renderTypes } from '@saylo/typegen';
-import { scanCatalogs } from '@saylo/typegen/catalog-files';
-import { connectDev } from '@saylo/vite/client';
-import { getServerCatalogSource } from '@saylo/vite/server';
+import { createBaseSchema, createStore, InvalidArgumentError } from '@0disoft/saylo-core';
+import { createSayloReact, createHydrationAdapter } from '@0disoft/saylo-react';
+import { renderTypes } from '@0disoft/saylo-typegen';
+import { scanCatalogs } from '@0disoft/saylo-typegen/catalog-files';
+import { connectDev } from '@0disoft/saylo-vite/client';
+import { getServerCatalogSource } from '@0disoft/saylo-vite/server';
 
 const { files } = await scanCatalogs('locales');
 const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: files.map(file => file.catalog) });

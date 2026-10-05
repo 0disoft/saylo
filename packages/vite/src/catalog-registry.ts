@@ -1,5 +1,5 @@
-import { createBaseSchema } from '@saylo/core';
-import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome, ParsedCatalog } from '@saylo/core';
+import { createBaseSchema } from '@0disoft/saylo-core';
+import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome, ParsedCatalog } from '@0disoft/saylo-core';
 import { createCatalogPatch } from './catalog-patch.js';
 import type { CatalogPatch, CatalogStamp } from './catalog-patch.js';
 

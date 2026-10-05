@@ -1,6 +1,6 @@
-import saylo from '@saylo/vite';
-import { connectDev, createStaticCatalogSource } from '@saylo/vite/client';
-import { createI18n, createStore } from '@saylo/core';
+import saylo from '@0disoft/saylo-vite';
+import { connectDev, createStaticCatalogSource } from '@0disoft/saylo-vite/client';
+import { createI18n, createStore } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 

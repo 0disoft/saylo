@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { createBaseSchema, parseCatalog } from '@saylo/core';
+import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
 import { CatalogRegistry } from '../../packages/vite/dist/catalog-registry.js';
 
 const locales = ['ko', 'en', 'ja', 'fr', 'de', 'es', 'it', 'pt', 'nl', 'sv', 'pl', 'tr', 'cs', 'uk', 'ar', 'hi', 'th', 'vi', 'id', 'zh'];

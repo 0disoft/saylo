@@ -1,4 +1,4 @@
-import type { Schema, StoreSnapshot } from '@saylo/core';
+import type { Schema, StoreSnapshot } from '@0disoft/saylo-core';
 import type { SayloInstance } from './index.js';
 
 export interface SayloHydrationAdapter<S extends Schema> extends SayloInstance<S> {

@@ -1,5 +1,5 @@
-import { createStore } from '@saylo/core';
-import { connectDev } from '@saylo/vite/client';
+import { createStore } from '@0disoft/saylo-core';
+import { connectDev } from '@0disoft/saylo-vite/client';
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 
 const element = id => document.getElementById(id);

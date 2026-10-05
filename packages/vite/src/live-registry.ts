@@ -1,7 +1,7 @@
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
-import { CatalogError, createBaseSchema, validateTranslation } from '@saylo/core';
-import type { CatalogSchema, ParsedCatalog } from '@saylo/core';
+import { CatalogError, createBaseSchema, validateTranslation } from '@0disoft/saylo-core';
+import type { CatalogSchema, ParsedCatalog } from '@0disoft/saylo-core';
 import { catalogLocation, readCatalogFile } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import type { LiveDiagnostic } from './types.js';

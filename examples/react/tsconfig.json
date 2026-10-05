@@ -5,7 +5,7 @@
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM"],
-    "types": ["react", "react-dom", "vite/client", "@saylo/vite/virtual"],
+    "types": ["react", "react-dom", "vite/client", "@0disoft/saylo-vite/virtual"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,

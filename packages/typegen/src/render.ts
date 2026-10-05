@@ -1,4 +1,4 @@
-import type { CatalogSchema } from '@saylo/core';
+import type { CatalogSchema } from '@0disoft/saylo-core';
 
 export type TypeSchema = Pick<CatalogSchema, 'namespace' | 'keys'>;
 const quote = (value: string) => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');

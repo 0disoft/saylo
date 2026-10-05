@@ -1,6 +1,6 @@
 import { createContext, createElement, useContext, useMemo, useSyncExternalStore } from 'react';
 import type { ComponentType, ReactNode } from 'react';
-import type { Schema, Store, StoreSnapshot } from '@saylo/core';
+import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
 export { createHydrationAdapter } from './hydration.js';
 export type { SayloHydrationAdapter } from './hydration.js';
 

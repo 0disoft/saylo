@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import { createHash } from 'node:crypto';
-import { parseCatalog } from '@saylo/core';
+import { parseCatalog } from '@0disoft/saylo-core';
 import { summarize } from './statistics.mjs';
 
 // Alternate both parsers in one process to limit run-to-run scheduling drift.

@@ -1,4 +1,4 @@
-import type { ParsedCatalog } from '@saylo/core';
+import type { ParsedCatalog } from '@0disoft/saylo-core';
 
 /** Restore immutability of trusted plugin-produced AST data after JSON transport. */
 export function freezeCatalogs(catalogs: readonly ParsedCatalog[]): readonly ParsedCatalog[] {

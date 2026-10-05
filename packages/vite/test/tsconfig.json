@@ -4,7 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": ["ES2022", "DOM"],
-    "types": ["node", "vite/client", "@saylo/vite/virtual"],
+    "types": ["node", "vite/client", "@0disoft/saylo-vite/virtual"],
     "strict": true,
     "allowJs": true,
     "checkJs": true,

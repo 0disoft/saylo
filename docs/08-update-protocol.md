@@ -4,7 +4,7 @@
 
 ## 현재 eager 구현 (2026-10-05)
 
-현재 `@saylo/vite`는 registry 전체를 교체한다. 실제 타입은 `packages/vite/src/types.ts`, 조정 로직은 `dev-sync.ts`에 있다.
+현재 `@0disoft/saylo-vite`는 registry 전체를 교체한다. 실제 타입은 `packages/vite/src/types.ts`, 조정 로직은 `dev-sync.ts`에 있다.
 
 | 이벤트 | 내용 |
 | --- | --- |
@@ -177,7 +177,7 @@ generation은 transport의 오래된 완료를 차단하는 값이다. generatio
 
 ```ts
 // virtual:saylo/server (server-only)
-import { serializeBootSnapshot } from '@saylo/core';
+import { serializeBootSnapshot } from '@0disoft/saylo-core';
 import { createRequestI18n } from 'virtual:saylo/server';
 const request = await createRequestI18n({ locale: 'en' });         // async scope 준비 후 요청별 instance
 try {
@@ -187,8 +187,8 @@ try {
 
 ```ts
 // client: 서버 JSON으로 초기 스냅샷을 만들고 브라우저용 source를 연결한다.
-import { createI18n, decodeBootSnapshot } from '@saylo/core';
-import { createHydrationAdapter } from '@saylo/react';
+import { createI18n, decodeBootSnapshot } from '@0disoft/saylo-core';
+import { createHydrationAdapter } from '@0disoft/saylo-react';
 import { catalogSource } from 'virtual:saylo/lazy';
 const decoded = decodeBootSnapshot(script.textContent);
 const client = createI18n({ initialSnapshot: decoded, catalogSource });

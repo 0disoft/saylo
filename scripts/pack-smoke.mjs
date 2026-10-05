@@ -14,7 +14,8 @@ const exec = promisify(execFile);
 const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-pack-'));
 const packs = path.join(root, 'packs');
 const majors = JSON.parse(await readFile(path.join(repository, 'package.json'), 'utf8')).devDependencies;
-const names = ['@saylo/core', '@saylo/react', '@saylo/typegen', '@saylo/vite'];
+const packages = Object.fromEntries(['core', 'react', 'typegen', 'vite'].map(id => [`@0disoft/saylo-${id}`, id]));
+const names = Object.keys(packages);
 // npm run can export .npmrc allow-scripts as an env override, which newer npm
 // rejects for project installs. Install scripts are disabled explicitly below.
 const childEnv = { ...Object.fromEntries(Object.entries(process.env)
@@ -39,7 +40,7 @@ try {
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
   assert.deepEqual(packed.map(pack => pack.name).sort(), [...names].sort());
   for (const pack of packed) {
-    const directory = path.join(repository, 'packages', pack.name.split('/')[1]);
+    const directory = path.join(repository, 'packages', packages[pack.name]);
     const manifest = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
     const files = new Set(pack.files.map(file => file.path));
     for (const target of [...Object.values(manifest.exports).flatMap(entry => Object.values(entry)), ...Object.values(manifest.bin ?? {})])
@@ -59,7 +60,7 @@ try {
       devDependencies: Object.fromEntries(['typescript', 'vite', '@types/node', '@types/react', '@types/react-dom'].map(name => [name, majors[name]])) }, null, 2));
     await writeFile(path.join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022',
       module: 'NodeNext', moduleResolution: 'NodeNext', lib: ['ES2022', 'DOM'], strict: true,
-      allowJs: true, checkJs: true, noEmit: true, types: ['node', 'vite/client', '@saylo/vite/virtual'] },
+      allowJs: true, checkJs: true, noEmit: true, types: ['node', 'vite/client', '@0disoft/saylo-vite/virtual'] },
       include: [`src/**/*.${language}`, 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
     console.log(`[pack] ${language}: installing tarballs and declared peer/tool major ranges outside the workspace`);
     await npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', '--workspaces=false'], app);

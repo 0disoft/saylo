@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "demo:lazy": "npm run build --workspace=@saylo/core && node examples/lazy/main.mjs",
+    "demo:lazy": "npm run build --workspace=@0disoft/saylo-core && node examples/lazy/main.mjs",
     "demo:ssr": "npm run build && node examples/ssr/demo.mjs",
     "bench:live": "npm run build && node benchmarks/live-update/run.mjs",
     "verify:pack": "npm run build && node scripts/pack-smoke.mjs",

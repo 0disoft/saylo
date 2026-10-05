@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
-import { createI18n, parseCatalog } from '@saylo/core';
+import { createI18n, parseCatalog } from '@0disoft/saylo-core';
 import { connectDev, createDevCatalogSource, createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest } from '../dist/types.js';

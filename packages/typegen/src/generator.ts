@@ -1,5 +1,5 @@
 import { Worker } from 'node:worker_threads';
-import type { CatalogSchema } from '@saylo/core';
+import type { CatalogSchema } from '@0disoft/saylo-core';
 import { writeGenerated } from './write.js';
 
 interface Job { generation: number; key: string; schemas: readonly CatalogSchema[] }
