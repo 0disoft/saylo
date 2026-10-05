@@ -14,6 +14,6 @@
     "test": "node --test test/plugin.test.mjs test/client.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
-  "dependencies": { "@saylo/core": "0" },
+  "dependencies": { "@saylo/core": "0", "@saylo/typegen": "0" },
   "peerDependencies": { "vite": "8" }
 }
