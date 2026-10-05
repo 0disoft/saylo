@@ -1,5 +1,5 @@
-import { CatalogError, createBaseSchema, createStore, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
-import type { ArgumentType, CatalogSchema, ParsedCatalog } from '@saylo/core';
+import { CatalogError, createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
+import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog } from '@saylo/core';
 
 const parsed: ParsedCatalog = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
 const base: CatalogSchema = createBaseSchema(parsed);
@@ -58,3 +58,32 @@ store.t('cart:items', { count: '3' });
 store.t(key);
 // @ts-expect-error immutable snapshot
 store.getSnapshot().stateRevision = 10;
+
+const bootPair: CatalogOutcome = { status: 'present', sessionId: 'initial', key: { locale: 'ko', namespace: 'cart' },
+  catalogVersion: 1, namespaceSchemaFingerprint: createBaseSchema(appCatalog).fingerprint, catalog: appCatalog };
+const source: CatalogSource = {
+  readManifest: () => ({ sessionId: 'initial', registryRevision: 0, baseLocale: 'ko',
+    availableLocales: ['ko', 'en'], availableNamespaces: ['cart'], catalogs: [bootPair] }),
+  loadCatalog: async (locale, namespace, signal) => {
+    void signal?.aborted;
+    return { status: 'missing', sessionId: 'initial', key: { locale, namespace }, catalogVersion: 0 };
+  },
+};
+const lazy = createI18n<AppSchema>({ catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
+const transition: Promise<void> = lazy.setLocale('en');
+const namespace: Promise<void> = lazy.loadNamespace('cart');
+const refresh: Promise<void> = lazy.refresh();
+void transition; void namespace; void refresh;
+lazy.t('cart:items', { count: 3 });
+lazy.getSnapshot().t('cart:at', { at: new Date(0) });
+// @ts-expect-error lazy callers preserve required args
+lazy.t('cart:items');
+// @ts-expect-error lazy callers preserve value types
+lazy.t('cart:items', { count: '3' });
+// @ts-expect-error lazy union keys still require narrowing
+lazy.t(key);
+// @ts-expect-error loading requires a namespace name
+lazy.loadNamespace(3);
+// @ts-expect-error explicit missing has no payload
+const missing: CatalogOutcome = { status: 'missing', sessionId: 'initial', key: { locale: 'en', namespace: 'cart' }, catalogVersion: 0, catalog: appCatalog };
+void missing;

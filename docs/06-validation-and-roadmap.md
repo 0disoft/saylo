@@ -33,6 +33,8 @@
 
 9단계의 eager handshake를 추가했다. Vite 어댑터 38개 테스트로 초기 연결, 요청 범위 echo, 중복·과거 응답, revision gap, 새 세션, 재연결 generation 무효화, 여러 store의 요청 분리, 제한된 재시도와 timer 정리를 검증했다. 전체 81개 테스트와 소비 타입 검사가 통과했다. React 개발 브라우저에서 문구 저장 후 입력·포커스·열린 모달 유지, 서버 중단·재기동 후 페이지 새로고침과 최신 카탈로그 복구를 확인했다. 부분 전송·pair별 version은 10단계에서 연결한다.
 
+10a의 지연 로딩 코어를 추가했다. `createI18n`의 교차 의도 완료, 실제 언어 선택 대체, missing 폴백, 실패·timeout, pair별 version과 세션 검증, tombstone 유지, manifest 추가·삭제, dispose와 subscriber 오류를 16개 테스트로 검증했다. 전체 check와 JS/checkJs·TS 소비 검사, `npm run demo:lazy`가 통과했다. 코어 49개, React 5개, typegen 5개, Vite 38개로 총 97개 테스트가 통과했다. Vite 범용 loader·부분 전송과 React lazy 데모는 10b에서 연결한다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |
@@ -78,7 +80,8 @@
 | 7 | React typed context와 snapshot-bound hook | 타입을 유지하면서 같은 상태 보존 데모가 React에서 동작한다 |
 | 8 | baseline typegen | 초기 readiness, 배경 생성, generation 취소, 내용이 바뀔 때만 `.d.ts` 쓰기를 구현한다 |
 | 9 | 세션·snapshot handshake와 resync | 범위가 있는 snapshot 요청, 중복·gap·늦은 응답을 처리한다 |
-| 10 | 지연 로딩과 전환 조정 | desired locale·namespace 준비 상태, missing·failure·stale 결과를 처리한다 |
+| 10a | 지연 로딩 코어와 전환 조정 | desired locale·namespace 준비 상태, missing·failure·stale 결과를 처리한다. 로컬 구현 완료 |
+| 10b | Vite 범용 로더와 부분 전송 | boot 이후 새 namespace 조회, pair별 version·tombstone, loaded scope 갱신과 React 데모를 연결한다 |
 | 11 | fresh production build | 현재 디스크 검증 → typegen → consumer 검사 → AST·정적 loader 산출을 연결한다 |
 | 12 | SSR serializer와 hydration fixture | 요청별 snapshot, boot escape, hydration 직전 갱신을 검증한다 |
 

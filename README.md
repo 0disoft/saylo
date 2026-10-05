@@ -80,6 +80,14 @@ store.dispose();
 
 후보는 모든 번역 계약을 검증한 뒤 게시하고, 구독자는 트랜잭션당 한 번 통지한다. 구독 중 요청한 다음 변경은 현재 snapshot의 모든 구독자가 끝난 뒤 게시한다. 구독자 오류는 나머지 구독자 통지를 마친 뒤 `AggregateError`로 전달하며 이미 게시한 상태를 되돌리지 않는다. `unsubscribe`와 `dispose`는 반복 호출해도 안전하다. 어댑터는 `store.onDispose(cleanup)`으로 소유 자원의 정리를 등록하고, 반환된 함수로 등록을 해제한다. 정리 중 오류가 나도 나머지 정리를 마친 뒤 `AggregateError`로 전달한다. 지연 로딩·부분 전송·secondary quarantine은 이후 단계의 계약이며, 현재 eager store는 잘못된 후보 전체를 거부한다. 키 삭제·필수 인자 추가로 기존 화면 호출이 깨지는 편집은 DOM 보존 범위에 포함하지 않는다.
 
+## 지연 로딩 코어
+
+`createI18n`은 필요한 로케일·namespace pair를 `CatalogSource`에서 조회하는 비동기 코어다. `setLocale`와 `loadNamespace`는 `Promise<void>`를 반환한다. 필요한 기준·대상 pair가 모두 present 또는 missing으로 확정될 때 한 번에 게시하며, 대기·조회 실패 중에는 이전 snapshot을 유지한다. missing 번역은 기준으로 폴백하고, 조회 실패는 `CatalogLoadError`로 구분한다. 서로 보완하는 언어 전환과 namespace 추가는 함께 완료하고, 실제로 대체된 언어 선택만 `SupersededRequestError`로 취소한다.
+
+현재 생성 옵션은 `catalogSource`, `locale`, `initialNamespaces`, `initialCatalogs`와 선택적인 `timeZone`·`requestTimeoutMs`다. manifest는 전체 locale·namespace 목록과 알려진 pair별 version·schema fingerprint·missing tombstone을 담는다. 부팅 pair는 결과를 빠짐없이 명시하고, 이후 결과는 현재 session·pair version·schema로 검사한다. `refresh()`는 어댑터가 manifest 변경 후 현재 원하는 범위를 다시 준비할 때 쓴다. 전역 revision만으로 관계없는 namespace의 정상 결과를 폐기하지 않는다. timeout 기본값은 카탈로그당 5초이며 dispose는 요청·timer·소유 listener를 정리한다.
+
+`npm run demo:lazy`는 언어 전환과 장바구니 namespace 로드를 동시에 실행하는 Node 데모다. 조회 중 한국어 snapshot을 유지하다가 한 번의 commit으로 영어 공통 문구와 한국어 장바구니 폴백을 게시한다. JS/checkJs와 TS 소비 fixture가 같은 키·인자 타입을 검사한다. 현재 경로는 parsed catalog를 받는 프로토타입이며, Vite 범용 loader·부분 전송과 React 연결, production 정적 loader, SSR BootSnapshot은 후속 단계다. 기존 개발 브라우저 데모는 eager store를 계속 사용한다.
+
 ## 타입 자동 생성
 
 Vite 플러그인에 `typegen: { outFile: 'generated.d.ts' }`를 추가한다. outFile은 Vite root 기준의 `.d.ts` 경로다. React 데모는 `examples/react/generated.d.ts`에서 생성된 `AppSchema`를 import한다.

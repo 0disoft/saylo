@@ -161,6 +161,8 @@ argument 없는 키는 그대로 호출한다. `t("cart:title")`.
 
 ## 공개 API
 
+현재 `createI18n` 코어는 parsed catalog 기반 프로토타입이다. 실제 생성 옵션은 `catalogSource`, `locale`, `initialNamespaces`, `initialCatalogs`이며 실제 타입은 `packages/core/src/loading-types.ts`에 있다. `CatalogManifest.catalogs`의 pair별 version·schema fingerprint·missing tombstone과 모든 초기 base+target outcome을 검증한다. 비동기 `setLocale`·`loadNamespace`·어댑터용 `refresh`, `StoreSnapshot` 형태의 불변 조회를 제공한다. 아래 `initialSnapshot: BootSnapshot` 생성 옵션과 wire catalog record는 SSR·production 연결을 위한 설계이며 아직 구현하지 않았다. 실행 예제는 `npm run demo:lazy`다.
+
 초기 구현 선택은 동기 생성 + 명시적 로드다. 부팅에 필요한 로케일과 namespace는 `initialSnapshot`으로 함께 넘기고, 나머지는 필요할 때 로드한다. async 생성 함수는 두지 않는다.
 
 schema는 런타임 옵션이 아니라 타입 전용 제네릭이다. 런타임 schema는 부팅 스냅샷의 base schema와 accepted schema 메타데이터에서 얻는다. `createI18n`에 schema 객체를 넘기지 않는다.

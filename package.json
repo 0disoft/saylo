@@ -6,6 +6,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
+    "demo:lazy": "npm run build --workspace=@saylo/core && node examples/lazy/main.mjs",
     "dev": "npm run build && vite --config examples/vanilla/vite.config.mjs --host 127.0.0.1",
     "build:demo": "npm run build && vite build --config examples/vanilla/vite.config.mjs",
     "dev:react": "npm run build && vite --config examples/react/vite.config.mjs --host 127.0.0.1",

@@ -81,7 +81,7 @@ export interface Translator<S extends Schema = Schema> {
   readonly t: Translate<S>;
 }
 
-/** Eager prototype: every namespace is loaded, with no transport metadata. */
+/** Shared UI snapshot. Lazy instances can load a subset of the namespace manifest. */
 export interface StoreSnapshot<S extends Schema = Schema> extends Translator<S> {
   readonly stateRevision: number;
   readonly availableLocales: readonly string[];

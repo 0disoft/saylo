@@ -1,5 +1,5 @@
 // @ts-check
-import { createBaseSchema, createStore, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
+import { createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@saylo/core';
 
 const parsed = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
 const base = createBaseSchema(parsed);
@@ -34,3 +34,25 @@ store.subscribe(snapshot => {
   // @ts-expect-error snapshot arg checking in JS
   snapshot.t('cart:items');
 });
+
+const lazyCatalog = parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' });
+/** @type {import('@saylo/core').CatalogOutcome} */
+const bootPair = { status: 'present', sessionId: 'one', key: { locale: 'ko', namespace: 'cart' },
+  catalogVersion: 1, namespaceSchemaFingerprint: createBaseSchema(lazyCatalog).fingerprint, catalog: lazyCatalog };
+/** @type {import('@saylo/core').CatalogSource} */
+const source = {
+  readManifest: () => ({ sessionId: 'one', registryRevision: 0, baseLocale: 'ko',
+    availableLocales: ['ko', 'en'], availableNamespaces: ['cart'], catalogs: [bootPair] }),
+  loadCatalog: async (locale, namespace) => ({ status: 'missing', sessionId: 'one', key: { locale, namespace }, catalogVersion: 0 }),
+};
+/** @type {import('@saylo/core').I18n<AppSchema>} */
+const lazy = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
+/** @type {Promise<void>} */
+const transition = lazy.setLocale('en');
+void transition;
+lazy.t('cart:title');
+lazy.t('cart:items', { count: 3 });
+// @ts-expect-error lazy required arg in checkJs
+lazy.t('cart:items');
+// @ts-expect-error lazy wrong value in checkJs
+lazy.getSnapshot().t('cart:items', { count: '3' });
