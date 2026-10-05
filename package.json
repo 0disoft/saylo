@@ -12,6 +12,7 @@
     "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces"
   },
   "devDependencies": {
+    "@types/node": "24",
     "typescript": "7",
     "vite": "8"
   }
