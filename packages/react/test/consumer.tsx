@@ -40,3 +40,12 @@ export const lazyApp = <SayloProvider instance={lazy}><Cart /></SayloProvider>;
 const other = createStore<{ 'other:title': {} }>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
 // @ts-expect-error provider instance must use this factory's schema
 export const wrongApp = <SayloProvider instance={other} />;
+
+import { createHydrationAdapter } from '@saylo/react';
+const hydration = createHydrationAdapter(lazy);
+export const hydratedApp = <SayloProvider instance={hydration}><Cart /></SayloProvider>;
+hydration.getServerSnapshot().t('cart:items', { count: 1 });
+hydration.finishHydration();
+hydration.dispose();
+// @ts-expect-error SSR snapshots retain the required argument contract
+hydration.getServerSnapshot().t('cart:items');

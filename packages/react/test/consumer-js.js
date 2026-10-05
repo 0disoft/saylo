@@ -24,3 +24,13 @@ function Cart() {
 export const app = createElement(bindings.SayloProvider, { instance: store }, createElement(Cart));
 /** @param {import('@saylo/core').I18n<AppSchema>} instance */
 export function lazyApp(instance) { return createElement(bindings.SayloProvider, { instance }, createElement(Cart)); }
+
+import { createHydrationAdapter } from '@saylo/react';
+/** @param {import('@saylo/core').I18n<AppSchema>} instance */
+export function hydratedApp(instance) {
+  const adapter = createHydrationAdapter(instance);
+  adapter.getServerSnapshot().t('cart:items', { count: 1 });
+  // @ts-expect-error checkJs keeps the hydration snapshot argument contract
+  adapter.getServerSnapshot().t('cart:items');
+  return createElement(bindings.SayloProvider, { instance: adapter }, createElement(Cart));
+}

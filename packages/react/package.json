@@ -9,7 +9,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test test/react.test.mjs",
+    "test": "node --test test/react.test.mjs test/hydration.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": { "@saylo/core": "0" },

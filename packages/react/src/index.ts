@@ -1,6 +1,8 @@
 import { createContext, createElement, useContext, useMemo, useSyncExternalStore } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 import type { Schema, Store, StoreSnapshot } from '@saylo/core';
+export { createHydrationAdapter } from './hydration.js';
+export type { SayloHydrationAdapter } from './hydration.js';
 
 export interface SayloProviderProps<S extends Schema> {
   /** Caller owns the store and its disposal. Keep the instance stable across renders. */
@@ -9,6 +11,8 @@ export interface SayloProviderProps<S extends Schema> {
 }
 
 export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
+  readonly getServerSnapshot?: () => StoreSnapshot<S>;
+  readonly onDispose?: (listener: () => void) => () => void;
   readonly setLocale: (locale: string) => void | Promise<void>;
   readonly loadNamespace?: (namespace: string) => Promise<void>;
 }
@@ -33,8 +37,7 @@ export function createSayloReact<S extends Schema = Schema>(): SayloReactBinding
   function useI18n(): SayloReactSnapshot<S> {
     const instance = useContext(Context);
     if (!instance) throw new Error('useI18n must be used inside the SayloProvider from the same createSayloReact factory.');
-    // Stable store functions avoid resubscriptions. SSR boot/hydration is a later stage.
-    const snapshot = useSyncExternalStore(instance.subscribe, instance.getSnapshot);
+    const snapshot = useSyncExternalStore(instance.subscribe, instance.getSnapshot, instance.getServerSnapshot);
     return useMemo(() => Object.freeze({ ...snapshot, setLocale: instance.setLocale,
       ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}) }), [snapshot, instance]);
   }
