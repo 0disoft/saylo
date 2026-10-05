@@ -1,0 +1,13 @@
+{
+  "name": "saylo-workspace",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run build && npm run test --workspaces",
+    "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces"
+  },
+  "devDependencies": {
+    "typescript": "7"
+  }
+}
