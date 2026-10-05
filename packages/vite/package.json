@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "description": "Vite 8 plugin and dev client that live-update Saylo catalogs without a full reload.",
+  "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/vite" },
+  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/vite#readme",
+  "bugs": { "url": "https://github.com/0disoft/saylo/issues" },
+  "keywords": ["i18n", "intl", "localization", "vite", "hmr"],
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./client": { "types": "./dist/client.d.ts", "import": "./dist/client.js" },

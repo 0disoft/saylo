@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "description": "React 19 bindings for Saylo with a typed provider and snapshot-bound hooks.",
+  "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/react" },
+  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/react#readme",
+  "bugs": { "url": "https://github.com/0disoft/saylo/issues" },
+  "keywords": ["i18n", "intl", "localization", "react"],
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
   },

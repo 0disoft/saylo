@@ -1,0 +1,80 @@
+# @0disoft/saylo-vite
+
+Saylo의 Vite 8 플러그인과 개발 클라이언트다. 카탈로그 파일 변경을 감지해 앱 모듈 교체 없이 화면에 반영한다.
+
+## 상태
+
+아직 npm에 게시하지 않았다. 아래 설치 명령은 게시 후 기준이고 현재는 저장소 workspace에서 쓴다.
+
+## 설치 (게시 후)
+
+앱 런타임에는 `@0disoft/saylo-core`를 설치하고, 플러그인과 dev client는 개발 의존성으로 넣는다. `vite`는 peer 의존성이며 현재 조건은 Vite 8이다.
+
+```sh
+npm install @0disoft/saylo-core
+npm install -D @0disoft/saylo-vite vite@8
+```
+
+## 설정
+
+```js
+// vite.config.mjs
+import { defineConfig } from 'vite';
+import saylo from '@0disoft/saylo-vite';
+
+export default defineConfig({
+  plugins: [saylo({
+    localesDir: 'locales',                   // Vite root 기준
+    baseLocale: 'ko',
+    initialNamespaces: ['demo'],             // 생략하면 기준 namespace 전체
+    timeZone: 'UTC',                         // 생략하면 UTC
+    typegen: { outFile: 'generated.d.ts' },  // 선택, Vite root 기준
+  })],
+});
+```
+
+카탈로그 파일 구조는 `locales/<locale>/<namespace>.json`이다. 예를 들어 `locales/ko/demo.json`, `locales/en/demo.json`이다.
+
+## 지연 로딩 클라이언트
+
+`virtual:saylo/lazy`가 초기 pair와 `catalogSource`를 제공한다. 앱은 코어 `createI18n`으로 instance를 만들고 `connectDev`로 개발 서버에 연결한다. `typegen.outFile`은 Vite root 기준이라 아래 `src/i18n.ts`에서는 `../generated.js`를 import한다.
+
+```ts
+// src/i18n.ts
+import { createI18n } from '@0disoft/saylo-core';
+import { connectDev } from '@0disoft/saylo-vite/client';
+import type { AppSchema } from '../generated.js';
+import { catalogSource, initialCatalogs, initialLocale, initialNamespaces, timeZone } from 'virtual:saylo/lazy';
+
+export const i18n = createI18n<AppSchema>({
+  catalogSource, locale: initialLocale, initialNamespaces, initialCatalogs, timeZone,
+});
+export const disconnect = connectDev(i18n, { catalogSource });
+// 정리: disconnect(); i18n.dispose();
+```
+
+TS/checkJs 소비자는 `compilerOptions.types`에 `["vite/client", "@0disoft/saylo-vite/virtual"]`을 넣는다.
+
+`virtual:saylo`는 전체 카탈로그를 한 번에 싣는 eager 경로다. eager store는 `virtual:saylo`의 `initialCatalogs`·`baseLocale`·`initialLocale`·`timeZone`으로 만든다.
+
+## 동작 범위
+
+플러그인은 파일을 감시해 정상 카탈로그만 게시하고, 클라이언트는 snapshot을 받아 앱에 전달한다. 코어와 store는 DOM을 직접 다루지 않으므로 화면 갱신은 앱이 snapshot을 렌더해 처리한다. Vite는 앱 모듈을 교체하지 않는다.
+
+SSR은 `@0disoft/saylo-vite/server`와 `virtual:saylo/server`를 쓴다. 예제는 저장소의 [SSR 예제](https://github.com/0disoft/saylo/tree/main/examples/ssr)에 있다.
+
+## 관련 패키지
+
+- [@0disoft/saylo-core](https://github.com/0disoft/saylo/tree/main/packages/core#readme) — `createI18n`
+- [@0disoft/saylo-react](https://github.com/0disoft/saylo/tree/main/packages/react#readme) — React 바인딩
+- [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme) — dev 타입 생성
+
+## 문서
+
+- [운영 빌드와 SSR](https://github.com/0disoft/saylo/blob/main/docs/05-build-and-ssr.md)
+- [갱신 프로토콜](https://github.com/0disoft/saylo/blob/main/docs/08-update-protocol.md)
+- 저장소 [README](https://github.com/0disoft/saylo#readme)
+
+## 버전
+
+Node.js·TypeScript 지원 범위는 아직 확정하지 않았다. peer 조건은 Vite 8이다.

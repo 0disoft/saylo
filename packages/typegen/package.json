@@ -1,5 +1,10 @@
 {
   "name": "@0disoft/saylo-typegen", "version": "0.0.0", "private": true, "type": "module",
+  "description": "TypeScript declaration generator for Saylo base catalogs, usable as a CLI or worker.",
+  "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/typegen" },
+  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/typegen#readme",
+  "bugs": { "url": "https://github.com/0disoft/saylo/issues" },
+  "keywords": ["i18n", "intl", "localization", "typegen", "cli", "typescript"],
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./catalog-files": { "types": "./dist/catalog-files.d.ts", "import": "./dist/catalog-files.js" }

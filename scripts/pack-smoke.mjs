@@ -24,6 +24,11 @@ function inside(directory, target) {
   const relative = path.relative(directory, target);
   return relative === '' || (relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
 }
+function example(readme, language) {
+  const match = readme.match(new RegExp('```' + language + '\\r?\\n([\\s\\S]*?)\\r?\\n```'));
+  assert.ok(match, `Missing ${language} README example`);
+  return match[1];
+}
 async function npm(args, cwd) {
   try {
     const result = await exec(process.execPath, [npmCli, ...args], { cwd, windowsHide: true,
@@ -39,10 +44,18 @@ try {
   const metadata = JSON.parse(await npm(['pack', '--workspaces', '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
   assert.deepEqual(packed.map(pack => pack.name).sort(), [...names].sort());
+  const packageDocs = new Map();
   for (const pack of packed) {
     const directory = path.join(repository, 'packages', packages[pack.name]);
     const manifest = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
     const files = new Set(pack.files.map(file => file.path));
+    assert.ok(files.has('README.md'), `${pack.name} is missing its README`);
+    assert.ok(typeof manifest.description === 'string' && manifest.description.trim(), `${pack.name} needs a description`);
+    assert.deepEqual(manifest.repository, { type: 'git', url: 'git+https://github.com/0disoft/saylo.git', directory: `packages/${packages[pack.name]}` });
+    assert.equal(manifest.homepage, `https://github.com/0disoft/saylo/tree/main/packages/${packages[pack.name]}#readme`);
+    assert.deepEqual(manifest.bugs, { url: 'https://github.com/0disoft/saylo/issues' });
+    assert.ok(Array.isArray(manifest.keywords) && manifest.keywords.length && manifest.keywords.every(word => typeof word === 'string' && word.trim()), `${pack.name} needs search keywords`);
+    packageDocs.set(pack.name, { manifest, readme: await readFile(path.join(directory, 'README.md'), 'utf8') });
     for (const target of [...Object.values(manifest.exports).flatMap(entry => Object.values(entry)), ...Object.values(manifest.bin ?? {})])
       assert.ok(files.has(target.replace(/^\.\//, '')), `${pack.name} is missing ${target}`);
     console.log(`[pack] ${pack.name}: ${pack.files.length} files, ${pack.size} bytes`);
@@ -60,18 +73,35 @@ try {
       devDependencies: Object.fromEntries(['typescript', 'vite', '@types/node', '@types/react', '@types/react-dom'].map(name => [name, majors[name]])) }, null, 2));
     await writeFile(path.join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022',
       module: 'NodeNext', moduleResolution: 'NodeNext', lib: ['ES2022', 'DOM'], strict: true,
-      allowJs: true, checkJs: true, noEmit: true, types: ['node', 'vite/client', '@0disoft/saylo-vite/virtual'] },
-      include: [`src/**/*.${language}`, 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
+      allowJs: true, checkJs: true, noEmit: true, jsx: 'react-jsx', types: ['node', 'vite/client', '@0disoft/saylo-vite/virtual'] },
+      include: [`src/**/*.${language}`, 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
     console.log(`[pack] ${language}: installing tarballs and declared peer/tool major ranges outside the workspace`);
     await npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', '--workspaces=false'], app);
     for (const name of names) {
       const installed = path.join(app, 'node_modules', name);
       assert.equal((await lstat(installed)).isSymbolicLink(), false, `${name} is a workspace link`);
       assert.ok(inside(await realpath(app), await realpath(installed)), `${name} escaped the consumer`);
+      const shipped = JSON.parse(await readFile(path.join(installed, 'package.json'), 'utf8'));
+      const expected = packageDocs.get(name);
+      for (const field of ['description', 'repository', 'homepage', 'bugs', 'keywords'])
+        assert.deepEqual(shipped[field], expected.manifest[field], `${name} lost packed ${field}`);
+      assert.equal(await readFile(path.join(installed, 'README.md'), 'utf8'), expected.readme, `${name} shipped a stale README`);
+    }
+    if (language === 'ts') {
+      // Check the actual shipped examples against the independently installed packages.
+      const doc = id => packageDocs.get(`@0disoft/saylo-${id}`).readme;
+      await writeFile(path.join(app, 'readme-core.mjs'), example(doc('core'), 'js'));
+      await writeFile(path.join(app, 'readme-react.tsx'), example(doc('react'), 'tsx'));
+      await writeFile(path.join(app, 'readme-typegen.ts'), example(doc('typegen'), 'ts'));
+      await writeFile(path.join(app, 'src/readme-vite.ts'), example(doc('vite'), 'ts'));
     }
     console.log((await npm(['run', 'typegen'], app)).trim());
     assert.match(await readFile(path.join(app, 'generated.d.ts'), 'utf8'), /"demo:items": \{ "count": number;/);
     await npm(['run', 'typecheck'], app);
+    if (language === 'ts') {
+      await exec(process.execPath, ['readme-core.mjs'], { cwd: app, windowsHide: true, env: childEnv });
+      console.log('[pack] Shipped core README example ran; React, typegen and Vite README examples typechecked.');
+    }
     const smoke = await exec(process.execPath, ['smoke.mjs'], { cwd: app, windowsHide: true, env: childEnv });
     console.log(smoke.stdout.trim());
     console.log((await npm(['run', 'build'], app)).trim());

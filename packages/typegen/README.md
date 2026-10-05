@@ -1,0 +1,77 @@
+# @0disoft/saylo-typegen
+
+Saylo 기준 카탈로그에서 `AppSchema` 타입 선언(`.d.ts`)을 생성한다. CLI `saylo-typegen`으로 실행하거나, `@0disoft/saylo-vite`가 개발 중 배경에서 실행한다.
+
+## 상태
+
+아직 npm에 게시하지 않았다. 아래 설치·실행 명령은 게시 후 기준이다. 현재는 저장소 workspace에서 `node packages/typegen/dist/cli.js`로 실행한다.
+
+## 설치 (게시 후)
+
+```sh
+npm install --save-dev @0disoft/saylo-typegen
+npm install @0disoft/saylo-core
+```
+
+`@0disoft/saylo-core`는 생성한 타입을 코어 제네릭으로 소비할 때 필요하다. 타입 선언만 생성할 때는 필요하지 않다.
+
+## 카탈로그
+
+`locales/<locale>/<namespace>.json` 구조를 쓴다. 예를 들어 `locales/ko/demo.json`과 `locales/en/demo.json`이다.
+
+```json
+{ "greeting": "안녕 {name}" }
+```
+
+```json
+{ "greeting": "Hello {name}" }
+```
+
+## 실행
+
+```sh
+npx saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
+```
+
+`--locales-dir`의 전체 카탈로그를 검증한 뒤 기준 로케일의 선언을 쓴다. 잘못된 번역 파일이 있으면 오류로 종료한다. 위 카탈로그에서 생성되는 `AppSchema`는 `{ "demo:greeting": { "name": number | string } }` 형태이고, 숫자는 `number`, 일반 보간은 `number | string`, 날짜는 `Date | number`로 표현한다. ICU 분기에서 쓴 인자도 필수로 생성한다.
+
+생성한 `AppSchema`는 코어 제네릭에 연결한다.
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { parseCatalog, createStore } from '@0disoft/saylo-core';
+import type { AppSchema } from './generated.js';
+
+const read = async (locale: string) => parseCatalog(
+  await readFile(`locales/${locale}/demo.json`, 'utf8'),
+  { locale, namespace: 'demo', sourceName: `locales/${locale}/demo.json` },
+);
+
+const store = createStore<AppSchema>({
+  baseLocale: 'ko', locale: 'en', timeZone: 'UTC',
+  catalogs: [await read('ko'), await read('en')],
+});
+console.log(store.t('demo:greeting', { name: 'Saylo' })); // "Hello Saylo"
+store.dispose();
+```
+
+JS 프로젝트에서는 JSDoc `/** @type {import('@0disoft/saylo-core').Store<import('./generated.js').AppSchema>} */`로 같은 키·인자 검사를 연결한다.
+
+## 빌드 순서
+
+순서는 typegen → tsc → vite다. Vite build는 소비자 TS 타입 검사를 하지 않으므로 tsc를 먼저 돌린다. Vite 플러그인에 `typegen: { outFile: 'generated.d.ts' }`를 주면 dev에서 초기 생성 뒤 배경으로 갱신하고, 문구만 바뀌면 선언을 다시 쓰지 않는다.
+
+## 관련 패키지
+
+- [@0disoft/saylo-core](https://github.com/0disoft/saylo/tree/main/packages/core#readme) — `AppSchema` 소비
+- [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme) — dev에서 자동 생성
+- [@0disoft/saylo-react](https://github.com/0disoft/saylo/tree/main/packages/react#readme) — typed hook
+
+## 문서
+
+- [라이브 반영과 타입](https://github.com/0disoft/saylo/blob/main/docs/04-live-update-and-types.md)
+- 저장소 [README](https://github.com/0disoft/saylo#readme)
+
+## 버전
+
+Node.js·TypeScript 지원 범위는 아직 확정하지 않았다.
