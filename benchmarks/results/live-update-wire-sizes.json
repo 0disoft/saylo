@@ -1,0 +1,31 @@
+{
+  "schema": "saylo-manifest-size-comparison-v1",
+  "gitRevision": "98a3ced7321fe3a74d1cc2fddd53a01ff1b621ac",
+  "method": "Reconstructed v1 and v2 manifest update JSON envelopes, UTF-8 byte lengths; not captured network traffic.",
+  "results": [
+    {
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "fingerprintCharacters": {
+        "before": 45886,
+        "after": 87
+      },
+      "manifestEnvelopeBytes": {
+        "before": 162256,
+        "after": 871
+      }
+    },
+    {
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "fingerprintCharacters": {
+        "before": 468886,
+        "after": 87
+      },
+      "manifestEnvelopeBytes": {
+        "before": 10980273,
+        "after": 4373
+      }
+    }
+  ]
+}

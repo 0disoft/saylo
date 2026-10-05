@@ -32,6 +32,8 @@
 
 production chunk loader는 11단계에서 연결했고, boot wire는 parsed catalog 배열을 싣는 1차 형태로 구현했다. 아래 CatalogRecord·push patch wire는 아직 초안이며 후속 단계다.
 
+namespace schema fingerprint는 정규화한 namespace·키·인자 acceptedTypes JSON의 UTF-8 SHA-256(`saylo-schema-v2:sha256:` + 64자리 16진수)이다. 로케일·pair마다 큰 스키마 문자열을 반복 전송하지 않도록 고정 길이 digest로 바꿨고, `saylo-schema-v1:` 형식으로 저장된 기존 boot·chunk는 재생성해야 한다.
+
 ```ts
 type SessionId = string;
 type RequestId = string;

@@ -1,0 +1,500 @@
+{
+  "scenario": "10k-20-locales",
+  "samples": [
+    {
+      "token": "10k-20-locales:26",
+      "warmup": true,
+      "saveToAckMs": 717.5901999999987,
+      "saveToManifestBroadcastMs": 284.17709999999715,
+      "fileWriteMs": 14.167800000002899,
+      "receiveToCommitMs": 236.19999992847443,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:27",
+      "warmup": true,
+      "saveToAckMs": 643.9732000000004,
+      "saveToManifestBroadcastMs": 186.7412000000004,
+      "fileWriteMs": 8.524600000000646,
+      "receiveToCommitMs": 239.5,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:28",
+      "warmup": true,
+      "saveToAckMs": 706.2020000000011,
+      "saveToManifestBroadcastMs": 175.77340000000186,
+      "fileWriteMs": 12.803099999997357,
+      "receiveToCommitMs": 349.2000000476837,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:29",
+      "warmup": true,
+      "saveToAckMs": 627.0946999999978,
+      "saveToManifestBroadcastMs": 222.11099999999715,
+      "fileWriteMs": 9.773800000002666,
+      "receiveToCommitMs": 224.40000009536743,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:30",
+      "warmup": true,
+      "saveToAckMs": 656.2060999999994,
+      "saveToManifestBroadcastMs": 262.02630000000136,
+      "fileWriteMs": 9.279900000001362,
+      "receiveToCommitMs": 208.39999997615814,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:31",
+      "warmup": false,
+      "saveToAckMs": 555.4045000000006,
+      "saveToManifestBroadcastMs": 162.41219999999885,
+      "fileWriteMs": 9.352500000000873,
+      "receiveToCommitMs": 212.60000002384186,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:32",
+      "warmup": false,
+      "saveToAckMs": 676.6811000000016,
+      "saveToManifestBroadcastMs": 183.3798999999999,
+      "fileWriteMs": 8.498500000001513,
+      "receiveToCommitMs": 231.39999997615814,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:33",
+      "warmup": false,
+      "saveToAckMs": 756.0789999999979,
+      "saveToManifestBroadcastMs": 158.38450000000012,
+      "fileWriteMs": 7.822100000001228,
+      "receiveToCommitMs": 414.10000002384186,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:34",
+      "warmup": false,
+      "saveToAckMs": 875.1431999999986,
+      "saveToManifestBroadcastMs": 154.71689999999944,
+      "fileWriteMs": 8.5724999999984,
+      "receiveToCommitMs": 169.5,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:35",
+      "warmup": false,
+      "saveToAckMs": 491.1785000000018,
+      "saveToManifestBroadcastMs": 144.05079999999725,
+      "fileWriteMs": 8.445899999998801,
+      "receiveToCommitMs": 179,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:36",
+      "warmup": false,
+      "saveToAckMs": 449.0876999999964,
+      "saveToManifestBroadcastMs": 116.8862999999983,
+      "fileWriteMs": 5.829499999999825,
+      "receiveToCommitMs": 193.39999997615814,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:37",
+      "warmup": false,
+      "saveToAckMs": 503.1342999999979,
+      "saveToManifestBroadcastMs": 167.0103999999992,
+      "fileWriteMs": 8.897499999999127,
+      "receiveToCommitMs": 171.39999997615814,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:38",
+      "warmup": false,
+      "saveToAckMs": 584.189999999995,
+      "saveToManifestBroadcastMs": 154.84139999999752,
+      "fileWriteMs": 6.63640000000305,
+      "receiveToCommitMs": 251.30000007152557,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:39",
+      "warmup": false,
+      "saveToAckMs": 552.0328000000009,
+      "saveToManifestBroadcastMs": 184.25080000000162,
+      "fileWriteMs": 8.192399999999907,
+      "receiveToCommitMs": 181.80000007152557,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:40",
+      "warmup": false,
+      "saveToAckMs": 476.8899999999994,
+      "saveToManifestBroadcastMs": 150.3678,
+      "fileWriteMs": 6.605500000005122,
+      "receiveToCommitMs": 178.60000002384186,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:41",
+      "warmup": false,
+      "saveToAckMs": 486.3521999999939,
+      "saveToManifestBroadcastMs": 134.88849999999366,
+      "fileWriteMs": 6.712700000003679,
+      "receiveToCommitMs": 211.89999997615814,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:42",
+      "warmup": false,
+      "saveToAckMs": 495.678899999999,
+      "saveToManifestBroadcastMs": 133.543700000002,
+      "fileWriteMs": 7.362600000000384,
+      "receiveToCommitMs": 183,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:43",
+      "warmup": false,
+      "saveToAckMs": 515.1978999999992,
+      "saveToManifestBroadcastMs": 141.5048999999999,
+      "fileWriteMs": 7.632099999995262,
+      "receiveToCommitMs": 188.20000004768372,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:44",
+      "warmup": false,
+      "saveToAckMs": 524.4044999999969,
+      "saveToManifestBroadcastMs": 153.91649999999936,
+      "fileWriteMs": 8.082099999999627,
+      "receiveToCommitMs": 207.5,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:45",
+      "warmup": false,
+      "saveToAckMs": 485.7314000000042,
+      "saveToManifestBroadcastMs": 140.72810000000027,
+      "fileWriteMs": 8.101000000002387,
+      "receiveToCommitMs": 197.60000002384186,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:46",
+      "warmup": false,
+      "saveToAckMs": 460.9400999999998,
+      "saveToManifestBroadcastMs": 143.68090000000666,
+      "fileWriteMs": 7.521399999997811,
+      "receiveToCommitMs": 165.5,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:47",
+      "warmup": false,
+      "saveToAckMs": 472.51090000000113,
+      "saveToManifestBroadcastMs": 134.01900000000023,
+      "fileWriteMs": 7.765399999996589,
+      "receiveToCommitMs": 215,
+      "commitToAckDispatchMs": 0.09999990463256836
+    },
+    {
+      "token": "10k-20-locales:48",
+      "warmup": false,
+      "saveToAckMs": 511.87719999999536,
+      "saveToManifestBroadcastMs": 161.01369999999588,
+      "fileWriteMs": 7.3840000000054715,
+      "receiveToCommitMs": 198.89999997615814,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:49",
+      "warmup": false,
+      "saveToAckMs": 819.5501999999979,
+      "saveToManifestBroadcastMs": 156.50469999999768,
+      "fileWriteMs": 7.573800000005576,
+      "receiveToCommitMs": 535.1999999284744,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:50",
+      "warmup": false,
+      "saveToAckMs": 474.01520000000164,
+      "saveToManifestBroadcastMs": 128.5873000000065,
+      "fileWriteMs": 6.850899999997637,
+      "receiveToCommitMs": 225.29999995231628,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:51",
+      "warmup": false,
+      "saveToAckMs": 353.2471000000005,
+      "saveToManifestBroadcastMs": 117.72720000000118,
+      "fileWriteMs": 8.36819999999716,
+      "receiveToCommitMs": 132.29999995231628,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:52",
+      "warmup": false,
+      "saveToAckMs": 374.76310000000376,
+      "saveToManifestBroadcastMs": 118.2309000000023,
+      "fileWriteMs": 7.853699999999662,
+      "receiveToCommitMs": 152.70000004768372,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:53",
+      "warmup": false,
+      "saveToAckMs": 410.5404999999955,
+      "saveToManifestBroadcastMs": 122.44029999999475,
+      "fileWriteMs": 5.649000000004889,
+      "receiveToCommitMs": 175.39999997615814,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:54",
+      "warmup": false,
+      "saveToAckMs": 484.5682000000015,
+      "saveToManifestBroadcastMs": 152.1449999999968,
+      "fileWriteMs": 6.953800000002957,
+      "receiveToCommitMs": 187.10000002384186,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:55",
+      "warmup": false,
+      "saveToAckMs": 1307.2207000000053,
+      "saveToManifestBroadcastMs": 143.14790000000357,
+      "fileWriteMs": 9.934999999997672,
+      "receiveToCommitMs": 112.10000002384186,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:56",
+      "warmup": false,
+      "saveToAckMs": 316.7837999999974,
+      "saveToManifestBroadcastMs": 114.72469999999885,
+      "fileWriteMs": 4.010399999999208,
+      "receiveToCommitMs": 122.09999990463257,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:57",
+      "warmup": false,
+      "saveToAckMs": 329.04209999999875,
+      "saveToManifestBroadcastMs": 105.92009999999573,
+      "fileWriteMs": 4.139100000000326,
+      "receiveToCommitMs": 126.30000007152557,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:58",
+      "warmup": false,
+      "saveToAckMs": 430.2684999999983,
+      "saveToManifestBroadcastMs": 117.99330000000191,
+      "fileWriteMs": 7.996200000001409,
+      "receiveToCommitMs": 202.10000002384186,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:59",
+      "warmup": false,
+      "saveToAckMs": 294.0020000000004,
+      "saveToManifestBroadcastMs": 107.69679999999789,
+      "fileWriteMs": 3.4394000000029337,
+      "receiveToCommitMs": 112.60000002384186,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:60",
+      "warmup": false,
+      "saveToAckMs": 256.2045999999973,
+      "saveToManifestBroadcastMs": 101.18659999999363,
+      "fileWriteMs": 4.8796000000002095,
+      "receiveToCommitMs": 92.69999992847443,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:61",
+      "warmup": false,
+      "saveToAckMs": 290.0859999999957,
+      "saveToManifestBroadcastMs": 104.73369999999704,
+      "fileWriteMs": 4.414600000003702,
+      "receiveToCommitMs": 111.39999997615814,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:62",
+      "warmup": false,
+      "saveToAckMs": 227.48369999999704,
+      "saveToManifestBroadcastMs": 88.12329999999929,
+      "fileWriteMs": 4.974600000001374,
+      "receiveToCommitMs": 78.10000002384186,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:63",
+      "warmup": false,
+      "saveToAckMs": 249.237000000001,
+      "saveToManifestBroadcastMs": 93.16630000000441,
+      "fileWriteMs": 3.634699999995064,
+      "receiveToCommitMs": 93.19999992847443,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:64",
+      "warmup": false,
+      "saveToAckMs": 278.08630000000267,
+      "saveToManifestBroadcastMs": 96.1053000000029,
+      "fileWriteMs": 4.769899999999325,
+      "receiveToCommitMs": 120.20000004768372,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:65",
+      "warmup": false,
+      "saveToAckMs": 225.46429999999964,
+      "saveToManifestBroadcastMs": 84.82709999999497,
+      "fileWriteMs": 3.0904000000009546,
+      "receiveToCommitMs": 78.29999995231628,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:66",
+      "warmup": false,
+      "saveToAckMs": 268.93069999999716,
+      "saveToManifestBroadcastMs": 99.80529999999999,
+      "fileWriteMs": 3.2946999999985565,
+      "receiveToCommitMs": 100.30000007152557,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:67",
+      "warmup": false,
+      "saveToAckMs": 293.8810000000012,
+      "saveToManifestBroadcastMs": 107.65469999999914,
+      "fileWriteMs": 4.429700000000594,
+      "receiveToCommitMs": 122.70000004768372,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:68",
+      "warmup": false,
+      "saveToAckMs": 368.7620999999999,
+      "saveToManifestBroadcastMs": 107.14240000000427,
+      "fileWriteMs": 3.5683999999964726,
+      "receiveToCommitMs": 139.20000004768372,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:69",
+      "warmup": false,
+      "saveToAckMs": 445.7354999999952,
+      "saveToManifestBroadcastMs": 121.03489999999874,
+      "fileWriteMs": 7.146600000000035,
+      "receiveToCommitMs": 178,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:70",
+      "warmup": false,
+      "saveToAckMs": 566.3075000000026,
+      "saveToManifestBroadcastMs": 148.84560000000056,
+      "fileWriteMs": 6.382799999999406,
+      "receiveToCommitMs": 260.60000002384186,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:71",
+      "warmup": false,
+      "saveToAckMs": 500.0541000000012,
+      "saveToManifestBroadcastMs": 157.1128000000026,
+      "fileWriteMs": 7.440099999999802,
+      "receiveToCommitMs": 179.70000004768372,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:72",
+      "warmup": false,
+      "saveToAckMs": 496.91129999999976,
+      "saveToManifestBroadcastMs": 145.19889999999577,
+      "fileWriteMs": 7.477400000003399,
+      "receiveToCommitMs": 195.39999997615814,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:73",
+      "warmup": false,
+      "saveToAckMs": 468.41189999999915,
+      "saveToManifestBroadcastMs": 143.87739999999758,
+      "fileWriteMs": 9.45850000000064,
+      "receiveToCommitMs": 181,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:74",
+      "warmup": false,
+      "saveToAckMs": 494.1823000000004,
+      "saveToManifestBroadcastMs": 137.8159999999989,
+      "fileWriteMs": 7.190499999996973,
+      "receiveToCommitMs": 193.89999997615814,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:75",
+      "warmup": false,
+      "saveToAckMs": 510.6987999999983,
+      "saveToManifestBroadcastMs": 176.41470000000118,
+      "fileWriteMs": 8.141499999997905,
+      "receiveToCommitMs": 171.79999995231628,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:76",
+      "warmup": false,
+      "saveToAckMs": 525.5792999999976,
+      "saveToManifestBroadcastMs": 144.70999999999913,
+      "fileWriteMs": 6.139900000001944,
+      "receiveToCommitMs": 232.5,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:77",
+      "warmup": false,
+      "saveToAckMs": 449.06340000000637,
+      "saveToManifestBroadcastMs": 135.59440000000177,
+      "fileWriteMs": 5.979799999993702,
+      "receiveToCommitMs": 188.30000007152557,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:78",
+      "warmup": false,
+      "saveToAckMs": 430.15060000000085,
+      "saveToManifestBroadcastMs": 144.96370000000024,
+      "fileWriteMs": 7.247300000002724,
+      "receiveToCommitMs": 147.70000004768372,
+      "commitToAckDispatchMs": 0
+    },
+    {
+      "token": "10k-20-locales:79",
+      "warmup": false,
+      "saveToAckMs": 461.19260000000213,
+      "saveToManifestBroadcastMs": 123.00600000000122,
+      "fileWriteMs": 6.378900000003341,
+      "receiveToCommitMs": 198.89999997615814,
+      "commitToAckDispatchMs": 0.10000002384185791
+    },
+    {
+      "token": "10k-20-locales:80",
+      "warmup": false,
+      "saveToAckMs": 388.02709999999934,
+      "saveToManifestBroadcastMs": 104.2065999999977,
+      "fileWriteMs": 6.925100000000384,
+      "receiveToCommitMs": 150.39999997615814,
+      "commitToAckDispatchMs": 0.10000002384185791
+    }
+  ]
+}

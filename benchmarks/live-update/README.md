@@ -38,11 +38,16 @@ npm run bench:live
 
 ## 결과
 
-결과는 [../results/live-update.json](../results/live-update.json)에 남는다. 환경(Node·OS·CPU·memory·Vite·React·브라우저 UA), git revision, UTC `measuredAt`, 시나리오 차원과 파일 바이트, 시나리오별 summary와 control 왕복 raw 값을 담는다. 시나리오별 raw sample(기본값은 warmup 포함 55개)은 결과 파일이 `samplesFile`로 가리키는 `live-update.<case>.samples.json`에 따로 둔다.
+결과는 기본 경로 [../results/live-update.json](../results/live-update.json)에 남고 `--out`으로 경로를 바꿀 수 있다. 최적화 후 재측정은 [../results/live-update-optimized.json](../results/live-update-optimized.json)에 있다. 각 파일은 환경(Node·OS·CPU·memory·Vite·React·브라우저 UA), git revision, UTC `measuredAt`, 시나리오 차원과 파일 바이트, 시나리오별 summary와 control 왕복 raw 값을 담는다. 시나리오별 raw sample(기본값은 warmup 포함 55개)은 결과 파일이 `samplesFile`로 가리키는 `live-update.<case>.samples.json`에 따로 둔다.
+
+## wire 크기 재구성
+
+manifest frame 크기는 [manifest-size.mjs](manifest-size.mjs)로 비교한다. 기존 v1과 현재 v2의 update envelope JSON을 재구성해 UTF-8 바이트만 재는 값이며 실제 네트워크 계측이 아니다. 결과는 [../results/live-update-wire-sizes.json](../results/live-update-wire-sizes.json)에 남는다. small(1k×3) 162,256 B → 871 B, large(10k×20) 10,980,273 B → 4,373 B이고, fingerprint 문자열은 45,886자 → 87자, 468,886자 → 87자다. 실행은 `node benchmarks/live-update/manifest-size.mjs`다.
 
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.
-- 기록된 run에서 두 시나리오의 save→DOM ack p95가 목표 p95 ≤ 100ms를 넘었다. small(1k×3) p95 191.25ms, large(10k×20) p95 1693.98ms다.
+- 기록된 run에서 두 시나리오의 save→DOM ack p95가 목표 p95 ≤ 100ms를 넘었다. 최적화 전 small(1k×3) p95 191.25ms, large(10k×20) p95 1693.98ms이고, 최적화 후에는 131.27ms와 819.55ms다. 두 값 모두 목표를 넘는다.
+- 전후 값은 같은 fixture와 옵션(warmup 5, 샘플 50, control 25)으로 따로 돌린 단일 run이다. control 왕복 p95도 small 10.51ms→6.21ms, large 39.69ms→11.53ms로 낮아졌으므로 감소분 전체를 코드 변경으로 볼 수 없고 일반 보장도 아니다.
 - startup은 Vite 서버 boot와 브라우저 boot를 따로 잰다. paint timing은 계측하지 않는다.
 - 로케일 추가·삭제 latency, paint, 가상화 비교, 다른 라이브러리 비교, 번들 크기 측정은 이번 범위가 아니다.

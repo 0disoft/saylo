@@ -4,7 +4,7 @@
 
 ## 성능 목표
 
-아래 수치는 목표다. 로컬 벤치마크로 일부를 측정했고, 결과와 한계는 아래 실측 기록에 남겼다. 어느 시나리오도 p95 목표를 달성하지 못했다.
+아래 수치는 목표다. 로컬 벤치마크로 일부를 측정했고, 결과와 한계는 아래 실측 기록에 남겼다. 최적화 전후 모두 어느 시나리오도 p95 목표를 달성하지 못했다.
 
 | 항목 | 목표 | 조건 |
 | --- | --- | --- |
@@ -31,14 +31,56 @@
 
 조건은 warmup 5회를 뺀 50 샘플, control 왕복 25회다. namespace 1, 렌더 메시지 2(바뀐 키 1 + 바뀌지 않은 키 1), loaded base `ko` + target `en`, `en` 본문 키 1개 수정이다. Chromium headless, React 개발 모드, paint 계측 없음. 환경은 Windows x64, Node v24.18.0, Vite 8.3.2, AMD Ryzen 5 7430U, logical CPU 12, memory 31.3GiB다.
 
+### 최적화 전 (2026-10-06 KST, gitRevision 143215f)
+
 | 시나리오 | 카탈로그 | save→DOM ack p50 | save→DOM ack p95 | save→manifest broadcast p95 | receive→commit p95 | control 왕복 p95 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1k×3 로케일 | 3 파일, 110,292 B | 161.54ms | 191.25ms | 132.68ms | 21.10ms | 10.51ms |
 | 10k×20 로케일 | 20 파일, 7,755,280 B | 1180.27ms | 1693.98ms | 722.26ms | 299.90ms | 39.69ms |
 
-두 시나리오 모두 save→DOM ack p95가 목표 p95 ≤ 100ms를 넘었다. 파일 쓰기 p95는 small 9.26ms, large 9.56ms로 따로 기록하며 종단 간 값에 더하지 않는다. 단계별 p95를 더해 종단 간 값으로 쓰지 않고, control 왕복도 전체 latency에서 빼지 않고 참고로만 병기한다. 서버·브라우저 clock을 서로 빼지 않는다. 단계 값을 보면 서버 처리 구간과 큰 payload의 브라우저 수신→commit 구간이 개선 대상으로 보이지만, 프로파일링으로 원인을 확정하지는 않았다.
+최적화 전 두 시나리오 모두 save→DOM ack p95가 목표 p95 ≤ 100ms를 넘었다. 파일 쓰기 p95는 small 9.26ms, large 9.56ms다.
 
-이 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 이 수치는 로컬 단일 run 실측이며 일반 보장이 아니다. 로케일 추가·삭제와 paint, 번들 크기는 아직 측정하지 않았다.
+### 최적화 후 (2026-10-06 KST, gitRevision 98a3ced)
+
+| 시나리오 | save→DOM ack p50 | save→DOM ack p95 | save→manifest broadcast p95 | receive→commit p95 | control 왕복 p95 |
+| --- | --- | --- | --- | --- | --- |
+| 1k×3 로케일 | 98.81ms | 131.27ms | 65.59ms | 25.50ms | 6.21ms |
+| 10k×20 로케일 | 472.51ms | 819.55ms | 176.41ms | 260.60ms | 11.53ms |
+
+최적화 후에도 두 시나리오의 save→DOM ack p95가 목표를 넘었다. 파일 쓰기 p95는 small 10.79ms, large 9.35ms, receive→commit p95는 small 21.10→25.50ms, large 299.90→260.60ms다.
+
+| 시나리오 | 최적화 전 p95 | 최적화 후 p95 | 감소 |
+| --- | --- | --- | --- |
+| 1k×3 로케일 | 191.25ms | 131.27ms | 약 31% |
+| 10k×20 로케일 | 1693.98ms | 819.55ms | 약 52% |
+
+전후 값은 같은 fixture와 옵션(warmup 5, 샘플 50, control 25)으로 따로 돌린 단일 run이다. 장비 부하가 run마다 다르므로 감소분 전체를 코드 변경으로 볼 수 없다. control 왕복 p95도 small 10.51→6.21ms, large 39.69→11.53ms로 낮아진 점을 함께 본다. 두 값 모두 일반 보장이 아니다.
+
+단계별 p95를 더해 종단 간 값으로 쓰지 않고, control 왕복도 전체 latency에서 빼거나 더하지 않고 참고로만 병기한다. 서버·브라우저 clock을 서로 빼지 않는다.
+
+### 원인 프로파일과 최적화
+
+`node --cpu-prof`로 짧은 10 샘플의 large 시나리오를 돌려 startup 뒤 채널 첫 handler 이후 샘플을 검사했다. 반복되는 freeze, `parseCatalog`, WebSocket stringify 비용이 확인됐다. 이 비용을 줄이도록 다음을 적용했다.
+
+- core의 깊은 동결 자기 검증을 WeakSet 조회로 바꿔 이미 동결된 객체를 다시 확인하지 않는다.
+- 카탈로그마다 `Intl.Locale` 객체를 하나만 만든다.
+- 깊게 동결된 카탈로그의 schema를 WeakMap으로 재사용한다.
+- schema fingerprint를 v1의 전체 정규화 문자열에서 87자 고정 길이 v2 digest로 바꾼다.
+- `parseCatalog`에 이전 `ParsedCatalog`를 넘겨 문구가 그대로인 메시지의 AST와 인자를 재사용한다.
+
+### wire 크기 재구성
+
+manifest frame 크기는 별도 재구성 도구 [manifest-size.mjs](../benchmarks/live-update/manifest-size.mjs)로 비교했다. 기존 v1과 현재 v2의 update envelope JSON을 재구성해 UTF-8 바이트만 비교한 값이고 실제 네트워크 전송 계측이 아니다. 결과는 [live-update-wire-sizes.json](../benchmarks/results/live-update-wire-sizes.json)에 있다. small(1k×3) 162,256 B → 871 B, large(10k×20) 10,980,273 B → 4,373 B이고, fingerprint 문자열은 45,886자 → 87자, 468,886자 → 87자다. 실행은 `node benchmarks/live-update/manifest-size.mjs`다.
+
+### 남은 병목과 다음 작업
+
+- 파일 전체를 읽어 JSON으로 파싱하는 비용이 남는다.
+- namespace 전체 AST를 전송하고 브라우저에서 검증·동결하는 비용이 남는다.
+- 파일 이벤트를 묶는 40ms quiet window가 하한으로 남는다.
+
+다음 작업은 변경된 메시지만 담는 message별 patch 전송이다.
+
+기록한 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 로케일 추가·삭제와 paint, 번들 크기는 아직 측정하지 않았다.
 
 ## 인수 사례
 
@@ -54,7 +96,9 @@
 
 11단계의 운영 정적 로더를 구현하고 실제 결과로 검증했다. `virtual:saylo/lazy`가 전체 metadata manifest와 base+initial locale의 initialNamespaces pair만 inline으로 싣고, 나머지 present pair는 generated virtual module의 literal `import()` loader entry로 분리한다. `createStaticCatalogSource(initialManifest, initialCatalogs, entries)`가 on-demand import·cache·dedupe를 처리하고, 실패나 session·version·fingerprint/key 불일치는 캐시에 반영하지 않으며 missing tombstone은 import 없이 반환한다. dev source와 eager `virtual:saylo`는 기존과 같다. 새 테스트 4개가 실제 Vite production build의 분리된 dynamic chunk 3개, emitted module 실행(locale+namespace fallback), fresh invalid disk build 실패, 정적 source dedupe·cache·retry·missing을 확인하고 기존 lazy test는 fallback에서 chunk 계약 검사로 교체했다. `npm run check`가 통과했고 core 49·Vite 53·React 6·typegen 5로 총 113개, JS/TS 소비 검사와 두 데모 production build가 통과했다. React 운영 브라우저 CDP에서 초기 요청은 HTML·main JS·CSS뿐이었고 영어 선택 시 demo dynamic chunk 하나만 요청됐으며 한국어/영어 재전환에는 추가 요청이 없었다. 폼 입력·포커스와 열린 모달·모달 입력이 유지됐고 WebSocket 연결과 console error/warn은 0이었다. 성능 수치·parser elimination·SSR은 미완료다.
 
-12단계의 SSR serializer와 hydration을 구현하고 로컬 검증을 진행했다. `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`을 공개했고, boot wire는 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣는다. 직렬화는 모든 `<`를 `\u003c`로, U+2028·U+2029를 escape한다. loaded base+target pair의 present/missing outcome을 빠짐없이 명시하고 누락·중복 outcome과 stamp·schema 불일치는 `INVALID_BOOT`로 거부하며, boot timeZone은 config와 일치해야 한다. `createServerI18n`은 async scope를 준비해 `getServerSnapshot`이 생성 시점 snapshot이 되는 문제를 피하고, `createHydrationAdapter`는 boot S1을 유지하면서 이후 snapshot을 최신 하나로 buffer해 `finishHydration()`에서 한 번 publish한다. SSR fixture는 `examples/ssr/{app,entry-server,client,config,server,demo}.mjs`로 추가했고, `npm run demo:ssr`가 ko/en 동시 요청 renderToString과 boot locale 검사를 수행한 뒤 종료하며 `npm run dev:ssr`는 127.0.0.1:5190/?locale=en에서 실제 서버·client hydrateRoot(StrictMode)·live connectDev를 확인한다. 이미 실행한 검사는 core의 html-safe roundtrip·timeZone·metadata 거부·요청 간 격리, React의 renderToString+hydrateRoot boot S1 `t` 고정·S2/S3 buffer 1회 적용·DOM·입력·포커스·state 보존, Vite SSR의 개발 watcher 다음 요청 최신 문구와 production SSR bundle 동적 import·요청별 ko/en 분리다. 전체 `npm run check`, JS/TS 소비 검사와 두 production 데모 빌드가 통과했다. core 53·React 9·Vite 55·typegen 5로 총 122개 테스트가 통과했다. 실제 SSR 브라우저에서 영어 첫 화면의 hydration과 클릭·입력 동작, 파일 수정 뒤 입력·수량 상태 유지, 다음 서버 응답의 최신 문구 반영을 확인했고 콘솔 경고·오류는 없었다. 카탈로그 요청의 초기 generation이 서버 검증을 만족하도록 수정하고 lazy fixture에도 실제 서버 검증기를 연결했다. 성능 측정과 패키지 공개 배포는 미완료다.
+12단계의 SSR serializer와 hydration을 구현하고 로컬 검증을 진행했다. `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`을 공개했고, boot wire는 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣는다. 직렬화는 모든 `<`를 `\u003c`로, U+2028·U+2029를 escape한다. loaded base+target pair의 present/missing outcome을 빠짐없이 명시하고 누락·중복 outcome과 stamp·schema 불일치는 `INVALID_BOOT`로 거부하며, boot timeZone은 config와 일치해야 한다. `createServerI18n`은 async scope를 준비해 `getServerSnapshot`이 생성 시점 snapshot이 되는 문제를 피하고, `createHydrationAdapter`는 boot S1을 유지하면서 이후 snapshot을 최신 하나로 buffer해 `finishHydration()`에서 한 번 publish한다. SSR fixture는 `examples/ssr/{app,entry-server,client,config,server,demo}.mjs`로 추가했고, `npm run demo:ssr`가 ko/en 동시 요청 renderToString과 boot locale 검사를 수행한 뒤 종료하며 `npm run dev:ssr`는 127.0.0.1:5190/?locale=en에서 실제 서버·client hydrateRoot(StrictMode)·live connectDev를 확인한다. 이미 실행한 검사는 core의 html-safe roundtrip·timeZone·metadata 거부·요청 간 격리, React의 renderToString+hydrateRoot boot S1 `t` 고정·S2/S3 buffer 1회 적용·DOM·입력·포커스·state 보존, Vite SSR의 개발 watcher 다음 요청 최신 문구와 production SSR bundle 동적 import·요청별 ko/en 분리다. 전체 `npm run check`, JS/TS 소비 검사와 두 production 데모 빌드가 통과했다. core 53·React 9·Vite 55·typegen 5로 총 122개 테스트가 통과했다. 실제 SSR 브라우저에서 영어 첫 화면의 hydration과 클릭·입력 동작, 파일 수정 뒤 입력·수량 상태 유지, 다음 서버 응답의 최신 문구 반영을 확인했고 콘솔 경고·오류는 없었다. 카탈로그 요청의 초기 generation이 서버 검증을 만족하도록 수정하고 lazy fixture에도 실제 서버 검증기를 연결했다. 패키지 공개 배포는 미완료다.
+
+라이브 갱신 최적화 라운드를 진행했다. `node --cpu-prof`로 병목을 확인하고 core 동결·schema·fingerprint·이전 AST 재사용을 손봤다. `npm run check`의 126개 테스트와 추가 Vite 통합 테스트 1개가 통과했다(core 57, Vite 56, React 9, typegen 5, 합 127). JS/TS 소비 검사와 vanilla·React production 빌드도 통과했다. 같은 fixture로 벤치마크를 다시 돌려 전후 값을 [live-update-optimized.json](../benchmarks/results/live-update-optimized.json)에 남겼고, raw sample summary가 nearest-rank 집계와 일치했다. 두 시나리오 모두 입력 상태가 유지되고 문구만 수정했을 때 `.d.ts`의 mtime과 size가 바뀌지 않았다. 성능 수치는 결과 파일 기준이며, 패키지 공개 배포는 미완료다.
 
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
@@ -88,7 +132,7 @@
 
 ## 로드맵
 
-작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 현재 12단계 SSR까지 로컬 구현을 진행했고, 이후 단계도 같은 방식으로 이어간다.
+작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 현재 12단계 SSR과 라이브 갱신 최적화 라운드까지 로컬 구현을 진행했고, 다음은 13단계다.
 
 | 순서 | 커밋의 한 가지 책임 | 완료 기준 |
 | --- | --- | --- |
@@ -105,5 +149,6 @@
 | 10b | Vite 범용 로더와 부분 전송 | boot 이후 새 namespace 조회, pair별 version·tombstone, loaded scope 갱신과 React 데모를 연결한다. 로컬 구현 완료 |
 | 11 | fresh production build | 현재 디스크 검증 → typegen → consumer 검사 → AST·정적 loader 산출을 연결한다. 로컬 구현 완료 |
 | 12 | SSR serializer와 hydration fixture | 요청별 snapshot, boot escape, hydration 직전 갱신을 검증한다. 로컬 구현 완료 |
+| 13 | 변경 메시지별 patch 전송 | 바뀐 메시지만 보내고 상태 보존·수렴을 유지한다. wire 크기와 브라우저 검증·동결 비용이 줄어든다 |
 
 1–8단계에서는 작은 fixture를 eager로 실어도 된다. 9–10단계에서 부분 전송과 미로드 상태가 들어올 때 카탈로그별 버전 계약을 적용한다.
