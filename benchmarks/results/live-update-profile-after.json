@@ -1,0 +1,433 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-05T16:34:53.749Z",
+  "gitRevision": "4d1f6fc91ba7c7456c63bc4a3ee1a2045c04c034",
+  "settings": {
+    "samples": 50,
+    "warmup": 5,
+    "calibrations": 25,
+    "timeoutMs": 30000
+  },
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "4923cee24e118548901554268bd44126325e207d7ba15f624a8e74da9c55680a",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/diagnostics.js": "888d73aa1904cfb179e4868ecaafe065f8def0c156339f6aa3142994f322fc7f",
+    "packages/core/dist/schema.js": "0f864de96c1630d0779aa194af110c35e55faeb726e52058595d5ea8d8c50d5b",
+    "packages/typegen/dist/catalog-files.js": "c23eb8167fed5b91c2b9c7663f45a0354d0cc19e7ae3b6b3acfd3190ee01fc40",
+    "packages/vite/dist/live-registry.js": "ac6726df4d77c783c90a4f1d709af3bcdd2bd488789996da5416d56b597c11fc",
+    "packages/vite/dist/catalog-registry.js": "fb85fb7b507b3894eadd0e3ef595243e23ed16af9059e928c6a14b4e1f3a31fa",
+    "packages/vite/dist/catalog-patch.js": "7a39eec7384e7eaebaefa4ace0de05653287a1e86897d20adae6ce79e087e50b",
+    "benchmarks/live-update/profile.mjs": "7cdba73526ecd488c84f1db93ad4805d3c5ae86562f02bb8ea214bfcb6855d6b",
+    "benchmarks/live-update/channel.mjs": "1948fbe2d767008b760f439a824d310d8805e23ad1a02d8c928e8e847182991e",
+    "benchmarks/live-update/run.mjs": "0f08c0b69f1e9b8b8a0fbbad41b2057759b5f36ab50ffd2d19ef2e15c81f94a8"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26200",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+  "results": [
+    {
+      "id": "10k-20-locales",
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "namespaces": 1,
+      "catalogFiles": 20,
+      "catalogBytes": 7755280,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 13500.317500000001,
+      "wire": {
+        "patchReplies": 50,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 935,
+          "p95Bytes": 935,
+          "minBytes": 931,
+          "maxBytes": 935
+        }
+      },
+      "browserBootMs": 5450.086899999998,
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 207.54809999999998,
+          "p95Ms": 1074.936999999998,
+          "minMs": 162.39370000000054,
+          "maxMs": 4094.2592000000004
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 136.07240000000093,
+          "p95Ms": 577.8820999999989,
+          "minMs": 105.87230000000272,
+          "maxMs": 4022.0083000000013
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 45.799999952316284,
+          "p95Ms": 53.299999952316284,
+          "minMs": 36.89999997615814,
+          "maxMs": 61.200000047683716
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.10000002384185791,
+          "minMs": 0,
+          "maxMs": 0.10000002384185791
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 9.668699999998353,
+          "p95Ms": 14.916299999997136,
+          "minMs": 7.367399999995541,
+          "maxMs": 32.63799999999901
+        }
+      },
+      "controlRoundTrip": {
+        "count": 25,
+        "p50Ms": 3.5314999999973224,
+        "p95Ms": 4.578900000000431,
+        "minMs": 3.0670000000027358,
+        "maxMs": 5.6071999999985565
+      },
+      "serverStages": {
+        "scope": "Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; stage p95s must not be added.",
+        "queueToDrainMs": {
+          "count": 50,
+          "p50Ms": 40.85060000000158,
+          "p95Ms": 43.12749999999869,
+          "minMs": 39.22419999999693,
+          "maxMs": 55.418100000002596
+        },
+        "readAndCandidateMs": {
+          "count": 50,
+          "p50Ms": 65.51390000000174,
+          "p95Ms": 154.00389999999607,
+          "minMs": 38.56260000000111,
+          "maxMs": 3321.7095999999947
+        },
+        "validationMs": {
+          "count": 50,
+          "p50Ms": 22.811699999998382,
+          "p95Ms": 381.2011999999995,
+          "minMs": 16.20850000000064,
+          "maxMs": 647.4987000000037
+        },
+        "registryReplaceMs": {
+          "count": 50,
+          "p50Ms": 8.0583000000006,
+          "p95Ms": 12.40219999999681,
+          "minMs": 6.825700000001234,
+          "maxMs": 15.013500000000931
+        },
+        "catalogDeltaMs": {
+          "count": 50,
+          "p50Ms": 19.2371000000021,
+          "p95Ms": 23.538299999996525,
+          "minMs": 13.626100000001315,
+          "maxMs": 1478.8076
+        },
+        "maxFileEvents": 1,
+        "maxDrains": 1
+      },
+      "cpuProfile": {
+        "scope": "Node measured edit loop only; excludes startup, calibration and warmup; includes fixture preparation, HTTP and waits; not browser CPU.",
+        "sampledMs": 21068.431,
+        "idleMs": 6413.864,
+        "busyMs": 14654.567,
+        "topSelf": [
+          {
+            "frame": "packages/core/dist/catalog.js:6:parseCatalog",
+            "selfMs": 5557.225,
+            "inclusiveMs": 7193.442,
+            "busySelfPercent": 37.92145479289835
+          },
+          {
+            "frame": "packages/vite/dist/catalog-patch.js:2:createCatalogPatch",
+            "selfMs": 2236.903,
+            "inclusiveMs": 2293.881,
+            "busySelfPercent": 15.264203985010269
+          },
+          {
+            "frame": "packages/core/dist/schema.js:70:validateTranslation",
+            "selfMs": 2170.701,
+            "inclusiveMs": 2760.013,
+            "busySelfPercent": 14.812454028836196
+          },
+          {
+            "frame": "packages/core/dist/diagnostics.js:4:freeze",
+            "selfMs": 1141.694,
+            "inclusiveMs": 1141.694,
+            "busySelfPercent": 7.790704426817934
+          },
+          {
+            "frame": "node:inspector:115:post",
+            "selfMs": 668.765,
+            "inclusiveMs": 670.399,
+            "busySelfPercent": 4.563526169009292
+          },
+          {
+            "frame": "packages/core/dist/diagnostics.js:3:isDeepFrozen",
+            "selfMs": 589.312,
+            "inclusiveMs": 589.312,
+            "busySelfPercent": 4.021353889200547
+          },
+          {
+            "frame": "packages/core/dist/json.js:3:readJson",
+            "selfMs": 469.6,
+            "inclusiveMs": 469.6,
+            "busySelfPercent": 3.2044617899662264
+          },
+          {
+            "frame": "packages/vite/dist/catalog-registry.js:5:equivalent",
+            "selfMs": 411.367,
+            "inclusiveMs": 411.367,
+            "busySelfPercent": 2.8070907861010155
+          },
+          {
+            "frame": "benchmarks/live-update/channel.mjs:31:handle",
+            "selfMs": 355.946,
+            "inclusiveMs": 462.367,
+            "busySelfPercent": 2.4289083396322795
+          },
+          {
+            "frame": ":0:(garbage collector)",
+            "selfMs": 285.968,
+            "inclusiveMs": 285.968,
+            "busySelfPercent": 1.9513916719613758
+          },
+          {
+            "frame": "packages/vite/dist/catalog-registry.js:62:loadDelta",
+            "selfMs": 133.827,
+            "inclusiveMs": 2427.708,
+            "busySelfPercent": 0.9132101958386079
+          },
+          {
+            "frame": "packages/vite/dist/catalog-patch.js:8:(anonymous)",
+            "selfMs": 56.978,
+            "inclusiveMs": 56.978,
+            "busySelfPercent": 0.38880712067439455
+          },
+          {
+            "frame": ":0:(anonymous)",
+            "selfMs": 28.364,
+            "inclusiveMs": 28.364,
+            "busySelfPercent": 0.19355058392376928
+          },
+          {
+            "frame": ":0:writev",
+            "selfMs": 26.347,
+            "inclusiveMs": 26.347,
+            "busySelfPercent": 0.17978695651669543
+          },
+          {
+            "frame": "packages/core/dist/schema.js:5:inferArguments",
+            "selfMs": 23.296,
+            "inclusiveMs": 24.863,
+            "busySelfPercent": 0.15896750821774536
+          },
+          {
+            "frame": "node:path:92:normalizeString",
+            "selfMs": 22.781,
+            "inclusiveMs": 25.889,
+            "busySelfPercent": 0.1554532453944221
+          },
+          {
+            "frame": "node:buffer:908:toString",
+            "selfMs": 17.859,
+            "inclusiveMs": 21.195,
+            "busySelfPercent": 0.12186644613928203
+          },
+          {
+            "frame": "packages/typegen/dist/catalog-files.js:17:readCatalogFile",
+            "selfMs": 14.097,
+            "inclusiveMs": 7217.92,
+            "busySelfPercent": 0.09619526800075362
+          },
+          {
+            "frame": "node:path:506:join",
+            "selfMs": 12.683,
+            "inclusiveMs": 25.71,
+            "busySelfPercent": 0.08654639881205634
+          },
+          {
+            "frame": ":0:openFileHandle",
+            "selfMs": 9.698,
+            "inclusiveMs": 9.698,
+            "busySelfPercent": 0.06617732205939623
+          }
+        ],
+        "sayloInclusive": [
+          {
+            "frame": "packages/typegen/dist/catalog-files.js:17:readCatalogFile",
+            "selfMs": 14.097,
+            "inclusiveMs": 7217.92,
+            "busySelfPercent": 0.09619526800075362
+          },
+          {
+            "frame": "packages/core/dist/catalog.js:6:parseCatalog",
+            "selfMs": 5557.225,
+            "inclusiveMs": 7193.442,
+            "busySelfPercent": 37.92145479289835
+          },
+          {
+            "frame": "packages/vite/dist/live-registry.js:89:(anonymous)",
+            "selfMs": 4.564,
+            "inclusiveMs": 3243.376,
+            "busySelfPercent": 0.031143874807082327
+          },
+          {
+            "frame": "packages/vite/dist/live-registry.js:34:validate",
+            "selfMs": 6.928,
+            "inclusiveMs": 2766.941,
+            "busySelfPercent": 0.04727536473783224
+          },
+          {
+            "frame": "packages/core/dist/schema.js:70:validateTranslation",
+            "selfMs": 2170.701,
+            "inclusiveMs": 2760.013,
+            "busySelfPercent": 14.812454028836196
+          },
+          {
+            "frame": "packages/vite/dist/index.js:56:requestCatalog",
+            "selfMs": 3.194,
+            "inclusiveMs": 2451.851,
+            "busySelfPercent": 0.02179525331591169
+          },
+          {
+            "frame": "packages/vite/dist/catalog-registry.js:62:loadDelta",
+            "selfMs": 133.827,
+            "inclusiveMs": 2427.708,
+            "busySelfPercent": 0.9132101958386079
+          },
+          {
+            "frame": "packages/vite/dist/catalog-patch.js:2:createCatalogPatch",
+            "selfMs": 2236.903,
+            "inclusiveMs": 2293.881,
+            "busySelfPercent": 15.264203985010269
+          },
+          {
+            "frame": "packages/core/dist/diagnostics.js:4:freeze",
+            "selfMs": 1141.694,
+            "inclusiveMs": 1141.694,
+            "busySelfPercent": 7.790704426817934
+          },
+          {
+            "frame": "packages/core/dist/diagnostics.js:3:isDeepFrozen",
+            "selfMs": 589.312,
+            "inclusiveMs": 589.312,
+            "busySelfPercent": 4.021353889200547
+          },
+          {
+            "frame": "packages/core/dist/json.js:3:readJson",
+            "selfMs": 469.6,
+            "inclusiveMs": 469.6,
+            "busySelfPercent": 3.2044617899662264
+          },
+          {
+            "frame": "packages/vite/dist/index.js:178:(anonymous)",
+            "selfMs": 4.554,
+            "inclusiveMs": 458.426,
+            "busySelfPercent": 0.031075636694008084
+          },
+          {
+            "frame": "packages/vite/dist/catalog-registry.js:33:replace",
+            "selfMs": 8.05,
+            "inclusiveMs": 431.621,
+            "busySelfPercent": 0.05493168102476177
+          },
+          {
+            "frame": "packages/vite/dist/catalog-registry.js:5:equivalent",
+            "selfMs": 411.367,
+            "inclusiveMs": 411.367,
+            "busySelfPercent": 2.8070907861010155
+          },
+          {
+            "frame": "packages/vite/dist/catalog-patch.js:8:(anonymous)",
+            "selfMs": 56.978,
+            "inclusiveMs": 56.978,
+            "busySelfPercent": 0.38880712067439455
+          },
+          {
+            "frame": "packages/core/dist/schema.js:5:inferArguments",
+            "selfMs": 23.296,
+            "inclusiveMs": 24.863,
+            "busySelfPercent": 0.15896750821774536
+          },
+          {
+            "frame": "packages/vite/dist/index.js:214:hotUpdate",
+            "selfMs": 0,
+            "inclusiveMs": 21.672,
+            "busySelfPercent": 0
+          },
+          {
+            "frame": "packages/typegen/dist/write.js:4:isGeneratedFile",
+            "selfMs": 2.787,
+            "inclusiveMs": 13.471,
+            "busySelfPercent": 0.019017962113790192
+          },
+          {
+            "frame": "packages/vite/dist/index.js:37:isTypegenFile",
+            "selfMs": 0,
+            "inclusiveMs": 13.471,
+            "busySelfPercent": 0
+          },
+          {
+            "frame": "packages/vite/dist/catalog-registry.js:52:(anonymous)",
+            "selfMs": 9.357,
+            "inclusiveMs": 9.357,
+            "busySelfPercent": 0.06385040240356471
+          }
+        ]
+      },
+      "controlRoundTripsMs": [
+        4.578900000000431,
+        3.5314999999973224,
+        3.940500000000611,
+        3.929100000001199,
+        3.833700000002864,
+        3.4336999999977706,
+        3.316100000000006,
+        3.34939999999915,
+        3.0670000000027358,
+        3.6825000000026193,
+        3.256600000000617,
+        3.1134000000020023,
+        3.297099999999773,
+        3.815200000000914,
+        3.497299999999086,
+        4.098900000000867,
+        3.4615999999987253,
+        3.6657999999988533,
+        3.106100000000879,
+        3.8417999999983294,
+        4.402999999998428,
+        3.9954999999972642,
+        3.4562000000005355,
+        3.3922999999995227,
+        5.6071999999985565
+      ],
+      "samplesFile": "live-update-profile-after.10k-20-locales.samples.json"
+    }
+  ]
+}

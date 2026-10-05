@@ -24,19 +24,21 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
   const reusable = previous && isDeepFrozen(previous) && previous.locale === context.locale &&
     previous.namespace === context.namespace && previous.sourceName === context.sourceName ? previous.messages : undefined;
   for (const entry of entries) {
-    const details = { ...context, id: entry.id };
     if (entry.id.length === 0 || entry.id.includes(':')) {
-      diagnostics.push({ ...details, code: 'INVALID_ID', position: positionAt(entry.keyOffset), message: 'Message IDs must be nonempty and cannot contain colons. Dots are literal.' });
+      diagnostics.push({ ...context, id: entry.id, code: 'INVALID_ID', position: positionAt(entry.keyOffset), message: 'Message IDs must be nonempty and cannot contain colons. Dots are literal.' });
       continue;
     }
+    // Most live entries are immutable reuse hits. Build diagnostic context only
+    // for messages that actually need parsing, avoiding a spread per cached ID.
+    const before = reusable && Object.hasOwn(reusable, entry.id) ? reusable[entry.id] : undefined;
+    if (before?.source === entry.value) {
+      const position = positionAt(entry.valueOffset);
+      messages[entry.id] = before.position.offset === position.offset && before.position.line === position.line &&
+        before.position.column === position.column ? before : freeze({ ...before, position });
+      continue;
+    }
+    const details = { ...context, id: entry.id };
     try {
-      const before = reusable && Object.hasOwn(reusable, entry.id) ? reusable[entry.id] : undefined;
-      if (before?.source === entry.value) {
-        const position = positionAt(entry.valueOffset);
-        messages[entry.id] = before.position.offset === position.offset && before.position.line === position.line &&
-          before.position.column === position.column ? before : freeze({ ...before, position });
-        continue;
-      }
       const ast = parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
         position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }));

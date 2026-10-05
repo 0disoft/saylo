@@ -1,6 +1,7 @@
 import { spawn, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { access, mkdtemp, mkdir, rm, stat, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +13,7 @@ import saylo from '@saylo/vite';
 import { createChannel } from './channel.mjs';
 import { createFixture, scenarios } from './fixture.mjs';
 import { summarize } from './statistics.mjs';
+import { createStageProbe, createCpuProbe } from './profile.mjs';
 
 const exec = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -20,7 +22,8 @@ const repository = fileURLToPath(new URL('../..', import.meta.url));
 const { values } = parseArgs({ options: { samples: { type: 'string', default: '50' }, warmup: { type: 'string', default: '5' },
   calibrations: { type: 'string', default: '25' }, scenario: { type: 'string', default: 'all' },
   browser: { type: 'string' }, out: { type: 'string', default: 'benchmarks/results/live-update.json' },
-  'no-typegen': { type: 'boolean', default: false }, 'timeout-ms': { type: 'string', default: '30000' } } });
+  'no-typegen': { type: 'boolean', default: false }, 'cpu-profile': { type: 'boolean', default: false },
+  'timeout-ms': { type: 'string', default: '30000' } } });
 function integer(name, min) {
   const value = Number(values[name]);
   if (!Number.isSafeInteger(value) || value < min) throw new Error(`--${name} must be an integer >= ${min}.`);
@@ -42,6 +45,13 @@ async function browserExecutable() {
   throw new Error('No installed Chromium browser found; pass --browser <executable>.');
 }
 const executable = await browserExecutable();
+// Include the actual loaded modules, so uncommitted optimization trials are identifiable.
+const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json.js',
+  'packages/core/dist/diagnostics.js', 'packages/core/dist/schema.js', 'packages/typegen/dist/catalog-files.js',
+  'packages/vite/dist/live-registry.js', 'packages/vite/dist/catalog-registry.js', 'packages/vite/dist/catalog-patch.js',
+  'benchmarks/live-update/profile.mjs', 'benchmarks/live-update/channel.mjs', 'benchmarks/live-update/run.mjs'];
+const codeHashes = Object.fromEntries(await Promise.all(measuredFiles.map(async file =>
+  [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
 
 async function stopBrowser(child) {
   if (!child?.pid || child.exitCode !== null || child.signalCode !== null) return;
@@ -58,6 +68,8 @@ async function stopBrowser(child) {
 async function runScenario(scenario) {
   const root = await mkdtemp(path.join(directory, '.live-update-'));
   let vite, child, channel;
+  const stageProbe = createStageProbe();
+  const cpuProbe = createCpuProbe(values['cpu-profile']);
   let cancelled = false;
   const interrupted = () => { cancelled = true; channel?.fail(new Error('Benchmark interrupted.')); };
   process.once('SIGINT', interrupted); process.once('SIGTERM', interrupted);
@@ -65,7 +77,7 @@ async function runScenario(scenario) {
     const appRoot = path.join(root, 'app');
     const fixture = await createFixture(appRoot, scenario);
     if (cancelled) throw new Error('Benchmark interrupted.');
-    channel = createChannel({ scenario, target: fixture.target, ...settings });
+    channel = createChannel({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe });
     console.log(`[bench] ${scenario.id}: ${fixture.catalogFiles} files, ${fixture.catalogBytes} catalog bytes; starting Vite`);
     const startupAt = performance.now();
     vite = await createServer({ configFile: false, root: appRoot, logLevel: 'error', clearScreen: false,
@@ -104,11 +116,18 @@ async function runScenario(scenario) {
         maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),
         catalogReplyBytes: { p50Bytes: replySizes.p50Ms, p95Bytes: replySizes.p95Ms, minBytes: replySizes.minMs, maxBytes: replySizes.maxMs } },
       browserBootMs: readyAt - launchedAt, summary, controlRoundTrip: summarize(collected.roundTrips),
+      serverStages: { scope: 'Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; stage p95s must not be added.',
+        ...Object.fromEntries(['queueToDrainMs', 'readAndCandidateMs', 'validationMs', 'registryReplaceMs', 'catalogDeltaMs']
+          .map(metric => [metric, summarize(measured.map(sample => sample.serverStages[metric]))])),
+        maxFileEvents: Math.max(...measured.map(sample => sample.serverStages.fileEvents)),
+        maxDrains: Math.max(...measured.map(sample => sample.serverStages.drains)) },
+      ...(collected.cpuProfile ? { cpuProfile: collected.cpuProfile } : {}),
       controlRoundTripsMs: collected.roundTrips, samples: collected.results };
   } finally {
     channel?.dispose();
     await stopBrowser(child);
     await vite?.close();
+    stageProbe.dispose(); cpuProbe.dispose();
     process.removeListener('SIGINT', interrupted); process.removeListener('SIGTERM', interrupted);
     const resolved = path.resolve(root);
     if (path.dirname(resolved) !== path.resolve(directory) || !path.basename(resolved).startsWith('.live-update-'))
@@ -125,6 +144,7 @@ for (const scenario of selected) {
 }
 const output = { schema: 'saylo-live-update-benchmark-v1', measuredAt: new Date().toISOString(),
   gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(), settings,
+  codeHashes,
   environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
     cpu: os.cpus()[0]?.model, logicalCpus: os.cpus().length, memoryGiB: os.totalmem() / 1024 ** 3,
     vite: require('vite/package.json').version },

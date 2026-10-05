@@ -103,13 +103,71 @@
 
 manifest frame 크기는 별도 재구성 도구 [manifest-size.mjs](../benchmarks/live-update/manifest-size.mjs)로 비교했다. 기존 v1과 현재 v2의 update envelope JSON을 재구성해 UTF-8 바이트만 비교한 값이고 실제 네트워크 전송 계측이 아니다. 결과는 [live-update-wire-sizes.json](../benchmarks/results/live-update-wire-sizes.json)에 있다. small(1k×3) 162,256 B → 871 B, large(10k×20) 10,980,273 B → 4,373 B이고, fingerprint 문자열은 45,886자 → 87자, 468,886자 → 87자다. 실행은 `node benchmarks/live-update/manifest-size.mjs`다.
 
+### parser 최적화와 프로파일 (2026-10-06)
+
+작업 트리의 uncommitted parser 최적화를 측정했다. 네 run 모두 `gitRevision`은 기준 커밋 4d1f6fc이고, before는 커밋된 그 runtime, context-trial·after·parser는 그 위의 uncommitted 변경을 실행했다. [live-update-profile-after.json](../benchmarks/results/live-update-profile-after.json)와 [live-update-parser.json](../benchmarks/results/live-update-parser.json)는 `codeHashes`로 core·vite `dist` 파일과 harness를 식별하고, 두 파일의 hash가 서로 같아 같은 runtime을 쟀다. before·context-trial은 codeHashes 추가 이전 측정이라 revision과 변경 내용으로 구분한다.
+
+| run | 조건 | 결과 파일 |
+| --- | --- | --- |
+| before | 원래 HEAD runtime | [live-update-profile-before.json](../benchmarks/results/live-update-profile-before.json) |
+| context-trial | diagnostics context spread만 변경 | [live-update-profile-context-trial.json](../benchmarks/results/live-update-profile-context-trial.json) |
+| after | 최종 parser, `--cpu-profile` 켬 | [live-update-profile-after.json](../benchmarks/results/live-update-profile-after.json) |
+| parser | 최종 parser, profiler 끔, 두 시나리오 | [live-update-parser.json](../benchmarks/results/live-update-parser.json) |
+
+before·context-trial·after는 large(10k×20)만, parser run은 small(1k×3)과 large(10k×20)를 warmup 5, 샘플 50, control 25로 돌렸다. 단계 값은 benchmark 전용 wrapper가 잰 참고값이고 서로 더하거나 종단 간 값으로 환산하지 않는다.
+
+`readAndCandidateMs`에는 경로 검증·파일 읽기·파싱, candidate 정리, base stat, 직렬화된 drain 대기가 함께 들어간다. read와 parse를 분리한 값이 아니므로 이 구간이 크다는 관측만으로 읽기·파싱 비용 구성을 확정하지 않는다.
+
+| 단계 p95 (large) | before | context-trial | after |
+| --- | --- | --- | --- |
+| readAndCandidateMs | 65.23ms | 129.06ms | 154.00ms |
+| validationMs | 25.23ms | 51.42ms | 381.20ms |
+| registryReplaceMs | 8.15ms | 18.30ms | 12.40ms |
+| catalogDeltaMs | 18.78ms | 28.52ms | 23.54ms |
+
+profiler를 켠 after run에서는 큰 지연이 관측됐다. save→DOM ack p95 1074.94ms(max 4094.26ms), save→manifest broadcast p95 577.88ms, readAndCandidate max 3321.71ms, catalogDelta max 1478.81ms다. 같은 코드에서 profiler를 끈 parser run은 large save→DOM ack p50 181.06ms·p95 200.63ms, readAndCandidate max 60.54ms, catalogDelta max 20.91ms였고, small은 save→DOM ack p50 62.63ms·p95 69.82ms, readAndCandidate max 9.59ms였다. 이 큰 지연이 profiler overhead·OS 스케줄링 지연과 어떻게 얽혔는지는 확정하지 않는다.
+
+parser run(profiler 끔)의 단계 p95와 browser 단계는 다음과 같다. 두 시나리오 모두 patch 응답 50회·full 응답 0회였고, 입력 노드 identity·값과 컴포넌트 state 검사가 유지됐으며 생성 `.d.ts`는 다시 쓰이지 않았다.
+
+| p95 (parser run) | small(1k×3) | large(10k×20) |
+| --- | --- | --- |
+| readAndCandidateMs | 6.95ms | 56.77ms |
+| validationMs | 1.83ms | 26.88ms |
+| registryReplaceMs | 0.57ms | 8.08ms |
+| catalogDeltaMs | 1.51ms | 19.46ms |
+| receive→commit(browser) | 5.50ms | 47.90ms |
+
+`--cpu-profile`은 Node inspector로 측정 구간의 edit loop만 profile한다. startup·calibration·warmup은 제외하고 fixture 준비·HTTP·대기는 포함하며 browser CPU가 아니다. profiler control overhead(`node:inspector:post`)와 OS 스케줄링 지연이 요약에 섞이므로 run 간 profiler 수치를 그대로 비교하거나 sample의 inclusive 값을 더해 총합으로 쓰지 않는다.
+
+- before busy 5802.10ms 중 `parseCatalog` self 1242.92ms(21.42%), `createCatalogPatch` self 609.05ms, `validateTranslation` self 641.37ms, `freeze` self 430.06ms, `readJson` self 323.14ms.
+- after busy 14654.57ms 중 `parseCatalog` self 5557.23ms(37.92%), `createCatalogPatch` self 2236.90ms, `validateTranslation` self 2170.70ms, `freeze` self 1141.69ms, `isDeepFrozen` self 589.31ms, `readJson` self 469.60ms.
+
+현재 프로파일에서 `parseCatalog` self가 가장 큰 단일 CPU frame이고 `createCatalogPatch`·`validateTranslation`이 뒤를 잇는다. 절대값은 run마다 다르므로 순위 정도만 본다.
+
+parser 자체 비용은 같은 프로세스에서 baseline 4d1f6fc와 최종 parser를 교차 호출해 따로 비교했다. 같은 길이의 값 1개를 수정하고 `JSON.stringify`·동등성 검사·디스크·watcher·검증·browser는 제외했으며, warmup 50, 측정 100 pair다. 결과는 [parse-compare.json](../benchmarks/results/parse-compare.json)에 있다.
+
+| 항목 | baseline | 최종 parser |
+| --- | --- | --- |
+| p50 | 29.34ms | 25.45ms |
+| p95 | 55.43ms | 55.42ms |
+
+pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50 기준 약 13.3% 줄었고 p95는 거의 같다. 이 측정이 말하는 범위는 메시지 1만 파일 1개를 수정했을 때의 중앙 파싱 비용 감소이고, 종단 간 전체 지연이나 p95 개선으로 확장하지 않는다.
+
+적용한 parser 변경은 다음과 같다.
+
+- `core/src/catalog.ts`: 재사용 가능한 immutable 메시지에는 diagnostics context spread를 생략하고 진단이 필요한 항목에만 만든다. invalid ID는 진단을 남기고 다음 항목으로 넘어간다.
+- `core/src/json.ts`: 최초 strict `JSON.parse`가 이미 decode한 값을 entry에 재사용하고, separator를 sticky regex로 매칭해 suffix slice를 없앴으며, 진단이 없으면 position locator를 만들지 않는다. duplicate decoded key·non-string·malformed strict 검사는 그대로 둔다.
+
+`npm run check`가 exit 0으로 통과했다. core 58·React 9·typegen 5·Vite 68로 총 140개가 한 번에 통과했고, JS/TS 소비 검사와 React TS 검사도 통과했다.
+
 ### 남은 병목과 다음 작업
 
-- 파일 전체를 읽어 JSON으로 파싱하는 비용이 남는다.
+- 현재 프로파일에서 CPU 비용은 `parseCatalog` self가 가장 크고, `readAndCandidateMs` 구간(경로 검증·읽기·파싱·candidate 정리·base stat·drain 대기)도 크게 나온다. read와 parse를 분리한 측정이 없어 어느 쪽이 얼마인지는 나눠 확정하지 않았고, strict JSON 파싱 단독 원인으로도 단정하지 않는다.
+- patch 응답 생성(`createCatalogPatch`)과 `validateTranslation`도 CPU에서 큰 몫을 차지한다.
 - full 응답에서 namespace 전체 AST를 전송하고 브라우저에서 검증·동결하는 비용이 남는다.
 - 파일 이벤트를 묶는 40ms quiet window가 하한으로 남는다.
 
-다음 작업은 서버의 파일 읽기와 strict JSON 파싱, 카탈로그 스냅샷 조회·정리 비용을 프로파일링하는 것이다. 구체 원인은 아직 확정하지 않았다. 운영 pack 소비 검증과 첫 배포 준비는 별도로 남아 있다.
+같은 프로세스 parser 비교로 메시지 1만 파일 1개 수정의 중앙 파싱 비용이 약 13.3% 줄어든 것은 확인했다. 다만 profiler를 켠 after run의 종단 간 p95는 1074.94ms로 크게 나왔고, profiler를 끈 parser run의 small p95 69.82ms·large p95 200.63ms는 단일 run이므로 목표 p95 ≤ 100ms의 안정적 달성을 주장하지 않는다. 큰 지연의 원인도 확정하지 않았다. 운영 pack 소비 검증과 첫 배포 준비는 별도로 남아 있다.
 
 기록한 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 로케일 추가·삭제와 paint, 번들 크기는 아직 측정하지 않았다.
 

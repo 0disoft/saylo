@@ -25,15 +25,18 @@ export function readJson(source: string, context: Required<CatalogOptions>): Jso
   }
   // Check every value token below, including values overwritten by duplicate keys.
   const entries: JsonEntry[] = [];
-  const positionAt = createPositionLocator(source);
+  let locate: ReturnType<typeof createPositionLocator> | undefined;
+  const positionAt = (offset: number) => (locate ??= createPositionLocator(source))(offset);
   const diagnostics: CatalogDiagnostic[] = [];
   const seen = new Set<string>();
   const strings = /"(?:[^"\\]|\\[\s\S])*"/g;
+  const separator = /\s*:\s*/y;
   let key: RegExpExecArray | null;
   while ((key = strings.exec(source)) !== null) {
     const id = JSON.parse(key[0]) as string;
     const afterKey = strings.lastIndex;
-    const valueStart = source.slice(afterKey).match(/^\s*:\s*/);
+    separator.lastIndex = afterKey;
+    const valueStart = separator.exec(source);
     const valueOffset = afterKey + (valueStart?.[0].length ?? 0);
     if (!valueStart || source[valueOffset] !== '"') {
       throw new CatalogError([{ ...context, code: 'INVALID_CATALOG', id, position: positionAt(valueOffset), message: 'Every message must be a string; nested objects and other values are unsupported.' }]);
@@ -44,7 +47,9 @@ export function readJson(source: string, context: Required<CatalogOptions>): Jso
       diagnostics.push({ ...context, code: 'DUPLICATE_ID', id, position: positionAt(key.index), message: `Duplicate message ID ${JSON.stringify(id)}.` });
     }
     seen.add(id);
-    entries.push({ id, value: JSON.parse(value[0]) as string, keyOffset: key.index, valueOffset, rawValue: value[0] });
+    // The initial strict parse already decoded these values. Duplicate IDs or
+    // overwritten non-string tokens still fail before entries leave this function.
+    entries.push({ id, value: (object as Record<string, string>)[id]!, keyOffset: key.index, valueOffset, rawValue: value[0] });
   }
   if (diagnostics.length) throw new CatalogError(diagnostics);
   return entries;

@@ -39,6 +39,7 @@ test('duplicate decoded JSON IDs are rejected before overwritten values disappea
     return true;
   });
   rejectsCode(() => parseCatalog('{"x":{},"x":"ok"}', options), 'INVALID_CATALOG');
+  rejectsCode(() => parseCatalog('{"x":"ok","x":{}}', options), 'INVALID_CATALOG');
 });
 
 test('prototype-like IDs and argument names are literal own keys', () => {

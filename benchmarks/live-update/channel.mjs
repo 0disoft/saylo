@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 
-export function createChannel({ scenario, target, samples, warmup, calibrations, timeoutMs }) {
+export function createChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, cpuProbe }) {
   const results = [];
   const roundTrips = [];
   let current;
@@ -53,12 +53,15 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
       current = command();
       reply(res, current);
       if (current.kind === 'done') {
-        finished = true; clearTimeout(timer); settle({ browser, roundTrips, results });
+        const cpuProfile = await cpuProbe.finish();
+        finished = true; clearTimeout(timer); settle({ browser, roundTrips, results, cpuProfile });
       } else armTimeout('ack');
     } else if (route === '/armed') {
       if (current?.kind !== 'edit' || data.token !== current.token || current.saveFinishedAt !== undefined) throw new Error('Invalid edit arm.');
       target.messages.probe = current.expected;
       const text = JSON.stringify(target.messages); // Content preparation excluded from save/commit measurement.
+      if (results.length === warmup) await cpuProbe.start();
+      stageProbe.begin();
       current.writeStartedAt = performance.now();
       await writeFile(target.file, text);
       current.saveFinishedAt = performance.now();
@@ -78,6 +81,7 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
           saveToManifestBroadcastMs: current.broadcastAt - current.saveFinishedAt,
           fileWriteMs: current.saveFinishedAt - current.writeStartedAt,
           receiveToCommitMs: data.receiveToCommitMs, commitToAckDispatchMs: data.commitToAckDispatchMs,
+          serverStages: stageProbe.finish(),
           catalogReplyKind: catalog.status, catalogReplyBytes: Buffer.byteLength(JSON.stringify(current.catalogReply)),
           changedMessages: catalog.status === 'patch' ? catalog.upsert.length : Object.keys(catalog.catalog.messages).length,
           positionUpdates: catalog.status === 'patch' ? (catalog.positionShift ? catalog.messageCount - catalog.upsert.length : catalog.positions.length) : 0 });
