@@ -4,6 +4,8 @@ import { EagerSync } from './dev-sync.js';
 import { catalogId as id, immutable, matches } from './catalog-outcome.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';
 import type { CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, ManifestEvent } from './types.js';
+import { applyCatalogPatch } from './catalog-patch.js';
+import type { PresentCatalog } from './catalog-patch.js';
 
 type HotContext = NonNullable<ImportMeta['hot']>;
 
@@ -23,6 +25,7 @@ export interface DevCatalogSourceOptions {
 interface Pending {
   request: CatalogRequest;
   readonly key: CatalogKey;
+  readonly baseline: PresentCatalog | undefined;
   resolve(result: CatalogLoadResult): void;
   reject(error: unknown): void;
   cleanup(): void;
@@ -73,16 +76,26 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     const entry = reply?.request && pending.get(reply.request.requestId);
     if (!entry || !ready || reply.request.generation !== entry.request.generation ||
         reply.request.locale !== entry.key.locale || reply.request.namespace !== entry.key.namespace) return;
-    const result = reply.result;
-    if (!result || (result.status !== 'failed' && (!result.key || id(result.key) !== id(entry.key) || !matches(manifest, result)))) {
-      entry.cleanup(); entry.reject(new CatalogLoadError('STALE_CATALOG', 'Catalog reply does not match the current pair stamp.')); return;
-    }
-    entry.cleanup();
-    if (result.status === 'failed') entry.resolve(result);
-    else {
+    try {
+      const wire = reply.result;
+      if (wire?.status === 'patch' && !entry.request.known) throw new Error('Unexpected patch in a full catalog reply.');
+      const result = wire?.status === 'patch' ? applyCatalogPatch(entry.baseline, wire) : wire;
+      if (!result || (result.status !== 'failed' && (!result.key || id(result.key) !== id(entry.key) || !matches(manifest, result))))
+        throw new CatalogLoadError('STALE_CATALOG', 'Catalog reply does not match the current pair stamp.');
+      if (result.status === 'failed') { entry.cleanup(); entry.resolve(result); return; }
       const accepted = immutable(result);
       cache.set(id(accepted.key), accepted);
+      entry.cleanup();
       entry.resolve(accepted);
+    } catch (error) {
+      if (reply.result?.status === 'patch' && entry.request.known) {
+        // One full retry, within the original timeout; superseded delta replies are ignored.
+        pending.delete(entry.request.requestId);
+        const { known: _known, ...request } = entry.request;
+        entry.request = { ...request, requestId: `${identity}:${++sequence}` };
+        pending.set(entry.request.requestId, entry);
+        send(entry);
+      } else { entry.cleanup(); entry.reject(error); }
     }
   };
   const receiveDiagnostic = (diagnostic: LiveDiagnostic) => {
@@ -104,7 +117,9 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
           const wasReady = ready;
           manifest = next;
           ready = true;
-          for (const [key, result] of cache) if (!matches(manifest, result)) cache.delete(key);
+          // Keep one stale present baseline per available pair for request-scoped deltas.
+          for (const [key, result] of cache) if (result.sessionId !== manifest.sessionId ||
+              !manifest.catalogs.some(meta => id(meta.key) === key && meta.status === 'present')) cache.delete(key);
           if (changed) for (const listener of [...listeners]) listener();
           if (!wasReady) resume();
           return true;
@@ -145,10 +160,12 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
       const cached = cache.get(id(key));
       if (cached && matches(manifest, cached)) return Promise.resolve(cached);
       return new Promise<CatalogLoadResult>((resolve, reject) => {
-        const request = { locale, namespace, generation, requestId: `${identity}:${++sequence}` };
+        const baseline = cached?.status === 'present' ? cached : undefined;
+        const request = { locale, namespace, generation, requestId: `${identity}:${++sequence}`,
+          ...(baseline ? { known: { sessionId: baseline.sessionId, catalogVersion: baseline.catalogVersion } } : {}) };
         const abort = () => { entry.cleanup(); reject(new CatalogLoadError('ABORTED', 'Catalog request was cancelled.')); };
         const timer = setTimeout(() => { entry.cleanup(); reject(new CatalogLoadError('TIMEOUT', 'Catalog reply timed out.')); }, timeoutMs);
-        const entry: Pending = { request, key, resolve, reject, cleanup: () => {
+        const entry: Pending = { request, key, baseline, resolve, reject, cleanup: () => {
           clearTimeout(timer); signal?.removeEventListener('abort', abort); pending.delete(entry.request.requestId); maybeStop();
         } };
         pending.set(request.requestId, entry);

@@ -1,4 +1,5 @@
 import type { CatalogDiagnostic, CatalogLoadResult, CatalogManifest, ParsedCatalog } from '@saylo/core';
+import type { CatalogPatch, CatalogStamp } from './catalog-patch.js';
 
 export interface SayloViteOptions {
   /** Relative to Vite root: <localesDir>/<locale>/<namespace>.json. */
@@ -72,15 +73,19 @@ export interface CatalogRequest {
   readonly generation: number;
   readonly locale: string;
   readonly namespace: string;
+  /** Last accepted present pair. Omit to force a full response. */
+  readonly known?: CatalogStamp;
 }
 export interface CatalogReply {
   readonly request: CatalogRequest;
-  readonly result: CatalogLoadResult;
+  readonly result: CatalogLoadResult | CatalogPatch;
 }
 export function isCatalogRequest(value: unknown): value is CatalogRequest {
   if (!value || typeof value !== 'object') return false;
   const request = value as CatalogRequest;
   if (!isSnapshotRequest({ ...request, scope: 'eager', namespaces: [request.namespace] })) return false;
+  if (request.known !== undefined && (!request.known || typeof request.known.sessionId !== 'string' || !request.known.sessionId ||
+      !Number.isSafeInteger(request.known.catalogVersion) || request.known.catalogVersion < 1)) return false;
   return request.namespace !== '.' && request.namespace !== '..' && !/[:/\\\x00-\x1f]/.test(request.namespace);
 }
 export const MANIFEST_EVENT = 'saylo:manifest';

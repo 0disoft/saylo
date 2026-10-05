@@ -166,6 +166,24 @@ test('live file reads reuse unchanged message AST without retaining edited text'
   assert.equal(next.messages.keep, first.messages.keep);
 });
 
+test('server catalog requests negotiate a delta only with an available client baseline', async t => {
+  const { ws, change } = await setup(t);
+  const replies = [];
+  const client = { send: frame => replies.push(frame.data) };
+  const request = { requestId: 'pair-1', generation: 1, locale: 'ko', namespace: 'demo' };
+  ws.emit(CATALOG_REQUEST_EVENT, request, client);
+  const initial = replies.at(-1).result;
+  assert.equal(initial.status, 'present');
+  await change('ko', '{"hello":"Changed {name}"}');
+  ws.emit(CATALOG_REQUEST_EVENT, { ...request, requestId: 'pair-2', known: {
+    sessionId: initial.sessionId, catalogVersion: initial.catalogVersion,
+  } }, client);
+  assert.equal(replies.at(-1).result.status, 'patch');
+  assert.deepEqual(replies.at(-1).result.upsert.map(([id]) => id), ['hello']);
+  ws.emit(CATALOG_REQUEST_EVENT, { ...request, requestId: 'full' }, client);
+  assert.equal(replies.at(-1).result.status, 'present');
+});
+
 test('base schema change revalidates translations atomically', async t => {
   const { change, request } = await setup(t);
   await change('ko', '{"hello":"안녕 {count, number}"}');

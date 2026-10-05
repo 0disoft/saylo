@@ -1,12 +1,17 @@
 import { createBaseSchema } from '@saylo/core';
 import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome, ParsedCatalog } from '@saylo/core';
+import { createCatalogPatch } from './catalog-patch.js';
+import type { CatalogPatch, CatalogStamp } from './catalog-patch.js';
 
 const id = (key: CatalogKey) => JSON.stringify([key.locale, key.namespace]);
-const signature = (catalog: ParsedCatalog) => JSON.stringify(Object.keys(catalog.messages).sort().map(k => [k, catalog.messages[k]!.source]));
+// Positions belong to the version too, so a delta always has an exact baseline.
+const signature = (catalog: ParsedCatalog) => JSON.stringify([catalog.sourceName,
+  Object.keys(catalog.messages).sort().map(k => [k, catalog.messages[k]!.source, catalog.messages[k]!.position])]);
 
 /** Accepted registry only. Missing tombstones survive deletion and re-creation. */
 export class CatalogRegistry {
   private records = new Map<string, ParsedCatalog>();
+  private previous = new Map<string, { version: number; catalog: ParsedCatalog }>();
   private readonly versions = new Map<string, { key: CatalogKey; version: number }>();
   private current!: CatalogManifest;
   private revision = 0;
@@ -22,6 +27,8 @@ export class CatalogRegistry {
       const after = next.get(key);
       const known = this.versions.get(key);
       if (!known || !before || !after || (before !== after && signature(before) !== signature(after))) {
+        if (known && before && after) this.previous.set(key, { version: known.version, catalog: before });
+        else this.previous.delete(key);
         const catalog = after ?? before!;
         this.versions.set(key, { key: { locale: catalog.locale, namespace: catalog.namespace }, version: (known?.version ?? 0) + 1 });
       }
@@ -40,6 +47,18 @@ export class CatalogRegistry {
   }
 
   manifest() { return this.current; }
+
+  loadDelta(locale: string, namespace: string, known?: CatalogStamp): CatalogOutcome | CatalogPatch {
+    const outcome = this.load(locale, namespace);
+    if (!known || known.sessionId !== this.sessionId || outcome.status !== 'present') return outcome;
+    const previous = this.previous.get(id(outcome.key));
+    const baseline = known.catalogVersion === outcome.catalogVersion ? outcome.catalog :
+      previous?.version === known.catalogVersion ? previous.catalog : undefined;
+    if (!baseline) return outcome;
+    const patch = createCatalogPatch(baseline, outcome, known);
+    // Dense changes are cheaper and simpler as a full replacement.
+    return patch.upsert.length + patch.remove.length > Math.max(8, Object.keys(outcome.catalog.messages).length / 2) ? outcome : patch;
+  }
 
   load(locale: string, namespace: string): CatalogOutcome {
     const key = { locale, namespace };

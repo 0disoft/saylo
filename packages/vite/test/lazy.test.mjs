@@ -16,6 +16,7 @@ function fixture(t) {
   hot.dispose = fn => disposers.push(fn);
   hot.prune = () => {};
   const sent = [];
+  const replies = [];
   const delayed = [];
   let delayCatalogs = false;
   hot.send = (event, request) => {
@@ -24,7 +25,8 @@ function fixture(t) {
     else {
       assert.equal(event, CATALOG_REQUEST_EVENT);
       assert.ok(isCatalogRequest(request), 'Client catalog frames must satisfy the actual server validator.');
-      const reply = { request, result: registry.load(request.locale, request.namespace) };
+      const reply = JSON.parse(JSON.stringify({ request, result: registry.loadDelta(request.locale, request.namespace, request.known) }));
+      replies.push(reply);
       delayCatalogs ? delayed.push(reply) : hot.emit(CATALOG_EVENT, reply);
     }
   };
@@ -37,7 +39,7 @@ function fixture(t) {
     records = next; registry.replace(next);
     hot.emit(MANIFEST_EVENT, { kind: 'update', baseRevision, manifest: registry.manifest() });
   };
-  return { hot, sent, source, instance, delayed, disposers, initial,
+  return { hot, sent, replies, source, instance, delayed, disposers, initial,
     registry: () => registry, records: () => records, delay(value) { delayCatalogs = value; }, replace,
     restart() { registry = new CatalogRegistry('two', 'ko', records); } };
 }
@@ -182,4 +184,99 @@ test('static chunk source consumes the same catalog contract and loads only desi
   await instance.setLocale('ko');
   await instance.setLocale('en');
   assert.equal(loaded.length, 3);
+});
+
+test('loaded edits negotiate sparse deltas and reuse immutable unchanged messages', async t => {
+  const f = fixture(t);
+  const next = text => parseCatalog(JSON.stringify({ title: text, keep: '{name}', extra: 'extra' }), { locale: 'ko', namespace: 'demo' });
+  f.replace([next('first'), ...f.records().filter(c => c.locale !== 'ko' || c.namespace !== 'demo')]);
+  connectDev(f.instance, { catalogSource: f.source });
+  await f.instance.refresh();
+  const before = f.source.getCatalogs().find(c => c.locale === 'ko' && c.namespace === 'demo');
+  f.replace([next('later'), ...f.records().filter(c => c.locale !== 'ko' || c.namespace !== 'demo')]);
+  await f.instance.refresh();
+  const reply = f.replies.at(-1);
+  assert.equal(reply.result.status, 'patch');
+  assert.deepEqual(reply.result.upsert.map(([id]) => id), ['title']);
+  assert.equal(reply.result.positions.length, 0);
+  const after = f.source.getCatalogs().find(c => c.locale === 'ko' && c.namespace === 'demo');
+  assert.equal(after.messages.keep, before.messages.keep);
+  assert.equal(f.instance.t('demo:title'), 'later');
+  assert.ok(Object.isFrozen(after.messages.title.ast));
+});
+
+test('a broken delta retries once with a new full request and ignores the superseded reply', async t => {
+  const f = fixture(t);
+  connectDev(f.instance, { catalogSource: f.source });
+  f.delay(true);
+  f.replace([catalog('최신 한국어'), ...f.records().filter(c => c.locale !== 'ko' || c.namespace !== 'demo')]);
+  await tick();
+  const broken = f.delayed.shift();
+  assert.equal(broken.result.status, 'patch');
+  f.hot.emit(CATALOG_EVENT, { ...broken, result: { ...broken.result, remove: ['absent'] } });
+  const recovered = f.delayed.shift();
+  assert.equal(recovered.request.known, undefined);
+  assert.notEqual(recovered.request.requestId, broken.request.requestId);
+  assert.equal(recovered.result.status, 'present');
+  f.hot.emit(CATALOG_EVENT, broken);
+  assert.equal(f.instance.t('demo:title'), '한국어');
+  f.hot.emit(CATALOG_EVENT, recovered);
+  await tick();
+  assert.equal(f.instance.t('demo:title'), '최신 한국어');
+});
+
+test('a repeatedly malformed patch cannot loop full recovery or mutate the current UI', async t => {
+  const f = fixture(t);
+  f.delay(true);
+  const stop = f.source.connect();
+  t.after(stop);
+  f.replace([catalog('latest'), ...f.records().filter(c => c.locale !== 'ko' || c.namespace !== 'demo')]);
+  const pending = f.source.loadCatalog('ko', 'demo');
+  const rejected = assert.rejects(pending, /Unexpected patch/);
+  const broken = f.delayed.shift();
+  f.hot.emit(CATALOG_EVENT, { ...broken, result: { ...broken.result, upsert: null } });
+  const full = f.delayed.shift();
+  f.hot.emit(CATALOG_EVENT, { request: full.request, result: broken.result });
+  await rejected;
+  assert.equal(f.sent.filter(e => e.event === CATALOG_REQUEST_EVENT).length, 2);
+  assert.equal(f.instance.t('demo:title'), '한국어');
+});
+
+test('shared instances can receive same-baseline patches in reverse order', async t => {
+  const f = fixture(t);
+  const other = createI18n({ catalogSource: f.source, locale: 'ko', initialNamespaces: ['demo'], initialCatalogs: f.initial });
+  t.after(() => other.dispose());
+  connectDev(f.instance, { catalogSource: f.source });
+  connectDev(other, { catalogSource: f.source });
+  f.delay(true);
+  f.replace([catalog('shared latest'), ...f.records().filter(c => c.locale !== 'ko' || c.namespace !== 'demo')]);
+  await tick();
+  assert.equal(f.delayed.length, 2);
+  assert.ok(f.delayed.every(reply => reply.result.status === 'patch'));
+  for (const reply of f.delayed.reverse()) f.hot.emit(CATALOG_EVENT, reply);
+  await tick();
+  assert.equal(f.instance.t('demo:title'), 'shared latest');
+  assert.equal(other.t('demo:title'), 'shared latest');
+});
+
+test('reconnecting with a patch pending uses the new session and retains the last good UI until a full reply', async t => {
+  const f = fixture(t);
+  connectDev(f.instance, { catalogSource: f.source });
+  f.delay(true);
+  f.replace([catalog('latest after restart'), ...f.records().filter(c => c.locale !== 'ko' || c.namespace !== 'demo')]);
+  await tick();
+  const oldPatch = f.delayed.shift();
+  assert.equal(oldPatch.result.status, 'patch');
+  f.hot.emit('vite:ws:disconnect');
+  f.restart();
+  f.hot.emit('vite:ws:connect');
+  await tick();
+  f.hot.emit(CATALOG_EVENT, oldPatch);
+  assert.equal(f.instance.t('demo:title'), '한국어');
+  const full = f.delayed.at(-1);
+  assert.equal(full.result.status, 'present');
+  assert.equal(full.result.sessionId, 'two');
+  f.hot.emit(CATALOG_EVENT, full);
+  await tick();
+  assert.equal(f.instance.t('demo:title'), 'latest after restart');
 });

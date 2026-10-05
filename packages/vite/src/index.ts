@@ -64,7 +64,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
         result: { status: 'failed', code: 'INVALID_REQUEST', message: 'Invalid catalog request.' } } });
       return;
     }
-    client.send({ type: 'custom', event: CATALOG_EVENT, data: { request: data, result: registry.load(data.locale, data.namespace) } });
+    client.send({ type: 'custom', event: CATALOG_EVENT, data: { request: data, result: registry.loadDelta(data.locale, data.namespace, data.known) } });
   };
   const onFile = (file: string) => { void live?.enqueue(file); };
   function detachLive() {
