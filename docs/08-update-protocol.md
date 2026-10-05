@@ -19,20 +19,55 @@
 
 ## wire 타입
 
-현재 lazy 경로는 아래 최종 patch 계약에 앞서 manifest와 pair 조회를 분리한 parsed-catalog 프로토타입이다.
+현재 lazy 경로는 manifest 조회와 pair 조회를 분리한다. pair 응답은 기본이 전체 present/missing/failed outcome이고, 직전 baseline이 맞으면 request-scoped 메시지 delta patch가 된다. 아래 push wire 설계 초안(`kind: "patch"`, 파일 단위 replacements/deletions, `SerializedCatalog`)은 아직 구현 전이며 지금의 delta patch와 다른 계약이다.
 
 | 이벤트 | 현재 lazy 전송 |
 | --- | --- |
 | `saylo:request-manifest` | eager handshake의 요청 ID·generation을 사용해 전체 metadata 요청 |
 | `saylo:manifest` | snapshot 응답 또는 `baseRevision`을 가진 update. 전체 목록·pair version·schema fingerprint·missing tombstone이며 AST 없음 |
-| `saylo:request-catalog` | 고유 요청 ID·generation과 locale·namespace 한 pair |
-| `saylo:catalog` | 요청 echo와 present/missing/failed. present에만 parsed catalog 본문 포함 |
+| `saylo:request-catalog` | 고유 요청 ID·generation과 locale·namespace 한 pair. 직전에 받은 present pair가 있으면 선택적 `known { sessionId, catalogVersion }`을 함께 보낸다 |
+| `saylo:catalog` | 요청 echo와 결과. baseline이 맞으면 `status: "patch"` delta, 아니면 present/missing/failed 전체 outcome. 전체 present와 patch에만 catalog 또는 메시지 delta를 싣는다 |
 
-`virtual:saylo/lazy`는 초기 범위의 base+target outcome만 싣고 source handle을 내보낸다. manifest update를 적용한 뒤 core의 `refresh`가 현재 desired scope를 다시 준비한다. 미로드·비활성 pair의 AST는 받지 않는다. 조회 응답은 요청 identity·session·pair version·schema를 검사하고 재연결은 identity를 무효화한 뒤 현재 manifest로 재요청한다. 여러 instance는 source를 공유하며 자신의 연결·구독만 해제한다. 기존 eager 전체 갱신은 eager snapshot을 요청한 Vite client에만 보낸다.
-
-production chunk loader는 11단계에서 연결했고, boot wire는 parsed catalog 배열을 싣는 1차 형태로 구현했다. 아래 CatalogRecord·push patch wire는 아직 초안이며 후속 단계다.
+`virtual:saylo/lazy`는 초기 범위의 base+target outcome만 싣고 source handle을 내보낸다. 기존 설계의 push patch와 달리 서버가 patch를 밀어주지 않는다. manifest 응답을 적용한 뒤 core의 `refresh`가 현재 desired scope를 다시 준비하면 `catalogSource`가 pair마다 직전 baseline을 기준으로 조회한다. 미로드·비활성 pair의 AST는 받지 않는다. 조회 응답은 요청 identity·session·pair version·schema를 검사하고 재연결은 identity를 무효화한 뒤 현재 manifest로 재요청한다. 여러 instance는 source를 공유하며 자신의 연결·구독만 해제한다. 기존 eager 전체 갱신은 eager snapshot을 요청한 Vite client에만 보낸다.
 
 namespace schema fingerprint는 정규화한 namespace·키·인자 acceptedTypes JSON의 UTF-8 SHA-256(`saylo-schema-v2:sha256:` + 64자리 16진수)이다. 로케일·pair마다 큰 스키마 문자열을 반복 전송하지 않도록 고정 길이 digest로 바꿨고, `saylo-schema-v1:` 형식으로 저장된 기존 boot·chunk는 재생성해야 한다.
+
+### 현행 request-scoped delta patch (2026-10-06)
+
+실제 타입은 `packages/vite/src/catalog-patch.ts`, 서버 판정은 `catalog-registry.ts`의 `loadDelta`에 있다.
+
+```ts
+interface CatalogStamp { readonly sessionId: string; readonly catalogVersion: number; }
+interface PositionShift { readonly offsetDelta: number; readonly lineDelta: number; readonly columnDelta: number; }
+
+interface CatalogPatch extends CatalogStamp {
+  readonly status: "patch";
+  readonly key: CatalogKey;
+  readonly namespaceSchemaFingerprint: string;
+  readonly base: CatalogStamp;                                         // 적용 조건: 현재 baseline과 같아야 함
+  readonly sourceName: string;
+  readonly messageCount: number;                                       // 적용 후 메시지 수. 다르면 거절한다
+  readonly upsert: readonly (readonly [string, ParsedMessage])[];       // [ID, ParsedMessage]
+  readonly remove: readonly string[];                                   // [ID]
+  readonly positions: readonly (readonly [string, SourcePosition])[];   // [ID, SourcePosition]
+  readonly positionShift?: PositionShift;                              // 일괄 이동. positions가 개별 ID를 덮는다
+}
+```
+
+- 서버는 pair마다 직전 present version 한 개만 보관한다(삭제·재생성 이력 없음). 요청의 `known`이 현재 version이나 그 직전 version과 맞을 때만 patch를 만든다.
+- patch는 현재 `sessionId`·`key`·`catalogVersion`·`namespaceSchemaFingerprint`·`sourceName`·`messageCount`와 `base` stamp를 담는다. 메시지 `source`가 바뀌면 upsert, 없어진 ID는 remove, 위치만 바뀌면 positions다.
+- unchanged-source 메시지의 delta(offset·line·column)가 모두 같고 실제로 움직인 위치가 2개 이상일 때 `positions` 목록 대신 `positionShift` 하나로 압축한다. 일부는 이동 0이고 다른 일부만 이동했거나 delta가 다르면 압축하지 않고 `positions` 목록을 그대로 보낸다. `positions`에 있는 ID는 개별 위치로 덮어쓴다.
+- 적용 시 `messageCount`와 위치값 유효성(정수, offset ≥ 0, line·column ≥ 1)을 검사한다. 메시지 수가 다르거나 위치값이 유효하지 않으면 거절하고 이전 정상 상태를 유지한다.
+- schema fingerprint만 바뀌어 pair version이 같아도 새 fingerprint를 담은 0메시지 patch가 될 수 있다. 위치만 바뀌는 포매터 JSON 재배치는 version을 올려 baseline을 정확히 맞추고, UI 의미가 같으면 core는 렌더를 건너뛴다.
+- 클라이언트는 요청마다 immutable baseline을 고정해 복수 instance의 역순 응답도 안전하다. 새 전체 `CatalogOutcome`만 core에 넘기고 base+target을 한 commit으로 게시한다. cache는 현재 세션 present pair마다 stale baseline 하나를 두고, `getCatalogs`는 현재 metadata와 맞는 pair만 노출한다.
+- 과거 version gap, 새 세션, 밀집 변경, 삭제·재생성, `known` 없음은 전체 present/missing으로 돌아간다. 깨진 patch는 기존 timeout 안에서 새 `requestId`로 `known` 없는 full을 한 번 재요청하고, 그마저 patch면 거절하고 이전 정상 UI를 유지한다.
+- 기존 eager 전체 snapshot, production chunk loader, SSR boot wire는 그대로 유지한다.
+
+core는 깊게 동결한 번역 인자 스키마와 기준 메시지의 인자 스키마가 이전 검증 때와 같은 객체이고 ID도 같으면 `validateTranslation` 결과를 재사용하고, mutable 입력이나 계약·키가 바뀌면 다시 검증한다. 서버는 pair version 판정에서 정렬·stringify 없이 key·source·position을 직접 비교한다.
+
+### 설계 초안: push wire
+
+아래 TS는 최종 push wire 설계 초안이다. 현행 lazy delta(`status: "patch"`, 메시지 단위 upsert/remove/positions)와 달리 전역 revision·`kind: "patch"`·파일 단위 `replacements`/`deletions`·`SerializedCatalog`를 쓴다. 아직 구현 전이다.
 
 ```ts
 type SessionId = string;

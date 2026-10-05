@@ -4,7 +4,7 @@
 
 ## 성능 목표
 
-아래 수치는 목표다. 로컬 벤치마크로 일부를 측정했고, 결과와 한계는 아래 실측 기록에 남겼다. 최적화 전후 모두 어느 시나리오도 p95 목표를 달성하지 못했다.
+아래 수치는 목표다. 로컬 벤치마크로 일부를 측정했고, 결과와 한계는 아래 실측 기록에 남겼다. request-scoped patch 적용 뒤 small은 재실행에서 p95 목표 안에 들어왔지만 같은 코드의 첫 run은 넘었고, large는 어느 run에서도 p95 목표를 넘었다. 어느 시나리오도 안정적 달성을 주장하지 않는다.
 
 | 항목 | 목표 | 조건 |
 | --- | --- | --- |
@@ -27,7 +27,7 @@
 
 ### 실측 기록 (로컬)
 
-`npm run bench:live`로 측정했다. 결과 요약은 [benchmarks/results/live-update.json](../benchmarks/results/live-update.json)에 남겼고, 시나리오별 raw sample은 그 파일이 가리키는 `live-update.<case>.samples.json`에 따로 둔다. 방법·조건·재실행 옵션은 [benchmarks/live-update/README.md](../benchmarks/live-update/README.md)에 있다.
+`npm run bench:live`로 측정했다. 결과 요약은 [live-update.json](../benchmarks/results/live-update.json)(최적화 전), [live-update-optimized.json](../benchmarks/results/live-update-optimized.json)(라이브 갱신 최적화 후), [live-update-patch.json](../benchmarks/results/live-update-patch.json)와 [live-update-patch-repeat.json](../benchmarks/results/live-update-patch-repeat.json)(request-scoped patch 적용 후 첫 run·재실행)에 남겼다. 시나리오별 raw sample은 각 파일이 가리키는 `live-update.<case>.samples.json`에 따로 둔다. 방법·조건·재실행 옵션은 [benchmarks/live-update/README.md](../benchmarks/live-update/README.md)에 있다.
 
 조건은 warmup 5회를 뺀 50 샘플, control 왕복 25회다. namespace 1, 렌더 메시지 2(바뀐 키 1 + 바뀌지 않은 키 1), loaded base `ko` + target `en`, `en` 본문 키 1개 수정이다. Chromium headless, React 개발 모드, paint 계측 없음. 환경은 Windows x64, Node v24.18.0, Vite 8.3.2, AMD Ryzen 5 7430U, logical CPU 12, memory 31.3GiB다.
 
@@ -58,6 +58,31 @@
 
 단계별 p95를 더해 종단 간 값으로 쓰지 않고, control 왕복도 전체 latency에서 빼거나 더하지 않고 참고로만 병기한다. 서버·브라우저 clock을 서로 빼지 않는다.
 
+### request-scoped patch 적용 후 (2026-10-06 KST, gitRevision 793d94f, 첫 run)
+
+같은 fixture와 옵션(warmup 5, 샘플 50, control 25)으로 돌린 첫 run이다.
+
+| 시나리오 | save→DOM ack p50 | save→DOM ack p95 | save→manifest broadcast p95 | receive→commit p95 | fileWrite p95 | control 왕복 p95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1k×3 로케일 | 77.58ms | 224.31ms | 199.82ms | 8.50ms | 61.51ms | 10.37ms |
+| 10k×20 로케일 | 177.00ms | 229.43ms | 147.25ms | 47.40ms | 10.56ms | 5.68ms |
+
+### request-scoped patch 적용 후 재실행 (2026-10-06 KST, gitRevision 793d94f, repeat)
+
+같은 코드·fixture로 한 번 더 돌린 run이다. 두 run 결과를 나눠 보존했다.
+
+| 시나리오 | save→DOM ack p50 | save→DOM ack p95 | save→manifest broadcast p95 | receive→commit p95 | fileWrite p95 | control 왕복 p95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1k×3 로케일 | 65.24ms | 76.65ms | 64.99ms | 5.30ms | 8.92ms | 9.34ms |
+| 10k×20 로케일 | 191.45ms | 241.18ms | 170.84ms | 48.20ms | 9.71ms | 3.72ms |
+
+- small(1k×3)은 첫 run p95 224.31ms로 최적화 후 131.27ms보다 나빠졌고, 재실행은 76.65ms로 목표 p95 ≤ 100ms 안에 들어왔다. 두 run이 다르므로 small의 안정적 목표 달성을 주장하지 않는다.
+- large(10k×20)는 두 run 모두 p95 229.43ms와 241.18ms로 목표를 넘었다. p50은 177.00ms와 191.45ms이고, receive→commit p95는 47.40ms와 48.20ms로 이전 260.60ms에서 크게 줄었다.
+- 첫 run의 fileWrite p95 61.51ms와 broadcast p95 199.82ms는 재실행의 8.92ms와 64.99ms보다 컸다. 독립 부하 프로파일 측정이 없어 원인을 단정하지 않고, 관측된 파일 쓰기와 서버 단계 지연만 기록한다.
+- 두 run 모두 각 시나리오 50회 편집이 patch 응답이었고 full 응답은 0회였다. upsert는 최대 1개, position 갱신은 0개다. 측정 구간에서는 토큰 길이가 같아 `positionShift`는 warmup에서만 발생했다.
+- catalog 응답 크기는 서버가 `client.send`에 넘긴 응답 객체를 캡처해 ack clock을 잡은 뒤 `JSON.stringify` UTF-8 크기로 계산했다. p95는 small 931B, large 936B다. 이 값은 catalog 응답 JSON이고 WS 헤더·압축·manifest 패킷은 포함하지 않으며 실제 물리 네트워크 전체 바이트가 아니다. [live-update-wire-sizes.json](../benchmarks/results/live-update-wire-sizes.json)의 재구성 크기와도 다른 값이다.
+- 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐고 생성 `.d.ts`는 다시 쓰이지 않았다. 두 run의 4개 case 모두 raw sample 55개(측정 50개)이고 5개 timing metric summary가 nearest-rank 값과 일치했다. 임시 benchmark fixture·profile 폴더와 해당 브라우저 프로세스는 run 뒤 0개였다.
+
 ### 원인 프로파일과 최적화
 
 `node --cpu-prof`로 짧은 10 샘플의 large 시나리오를 돌려 startup 뒤 채널 첫 handler 이후 샘플을 검사했다. 반복되는 freeze, `parseCatalog`, WebSocket stringify 비용이 확인됐다. 이 비용을 줄이도록 다음을 적용했다.
@@ -68,6 +93,12 @@
 - schema fingerprint를 v1의 전체 정규화 문자열에서 87자 고정 길이 v2 digest로 바꾼다.
 - `parseCatalog`에 이전 `ParsedCatalog`를 넘겨 문구가 그대로인 메시지의 AST와 인자를 재사용한다.
 
+이후 request-scoped patch 라운드에서 다음을 추가로 적용했다.
+
+- 깊게 동결한 번역 인자 스키마와 기준 메시지의 인자 스키마가 이전 검증 때와 같은 객체이고 ID도 같으면 `validateTranslation` 결과를 재사용하고, mutable 입력이나 계약·키가 바뀌면 다시 검증한다.
+- 서버의 pair version 판정은 정렬·stringify 없이 key·source·position을 직접 비교한다.
+- 위치가 일괄 이동하면 위치 목록 대신 `positionShift` 하나로 압축한다.
+
 ### wire 크기 재구성
 
 manifest frame 크기는 별도 재구성 도구 [manifest-size.mjs](../benchmarks/live-update/manifest-size.mjs)로 비교했다. 기존 v1과 현재 v2의 update envelope JSON을 재구성해 UTF-8 바이트만 비교한 값이고 실제 네트워크 전송 계측이 아니다. 결과는 [live-update-wire-sizes.json](../benchmarks/results/live-update-wire-sizes.json)에 있다. small(1k×3) 162,256 B → 871 B, large(10k×20) 10,980,273 B → 4,373 B이고, fingerprint 문자열은 45,886자 → 87자, 468,886자 → 87자다. 실행은 `node benchmarks/live-update/manifest-size.mjs`다.
@@ -75,10 +106,10 @@ manifest frame 크기는 별도 재구성 도구 [manifest-size.mjs](../benchmar
 ### 남은 병목과 다음 작업
 
 - 파일 전체를 읽어 JSON으로 파싱하는 비용이 남는다.
-- namespace 전체 AST를 전송하고 브라우저에서 검증·동결하는 비용이 남는다.
+- full 응답에서 namespace 전체 AST를 전송하고 브라우저에서 검증·동결하는 비용이 남는다.
 - 파일 이벤트를 묶는 40ms quiet window가 하한으로 남는다.
 
-다음 작업은 변경된 메시지만 담는 message별 patch 전송이다.
+다음 작업은 서버의 파일 읽기와 strict JSON 파싱, 카탈로그 스냅샷 조회·정리 비용을 프로파일링하는 것이다. 구체 원인은 아직 확정하지 않았다. 운영 pack 소비 검증과 첫 배포 준비는 별도로 남아 있다.
 
 기록한 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 로케일 추가·삭제와 paint, 번들 크기는 아직 측정하지 않았다.
 
@@ -99,6 +130,8 @@ manifest frame 크기는 별도 재구성 도구 [manifest-size.mjs](../benchmar
 12단계의 SSR serializer와 hydration을 구현하고 로컬 검증을 진행했다. `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`을 공개했고, boot wire는 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣는다. 직렬화는 모든 `<`를 `\u003c`로, U+2028·U+2029를 escape한다. loaded base+target pair의 present/missing outcome을 빠짐없이 명시하고 누락·중복 outcome과 stamp·schema 불일치는 `INVALID_BOOT`로 거부하며, boot timeZone은 config와 일치해야 한다. `createServerI18n`은 async scope를 준비해 `getServerSnapshot`이 생성 시점 snapshot이 되는 문제를 피하고, `createHydrationAdapter`는 boot S1을 유지하면서 이후 snapshot을 최신 하나로 buffer해 `finishHydration()`에서 한 번 publish한다. SSR fixture는 `examples/ssr/{app,entry-server,client,config,server,demo}.mjs`로 추가했고, `npm run demo:ssr`가 ko/en 동시 요청 renderToString과 boot locale 검사를 수행한 뒤 종료하며 `npm run dev:ssr`는 127.0.0.1:5190/?locale=en에서 실제 서버·client hydrateRoot(StrictMode)·live connectDev를 확인한다. 이미 실행한 검사는 core의 html-safe roundtrip·timeZone·metadata 거부·요청 간 격리, React의 renderToString+hydrateRoot boot S1 `t` 고정·S2/S3 buffer 1회 적용·DOM·입력·포커스·state 보존, Vite SSR의 개발 watcher 다음 요청 최신 문구와 production SSR bundle 동적 import·요청별 ko/en 분리다. 전체 `npm run check`, JS/TS 소비 검사와 두 production 데모 빌드가 통과했다. core 53·React 9·Vite 55·typegen 5로 총 122개 테스트가 통과했다. 실제 SSR 브라우저에서 영어 첫 화면의 hydration과 클릭·입력 동작, 파일 수정 뒤 입력·수량 상태 유지, 다음 서버 응답의 최신 문구 반영을 확인했고 콘솔 경고·오류는 없었다. 카탈로그 요청의 초기 generation이 서버 검증을 만족하도록 수정하고 lazy fixture에도 실제 서버 검증기를 연결했다. 패키지 공개 배포는 미완료다.
 
 라이브 갱신 최적화 라운드를 진행했다. `node --cpu-prof`로 병목을 확인하고 core 동결·schema·fingerprint·이전 AST 재사용을 손봤다. `npm run check`의 126개 테스트와 추가 Vite 통합 테스트 1개가 통과했다(core 57, Vite 56, React 9, typegen 5, 합 127). JS/TS 소비 검사와 vanilla·React production 빌드도 통과했다. 같은 fixture로 벤치마크를 다시 돌려 전후 값을 [live-update-optimized.json](../benchmarks/results/live-update-optimized.json)에 남겼고, raw sample summary가 nearest-rank 집계와 일치했다. 두 시나리오 모두 입력 상태가 유지되고 문구만 수정했을 때 `.d.ts`의 mtime과 size가 바뀌지 않았다. 성능 수치는 결과 파일 기준이며, 패키지 공개 배포는 미완료다.
+
+13단계의 request-scoped message patch를 구현했다. pair 응답이 직전 baseline과 맞으면 바뀐 메시지 delta가 되고, 아니면 full로 돌아간다. 서버는 pair마다 직전 present version 하나만 보관하고, 클라이언트는 요청마다 immutable baseline을 고정한다. `validateTranslation`은 깊게 동결한 번역·기준 인자 스키마가 이전 검증 때와 같은 객체이고 ID도 같으면 결과를 재사용하고, 서버 version 판정은 정렬·stringify를 없앴다. core 58·React 9·typegen 5·Vite 68로 총 140개 테스트가 통과했다. 전체 스위트는 140개 중 139개가 한 번에 통과했고, typegen background Windows rename EPERM으로 실패한 1개는 그 테스트만 단독 재실행해 통과했다. JS/TS 소비 검사와 React TS 검사도 따로 통과했다. 거부된 delta가 부분 mutation을 남기지 않는지, messageCount와 위치 유효성 검사, 클라이언트의 full 재요청을 테스트로 확인했다. 두 production 데모 빌드가 통과했다. 같은 fixture로 첫 run과 재실행 두 번 측정해 각각 [live-update-patch.json](../benchmarks/results/live-update-patch.json)와 [live-update-patch-repeat.json](../benchmarks/results/live-update-patch-repeat.json)에 보존했다. 운영 pack 소비 검증과 첫 배포 준비는 아직 미완료다.
 
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
@@ -132,7 +165,7 @@ manifest frame 크기는 별도 재구성 도구 [manifest-size.mjs](../benchmar
 
 ## 로드맵
 
-작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 현재 12단계 SSR과 라이브 갱신 최적화 라운드까지 로컬 구현을 진행했고, 다음은 13단계다.
+작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 현재 13단계 request-scoped patch까지 로컬 구현을 진행했다.
 
 | 순서 | 커밋의 한 가지 책임 | 완료 기준 |
 | --- | --- | --- |
@@ -149,6 +182,6 @@ manifest frame 크기는 별도 재구성 도구 [manifest-size.mjs](../benchmar
 | 10b | Vite 범용 로더와 부분 전송 | boot 이후 새 namespace 조회, pair별 version·tombstone, loaded scope 갱신과 React 데모를 연결한다. 로컬 구현 완료 |
 | 11 | fresh production build | 현재 디스크 검증 → typegen → consumer 검사 → AST·정적 loader 산출을 연결한다. 로컬 구현 완료 |
 | 12 | SSR serializer와 hydration fixture | 요청별 snapshot, boot escape, hydration 직전 갱신을 검증한다. 로컬 구현 완료 |
-| 13 | 변경 메시지별 patch 전송 | 바뀐 메시지만 보내고 상태 보존·수렴을 유지한다. wire 크기와 브라우저 검증·동결 비용이 줄어든다 |
+| 13 | 변경 메시지별 patch 전송 | 바뀐 메시지만 보내고 상태 보존·수렴을 유지한다. wire 크기와 브라우저 검증·동결 비용이 줄어든다. 로컬 구현 완료 |
 
 1–8단계에서는 작은 fixture를 eager로 실어도 된다. 9–10단계에서 부분 전송과 미로드 상태가 들어올 때 카탈로그별 버전 계약을 적용한다.
