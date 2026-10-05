@@ -87,3 +87,11 @@ lazy.loadNamespace(3);
 // @ts-expect-error explicit missing has no payload
 const missing: CatalogOutcome = { status: 'missing', sessionId: 'initial', key: { locale: 'en', namespace: 'cart' }, catalogVersion: 0, catalog: appCatalog };
 void missing;
+
+const serverSnapshot = lazy.getServerSnapshot();
+serverSnapshot.t('cart:items', { count: 1 });
+const bootSnapshot = lazy.getBootSnapshot();
+const restored = createI18n<AppSchema>({ catalogSource: source, initialSnapshot: bootSnapshot });
+restored.t('cart:items', { count: 1 });
+// @ts-expect-error SSR boot and parsed initial scope are mutually exclusive
+createI18n({ catalogSource: source, initialSnapshot: bootSnapshot, locale: 'ko', initialNamespaces: [], initialCatalogs: [] });

@@ -1,4 +1,5 @@
 import { CatalogLoader } from './catalog-loader.js';
+import { createBootSnapshot, validateBootSnapshot } from './boot.js';
 import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
 import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, readManifest, scopeKeys } from './loading-registry.js';
@@ -12,26 +13,29 @@ interface Waiter {
   reject(reason: unknown): void;
 }
 
-/** Async desired-scope coordinator using parsed catalogs, before SSR boot encoding. */
+/** Async desired-scope coordinator; SSR instances start from a pinned boot manifest. */
 export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions): I18n<S> {
   const source = options.catalogSource;
-  let manifest = readManifest(source.readManifest());
+  const decoded = options.initialSnapshot ? validateBootSnapshot(options.initialSnapshot) : undefined;
+  let manifest = readManifest(decoded?.manifest ?? source.readManifest());
   const baseLocale = manifest.baseLocale;
   const retiredSessions = new Set<string>();
-  const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
+  const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? decoded?.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
+  if (decoded && timeZone !== decoded.timeZone) throw new CatalogLoadError('INVALID_BOOT', 'Configured timeZone differs from the SSR boot snapshot.');
   const timeoutMs = options.requestTimeoutMs ?? 5000;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('requestTimeoutMs must be a positive timer duration.');
-  let desiredLocale = canonicalLocale(options.locale);
+  let desiredLocale = canonicalLocale(decoded?.locale ?? options.locale!);
   if (!manifest.availableLocales.includes(desiredLocale)) throw new RangeError('Initial locale is outside the manifest.');
-  let desiredNamespaces = new Set(options.initialNamespaces);
-  if (desiredNamespaces.size !== options.initialNamespaces.length) throw new RangeError('Duplicate initial namespace.');
+  const initialNamespaces = decoded?.loadedNamespaces ?? options.initialNamespaces!;
+  let desiredNamespaces = new Set(initialNamespaces);
+  if (desiredNamespaces.size !== initialNamespaces.length) throw new RangeError('Duplicate initial namespace.');
   for (const namespace of desiredNamespaces) {
     assertNamespace(namespace);
     if (!manifest.availableNamespaces.includes(namespace)) throw new RangeError('Initial namespace is outside the manifest.');
   }
   const initialKeys = scopeKeys(manifest, desiredLocale, [...desiredNamespaces].sort());
   const initial = new Map<string, CatalogOutcome>();
-  for (const outcome of options.initialCatalogs) {
+  for (const outcome of decoded?.catalogOutcomes ?? options.initialCatalogs!) {
     const key = initialKeys.find(key => outcome?.key && keyId(key) === keyId(outcome.key));
     if (!key || initial.has(keyId(key))) throw new CatalogLoadError('INVALID_INITIAL_STATE', 'Unexpected or duplicate initial catalog outcome.');
     initial.set(keyId(key), acceptOutcome(manifest, key, outcome));
@@ -39,9 +43,11 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   if (initial.size !== initialKeys.length) throw new CatalogLoadError('INVALID_INITIAL_STATE', 'Initial state must contain every base and target outcome.');
   const formatter = createTextFormatter(timeZone);
   const boot = createLoadedSnapshot<S>(manifest, desiredLocale, [...desiredNamespaces].sort(),
-    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, 0);
+    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0);
   let current = boot.snapshot;
   let signature = boot.signature;
+  let committedManifest = manifest;
+  let committedOutcomes = initialKeys.map(key => initial.get(keyId(key))!);
   let generation = 0;
   let staleRetries = 0;
   let disposed = false;
@@ -128,6 +134,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       if (syncManifest()) return;
       const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter, current.stateRevision + 1);
       staleRetries = 0;
+      committedManifest = manifest;
+      committedOutcomes = outcomes;
       publish(candidate.snapshot, candidate.signature);
     } catch (error) {
       if (disposed || epoch !== generation) return;
@@ -151,6 +159,9 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   return Object.freeze({
     t: ((key: string, args?: Record<string, unknown>) => (current.t as Translate<Schema>)(key, args)) as Translate<S>,
     getSnapshot: () => current,
+    getServerSnapshot: () => boot.snapshot,
+    getBootSnapshot: () => createBootSnapshot({ manifest: committedManifest, locale: current.locale, timeZone,
+      stateRevision: current.stateRevision, loadedNamespaces: current.loadedNamespaces, catalogOutcomes: committedOutcomes }),
     getLocales: () => current.availableLocales,
     getNamespaces: () => current.availableNamespaces,
     subscribe(callback: (snapshot: StoreSnapshot<S>) => void) {

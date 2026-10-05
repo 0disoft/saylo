@@ -1,4 +1,5 @@
 import type { ParsedCatalog, Schema, StoreSnapshot, Translate } from './types.js';
+import type { BootSnapshot } from './boot.js';
 
 export interface CatalogKey {
   readonly locale: string;
@@ -21,7 +22,7 @@ export interface CatalogManifest {
   readonly catalogs: readonly CatalogMetadata[];
 }
 
-/** Parsed-catalog prototype. Boot encoding and production loaders are later stages. */
+/** Versioned parsed catalogs shared by development, production chunks and SSR boot data. */
 export type CatalogOutcome = { readonly sessionId: string } & (
   | { readonly status: 'present'; readonly key: CatalogKey; readonly catalogVersion: number;
       readonly namespaceSchemaFingerprint: string; readonly catalog: ParsedCatalog }
@@ -36,12 +37,8 @@ export interface CatalogSource {
   loadCatalog(locale: string, namespace: string, signal?: AbortSignal): Promise<CatalogLoadResult>;
 }
 
-export interface CreateI18nOptions {
+interface SharedI18nOptions {
   readonly catalogSource: CatalogSource;
-  readonly locale: string;
-  readonly initialNamespaces: readonly string[];
-  /** Exact base+target outcomes for the initial loaded namespace set. */
-  readonly initialCatalogs: readonly CatalogOutcome[];
   readonly timeZone?: string;
   /** Per-catalog timeout, defaults to 5000ms. */
   readonly requestTimeoutMs?: number;
@@ -49,9 +46,20 @@ export interface CreateI18nOptions {
   readonly onError?: (error: AggregateError) => void;
 }
 
+export type CreateI18nOptions = SharedI18nOptions & (
+  | { readonly locale: string; readonly initialNamespaces: readonly string[];
+      readonly initialCatalogs: readonly CatalogOutcome[]; readonly initialSnapshot?: never }
+  | { readonly initialSnapshot: BootSnapshot; readonly locale?: never; readonly initialNamespaces?: never;
+      readonly initialCatalogs?: never }
+);
+
 export interface I18n<S extends Schema = Schema> {
   readonly t: Translate<S>;
   getSnapshot(): StoreSnapshot<S>;
+  /** Immutable initial snapshot for server rendering and client hydration. */
+  getServerSnapshot(): StoreSnapshot<S>;
+  /** Exact committed scope and pair stamps; excludes in-flight desired state. */
+  getBootSnapshot(): BootSnapshot;
   getLocales(): readonly string[];
   getNamespaces(): readonly string[];
   subscribe(listener: (snapshot: StoreSnapshot<S>) => void): () => void;

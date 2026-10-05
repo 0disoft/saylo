@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test test/catalog.test.mjs test/translator.test.mjs test/store.test.mjs test/loading.test.mjs",
+    "test": "node --test test/catalog.test.mjs test/translator.test.mjs test/store.test.mjs test/loading.test.mjs test/boot.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": {
