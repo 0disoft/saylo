@@ -94,9 +94,15 @@ async function runScenario(scenario) {
     const { readyAt, ...browser } = collected.browser;
     const summary = Object.fromEntries(['saveToAckMs', 'saveToManifestBroadcastMs', 'receiveToCommitMs', 'commitToAckDispatchMs', 'fileWriteMs']
       .map(metric => [metric, summarize(measured.map(sample => sample[metric]))]));
+    const replySizes = summarize(measured.map(sample => sample.catalogReplyBytes));
     return { ...scenario, namespaces: fixture.namespaces, catalogFiles: fixture.catalogFiles, catalogBytes: fixture.catalogBytes,
       renderedMessages: 2, editedLocale: 'en', editedNamespace: 'bench', changedKeysPerSave: 1,
       typegenEnabled: !values['no-typegen'], declarationRewritten: false, browser, serverStartupMs,
+      wire: { patchReplies: measured.filter(s => s.catalogReplyKind === 'patch').length,
+        fullReplies: measured.filter(s => s.catalogReplyKind === 'present').length,
+        maxChangedMessages: Math.max(...measured.map(s => s.changedMessages)),
+        maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),
+        catalogReplyBytes: { p50Bytes: replySizes.p50Ms, p95Bytes: replySizes.p95Ms, minBytes: replySizes.minMs, maxBytes: replySizes.maxMs } },
       browserBootMs: readyAt - launchedAt, summary, controlRoundTrip: summarize(collected.roundTrips),
       controlRoundTripsMs: collected.roundTrips, samples: collected.results };
   } finally {

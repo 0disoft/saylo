@@ -19,9 +19,12 @@ async function request(route, data) {
 }
 const fail = error => { void request('fail', { message: String(error) }).catch(() => {}); };
 import.meta.hot.on('saylo:catalog', reply => {
+  const receivedAt = performance.now();
   const result = reply?.result;
-  if (result?.status === 'present' && result.key.locale === 'en' && result.key.namespace === 'bench')
-    receipts.set(result.catalog.messages.probe.source, performance.now());
+  if ((result?.status === 'present' || result?.status === 'patch') && result.key.locale === 'en' && result.key.namespace === 'bench') {
+    const probe = result.status === 'patch' ? result.upsert.find(([id]) => id === 'probe')?.[1] : result.catalog.messages.probe;
+    if (probe) receipts.set(probe.source, receivedAt);
+  }
 });
 connectDev(instance, { catalogSource, onDiagnostic: diagnostic => { if (diagnostic.message) fail(diagnostic.message); } });
 

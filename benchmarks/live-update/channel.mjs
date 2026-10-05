@@ -11,6 +11,8 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
   let finished = false;
   let timer;
   let settle, reject;
+  let server;
+  const clients = new Map();
   const completion = new Promise((yes, no) => { settle = yes; reject = no; });
   // Attach early so a startup failure is never an unhandled rejection while Vite is initializing.
   completion.catch(() => {});
@@ -34,6 +36,17 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
     if (finished && route !== '/command') throw new Error('Benchmark is no longer active.');
     if (route === '/ready') {
       if (ready) throw new Error('Unexpected page reload invalidated the benchmark.');
+      for (const client of server.ws.clients) {
+        const original = client.send;
+        const instrumented = function (...args) {
+          const frame = args[0];
+          if (current?.kind === 'edit' && frame?.event === 'saylo:catalog' &&
+              frame.data.result?.key?.locale === 'en' && frame.data.result.key.namespace === 'bench') current.catalogReply = frame;
+          return original.apply(this, args);
+        };
+        clients.set(client, { original, instrumented });
+        client.send = instrumented;
+      }
       ready = true; browser = { ...data, readyAt: performance.now() }; armTimeout('command'); reply(res, {});
     } else if (route === '/command') {
       if (!ready || current) throw new Error('Overlapping or premature command.');
@@ -57,12 +70,17 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
       else {
         if (data.text !== current.expected || !Number.isFinite(current.saveFinishedAt) ||
             !Number.isFinite(current.broadcastAt) || !Number.isFinite(data.receiveToCommitMs) || data.receiveToCommitMs < 0 ||
-            !Number.isFinite(data.commitToAckDispatchMs) || data.commitToAckDispatchMs < 0) throw new Error('Invalid sample timing or DOM text.');
+            !Number.isFinite(data.commitToAckDispatchMs) || data.commitToAckDispatchMs < 0 || !current.catalogReply) throw new Error('Invalid sample timing or DOM text.');
+        // Serialize only after the ack clock is captured, keeping size accounting out of latency.
+        const catalog = current.catalogReply.data.result;
         results.push({ token: current.token, warmup: results.length < warmup,
           saveToAckMs: acknowledgedAt - current.saveFinishedAt,
           saveToManifestBroadcastMs: current.broadcastAt - current.saveFinishedAt,
           fileWriteMs: current.saveFinishedAt - current.writeStartedAt,
-          receiveToCommitMs: data.receiveToCommitMs, commitToAckDispatchMs: data.commitToAckDispatchMs });
+          receiveToCommitMs: data.receiveToCommitMs, commitToAckDispatchMs: data.commitToAckDispatchMs,
+          catalogReplyKind: catalog.status, catalogReplyBytes: Buffer.byteLength(JSON.stringify(current.catalogReply)),
+          changedMessages: catalog.status === 'patch' ? catalog.upsert.length : Object.keys(catalog.catalog.messages).length,
+          positionUpdates: catalog.status === 'patch' ? (catalog.positionShift ? catalog.messageCount - catalog.upsert.length : catalog.positions.length) : 0 });
         if (results.length % 10 === 0) console.log(`[bench] ${scenario.id}: ${results.length}/${warmup + samples} edits acknowledged`);
       }
       current = undefined; armTimeout('next command'); reply(res, {});
@@ -70,7 +88,8 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
     else throw new Error('Unknown benchmark route.');
   }
   return { completion, fail, start: () => armTimeout('browser readiness'),
-    plugin: { name: 'saylo-benchmark-channel', configureServer(server) {
+    plugin: { name: 'saylo-benchmark-channel', configureServer(devServer) {
+      server = devServer;
       const original = server.ws.send;
       const instrumented = function (...args) {
         const event = args[0];
@@ -83,6 +102,10 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
         fail(error); if (!res.writableEnded) { res.statusCode = 500; res.end(error.message); }
       }); });
     } },
-    dispose() { clearTimeout(timer); },
+    dispose() {
+      clearTimeout(timer);
+      for (const [client, hooks] of clients) if (client.send === hooks.instrumented) client.send = hooks.original;
+      clients.clear();
+    },
   };
 }

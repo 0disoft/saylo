@@ -1,0 +1,234 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-05T16:00:10.806Z",
+  "gitRevision": "793d94f22af20286bd94cb99c44da9c3a4cba799",
+  "settings": {
+    "samples": 50,
+    "warmup": 5,
+    "calibrations": 25,
+    "timeoutMs": 30000
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26200",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+  "results": [
+    {
+      "id": "1k-3-locales",
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "namespaces": 1,
+      "catalogFiles": 3,
+      "catalogBytes": 110292,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 959.9322,
+      "wire": {
+        "patchReplies": 50,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 931,
+          "p95Bytes": 931,
+          "minBytes": 927,
+          "maxBytes": 931
+        }
+      },
+      "browserBootMs": 2797.2924000000003,
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 77.57510000000002,
+          "p95Ms": 224.30699999999888,
+          "minMs": 44.679299999999785,
+          "maxMs": 281.41759999999977
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 65.42829999999958,
+          "p95Ms": 199.8185999999996,
+          "minMs": 33.41280000000006,
+          "maxMs": 217.63889999999992
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 5.399999976158142,
+          "p95Ms": 8.5,
+          "minMs": 4.100000023841858,
+          "maxMs": 12.400000095367432
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.10000002384185791,
+          "minMs": 0,
+          "maxMs": 0.10000002384185791
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 14.52100000000064,
+          "p95Ms": 61.50840000000062,
+          "minMs": 4.800600000000486,
+          "maxMs": 78.97619999999915
+        }
+      },
+      "controlRoundTrip": {
+        "count": 25,
+        "p50Ms": 5.596400000000358,
+        "p95Ms": 10.368500000000495,
+        "minMs": 3.501299999999901,
+        "maxMs": 11.452900000000227
+      },
+      "controlRoundTripsMs": [
+        8.671699999999873,
+        5.596400000000358,
+        11.452900000000227,
+        8.201200000000426,
+        4.594300000000658,
+        8.343799999999646,
+        8.713999999999942,
+        9.010000000000218,
+        3.977600000000166,
+        8.290399999999863,
+        5.827499999999418,
+        9.60359999999946,
+        4.192199999999502,
+        10.368500000000495,
+        3.715700000000652,
+        5.021600000000035,
+        3.8126000000002023,
+        6.535300000000461,
+        4.515300000000025,
+        3.779500000000553,
+        3.501299999999901,
+        3.615299999999479,
+        4.883699999999408,
+        4.207499999999527,
+        6.357100000000173
+      ],
+      "samplesFile": "live-update-patch.1k-3-locales.samples.json"
+    },
+    {
+      "id": "10k-20-locales",
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "namespaces": 1,
+      "catalogFiles": 20,
+      "catalogBytes": 7755280,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 15916.051,
+      "wire": {
+        "patchReplies": 50,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 936,
+          "p95Bytes": 936,
+          "minBytes": 932,
+          "maxBytes": 936
+        }
+      },
+      "browserBootMs": 6943.667799999996,
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 176.99599999999919,
+          "p95Ms": 229.43239999999787,
+          "minMs": 139.68480000000272,
+          "maxMs": 254.0599000000002
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 115.26460000000225,
+          "p95Ms": 147.25400000000081,
+          "minMs": 88.7013999999981,
+          "maxMs": 177.32370000000083
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 39.89999997615814,
+          "p95Ms": 47.39999997615814,
+          "minMs": 30.299999952316284,
+          "maxMs": 48.199999928474426
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.10000002384185791,
+          "minMs": 0,
+          "maxMs": 0.10000002384185791
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 7.599999999998545,
+          "p95Ms": 10.555899999999383,
+          "minMs": 4.6733000000022,
+          "maxMs": 16.056299999996554
+        }
+      },
+      "controlRoundTrip": {
+        "count": 25,
+        "p50Ms": 3.977599999998347,
+        "p95Ms": 5.684299999993527,
+        "minMs": 3.353499999997439,
+        "maxMs": 13.588299999995797
+      },
+      "controlRoundTripsMs": [
+        13.588299999995797,
+        4.495300000002317,
+        3.8246999999973923,
+        4.423499999997148,
+        5.203099999998813,
+        4.713199999998324,
+        5.684299999993527,
+        4.106400000004214,
+        3.977599999998347,
+        4.730100000000675,
+        3.438000000001921,
+        3.353499999997439,
+        3.481899999998859,
+        4.10570000000007,
+        5.00449999999546,
+        3.746999999995751,
+        3.4301999999952386,
+        3.74829999999929,
+        3.450799999998708,
+        4.211100000000442,
+        3.6975000000020373,
+        3.4865999999965425,
+        3.543599999997241,
+        4.284700000003795,
+        3.4733000000051106
+      ],
+      "samplesFile": "live-update-patch.10k-20-locales.samples.json"
+    }
+  ]
+}
