@@ -5,7 +5,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 ## 현재 상태
 
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 패키지는 아직 비공개이며 npm에 배포하지 않았다.
-- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. production chunk loader와 SSR은 이후 구현한다.
+- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR은 이후 구현한다.
 - 성능 수치는 전부 목표치다. 측정 결과가 아니며, 벤치마크도 아직 없다.
 - 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
 - npm 패키지 이름 `saylo`의 사용 가능 여부는 확인하지 않았다. 라이선스도 아직 정하지 않았다.
@@ -86,7 +86,7 @@ store.dispose();
 
 현재 생성 옵션은 `catalogSource`, `locale`, `initialNamespaces`, `initialCatalogs`와 선택적인 `timeZone`·`requestTimeoutMs`다. manifest는 전체 locale·namespace 목록과 알려진 pair별 version·schema fingerprint·missing tombstone을 담는다. 부팅 pair는 결과를 빠짐없이 명시하고, 이후 결과는 현재 session·pair version·schema로 검사한다. `refresh()`는 어댑터가 manifest 변경 후 현재 원하는 범위를 다시 준비할 때 쓴다. 전역 revision만으로 관계없는 namespace의 정상 결과를 폐기하지 않는다. timeout 기본값은 카탈로그당 5초이며 dispose는 요청·timer·소유 listener를 정리한다.
 
-`npm run demo:lazy`는 언어 전환과 장바구니 namespace 로드를 동시에 실행하는 Node 데모다. 조회 중 한국어 snapshot을 유지하다가 한 번의 commit으로 영어 공통 문구와 한국어 장바구니 폴백을 게시한다. JS/checkJs와 TS 소비 fixture가 같은 키·인자 타입을 검사한다. 현재 경로는 parsed catalog를 받는 프로토타입이다. 개발에서는 Vite 범용 loader·부분 전송과 React 연결을 지원한다. 현재 production fallback은 전체 카탈로그를 한 번들에 싣고 같은 `CatalogSource` 계약을 제공하며, 정적 chunk loader와 SSR BootSnapshot은 후속 단계다.
+`npm run demo:lazy`는 언어 전환과 장바구니 namespace 로드를 동시에 실행하는 Node 데모다. 조회 중 한국어 snapshot을 유지하다가 한 번의 commit으로 영어 공통 문구와 한국어 장바구니 폴백을 게시한다. JS/checkJs와 TS 소비 fixture가 같은 키·인자 타입을 검사한다. 현재 경로는 parsed catalog를 받는 프로토타입이다. 개발에서는 Vite 범용 loader·부분 전송과 React 연결을 지원한다. 운영 경로는 `createStaticCatalogSource(initialManifest, initialCatalogs, entries)`로 boot pair만 inline으로 싣고 나머지 present pair는 생성된 literal `import()` loader entry로 분리한다. 실패나 session·version·fingerprint/key 불일치는 캐시에 반영하지 않고, missing tombstone은 import 없이 반환한다. SSR BootSnapshot은 후속 단계다.
 
 lazy 앱은 아래처럼 연결한다. Vite의 `initialNamespaces` 옵션으로 부팅 범위를 정하며, 생략하면 기준 namespace 전체다. source는 여러 instance가 공유할 수 있고 마지막 연결 해제 후 자신이 등록한 HMR listener를 정리한다.
 

@@ -161,13 +161,24 @@ test('source timeout and module disposal reject pending loads and release listen
   assert.equal(f.hot.listenerCount(CATALOG_EVENT), 0);
 });
 
-test('static fallback consumes the same catalog source contract without HMR', async t => {
+test('static chunk source consumes the same catalog contract and loads only desired pairs', async t => {
   const f = fixture(t);
   const registry = f.registry();
-  const source = createStaticCatalogSource(registry.manifest(), registry.manifest().catalogs.map(m => registry.load(m.key.locale, m.key.namespace)));
+  const loaded = [];
+  const source = createStaticCatalogSource(registry.manifest(), f.initial, registry.manifest().catalogs
+    .filter(m => m.key.locale !== 'ko' || m.key.namespace !== 'demo').map(m => ({ key: m.key, load: async () => {
+      loaded.push([m.key.locale, m.key.namespace]);
+      return registry.load(m.key.locale, m.key.namespace);
+    } })));
   const instance = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['demo'], initialCatalogs: f.initial });
   t.after(() => instance.dispose());
   connectDev(instance, { catalogSource: source });
+  assert.deepEqual(loaded, []);
+  assert.equal(source.getCatalogs().length, 1);
   await Promise.all([instance.setLocale('en'), instance.loadNamespace('help')]);
   assert.equal(instance.t('help:title'), 'Help');
+  assert.deepEqual(loaded.sort(), [['en', 'demo'], ['en', 'help'], ['ko', 'help']]);
+  await instance.setLocale('ko');
+  await instance.setLocale('en');
+  assert.equal(loaded.length, 3);
 });

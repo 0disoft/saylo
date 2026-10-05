@@ -7,6 +7,8 @@ import { CatalogRegistry } from './catalog-registry.js';
 import { scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
+import { catalogId } from './catalog-outcome.js';
+import type { CatalogOutcome } from '@saylo/core';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
   REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest, isSnapshotRequest } from './types.js';
 import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './types.js';
@@ -15,6 +17,8 @@ const VIRTUAL = 'virtual:saylo';
 const RESOLVED = `\0${VIRTUAL}`;
 const LAZY = 'virtual:saylo/lazy';
 const RESOLVED_LAZY = `\0${LAZY}`;
+const CHUNK = 'virtual:saylo/catalog/';
+const encode = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
 
 export default function saylo(options: SayloViteOptions): Plugin {
   const baseLocale = Intl.getCanonicalLocales(options.baseLocale)[0];
@@ -26,6 +30,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let files = new Map<string, CatalogFile>();
   let registry: CatalogRegistry;
   let production = false;
+  const chunks = new Map<string, CatalogOutcome>();
   let revision = 0;
   let server: ViteDevServer | undefined;
   let live: LiveRegistry | undefined;
@@ -90,6 +95,11 @@ export default function saylo(options: SayloViteOptions): Plugin {
       // Fresh strict validation for startup and builds, using the same core contracts.
       createStore({ baseLocale, locale: initialLocale, catalogs: snapshot().catalogs, timeZone }).dispose();
       registry = new CatalogRegistry(sessionId, baseLocale, snapshot().catalogs);
+      chunks.clear();
+      if (production) for (const meta of registry.manifest().catalogs) {
+        if (meta.status === 'present') chunks.set(`${CHUNK}${encodeURIComponent(meta.key.locale)}/${encodeURIComponent(meta.key.namespace)}`,
+          registry.load(meta.key.locale, meta.key.namespace));
+      }
       if (options.typegen) {
         generatedOut = path.resolve(config.root, options.typegen.outFile);
         typegen = new TypeGenerator(generatedOut);
@@ -97,8 +107,14 @@ export default function saylo(options: SayloViteOptions): Plugin {
         catch (error) { await cleanup(); throw error; }
       }
     },
-    resolveId(id) { if (id === VIRTUAL) return RESOLVED; if (id === LAZY) return RESOLVED_LAZY; },
+    resolveId(id) {
+      if (id === VIRTUAL) return RESOLVED;
+      if (id === LAZY) return RESOLVED_LAZY;
+      if (chunks.has(id)) return `\0${id}`;
+    },
     load(id) {
+      const chunk = chunks.get(id.startsWith('\0') ? id.slice(1) : id);
+      if (chunk) return `export default ${encode(chunk)};`;
       if (id === RESOLVED_LAZY) {
         const manifest = registry.manifest();
         const locale = manifest.availableLocales.includes(initialLocale) ? initialLocale : baseLocale;
@@ -106,13 +122,15 @@ export default function saylo(options: SayloViteOptions): Plugin {
         if (namespaces.length !== (options.initialNamespaces?.length ?? namespaces.length) || namespaces.some(n => !manifest.availableNamespaces.includes(n)))
           throw new RangeError('initialNamespaces must be unique available base namespaces.');
         const outcomes = namespaces.flatMap(namespace => [...new Set([baseLocale, locale])].map(locale => registry.load(locale, namespace)));
-        const encode = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
-        return `import { createDevCatalogSource, createStaticCatalogSource } from '@saylo/vite/client';
+        const bootPairs = new Set(outcomes.map(outcome => catalogId(outcome.key)));
+        const loaders = [...chunks].filter(([, outcome]) => !bootPairs.has(catalogId(outcome.key)))
+          .map(([moduleId, outcome]) => `{ key: ${encode(outcome.key)}, load: () => import(${encode(moduleId)}).then(module => module.default) }`);
+        return `import { ${production ? 'createStaticCatalogSource' : 'createDevCatalogSource'} } from '@saylo/vite/client';
 export const initialCatalogs = ${encode(outcomes)};
 export const initialLocale = ${encode(locale)};
 export const initialNamespaces = ${encode(namespaces)};
 export const timeZone = ${encode(timeZone)};
-export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, ${encode(manifest.catalogs.map(c => registry.load(c.key.locale, c.key.namespace)))})`
+export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, initialCatalogs, [${loaders.join(',\n')}])`
           : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot })`};`;
       }
       if (id !== RESOLVED) return;

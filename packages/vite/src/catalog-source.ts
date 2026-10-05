@@ -1,23 +1,11 @@
 import { CatalogLoadError, validateCatalogManifest } from '@saylo/core';
 import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, CatalogSource, ParsedCatalog } from '@saylo/core';
 import { EagerSync } from './dev-sync.js';
-import { freezeCatalogs } from './freeze.js';
+import { catalogId as id, immutable, matches } from './catalog-outcome.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';
 import type { CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, ManifestEvent } from './types.js';
 
 type HotContext = NonNullable<ImportMeta['hot']>;
-const noop = () => {};
-const id = (key: CatalogKey) => JSON.stringify([key.locale, key.namespace]);
-function matches(manifest: CatalogManifest, result: CatalogOutcome) {
-  const known = manifest.catalogs.find(meta => id(meta.key) === id(result.key));
-  return result.sessionId === manifest.sessionId && result.catalogVersion === (known?.catalogVersion ?? 0) &&
-    result.status === (known?.status ?? 'missing') && (result.status !== 'present' ||
-      (known?.status === 'present' && result.namespaceSchemaFingerprint === known.namespaceSchemaFingerprint));
-}
-function immutable(result: CatalogOutcome): CatalogOutcome {
-  if (result.status === 'present') freezeCatalogs([result.catalog]);
-  return Object.freeze({ ...result, key: Object.freeze({ ...result.key }) });
-}
 
 export interface DevCatalogSource extends CatalogSource {
   getCatalogs(): readonly ParsedCatalog[];
@@ -180,22 +168,4 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   hot.dispose(source.dispose);
   hot.prune(source.dispose);
   return source;
-}
-
-/** Temporary production fallback; static chunk loaders replace this in the build stage. */
-export function createStaticCatalogSource(initial: CatalogManifest, outcomes: readonly CatalogOutcome[]): DevCatalogSource {
-  const manifest = validateCatalogManifest(initial);
-  const cache = new Map(outcomes.map(outcome => [id(outcome.key), immutable(outcome)]));
-  for (const meta of manifest.catalogs) {
-    const result = cache.get(id(meta.key));
-    if (!result || !matches(manifest, result)) throw new CatalogLoadError('INVALID_STATIC_CATALOG', 'Static source must include every known pair outcome.');
-  }
-  return Object.freeze({ readManifest: () => manifest,
-    getCatalogs: () => Object.freeze([...cache.values()].filter(o => o.status === 'present').map(o => o.catalog)),
-    subscribeManifest: () => noop, subscribeDiagnostic: () => noop, connect: () => noop, dispose: noop,
-    async loadCatalog(locale: string, namespace: string) {
-      return cache.get(id({ locale, namespace })) ?? Object.freeze({ status: 'missing' as const, sessionId: manifest.sessionId,
-        key: Object.freeze({ locale, namespace }), catalogVersion: 0 });
-    },
-  });
 }

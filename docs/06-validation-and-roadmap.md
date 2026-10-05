@@ -35,7 +35,9 @@
 
 10a의 지연 로딩 코어를 추가했다. `createI18n`의 교차 의도 완료, 실제 언어 선택 대체, missing 폴백, 실패·timeout, pair별 version과 세션 검증, tombstone 유지, manifest 추가·삭제, dispose와 subscriber 오류를 16개 테스트로 검증했다. 전체 check와 JS/checkJs·TS 소비 검사, `npm run demo:lazy`가 통과했다. 코어 49개, React 5개, typegen 5개, Vite 38개로 총 97개 테스트가 통과했다. Vite 범용 loader·부분 전송과 React lazy 데모는 10b에서 연결한다.
 
-10b의 Vite 범용 조회·부분 전송과 React 연결을 완료했다. 코어 49개, Vite 49개, React 6개, typegen 5개로 총 109개 테스트, 전체 check·JS/TS 소비 검사와 두 production 데모 빌드가 통과했다. 실제 브라우저 WebSocket에서 영어 선택의 `en/demo` 단독 조회, loaded pair 수정, 신규 namespace의 명시 로드 전 AST 미전송·로드 시 base+target 두 pair 조회를 확인했다. 폼 입력·포커스·모달 유지, JSON 오류 복구, 부팅 뒤 로케일 추가·선택, namespace 삭제와 현재 로케일 삭제 후 기준 언어 전환도 확인했다. 현재 production fallback은 전체 bundle이며 정적 chunk loader는 11단계다.
+10b의 Vite 범용 조회·부분 전송과 React 연결을 완료했다. 코어 49개, Vite 49개, React 6개, typegen 5개로 총 109개 테스트, 전체 check·JS/TS 소비 검사와 두 production 데모 빌드가 통과했다. 실제 브라우저 WebSocket에서 영어 선택의 `en/demo` 단독 조회, loaded pair 수정, 신규 namespace의 명시 로드 전 AST 미전송·로드 시 base+target 두 pair 조회를 확인했다. 폼 입력·포커스·모달 유지, JSON 오류 복구, 부팅 뒤 로케일 추가·선택, namespace 삭제와 현재 로케일 삭제 후 기준 언어 전환도 확인했다. 이 시점 운영 fallback은 전체 bundle이었고 정적 chunk loader는 11단계로 남아 있었다.
+
+11단계의 운영 정적 로더를 구현하고 실제 결과로 검증했다. `virtual:saylo/lazy`가 전체 metadata manifest와 base+initial locale의 initialNamespaces pair만 inline으로 싣고, 나머지 present pair는 generated virtual module의 literal `import()` loader entry로 분리한다. `createStaticCatalogSource(initialManifest, initialCatalogs, entries)`가 on-demand import·cache·dedupe를 처리하고, 실패나 session·version·fingerprint/key 불일치는 캐시에 반영하지 않으며 missing tombstone은 import 없이 반환한다. dev source와 eager `virtual:saylo`는 기존과 같다. 새 테스트 4개가 실제 Vite production build의 분리된 dynamic chunk 3개, emitted module 실행(locale+namespace fallback), fresh invalid disk build 실패, 정적 source dedupe·cache·retry·missing을 확인하고 기존 lazy test는 fallback에서 chunk 계약 검사로 교체했다. `npm run check`가 통과했고 core 49·Vite 53·React 6·typegen 5로 총 113개, JS/TS 소비 검사와 두 데모 production build가 통과했다. React 운영 브라우저 CDP에서 초기 요청은 HTML·main JS·CSS뿐이었고 영어 선택 시 demo dynamic chunk 하나만 요청됐으며 한국어/영어 재전환에는 추가 요청이 없었다. 폼 입력·포커스와 열린 모달·모달 입력이 유지됐고 WebSocket 연결과 console error/warn은 0이었다. 성능 수치·parser elimination·SSR은 미완료다.
 
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
@@ -63,13 +65,13 @@
 
 ## 검증 방식
 
-- 이번 작업은 문서 전용이다. 공개 타입 선언을 분리해 TS와 checkJs 소비 사례를 검사하고, Markdown 링크·JSON 예제·코드 블록·파일 크기를 확인한다. 결과는 [리뷰 반영 기록](../review/feedback-resolution.ko.md)에 남긴다.
+- 문서와 구현을 함께 갱신한다. 공개 타입 선언과 소비 fixture 검사, 실제 production build·정적 loader 검증을 수행하고, Markdown 링크·JSON 예제·코드 블록·파일 크기도 확인한다. 현재 구현의 결과는 이 문서의 단계별 검증 기록에 남긴다. 문서 설계 리뷰는 [리뷰 반영 기록](../review/feedback-resolution.ko.md)을 참고한다.
 - 실행하지 않은 검사는 pass가 아니다. 문서 링크 확인도 항목별로 남긴다.
 - 검증하지 않은 항목은 미검증으로 유지한다. 성능 수치는 전부 목표치다.
 
 ## 로드맵
 
-작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 이번 문서 작업에서 구현은 하지 않는다.
+작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 현재 11단계 정적 로더까지 로컬 구현을 진행했고, 이후 단계도 같은 방식으로 이어간다.
 
 | 순서 | 커밋의 한 가지 책임 | 완료 기준 |
 | --- | --- | --- |
@@ -84,7 +86,7 @@
 | 9 | 세션·snapshot handshake와 resync | 범위가 있는 snapshot 요청, 중복·gap·늦은 응답을 처리한다 |
 | 10a | 지연 로딩 코어와 전환 조정 | desired locale·namespace 준비 상태, missing·failure·stale 결과를 처리한다. 로컬 구현 완료 |
 | 10b | Vite 범용 로더와 부분 전송 | boot 이후 새 namespace 조회, pair별 version·tombstone, loaded scope 갱신과 React 데모를 연결한다. 로컬 구현 완료 |
-| 11 | fresh production build | 현재 디스크 검증 → typegen → consumer 검사 → AST·정적 loader 산출을 연결한다 |
+| 11 | fresh production build | 현재 디스크 검증 → typegen → consumer 검사 → AST·정적 loader 산출을 연결한다. 로컬 구현 완료 |
 | 12 | SSR serializer와 hydration fixture | 요청별 snapshot, boot escape, hydration 직전 갱신을 검증한다 |
 
 1–8단계에서는 작은 fixture를 eager로 실어도 된다. 9–10단계에서 부분 전송과 미로드 상태가 들어올 때 카탈로그별 버전 계약을 적용한다.

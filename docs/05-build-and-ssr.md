@@ -22,7 +22,7 @@
 ## 지연 로딩
 
 - 로케일과 namespace는 `CatalogSource`를 통해 지연 로딩한다. 전체 카탈로그를 한 번에 싣지 않는다.
-- 개발은 범용 `loadCatalog(locale, namespace)`가 현재 registry를 조회한다. 운영은 generated static loader map만 쓴다. 둘 다 같은 인터페이스를 뒤에 둔다.
+- 개발은 범용 `loadCatalog(locale, namespace)`가 현재 registry를 조회한다. 운영은 boot pair를 inline으로 싣고 나머지 present pair를 생성된 literal `import()` loader entry로 분리한다(`createStaticCatalogSource`). 둘 다 같은 인터페이스를 뒤에 둔다.
 - 서버에서 카탈로그를 파싱할 때 브라우저의 소스 파일 시스템에 접근하지 않는다. 서버가 파일을 읽어 파싱하고, 클라이언트는 결과를 받는다.
 
 ## 런타임 로케일 전환
@@ -39,7 +39,7 @@
 
 ## Vite 변환
 
-- 처음에는 안정적인 virtual module 하나를 노출한다. 이 모듈은 handle, boot data(BootSnapshot), catalogSource만 제공한다. HMR 이벤트 등록은 `connectDev`가 담당한다.
+- `virtual:saylo`(eager 전체 registry)와 `virtual:saylo/lazy`(boot data와 catalogSource) 두 virtual module을 노출한다. HMR 이벤트 등록은 `connectDev`가 담당한다.
 - 로케일을 동적으로 다시 export하는 const는 모듈을 무효화하지 않는다. 갱신은 store 스냅샷으로 전달하고, 모듈 자체를 바꾸지 않는다.
 - namespace manifest가 동적으로 늘거나 줄면 patch envelope의 `availableNamespaces`와 mutable manifest handle 갱신으로 전달한다. 개발에는 정적 namespace map이 없다. 새 namespace 조회는 범용 `loadCatalog`가 처리하고, 정적 loader map은 운영에서만 생성한다.
 - Vite dev server 재시작이나 websocket 재연결에서 Vite client가 스스로 full reload(`location.reload`)를 하는 경우가 있다. 그 경로는 Saylo의 DOM 보존 범위 밖이다. Saylo의 무리로드 보장은 정상 번역 변경에 한정한다.

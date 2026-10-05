@@ -1,5 +1,5 @@
 import saylo from '@saylo/vite';
-import { connectDev } from '@saylo/vite/client';
+import { connectDev, createStaticCatalogSource } from '@saylo/vite/client';
 import { createI18n, createStore } from '@saylo/core';
 import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
@@ -12,3 +12,9 @@ const lazy = createI18n({ catalogSource, locale: lazyLocale, initialNamespaces, 
 connectDev(lazy, { catalogSource });
 // @ts-expect-error checkJs also requires the lazy source handle
 connectDev(lazy);
+
+createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [
+  { key: { locale: 'en', namespace: 'demo' }, load: async () => lazyCatalogs[0] },
+]);
+// @ts-expect-error checkJs also rejects unversioned static outcomes
+createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [{ key: { locale: 'en', namespace: 'demo' }, load: async () => ({}) }]);
