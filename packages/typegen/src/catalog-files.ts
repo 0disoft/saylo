@@ -23,10 +23,10 @@ export async function assertInside(root: string, file: string): Promise<void> {
   }
 }
 
-export async function readCatalogFile(root: string, file: string, locale: string, namespace: string, read: () => string | Promise<string> = () => readFile(file, 'utf8')): Promise<CatalogFile> {
+export async function readCatalogFile(root: string, file: string, locale: string, namespace: string, read: () => string | Promise<string> = () => readFile(file, 'utf8'), previous?: ParsedCatalog): Promise<CatalogFile> {
   await assertInside(root, file);
   const source = await read();
-  const catalog = parseCatalog(source, { locale, namespace, sourceName: path.relative(root, file).split(path.sep).join('/') });
+  const catalog = parseCatalog(source, { locale, namespace, sourceName: path.relative(root, file).split(path.sep).join('/') }, previous);
   return { file, source, catalog };
 }
 

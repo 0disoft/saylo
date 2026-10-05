@@ -155,6 +155,17 @@ test('bad JSON retains last good registry and recovery clears diagnostic', async
   assert.equal(events.at(-1).data.message, '');
 });
 
+test('live file reads reuse unchanged message AST without retaining edited text', async t => {
+  const { change, request } = await setup(t);
+  await change('ko', '{"hello":"First {name}","keep":"{n, plural, other {#}}"}');
+  const first = request()[0].data.catalogs.find(c => c.locale === 'ko');
+  await change('ko', '{"hello":"Later {name}","keep":"{n, plural, other {#}}"}');
+  const next = request()[0].data.catalogs.find(c => c.locale === 'ko');
+  assert.equal(next.messages.hello.source, 'Later {name}');
+  assert.notEqual(next.messages.hello.ast, first.messages.hello.ast);
+  assert.equal(next.messages.keep, first.messages.keep);
+});
+
 test('base schema change revalidates translations atomically', async t => {
   const { change, request } = await setup(t);
   await change('ko', '{"hello":"안녕 {count, number}"}');

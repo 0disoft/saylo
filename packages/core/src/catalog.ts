@@ -1,10 +1,11 @@
 import { parse } from '@formatjs/icu-messageformat-parser';
-import { CatalogError, freeze, createPositionLocator } from './diagnostics.js';
+import { CatalogError, freeze, createPositionLocator, isDeepFrozen } from './diagnostics.js';
 import { messageOffset, readJson } from './json.js';
 import { inferArguments } from './schema.js';
 import type { CatalogDiagnostic, CatalogOptions, ParsedCatalog, ParsedMessage } from './types.js';
 
-export function parseCatalog(source: string, options: CatalogOptions): ParsedCatalog {
+/** An immutable previous catalog lets live readers reuse unchanged ICU messages. */
+export function parseCatalog(source: string, options: CatalogOptions, previous?: ParsedCatalog): ParsedCatalog {
   const context = { ...options, sourceName: options.sourceName ?? '<catalog>' };
   if (typeof options.namespace !== 'string' || !options.namespace || options.namespace === '.' || options.namespace === '..' || /[:/\\\x00-\x1f]/.test(options.namespace)) {
     throw new CatalogError([{ ...context, code: 'INVALID_NAMESPACE', message: 'Namespace must be a nonempty filename without colons or path separators.' }]);
@@ -20,6 +21,8 @@ export function parseCatalog(source: string, options: CatalogOptions): ParsedCat
   const diagnostics: CatalogDiagnostic[] = [];
   const messages: Record<string, ParsedMessage> = Object.create(null);
   const locale = new Intl.Locale(context.locale);
+  const reusable = previous && isDeepFrozen(previous) && previous.locale === context.locale &&
+    previous.namespace === context.namespace && previous.sourceName === context.sourceName ? previous.messages : undefined;
   for (const entry of entries) {
     const details = { ...context, id: entry.id };
     if (entry.id.length === 0 || entry.id.includes(':')) {
@@ -27,6 +30,13 @@ export function parseCatalog(source: string, options: CatalogOptions): ParsedCat
       continue;
     }
     try {
+      const before = reusable && Object.hasOwn(reusable, entry.id) ? reusable[entry.id] : undefined;
+      if (before?.source === entry.value) {
+        const position = positionAt(entry.valueOffset);
+        messages[entry.id] = before.position.offset === position.offset && before.position.line === position.line &&
+          before.position.column === position.column ? before : freeze({ ...before, position });
+        continue;
+      }
       const ast = parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
         position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }));

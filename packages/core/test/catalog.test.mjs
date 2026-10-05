@@ -174,3 +174,21 @@ test('deep freeze visits children of an externally shallow-frozen object', () =>
   assert.throws(() => { value.nested.values.push('after'); }, TypeError);
   assert.equal(freeze(value), value);
 });
+
+test('incremental parsing reuses unchanged ICU but refreshes source positions and validates changed entries', () => {
+  const first = parseCatalog('{"x":"{n, number}","keep":"{name}"}', options);
+  const source = '{\n  "x":"Changed {n, number}",\n  "keep":"{name}"\n}';
+  const next = parseCatalog(source, options, first);
+  assert.notEqual(next.messages.x.ast, first.messages.x.ast);
+  assert.equal(next.messages.keep.ast, first.messages.keep.ast);
+  assert.equal(next.messages.keep.arguments, first.messages.keep.arguments);
+  assert.deepEqual(next.messages.keep.position, { offset: source.indexOf('"{name}"'), line: 3, column: 10 });
+  assert.deepEqual(next, parseCatalog(source, options));
+  rejectsCode(() => parseCatalog('{"keep":"{name}","keep":"bad"}', options, first), 'DUPLICATE_ID');
+  rejectsCode(() => parseCatalog('{"keep":"{name"}', options, first), 'INVALID_ICU');
+  rejectsCode(() => parseCatalog('{"keep":"{n, number} {n, select, other {x}}"}', options, first), 'ARGUMENT_CONFLICT');
+  const removed = parseCatalog('{"keep":"{name}"}', options, next);
+  assert.deepEqual(Object.keys(removed.messages), ['keep']);
+  const translated = parseCatalog('{"keep":"{name}"}', { ...options, locale: 'en' }, first);
+  assert.notEqual(translated.messages.keep.ast, first.messages.keep.ast);
+});

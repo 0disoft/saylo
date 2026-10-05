@@ -99,7 +99,7 @@ export class LiveRegistry {
         const location = catalogLocation(this.root, file)!;
         try {
           // Read the final filesystem state, rather than trusting an earlier unlink/add label.
-          const changed = await readCatalogFile(this.root, file, location.locale, location.namespace, read);
+          const changed = await readCatalogFile(this.root, file, location.locale, location.namespace, read, candidate.get(file)?.catalog);
           candidate.set(file, changed);
           errors.delete(file);
         } catch (error) {
