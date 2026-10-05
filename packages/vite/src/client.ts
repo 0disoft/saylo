@@ -1,7 +1,14 @@
-import type { ParsedCatalog, Schema, Store } from '@saylo/core';
+import type { I18n, ParsedCatalog, Schema, Store } from '@saylo/core';
 import { EagerSync } from './dev-sync.js';
 import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from './types.js';
 import type { EagerCatalogEvent, LiveDiagnostic } from './types.js';
+import { freezeCatalogs } from './freeze.js';
+import { connectLazyDev } from './lazy-connection.js';
+import type { ConnectLazyDevOptions } from './lazy-connection.js';
+export { freezeCatalogs } from './freeze.js';
+export { createDevCatalogSource, createStaticCatalogSource } from './catalog-source.js';
+export type { DevCatalogSource, DevCatalogSourceOptions } from './catalog-source.js';
+export type { ConnectLazyDevOptions } from './lazy-connection.js';
 
 type HotContext = NonNullable<ImportMeta['hot']>;
 export interface ConnectDevOptions {
@@ -12,28 +19,23 @@ export interface ConnectDevOptions {
   readonly requestTimeoutMs?: number;
 }
 
-/** Restore immutability of trusted plugin-produced AST data after JSON transport. */
-export function freezeCatalogs(catalogs: readonly ParsedCatalog[]): readonly ParsedCatalog[] {
-  function freeze(value: unknown) {
-    if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze(child);
-      Object.freeze(value);
-    }
-  }
-  freeze(catalogs);
-  return catalogs;
-}
-
 const bindings = new WeakMap<object, () => void>();
 const hotBindings = new WeakMap<HotContext, Set<() => void>>();
 const noop = () => {};
 
-export function connectDev<S extends Schema>(store: Store<S>, options: ConnectDevOptions = {}): () => void {
+export function connectDev<S extends Schema>(store: Store<S>, options?: ConnectDevOptions): () => void;
+export function connectDev<S extends Schema>(store: I18n<S>, options: ConnectLazyDevOptions): () => void;
+export function connectDev<S extends Schema>(store: Store<S> | I18n<S>, options: ConnectDevOptions | ConnectLazyDevOptions = {}): () => void {
+  if ('refresh' in store) {
+    if (!('catalogSource' in options)) throw new Error('Lazy connectDev requires catalogSource.');
+    return connectLazyDev(store, options);
+  }
   const existing = bindings.get(store);
   if (existing) return existing;
-  const hot = options.hot ?? import.meta.hot;
+  const eagerOptions = options as ConnectDevOptions;
+  const hot = eagerOptions.hot ?? import.meta.hot;
   if (!hot) return noop;
-  const timeoutMs = options.requestTimeoutMs ?? 5000;
+  const timeoutMs = eagerOptions.requestTimeoutMs ?? 5000;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('requestTimeoutMs must be a positive timer duration.');
   let unwatchDispose = noop;
   const report = (error: unknown) => options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [] });

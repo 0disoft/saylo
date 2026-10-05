@@ -8,7 +8,8 @@ import test from 'node:test';
 import saylo from '../dist/index.js';
 import { createStore } from '@saylo/core';
 import { assertInside, scanCatalogs } from '../dist/catalog-files.js';
-import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from '../dist/types.js';
+import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
+  REQUEST_EVENT, SNAPSHOT_EVENT } from '../dist/types.js';
 
 async function fixture(t) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-vite-'));
@@ -30,10 +31,15 @@ async function setup(t, options = {}) {
   const warnings = [];
   const ws = new EventEmitter();
   ws.send = event => events.push(event);
+  ws.clients = new Set();
   const watcher = new EventEmitter();
   watcher.add = () => {};
   const server = { ws, watcher, httpServer: new EventEmitter(), config: { logger: { warn(message) { warnings.push(message); } } } };
   plugin.configureServer(server);
+  const eagerClient = { send: event => ws.send(event) };
+  ws.clients.add(eagerClient);
+  ws.emit(REQUEST_EVENT, { scope: 'eager', requestId: 'eager', generation: 1, locale: 'ko', namespaces: ['demo'] }, eagerClient);
+  events.length = 0;
   const change = (locale, source) => plugin.hotUpdate({
     type: 'update', file: path.join(root, locale, 'demo.json'), read: () => source, modules: [], server,
   });
@@ -342,4 +348,39 @@ test('malformed snapshot requests get a targeted diagnostic without a registry r
     assert.match(replies[0].data.message, /Invalid eager snapshot request/);
   }
   assert.equal(events.length, 0);
+});
+
+test('lazy virtual boot includes only its base/target scope and catalog requests are targeted', async t => {
+  const { plugin, disk, ws } = await setup(t, { initialNamespaces: ['demo'] });
+  await disk('create', 'ko', 'help', '{"title":"PRIVATE_HELP_TEXT"}');
+  const lazy = plugin.load(plugin.resolveId('virtual:saylo/lazy'));
+  assert.ok(lazy.includes('createDevCatalogSource'));
+  assert.ok(!lazy.includes('PRIVATE_HELP_TEXT'));
+  assert.ok(!lazy.includes('en {name}'));
+  const replies = [];
+  ws.emit(CATALOG_REQUEST_EVENT, { requestId: 'lazy:1', generation: 1, locale: 'ko', namespace: 'help' }, { send: event => replies.push(event) });
+  assert.equal(replies.length, 1);
+  assert.equal(replies[0].event, CATALOG_EVENT);
+  assert.equal(replies[0].data.result.catalog.messages.title.source, 'PRIVATE_HELP_TEXT');
+  assert.equal(replies[0].data.result.catalog.namespace, 'help');
+  ws.emit(CATALOG_REQUEST_EVENT, { requestId: 'lazy:2', generation: 1, locale: 'en', namespace: 'help' }, { send: event => replies.push(event) });
+  assert.equal(replies[1].data.result.status, 'missing');
+  assert.equal(replies[1].data.result.catalogVersion, 0);
+});
+
+test('lazy-only clients receive metadata broadcasts and stable scoped versions after deletion', async t => {
+  const { ws, events, change, disk } = await setup(t);
+  ws.clients.clear();
+  await change('en', '{"hello":"NEW_TRANSLATION_TEXT {name}"}');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 0);
+  assert.equal(events.filter(e => e.event === MANIFEST_EVENT).length, 1);
+  assert.ok(!JSON.stringify(events[0]).includes('NEW_TRANSLATION_TEXT'));
+  const replies = [];
+  const request = { scope: 'eager', requestId: 'metadata:1', generation: 1, locale: 'ko', namespaces: [] };
+  ws.emit(MANIFEST_REQUEST_EVENT, request, { send: event => replies.push(event) });
+  const before = replies[0].data.manifest.catalogs.find(c => c.key.locale === 'en');
+  await disk('delete', 'en');
+  const after = events.at(-1).data.manifest.catalogs.find(c => c.key.locale === 'en');
+  assert.equal(after.status, 'missing');
+  assert.equal(after.catalogVersion, before.catalogVersion + 1);
 });

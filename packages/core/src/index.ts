@@ -4,6 +4,7 @@ export { createBaseSchema, validateTranslation } from './schema.js';
 export { createTranslator } from './translator.js';
 export { createStore } from './store.js';
 export { createI18n } from './i18n.js';
+export { readManifest as validateCatalogManifest } from './loading-registry.js';
 export { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
 export { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
 export type {

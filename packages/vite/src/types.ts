@@ -1,10 +1,12 @@
-import type { CatalogDiagnostic, ParsedCatalog } from '@saylo/core';
+import type { CatalogDiagnostic, CatalogLoadResult, CatalogManifest, ParsedCatalog } from '@saylo/core';
 
 export interface SayloViteOptions {
   /** Relative to Vite root: <localesDir>/<locale>/<namespace>.json. */
   readonly localesDir: string;
   readonly baseLocale: string;
   readonly initialLocale?: string;
+  /** Scope exported by virtual:saylo/lazy. Defaults to every base namespace. */
+  readonly initialNamespaces?: readonly string[];
   readonly timeZone?: string;
   /** Declaration file relative to Vite root. Startup awaits it; live updates do not. */
   readonly typegen?: { readonly outFile: string };
@@ -60,3 +62,28 @@ export interface LiveDiagnostic {
 export const SNAPSHOT_EVENT = 'saylo:eager-snapshot';
 export const REQUEST_EVENT = 'saylo:request-eager-snapshot';
 export const DIAGNOSTIC_EVENT = 'saylo:eager-diagnostic';
+
+export type ManifestEvent = { readonly manifest: CatalogManifest } & (
+  | { readonly kind: 'snapshot'; readonly request: EagerSnapshotRequest }
+  | { readonly kind: 'update'; readonly baseRevision: number }
+);
+export interface CatalogRequest {
+  readonly requestId: string;
+  readonly generation: number;
+  readonly locale: string;
+  readonly namespace: string;
+}
+export interface CatalogReply {
+  readonly request: CatalogRequest;
+  readonly result: CatalogLoadResult;
+}
+export function isCatalogRequest(value: unknown): value is CatalogRequest {
+  if (!value || typeof value !== 'object') return false;
+  const request = value as CatalogRequest;
+  if (!isSnapshotRequest({ ...request, scope: 'eager', namespaces: [request.namespace] })) return false;
+  return request.namespace !== '.' && request.namespace !== '..' && !/[:/\\\x00-\x1f]/.test(request.namespace);
+}
+export const MANIFEST_EVENT = 'saylo:manifest';
+export const MANIFEST_REQUEST_EVENT = 'saylo:request-manifest';
+export const CATALOG_REQUEST_EVENT = 'saylo:request-catalog';
+export const CATALOG_EVENT = 'saylo:catalog';

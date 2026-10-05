@@ -2,15 +2,19 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { createBaseSchema, createStore } from '@saylo/core';
 import { isGeneratedFile, TypeGenerator } from '@saylo/typegen';
-import type { Plugin, ViteDevServer } from 'vite';
+import type { Plugin, ViteDevServer, WebSocketClient } from 'vite';
+import { CatalogRegistry } from './catalog-registry.js';
 import { scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
-import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT, isSnapshotRequest } from './types.js';
+import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
+  REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest, isSnapshotRequest } from './types.js';
 import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './types.js';
 
 const VIRTUAL = 'virtual:saylo';
 const RESOLVED = `\0${VIRTUAL}`;
+const LAZY = 'virtual:saylo/lazy';
+const RESOLVED_LAZY = `\0${LAZY}`;
 
 export default function saylo(options: SayloViteOptions): Plugin {
   const baseLocale = Intl.getCanonicalLocales(options.baseLocale)[0];
@@ -20,6 +24,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
   const sessionId = randomUUID();
   let root = '';
   let files = new Map<string, CatalogFile>();
+  let registry: CatalogRegistry;
+  let production = false;
   let revision = 0;
   let server: ViteDevServer | undefined;
   let live: LiveRegistry | undefined;
@@ -27,14 +33,29 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let generatedOut: string | undefined;
   const isTypegenFile = (file: string) => generatedOut !== undefined && isGeneratedFile(generatedOut, file);
   let diagnostic: LiveDiagnostic = { message: '', diagnostics: [] };
+  const eagerClients = new Set<WebSocketClient>();
   const snapshot = () => ({ sessionId, revision, baseLocale, catalogs: [...files.values()].map(f => f.catalog) });
   const request: Parameters<ViteDevServer['ws']['on']>[1] = (data, client) => {
     if (!isSnapshotRequest(data)) {
       client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: { message: 'Invalid eager snapshot request.', diagnostics: [] } });
       return;
     }
+    eagerClients.add(client);
     client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: { ...snapshot(), kind: 'snapshot', request: data } });
     client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: { ...diagnostic, request: data } });
+  };
+  const requestManifest: Parameters<ViteDevServer['ws']['on']>[1] = (data, client) => {
+    if (!isSnapshotRequest(data)) return;
+    client.send({ type: 'custom', event: MANIFEST_EVENT, data: { kind: 'snapshot', request: data, manifest: registry.manifest() } });
+    client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: { ...diagnostic, request: data } });
+  };
+  const requestCatalog: Parameters<ViteDevServer['ws']['on']>[1] = (data, client) => {
+    if (!isCatalogRequest(data)) {
+      client.send({ type: 'custom', event: CATALOG_EVENT, data: { request: data,
+        result: { status: 'failed', code: 'INVALID_REQUEST', message: 'Invalid catalog request.' } } });
+      return;
+    }
+    client.send({ type: 'custom', event: CATALOG_EVENT, data: { request: data, result: registry.load(data.locale, data.namespace) } });
   };
   const onFile = (file: string) => { void live?.enqueue(file); };
   function detachLive() {
@@ -42,6 +63,9 @@ export default function saylo(options: SayloViteOptions): Plugin {
     server?.watcher.off('add', onFile);
     server?.watcher.off('unlink', onFile);
     server?.ws.off(REQUEST_EVENT, request);
+    server?.ws.off(MANIFEST_REQUEST_EVENT, requestManifest);
+    server?.ws.off(CATALOG_REQUEST_EVENT, requestCatalog);
+    eagerClients.clear();
     server?.httpServer?.off('close', cleanup);
   }
   async function cleanup() {
@@ -62,8 +86,10 @@ export default function saylo(options: SayloViteOptions): Plugin {
       const scanned = await scanCatalogs(path.resolve(config.root, options.localesDir));
       root = scanned.root;
       files = new Map(scanned.files.map(f => [f.file, f]));
+      production = config.command === 'build';
       // Fresh strict validation for startup and builds, using the same core contracts.
       createStore({ baseLocale, locale: initialLocale, catalogs: snapshot().catalogs, timeZone }).dispose();
+      registry = new CatalogRegistry(sessionId, baseLocale, snapshot().catalogs);
       if (options.typegen) {
         generatedOut = path.resolve(config.root, options.typegen.outFile);
         typegen = new TypeGenerator(generatedOut);
@@ -71,8 +97,24 @@ export default function saylo(options: SayloViteOptions): Plugin {
         catch (error) { await cleanup(); throw error; }
       }
     },
-    resolveId(id) { if (id === VIRTUAL) return RESOLVED; },
+    resolveId(id) { if (id === VIRTUAL) return RESOLVED; if (id === LAZY) return RESOLVED_LAZY; },
     load(id) {
+      if (id === RESOLVED_LAZY) {
+        const manifest = registry.manifest();
+        const locale = manifest.availableLocales.includes(initialLocale) ? initialLocale : baseLocale;
+        const namespaces = [...new Set(options.initialNamespaces ?? manifest.availableNamespaces)].sort();
+        if (namespaces.length !== (options.initialNamespaces?.length ?? namespaces.length) || namespaces.some(n => !manifest.availableNamespaces.includes(n)))
+          throw new RangeError('initialNamespaces must be unique available base namespaces.');
+        const outcomes = namespaces.flatMap(namespace => [...new Set([baseLocale, locale])].map(locale => registry.load(locale, namespace)));
+        const encode = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
+        return `import { createDevCatalogSource, createStaticCatalogSource } from '@saylo/vite/client';
+export const initialCatalogs = ${encode(outcomes)};
+export const initialLocale = ${encode(locale)};
+export const initialNamespaces = ${encode(namespaces)};
+export const timeZone = ${encode(timeZone)};
+export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, ${encode(manifest.catalogs.map(c => registry.load(c.key.locale, c.key.namespace)))})`
+          : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot })`};`;
+      }
       if (id !== RESOLVED) return;
       const catalogs = JSON.stringify(snapshot().catalogs).replace(/</g, '\\u003c');
       return `import { freezeCatalogs } from '@saylo/vite/client';
@@ -88,8 +130,13 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
         if (changed) {
           files = new Map(next.map(f => [f.file, f]));
           revision++;
+          registry.replace(snapshot().catalogs);
           const update: EagerCatalogUpdate = { ...snapshot(), kind: 'update', baseRevision: revision - 1 };
-          server?.ws.send({ type: 'custom', event: SNAPSHOT_EVENT, data: update });
+          for (const client of eagerClients) {
+            if (!server?.ws.clients.has(client)) { eagerClients.delete(client); continue; }
+            client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: update });
+          }
+          server?.ws.send({ type: 'custom', event: MANIFEST_EVENT, data: { kind: 'update', baseRevision: revision - 1, manifest: registry.manifest() } });
           const generator = typegen;
           if (generator) void generator.update(live!.getAcceptedSchemas()).catch(error => {
             if (typegen === generator) server?.config.logger.warn(`[saylo:typegen] ${error instanceof Error ? error.message : String(error)}`);
@@ -105,6 +152,8 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
       server.watcher.on('add', onFile);
       server.watcher.on('unlink', onFile);
       server.ws.on(REQUEST_EVENT, request);
+      server.ws.on(MANIFEST_REQUEST_EVENT, requestManifest);
+      server.ws.on(CATALOG_REQUEST_EVENT, requestCatalog);
       server.httpServer?.once('close', cleanup);
     },
     async hotUpdate(context) {
