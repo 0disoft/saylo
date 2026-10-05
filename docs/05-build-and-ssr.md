@@ -1,15 +1,16 @@
 # 05. 빌드와 SSR
 
-이 문서는 운영 빌드 형태, 지연 로딩, Vite 변환, SSR, 보안을 정한다.
+이 문서는 운영 빌드 형태, 지연 로딩, Vite 변환, SSR, 보안, 정리를 정한다.
 
 ## 운영 카탈로그 모델
 
 - 운영은 미리 파싱·검증된 AST 카탈로그를 사용하고, 개발과 같은 core formatter를 공유한다.
-- 빌드 시점 parser를 런타임에서 제거하는 것은 가능한 범위에서 시도한다. AST만 공급하면 parser가 빠질 수 있지만, 이는 bundler alias나 no-parser 전략을 검증해야 하는 항목이고 자동으로 보장되지 않는다. 런타임에 parser가 남을 수도 있다.
+- 빌드 시점 parser를 런타임에서 제거하는 것은 가능한 범위에서 시도한다. AST만 공급하면 parser가 빠질 수 있지만, 이는 bundler 전략을 검증해야 하는 항목이고 자동으로 보장되지 않는다. 런타임에 parser가 남을 수도 있다.
+- no-parser 구성은 Saylo의 AST 전용 배포 경계 안에서만 다룬다. 앱 전체에 alias를 강제하지 않는다. 문자열 메시지를 쓰는 다른 FormatJS 소비자와 충돌할 수 있다.
 - core의 브라우저 엔트리에는 파일 시스템 접근이 없고 parser도 필수가 아니다. AST를 받으면 parser 없이 동작한다. 파일 시스템과 parser는 dev plugin과 build 경계에 둔다.
 - 사용하지 않는 메시지 제거(emit/whole unused-message elimination)는 후속 최적화로 둔다. 동적 t 키를 쓰는 코드에서는 제거가 위험하므로 tradeoff를 근거와 함께 검증한 뒤 결정한다.
 
-코드 생성 대기를 줄이는 접근이라는 점에서 코드젠 방식 도구([Paraglide 메시지 컴파일](https://paraglidejs.com/compiling-messages))와 HMR 방식 도구([Wuchale HMR](https://wuchale.dev/guides/hmr/)) 사이에 있다.
+코드 생성 대기를 줄이는 접근이라는 점에서 코드젠 방식 도구([Paraglide 메시지 컴파일](https://paraglidejs.com/compiling-messages))와 HMR 방식 도구([Wuchale 개발 모드](https://wuchale.dev/guides/dev/)) 사이에 있다.
 
 ## 번역 검증 정책 (build)
 
@@ -20,15 +21,17 @@
 
 ## 지연 로딩
 
-- 로케일과 namespace는 명시적 정적 loader map으로 지연 로딩한다. 전체 카탈로그를 한 번에 싣지 않는다.
+- 로케일과 namespace는 `CatalogSource`를 통해 지연 로딩한다. 전체 카탈로그를 한 번에 싣지 않는다.
+- 개발은 범용 `loadCatalog(locale, namespace)`가 현재 registry를 조회한다. 운영은 generated static loader map만 쓴다. 둘 다 같은 인터페이스를 뒤에 둔다.
 - 서버에서 카탈로그를 파싱할 때 브라우저의 소스 파일 시스템에 접근하지 않는다. 서버가 파일을 읽어 파싱하고, 클라이언트는 결과를 받는다.
 
 ## 런타임 로케일 전환
 
 - 로케일 전환은 비동기다. 카탈로그 로드를 보장한 뒤 스냅샷을 게시한다.
+- 로케일 전환과 namespace 로드는 하나의 desired state로 조정한다. 미완료 동안 이전 UI를 유지하고, 모든 base+target pair가 확정되면 한 번에 게시한다. 판정 규칙은 [04-live-update-and-types.md](04-live-update-and-types.md)를 따른다.
 - 빠른 토글을 위해 load/commit generation token을 쓴다. 뒤늦게 도착한 이전 로케일 로드가 최신 전환을 덮어쓰지 못하게 한다.
-- 네트워크 오류가 나면 이전 상태를 유지하고 요청을 실패로 처리한다. 빈 카탈로그로 갈아타지 않는다.
-- baseline은 항상 로드돼 있어야 하며 fallback 대상이 된다.
+- 네트워크 오류가 나면 이전 상태를 유지하고 그 요청을 실패로 처리한다. 빈 카탈로그로 갈아타지 않는다.
+- baseline은 항상 로드돼 있어야 하며 fallback 대상이 된다. fallback 대상은 baseLocale 하나다.
 
 ## DEV/PROD 공통 경로
 
@@ -36,20 +39,28 @@
 
 ## Vite 변환
 
-- 처음에는 안정적인 virtual module 하나를 노출한다. 이 모듈은 런타임 registry와 초기 카탈로그 스냅샷을 제공하고 HMR 이벤트 등록을 담당한다.
+- 처음에는 안정적인 virtual module 하나를 노출한다. 이 모듈은 handle, boot data(BootSnapshot), catalogSource만 제공한다. HMR 이벤트 등록은 `connectDev`가 담당한다.
 - 로케일을 동적으로 다시 export하는 const는 모듈을 무효화하지 않는다. 갱신은 store 스냅샷으로 전달하고, 모듈 자체를 바꾸지 않는다.
+- namespace manifest가 동적으로 늘거나 줄면 patch envelope의 `availableNamespaces`와 mutable manifest handle 갱신으로 전달한다. 개발에는 정적 namespace map이 없다. 새 namespace 조회는 범용 `loadCatalog`가 처리하고, 정적 loader map은 운영에서만 생성한다.
+- Vite dev server 재시작이나 websocket 재연결에서 Vite client가 스스로 full reload(`location.reload`)를 하는 경우가 있다. 그 경로는 Saylo의 DOM 보존 범위 밖이다. Saylo의 무리로드 보장은 정상 번역 변경에 한정한다.
 - 카탈로그 소스 파일을 앱 import 그래프에 넣지 않는다. 이 점은 [02-architecture.md](02-architecture.md)의 개발 서버 플러그인 규칙과 같다.
 
 ## SSR
 
-- 요청마다 instance와 카탈로그 스냅샷을 만든다. 공유하는 것은 컴파일된 엔트리(파싱·검증 결과)뿐이다.
-- 서버 전역 `setLocale`을 두지 않는다. 요청 간 로케일이 섞이는 원인이 된다.
-- SSR 부팅은 hydration 시점의 locale, timeZone, schema revision, catalog revision이 일치해야 한다. hydration 이후 도착한 갱신(pending update)은 그 시점부터 반영한다.
-- 서버 플러그인은 브라우저 갱신과 함께 SSR의 이후 요청에도 갱신된 카탈로그를 반영한다.
+- 요청마다 instance와 immutable 카탈로그 snapshot을 만든다. 공유하는 것은 컴파일된 엔트리(파싱·검증 결과)뿐이다.
+- 서버 전역 `setLocale`을 두지 않는다. per-request instance를 쓴다. 요청 간 로케일이 섞이는 원인을 없앤다.
+- context factory가 만든 hook의 `t`는 그 렌더에 묶인다. boot S1로 hydration하는 동안 `t`도 S1을 읽는다.
+- hydration barrier 동안 S2 이벤트는 buffer에 담고, barrier가 끝날 때 한 번만 적용한다.
+- `getServerSnapshot`은 decode한 boot 데이터를 고정 identity로 반환한다. `subscribe`/`getSnapshot` 참조는 안정적으로 유지한다(`Object.is` 비교).
 - 렌더 중인 스냅샷은 격리한다. 요청 처리 도중 스냅샷을 변형하지 않는다.
-- `getServerSnapshot`은 브라우저 부팅 시점과 동등한 데이터를 반환하고, `subscribe`/`getSnapshot` 참조는 안정적으로 유지한다(`Object.is` 비교).
-- hydration용으로 심는 boot JSON은 `<`, `</script` 같은 시퀀스를 escape해서 넣는다. boot 데이터에 locale, timeZone, schema revision, catalog revision을 함께 담는다.
-- 날짜·시간은 timeZone을 명시적으로 config에서 받는다(기본 UTC 권장). 이렇게 해야 서버와 브라우저 결과가 갈리지 않는다. 자세한 캐시 키와 baseline fallback 포맷 규칙은 [03-catalog-and-api.md](03-catalog-and-api.md)를 따른다.
+- 서버 플러그인은 브라우저 갱신과 함께 SSR의 이후 요청에도 갱신된 카탈로그를 반영한다.
+
+### 부팅 데이터
+
+- boot JSON에는 locale, resolved timeZone, baseSchema와 카탈로그별 version·내용·provenance를 함께 담는다. Map은 배열로 인코딩한다([03-catalog-and-api.md](03-catalog-and-api.md)의 `BootSnapshot`).
+- HTML에 넣는 JSON은 모든 `<`를 `\u003c`로 치환해 `</script>` 종료를 막는다.
+- 날짜·시간 인자로 Date를 받을 때 내부에서 현재 시각(`Date.now`/`currentTime`)을 만들지 않는다.
+- timeZone은 config에 값을 저장하는 것만으로 모든 날짜 포맷에 자동 적용되지 않는다. resolved timeZone을 기본 date/time 스타일과 skeleton 경로 모두에 전달한다(provide formatters cache override).
 
 ## 보안
 
@@ -59,4 +70,6 @@
 
 ## 정리(cleanup)
 
-watcher, event listener, socket은 abort 경로에서 정리한다. 개발 서버 재시작이나 HMR이 반복돼도 리스너가 쌓여 새지 않게 한다.
+- watcher, event listener, socket은 abort 경로에서 정리한다. 개발 서버 재시작이나 HMR이 반복돼도 listener가 쌓여 새지 않게 한다.
+- Vite dev server가 watcher와 websocket을 소유한다. Saylo는 공유 watcher와 socket을 닫지 않고 자신이 등록한 listener와 bridge 구독만 해제한다.
+- saylo가 생성한 `.d.ts`와 typegen 임시 파일은 Saylo의 감시·이벤트 범위에서 제외한다. 임시 파일이 앱 watch HMR을 유발하지 않도록 좁은 ignore 규칙을 검증한다.
