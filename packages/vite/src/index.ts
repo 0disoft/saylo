@@ -6,8 +6,8 @@ import type { Plugin, ViteDevServer } from 'vite';
 import { scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
-import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from './types.js';
-import type { EagerCatalogSnapshot, LiveDiagnostic, SayloViteOptions } from './types.js';
+import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT, isSnapshotRequest } from './types.js';
+import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './types.js';
 
 const VIRTUAL = 'virtual:saylo';
 const RESOLVED = `\0${VIRTUAL}`;
@@ -27,10 +27,14 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let generatedOut: string | undefined;
   const isTypegenFile = (file: string) => generatedOut !== undefined && isGeneratedFile(generatedOut, file);
   let diagnostic: LiveDiagnostic = { message: '', diagnostics: [] };
-  const snapshot = (): EagerCatalogSnapshot => ({ sessionId, revision, baseLocale, catalogs: [...files.values()].map(f => f.catalog) });
-  const request: Parameters<ViteDevServer['ws']['on']>[1] = (_data, client) => {
-    client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: snapshot() });
-    client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic });
+  const snapshot = () => ({ sessionId, revision, baseLocale, catalogs: [...files.values()].map(f => f.catalog) });
+  const request: Parameters<ViteDevServer['ws']['on']>[1] = (data, client) => {
+    if (!isSnapshotRequest(data)) {
+      client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: { message: 'Invalid eager snapshot request.', diagnostics: [] } });
+      return;
+    }
+    client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: { ...snapshot(), kind: 'snapshot', request: data } });
+    client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: { ...diagnostic, request: data } });
   };
   const onFile = (file: string) => { void live?.enqueue(file); };
   function detachLive() {
@@ -84,7 +88,8 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
         if (changed) {
           files = new Map(next.map(f => [f.file, f]));
           revision++;
-          server?.ws.send({ type: 'custom', event: SNAPSHOT_EVENT, data: snapshot() });
+          const update: EagerCatalogUpdate = { ...snapshot(), kind: 'update', baseRevision: revision - 1 };
+          server?.ws.send({ type: 'custom', event: SNAPSHOT_EVENT, data: update });
           const generator = typegen;
           if (generator) void generator.update(live!.getAcceptedSchemas()).catch(error => {
             if (typegen === generator) server?.config.logger.warn(`[saylo:typegen] ${error instanceof Error ? error.message : String(error)}`);
@@ -115,4 +120,4 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
   };
 }
 
-export type { SayloViteOptions, LiveDiagnostic, EagerCatalogSnapshot } from './types.js';
+export type { SayloViteOptions, LiveDiagnostic, EagerCatalogSnapshot, EagerCatalogUpdate, EagerCatalogEvent, EagerSnapshotRequest } from './types.js';

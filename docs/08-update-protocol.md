@@ -2,6 +2,21 @@
 
 이 문서는 Saylo의 개발 갱신과 부팅 wire 프로토콜의 단일 출처다. patch, snapshot, boot 인코딩, 적용과 resync 규칙을 정한다. [03-catalog-and-api.md](03-catalog-and-api.md)의 공개 타입과 [04-live-update-and-types.md](04-live-update-and-types.md)의 정책은 이 문서를 참조한다. 검증 전 제안이다.
 
+## 현재 eager 구현 (2026-10-05)
+
+현재 `@saylo/vite`는 registry 전체를 교체한다. 실제 타입은 `packages/vite/src/types.ts`, 조정 로직은 `dev-sync.ts`에 있다.
+
+| 이벤트 | 내용 |
+| --- | --- |
+| `saylo:request-eager-snapshot` | `scope: 'eager'`, 고유 `requestId`, 클라이언트 `generation`, 현재 `locale`·`namespaces` |
+| `saylo:eager-snapshot` / `kind: 'snapshot'` | 요청을 echo하고 서버 `sessionId`·`revision`·`baseLocale`·전체 `catalogs` 반환 |
+| `saylo:eager-snapshot` / `kind: 'update'` | 서버 `baseRevision`·`revision`과 전체 registry 반환 |
+| `saylo:eager-diagnostic` | 파일 오류는 broadcast, 요청 진단은 요청 정보를 붙여 해당 client에만 반환 |
+
+서버 revision과 클라이언트 요청 generation은 독립적이다. listener 등록 뒤 처음 요청하고, gap·새 세션·재연결은 snapshot으로 복구한다. 유효 요청은 하나이며 복구 중 update는 최신 session·revision 정보 하나로 합친다. 과거 요청과 관측 revision보다 낮은 응답은 게시하지 않는다. 기본 timeout은 요청당 5초, 최대 3회 시도이며 실패 시 마지막 정상 상태를 유지한다. 다음 update·연결 이벤트에서 다시 시도할 수 있다. disconnect·해제·dispose는 요청과 timer를 무효화한다.
+
+요청의 locale·namespace는 현재 상태를 설명하고 `scope: 'eager'` 응답은 전체를 교체한다. 아래 pair별 outcome·version·tombstone과 부분 patch는 지연 로딩 단계에서 연결한다. Vite 서버 재시작의 실제 브라우저 경로는 페이지 새로고침을 포함하며 그 경우 DOM 보존을 요구하지 않는다.
+
 ## wire 타입
 
 ```ts

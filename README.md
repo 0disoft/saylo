@@ -27,7 +27,7 @@ npm run check
 
 Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@saylo/vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수로 연결을 끊고 다시 연결할 수 있다. `store.dispose()`와 Vite dispose·prune도 연결을 정리한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@saylo/vite/virtual`을 포함한다.
 
-현재 개발 전송은 임시 전체 eager snapshot이다. 변경 파일만 파싱하고 기준 스키마 변경 시 해당 namespace의 번역을 재검증한 뒤, Vite custom event로 registry 전체를 전달한다. 라이브 문구 갱신은 앱 모듈을 교체하지 않는다. 부분 전송과 로드 범위별 resync는 이후 단계이며, Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
+현재 개발 전송은 임시 전체 eager registry 교체다. 변경 파일만 파싱하고 기준 스키마 변경 시 해당 namespace의 번역을 재검증한 뒤, Vite custom event로 전달한다. 처음 연결, revision gap, 새 세션과 재연결은 요청 ID와 generation을 가진 snapshot handshake로 복구한다. 요청에는 현재 로케일과 로드된 namespace를 담고, 응답은 `scope: 'eager'`에 따라 registry 전체를 교체한다. 중복·과거 응답을 버리고, 복구 중에는 마지막 정상 화면을 유지한다. 요청당 기본 5초 timeout, 최대 3회 재시도이며 `connectDev`의 `requestTimeoutMs`로 timeout을 바꿀 수 있다. 라이브 문구 갱신은 앱 모듈을 교체하지 않는다. 부분 전송과 로드 범위별 resync는 이후 단계이며, Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
 
 파일 이벤트는 40ms quiet window로 묶고, 이벤트가 계속 들어오면 최대 200ms 뒤 읽기를 시작한다. 임시 파일 교체 저장은 최종 경로의 상태로 판단한다. 현재 로케일의 모든 카탈로그를 삭제하면 기준 언어로 전환한다. 기준 namespace 삭제는 목록에서 제거하고 남은 번역 파일은 기준 namespace가 복원될 때 다시 검증한다. 운영 빌드는 기준 없는 번역 파일을 엄격히 거부하므로 namespace를 제거할 때 번역 파일도 함께 정리한다. 기준 로케일의 모든 카탈로그 삭제는 거부하고 마지막 정상 상태를 유지한다. 새 번역 파일이 기준 파일보다 먼저 도착해 검증에 실패해도, 기준 파일이 생기면 후보를 자동 재검증한다. `.d.ts`, 숨김 JSON과 `.json.tmp` 파일은 Saylo 카탈로그 범위에서 제외한다.
 

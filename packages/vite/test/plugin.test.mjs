@@ -37,9 +37,9 @@ async function setup(t, options = {}) {
   const change = (locale, source) => plugin.hotUpdate({
     type: 'update', file: path.join(root, locale, 'demo.json'), read: () => source, modules: [], server,
   });
-  const request = () => {
+  const request = (data = { scope: 'eager', requestId: 'test-request', generation: 1, locale: 'ko', namespaces: ['demo'] }) => {
     const replies = [];
-    ws.emit(REQUEST_EVENT, {}, { send: event => replies.push(event) });
+    ws.emit(REQUEST_EVENT, data, { send: event => replies.push(event) });
     return replies;
   };
   const disk = async (type, locale, namespace = 'demo', source) => {
@@ -130,6 +130,8 @@ test('changed file sends snapshot, suppresses default HMR, and dedupes identical
   assert.deepEqual(await change('en', '{"hello":"Hello {name}"}'), []);
   assert.equal(events[0].event, SNAPSHOT_EVENT);
   assert.equal(events[0].data.revision, 1);
+  assert.equal(events[0].data.kind, 'update');
+  assert.equal(events[0].data.baseRevision, 0);
   await change('en', '{"hello":"Hello {name}"}');
   assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
   assert.equal(request()[0].data.revision, 1);
@@ -309,4 +311,35 @@ test('virtual serialization escapes HTML delimiters', async t => {
   const virtual = plugin.load(plugin.resolveId('virtual:saylo'));
   assert.ok(!virtual.includes('</script>'));
   assert.ok(virtual.includes('\\u003c/script>'));
+});
+
+test('snapshot handshake echoes request scope and targets only the requesting client', async t => {
+  const { request, events, change } = await setup(t);
+  await change('en', '{"hello":"Changed {name}"}');
+  const before = events.length;
+  const scope = { scope: 'eager', requestId: 'client-a:2', generation: 2, locale: 'en', namespaces: ['demo', 'new'] };
+  const replies = request(scope);
+  assert.equal(events.length, before);
+  assert.equal(replies[0].data.kind, 'snapshot');
+  assert.deepEqual(replies[0].data.request, scope);
+  assert.deepEqual(replies[1].data.request, scope);
+  assert.equal(replies[0].data.revision, 1);
+  assert.deepEqual(replies[0].data.catalogs.map(c => c.locale).sort(), ['en', 'ko']);
+  // The request describes desired state, but the eager response still replaces the whole registry.
+  const latest = request({ ...scope, requestId: 'client-b:1', generation: 1 });
+  assert.equal(latest[0].data.sessionId, replies[0].data.sessionId);
+});
+
+test('malformed snapshot requests get a targeted diagnostic without a registry reply', async t => {
+  const { request, events } = await setup(t);
+  const valid = { scope: 'eager', requestId: 'test', generation: 1, locale: 'ko', namespaces: ['demo'] };
+  for (const data of [null, {}, { ...valid, scope: 'partial' }, { ...valid, requestId: '' },
+    { ...valid, generation: -1 }, { ...valid, locale: 'bad_locale' },
+    { ...valid, namespaces: ['demo', 'demo'] }, { ...valid, namespaces: [2] }]) {
+    const replies = request(data);
+    assert.equal(replies.length, 1);
+    assert.equal(replies[0].event, DIAGNOSTIC_EVENT);
+    assert.match(replies[0].data.message, /Invalid eager snapshot request/);
+  }
+  assert.equal(events.length, 0);
 });
