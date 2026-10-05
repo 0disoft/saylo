@@ -6,6 +6,8 @@ export interface SayloViteOptions {
   readonly baseLocale: string;
   readonly initialLocale?: string;
   readonly timeZone?: string;
+  /** Declaration file relative to Vite root. Startup awaits it; live updates do not. */
+  readonly typegen?: { readonly outFile: string };
 }
 
 /** Temporary eager transport, before the partial-update protocol in docs/08. */

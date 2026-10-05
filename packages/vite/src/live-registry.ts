@@ -60,6 +60,10 @@ export class LiveRegistry {
 
   owns(file: string) { return catalogLocation(this.root, file) !== undefined; }
 
+  getAcceptedSchemas(): readonly CatalogSchema[] {
+    return [...this.accepted.values()].filter(f => f.catalog.locale === this.baseLocale).map(f => this.schemas.get(f.catalog)!);
+  }
+
   diagnostic(): LiveDiagnostic {
     return { message: [...this.errors.values()].map(d => d.message).join('\n'),
       diagnostics: [...this.errors.values()].flatMap(d => d.diagnostics) };

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { mkdtemp, mkdir, writeFile, rm, rename } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, rename, readFile, stat, utimes } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -19,18 +20,20 @@ async function fixture(t) {
   return root;
 }
 
-async function setup(t) {
+async function setup(t, options = {}) {
+  let plugin;
+  t.after(() => plugin?.closeBundle());
   const root = await fixture(t);
-  const plugin = saylo({ localesDir: root, baseLocale: 'ko' });
+  plugin = saylo({ localesDir: root, baseLocale: 'ko', ...options });
   await plugin.configResolved({ root });
   const events = [];
+  const warnings = [];
   const ws = new EventEmitter();
   ws.send = event => events.push(event);
   const watcher = new EventEmitter();
   watcher.add = () => {};
-  const server = { ws, watcher, httpServer: new EventEmitter(), config: { logger: { warn() {} } } };
+  const server = { ws, watcher, httpServer: new EventEmitter(), config: { logger: { warn(message) { warnings.push(message); } } } };
   plugin.configureServer(server);
-  t.after(() => plugin.closeBundle());
   const change = (locale, source) => plugin.hotUpdate({
     type: 'update', file: path.join(root, locale, 'demo.json'), read: () => source, modules: [], server,
   });
@@ -48,8 +51,55 @@ async function setup(t) {
     watcher.emit(type === 'delete' ? 'unlink' : 'add', file);
     return plugin.hotUpdate({ type, file, read: () => source, modules: [], server });
   };
-  return { root, plugin, events, ws, change, request, server, disk };
+  return { root, plugin, events, warnings, ws, change, request, server, disk };
 }
+
+test('startup type readiness precedes serving and live publish precedes background typegen', async t => {
+  const { root, server, change, request, warnings } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
+  const out = path.join(root, 'generated.d.ts');
+  assert.ok((await readFile(out, 'utf8')).includes('"demo:hello": { "name": number | string; };'));
+  const send = server.ws.send;
+  server.ws.send = event => {
+    if (event.event === SNAPSHOT_EVENT) assert.ok(!readFileSync(out, 'utf8').includes('demo:added'));
+    send(event);
+  };
+  await change('ko', '{"hello":"Updated {name}","added":"{count, number}"}');
+  assert.equal(request()[0].data.revision, 1);
+  const deadline = Date.now() + 10000;
+  while (!(await readFile(out, 'utf8')).includes('demo:added')) {
+    assert.ok(Date.now() < deadline, `background type generation completed: ${warnings.join('\n')}`);
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  server.ws.send = send;
+  await utimes(out, new Date('2000-01-01T00:00:00Z'), new Date('2000-01-01T00:00:00Z'));
+  const before = (await stat(out)).mtimeMs;
+  await change('ko', '{"hello":"Text only {name}","added":"{count, number}"}');
+  assert.equal((await stat(out)).mtimeMs, before);
+});
+
+test('generated declaration and owned temporary paths are narrowly excluded from watch/HMR', async t => {
+  const root = await fixture(t);
+  const plugin = saylo({ localesDir: root, baseLocale: 'ko', typegen: { outFile: 'generated.d.ts' } });
+  t.after(() => plugin.closeBundle());
+  const config = plugin.config({ root });
+  const ignored = config.server.watch.ignored[0];
+  const out = path.join(root, 'generated.d.ts');
+  const temp = path.join(root, '.generated.d.ts.saylo-typegen-example.tmp');
+  assert.equal(ignored(out), true);
+  assert.equal(ignored(temp), true);
+  assert.equal(ignored(path.join(root, 'other.d.ts')), false);
+  assert.equal(ignored(path.join(root, 'ko', 'demo.json')), false);
+  assert.deepEqual(await plugin.hotUpdate({ type: 'update', file: out, modules: [], server: {} }), []);
+});
+
+test('failed initial type readiness aborts startup and retains catalog source', async t => {
+  const root = await fixture(t);
+  const plugin = saylo({ localesDir: root, baseLocale: 'ko', typegen: { outFile: 'ko/demo.json' } });
+  t.after(() => plugin.closeBundle());
+  const before = await readFile(path.join(root, 'ko', 'demo.json'), 'utf8');
+  await assert.rejects(plugin.configResolved({ root }), /outFile must end in .d.ts/);
+  assert.equal(await readFile(path.join(root, 'ko', 'demo.json'), 'utf8'), before);
+});
 
 test('scan canonicalizes locale directories and parses ICU', async t => {
   const root = await fixture(t);
