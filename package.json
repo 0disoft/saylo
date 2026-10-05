@@ -8,6 +8,8 @@
     "build": "npm run build --workspaces",
     "dev": "npm run build && vite --config examples/vanilla/vite.config.mjs --host 127.0.0.1",
     "build:demo": "npm run build && vite build --config examples/vanilla/vite.config.mjs",
+    "dev:react": "npm run build && vite --config examples/react/vite.config.mjs --host 127.0.0.1",
+    "build:react": "npm run build && tsc -p examples/react/tsconfig.json && vite build --config examples/react/vite.config.mjs",
     "test": "npm run build && npm run test --workspaces",
     "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces"
   },
