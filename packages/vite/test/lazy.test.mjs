@@ -4,7 +4,7 @@ import test from 'node:test';
 import { createI18n, parseCatalog } from '@saylo/core';
 import { connectDev, createDevCatalogSource, createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
-import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT, SNAPSHOT_EVENT } from '../dist/types.js';
+import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest } from '../dist/types.js';
 
 const catalog = (text, locale = 'ko', namespace = 'demo') => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
 const tick = () => new Promise(resolve => setImmediate(resolve));
@@ -23,6 +23,7 @@ function fixture(t) {
     if (event === MANIFEST_REQUEST_EVENT) hot.emit(MANIFEST_EVENT, { kind: 'snapshot', request, manifest: registry.manifest() });
     else {
       assert.equal(event, CATALOG_REQUEST_EVENT);
+      assert.ok(isCatalogRequest(request), 'Client catalog frames must satisfy the actual server validator.');
       const reply = { request, result: registry.load(request.locale, request.namespace) };
       delayCatalogs ? delayed.push(reply) : hot.emit(CATALOG_EVENT, reply);
     }

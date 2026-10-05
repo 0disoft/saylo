@@ -37,7 +37,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('Invalid catalog source timeout.');
   const identity = crypto.getRandomValues(new Uint32Array(4)).join('-');
   let sequence = 0;
-  let generation = 0;
+  let generation = 1;
   let refs = 0;
   let disposed = false;
   let ready = false;
