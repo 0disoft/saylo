@@ -1,14 +1,10 @@
-import { CatalogError, createStore, parseCatalog } from '@saylo/core';
-import ko from './locales/ko.json';
-import en from './locales/en.json';
+import { createStore } from '@saylo/core';
+import { connectDev } from '@saylo/vite/client';
+import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 
 const element = id => document.getElementById(id);
 const editors = { ko: element('ko-editor'), en: element('en-editor') };
-const initial = { ko, en };
-for (const [locale, messages] of Object.entries(initial)) editors[locale].value = JSON.stringify(messages, null, 2);
-const readCatalogs = () => Object.entries(editors).map(([locale, editor]) =>
-  parseCatalog(editor.value, { locale, namespace: 'demo', sourceName: `${locale}.json` }));
-const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: readCatalogs() });
+const store = createStore({ baseLocale, locale: initialLocale, catalogs: initialCatalogs, timeZone });
 const controls = new AbortController();
 const on = (target, event, callback) => target.addEventListener(event, callback, { signal: controls.signal });
 const textNodes = [...document.querySelectorAll('[data-message]')];
@@ -36,37 +32,38 @@ function render(snapshot) {
   localeSelect.value = snapshot.locale;
 }
 
-function apply() {
-  try {
-    store.replaceCatalogs(readCatalogs());
-    error.textContent = '';
-    element('status').textContent = '문구를 반영했습니다. 입력한 값은 그대로 유지됩니다.';
-  } catch (cause) {
-    error.textContent = cause instanceof CatalogError
-      ? cause.diagnostics.map(d => `${d.sourceName}${d.id ? ` [${d.id}]` : ''}: ${d.message}`).join('\n')
-      : String(cause);
-    element('status').textContent = cause instanceof AggregateError
-      ? '카탈로그는 반영됐지만 화면 호출이 새 스키마와 맞지 않습니다.'
-      : '문구를 반영하지 않았습니다. 마지막 정상 상태를 유지합니다.';
+function showCatalogs(catalogs) {
+  for (const catalog of catalogs) {
+    const editor = editors[catalog.locale];
+    if (catalog.namespace !== 'demo' || !editor) continue;
+    editor.value = JSON.stringify(Object.fromEntries(Object.entries(catalog.messages).map(([key, message]) => [key, message.source])), null, 2);
   }
 }
 
 const unsubscribe = store.subscribe(render);
 render(store.getSnapshot());
-on(element('apply'), 'click', apply);
+showCatalogs(initialCatalogs);
+const disconnect = connectDev(store, {
+  onUpdate: catalogs => {
+    showCatalogs(catalogs);
+    if (!error.textContent) element('status').textContent = '정상 카탈로그가 연결되어 있습니다. 파일을 저장하면 자동 반영됩니다.';
+  },
+  onDiagnostic: diagnostic => {
+    error.textContent = diagnostic.diagnostics.length
+      ? diagnostic.diagnostics.map(d => `${d.sourceName}${d.id ? ` [${d.id}]` : ''}: ${d.message}`).join('\n')
+      : diagnostic.message;
+    element('status').textContent = diagnostic.message
+      ? '갱신 중 오류가 발생했습니다. 아래 진단을 확인하세요.'
+      : '오류가 해결되어 정상 카탈로그를 사용합니다.';
+  },
+});
+if (!import.meta.hot) element('status').textContent = '빌드된 카탈로그를 사용합니다. 파일 자동 반영은 개발 서버에서 동작합니다.';
 on(localeSelect, 'change', () => store.setLocale(localeSelect.value));
 on(count, 'input', () => render(store.getSnapshot()));
 on(element('order-form'), 'submit', event => {
   event.preventDefault();
   element('confirmation').showModal();
 });
-on(element('restore'), 'click', () => {
-  for (const [locale, messages] of Object.entries(initial)) editors[locale].value = JSON.stringify(messages, null, 2);
-  apply();
-});
-on(document, 'keydown', event => {
-  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); apply(); }
-});
-function cleanup() { controls.abort(); unsubscribe(); store.dispose(); }
+function cleanup() { disconnect(); controls.abort(); unsubscribe(); store.dispose(); }
 on(window, 'pagehide', cleanup);
 if (import.meta.hot) import.meta.hot.dispose(cleanup);

@@ -5,7 +5,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 ## 현재 상태
 
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 패키지는 아직 비공개이며 npm에 배포하지 않았다.
-- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`와 오류 클래스들이다. `examples/vanilla`는 카탈로그를 교체해도 폼과 모달을 유지하는 데모다. 파일 저장 기반 Vite 라이브 갱신, React 연결, typegen과 SSR은 이후 구현한다.
+- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`와 오류 클래스들이다. `packages/vite`는 기존 카탈로그 파일 수정과 `virtual:saylo`·`connectDev` 연결을 지원한다. `examples/vanilla`에서 파일 저장 후 폼과 모달을 유지하며 문구를 갱신한다. 파일 추가·삭제, React 연결, typegen과 SSR은 이후 구현한다.
 - 성능 수치는 전부 목표치다. 측정 결과가 아니며, 벤치마크도 아직 없다.
 - 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
 - npm 패키지 이름 `saylo`의 사용 가능 여부는 확인하지 않았다. 라이선스도 아직 정하지 않았다.
@@ -23,7 +23,11 @@ npm run check
 
 `check`는 ESM·선언 파일 빌드, 카탈로그 검증 테스트, TS와 checkJs 소비 타입 검사를 수행한다. 빌드만 하려면 `npm run build`, 빌드와 실행 테스트는 `npm test`를 쓴다.
 
-폼 데모는 `npm run dev`로 실행한 뒤 터미널에 표시되는 로컬 주소를 연다. 화면의 JSON 편집기에 문구를 수정하고 적용하거나 `Ctrl+Enter`를 누른다. 입력값·포커스·커서·스크롤과 열린 모달이 유지되는지 확인할 수 있다. JSON이 깨지거나 번역 계약이 어긋나면 마지막 정상 상태를 유지한다. `npm run build:demo`는 데모를 빌드한다. 현재 데모는 화면에서 직접 카탈로그를 교체하며, 디스크 파일 저장 자동 반영은 아직 구현하지 않았다.
+폼 데모는 `npm run dev`로 실행한 뒤 터미널에 표시되는 로컬 주소를 연다. 편집기에서 `examples/vanilla/locales/ko/demo.json` 또는 `en/demo.json`의 문구를 수정하고 저장한다. 입력값·포커스·커서·스크롤과 열린 모달이 유지되는지 확인할 수 있다. JSON이 깨지거나 번역 계약이 어긋나면 마지막 정상 상태와 파일별 진단을 유지한다. `npm run build:demo`는 현재 디스크의 카탈로그를 검증해 데모를 빌드한다.
+
+Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@saylo/vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수를 store dispose 전에 호출한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@saylo/vite/virtual`을 포함한다.
+
+현재 개발 전송은 임시 전체 eager snapshot이다. 변경 파일만 파싱하고 기준 스키마 변경 시 해당 namespace의 번역을 재검증한 뒤, Vite custom event로 registry 전체를 전달한다. 라이브 문구 갱신은 앱 모듈을 교체하지 않는다. 파일 추가·삭제, 부분 전송과 로드 범위별 resync는 이후 단계이며, Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
 
 ```js
 import { parseCatalog, createBaseSchema, validateTranslation, createTranslator } from '@saylo/core';
