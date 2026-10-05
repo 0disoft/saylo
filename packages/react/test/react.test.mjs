@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
 import { JSDOM } from 'jsdom';
 import { act, createElement as h, StrictMode, useState } from 'react';
-import { createStore, parseCatalog } from '@saylo/core';
+import { createBaseSchema, createI18n, createStore, parseCatalog } from '@saylo/core';
 import { createSayloReact } from '@saylo/react';
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'http://localhost/' });
@@ -32,6 +32,57 @@ function fixture(t, locale = 'ko') {
   t.after(async () => { await act(() => root.unmount()); original.dispose(); container.remove(); });
   return { root, container, store, active, subscriptions: () => subscriptions };
 }
+
+test('lazy locale and namespace intents commit together without remounting React state', async t => {
+  const { root, container } = fixture(t);
+  const records = [...catalogs(), parseCatalog('{"title":"도움말"}', { locale: 'ko', namespace: 'help' }),
+    parseCatalog('{"title":"Help"}', { locale: 'en', namespace: 'help' })];
+  const fingerprint = ns => createBaseSchema(records.find(c => c.locale === 'ko' && c.namespace === ns)).fingerprint;
+  const outcome = (locale, namespace) => ({ sessionId: 'one', status: 'present', key: { locale, namespace }, catalogVersion: 1,
+    namespaceSchemaFingerprint: fingerprint(namespace), catalog: records.find(c => c.locale === locale && c.namespace === namespace) });
+  let release;
+  const slow = new Promise(resolve => { release = resolve; });
+  const source = {
+    readManifest: () => ({ sessionId: 'one', registryRevision: 0, baseLocale: 'ko', availableLocales: ['en', 'ko'], availableNamespaces: ['demo', 'help'],
+      catalogs: records.map(c => ({ key: { locale: c.locale, namespace: c.namespace }, status: 'present', catalogVersion: 1, namespaceSchemaFingerprint: fingerprint(c.namespace) })) }),
+    loadCatalog: async (locale, namespace) => { if (locale === 'en' && namespace === 'demo') await slow; return outcome(locale, namespace); },
+  };
+  const instance = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['demo'], initialCatalogs: [outcome('ko', 'demo')] });
+  t.after(() => instance.dispose());
+  const { SayloProvider, useI18n } = createSayloReact();
+  let current;
+  let commits = 0;
+  instance.subscribe(() => commits++);
+  function Form() {
+    current = useI18n();
+    const [count, setCount] = useState(0);
+    return h('section', null, h('h1', null, current.t('demo:title')), h('input', { defaultValue: '' }),
+      h('button', { onClick: () => setCount(v => v + 1) }, `${count}`), h('dialog', { open: count > 0 }, 'confirmation'),
+      h('p', null, current.loadedNamespaces.includes('help') ? current.t('help:title') : 'not loaded'));
+  }
+  await act(() => root.render(h(StrictMode, null, h(SayloProvider, { instance }, h(Form)))));
+  const input = container.querySelector('input');
+  input.value = '비동기 입력 유지';
+  await act(() => container.querySelector('button').click());
+  input.focus(); input.setSelectionRange(2, 2);
+  const before = current;
+  let locale, namespace;
+  await act(async () => { locale = current.setLocale('en'); namespace = current.loadNamespace('help'); await new Promise(resolve => setImmediate(resolve)); });
+  assert.equal(container.querySelector('h1').textContent, '한국어');
+  assert.equal(current, before);
+  await act(async () => { release(); await Promise.all([locale, namespace]); });
+  assert.equal(commits, 1);
+  assert.equal(container.querySelector('h1').textContent, 'English');
+  assert.equal(container.querySelector('p').textContent, 'Help');
+  assert.equal(container.querySelector('input'), input);
+  assert.equal(input.value, '비동기 입력 유지');
+  assert.equal(document.activeElement, input);
+  assert.equal(input.selectionStart, 2);
+  assert.equal(container.querySelector('dialog').open, true);
+  assert.equal(container.querySelector('button').textContent, '1');
+  assert.equal(current.loadNamespace, before.loadNamespace);
+  assert.equal(before.t('demo:title'), '한국어');
+});
 
 test('StrictMode preserves DOM, component state, focus and snapshot-bound t across catalog updates', async t => {
   const { root, store, container, active, subscriptions } = fixture(t);

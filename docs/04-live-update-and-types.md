@@ -18,7 +18,7 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 
 ## desired-state 조정
 
-현재 코어 구현은 `packages/core/src/i18n.ts`와 `catalog-loader.ts`다. desired locale·namespace의 준비를 합치고 pair/version별 요청을 공유한다. 미로드 namespace는 명시적으로 로드하며, present/missing 전체가 준비된 뒤 한 번 게시한다. stale 응답은 최대 3회 조회하고 실패 시 이전 UI를 유지한다. 아래 스키마 quarantine와 Vite 부분 patch는 후속 단계다. 현재 lazy 후보도 번역 스키마 검증에 실패하면 후보 전체를 거부한다.
+현재 코어 구현은 `packages/core/src/i18n.ts`와 `catalog-loader.ts`다. desired locale·namespace의 준비를 합치고 pair/version별 요청을 공유한다. 미로드 namespace는 명시적으로 로드하며, present/missing 전체가 준비된 뒤 한 번 게시한다. stale 응답은 최대 3회 조회하고 실패 시 이전 UI를 유지한다. Vite는 manifest 전체와 요청한 parsed pair의 본문을 별도로 전달하며, loaded scope의 변경만 다시 조회한다. 아래 스키마 quarantine와 push 방식의 부분 patch는 후속 단계다. 현재 lazy 후보도 번역 스키마 검증에 실패하면 후보 전체를 거부한다.
 
 로케일 전환과 namespace 로드는 하나의 desired state(locale + 원하는 namespace 집합)로 조정한다. generation은 transport의 오래된 완료를 차단하기 위한 값이지, generation이 바뀔 때마다 모든 호출자를 취소한다는 뜻이 아니다.
 

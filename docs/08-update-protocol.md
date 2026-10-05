@@ -19,6 +19,19 @@
 
 ## wire 타입
 
+현재 lazy 경로는 아래 최종 patch 계약에 앞서 manifest와 pair 조회를 분리한 parsed-catalog 프로토타입이다.
+
+| 이벤트 | 현재 lazy 전송 |
+| --- | --- |
+| `saylo:request-manifest` | eager handshake의 요청 ID·generation을 사용해 전체 metadata 요청 |
+| `saylo:manifest` | snapshot 응답 또는 `baseRevision`을 가진 update. 전체 목록·pair version·schema fingerprint·missing tombstone이며 AST 없음 |
+| `saylo:request-catalog` | 고유 요청 ID·generation과 locale·namespace 한 pair |
+| `saylo:catalog` | 요청 echo와 present/missing/failed. present에만 parsed catalog 본문 포함 |
+
+`virtual:saylo/lazy`는 초기 범위의 base+target outcome만 싣고 source handle을 내보낸다. manifest update를 적용한 뒤 core의 `refresh`가 현재 desired scope를 다시 준비한다. 미로드·비활성 pair의 AST는 받지 않는다. 조회 응답은 요청 identity·session·pair version·schema를 검사하고 재연결은 identity를 무효화한 뒤 현재 manifest로 재요청한다. 여러 instance는 source를 공유하며 자신의 연결·구독만 해제한다. 기존 eager 전체 갱신은 eager snapshot을 요청한 Vite client에만 보낸다.
+
+현재 production은 같은 source 계약의 전체 bundle fallback이다. 아래 CatalogRecord·push patch·BootSnapshot wire와 production chunk loader는 후속 단계다.
+
 ```ts
 type SessionId = string;
 type RequestId = string;

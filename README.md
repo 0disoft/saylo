@@ -5,7 +5,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 ## 현재 상태
 
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 패키지는 아직 비공개이며 npm에 배포하지 않았다.
-- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`와 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제와 `virtual:saylo`·`connectDev` 연결을 지원한다. `packages/react`는 `createSayloReact`로 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. 부분 전송과 SSR은 이후 구현한다.
+- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. production chunk loader와 SSR은 이후 구현한다.
 - 성능 수치는 전부 목표치다. 측정 결과가 아니며, 벤치마크도 아직 없다.
 - 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
 - npm 패키지 이름 `saylo`의 사용 가능 여부는 확인하지 않았다. 라이선스도 아직 정하지 않았다.
@@ -27,11 +27,11 @@ npm run check
 
 Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@saylo/vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수로 연결을 끊고 다시 연결할 수 있다. `store.dispose()`와 Vite dispose·prune도 연결을 정리한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@saylo/vite/virtual`을 포함한다.
 
-현재 개발 전송은 임시 전체 eager registry 교체다. 변경 파일만 파싱하고 기준 스키마 변경 시 해당 namespace의 번역을 재검증한 뒤, Vite custom event로 전달한다. 처음 연결, revision gap, 새 세션과 재연결은 요청 ID와 generation을 가진 snapshot handshake로 복구한다. 요청에는 현재 로케일과 로드된 namespace를 담고, 응답은 `scope: 'eager'`에 따라 registry 전체를 교체한다. 중복·과거 응답을 버리고, 복구 중에는 마지막 정상 화면을 유지한다. 요청당 기본 5초 timeout, 최대 3회 재시도이며 `connectDev`의 `requestTimeoutMs`로 timeout을 바꿀 수 있다. 라이브 문구 갱신은 앱 모듈을 교체하지 않는다. 부분 전송과 로드 범위별 resync는 이후 단계이며, Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
+개발 전송은 eager와 lazy 경로를 함께 지원한다. `virtual:saylo`는 기존 전체 registry를 제공하며 eager 갱신은 그 연결을 요청한 Vite client에만 보낸다. `virtual:saylo/lazy`는 초기 기준·대상 pair만 싣고, 이후에는 문구 없는 manifest를 받아 변경된 loaded pair만 조회한다. 미로드 namespace·비활성 로케일 수정은 AST를 받지 않으며 새 namespace도 범용 조회로 로드한다. 처음 연결, revision gap, 새 세션과 재연결은 요청 ID·generation을 가진 manifest handshake로 복구한다. 늦은 pair 응답은 현재 session·version·schema로 판정한다. 라이브 갱신은 앱 모듈을 교체하지 않는다. Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
 
 파일 이벤트는 40ms quiet window로 묶고, 이벤트가 계속 들어오면 최대 200ms 뒤 읽기를 시작한다. 임시 파일 교체 저장은 최종 경로의 상태로 판단한다. 현재 로케일의 모든 카탈로그를 삭제하면 기준 언어로 전환한다. 기준 namespace 삭제는 목록에서 제거하고 남은 번역 파일은 기준 namespace가 복원될 때 다시 검증한다. 운영 빌드는 기준 없는 번역 파일을 엄격히 거부하므로 namespace를 제거할 때 번역 파일도 함께 정리한다. 기준 로케일의 모든 카탈로그 삭제는 거부하고 마지막 정상 상태를 유지한다. 새 번역 파일이 기준 파일보다 먼저 도착해 검증에 실패해도, 기준 파일이 생기면 후보를 자동 재검증한다. `.d.ts`, 숨김 JSON과 `.json.tmp` 파일은 Saylo 카탈로그 범위에서 제외한다.
 
-React 데모는 `npm run dev:react`로 실행한다. `examples/vanilla/locales`의 같은 카탈로그와 기존 스타일을 공유하고, 입력값·수량·모달은 React state로 관리한다. `npm run typegen:react`는 타입만 생성한다. `npm run build:react`는 패키지 빌드 → 현재 디스크 검증과 타입 생성 → 데모 TS 검사 → Vite production 빌드 순서로 실행한다.
+React 데모는 `npm run dev:react`로 실행한다. `examples/vanilla/locales`의 같은 카탈로그와 기존 스타일을 공유하고, 입력값·수량·모달은 React state로 관리한다. 처음에는 한국어 `demo`만 싣고 영어 선택 시 영어 pair를 조회한다. 새 namespace는 목록에 나타나고 버튼을 눌러 명시적으로 로드한다. `npm run typegen:react`는 타입만 생성한다. `npm run build:react`는 패키지 빌드 → 현재 디스크 검증과 타입 생성 → 데모 TS 검사 → Vite production 빌드 순서로 실행한다.
 
 ```js
 import { parseCatalog, createBaseSchema, validateTranslation, createTranslator } from '@saylo/core';
@@ -86,7 +86,22 @@ store.dispose();
 
 현재 생성 옵션은 `catalogSource`, `locale`, `initialNamespaces`, `initialCatalogs`와 선택적인 `timeZone`·`requestTimeoutMs`다. manifest는 전체 locale·namespace 목록과 알려진 pair별 version·schema fingerprint·missing tombstone을 담는다. 부팅 pair는 결과를 빠짐없이 명시하고, 이후 결과는 현재 session·pair version·schema로 검사한다. `refresh()`는 어댑터가 manifest 변경 후 현재 원하는 범위를 다시 준비할 때 쓴다. 전역 revision만으로 관계없는 namespace의 정상 결과를 폐기하지 않는다. timeout 기본값은 카탈로그당 5초이며 dispose는 요청·timer·소유 listener를 정리한다.
 
-`npm run demo:lazy`는 언어 전환과 장바구니 namespace 로드를 동시에 실행하는 Node 데모다. 조회 중 한국어 snapshot을 유지하다가 한 번의 commit으로 영어 공통 문구와 한국어 장바구니 폴백을 게시한다. JS/checkJs와 TS 소비 fixture가 같은 키·인자 타입을 검사한다. 현재 경로는 parsed catalog를 받는 프로토타입이며, Vite 범용 loader·부분 전송과 React 연결, production 정적 loader, SSR BootSnapshot은 후속 단계다. 기존 개발 브라우저 데모는 eager store를 계속 사용한다.
+`npm run demo:lazy`는 언어 전환과 장바구니 namespace 로드를 동시에 실행하는 Node 데모다. 조회 중 한국어 snapshot을 유지하다가 한 번의 commit으로 영어 공통 문구와 한국어 장바구니 폴백을 게시한다. JS/checkJs와 TS 소비 fixture가 같은 키·인자 타입을 검사한다. 현재 경로는 parsed catalog를 받는 프로토타입이다. 개발에서는 Vite 범용 loader·부분 전송과 React 연결을 지원한다. 현재 production fallback은 전체 카탈로그를 한 번들에 싣고 같은 `CatalogSource` 계약을 제공하며, 정적 chunk loader와 SSR BootSnapshot은 후속 단계다.
+
+lazy 앱은 아래처럼 연결한다. Vite의 `initialNamespaces` 옵션으로 부팅 범위를 정하며, 생략하면 기준 namespace 전체다. source는 여러 instance가 공유할 수 있고 마지막 연결 해제 후 자신이 등록한 HMR listener를 정리한다.
+
+```js
+import { createI18n } from '@saylo/core';
+import { connectDev } from '@saylo/vite/client';
+import { catalogSource, initialCatalogs, initialLocale, initialNamespaces, timeZone } from 'virtual:saylo/lazy';
+
+const i18n = createI18n({ catalogSource, locale: initialLocale, initialNamespaces, initialCatalogs, timeZone });
+const disconnect = connectDev(i18n, { catalogSource });
+await i18n.setLocale('en');
+// 현재 manifest에 있는 namespace를 필요할 때 로드한다.
+// await i18n.loadNamespace('help');
+// 종료 시 disconnect(), i18n.dispose()로 소유 자원을 정리한다.
+```
 
 ## 타입 자동 생성
 
@@ -144,6 +159,8 @@ const disconnect = connectDev(store);
 ```
 
 `useI18n`은 `useSyncExternalStore`로 구독하고, 해당 렌더의 불변 snapshot과 `setLocale`을 반환한다. 이전 렌더의 `t`는 이전 번역을 계속 읽으며 `store.t`는 최신 번역을 읽는다. 같은 snapshot·instance에서는 hook 결과와 `setLocale` 참조가 유지된다. 같은 문구나 비활성 로케일 수정은 구독 컴포넌트를 다시 렌더하지 않는다. Provider는 전달받은 store의 수명을 소유하지 않으므로 unmount 후에도 store를 다른 화면에서 사용할 수 있다. store를 소유한 앱이 React root와 개발 연결을 해제한 뒤 `store.dispose()`를 호출한다.
+
+Provider는 `createStore`와 `createI18n`을 모두 받는다. hook의 `setLocale` 반환 타입은 `void | Promise<void>`이며 lazy 호출의 실패는 await/catch로 처리한다. lazy instance에서는 `loadNamespace`도 같은 함수 참조로 제공하고 eager instance에는 그 함수가 없다. 필요한 pair를 준비하는 동안 hook은 이전 snapshot을 읽으며, 준비가 끝나면 한 번 게시한다.
 
 JS/checkJs에서는 `SayloReactBindings<AppSchema>`와 `Store<AppSchema>` JSDoc으로 같은 키·인자 검사를 연결할 수 있다. 소비 예제는 `packages/react/test/consumer-js.js`와 `consumer.tsx`에 있다. 현재 hook은 클라이언트 렌더용이며 SSR boot serializer·getServerSnapshot·hydration barrier는 이후 단계에서 구현한다.
 

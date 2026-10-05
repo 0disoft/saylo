@@ -3,23 +3,23 @@ import { createRoot } from 'react-dom/client';
 import { connectDev } from '@saylo/vite/client';
 import type { LiveDiagnostic } from '@saylo/vite/client';
 import type { ParsedCatalog } from '@saylo/core';
-import { initialCatalogs } from 'virtual:saylo';
+import { catalogSource, initialCatalogs } from 'virtual:saylo/lazy';
 import { SayloProvider, store, useI18n } from './i18n';
 import '../vanilla/style.css';
 
 function CatalogPanel() {
-  const [catalogs, setCatalogs] = useState<readonly ParsedCatalog[]>(initialCatalogs);
+  const [catalogs, setCatalogs] = useState<readonly ParsedCatalog[]>(initialCatalogs.flatMap(o => o.status === 'present' ? [o.catalog] : []));
   const [diagnostic, setDiagnostic] = useState<LiveDiagnostic>({ message: '', diagnostics: [] });
-  useEffect(() => connectDev(store, { onUpdate: setCatalogs, onDiagnostic: setDiagnostic }), []);
+  useEffect(() => connectDev(store, { catalogSource, onUpdate: setCatalogs, onDiagnostic: setDiagnostic }), []);
   const source = (locale: string) => {
     const catalog = catalogs.find(c => c.locale === locale && c.namespace === 'demo');
-    return catalog ? JSON.stringify(Object.fromEntries(Object.entries(catalog.messages).map(([key, message]) => [key, message.source])), null, 2) : '';
+    return catalog ? JSON.stringify(Object.fromEntries(Object.entries(catalog.messages).map(([key, message]) => [key, message.source])), null, 2) : '아직 로드하지 않았습니다.';
   };
   const details = diagnostic.diagnostics.length
     ? diagnostic.diagnostics.map(d => `${d.sourceName}${d.id ? ` [${d.id}]` : ''}: ${d.message}`).join('\n')
     : diagnostic.message;
   return <section className="panel editor">
-    <div className="panel-header"><h2>현재 파일 문구</h2><span className="badge">JSON</span></div>
+    <div className="panel-header"><h2>불러온 파일 문구</h2><span className="badge">JSON</span></div>
     <p className="hint">vanilla 데모와 같은 번역 파일을 사용합니다. <code>examples/vanilla/locales/ko/demo.json</code>을 수정하고 저장하세요.</p>
     <label>기준 문구 · 한국어<textarea className="code" rows={12} spellCheck={false} aria-label="한국어 카탈로그" readOnly value={source('ko')} /></label>
     <label>번역 문구 · English<textarea className="code" rows={12} spellCheck={false} aria-label="영어 카탈로그" readOnly value={source('en')} /></label>
@@ -38,6 +38,25 @@ function App() {
   const [count, setCount] = useState('2');
   const [confirmation, setConfirmation] = useState('');
   const [open, setOpen] = useState(false);
+  const [pendingLocale, setPendingLocale] = useState<string>();
+  const [pendingNamespace, setPendingNamespace] = useState<string>();
+  const [transitionError, setTransitionError] = useState('');
+  const localeGeneration = useRef(0);
+  async function selectLocale(value: string) {
+    const generation = ++localeGeneration.current;
+    setPendingLocale(value);
+    setTransitionError('');
+    try { await setLocale(value); }
+    catch (error) { if (generation === localeGeneration.current) setTransitionError(error instanceof Error ? error.message : String(error)); }
+    finally { if (generation === localeGeneration.current) setPendingLocale(undefined); }
+  }
+  async function loadNamespace(namespace: string) {
+    setPendingNamespace(namespace);
+    setTransitionError('');
+    try { await store.loadNamespace(namespace); }
+    catch (error) { setTransitionError(error instanceof Error ? error.message : String(error)); }
+    finally { setPendingNamespace(undefined); }
+  }
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
   useEffect(() => {
@@ -51,7 +70,7 @@ function App() {
       <header>
         <a className="brand" href="/">Saylo <span>React demo · StrictMode</span></a>
         <label className="locale-control">화면 언어
-          <select id="locale" aria-label="화면 언어" value={locale} onChange={event => setLocale(event.target.value)}>
+          <select id="locale" aria-label="화면 언어" value={pendingLocale ?? locale} onChange={event => { void selectLocale(event.target.value); }}>
             {snapshot.availableLocales.map(value => <option key={value} value={value}>{({ ko: '한국어', en: 'English' } as Record<string, string>)[value] ?? value}</option>)}
           </select>
         </label>
@@ -60,6 +79,8 @@ function App() {
         <p className="eyebrow">REACT LIVE CATALOG PREVIEW</p>
         <h1>{t('demo:heading')}</h1>
         <p>{t('demo:description')}</p>
+        {pendingLocale && <p role="status">{pendingLocale} 문구를 불러오는 중입니다.</p>}
+        <p role="alert" id="transition-error">{transitionError}</p>
       </section>
       <div className="layout">
         <section className="panel preview">
@@ -73,6 +94,11 @@ function App() {
           </form>
           <p className="hint">입력값은 React state로 관리합니다. 번역 파일을 저장해도 입력과 열린 모달이 유지됩니다.</p>
           <p className="hint">사용 가능한 namespace: <span id="namespaces">{snapshot.availableNamespaces.join(', ')}</span></p>
+          <p className="hint">불러온 namespace: <span id="loaded-namespaces">{snapshot.loadedNamespaces.join(', ')}</span></p>
+          {snapshot.availableNamespaces.filter(namespace => !snapshot.loadedNamespaces.includes(namespace)).map(namespace =>
+            <button key={namespace} type="button" disabled={pendingNamespace !== undefined} onClick={() => { void loadNamespace(namespace); }}>
+              {pendingNamespace === namespace ? '불러오는 중' : `${namespace} 불러오기`}
+            </button>)}
         </section>
         <CatalogPanel />
       </div>

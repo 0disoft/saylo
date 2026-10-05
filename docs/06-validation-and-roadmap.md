@@ -35,6 +35,8 @@
 
 10a의 지연 로딩 코어를 추가했다. `createI18n`의 교차 의도 완료, 실제 언어 선택 대체, missing 폴백, 실패·timeout, pair별 version과 세션 검증, tombstone 유지, manifest 추가·삭제, dispose와 subscriber 오류를 16개 테스트로 검증했다. 전체 check와 JS/checkJs·TS 소비 검사, `npm run demo:lazy`가 통과했다. 코어 49개, React 5개, typegen 5개, Vite 38개로 총 97개 테스트가 통과했다. Vite 범용 loader·부분 전송과 React lazy 데모는 10b에서 연결한다.
 
+10b의 Vite 범용 조회·부분 전송과 React 연결을 완료했다. 코어 49개, Vite 49개, React 6개, typegen 5개로 총 109개 테스트, 전체 check·JS/TS 소비 검사와 두 production 데모 빌드가 통과했다. 실제 브라우저 WebSocket에서 영어 선택의 `en/demo` 단독 조회, loaded pair 수정, 신규 namespace의 명시 로드 전 AST 미전송·로드 시 base+target 두 pair 조회를 확인했다. 폼 입력·포커스·모달 유지, JSON 오류 복구, 부팅 뒤 로케일 추가·선택, namespace 삭제와 현재 로케일 삭제 후 기준 언어 전환도 확인했다. 현재 production fallback은 전체 bundle이며 정적 chunk loader는 11단계다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |
@@ -81,7 +83,7 @@
 | 8 | baseline typegen | 초기 readiness, 배경 생성, generation 취소, 내용이 바뀔 때만 `.d.ts` 쓰기를 구현한다 |
 | 9 | 세션·snapshot handshake와 resync | 범위가 있는 snapshot 요청, 중복·gap·늦은 응답을 처리한다 |
 | 10a | 지연 로딩 코어와 전환 조정 | desired locale·namespace 준비 상태, missing·failure·stale 결과를 처리한다. 로컬 구현 완료 |
-| 10b | Vite 범용 로더와 부분 전송 | boot 이후 새 namespace 조회, pair별 version·tombstone, loaded scope 갱신과 React 데모를 연결한다 |
+| 10b | Vite 범용 로더와 부분 전송 | boot 이후 새 namespace 조회, pair별 version·tombstone, loaded scope 갱신과 React 데모를 연결한다. 로컬 구현 완료 |
 | 11 | fresh production build | 현재 디스크 검증 → typegen → consumer 검사 → AST·정적 loader 산출을 연결한다 |
 | 12 | SSR serializer와 hydration fixture | 요청별 snapshot, boot escape, hydration 직전 갱신을 검증한다 |
 

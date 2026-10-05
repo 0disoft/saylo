@@ -4,11 +4,16 @@ import type { Schema, Store, StoreSnapshot } from '@saylo/core';
 
 export interface SayloProviderProps<S extends Schema> {
   /** Caller owns the store and its disposal. Keep the instance stable across renders. */
-  readonly instance: Store<S>;
+  readonly instance: SayloInstance<S>;
   readonly children?: ReactNode;
 }
 
-export type SayloReactSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<Store<S>, 'setLocale'>>;
+export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
+  readonly setLocale: (locale: string) => void | Promise<void>;
+  readonly loadNamespace?: (namespace: string) => Promise<void>;
+}
+
+export type SayloReactSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<SayloInstance<S>, 'setLocale' | 'loadNamespace'>>;
 
 export interface SayloReactBindings<S extends Schema> {
   readonly SayloProvider: ComponentType<SayloProviderProps<S>>;
@@ -18,7 +23,7 @@ export interface SayloReactBindings<S extends Schema> {
 
 /** Create once at module scope; the provider and hook share the same typed context. */
 export function createSayloReact<S extends Schema = Schema>(): SayloReactBindings<S> {
-  const Context = createContext<Store<S> | null>(null);
+  const Context = createContext<SayloInstance<S> | null>(null);
   Context.displayName = 'Saylo';
 
   function SayloProvider({ instance, children }: SayloProviderProps<S>) {
@@ -30,7 +35,8 @@ export function createSayloReact<S extends Schema = Schema>(): SayloReactBinding
     if (!instance) throw new Error('useI18n must be used inside the SayloProvider from the same createSayloReact factory.');
     // Stable store functions avoid resubscriptions. SSR boot/hydration is a later stage.
     const snapshot = useSyncExternalStore(instance.subscribe, instance.getSnapshot);
-    return useMemo(() => Object.freeze({ ...snapshot, setLocale: instance.setLocale }), [snapshot, instance]);
+    return useMemo(() => Object.freeze({ ...snapshot, setLocale: instance.setLocale,
+      ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}) }), [snapshot, instance]);
   }
 
   return Object.freeze({ SayloProvider, useI18n });

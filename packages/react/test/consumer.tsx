@@ -1,4 +1,5 @@
 import { createStore, parseCatalog } from '@saylo/core';
+import type { I18n } from '@saylo/core';
 import { createSayloReact } from '@saylo/react';
 
 type AppSchema = {
@@ -25,11 +26,17 @@ function Cart() {
   snapshot.t(key, { count: 3 });
   if (key === 'cart:items') snapshot.t(key, { count: 3 }); else snapshot.t(key, { code: 'A' });
   snapshot.setLocale('en');
+  const transition: void | Promise<void> = snapshot.setLocale('en');
+  void transition;
+  const namespace: Promise<void> | undefined = snapshot.loadNamespace?.('cart');
+  void namespace;
   // @ts-expect-error immutable snapshot
   snapshot.stateRevision = 3;
   return <p>{snapshot.t('cart:title')}</p>;
 }
 export const app = <SayloProvider instance={store}><Cart /></SayloProvider>;
+declare const lazy: I18n<AppSchema>;
+export const lazyApp = <SayloProvider instance={lazy}><Cart /></SayloProvider>;
 const other = createStore<{ 'other:title': {} }>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
 // @ts-expect-error provider instance must use this factory's schema
 export const wrongApp = <SayloProvider instance={other} />;

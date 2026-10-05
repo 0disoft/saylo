@@ -22,3 +22,5 @@ function Cart() {
   return createElement('p', null, t('cart:title'));
 }
 export const app = createElement(bindings.SayloProvider, { instance: store }, createElement(Cart));
+/** @param {import('@saylo/core').I18n<AppSchema>} instance */
+export function lazyApp(instance) { return createElement(bindings.SayloProvider, { instance }, createElement(Cart)); }
