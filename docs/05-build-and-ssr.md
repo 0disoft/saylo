@@ -51,13 +51,16 @@
 - 서버 전역 `setLocale`을 두지 않는다. per-request instance를 쓴다. 요청 간 로케일이 섞이는 원인을 없앤다.
 - context factory가 만든 hook의 `t`는 그 렌더에 묶인다. boot S1로 hydration하는 동안 `t`도 S1을 읽는다.
 - hydration barrier 동안 S2 이벤트는 buffer에 담고, barrier가 끝날 때 한 번만 적용한다.
+- client는 `createHydrationAdapter(instance)`로 감싼다. adapter는 root마다 새로 만들고 boot S1을 유지하며 underlying snapshot은 최신 하나로 buffer한다. `finishHydration()`을 호출해야 한 번 publish하고 그 뒤에도 `getServerSnapshot`은 S1을 반환한다. `adapter.dispose()`는 자신이 건 구독만 해제하고 원래 instance의 `dispose()`는 앱이 따로 호출한다.
 - `getServerSnapshot`은 decode한 boot 데이터를 고정 identity로 반환한다. `subscribe`/`getSnapshot` 참조는 안정적으로 유지한다(`Object.is` 비교).
 - 렌더 중인 스냅샷은 격리한다. 요청 처리 도중 스냅샷을 변형하지 않는다.
 - 서버 플러그인은 브라우저 갱신과 함께 SSR의 이후 요청에도 갱신된 카탈로그를 반영한다.
 
 ### 부팅 데이터
 
-- boot JSON에는 locale, resolved timeZone, baseSchema와 카탈로그별 version·내용·provenance를 함께 담는다. Map은 배열로 인코딩한다([03-catalog-and-api.md](03-catalog-and-api.md)의 `BootSnapshot`).
+- boot wire v1은 `format: 'saylo-boot-v1'`에 `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas`(`CatalogSchema[]`), `catalogOutcomes`(`CatalogOutcome[]`)를 담는다. `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`이 공개 API다.
+- 현재 `catalogOutcome`은 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣고 loaded base+target pair의 present/missing을 빠짐없이 명시한다. decode는 누락·중복 outcome과 stamp·schema 불일치를 `INVALID_BOOT`로 거부하고, boot timeZone은 config와 일치해야 한다. [03-catalog-and-api.md](03-catalog-and-api.md)의 `CatalogRecord`·`Map` 모형은 초안이며 후속 단계다.
+- `serializeBootSnapshot`은 모든 `<`를 `\u003c`로, U+2028·U+2029를 escape한다. `createServerI18n({ catalogSource, locale, initialNamespaces, timeZone?, requestTimeoutMs? })`는 async scope를 준비한 뒤 요청별 instance를 만들고, `getServerSnapshot`이 생성 시점 snapshot이므로 렌더 전에 scope를 확정하려면 이 factory를 쓴다. `virtual:saylo/server`는 플러그인 기본값을 적용하는 `createRequestI18n`과 서버용 `catalogSource`를 노출한다.
 - HTML에 넣는 JSON은 모든 `<`를 `\u003c`로 치환해 `</script>` 종료를 막는다.
 - 날짜·시간 인자로 Date를 받을 때 내부에서 현재 시각(`Date.now`/`currentTime`)을 만들지 않는다.
 - timeZone은 config에 값을 저장하는 것만으로 모든 날짜 포맷에 자동 적용되지 않는다. resolved timeZone을 기본 date/time 스타일과 skeleton 경로 모두에 전달한다(provide formatters cache override).

@@ -13,3 +13,10 @@ declare module 'virtual:saylo/lazy' {
   export const timeZone: string;
   export const catalogSource: import('@saylo/vite/client').DevCatalogSource;
 }
+
+declare module 'virtual:saylo/server' {
+  export const catalogSource: import('@saylo/core').CatalogSource;
+  export function createRequestI18n<S extends import('@saylo/core').Schema = import('@saylo/core').Schema>(
+    options?: Partial<Omit<import('@saylo/core').ServerI18nOptions, 'catalogSource'>>
+  ): Promise<import('@saylo/core').I18n<S>>;
+}

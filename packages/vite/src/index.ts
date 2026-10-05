@@ -9,6 +9,7 @@ import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
 import { catalogId } from './catalog-outcome.js';
 import type { CatalogOutcome } from '@saylo/core';
+import { registerServerSource } from './server-source.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
   REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest, isSnapshotRequest } from './types.js';
 import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './types.js';
@@ -17,6 +18,8 @@ const VIRTUAL = 'virtual:saylo';
 const RESOLVED = `\0${VIRTUAL}`;
 const LAZY = 'virtual:saylo/lazy';
 const RESOLVED_LAZY = `\0${LAZY}`;
+const SERVER = 'virtual:saylo/server';
+const RESOLVED_SERVER = `\0${SERVER}`;
 const CHUNK = 'virtual:saylo/catalog/';
 const encode = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
 
@@ -36,6 +39,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let live: LiveRegistry | undefined;
   let typegen: TypeGenerator | undefined;
   let generatedOut: string | undefined;
+  let removeServerSource: (() => void) | undefined;
   const isTypegenFile = (file: string) => generatedOut !== undefined && isGeneratedFile(generatedOut, file);
   let diagnostic: LiveDiagnostic = { message: '', diagnostics: [] };
   const eagerClients = new Set<WebSocketClient>();
@@ -64,6 +68,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   };
   const onFile = (file: string) => { void live?.enqueue(file); };
   function detachLive() {
+    removeServerSource?.(); removeServerSource = undefined;
     live?.stop();
     server?.watcher.off('add', onFile);
     server?.watcher.off('unlink', onFile);
@@ -84,7 +89,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
     enforce: 'pre',
     config(config) {
       generatedOut = options.typegen ? path.resolve(config.root ?? process.cwd(), options.typegen.outFile) : undefined;
-      return { optimizeDeps: { exclude: ['@saylo/vite/client'] },
+      return { optimizeDeps: { exclude: ['@saylo/vite/client'] }, ssr: { external: ['@saylo/vite/server'] },
         ...(generatedOut ? { server: { watch: { ignored: [(file: string) => isTypegenFile(file)] } } } : {}) };
     },
     async configResolved(config) {
@@ -110,12 +115,21 @@ export default function saylo(options: SayloViteOptions): Plugin {
     resolveId(id) {
       if (id === VIRTUAL) return RESOLVED;
       if (id === LAZY) return RESOLVED_LAZY;
+      if (id === SERVER) return RESOLVED_SERVER;
       if (chunks.has(id)) return `\0${id}`;
     },
     load(id) {
       const chunk = chunks.get(id.startsWith('\0') ? id.slice(1) : id);
       if (chunk) return `export default ${encode(chunk)};`;
-      if (id === RESOLVED_LAZY) {
+      if (id === RESOLVED_SERVER && this.environment?.name === 'client') throw new Error('virtual:saylo/server is a server-only entry.');
+      if (id === RESOLVED_SERVER && !production) return `import { getServerCatalogSource } from '@saylo/vite/server';
+import { createServerI18n } from '@saylo/core';
+export const catalogSource = getServerCatalogSource(${encode(sessionId)});
+export const createRequestI18n = (options = {}) => createServerI18n({
+  locale: ${encode(initialLocale)}, timeZone: ${encode(timeZone)},
+  initialNamespaces: ${options.initialNamespaces ? encode(options.initialNamespaces) : 'catalogSource.readManifest().availableNamespaces'},
+  ...options, catalogSource });`;
+      if (id === RESOLVED_LAZY || id === RESOLVED_SERVER) {
         const manifest = registry.manifest();
         const locale = manifest.availableLocales.includes(initialLocale) ? initialLocale : baseLocale;
         const namespaces = [...new Set(options.initialNamespaces ?? manifest.availableNamespaces)].sort();
@@ -131,7 +145,10 @@ export const initialLocale = ${encode(locale)};
 export const initialNamespaces = ${encode(namespaces)};
 export const timeZone = ${encode(timeZone)};
 export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, initialCatalogs, [${loaders.join(',\n')}])`
-          : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot })`};`;
+          : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot })`};
+${id === RESOLVED_SERVER ? `import { createServerI18n } from '@saylo/core';
+export const createRequestI18n = (options = {}) => createServerI18n({ locale: initialLocale, timeZone,
+  initialNamespaces, ...options, catalogSource });` : ''}`;
       }
       if (id !== RESOLVED) return;
       const catalogs = JSON.stringify(snapshot().catalogs).replace(/</g, '\\u003c');
@@ -144,6 +161,10 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
     configureServer(devServer) {
       detachLive();
       server = devServer;
+      removeServerSource = registerServerSource(sessionId, {
+        readManifest: () => registry.manifest(),
+        loadCatalog: async (locale, namespace) => registry.load(locale, namespace),
+      });
       live = new LiveRegistry(root, [...files.values()], baseLocale, (next, changed, nextDiagnostic) => {
         if (changed) {
           files = new Map(next.map(f => [f.file, f]));

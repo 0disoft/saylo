@@ -30,7 +30,7 @@
 
 `virtual:saylo/lazy`는 초기 범위의 base+target outcome만 싣고 source handle을 내보낸다. manifest update를 적용한 뒤 core의 `refresh`가 현재 desired scope를 다시 준비한다. 미로드·비활성 pair의 AST는 받지 않는다. 조회 응답은 요청 identity·session·pair version·schema를 검사하고 재연결은 identity를 무효화한 뒤 현재 manifest로 재요청한다. 여러 instance는 source를 공유하며 자신의 연결·구독만 해제한다. 기존 eager 전체 갱신은 eager snapshot을 요청한 Vite client에만 보낸다.
 
-현재 production은 같은 source 계약의 전체 bundle fallback이다. 아래 CatalogRecord·push patch·BootSnapshot wire와 production chunk loader는 후속 단계다.
+production chunk loader는 11단계에서 연결했고, boot wire는 parsed catalog 배열을 싣는 1차 형태로 구현했다. 아래 CatalogRecord·push patch wire는 아직 초안이며 후속 단계다.
 
 ```ts
 type SessionId = string;
@@ -132,16 +132,28 @@ generation은 transport의 오래된 완료를 차단하는 값이다. generatio
 
 ## boot 인코딩과 dev metadata
 
-- `BootSnapshot`([03-catalog-and-api.md](03-catalog-and-api.md))은 wire로 직렬화한다. `Map`은 배열로 명시적으로 인코딩·디코딩한다. `JSON.stringify(Map)`에 의존하지 않는다.
+- `BootSnapshot`([03-catalog-and-api.md](03-catalog-and-api.md))은 wire로 직렬화한다. 현재 구현한 boot wire v1은 `format: 'saylo-boot-v1'`에 `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas`(`CatalogSchema[]`), `catalogOutcomes`(`CatalogOutcome[]`)를 담는다. `catalogOutcome`은 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣고 missing outcome도 명시한다. `Map`을 배열로 인코딩하는 모형은 초안이며 `JSON.stringify(Map)`에 의존하지 않는다.
 - boot에는 locale, baseLocale, resolved timeZone, available manifest, 현재 로드한 namespace, base schema와 카탈로그 record의 version·provenance, loadedNamespaces의 base+target pair 전부에 대한 present/missing 판정과 version이 들어간다. 데이터 누락을 정상 부재로 추정하지 않는다.
 - 개발에서 초기 transport 정보(개발 세션, registry snapshot)는 별도의 고정 opaque handle로 주고받는다. handle은 안정적이며 dev metadata 조회에만 쓴다.
 - `CatalogSource`의 metadata 경로에서 dev session과 registry snapshot을 받아 boot를 decode하고, 그 결과로 core의 `UiSnapshot`을 만든다.
 - 부팅 예(짧게):
 
 ```ts
-// virtual:saylo가 내보내는 값
-import { initialSnapshot, catalogSource } from "virtual:saylo";
-// initialSnapshot: BootSnapshot (wire에서 decode된 값)
-// catalogSource: CatalogSource (개발은 범용 loadCatalog, 운영은 static map)
-const i18n = createI18n({ initialSnapshot, catalogSource, timeZone: "UTC" });
+// virtual:saylo/server (server-only)
+import { serializeBootSnapshot } from '@saylo/core';
+import { createRequestI18n } from 'virtual:saylo/server';
+const request = await createRequestI18n({ locale: 'en' });         // async scope 준비 후 요청별 instance
+try {
+  const boot = serializeBootSnapshot(request.getBootSnapshot()); // 서버 HTML과 함께 전달한다.
+} finally { request.dispose(); }
+```
+
+```ts
+// client: 서버 JSON으로 초기 스냅샷을 만들고 브라우저용 source를 연결한다.
+import { createI18n, decodeBootSnapshot } from '@saylo/core';
+import { createHydrationAdapter } from '@saylo/react';
+import { catalogSource } from 'virtual:saylo/lazy';
+const decoded = decodeBootSnapshot(script.textContent);
+const client = createI18n({ initialSnapshot: decoded, catalogSource });
+const adapter = createHydrationAdapter(client);                     // boot S1 유지, finishHydration 후 1회 publish
 ```

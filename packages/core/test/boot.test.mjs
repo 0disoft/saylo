@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createBaseSchema, createBootSnapshot, createI18n, decodeBootSnapshot, parseCatalog, serializeBootSnapshot } from '@saylo/core';
+import { createBaseSchema, createBootSnapshot, createI18n, createServerI18n, decodeBootSnapshot, parseCatalog, serializeBootSnapshot } from '@saylo/core';
 
 function fixture() {
   const parse = (locale, namespace, messages) => parseCatalog(JSON.stringify(messages), { locale, namespace, sourceName: `${locale}/${namespace}.json` });
@@ -90,4 +90,20 @@ test('request instances stay isolated and serialized scopes track committed stat
   assert.equal(hydrate.t('demo:title'), '최신 문구');
   assert.equal(hydrate.getServerSnapshot().t('demo:title'), pinned.t('demo:title'));
   assert.equal(serializeBootSnapshot(hydrate.getBootSnapshot()), serializeBootSnapshot(createBootSnapshot(hydrate.getBootSnapshot())));
+});
+
+test('SSR request preparation pins the ready scope, retries changed pair stamps, and bounds waiting', async t => {
+  const f = fixture();
+  let changed = false;
+  const source = { ...f.source, async loadCatalog(locale, namespace) {
+    if (!changed) { f.change(); changed = true; }
+    return f.outcome(locale, namespace);
+  } };
+  const server = await createServerI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['demo'], timeZone: 'Asia/Seoul' });
+  t.after(() => server.dispose());
+  assert.equal(server.getServerSnapshot().t('demo:title'), '최신 문구');
+  assert.equal(server.getBootSnapshot().manifest.registryRevision, 1);
+  const hanging = { ...source, loadCatalog: () => new Promise(() => {}) };
+  await assert.rejects(createServerI18n({ catalogSource: hanging, locale: 'ko', initialNamespaces: ['demo'], requestTimeoutMs: 10 }), { code: 'TIMEOUT' });
+  await assert.rejects(createServerI18n({ catalogSource: source, locale: 'ja', initialNamespaces: ['demo'] }), RangeError);
 });

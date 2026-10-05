@@ -18,3 +18,8 @@ createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [
 ]);
 // @ts-expect-error checkJs also rejects unversioned static outcomes
 createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [{ key: { locale: 'en', namespace: 'demo' }, load: async () => ({}) }]);
+
+import { createRequestI18n } from 'virtual:saylo/server';
+createRequestI18n({ locale: 'en' }).then(instance => instance.dispose());
+// @ts-expect-error checkJs also rejects invalid request locales
+createRequestI18n({ locale: 3 });

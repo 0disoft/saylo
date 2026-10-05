@@ -6,6 +6,8 @@ export { createStore } from './store.js';
 export { createI18n } from './i18n.js';
 export { createBootSnapshot, serializeBootSnapshot, decodeBootSnapshot } from './boot.js';
 export type { BootSnapshot, BootSnapshotInput } from './boot.js';
+export { createServerI18n } from './server.js';
+export type { ServerI18nOptions } from './server.js';
 export { readManifest as validateCatalogManifest } from './loading-registry.js';
 export { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
 export { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';

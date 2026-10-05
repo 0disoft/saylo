@@ -21,3 +21,9 @@ const staticSource = createStaticCatalogSource(catalogSource.readManifest(), laz
 staticSource.loadCatalog('en', 'demo');
 // @ts-expect-error static loaders must resolve a versioned catalog outcome
 createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [{ key: { locale: 'en', namespace: 'demo' }, load: async () => ({}) }]);
+
+import { createRequestI18n } from 'virtual:saylo/server';
+const request = createRequestI18n<{ 'demo:hello': { name: string } }>({ locale: 'en' });
+request.then(instance => { instance.getServerSnapshot().t('demo:hello', { name: 'SSR' }); instance.dispose(); });
+// @ts-expect-error request locale must be a string
+createRequestI18n({ locale: 3 });

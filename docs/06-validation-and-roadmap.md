@@ -39,6 +39,8 @@
 
 11단계의 운영 정적 로더를 구현하고 실제 결과로 검증했다. `virtual:saylo/lazy`가 전체 metadata manifest와 base+initial locale의 initialNamespaces pair만 inline으로 싣고, 나머지 present pair는 generated virtual module의 literal `import()` loader entry로 분리한다. `createStaticCatalogSource(initialManifest, initialCatalogs, entries)`가 on-demand import·cache·dedupe를 처리하고, 실패나 session·version·fingerprint/key 불일치는 캐시에 반영하지 않으며 missing tombstone은 import 없이 반환한다. dev source와 eager `virtual:saylo`는 기존과 같다. 새 테스트 4개가 실제 Vite production build의 분리된 dynamic chunk 3개, emitted module 실행(locale+namespace fallback), fresh invalid disk build 실패, 정적 source dedupe·cache·retry·missing을 확인하고 기존 lazy test는 fallback에서 chunk 계약 검사로 교체했다. `npm run check`가 통과했고 core 49·Vite 53·React 6·typegen 5로 총 113개, JS/TS 소비 검사와 두 데모 production build가 통과했다. React 운영 브라우저 CDP에서 초기 요청은 HTML·main JS·CSS뿐이었고 영어 선택 시 demo dynamic chunk 하나만 요청됐으며 한국어/영어 재전환에는 추가 요청이 없었다. 폼 입력·포커스와 열린 모달·모달 입력이 유지됐고 WebSocket 연결과 console error/warn은 0이었다. 성능 수치·parser elimination·SSR은 미완료다.
 
+12단계의 SSR serializer와 hydration을 구현하고 로컬 검증을 진행했다. `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`을 공개했고, boot wire는 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣는다. 직렬화는 모든 `<`를 `\u003c`로, U+2028·U+2029를 escape한다. loaded base+target pair의 present/missing outcome을 빠짐없이 명시하고 누락·중복 outcome과 stamp·schema 불일치는 `INVALID_BOOT`로 거부하며, boot timeZone은 config와 일치해야 한다. `createServerI18n`은 async scope를 준비해 `getServerSnapshot`이 생성 시점 snapshot이 되는 문제를 피하고, `createHydrationAdapter`는 boot S1을 유지하면서 이후 snapshot을 최신 하나로 buffer해 `finishHydration()`에서 한 번 publish한다. SSR fixture는 `examples/ssr/{app,entry-server,client,config,server,demo}.mjs`로 추가했고, `npm run demo:ssr`가 ko/en 동시 요청 renderToString과 boot locale 검사를 수행한 뒤 종료하며 `npm run dev:ssr`는 127.0.0.1:5190/?locale=en에서 실제 서버·client hydrateRoot(StrictMode)·live connectDev를 확인한다. 이미 실행한 검사는 core의 html-safe roundtrip·timeZone·metadata 거부·요청 간 격리, React의 renderToString+hydrateRoot boot S1 `t` 고정·S2/S3 buffer 1회 적용·DOM·입력·포커스·state 보존, Vite SSR의 개발 watcher 다음 요청 최신 문구와 production SSR bundle 동적 import·요청별 ko/en 분리다. 전체 `npm run check`, JS/TS 소비 검사와 두 production 데모 빌드가 통과했다. core 53·React 9·Vite 55·typegen 5로 총 122개 테스트가 통과했다. 실제 SSR 브라우저에서 영어 첫 화면의 hydration과 클릭·입력 동작, 파일 수정 뒤 입력·수량 상태 유지, 다음 서버 응답의 최신 문구 반영을 확인했고 콘솔 경고·오류는 없었다. 카탈로그 요청의 초기 generation이 서버 검증을 만족하도록 수정하고 lazy fixture에도 실제 서버 검증기를 연결했다. 성능 측정과 패키지 공개 배포는 미완료다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |
@@ -71,7 +73,7 @@
 
 ## 로드맵
 
-작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 현재 11단계 정적 로더까지 로컬 구현을 진행했고, 이후 단계도 같은 방식으로 이어간다.
+작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 현재 12단계 SSR까지 로컬 구현을 진행했고, 이후 단계도 같은 방식으로 이어간다.
 
 | 순서 | 커밋의 한 가지 책임 | 완료 기준 |
 | --- | --- | --- |
@@ -87,6 +89,6 @@
 | 10a | 지연 로딩 코어와 전환 조정 | desired locale·namespace 준비 상태, missing·failure·stale 결과를 처리한다. 로컬 구현 완료 |
 | 10b | Vite 범용 로더와 부분 전송 | boot 이후 새 namespace 조회, pair별 version·tombstone, loaded scope 갱신과 React 데모를 연결한다. 로컬 구현 완료 |
 | 11 | fresh production build | 현재 디스크 검증 → typegen → consumer 검사 → AST·정적 loader 산출을 연결한다. 로컬 구현 완료 |
-| 12 | SSR serializer와 hydration fixture | 요청별 snapshot, boot escape, hydration 직전 갱신을 검증한다 |
+| 12 | SSR serializer와 hydration fixture | 요청별 snapshot, boot escape, hydration 직전 갱신을 검증한다. 로컬 구현 완료 |
 
 1–8단계에서는 작은 fixture를 eager로 실어도 된다. 9–10단계에서 부분 전송과 미로드 상태가 들어올 때 카탈로그별 버전 계약을 적용한다.

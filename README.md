@@ -5,7 +5,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 ## 현재 상태
 
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 패키지는 아직 비공개이며 npm에 배포하지 않았다.
-- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR은 이후 구현한다.
+- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR boot serializer·요청별 instance·React hydration 어댑터를 구현했고 전체 check와 실제 브라우저 검증을 마쳤다.
 - 성능 수치는 전부 목표치다. 측정 결과가 아니며, 벤치마크도 아직 없다.
 - 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
 - npm 패키지 이름 `saylo`의 사용 가능 여부는 확인하지 않았다. 라이선스도 아직 정하지 않았다.
@@ -86,7 +86,7 @@ store.dispose();
 
 현재 생성 옵션은 `catalogSource`, `locale`, `initialNamespaces`, `initialCatalogs`와 선택적인 `timeZone`·`requestTimeoutMs`다. manifest는 전체 locale·namespace 목록과 알려진 pair별 version·schema fingerprint·missing tombstone을 담는다. 부팅 pair는 결과를 빠짐없이 명시하고, 이후 결과는 현재 session·pair version·schema로 검사한다. `refresh()`는 어댑터가 manifest 변경 후 현재 원하는 범위를 다시 준비할 때 쓴다. 전역 revision만으로 관계없는 namespace의 정상 결과를 폐기하지 않는다. timeout 기본값은 카탈로그당 5초이며 dispose는 요청·timer·소유 listener를 정리한다.
 
-`npm run demo:lazy`는 언어 전환과 장바구니 namespace 로드를 동시에 실행하는 Node 데모다. 조회 중 한국어 snapshot을 유지하다가 한 번의 commit으로 영어 공통 문구와 한국어 장바구니 폴백을 게시한다. JS/checkJs와 TS 소비 fixture가 같은 키·인자 타입을 검사한다. 현재 경로는 parsed catalog를 받는 프로토타입이다. 개발에서는 Vite 범용 loader·부분 전송과 React 연결을 지원한다. 운영 경로는 `createStaticCatalogSource(initialManifest, initialCatalogs, entries)`로 boot pair만 inline으로 싣고 나머지 present pair는 생성된 literal `import()` loader entry로 분리한다. 실패나 session·version·fingerprint/key 불일치는 캐시에 반영하지 않고, missing tombstone은 import 없이 반환한다. SSR BootSnapshot은 후속 단계다.
+`npm run demo:lazy`는 언어 전환과 장바구니 namespace 로드를 동시에 실행하는 Node 데모다. 조회 중 한국어 snapshot을 유지하다가 한 번의 commit으로 영어 공통 문구와 한국어 장바구니 폴백을 게시한다. JS/checkJs와 TS 소비 fixture가 같은 키·인자 타입을 검사한다. 현재 경로는 parsed catalog를 받는 프로토타입이다. 개발에서는 Vite 범용 loader·부분 전송과 React 연결을 지원한다. 운영 경로는 `createStaticCatalogSource(initialManifest, initialCatalogs, entries)`로 boot pair만 inline으로 싣고 나머지 present pair는 생성된 literal `import()` loader entry로 분리한다. 실패나 session·version·fingerprint/key 불일치는 캐시에 반영하지 않고, missing tombstone은 import 없이 반환한다. SSR boot snapshot은 `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`로 로컬 구현했다. 현재 wire는 parsed catalog의 sourceName·locale·AST·인자를 배열로 직렬화하고, 초안 `CatalogRecord`·`Map` 모형은 후속 단계다.
 
 lazy 앱은 아래처럼 연결한다. Vite의 `initialNamespaces` 옵션으로 부팅 범위를 정하며, 생략하면 기준 namespace 전체다. source는 여러 instance가 공유할 수 있고 마지막 연결 해제 후 자신이 등록한 HMR listener를 정리한다.
 
@@ -162,7 +162,52 @@ const disconnect = connectDev(store);
 
 Provider는 `createStore`와 `createI18n`을 모두 받는다. hook의 `setLocale` 반환 타입은 `void | Promise<void>`이며 lazy 호출의 실패는 await/catch로 처리한다. lazy instance에서는 `loadNamespace`도 같은 함수 참조로 제공하고 eager instance에는 그 함수가 없다. 필요한 pair를 준비하는 동안 hook은 이전 snapshot을 읽으며, 준비가 끝나면 한 번 게시한다.
 
-JS/checkJs에서는 `SayloReactBindings<AppSchema>`와 `Store<AppSchema>` JSDoc으로 같은 키·인자 검사를 연결할 수 있다. 소비 예제는 `packages/react/test/consumer-js.js`와 `consumer.tsx`에 있다. 현재 hook은 클라이언트 렌더용이며 SSR boot serializer·getServerSnapshot·hydration barrier는 이후 단계에서 구현한다.
+JS/checkJs에서는 `SayloReactBindings<AppSchema>`와 `Store<AppSchema>` JSDoc으로 같은 키·인자 검사를 연결할 수 있다. 소비 예제는 `packages/react/test/consumer-js.js`와 `consumer.tsx`에 있다. `createSayloReact`의 hook은 `useSyncExternalStore` 세 번째 인자로 `getServerSnapshot`을 연결한다. SSR hydration은 `@saylo/react`의 `createHydrationAdapter`를 `instance` 대신 Provider에 넘기는 방식으로 지원한다.
+
+## SSR
+
+서버는 요청마다 instance를 만들고 scope가 준비된 뒤 boot snapshot을 직렬화한다. 클라이언트는 그 JSON을 decode해 같은 boot S1로 hydration하고, live 갱신은 hydration barrier가 끝난 뒤 한 번만 반영한다.
+
+서버는 `virtual:saylo/server`의 `createRequestI18n`으로 렌더 전에 요청 scope를 준비한다. 개발에서는 Node registry handle이 최신 read/load를 제공하고 server 종료 시 unregister하며, 운영은 static import source를 쓴다.
+
+```js
+import { createElement as h } from 'react';
+import { renderToString } from 'react-dom/server';
+import { serializeBootSnapshot } from '@saylo/core';
+import { createRequestI18n } from 'virtual:saylo/server';
+import { App, SayloProvider } from './app.mjs'; // examples/ssr의 공유 컴포넌트
+
+const request = await createRequestI18n({ locale: 'en' });
+try {
+  const html = renderToString(h(SayloProvider, { instance: request }, h(App)));
+  const boot = serializeBootSnapshot(request.getBootSnapshot()); // committed scope만 직렬화
+  // boot를 <script type="application/json" id="saylo-boot">의 textContent에 넣는다.
+} finally { request.dispose(); }
+```
+
+```js
+import { createElement as h } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { createI18n, decodeBootSnapshot } from '@saylo/core';
+import { createHydrationAdapter } from '@saylo/react';
+import { connectDev } from '@saylo/vite/client';
+import { catalogSource } from 'virtual:saylo/lazy';
+import { App, SayloProvider } from './app.mjs';
+
+const decoded = decodeBootSnapshot(document.getElementById('saylo-boot').textContent);
+const client = createI18n({ initialSnapshot: decoded, catalogSource });
+const adapter = createHydrationAdapter(client);
+connectDev(client, { catalogSource });
+const root = hydrateRoot(document.getElementById('root'), h(SayloProvider, { instance: adapter },
+  h(App, { onHydrated: adapter.finishHydration }))); // 예제 App은 effect에서 onHydrated를 호출한다.
+// unmount 시 root.unmount(), adapter.dispose(), client.dispose()를 호출한다.
+```
+
+`createI18n`은 기존 parsed scope 옵션(`locale`·`initialNamespaces`·`initialCatalogs`) 또는 `initialSnapshot`+`catalogSource` 중 하나를 받는다. boot로 만들면 source가 최신이어도 최초 manifest가 boot에 고정되고, `getServerSnapshot`은 생성 시점 snapshot identity를 유지한다. `getBootSnapshot`은 현재 committed scope만 직렬화한다.
+
+`createHydrationAdapter(instance)`는 root마다 새로 만든다. adapter는 boot S1을 유지하면서 underlying snapshot은 최신 하나만 buffer하고, `finishHydration()`을 호출해야 그 시점에 한 번 publish한다. `getServerSnapshot`은 이후에도 S1을 반환한다. `adapter.dispose()`는 자신이 건 구독만 해제하므로 원래 instance 정리는 앱이 `client.dispose()`로 따로 한다.
+
+실행용 SSR fixture는 `examples/ssr/`에 있고, `npm run demo:ssr`가 ko/en 동시 요청 renderToString과 boot locale 검사를 수행한 뒤 종료한다. `npm run dev:ssr`는 127.0.0.1:5190/?locale=en에서 실제 SSR 서버를 띄워 client hydrateRoot(StrictMode)와 live connectDev까지 확인한다.
 
 ## 설계 방향 한 줄 요약
 
