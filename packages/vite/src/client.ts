@@ -32,8 +32,10 @@ export function connectDev<S extends Schema>(store: Store<S>, options: ConnectDe
   if (!hot) return noop;
   let sessionId: string | undefined;
   let revision = -1;
+  let unwatchDispose = noop;
   const report = (error: unknown) => options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [] });
   const receive = (payload: EagerCatalogSnapshot) => {
+    if (bindings.get(store) !== stop) return;
     if (!payload || typeof payload.sessionId !== 'string' || !Number.isSafeInteger(payload.revision) || payload.revision < 0 || !Array.isArray(payload.catalogs)) {
       report(new Error('Invalid eager snapshot envelope.'));
       return;
@@ -48,28 +50,35 @@ export function connectDev<S extends Schema>(store: Store<S>, options: ConnectDe
     }
     sessionId = payload.sessionId;
     revision = payload.revision;
+    if (bindings.get(store) !== stop) return;
     options.onUpdate?.(payload.catalogs);
   };
-  const receiveDiagnostic = (diagnostic: LiveDiagnostic) => options.onDiagnostic?.(diagnostic);
+  const receiveDiagnostic = (diagnostic: LiveDiagnostic) => {
+    if (bindings.get(store) === stop) options.onDiagnostic?.(diagnostic);
+  };
   const stop = () => {
     if (bindings.get(store) !== stop) return;
     hot.off(SNAPSHOT_EVENT, receive);
     hot.off(DIAGNOSTIC_EVENT, receiveDiagnostic);
     bindings.delete(store);
+    unwatchDispose();
     hotBindings.get(hot)?.delete(stop);
   };
   let live = hotBindings.get(hot);
   if (!live) {
     live = new Set();
     hotBindings.set(hot, live);
-    hot.dispose(() => { for (const stop of [...live!]) stop(); });
+    const stopAll = () => { for (const stop of [...live!]) stop(); };
+    hot.dispose(stopAll);
+    hot.prune(stopAll);
   }
   bindings.set(store, stop);
   live.add(stop);
   hot.on(SNAPSHOT_EVENT, receive);
   hot.on(DIAGNOSTIC_EVENT, receiveDiagnostic);
   // Listener registration precedes the authoritative whole-registry request.
-  hot.send(REQUEST_EVENT);
+  try { unwatchDispose = store.onDispose(stop); hot.send(REQUEST_EVENT); }
+  catch (error) { stop(); throw error; }
   return stop;
 }
 

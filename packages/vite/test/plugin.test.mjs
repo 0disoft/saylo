@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, rename } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import saylo from '../dist/index.js';
+import { createStore } from '@saylo/core';
 import { assertInside, scanCatalogs } from '../dist/catalog-files.js';
 import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from '../dist/types.js';
 
@@ -25,18 +26,29 @@ async function setup(t) {
   const events = [];
   const ws = new EventEmitter();
   ws.send = event => events.push(event);
-  const server = { ws, watcher: { add() {} }, httpServer: new EventEmitter(), config: { logger: { warn() {} } } };
+  const watcher = new EventEmitter();
+  watcher.add = () => {};
+  const server = { ws, watcher, httpServer: new EventEmitter(), config: { logger: { warn() {} } } };
   plugin.configureServer(server);
   t.after(() => plugin.closeBundle());
-  const change = (locale, source) => plugin.handleHotUpdate({
-    file: path.join(root, locale, 'demo.json'), read: () => source, modules: [], server,
+  const change = (locale, source) => plugin.hotUpdate({
+    type: 'update', file: path.join(root, locale, 'demo.json'), read: () => source, modules: [], server,
   });
   const request = () => {
     const replies = [];
     ws.emit(REQUEST_EVENT, {}, { send: event => replies.push(event) });
     return replies;
   };
-  return { root, plugin, events, ws, change, request, server };
+  const disk = async (type, locale, namespace = 'demo', source) => {
+    const file = path.join(root, locale, `${namespace}.json`);
+    if (source !== undefined) {
+      await mkdir(path.dirname(file), { recursive: true });
+      await writeFile(file, source);
+    } else if (type === 'delete') await rm(file);
+    watcher.emit(type === 'delete' ? 'unlink' : 'add', file);
+    return plugin.hotUpdate({ type, file, read: () => source, modules: [], server });
+  };
+  return { root, plugin, events, ws, change, request, server, disk };
 }
 
 test('scan canonicalizes locale directories and parses ICU', async t => {
@@ -69,7 +81,7 @@ test('changed file sends snapshot, suppresses default HMR, and dedupes identical
   assert.equal(events[0].event, SNAPSHOT_EVENT);
   assert.equal(events[0].data.revision, 1);
   await change('en', '{"hello":"Hello {name}"}');
-  assert.equal(events.length, 1);
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
   assert.equal(request()[0].data.revision, 1);
   const virtual = plugin.load(plugin.resolveId('virtual:saylo'));
   assert.match(virtual, /Hello/);
@@ -92,20 +104,153 @@ test('base schema change revalidates translations atomically', async t => {
   assert.equal(request()[1].event, DIAGNOSTIC_EVENT);
   await change('en', '{"hello":"Hello"}');
   assert.equal(request()[0].data.revision, 1);
-  assert.equal(request()[1].event, DIAGNOSTIC_EVENT); // An unrelated save cannot clear the ko error.
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'ko').messages.hello.source, '안녕 {count, number}');
+  assert.equal(request()[1].data.message, ''); // A compatible dependency edit automatically retries the desired candidate.
   await change('ko', '{"hello":"안녕 {count, number}"}');
-  assert.equal(request()[0].data.revision, 2);
-  assert.equal(request().length, 1);
+  assert.equal(request()[0].data.revision, 1);
+  assert.equal(request()[1].data.message, '');
 });
 
-test('concurrent saves apply in order and close removes plugin listeners', async t => {
+test('concurrent saves coalesce to final value and close removes only plugin listeners', async t => {
   const { change, events, server, ws } = await setup(t);
+  const foreign = () => {};
+  server.watcher.on('add', foreign);
   await Promise.all([change('ko', '{"hello":"첫 번째 {name}"}'), change('ko', '{"hello":"두 번째 {name}"}')]);
-  assert.deepEqual(events.map(e => e.data.revision), [1, 2]);
+  assert.deepEqual(events.filter(e => e.event === SNAPSHOT_EVENT).map(e => e.data.revision), [1]);
+  assert.equal(events[0].data.catalogs.find(c => c.locale === 'ko').messages.hello.source, '두 번째 {name}');
   server.httpServer.emit('close');
   assert.equal(ws.listenerCount(REQUEST_EVENT), 0);
+  assert.equal(server.watcher.listenerCount('add'), 1);
+  assert.equal(server.watcher.listenerCount('unlink'), 0);
   await change('ko', '{"hello":"닫힌 서버 {name}"}');
-  assert.equal(events.length, 2);
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+});
+
+test('new locale and paired namespace files join the same valid batch', async t => {
+  const { disk, request, events } = await setup(t);
+  await Promise.all([
+    disk('create', 'ja', 'demo', '{"hello":"こんにちは {name}"}'),
+    disk('create', 'en', 'help', '{"title":"Help"}'),
+    disk('create', 'ko', 'help', '{"title":"도움말"}'),
+  ]);
+  const store = createStore({ baseLocale: 'ko', locale: 'ja', catalogs: request()[0].data.catalogs });
+  t.after(() => store.dispose());
+  assert.deepEqual(store.getSnapshot().availableLocales, ['en', 'ja', 'ko']);
+  assert.deepEqual(store.getSnapshot().availableNamespaces, ['demo', 'help']);
+  assert.equal(store.t('demo:hello', { name: '제로디' }), 'こんにちは 제로디');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+});
+
+test('translation namespace removal falls back and current locale removal selects base', async t => {
+  const { disk, request } = await setup(t);
+  await Promise.all([disk('create', 'ko', 'help', '{"title":"도움말"}'), disk('create', 'en', 'help', '{"title":"Help"}')]);
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: request()[0].data.catalogs });
+  t.after(() => store.dispose());
+  await disk('delete', 'en', 'help');
+  store.replaceCatalogs(request()[0].data.catalogs);
+  assert.equal(store.t('help:title'), '도움말');
+  await disk('delete', 'en');
+  store.replaceCatalogs(request()[0].data.catalogs);
+  assert.equal(store.getSnapshot().locale, 'ko');
+  assert.deepEqual(store.getSnapshot().availableLocales, ['ko']);
+});
+
+test('baseline namespace removal retires secondary files and restoration rejoins them', async t => {
+  const { disk, request } = await setup(t);
+  await Promise.all([disk('create', 'ko', 'help', '{"title":"도움말"}'), disk('create', 'en', 'help', '{"title":"Help"}')]);
+  await disk('delete', 'ko', 'help');
+  assert.ok(request()[0].data.catalogs.every(c => c.namespace !== 'help'));
+  await disk('create', 'ko', 'help', '{"title":"도움말"}');
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: request()[0].data.catalogs });
+  t.after(() => store.dispose());
+  assert.equal(store.t('help:title'), 'Help');
+});
+
+test('deleting all base files retains last good state and recovers when restored', async t => {
+  const { disk, request } = await setup(t);
+  await disk('delete', 'ko');
+  assert.equal(request()[0].data.revision, 0);
+  assert.match(request()[1].data.message, /base locale must retain/);
+  await disk('create', 'ko', 'demo', '{"hello":"복구 {name}"}');
+  assert.equal(request()[0].data.revision, 1);
+  assert.equal(request()[1].data.message, '');
+});
+
+test('atomic unlink/add save reads final file without publishing removal', async t => {
+  const { root, plugin, server, request, events } = await setup(t);
+  const file = path.join(root, 'en', 'demo.json');
+  const temp = path.join(root, 'en', '.demo.json');
+  await writeFile(temp, '{"hello":"Replaced {name}"}');
+  assert.equal(await plugin.hotUpdate({ type: 'create', file: temp, modules: [], server }), undefined);
+  await rm(file);
+  server.watcher.emit('unlink', file);
+  const deletion = plugin.hotUpdate({ type: 'delete', file, modules: [], server });
+  await rename(temp, file);
+  server.watcher.emit('add', file);
+  await Promise.all([deletion, plugin.hotUpdate({ type: 'create', file, modules: [], server })]);
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: request()[0].data.catalogs });
+  t.after(() => store.dispose());
+  assert.equal(store.t('demo:hello', { name: 'Ada' }), 'Replaced Ada');
+});
+
+test('translation arriving before new baseline is retried without resaving translation', async t => {
+  const { disk, request } = await setup(t);
+  await disk('create', 'en', 'help', '{"title":"Help"}');
+  assert.equal(request()[0].data.revision, 0);
+  assert.ok(request()[1].data.message);
+  await disk('create', 'ko', 'help', '{"title":"도움말"}');
+  assert.equal(request()[0].data.revision, 1);
+  assert.equal(request()[1].data.message, '');
+  assert.equal(request()[0].data.catalogs.filter(c => c.namespace === 'help').length, 2);
+});
+
+test('invalid new file is diagnosed and ignored files do not create live events', async t => {
+  const { disk, root, plugin, server, request, events } = await setup(t);
+  await disk('create', 'ja', 'demo', '{');
+  assert.equal(request()[0].data.revision, 0);
+  assert.ok(request()[1].data.message);
+  await disk('delete', 'ja');
+  assert.equal(request()[1].data.message, '');
+  for (const name of ['generated.d.ts', 'demo.json.tmp', '.demo.json']) {
+    const file = path.join(root, 'ko', name);
+    server.watcher.emit('add', file);
+    assert.equal(await plugin.hotUpdate({ type: 'create', file, modules: [], server }), undefined);
+  }
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 0);
+});
+
+test('save during an async read discards superseded content before publishing', async t => {
+  const { root, plugin, server, events, request } = await setup(t);
+  const file = path.join(root, 'ko', 'demo.json');
+  let started;
+  let release;
+  const reading = new Promise(resolve => { started = resolve; });
+  const source = new Promise(resolve => { release = resolve; });
+  const slow = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => { started(); return source; } });
+  await reading;
+  await writeFile(file, '{"hello":"Latest {name}"}');
+  const latest = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => '{"hello":"Latest {name}"}' });
+  release('{"hello":"Superseded {name}"}');
+  await Promise.all([slow, latest]);
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'ko').messages.hello.source, 'Latest {name}');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+});
+
+test('closing during an async read cancels publication and pending listeners', async t => {
+  const { root, plugin, server, events } = await setup(t);
+  let started;
+  let release;
+  const reading = new Promise(resolve => { started = resolve; });
+  const source = new Promise(resolve => { release = resolve; });
+  const slow = plugin.hotUpdate({ type: 'update', file: path.join(root, 'ko', 'demo.json'), modules: [], server,
+    read: () => { started(); return source; } });
+  await reading;
+  plugin.closeBundle();
+  release('{"hello":"Closed {name}"}');
+  await slow;
+  assert.equal(events.length, 0);
+  assert.equal(server.watcher.listenerCount('add'), 0);
 });
 
 test('virtual serialization escapes HTML delimiters', async t => {

@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
-import { CatalogError, createBaseSchema, createStore, validateTranslation } from '@saylo/core';
+import { createStore } from '@saylo/core';
 import type { Plugin, ViteDevServer } from 'vite';
-import { readCatalogFile, scanCatalogs } from './catalog-files.js';
+import { scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
+import { LiveRegistry } from './live-registry.js';
 import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from './types.js';
 import type { EagerCatalogSnapshot, LiveDiagnostic, SayloViteOptions } from './types.js';
 
@@ -13,63 +14,27 @@ const RESOLVED = `\0${VIRTUAL}`;
 export default function saylo(options: SayloViteOptions): Plugin {
   const baseLocale = Intl.getCanonicalLocales(options.baseLocale)[0];
   if (!baseLocale) throw new RangeError('baseLocale must not be empty.');
-  const initialLocale = options.initialLocale ?? baseLocale;
+  const initialLocale = Intl.getCanonicalLocales(options.initialLocale ?? baseLocale)[0]!;
   const timeZone = options.timeZone ?? 'UTC';
   const sessionId = randomUUID();
   let root = '';
   let files = new Map<string, CatalogFile>();
   let revision = 0;
   let server: ViteDevServer | undefined;
-  const diagnostics = new Map<string, LiveDiagnostic>();
-  const diagnostic = (): LiveDiagnostic => ({
-    message: [...diagnostics.values()].map(d => d.message).join('\n'),
-    diagnostics: [...diagnostics.values()].flatMap(d => d.diagnostics),
-  });
-  let pending = Promise.resolve();
-  let stopped = false;
+  let live: LiveRegistry | undefined;
+  let diagnostic: LiveDiagnostic = { message: '', diagnostics: [] };
   const snapshot = (): EagerCatalogSnapshot => ({ sessionId, revision, baseLocale, catalogs: [...files.values()].map(f => f.catalog) });
   const request: Parameters<ViteDevServer['ws']['on']>[1] = (_data, client) => {
     client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: snapshot() });
-    if (diagnostics.size) client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic() });
+    client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic });
   };
+  const onFile = (file: string) => { void live?.enqueue(file); };
   function cleanup() {
-    stopped = true;
+    live?.stop();
+    server?.watcher.off('add', onFile);
+    server?.watcher.off('unlink', onFile);
     server?.ws.off(REQUEST_EVENT, request);
     server?.httpServer?.off('close', cleanup);
-  }
-  async function refresh(file: string, read: () => string | Promise<string>) {
-    if (stopped) return;
-    const previous = files.get(file);
-    if (!previous) return;
-    try {
-      const changed = await readCatalogFile(root, file, previous.catalog.locale, previous.catalog.namespace, read);
-      if (stopped) return;
-      if (changed.source !== previous.source) {
-        const candidate = new Map(files);
-        candidate.set(file, changed);
-        const namespace = changed.catalog.namespace;
-        const base = [...candidate.values()].find(f => f.catalog.locale === baseLocale && f.catalog.namespace === namespace)!;
-        const schema = createBaseSchema(base.catalog);
-        if (changed.catalog.locale === baseLocale) {
-          if (schema.fingerprint !== createBaseSchema(previous.catalog).fingerprint) {
-            for (const item of candidate.values()) {
-              if (item.catalog.namespace === namespace && item.catalog.locale !== baseLocale) validateTranslation(schema, item.catalog);
-            }
-          }
-        } else validateTranslation(schema, changed.catalog);
-        files = candidate;
-        revision++;
-        server?.ws.send({ type: 'custom', event: SNAPSHOT_EVENT, data: snapshot() });
-      }
-      if (diagnostics.delete(file)) {
-        server?.ws.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic() });
-      }
-    } catch (error) {
-      const failure = { message: error instanceof Error ? error.message : String(error), diagnostics: error instanceof CatalogError ? error.diagnostics : [] };
-      diagnostics.set(file, failure);
-      server?.ws.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic() });
-      server?.config.logger.warn(`[saylo] ${failure.message}`);
-    }
   }
   return {
     name: 'saylo',
@@ -89,22 +54,36 @@ export default function saylo(options: SayloViteOptions): Plugin {
       return `import { freezeCatalogs } from '@saylo/vite/client';
 export const initialCatalogs = freezeCatalogs(${catalogs});
 export const baseLocale = ${JSON.stringify(baseLocale)};
-export const initialLocale = ${JSON.stringify(initialLocale)};
+export const initialLocale = ${JSON.stringify(snapshot().catalogs.some(c => c.locale === initialLocale) ? initialLocale : baseLocale)};
 export const timeZone = ${JSON.stringify(timeZone)};`;
     },
     configureServer(devServer) {
+      cleanup();
       server = devServer;
-      stopped = false;
-      server.watcher.add([...files.keys()]);
+      live = new LiveRegistry(root, [...files.values()], baseLocale, (next, changed, nextDiagnostic) => {
+        if (changed) {
+          files = new Map(next.map(f => [f.file, f]));
+          revision++;
+          server?.ws.send({ type: 'custom', event: SNAPSHOT_EVENT, data: snapshot() });
+        }
+        if (JSON.stringify(diagnostic) !== JSON.stringify(nextDiagnostic)) {
+          diagnostic = nextDiagnostic;
+          server?.ws.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic });
+          if (diagnostic.message) server?.config.logger.warn(`[saylo] ${diagnostic.message}`);
+        }
+      });
+      server.watcher.add(root);
+      server.watcher.on('add', onFile);
+      server.watcher.on('unlink', onFile);
       server.ws.on(REQUEST_EVENT, request);
       server.httpServer?.once('close', cleanup);
     },
-    async handleHotUpdate(context) {
+    async hotUpdate(context) {
       const file = path.resolve(context.file);
-      if (!files.has(file)) return;
+      if (!live?.owns(file)) return;
+      if (this.environment && this.environment.name !== 'client') return [];
       if (context.modules.length) context.server.config.logger.warn(`[saylo] Managed catalog is directly imported: ${file}. Use virtual:saylo.`);
-      pending = pending.then(() => refresh(file, context.read));
-      await pending;
+      await live.enqueue(file, context.type === 'update' ? context.read : undefined);
       return [];
     },
     closeBundle: cleanup,

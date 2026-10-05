@@ -12,14 +12,16 @@ function fixture(t) {
   t.after(() => store.dispose());
   const hot = new EventEmitter();
   const disposers = [];
+  const pruners = [];
   hot.dispose = callback => disposers.push(callback);
+  hot.prune = callback => pruners.push(callback);
   hot.send = event => {
     assert.equal(event, REQUEST_EVENT);
     assert.equal(hot.listenerCount(SNAPSHOT_EVENT), 1);
     assert.equal(hot.listenerCount(DIAGNOSTIC_EVENT), 1);
     hot.emit(SNAPSHOT_EVENT, payload(0, '초기'));
   };
-  return { hot, store, disposers };
+  return { hot, store, disposers, pruners };
 }
 
 test('connect registers before request, dedupes revisions, and accepts a new session', t => {
@@ -35,6 +37,49 @@ test('connect registers before request, dedupes revisions, and accepts a new ses
   assert.ok(Object.isFrozen(updates[1][0].messages.hello.ast));
   hot.emit(SNAPSHOT_EVENT, payload(0, '새 세션', 'two'));
   assert.equal(store.t('demo:hello'), '새 세션');
+});
+
+test('disconnect ignores late packets and reconnect requests the current snapshot', t => {
+  const { hot, store, pruners } = fixture(t);
+  const stop = connectDev(store, { hot });
+  const late = hot.listeners(SNAPSHOT_EVENT)[0];
+  stop();
+  late(payload(9, '해제 후 늦은 응답'));
+  assert.equal(store.t('demo:hello'), '초기');
+  hot.send = () => hot.emit(SNAPSHOT_EVENT, payload(10, '재연결 최신 문구'));
+  connectDev(store, { hot });
+  assert.equal(store.t('demo:hello'), '재연결 최신 문구');
+  pruners[0]();
+  assert.equal(hot.listenerCount(SNAPSHOT_EVENT), 0);
+  assert.equal(hot.listenerCount(DIAGNOSTIC_EVENT), 0);
+});
+
+test('failed initial request releases binding so connect can be retried', t => {
+  const { hot, store } = fixture(t);
+  hot.send = () => { throw new Error('socket unavailable'); };
+  assert.throws(() => connectDev(store, { hot }), /socket unavailable/);
+  assert.equal(hot.listenerCount(SNAPSHOT_EVENT), 0);
+  hot.send = () => hot.emit(SNAPSHOT_EVENT, payload(0, '다시 연결'));
+  const stop = connectDev(store, { hot });
+  assert.equal(store.t('demo:hello'), '다시 연결');
+  stop();
+});
+
+test('store disposal releases its bridge without closing another store binding', t => {
+  const { hot, store } = fixture(t);
+  const other = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [catalog('다른 store')] });
+  t.after(() => other.dispose());
+  connectDev(store, { hot });
+  hot.send = () => {};
+  connectDev(other, { hot });
+  assert.equal(hot.listenerCount(SNAPSHOT_EVENT), 2);
+  store.dispose();
+  assert.equal(hot.listenerCount(SNAPSHOT_EVENT), 1);
+  hot.emit(SNAPSHOT_EVENT, payload(1, '다른 store 갱신'));
+  assert.equal(other.t('demo:hello'), '다른 store 갱신');
+  other.dispose();
+  assert.equal(hot.listenerCount(SNAPSHOT_EVENT), 0);
+  assert.equal(hot.listenerCount(DIAGNOSTIC_EVENT), 0);
 });
 
 test('single store binding and idempotent stop/dispose remove all listeners', t => {
