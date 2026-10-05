@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@saylo/core';
 import { freeze } from '../dist/diagnostics.js';
 
@@ -130,6 +131,16 @@ test('fingerprint depends on namespace and argument contract, not text or key or
   assert.equal(first.fingerprint, edited.fingerprint);
   assert.notEqual(first.fingerprint, createBaseSchema(catalog({ title: 'Cart', x: '{n}' })).fingerprint);
   assert.notEqual(first.fingerprint, createBaseSchema(parseCatalog('{"title":"Cart","x":"{n, number}"}', { locale: 'ko', namespace: 'other' })).fingerprint);
+});
+
+test('compact schema fingerprints match native SHA-256 for Unicode and scale independently of catalog size', () => {
+  const schema = createBaseSchema(catalog({ '항목😀': '{name}', '\ud800': 'text' }));
+  const canonical = ['cart', [['항목😀', [['name', ['number', 'string']]]], ['\ud800', []]]];
+  const digest = createHash('sha256').update(JSON.stringify(canonical), 'utf8').digest('hex');
+  assert.equal(schema.fingerprint, `saylo-schema-v2:sha256:${digest}`);
+  const large = createBaseSchema(catalog(Object.fromEntries(Array.from({ length: 1000 }, (_, i) => [`m${i}`, '{name}']))));
+  assert.equal(large.fingerprint.length, schema.fingerprint.length);
+  assert.equal(large.fingerprint.length, 87);
 });
 
 test('parsed AST, schemas and diagnostics are deeply immutable', () => {

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "3",
+    "@noble/hashes": "2",
     "intl-messageformat": "12"
   }
 }
