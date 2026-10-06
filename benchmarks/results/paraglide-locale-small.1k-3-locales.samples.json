@@ -1,0 +1,269 @@
+{
+  "scenario": "1k-3-locales",
+  "samples": [
+    {
+      "token": "1k-3-locales:11",
+      "warmup": true,
+      "saveToListAckMs": 6798.154100000002,
+      "selectToTranslationAckMs": 130.29379999999946,
+      "saveToTranslationAckMs": 6932.6720000000005,
+      "fileWriteMs": 26.52049999999872,
+      "catalogToSettingsSaveMs": 15.524499999999534,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:12",
+      "warmup": true,
+      "saveToListAckMs": 4955.775600000001,
+      "selectToTranslationAckMs": 103.3385999999955,
+      "saveToTranslationAckMs": 5063.144899999999,
+      "fileWriteMs": 17.1504999999961,
+      "catalogToSettingsSaveMs": 8.529300000001967,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:13",
+      "warmup": false,
+      "saveToListAckMs": 4835.923800000004,
+      "selectToTranslationAckMs": 105.20790000000125,
+      "saveToTranslationAckMs": 4943.6802000000025,
+      "fileWriteMs": 14.922399999995832,
+      "catalogToSettingsSaveMs": 9.027299999994284,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:14",
+      "warmup": false,
+      "saveToListAckMs": 4801.883199999997,
+      "selectToTranslationAckMs": 142.16960000000836,
+      "saveToTranslationAckMs": 4949.826400000005,
+      "fileWriteMs": 16.327499999999418,
+      "catalogToSettingsSaveMs": 9.784400000004098,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:15",
+      "warmup": false,
+      "saveToListAckMs": 3881.3943,
+      "selectToTranslationAckMs": 111.62880000000587,
+      "saveToTranslationAckMs": 3996.1627000000008,
+      "fileWriteMs": 13.377399999997579,
+      "catalogToSettingsSaveMs": 7.240900000004331,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:16",
+      "warmup": false,
+      "saveToListAckMs": 4726.175300000003,
+      "selectToTranslationAckMs": 96.50259999999253,
+      "saveToTranslationAckMs": 4825.810799999992,
+      "fileWriteMs": 15.35450000000128,
+      "catalogToSettingsSaveMs": 9.685200000007171,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:17",
+      "warmup": false,
+      "saveToListAckMs": 5189.482900000003,
+      "selectToTranslationAckMs": 198.99650000000838,
+      "saveToTranslationAckMs": 5391.670500000007,
+      "fileWriteMs": 13.891799999997602,
+      "catalogToSettingsSaveMs": 8.3408999999956,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:18",
+      "warmup": false,
+      "saveToListAckMs": 7447.989100000006,
+      "selectToTranslationAckMs": 185.16700000001583,
+      "saveToTranslationAckMs": 7636.679800000013,
+      "fileWriteMs": 57.34189999999944,
+      "catalogToSettingsSaveMs": 34.45429999998305,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:19",
+      "warmup": false,
+      "saveToListAckMs": 4808.445999999996,
+      "selectToTranslationAckMs": 107.597299999994,
+      "saveToTranslationAckMs": 4919.446399999986,
+      "fileWriteMs": 12.62390000000596,
+      "catalogToSettingsSaveMs": 7.004700000019511,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:20",
+      "warmup": false,
+      "saveToListAckMs": 4821.633700000006,
+      "selectToTranslationAckMs": 103.79080000001704,
+      "saveToTranslationAckMs": 4927.842900000018,
+      "fileWriteMs": 14.364699999976438,
+      "catalogToSettingsSaveMs": 8.174599999998463,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:21",
+      "warmup": false,
+      "saveToListAckMs": 4664.732400000008,
+      "selectToTranslationAckMs": 102.09590000001481,
+      "saveToTranslationAckMs": 4769.347100000014,
+      "fileWriteMs": 12.499199999991106,
+      "catalogToSettingsSaveMs": 7.370400000014342,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    },
+    {
+      "token": "1k-3-locales:22",
+      "warmup": false,
+      "saveToListAckMs": 4573.666200000007,
+      "selectToTranslationAckMs": 167.80799999999,
+      "saveToTranslationAckMs": 4744.261100000003,
+      "fileWriteMs": 12.232299999974202,
+      "catalogToSettingsSaveMs": 6.166099999973085,
+      "addedCatalogBytes": 36781,
+      "listPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "translationPreservation": {
+        "inputNodePreserved": false,
+        "inputValuePreserved": false,
+        "componentStatePreserved": false
+      },
+      "listReloads": 1,
+      "selectionReloads": 1
+    }
+  ]
+}

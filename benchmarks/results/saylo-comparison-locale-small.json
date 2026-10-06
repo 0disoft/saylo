@@ -1,0 +1,162 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-06T17:57:21.421Z",
+  "gitRevision": "ff5f5f67ec97105f765da7541b4d8a9b9f501350",
+  "settings": {
+    "samples": 10,
+    "warmup": 2,
+    "calibrations": 10,
+    "timeoutMs": 30000
+  },
+  "mode": "locale-add",
+  "instrumentation": {
+    "cpuProfile": false,
+    "browserStages": false,
+    "serverFileStages": false
+  },
+  "workingTreeStatus": "M benchmarks/live-update/README.md\n M docs/12-locale-add-measurements.md\n M docs/13-paraglide-comparison.md\n?? benchmarks/results/paraglide-locale-small.1k-3-locales.samples.json\n?? benchmarks/results/paraglide-locale-small.json\n?? benchmarks/results/paraglide-locale-smoke.1k-3-locales.samples.json\n?? benchmarks/results/paraglide-locale-smoke.json",
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "4923cee24e118548901554268bd44126325e207d7ba15f624a8e74da9c55680a",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/diagnostics.js": "5efe48b5d153f843ac39de31d8f3b115a850092e15efd931b0972448dddb4ee6",
+    "packages/core/dist/schema.js": "50b1b59c71956e3ead5b47317a0fb9e0ef0d1db4142d608b5847757125c769ce",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "packages/vite/dist/live-registry.js": "fd6592615105b978987bd82b56bb5855f008669a314f606f969d6b1d6a54a1e6",
+    "packages/vite/dist/translation-quarantine.js": "e64ed9e9567f2793c36a7269ab393dedcbf8e1fc915ddaae405fc4d3cf6fd1f2",
+    "packages/vite/dist/catalog-registry.js": "8cf8ff87809c152fe8599a260ec7f7b7145bb74518d4499cfd99ccd965ce925e",
+    "packages/vite/dist/catalog-patch.js": "7a39eec7384e7eaebaefa4ace0de05653287a1e86897d20adae6ce79e087e50b",
+    "benchmarks/live-update/profile.mjs": "997bf60be68568e72f624b6317371b80711b4c7561cde0fb238075d06b9f0a23",
+    "benchmarks/live-update/channel.mjs": "62c2c61186e6c2799f6219f6d9c15d2f8264cc4f03445488459bfcce0db887ff",
+    "benchmarks/live-update/run.mjs": "d3cfac112ae40e833539f5ecfd8f0aed998efacde5bc57e4e650e51a951a4e7e",
+    "benchmarks/live-update/app.jsx": "cb6123093d311022c5bea5f719295aecaa529330e82f3d5974b0a0fbea2bf8ad",
+    "benchmarks/live-update/fixture.mjs": "1b547cc3705e8397948568cde4245e178379bc2753edf2657af365928ca8a915",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "376fef212eb14bf1c3fad0514dac30e3ce9de7ab5892e5fb8a710c31edbe8078",
+    "benchmarks/live-update/browser-profile.mjs": "a10535443dcc071b277b2284132e4314de32d5ecd2d67761c187f0ba622b3770",
+    "benchmarks/live-update/browser-probe.mjs": "1bcddbf9a39500c23088d37e0568ac2b83f390c1a054b348dc731cd3cec11fa9",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/snapshot-signature.js": "1ef671cd30f6b8c694693b8cce921e569d10d523596664713317f936e289f348",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f",
+    "packages/vite/dist/catalog-source.js": "0a7f2415b9ad6f2172ac9f849d9dac93708d3aece30478e54d3be89d0d22b226",
+    "packages/vite/dist/freeze.js": "d5a2ad10a099c77db9ba4fdd0567d25fa23c3cee0d4f3b163ce96e55bec354f5",
+    "benchmarks/live-update/server-file-profile.mjs": "2545266c3442d08ea6213305e20701ca9f8ff5b1da64eabc8eacfc36b2eb0738",
+    "benchmarks/live-update/locale-channel.mjs": "e08f09c14af0284f051cf0c19d1840ab3f78cbeebfbd13896083129c626b34f4",
+    "benchmarks/live-update/locale-app.jsx": "220848361ef9838c7825130b1ce64a1f79a3534ea71aae3dfaf5da6be3f4fd13"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26200",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node: file write resolved -> list/translation ack received; selection-ready request received -> translation ack. Browser: before setLocale -> translation commit. Never subtract clocks across processes.",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Fresh en-GB directory and catalog per round; directory creation excluded from file-save latency. List option commit then automated locale selection; target never loaded before list ack. Reset to en and await locale removal before next round. React development, no paint timing.",
+  "results": [
+    {
+      "id": "1k-3-locales",
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "namespaces": 1,
+      "initialCatalogFiles": 3,
+      "initialCatalogBytes": 110292,
+      "addedLocale": "en-GB",
+      "addedFilesPerRound": 1,
+      "addedMessages": 1000,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 412.14599999999996,
+      "browserBootMs": 1253.3213,
+      "summary": {
+        "saveToListAckMs": {
+          "count": 10,
+          "p50Ms": 136.13709999999992,
+          "p95Ms": 183.04369999999926,
+          "minMs": 119.20380000000023,
+          "maxMs": 183.04369999999926
+        },
+        "selectToTranslationAckMs": {
+          "count": 10,
+          "p50Ms": 41.685599999999795,
+          "p95Ms": 69.32250000000022,
+          "minMs": 28.212499999999636,
+          "maxMs": 69.32250000000022
+        },
+        "saveToTranslationAckMs": {
+          "count": 10,
+          "p50Ms": 180.90589999999975,
+          "p95Ms": 245.44949999999972,
+          "minMs": 151.3436999999999,
+          "maxMs": 245.44949999999972
+        },
+        "selectToCommitMs": {
+          "count": 10,
+          "p50Ms": 38.80000000447035,
+          "p95Ms": 65.20000000298023,
+          "minMs": 25.5,
+          "maxMs": 65.20000000298023
+        },
+        "saveToBroadcastMs": {
+          "count": 10,
+          "p50Ms": 130.26409999999942,
+          "p95Ms": 174.6273999999994,
+          "minMs": 114.72350000000006,
+          "maxMs": 174.6273999999994
+        },
+        "fileWriteMs": {
+          "count": 10,
+          "p50Ms": 7.05410000000029,
+          "p95Ms": 21.39130000000023,
+          "minMs": 4.4211999999997715,
+          "maxMs": 21.39130000000023
+        }
+      },
+      "wire": {
+        "preSelectionCatalogReplies": 0,
+        "fullReplies": 10,
+        "catalogReplyBytes": {
+          "count": 10,
+          "p50Bytes": 437409,
+          "p95Bytes": 437410,
+          "minBytes": 437408,
+          "maxBytes": 437410
+        },
+        "addedCatalogBytes": {
+          "count": 10,
+          "p50Bytes": 36781,
+          "p95Bytes": 36781,
+          "minBytes": 36781,
+          "maxBytes": 36781
+        }
+      },
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 2.962800000000243,
+        "p95Ms": 5.83809999999994,
+        "minMs": 2.144999999999982,
+        "maxMs": 5.83809999999994
+      },
+      "controlRoundTripsMs": [
+        4.415399999999863,
+        2.962800000000243,
+        2.144999999999982,
+        2.670300000000225,
+        3.713799999999992,
+        3.542500000000018,
+        2.2128999999999905,
+        5.83809999999994,
+        2.4666000000001986,
+        4.007000000000062
+      ],
+      "samplesFile": "saylo-comparison-locale-small.1k-3-locales.samples.json"
+    }
+  ]
+}

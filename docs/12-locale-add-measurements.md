@@ -4,6 +4,8 @@
 
 ## 실행과 조건
 
+Paraglide와의 소규모 10회 비교는 [13-paraglide-comparison.md](13-paraglide-comparison.md)에 별도로 기록한다. 이 문서의 50회 run과 sample 수·부하·시점이 다르므로 수치를 합치지 않는다.
+
 ```sh
 npm run build
 node benchmarks/live-update/run.mjs --mode locale-add --out benchmarks/results/locale-add.json

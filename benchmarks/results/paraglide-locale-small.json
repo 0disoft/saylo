@@ -1,0 +1,137 @@
+{
+  "schema": "saylo-paraglide-benchmark-v1",
+  "mode": "locale-add",
+  "measuredAt": "2026-10-06T17:56:26.862Z",
+  "gitRevision": "ff5f5f67ec97105f765da7541b4d8a9b9f501350",
+  "workingTreeStatus": "M benchmarks/live-update/README.md\n M docs/12-locale-add-measurements.md\n M docs/13-paraglide-comparison.md\n?? benchmarks/results/paraglide-locale-small.1k-3-locales.samples.json\n?? benchmarks/results/paraglide-locale-smoke.1k-3-locales.samples.json\n?? benchmarks/results/paraglide-locale-smoke.json",
+  "codeHashes": {
+    "benchmarks/paraglide/run.mjs": "abac8e88cbd57ff278e053e9f81d1e7f4270867cbc6719f41d21bcfd7a9431fd",
+    "benchmarks/paraglide/fixture.mjs": "2264176015a5636bb9c23ca7f6429d14b4f518c36f655c9aea5be4149f0a5049",
+    "benchmarks/paraglide/channel.mjs": "d180964f66e762dc6c094c264f836e706b07bcbe65bb18373d454233ca39775e",
+    "benchmarks/paraglide/app.jsx": "903a377e878315ac1aea6a5b8f84b1097f627fdca24d5dd44476c72abca43e83",
+    "benchmarks/paraglide/main.jsx": "270ecb20958f2779b4eb957ce93b965f04284ac10bd0e1bfe0d31a07cc1499af",
+    "benchmarks/paraglide/control.js": "6548606a25667b9142c36dda3c83794f16c9c71afb1aa8ec1d10481bf040e7ff",
+    "benchmarks/paraglide/package.json": "ce808dea7083d01773ec4a50dcc72a81db856cb6af2869476a24d48ce260e1bb",
+    "benchmarks/paraglide/package-lock.json": "022e8955a4f6171796b854531f20aa3e28d6d412cbffb4f512236de952f2c3b0",
+    "benchmarks/paraglide/locale-app.jsx": "d3ffe416951e0df9b05af3ea38dd9b7212529439731b8134c0a0623580d4e099",
+    "benchmarks/paraglide/locale-control.js": "4eb35fb0993d2dbc9cc59272aac7fa650e445089d11a1fd14c307a6f84b52383",
+    "benchmarks/paraglide/locale-channel.mjs": "1408b7724de77af28750e0848c6aa688ddfe510cdf05ad775513c5c9b79f1b20",
+    "benchmarks/live-update/fixture.mjs": "1b547cc3705e8397948568cde4245e178379bc2753edf2657af365928ca8a915",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "376fef212eb14bf1c3fad0514dac30e3ce9de7ab5892e5fb8a710c31edbe8078"
+  },
+  "settings": {
+    "samples": 10,
+    "warmup": 2,
+    "calibrations": 10,
+    "timeoutMs": 120000
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26200",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "versions": {
+      "vite": "8.3.2",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@vitejs/plugin-react": "6.1.2",
+      "@inlang/paraglide-js": "2.25.4",
+      "@inlang/plugin-message-format": "4.4.5"
+    }
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM commit HTTP ack body received. Browser commitToAckDispatch uses its own clock. Never subtract clocks or control RTT.",
+  "scope": "Fresh en-GB catalog then settings.locales update per round. Node clock starts after both writes resolve. Directory creation excluded. Default setLocale document navigation, no reload:false escape hatch. Generated locale functions can be transferred before selection; not a lazy cold-catalog comparison. DOM commit, no paint timing.",
+  "results": [
+    {
+      "id": "1k-3-locales",
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "namespaces": 1,
+      "initialCatalogFiles": 3,
+      "initialCatalogBytes": 110292,
+      "addedLocale": "en-GB",
+      "addedFilesPerRound": 1,
+      "settingsWritesPerAddition": 1,
+      "emitTsDeclarations": false,
+      "setLocaleReload": true,
+      "outputStructure": "locale-modules (development default)",
+      "browser": {
+        "documentId": "72c769e4-157b-474b-bca6-93dc9863d750",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+      },
+      "fixturePreparationMs": 6477.3763,
+      "serverStartupMs": 4415.3598,
+      "browserBootMs": 1439.5118000000002,
+      "documentCountIncludingWarmupAndResets": 49,
+      "summary": {
+        "saveToListAckMs": {
+          "count": 10,
+          "p50Ms": 4801.883199999997,
+          "p95Ms": 7447.989100000006,
+          "minMs": 3881.3943,
+          "maxMs": 7447.989100000006
+        },
+        "selectToTranslationAckMs": {
+          "count": 10,
+          "p50Ms": 107.597299999994,
+          "p95Ms": 198.99650000000838,
+          "minMs": 96.50259999999253,
+          "maxMs": 198.99650000000838
+        },
+        "saveToTranslationAckMs": {
+          "count": 10,
+          "p50Ms": 4919.446399999986,
+          "p95Ms": 7636.679800000013,
+          "minMs": 3996.1627000000008,
+          "maxMs": 7636.679800000013
+        },
+        "fileWriteMs": {
+          "count": 10,
+          "p50Ms": 13.891799999997602,
+          "p95Ms": 57.34189999999944,
+          "minMs": 12.232299999974202,
+          "maxMs": 57.34189999999944
+        }
+      },
+      "listReloads": 10,
+      "selectionReloads": 10,
+      "preservation": {
+        "listPreservation": {
+          "inputNodePreserved": 0,
+          "inputValuePreserved": 0,
+          "componentStatePreserved": 0
+        },
+        "translationPreservation": {
+          "inputNodePreserved": 0,
+          "inputValuePreserved": 0,
+          "componentStatePreserved": 0
+        }
+      },
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 5.221499999999651,
+        "p95Ms": 8.319100000000617,
+        "minMs": 3.4994000000006054,
+        "maxMs": 8.319100000000617
+      },
+      "controlRoundTripsMs": [
+        8.319100000000617,
+        6.174300000000585,
+        3.580199999998513,
+        5.527600000001257,
+        5.221499999999651,
+        4.310300000001007,
+        4.28859999999986,
+        3.4994000000006054,
+        5.235199999999168,
+        5.876800000000003
+      ],
+      "samplesFile": "paraglide-locale-small.1k-3-locales.samples.json"
+    }
+  ],
+  "failures": []
+}

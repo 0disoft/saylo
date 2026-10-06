@@ -2,6 +2,8 @@
 
 개발 중 카탈로그 문구를 수정했을 때 화면에 반영되기까지의 latency를 잰다. 대상은 실제 Vite watcher와 실제 브라우저 DOM commit이다.
 
+Paraglide의 별도 비교 실행기는 [../paraglide/README.md](../paraglide/README.md)에 있다. 선택적으로 benchmark 전용 의존성을 별도 디렉터리에 설치하며 Saylo 제품 패키지에는 추가하지 않는다. 조건 차이와 결과는 [../../docs/13-paraglide-comparison.md](../../docs/13-paraglide-comparison.md)를 따른다.
+
 ## 실행
 
 저장소 루트에서 실행한다. workspace를 먼저 build한 뒤 Node harness가 돈다.
