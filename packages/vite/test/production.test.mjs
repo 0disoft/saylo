@@ -85,16 +85,25 @@ test('real production build emits scoped AST chunks, executes lazy imports, and 
   for (const locale of ['ko', 'en']) {
     await mkdir(path.join(root, 'locales', locale), { recursive: true });
     for (const namespace of ['demo', 'help']) await writeFile(path.join(root, 'locales', locale, `${namespace}.json`),
-      JSON.stringify({ title: `${locale === 'ko' && namespace === 'demo' ? 'BOOT' : 'LAZY'}_${locale}_${namespace}` }));
+      JSON.stringify({ title: `${locale === 'ko' && namespace === 'demo' ? 'BOOT' : 'LAZY'}_${locale}_${namespace}`,
+        number: '{n, number}', date: '{at, date, short}', time: '{at, time, ::HHmm}',
+        plural: '{n, plural, offset:1 =0 {None} one {# one} other {# many}}',
+        ordinal: '{n, selectordinal, one {#st} other {#th}}',
+        select: '{who, select, a {A} other {Other}}',
+        nested: '{n, plural, one {{who, select, a {OneA} other {OneOther}}} other {Other #}}',
+        tag: '<b>{name}</b>' }));
   }
   await writeFile(path.join(root, 'locales', 'en', 'help.json'), '{}'); // Key fallback inside a present chunk.
-  await writeFile(path.join(root, 'main.js'), `import { createI18n } from '@0disoft/saylo-core';
+  await writeFile(path.join(root, 'main.js'), `import { createI18n } from '@0disoft/saylo-core/runtime';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
 export const source = catalogSource;
 export const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });`);
-  const config = () => ({ configFile: false, root, logLevel: 'silent',
-    plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', initialNamespaces: ['demo'], typegen: { outFile: 'generated.d.ts' } })],
-    resolve: { alias: { '@0disoft/saylo-core': fileURLToPath(new URL('../../core/dist/index.js', import.meta.url)),
+  const config = (astRuntime = true) => ({ configFile: false, root, logLevel: 'silent',
+    plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', initialNamespaces: ['demo'], timeZone: 'UTC', astRuntime,
+      typegen: { outFile: 'generated.d.ts' } })],
+    resolve: { alias: { '@0disoft/saylo-core/runtime': fileURLToPath(new URL('../../core/dist/runtime.js', import.meta.url)),
+      '@0disoft/saylo-core': fileURLToPath(new URL('../../core/dist/index.js', import.meta.url)),
+      'intl-messageformat': fileURLToPath(import.meta.resolve('intl-messageformat')),
       '@0disoft/saylo-vite/client': fileURLToPath(new URL('../dist/client.js', import.meta.url)) } },
     build: { minify: false, modulePreload: false,
       rolldownOptions: { input: path.join(root, 'main.js'), preserveEntrySignatures: 'strict' } } });
@@ -110,6 +119,7 @@ export const instance = createI18n({ catalogSource, initialCatalogs, locale: ini
   }
   assert.ok(entry.code.includes('BOOT_ko_demo'));
   assert.ok(!chunks.some(chunk => chunk.code.includes('vite:ws:') || chunk.code.includes('saylo:request-catalog')));
+  assert.ok(!chunks.some(chunk => chunk.code.includes('EXPECT_ARGUMENT_CLOSING_BRACE')), 'AST runtime must not include the ICU parser');
   assert.match(await readFile(path.join(root, 'generated.d.ts'), 'utf8'), /help:title/);
   // Run exactly the emitted modules, not the plugin's pre-bundle strings.
   const { instance, source } = await import(pathToFileURL(path.join(root, 'dist', entry.fileName)));
@@ -120,6 +130,36 @@ export const instance = createI18n({ catalogSource, initialCatalogs, locale: ini
   await instance.loadNamespace('help');
   assert.equal(instance.t('help:title'), 'LAZY_ko_help');
   assert.equal(source.getCatalogs().length, 4);
+  const vectors = [
+    ['number', { n: 1234.5 }], ['date', { at: new Date('2024-01-02T03:04:00Z') }],
+    ['time', { at: new Date('2024-01-02T03:04:00Z') }], ['plural', { n: 3 }],
+    ['ordinal', { n: 1 }], ['select', { who: 'a' }], ['nested', { n: 1, who: 'a' }], ['tag', { name: 'Ada' }],
+  ];
+  const actual = vectors.map(([id, args]) => instance.t(`demo:${id}`, args));
+  const baseline = await build(config(false));
+  const normalChunks = baseline.output.filter(o => o.type === 'chunk');
+  assert.ok(normalChunks.some(chunk => chunk.code.includes('EXPECT_ARGUMENT_CLOSING_BRACE')));
+  const normalEntry = normalChunks.find(o => o.isEntry);
+  const normal = await import(pathToFileURL(path.join(root, 'dist', normalEntry.fileName)));
+  t.after(() => normal.instance.dispose());
+  await normal.instance.setLocale('en');
+  assert.deepEqual(vectors.map(([id, args]) => normal.instance.t(`demo:${id}`, args)), actual);
+  const bytes = values => values.reduce((total, chunk) => total + Buffer.byteLength(chunk.code), 0);
+  assert.ok(bytes(chunks) < bytes(normalChunks));
+  console.log(`[ast-runtime] fixture unminified JS: ${bytes(normalChunks)} -> ${bytes(chunks)} bytes`);
+
+  // A separate string-based FormatJS user must still have its parser, even with Saylo optimization enabled.
+  await writeFile(path.join(root, 'main.js'), `import { IntlMessageFormat } from 'intl-messageformat';
+import { createI18n } from '@0disoft/saylo-core/runtime';
+import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
+export const externalText = new IntlMessageFormat('Hello {name}', 'en').format({ name: 'Ada' });
+export const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });`);
+  const mixed = await build(config());
+  const mixedEntry = mixed.output.find(o => o.type === 'chunk' && o.isEntry);
+  const other = await import(pathToFileURL(path.join(root, 'dist', mixedEntry.fileName)));
+  t.after(() => other.instance.dispose());
+  assert.equal(other.externalText, 'Hello Ada');
+  assert.ok(mixed.output.some(o => o.type === 'chunk' && o.code.includes('EXPECT_ARGUMENT_CLOSING_BRACE')));
   await writeFile(path.join(root, 'locales', 'en', 'demo.json'), '{');
   await assert.rejects(build(config()));
 });

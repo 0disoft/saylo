@@ -8,6 +8,7 @@ import { scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
 import { catalogId } from './catalog-outcome.js';
+import { createAstFormatter } from './ast-formatter.js';
 import type { CatalogOutcome } from '@0disoft/saylo-core';
 import { registerServerSource } from './server-source.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
@@ -29,6 +30,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   const initialLocale = Intl.getCanonicalLocales(options.initialLocale ?? baseLocale)[0]!;
   const timeZone = options.timeZone ?? 'UTC';
   const sessionId = randomUUID();
+  const astFormatter = createAstFormatter();
   let root = '';
   let files = new Map<string, CatalogFile>();
   let registry: CatalogRegistry;
@@ -112,13 +114,18 @@ export default function saylo(options: SayloViteOptions): Plugin {
         catch (error) { await cleanup(); throw error; }
       }
     },
-    resolveId(id) {
+    resolveId(id, importer) {
       if (id === VIRTUAL) return RESOLVED;
       if (id === LAZY) return RESOLVED_LAZY;
       if (id === SERVER) return RESOLVED_SERVER;
       if (chunks.has(id)) return `\0${id}`;
+      if (production && options.astRuntime !== false) return astFormatter.resolve(id, importer, this);
     },
     load(id) {
+      if (production && options.astRuntime !== false) {
+        const ast = astFormatter.load(id);
+        if (ast) return ast;
+      }
       const chunk = chunks.get(id.startsWith('\0') ? id.slice(1) : id);
       if (chunk) return `export default ${encode(chunk)};`;
       if (id === RESOLVED_SERVER && this.environment?.name === 'client') throw new Error('virtual:saylo/server is a server-only entry.');

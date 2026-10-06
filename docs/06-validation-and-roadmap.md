@@ -169,7 +169,7 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 
 같은 프로세스 parser 비교로 메시지 1만 파일 1개 수정의 중앙 파싱 비용이 약 13.3% 줄어든 것은 확인했다. 다만 profiler를 켠 after run의 종단 간 p95는 1074.94ms로 크게 나왔고, profiler를 끈 parser run의 small p95 69.82ms·large p95 200.63ms는 단일 run이므로 목표 p95 ≤ 100ms의 안정적 달성을 주장하지 않는다. 큰 지연의 원인도 확정하지 않았다. 운영 pack 소비 검증은 `npm run verify:pack`으로 완료했고, 첫 배포 준비는 별도로 남아 있다.
 
-기록한 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 로케일 추가·삭제와 paint, 번들 크기는 아직 측정하지 않았다.
+기록한 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 로케일 추가·삭제와 paint는 아직 측정하지 않았고, 번들 크기는 이 기록에서 재지 않았다. parser 런타임 제거 뒤 fixture 청크 크기 측정은 아래 새 기록에 있고 대표 앱 번들 크기는 아직 미측정이다.
 
 ## 인수 사례
 
@@ -201,7 +201,13 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 
 패키지 소개 문서와 npm 메타데이터를 추가했다. `packages/core`·`packages/react`·`packages/typegen`·`packages/vite`에 README를 새로 쓰고, 각 `package.json`에 `description`·`repository`·`homepage`·`bugs`·`keywords` 다섯 필드만 더했다. 이름은 `@0disoft/saylo-*`이고 저장소는 `https://github.com/0disoft/saylo.git`다. `private: true`·version 0.0.0·exports·bin·scripts·license는 그대로이며 공개 배포는 하지 않았다. README의 설치 명령은 게시 후 기준으로 표시했고 현재 공개 registry에는 없다. 2026-10-06 `npm run verify:pack`(Node 24.18.0·Vite 8.3.2)이 exit 0으로 통과했다. 네 README가 pack 목록에 들어가고, 저장소 밖 JS·TS 소비 앱에 설치한 tarball의 README 바이트와 metadata 다섯 필드가 원본과 일치했다. core README 첫 JS 블록은 Node로 실행하고, React tsx·typegen TS·Vite TS 블록은 실제 발췌를 독립 앱에서 tsc·generated `.d.ts`로 검사했다. manifest audit에서 다섯 필드 외 JSON 구조는 원본과 같고 README 로컬 링크 대상·코드 울타리도 확인했다. CLI·checkJs·TS·번역 인자 거부·React SSR·public subpath·Vite production chunk 기존 검사도 통과했다. code 변경이 없어 140개 `npm run check`는 다시 돌리지 않았다.
 
-secondary quarantine을 Vite plugin에 구현했다. `LiveRegistry`가 raw desired와 파일별 last-good 번역을 유지하고, 기준 schema가 바뀌면 직전 정상 번역에서 부적합 메시지만 제거한 immutable catalog를 게시하며 빠진 메시지는 base fallback으로 둔다. 잘못된 secondary 편집은 그 파일의 last-good을 유지하고 다른 파일 변경은 계속 반영한다. last-good이 없는 새 secondary는 게시하지 않고, 삭제 시 last-good을 지운다. 기준이나 번역이 복구되면 raw 번역을 자동 재검증해 복원하고 진단을 해제한다. startup·build의 전체 엄격 검증과 코어 `createStore.replaceCatalogs`의 동작은 그대로이고, 격리는 plugin 계층에만 있다. Vite test의 plugin·lazy·patch·production·server 스위트 합 56개가 통과했고 `vite build`와 소비 TS 검사도 통과했다. 실제 브라우저에서 quarantine 동작을 확인한 검증은 아직 하지 않았다.
+secondary quarantine을 Vite plugin에 구현했다. `LiveRegistry`가 raw desired와 파일별 last-good 번역을 유지하고, 기준 schema가 바뀌면 직전 정상 번역에서 부적합 메시지만 제거한 immutable catalog를 게시하며 빠진 메시지는 base fallback으로 둔다. 잘못된 secondary 편집은 그 파일의 last-good을 유지하고 다른 파일 변경은 계속 반영한다. last-good이 없는 새 secondary는 게시하지 않고, 삭제 시 last-good을 지운다. 기준이나 번역이 복구되면 raw 번역을 자동 재검증해 복원하고 진단을 해제한다. startup·build의 전체 엄격 검증과 코어 `createStore.replaceCatalogs`의 동작은 그대로이고, 격리는 plugin 계층에만 있다. Vite test의 plugin·lazy·patch·production·server 스위트 합 56개가 통과했고 `vite build`와 소비 TS 검사도 통과했다. 이후 성능 fastpath 수정을 반영한 커밋 `6023fb2`에서 관련 Vite plugin 30개 테스트를 다시 통과했다. 실제 브라우저에서 quarantine 동작을 확인한 검증은 아직 하지 않았다.
+
+Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외하고, `astRuntime`(기본 `true`)은 Saylo formatter에만 FormatJS의 공개 `no-parser.js` 경로를 적용한다. 외부 문자열 기반 FormatJS 소비와 SSR external 의존성은 유지한다. 적용 범위와 끄는 방법은 [05-build-and-ssr.md](05-build-and-ssr.md)를 따른다. quarantine과 parser 제거는 아직 npm `0.1.0-alpha.1`에 포함되지 않은 로컬 변경이다.
+
+전체 `npm run check`가 exit 0으로 통과했다(core 58·React 9·typegen 5·Vite 72, 합 144개, JS/TS 소비·React TS 검사, OIDC helper 3개 별도). production 검사는 AST-only 번들의 parser 오류 표식 부재, 숫자·날짜·시간 skeleton·plural offset·selectordinal·select·중첩·태그 8벡터의 최적화 전후 출력 일치, 외부 FormatJS 문자열 번역, lazy chunk 실행·fallback, 잘못된 디스크 카탈로그의 build 거부를 확인했다. `npm run verify:pack`도 exit 0으로 통과했다. 저장소 밖 JS·TS 앱에서 tarball 설치·CLI·typegen·checkJs·strict TS·README 예제·runtime 엔트리·React SSR·Vite lazy build와 parser 오류 표식 부재를 확인했다.
+
+이 run에서 비교 fixture의 압축 전 JS 청크 합은 168,462 B → 117,385 B였다. 같은 fixture의 `astRuntime: false`/`true` 빌드 비교이며, gzip 크기나 대표 앱 결과가 아니다. 대표 앱 번들 크기와 대규모 라이브 반영 성능의 재측정은 남아 있다.
 
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
@@ -235,7 +241,7 @@ secondary quarantine을 Vite plugin에 구현했다. `LiveRegistry`가 raw desir
 
 ## 로드맵
 
-작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 1~13단계 로컬 구현을 마치고 secondary quarantine을 plugin에 추가했다. build-time parser 제거·unused message 제거·selector 미세구독·completeTranslations·Svelte/Vue 어댑터·대규모 성능 목표·비교 실험은 후속이다. build-time parser 제거는 별도 커밋에서 작업 중이며 아직 완료가 아니다.
+작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 1~13단계 로컬 구현에 secondary quarantine과 build-time parser 런타임 제거(`astRuntime`)를 더했다. 두 변경 모두 로컬이고 게시된 npm alpha에는 아직 없다. unused message 제거·selector 미세구독·completeTranslations·Svelte/Vue 어댑터·대규모 성능 목표·비교 실험은 후속이다.
 
 | 순서 | 커밋의 한 가지 책임 | 완료 기준 |
 | --- | --- | --- |

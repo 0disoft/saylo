@@ -4,7 +4,7 @@ import { createI18n, createStore } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 
-saylo({ localesDir: './locales', baseLocale: 'ko', typegen: { outFile: 'generated.d.ts' } });
+saylo({ localesDir: './locales', baseLocale: 'ko', astRuntime: true, typegen: { outFile: 'generated.d.ts' } });
 const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale, timeZone });
 const stop: () => void = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.message) });
 stop();

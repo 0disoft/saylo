@@ -58,9 +58,9 @@
 | --- | --- |
 | 라이선스 | Apache-2.0 확정. 배포 tarball에 `LICENSE`·`NOTICE`를 함께 싣는다 |
 | npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-typegen`·`saylo-vite` 네 이름으로 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`) 게시 완료 |
-| 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 로케일 추가·paint·번들 크기는 아직 미측정 |
+| 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 로케일 추가·paint·번들 크기는 parser 제거 fixture의 unminified JS 청크 합만 확인(최신 run 168462→117385 B)했고 대표 앱 측정은 남았다 |
 | 지원 버전 범위 | Node 24.x, Vite 8, React 19, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
-| build-time parser 런타임 제거 | 작업 중. 별도 커밋에서 진행하며 아직 완료가 아니다. bundler 경계 검증 필요 |
+| build-time parser 런타임 제거 | Vite plugin에 로컬 구현(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. 로컬 변경이고 게시본에는 없다 |
 | requireCompleteTranslations(완역 강제) | 후속. 기본은 불완전한 번역 허용 |
 | unused message 제거 최적화 | 후속. 동적 t 키 tradeoff 검증 필요 |
 | selector 미세구독 최적화 | 후속 |

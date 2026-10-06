@@ -1,4 +1,4 @@
-import { TYPE } from '@formatjs/icu-messageformat-parser';
+import { TYPE } from '@formatjs/icu-messageformat-parser/no-parser.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';

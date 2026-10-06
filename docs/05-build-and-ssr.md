@@ -5,8 +5,11 @@
 ## 운영 카탈로그 모델
 
 - 운영은 미리 파싱·검증된 AST 카탈로그를 사용하고, 개발과 같은 core formatter를 공유한다.
-- 빌드 시점 parser를 런타임에서 제거하는 것은 가능한 범위에서 시도한다. AST만 공급하면 parser가 빠질 수 있지만, 이는 bundler 전략을 검증해야 하는 항목이고 자동으로 보장되지 않는다. 런타임에 parser가 남을 수도 있다.
-- no-parser 구성은 Saylo의 AST 전용 배포 경계 안에서만 다룬다. 앱 전체에 alias를 강제하지 않는다. 문자열 메시지를 쓰는 다른 FormatJS 소비자와 충돌할 수 있다.
+- 빌드 시점 parser를 런타임에서 제거하는 경로를 Vite plugin에 로컬 구현했다(옵션 `astRuntime`, 기본 `true`, production 한정). Saylo `core/dist/formatters.js`가 `intl-messageformat`을 import할 때만 그 모듈을 별도 virtual 모듈로 해석하고, 그 모듈의 의존성을 공개 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾼다. 앱 전체 alias는 걸지 않는다.
+- no-parser 구성은 Saylo의 AST 전용 배포 경계 안에서만 다룬다. 외부에서 `IntlMessageFormat(string)`을 쓰는 소비자는 원본 parser를 그대로 쓴다.
+- 외부로 해석되는 의존성은 건드리지 않으므로 SSR external 의존성도 그대로다. 앱이 런타임에 직접 `parseCatalog`를 호출하면 parser가 포함되는 것이 정상이다. `astRuntime: false`로 이 경로를 끌 수 있다.
+- 공개 `@0disoft/saylo-core/runtime` 엔트리는 `parseCatalog`를 제외하고, 기존 루트 엔트리는 기존 API를 그대로 유지한다.
+- 런타임 엔트리만 쓴다고 모든 bundler에서 parser 제거가 보장되지는 않는다. 검증 범위는 Vite 8 production build다. 런타임에 parser가 남을 수도 있다.
 - core의 브라우저 엔트리에는 파일 시스템 접근이 없고 parser도 필수가 아니다. AST를 받으면 parser 없이 동작한다. 파일 시스템과 parser는 dev plugin과 build 경계에 둔다.
 - 사용하지 않는 메시지 제거(emit/whole unused-message elimination)는 후속 최적화로 둔다. 동적 t 키를 쓰는 코드에서는 제거가 위험하므로 tradeoff를 근거와 함께 검증한 뒤 결정한다.
 

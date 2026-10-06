@@ -104,6 +104,11 @@ try {
     const app = path.join(root, language);
     await cp(path.join(fixtures, 'shared'), app, { recursive: true });
     await cp(path.join(fixtures, language), path.join(app, 'src'), { recursive: true });
+    // Published alpha.1 predates the runtime subpath; exercise it only in local tarballs.
+    if (!fromRegistry) {
+      const entry = path.join(app, 'src', `main.${language}`);
+      await writeFile(entry, (await readFile(entry, 'utf8')).replaceAll("'@0disoft/saylo-core'", "'@0disoft/saylo-core/runtime'"));
+    }
     await writeFile(path.join(app, 'index.html'), `<html><body><div id="app"></div><script type="module" src="/src/main.${language}"></script></body></html>\n`);
     await writeFile(path.join(app, 'package.json'), JSON.stringify({ name: `saylo-packed-${language}`, private: true, type: 'module',
       scripts: { typegen: 'saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts',
@@ -149,6 +154,10 @@ try {
     console.log((await npm(['run', 'build'], app)).trim());
     const bundle = JSON.parse(await readFile(path.join(app, 'dist/.vite/manifest.json'), 'utf8'));
     assert.ok(Object.values(bundle).some(entry => entry.isDynamicEntry), 'Lazy translation chunk was not emitted.');
+    if (!fromRegistry) for (const entry of Object.values(bundle)) {
+      if (entry.file.endsWith('.js')) assert.ok(!(await readFile(path.join(app, 'dist', entry.file), 'utf8'))
+        .includes('EXPECT_ARGUMENT_CLOSING_BRACE'), 'AST consumer shipped the ICU parser.');
+    }
     console.log(`[pack] ${language}: CLI, ${language === 'js' ? 'checkJs' : 'TypeScript'}, runtime/React SSR, Vite lazy build passed`);
   }
   console.log('[pack] All four packed packages passed independent JS and TS consumption.');

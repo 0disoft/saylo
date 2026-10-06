@@ -9,6 +9,8 @@ export interface SayloViteOptions {
   /** Scope exported by virtual:saylo/lazy. Defaults to every base namespace. */
   readonly initialNamespaces?: readonly string[];
   readonly timeZone?: string;
+  /** Production-only parser removal scoped to Saylo's AST formatter. Defaults to true. */
+  readonly astRuntime?: boolean;
   /** Declaration file relative to Vite root. Startup awaits it; live updates do not. */
   readonly typegen?: { readonly outFile: string };
 }

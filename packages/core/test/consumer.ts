@@ -1,5 +1,11 @@
 import { CatalogError, createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
 import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
+import { createI18n as createRuntimeI18n } from '@0disoft/saylo-core/runtime';
+
+const runtimeFactory: typeof createI18n = createRuntimeI18n;
+void runtimeFactory;
+// @ts-expect-error the AST runtime entry does not expose the string parser
+import { parseCatalog as runtimeParser } from '@0disoft/saylo-core/runtime';
 
 const parsed: ParsedCatalog = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
 const base: CatalogSchema = createBaseSchema(parsed);
