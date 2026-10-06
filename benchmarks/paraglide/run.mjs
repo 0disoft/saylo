@@ -132,21 +132,30 @@ async function runScenario(scenario) {
     await rm(resolved, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   }
 }
-const out = path.resolve(values.out), results = [];
+const out = path.resolve(values.out), results = [], failures = [];
 await mkdir(path.dirname(out), { recursive: true });
+async function saveOutput() {
+  await writeFile(out, `${JSON.stringify({ schema: 'saylo-paraglide-benchmark-v1', mode: 'edit', measuredAt: new Date().toISOString(),
+    gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(),
+    workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(), codeHashes, settings,
+    environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
+      cpu: os.cpus()[0]?.model, logicalCpus: os.cpus().length, memoryGiB: os.totalmem() / 1024 ** 3, versions },
+    clock: 'Node performance.now: writeFile resolved -> DOM commit HTTP ack body received. Browser commitToAckDispatch uses its own clock. Never subtract clocks or control RTT.',
+    scope: 'Same catalog content/dimensions as Saylo; message-format plugin copied from installed package, no runtime CDN access. React Fast Refresh enabled. DOM commit, no paint timing. Separate run, not paired speedup evidence.',
+    results, failures }, null, 2)}\n`);
+}
 for (const scenario of selected) {
-  const result = await runScenario(scenario);
+  let result;
+  try { result = await runScenario(scenario); }
+  catch (error) {
+    failures.push({ scenario: scenario.id, name: error.name, message: error.message, code: error.code,
+      cause: error.cause ? { name: error.cause.name, message: error.cause.message, code: error.cause.code } : undefined });
+    await saveOutput(); throw error;
+  }
   const samplesFile = `${path.basename(out, path.extname(out))}.${scenario.id}.samples.json`;
   await writeFile(path.join(path.dirname(out), samplesFile), `${JSON.stringify({ scenario: scenario.id, samples: result.samples }, null, 2)}\n`);
   delete result.samples; result.samplesFile = samplesFile; results.push(result);
+  await saveOutput(); // A later scenario failing must not discard completed scenario metadata.
   console.log(`[paraglide] ${scenario.id}: p95=${result.summary.saveToAckMs.p95Ms.toFixed(2)}ms; reloads=${result.reloads}`);
 }
-await writeFile(out, `${JSON.stringify({ schema: 'saylo-paraglide-benchmark-v1', mode: 'edit', measuredAt: new Date().toISOString(),
-  gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(),
-  workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(), codeHashes, settings,
-  environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
-    cpu: os.cpus()[0]?.model, logicalCpus: os.cpus().length, memoryGiB: os.totalmem() / 1024 ** 3, versions },
-  clock: 'Node performance.now: writeFile resolved -> DOM commit HTTP ack body received. Browser commitToAckDispatch uses its own clock. Never subtract clocks or control RTT.',
-  scope: 'Same catalog content/dimensions as Saylo; message-format plugin copied from installed package, no runtime CDN access. React Fast Refresh enabled. DOM commit, no paint timing. Separate run, not paired speedup evidence.',
-  results }, null, 2)}\n`);
 console.log(`[paraglide] result: ${out}`);

@@ -17,6 +17,7 @@
 9. [10-performance-measurements.md](10-performance-measurements.md) — 로컬 벤치마크 결과와 프로파일 기록
 10. [11-parser-measurements.md](11-parser-measurements.md) — 파서 내부 비용과 최적화 검증
 11. [12-locale-add-measurements.md](12-locale-add-measurements.md) — 새 로케일 목록·최초 번역 반영 측정
+12. [13-paraglide-comparison.md](13-paraglide-comparison.md) — Paraglide 동일 규모 측정과 초기 준비 실패 관측
 
 ## 상태 표기 규칙
 

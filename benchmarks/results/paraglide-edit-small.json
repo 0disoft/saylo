@@ -1,0 +1,118 @@
+{
+  "schema": "saylo-paraglide-benchmark-v1",
+  "mode": "edit",
+  "measuredAt": "2026-10-06T17:45:51.112Z",
+  "gitRevision": "021988dcd802f33eb03aed4b76932dc22685d7c6",
+  "workingTreeStatus": "M benchmarks/paraglide/run.mjs\n?? benchmarks/results/paraglide-edit-large.failure.json\n?? benchmarks/results/paraglide-edit-small.1k-3-locales.samples.json\n?? benchmarks/results/paraglide-edit.1k-3-locales.samples.json",
+  "codeHashes": {
+    "benchmarks/paraglide/run.mjs": "78428b1bbe2a5b428d68ac0cc7b9d11e39b2d70575384dfcdecb0c3c3444ee2b",
+    "benchmarks/paraglide/fixture.mjs": "5d1a35ea6e836a87534dfcc239693f275e49ced0401612b8674892bae2db4aa6",
+    "benchmarks/paraglide/channel.mjs": "d180964f66e762dc6c094c264f836e706b07bcbe65bb18373d454233ca39775e",
+    "benchmarks/paraglide/app.jsx": "903a377e878315ac1aea6a5b8f84b1097f627fdca24d5dd44476c72abca43e83",
+    "benchmarks/paraglide/main.jsx": "598d3ce83437fbd9050aa9e5bdaa667a4e06a8cea1d71cbea3e0e545b17e5bae",
+    "benchmarks/paraglide/control.js": "6548606a25667b9142c36dda3c83794f16c9c71afb1aa8ec1d10481bf040e7ff",
+    "benchmarks/paraglide/package.json": "ce808dea7083d01773ec4a50dcc72a81db856cb6af2869476a24d48ce260e1bb",
+    "benchmarks/paraglide/package-lock.json": "022e8955a4f6171796b854531f20aa3e28d6d412cbffb4f512236de952f2c3b0",
+    "benchmarks/live-update/fixture.mjs": "1b547cc3705e8397948568cde4245e178379bc2753edf2657af365928ca8a915",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "376fef212eb14bf1c3fad0514dac30e3ce9de7ab5892e5fb8a710c31edbe8078"
+  },
+  "settings": {
+    "samples": 10,
+    "warmup": 2,
+    "calibrations": 10,
+    "timeoutMs": 300000
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26200",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "versions": {
+      "vite": "8.3.2",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@vitejs/plugin-react": "6.1.2",
+      "@inlang/paraglide-js": "2.25.4",
+      "@inlang/plugin-message-format": "4.4.5"
+    }
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM commit HTTP ack body received. Browser commitToAckDispatch uses its own clock. Never subtract clocks or control RTT.",
+  "scope": "Same catalog content/dimensions as Saylo; message-format plugin copied from installed package, no runtime CDN access. React Fast Refresh enabled. DOM commit, no paint timing. Separate run, not paired speedup evidence.",
+  "results": [
+    {
+      "id": "1k-3-locales",
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "namespaces": 1,
+      "catalogFiles": 3,
+      "catalogBytes": 110292,
+      "renderedMessages": 2,
+      "changedKeysPerSave": 1,
+      "editedLocale": "en",
+      "emitTsDeclarations": false,
+      "fixturePreparationMs": 7200.8289,
+      "outputStructure": "locale-modules (development default)",
+      "browser": {
+        "documentId": "321df925-8f40-42e1-aaa3-6fd52c677b75",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+      },
+      "serverStartupMs": 5342.730100000001,
+      "browserBootMs": 1935.3431999999993,
+      "summary": {
+        "saveToAckMs": {
+          "count": 10,
+          "p50Ms": 5273.735599999993,
+          "p95Ms": 7912.074399999998,
+          "minMs": 4273.6633,
+          "maxMs": 7912.074399999998
+        },
+        "fileWriteMs": {
+          "count": 10,
+          "p50Ms": 8.248999999996158,
+          "p95Ms": 18.22520000000077,
+          "minMs": 5.974499999996624,
+          "maxMs": 18.22520000000077
+        },
+        "commitToAckDispatchMs": {
+          "count": 10,
+          "p50Ms": 0.10000000149011612,
+          "p95Ms": 0.30000000447034836,
+          "minMs": 0,
+          "maxMs": 0.30000000447034836
+        }
+      },
+      "documentCountIncludingWarmup": 1,
+      "preservation": {
+        "inputNodePreserved": 10,
+        "inputValuePreserved": 10,
+        "componentStatePreserved": 10
+      },
+      "reloads": 0,
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 5.7281999999995605,
+        "p95Ms": 12.136399999999412,
+        "minMs": 4.58980000000156,
+        "maxMs": 12.136399999999412
+      },
+      "controlRoundTripsMs": [
+        6.09900000000016,
+        9.03690000000097,
+        4.869599999999991,
+        5.140999999999622,
+        5.7281999999995605,
+        7.674399999999878,
+        11.647000000000844,
+        12.136399999999412,
+        4.58980000000156,
+        4.6789000000007945
+      ],
+      "samplesFile": "paraglide-edit-small.1k-3-locales.samples.json"
+    }
+  ],
+  "failures": []
+}

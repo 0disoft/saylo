@@ -1,0 +1,29 @@
+{
+  "schema": "saylo-paraglide-failure-observation-v1",
+  "observedAt": "2026-10-06T17:43:36Z",
+  "source": "Captured stdout/stderr and exit status of the first comparison invocation; recorded after the process exited",
+  "command": "node benchmarks/paraglide/run.mjs --samples 10 --warmup 2 --calibrations 10 --timeout-ms 300000 --out benchmarks/results/paraglide-edit.json",
+  "harnessRevision": "021988d",
+  "scenario": "10k-20-locales",
+  "messagesPerLocale": 10000,
+  "localeCount": 20,
+  "phase": "fixture pre-compilation before Vite startup",
+  "completedSamples": 0,
+  "exitCode": 1,
+  "environment": { "node": "v24.18.0", "platform": "win32", "paraglide": "2.25.4", "messageFormatPlugin": "4.4.5", "lixSdk": "0.19.0" },
+  "dependencyLockfile": "../paraglide/package-lock.json",
+  "error": {
+    "name": "Error",
+    "message": "The repository operation may have committed before its acknowledgement was lost; do not retry it blindly",
+    "code": "LIX_WRITE_OUTCOME_UNKNOWN",
+    "cause": { "name": "LixError", "message": "Lix transaction.commit did not settle within 60000ms", "code": "LIX_OPERATION_TIMEOUT" },
+    "stackLocations": [
+      "@lix-js/sdk/dist/worker/request-lifecycle.js:32:26",
+      "@lix-js/sdk/dist/worker/client.js:748:28",
+      "@lix-js/sdk/dist/worker/client.js:742:14",
+      "@lix-js/sdk/dist/worker/client.js:485:26"
+    ]
+  },
+  "cleanup": "No .live-update-paraglide-* directory or original Node process remained when inspected after this invocation; Vite and browser startup were not reached for this scenario",
+  "limits": "One observed attempt. No latency estimate, p95, speedup, or generic scale limit can be inferred. Harness timeout does not override Lix's internal transaction timeout. Earlier small-case raw samples survived, but its metadata was not checkpointed by this revision."
+}

@@ -26,6 +26,7 @@
 - CI에서 광범위한 매트릭스로 비용을 부풀리지 않는다. 필요한 조합만 돌린다.
 
 상세 벤치마크 결과와 프로파일 기록은 [10-performance-measurements.md](10-performance-measurements.md)에 있다.
+Paraglide와 같은 fixture의 첫 문구 수정 측정과 대규모 초기 준비 실패는 [13-paraglide-comparison.md](13-paraglide-comparison.md)에 별도로 기록했다. 얇은 계층 대안의 계약 비교 실험과 제품 우열 판정은 남아 있다.
 
 ## 인수 사례
 
