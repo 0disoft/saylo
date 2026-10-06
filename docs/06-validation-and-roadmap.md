@@ -201,13 +201,15 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 
 패키지 소개 문서와 npm 메타데이터를 추가했다. `packages/core`·`packages/react`·`packages/typegen`·`packages/vite`에 README를 새로 쓰고, 각 `package.json`에 `description`·`repository`·`homepage`·`bugs`·`keywords` 다섯 필드만 더했다. 이름은 `@0disoft/saylo-*`이고 저장소는 `https://github.com/0disoft/saylo.git`다. `private: true`·version 0.0.0·exports·bin·scripts·license는 그대로이며 공개 배포는 하지 않았다. README의 설치 명령은 게시 후 기준으로 표시했고 현재 공개 registry에는 없다. 2026-10-06 `npm run verify:pack`(Node 24.18.0·Vite 8.3.2)이 exit 0으로 통과했다. 네 README가 pack 목록에 들어가고, 저장소 밖 JS·TS 소비 앱에 설치한 tarball의 README 바이트와 metadata 다섯 필드가 원본과 일치했다. core README 첫 JS 블록은 Node로 실행하고, React tsx·typegen TS·Vite TS 블록은 실제 발췌를 독립 앱에서 tsc·generated `.d.ts`로 검사했다. manifest audit에서 다섯 필드 외 JSON 구조는 원본과 같고 README 로컬 링크 대상·코드 울타리도 확인했다. CLI·checkJs·TS·번역 인자 거부·React SSR·public subpath·Vite production chunk 기존 검사도 통과했다. code 변경이 없어 140개 `npm run check`는 다시 돌리지 않았다.
 
+secondary quarantine을 Vite plugin에 구현했다. `LiveRegistry`가 raw desired와 파일별 last-good 번역을 유지하고, 기준 schema가 바뀌면 직전 정상 번역에서 부적합 메시지만 제거한 immutable catalog를 게시하며 빠진 메시지는 base fallback으로 둔다. 잘못된 secondary 편집은 그 파일의 last-good을 유지하고 다른 파일 변경은 계속 반영한다. last-good이 없는 새 secondary는 게시하지 않고, 삭제 시 last-good을 지운다. 기준이나 번역이 복구되면 raw 번역을 자동 재검증해 복원하고 진단을 해제한다. startup·build의 전체 엄격 검증과 코어 `createStore.replaceCatalogs`의 동작은 그대로이고, 격리는 plugin 계층에만 있다. Vite test의 plugin·lazy·patch·production·server 스위트 합 56개가 통과했고 `vite build`와 소비 TS 검사도 통과했다. 실제 브라우저에서 quarantine 동작을 확인한 검증은 아직 하지 않았다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |
 | 2 | 추가·수정·삭제 | 키 추가, 값 수정, 키 삭제가 각각 수렴한다 |
 | 3 | 파싱 복구 | 깨진 JSON/ICU를 넣어도 마지막 정상값이 유지되고 진단이 나온다 |
 | 4 | 재연결·갭 | 새 세션·revision gap에서 full snapshot으로 복구하고, 중복·오래된 patch는 discard한다. Vite 재시작 후 DOM 보존은 요구하지 않는다 |
-| 5 | 비동기 타입 schema | baseline schema 변경 시 quarantine과 fallback이 동작한다(quarantine는 미구현이고 현재는 부적합 후보를 배치 거부한다). 키 삭제·필수 인자 추가 후 기존 호출 오류는 진단하며 DOM 보존을 요구하지 않는다 |
+| 5 | 비동기 타입 schema | baseline schema 변경 시 quarantine과 fallback이 동작한다(quarantine는 plugin 구현 완료, 단위·통합 테스트만 통과했고 브라우저 검증은 아직 없다). 키 삭제·필수 인자 추가 후 기존 호출 오류는 진단하며 DOM 보존을 요구하지 않는다 |
 | 6 | 포맷 일치 | 변수, number/date/time, plural/select가 같은 Intl locale data·런타임에서 dev/prod 동일 출력을 낸다(고정 timeZone, 고정 시각 입력) |
 | 7 | SSR 동시성 | 요청 간 로케일·카탈로그가 섞이지 않는다 |
 | 8 | JS/TS 소비 | JS 프로젝트와 TS 프로젝트에서 모두 설치·소비가 된다(스모크) |
@@ -233,7 +235,7 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 
 ## 로드맵
 
-작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 1~13단계 로컬 구현을 마쳤다. quarantine·build-time parser 제거·unused message 제거·selector 미세구독·completeTranslations·Svelte/Vue 어댑터·대규모 성능 목표·비교 실험은 후속이다.
+작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 1~13단계 로컬 구현을 마치고 secondary quarantine을 plugin에 추가했다. build-time parser 제거·unused message 제거·selector 미세구독·completeTranslations·Svelte/Vue 어댑터·대규모 성능 목표·비교 실험은 후속이다. build-time parser 제거는 별도 커밋에서 작업 중이며 아직 완료가 아니다.
 
 | 순서 | 커밋의 한 가지 책임 | 완료 기준 |
 | --- | --- | --- |

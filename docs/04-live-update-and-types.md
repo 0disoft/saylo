@@ -18,7 +18,7 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 
 ## desired-state 조정
 
-현재 코어 구현은 `packages/core/src/i18n.ts`와 `catalog-loader.ts`다. desired locale·namespace의 준비를 합치고 pair/version별 요청을 공유한다. 미로드 namespace는 명시적으로 로드하며, present/missing 전체가 준비된 뒤 한 번 게시한다. stale 응답은 최대 3회 조회하고 실패 시 이전 UI를 유지한다. Vite는 manifest 전체와 요청한 parsed pair의 본문을 별도로 전달하며, loaded scope의 변경만 다시 조회한다. 직전 baseline과 맞는 pair 응답은 바뀐 메시지 request-scoped delta가 되고, 그 밖에는 full present/missing 응답으로 돌아간다(13단계, 로컬 구현 완료). 서버가 patch를 밀어주는 push 방식 전송은 후속이다. secondary 스키마 quarantine는 미구현이며, 현재는 번역 스키마 검증에 실패한 후보를 배치 단위로 거부한다. quarantine 구현을 시작한 상태이고 완료·검증 전이다.
+현재 코어 구현은 `packages/core/src/i18n.ts`와 `catalog-loader.ts`다. desired locale·namespace의 준비를 합치고 pair/version별 요청을 공유한다. 미로드 namespace는 명시적으로 로드하며, present/missing 전체가 준비된 뒤 한 번 게시한다. stale 응답은 최대 3회 조회하고 실패 시 이전 UI를 유지한다. Vite는 manifest 전체와 요청한 parsed pair의 본문을 별도로 전달하며, loaded scope의 변경만 다시 조회한다. 직전 baseline과 맞는 pair 응답은 바뀐 메시지 request-scoped delta가 되고, 그 밖에는 full present/missing 응답으로 돌아간다(13단계, 로컬 구현 완료). 서버가 patch를 밀어주는 push 방식 전송은 후속이다. secondary 스키마 quarantine는 Vite plugin에서 구현했다(아래 참조).
 
 로케일 전환과 namespace 로드는 하나의 desired state(locale + 원하는 namespace 집합)로 조정한다. generation은 transport의 오래된 완료를 차단하기 위한 값이지, generation이 바뀔 때마다 모든 호출자를 취소한다는 뜻이 아니다.
 
@@ -66,7 +66,10 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 - 유효한 base 변경은 커밋한다. 커밋을 미루지 않는다.
 - 부적합해진 기존 secondary 메시지는 개발 중 quarantine(격리)하고 진단을 낸다. 그 메시지는 base 값으로 fallback해 화면이 깨지지 않게 한다.
 - base 변경과 locale 카탈로그는 후보 트랜잭션에서 함께 검증한다. 기준 schema와 각 locale schema가 맞는 조합만 커밋한다.
-- 위 quarantine는 아직 미구현이다. 현재는 기준 schema와 맞지 않는 후보를 배치 단위로 거부한다.
+- 위 quarantine는 Vite plugin의 `LiveRegistry`에 구현했다. plugin은 raw desired와 파일별 last-good 번역을 함께 유지한다. 기준 schema가 바뀌면 직전 정상 번역에서 새 schema에 맞지 않는 메시지만 제거한 immutable catalog를 게시하고, 남은 번역과 locale은 유지하며 빠진 메시지는 base 값으로 fallback한다.
+- 잘못된 secondary 편집은 그 파일의 last-good 번역을 유지하고 다른 파일의 정상 편집은 그대로 게시한다. last-good이 없는 새 secondary는 게시하지 않는다. 파일을 삭제하면 그 last-good도 지운다. 기준이나 번역이 다시 유효해지면 raw 번역을 자동 재검증해 복원하고 해당 진단을 해제한다.
+- startup과 build는 그대로 전체 카탈로그를 엄격 검증한다. 코어 공개 API의 `createStore.replaceCatalogs`에는 자동 격리를 넣지 않았고, 사용자 정의 `CatalogSource`가 부적합 payload를 넘기면 코어는 그대로 거부한다. 격리는 plugin 계층에서만 한다.
+- 실제 브라우저에서 quarantine 동작을 확인한 검증은 아직 하지 않았다. 기존 문구 갱신의 DOM 상태 보존 검증과는 별개다.
 
 DOM 상태 보존 범위는 편집 종류로 나눈다.
 

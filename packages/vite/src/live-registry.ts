@@ -5,6 +5,7 @@ import type { CatalogSchema, ParsedCatalog } from '@0disoft/saylo-core';
 import { catalogLocation, readCatalogFile } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import type { LiveDiagnostic } from './types.js';
+import { quarantineTranslation } from './translation-quarantine.js';
 
 type Read = () => string | Promise<string>;
 const QUIET_MS = 40;
@@ -14,6 +15,7 @@ const MAX_WAIT_MS = 200;
 export class LiveRegistry {
   private desired: Map<string, CatalogFile>;
   private accepted: Map<string, CatalogFile>;
+  private lastGoodTranslations: Map<string, CatalogFile>;
   private knownNamespaces: Set<string>;
   private schemas = new WeakMap<ParsedCatalog, CatalogSchema>();
   private validated = new WeakMap<ParsedCatalog, string>();
@@ -34,6 +36,7 @@ export class LiveRegistry {
   ) {
     this.desired = new Map(files.map(f => [f.file, f]));
     this.accepted = new Map(this.desired);
+    this.lastGoodTranslations = new Map(files.filter(f => f.catalog.locale !== baseLocale).map(f => [f.file, f]));
     this.knownNamespaces = new Set(files.filter(f => f.catalog.locale === baseLocale).map(f => f.catalog.namespace));
     this.validate(files);
   }
@@ -59,6 +62,37 @@ export class LiveRegistry {
   }
 
   owns(file: string) { return catalogLocation(this.root, file) !== undefined; }
+
+  private prepareTranslations(files: readonly CatalogFile[]) {
+    const bases = new Map(files.filter(f => f.catalog.locale === this.baseLocale)
+      .map(f => [f.catalog.namespace, createBaseSchema(f.catalog)]));
+    const errors = new Map(this.errors);
+    const translations = new Map(this.lastGoodTranslations);
+    for (const key of errors.keys()) if (key.startsWith('schema:')) errors.delete(key);
+    for (const file of translations.keys()) if (!this.desired.has(file)) translations.delete(file);
+    const active = files.flatMap(item => {
+      if (item.catalog.locale === this.baseLocale) return [item];
+      const schema = bases.get(item.catalog.namespace);
+      if (!schema) throw new CatalogError([{ sourceName: item.catalog.sourceName, locale: item.catalog.locale,
+        namespace: item.catalog.namespace, code: 'NAMESPACE_MISMATCH', message: 'Every translation namespace needs a base catalog.' }]);
+      try {
+        if (this.validated.get(item.catalog) !== schema.fingerprint) {
+          validateTranslation(schema, item.catalog);
+          this.validated.set(item.catalog, schema.fingerprint);
+        }
+        translations.set(item.file, item);
+        return [item];
+      } catch (error) {
+        if (!(error instanceof CatalogError)) throw error;
+        errors.set(`schema:${item.file}`, this.failure(error));
+        const previous = translations.get(item.file);
+        if (!previous) return [];
+        const catalog = quarantineTranslation(schema, previous.catalog);
+        return [catalog === previous.catalog ? previous : { ...previous, catalog }];
+      }
+    });
+    return { active, translations, errors };
+  }
 
   getAcceptedSchemas(): readonly CatalogSchema[] {
     return [...this.accepted.values()].filter(f => f.catalog.locale === this.baseLocale).map(f => this.schemas.get(f.catalog)!);
@@ -135,14 +169,24 @@ export class LiveRegistry {
         const namespaces = new Set(bases.map(f => f.catalog.namespace));
         // Removing a baseline namespace removes it from the active registry. Its secondary
         // files stay cached on disk and rejoin if that baseline namespace is restored.
-        const active = [...candidate.values()].filter(f => namespaces.has(f.catalog.namespace) || !this.knownNamespaces.has(f.catalog.namespace));
+        const prepared = this.prepareTranslations([...candidate.values()]
+          .filter(f => namespaces.has(f.catalog.namespace) || !this.knownNamespaces.has(f.catalog.namespace)));
+        const { active } = prepared;
         this.validate(active);
         if (generation !== this.generation || this.stopped) {
           if (!this.stopped) { for (const file of batch.keys()) if (!this.queued.has(file)) this.queued.set(file, undefined); this.schedule(); }
           return;
         }
-        const changed = active.length !== this.accepted.size || active.some(f => this.accepted.get(f.file)?.source !== f.source);
+        const changed = active.length !== this.accepted.size || active.some(f => {
+          const previous = this.accepted.get(f.file);
+          if (!previous || previous.source !== f.source) return true;
+          if (previous.catalog === f.catalog) return false;
+          return Object.keys(previous.catalog.messages).length !== Object.keys(f.catalog.messages).length ||
+            Object.keys(f.catalog.messages).some(id => previous.catalog.messages[id] !== f.catalog.messages[id]);
+        });
         this.accepted = new Map(active.map(f => [f.file, f]));
+        this.lastGoodTranslations = prepared.translations;
+        this.errors = prepared.errors;
         for (const namespace of namespaces) this.knownNamespaces.add(namespace);
         this.errors.delete('<registry>');
         this.publish(active, changed, this.diagnostic());

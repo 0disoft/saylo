@@ -60,12 +60,12 @@
 | npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-typegen`·`saylo-vite` 네 이름으로 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`) 게시 완료 |
 | 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 로케일 추가·paint·번들 크기는 아직 미측정 |
 | 지원 버전 범위 | Node 24.x, Vite 8, React 19, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
-| build-time parser 런타임 제거 | 미구현. bundler 경계 검증 필요 |
+| build-time parser 런타임 제거 | 작업 중. 별도 커밋에서 진행하며 아직 완료가 아니다. bundler 경계 검증 필요 |
 | requireCompleteTranslations(완역 강제) | 후속. 기본은 불완전한 번역 허용 |
 | unused message 제거 최적화 | 후속. 동적 t 키 tradeoff 검증 필요 |
 | selector 미세구독 최적화 | 후속 |
 | Svelte·Vue 어댑터 | 후속. 현재는 vanilla subscription과 React |
-| secondary schema quarantine | 미구현(작업 시작). 현재는 기준 schema와 맞지 않는 후보를 배치 단위로 거부한다. 구현을 시작한 상태이며 완료·검증 전이다 |
+| secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트만 통과했고 실제 브라우저 검증은 아직 없다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
 | JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
 | message delta 비용 | request-scoped message delta를 로컬 구현했다. 대규모 반영 성능 목표는 여전히 미달이고 대규모 fixture 재측정이 남았다 |
 | 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 비교 실험은 아직 실시하지 않았다 |

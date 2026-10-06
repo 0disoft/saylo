@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import saylo from '../dist/index.js';
-import { createStore } from '@0disoft/saylo-core';
+import { createStore, createI18n } from '@0disoft/saylo-core';
 import { assertInside, scanCatalogs } from '../dist/catalog-files.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
   REQUEST_EVENT, SNAPSHOT_EVENT } from '../dist/types.js';
@@ -184,18 +184,97 @@ test('server catalog requests negotiate a delta only with an available client ba
   assert.equal(replies.at(-1).result.status, 'present');
 });
 
-test('base schema change revalidates translations atomically', async t => {
+test('base schema change publishes immediately with incompatible translation quarantined', async t => {
   const { change, request } = await setup(t);
   await change('ko', '{"hello":"안녕 {count, number}"}');
-  assert.equal(request()[0].data.revision, 0);
+  assert.equal(request()[0].data.revision, 1);
   assert.equal(request()[1].event, DIAGNOSTIC_EVENT);
+  assert.equal(request()[1].data.diagnostics[0].code, 'UNKNOWN_ARGUMENT');
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: request()[0].data.catalogs });
+  t.after(() => store.dispose());
+  assert.equal(store.t('demo:hello', { count: 3 }), '안녕 3');
+  assert.deepEqual(store.getSnapshot().availableLocales, ['en', 'ko']);
   await change('en', '{"hello":"Hello"}');
-  assert.equal(request()[0].data.revision, 1);
+  assert.equal(request()[0].data.revision, 2);
   assert.equal(request()[0].data.catalogs.find(c => c.locale === 'ko').messages.hello.source, '안녕 {count, number}');
-  assert.equal(request()[1].data.message, ''); // A compatible dependency edit automatically retries the desired candidate.
-  await change('ko', '{"hello":"안녕 {count, number}"}');
-  assert.equal(request()[0].data.revision, 1);
   assert.equal(request()[1].data.message, '');
+  await change('ko', '{"hello":"안녕 {count, number}"}');
+  assert.equal(request()[0].data.revision, 2);
+  assert.equal(request()[1].data.message, '');
+});
+
+test('quarantine keeps compatible messages and restores raw translations after base recovery', async t => {
+  const { change, request, events } = await setup(t);
+  await change('ko', '{"hello":"안녕 {name}","keep":"유지","remove":"삭제"}');
+  await change('en', '{"hello":"Hi {name}","keep":"Keep","remove":"Remove"}');
+  events.length = 0;
+  await change('ko', '{"hello":"{count, number}명","keep":"유지"}');
+  const catalogs = request()[0].data.catalogs;
+  const en = catalogs.find(c => c.locale === 'en');
+  assert.deepEqual(Object.keys(en.messages), ['keep']);
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs });
+  t.after(() => store.dispose());
+  assert.equal(store.t('demo:hello', { count: 3 }), '3명');
+  assert.equal(store.t('demo:keep'), 'Keep');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+  const revision = request()[0].data.revision;
+  await change('ko', '{"hello":"{count, number}명","keep":"유지"}');
+  assert.equal(request()[0].data.revision, revision);
+  await change('ko', '{"hello":"안녕 {name}","keep":"유지","remove":"삭제"}');
+  store.replaceCatalogs(request()[0].data.catalogs);
+  assert.equal(store.t('demo:hello', { name: 'Ada' }), 'Hi Ada');
+  assert.equal(store.t('demo:remove'), 'Remove');
+  assert.equal(request()[1].data.message, '');
+});
+
+test('invalid secondary edits retain last good messages without blocking other files', async t => {
+  const { change, request } = await setup(t);
+  await change('en', '{"hello":"Bad {unknown}"}');
+  assert.equal(request()[0].data.revision, 0);
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'en').messages.hello.source, 'en {name}');
+  await change('ko', '{"hello":"새 기준 {name}","new":"새 키"}');
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: request()[0].data.catalogs });
+  t.after(() => store.dispose());
+  assert.equal(store.t('demo:hello', { name: 'Ada' }), 'en Ada');
+  assert.equal(store.t('demo:new'), '새 키');
+  assert.ok(request()[1].data.message);
+  await change('en', '{"hello":"Fixed {name}"}');
+  assert.equal(request()[1].data.message, '');
+});
+
+test('deleted translation cannot be resurrected by an invalid replacement', async t => {
+  const { disk, request, change } = await setup(t);
+  await disk('delete', 'en');
+  await disk('create', 'en', 'demo', '{"hello":"Bad {unknown}"}');
+  assert.ok(request()[0].data.catalogs.every(c => c.locale !== 'en'));
+  await change('en', '{"hello":"New {name}"}');
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'en').messages.hello.source, 'New {name}');
+  assert.equal(request()[1].data.message, '');
+});
+
+test('lazy pair metadata and payload converge after quarantine and restoration', async t => {
+  const { ws, change } = await setup(t);
+  let requestNumber = 0;
+  const send = (event, data) => {
+    const replies = [];
+    ws.emit(event, data, { send: reply => replies.push(reply.data) });
+    return replies[0];
+  };
+  const source = {
+    readManifest: () => send(MANIFEST_REQUEST_EVENT, { scope: 'eager', requestId: `m-${++requestNumber}`,
+      generation: 1, locale: 'en', namespaces: ['demo'] }).manifest,
+    loadCatalog: async (locale, namespace) => send(CATALOG_REQUEST_EVENT, {
+      requestId: `c-${++requestNumber}`, generation: 1, locale, namespace }).result,
+  };
+  const initialCatalogs = await Promise.all(['ko', 'en'].map(locale => source.loadCatalog(locale, 'demo')));
+  const instance = createI18n({ catalogSource: source, locale: 'en', initialNamespaces: ['demo'], initialCatalogs });
+  t.after(() => instance.dispose());
+  await change('ko', '{"hello":"{count, number}명"}');
+  await instance.refresh();
+  assert.equal(instance.t('demo:hello', { count: 2 }), '2명');
+  await change('en', '{"hello":"{count, plural, one {# person} other {# people}}"}');
+  await instance.refresh();
+  assert.equal(instance.t('demo:hello', { count: 2 }), '2 people');
 });
 
 test('concurrent saves coalesce to final value and close removes only plugin listeners', async t => {
