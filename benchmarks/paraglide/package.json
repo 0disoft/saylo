@@ -1,0 +1,11 @@
+{
+  "name": "saylo-paraglide-benchmark",
+  "private": true,
+  "type": "module",
+  "scripts": { "bench": "node run.mjs" },
+  "devDependencies": {
+    "@inlang/paraglide-js": "2",
+    "@inlang/plugin-message-format": "4",
+    "@vitejs/plugin-react": "6"
+  }
+}
