@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { createHash } from 'node:crypto';
 import { cp, lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -18,7 +19,9 @@ const majors = JSON.parse(await readFile(path.join(repository, 'package.json'), 
 const packages = Object.fromEntries(['core', 'react', 'typegen', 'vite'].map(id => [`@0disoft/saylo-${id}`, id]));
 const names = Object.keys(packages);
 const saveRelease = process.argv.slice(2).includes('--save-release');
-assert.ok(process.argv.slice(2).every(arg => arg === '--save-release'), 'Unsupported pack argument.');
+const fromRegistry = process.argv.slice(2).includes('--registry');
+assert.ok(process.argv.slice(2).every(arg => ['--save-release', '--registry'].includes(arg)), 'Unsupported pack argument.');
+assert.ok(!(saveRelease && fromRegistry), 'Registry verification cannot replace local release artifacts.');
 const license = await readFile(path.join(repository, 'LICENSE'), 'utf8');
 const notice = await readFile(path.join(repository, 'NOTICE'), 'utf8');
 // npm run can export .npmrc allow-scripts as an env override, which newer npm
@@ -46,9 +49,31 @@ async function npm(args, cwd) {
 try {
   assert.ok(!inside(repository, root), 'Consumer must live outside the repository.');
   await mkdir(packs);
-  const metadata = JSON.parse(await npm(['pack', '--workspaces', '--ignore-scripts', '--json', '--pack-destination', packs], repository));
+  const registryVersions = new Map();
+  if (fromRegistry) {
+    const baseVersion = JSON.parse(await readFile(path.join(repository, 'packages/core/package.json'), 'utf8')).version;
+    const bootstrap = JSON.parse(await readFile(path.join(repository, 'releases', `${baseVersion}.json`), 'utf8'));
+    for (const name of names) {
+      const manifest = JSON.parse(await readFile(path.join(repository, 'packages', packages[name], 'package.json'), 'utf8'));
+      const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(30000) });
+      assert.ok(response.ok, `${name}: public registry HTTP ${response.status}`);
+      const metadata = await response.json();
+      assert.equal(metadata['dist-tags']?.alpha, manifest.version);
+      const version = metadata.versions?.[manifest.version];
+      assert.ok(version, `${name}: released version missing`);
+      assert.equal(version.dist.integrity, bootstrap.find(pack => pack.name === name && pack.version === manifest.version)?.integrity, `${name}: published bytes differ from approved CI artifact`);
+      registryVersions.set(name, version);
+    }
+    console.log('[registry] All four public alpha versions match the approved CI artifact integrity.');
+  }
+  const source = fromRegistry ? ['--workspaces=false', ...names.map(name => `${name}@${registryVersions.get(name).version}`), '--registry', 'https://registry.npmjs.org/'] : ['--workspaces'];
+  const metadata = JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
   assert.deepEqual(packed.map(pack => pack.name).sort(), [...names].sort());
+  if (fromRegistry) for (const pack of packed) {
+    const integrity = `sha512-${createHash('sha512').update(await readFile(path.join(packs, pack.filename))).digest('base64')}`;
+    assert.equal(integrity, registryVersions.get(pack.name).dist.integrity, `${pack.name}: downloaded tarball integrity differs`);
+  }
   if (saveRelease) {
     const core = JSON.parse(await readFile(path.join(repository, 'packages/core/package.json'), 'utf8'));
     await checkRelease(releaseInput(['--version', core.version, '--tag', core.publishConfig.tag]));

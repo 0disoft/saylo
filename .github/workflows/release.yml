@@ -19,6 +19,11 @@ on:
         required: true
         default: false
         type: boolean
+      verify_oidc:
+        description: Verify all four Trusted Publishers without publishing
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -52,6 +57,9 @@ jobs:
         run: npm install --global npm@11
       - name: Validate committed release metadata
         run: npm run release:check -- --version "$RELEASE_VERSION" --tag "$RELEASE_TAG"
+      - name: Verify npm OIDC token exchange without publishing
+        if: inputs.verify_oidc && !inputs.publish
+        run: npm run release:oidc
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Check runtime and consumer types

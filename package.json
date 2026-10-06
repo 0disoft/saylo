@@ -10,6 +10,7 @@
     "demo:ssr": "npm run build && node examples/ssr/demo.mjs",
     "bench:live": "npm run build && node benchmarks/live-update/run.mjs",
     "verify:pack": "npm run build && node scripts/pack-smoke.mjs",
+    "verify:registry": "node scripts/pack-smoke.mjs --registry",
     "dev:ssr": "npm run build && node examples/ssr/server.mjs",
     "dev": "npm run build && vite --config examples/vanilla/vite.config.mjs --host 127.0.0.1",
     "build:demo": "npm run build && vite build --config examples/vanilla/vite.config.mjs",
@@ -17,10 +18,11 @@
     "typegen:react": "npm run build && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts",
     "build:react": "npm run typegen:react && tsc -p examples/react/tsconfig.json && vite build --config examples/react/vite.config.mjs",
     "test": "npm run build && npm run test --workspaces",
-    "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json",
+    "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json && node --test scripts/test/verify-oidc.test.mjs",
     "release:check": "node scripts/release-check.mjs",
     "release:pack": "npm run build && node scripts/pack-smoke.mjs --save-release",
-    "release:publish": "node scripts/release-publish.mjs"
+    "release:publish": "node scripts/release-publish.mjs",
+    "release:oidc": "node scripts/verify-oidc.mjs"
   },
   "devDependencies": {
     "@types/node": "24",
