@@ -69,7 +69,7 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 - 위 quarantine는 Vite plugin의 `LiveRegistry`에 구현했다. plugin은 raw desired와 파일별 last-good 번역을 함께 유지한다. 기준 schema가 바뀌면 직전 정상 번역에서 새 schema에 맞지 않는 메시지만 제거한 immutable catalog를 게시하고, 남은 번역과 locale은 유지하며 빠진 메시지는 base 값으로 fallback한다.
 - 잘못된 secondary 편집은 그 파일의 last-good 번역을 유지하고 다른 파일의 정상 편집은 그대로 게시한다. last-good이 없는 새 secondary는 게시하지 않는다. 파일을 삭제하면 그 last-good도 지운다. 기준이나 번역이 다시 유효해지면 raw 번역을 자동 재검증해 복원하고 해당 진단을 해제한다.
 - startup과 build는 그대로 전체 카탈로그를 엄격 검증한다. 코어 공개 API의 `createStore.replaceCatalogs`에는 자동 격리를 넣지 않았고, 사용자 정의 `CatalogSource`가 부적합 payload를 넘기면 코어는 그대로 거부한다. 격리는 plugin 계층에서만 한다.
-- 실제 브라우저에서 quarantine 동작을 확인한 검증은 아직 하지 않았다. 기존 문구 갱신의 DOM 상태 보존 검증과는 별개다.
+- quarantine 동작은 2026-10-07(KST) 브라우저에서 실제 watcher·WS 자동 갱신으로 확인했다(자세한 기록은 [06-validation-and-roadmap.md](06-validation-and-roadmap.md)). 더 좁은 번역 키만 격리되고 나머지 키와 로케일은 유지됐고, 그 파일을 고치면 자동 복원·진단 해제, 다시 부적합해지면 마지막 정상값 유지, 다른 파일 수정 비차단을 관측했다. 이 편집은 schema-breaking이라 입력·dialog 상태 보존은 관측 사례이며 일반 보장이 아니다.
 
 DOM 상태 보존 범위는 편집 종류로 나눈다.
 
