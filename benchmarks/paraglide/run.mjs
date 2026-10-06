@@ -11,6 +11,7 @@ import react from '@vitejs/plugin-react';
 import { compile, paraglideVitePlugin } from '@inlang/paraglide-js';
 import { createParaglideFixture } from './fixture.mjs';
 import { createChannel } from './channel.mjs';
+import { createLocaleChannel, metrics as localeMetrics } from './locale-channel.mjs';
 import { scenarios } from '../live-update/fixture.mjs';
 import { summarize } from '../live-update/statistics.mjs';
 
@@ -22,6 +23,7 @@ const { createServer } = await import(pathToFileURL(rootRequire.resolve('vite'))
 const directory = fileURLToPath(new URL('..', import.meta.url));
 const { values } = parseArgs({ options: { samples: { type: 'string', default: '50' }, warmup: { type: 'string', default: '5' },
   calibrations: { type: 'string', default: '25' }, scenario: { type: 'string', default: 'all' }, browser: { type: 'string' },
+  mode: { type: 'string', default: 'edit' },
   'timeout-ms': { type: 'string', default: '120000' }, out: { type: 'string', default: 'benchmarks/results/paraglide-edit.json' } } });
 const settings = Object.fromEntries(['samples', 'warmup', 'calibrations', 'timeout-ms'].map(key => {
   const value = Number(values[key]);
@@ -30,6 +32,7 @@ const settings = Object.fromEntries(['samples', 'warmup', 'calibrations', 'timeo
 }));
 const selected = scenarios.filter(s => values.scenario === 'all' || values.scenario === s.id);
 if (!selected.length) throw new Error('Unknown scenario.');
+if (!['edit', 'locale-add'].includes(values.mode)) throw new Error('Use --mode edit or locale-add.');
 const candidates = values.browser ? [path.resolve(values.browser)] : process.platform === 'win32' ? [
   path.join(process.env.PROGRAMFILES ?? 'C:/Program Files', 'Google/Chrome/Application/chrome.exe'),
   path.join(process.env['PROGRAMFILES(X86)'] ?? 'C:/Program Files (x86)', 'Microsoft/Edge/Application/msedge.exe'),
@@ -38,6 +41,7 @@ let executable;
 for (const candidate of candidates) { try { await access(candidate); executable = candidate; break; } catch {} }
 if (!executable) throw new Error('Pass --browser with an installed Chromium executable.');
 const files = ['run.mjs', 'fixture.mjs', 'channel.mjs', 'app.jsx', 'main.jsx', 'control.js', 'package.json', 'package-lock.json'].map(file => `benchmarks/paraglide/${file}`);
+if (values.mode === 'locale-add') files.push(...['locale-app.jsx', 'locale-control.js', 'locale-channel.mjs'].map(file => `benchmarks/paraglide/${file}`));
 files.push('benchmarks/live-update/fixture.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json');
 const codeHashes = Object.fromEntries(await Promise.all(files.map(async file => [file,
   createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
@@ -61,13 +65,13 @@ async function stopBrowser(child) {
 }
 async function runScenario(scenario) {
   const root = await mkdtemp(path.join(directory, '.live-update-paraglide-'));
-  let vite, child, channel;
+  let vite, child, channel, awaitCompilerIdle;
   let cancelled = false;
   const interrupted = () => { cancelled = true; channel?.fail(new Error('Benchmark interrupted.')); };
   process.once('SIGINT', interrupted); process.once('SIGTERM', interrupted);
   try {
     const appRoot = path.join(root, 'app');
-    const fixture = await createParaglideFixture(appRoot, scenario);
+    const fixture = await createParaglideFixture(appRoot, scenario, values.mode);
     const compilerOptions = { project: fixture.project, outdir: path.join(appRoot, 'paraglide'),
       emitTsDeclarations: false, strategy: ['cookie', 'globalVariable', 'baseLocale'] };
     // Create project metadata before starting Vite's watcher. Kept outside warm edit timing.
@@ -88,13 +92,14 @@ async function runScenario(scenario) {
         };
       }
     }
-    const awaitCompilerIdle = async () => {
+    awaitCompilerIdle = async () => {
       while (inFlight.size || performance.now() - lastCompilerEnd < 100) {
         if (inFlight.size) await Promise.allSettled([...inFlight]);
         else await new Promise(resolve => setTimeout(resolve, 100));
       }
     };
-    channel = createChannel({ scenario, target: fixture.target, ...settings, awaitCompilerIdle });
+    const channelFactory = values.mode === 'locale-add' ? createLocaleChannel : createChannel;
+    channel = channelFactory({ scenario, target: fixture.target, fixture, ...settings, awaitCompilerIdle });
     if (cancelled) throw new Error('Benchmark interrupted.');
     console.log(`[paraglide] ${scenario.id}: ${fixture.catalogBytes} catalog bytes; starting Vite`);
     const startedAt = performance.now();
@@ -116,6 +121,18 @@ async function runScenario(scenario) {
     const measured = collected.results.filter(sample => !sample.warmup);
     if (measured.length !== settings.samples) throw new Error('Incomplete sample set.');
     const { readyAt, ...browser } = collected.browser;
+    if (values.mode === 'locale-add') return { ...scenario, namespaces: 1, initialCatalogFiles: fixture.catalogFiles,
+      initialCatalogBytes: fixture.catalogBytes, addedLocale: 'en-GB', addedFilesPerRound: 1, settingsWritesPerAddition: 1,
+      emitTsDeclarations: false, setLocaleReload: true, outputStructure: 'locale-modules (development default)',
+      browser, fixturePreparationMs, serverStartupMs, browserBootMs: readyAt - launchedAt,
+      documentCountIncludingWarmupAndResets: collected.documentCount,
+      summary: Object.fromEntries(localeMetrics.map(metric => [metric, summarize(measured.map(sample => sample[metric]))])),
+      listReloads: measured.reduce((sum, sample) => sum + sample.listReloads, 0),
+      selectionReloads: measured.reduce((sum, sample) => sum + sample.selectionReloads, 0),
+      preservation: Object.fromEntries(['listPreservation', 'translationPreservation'].map(phase => [phase,
+        Object.fromEntries(['inputNodePreserved', 'inputValuePreserved', 'componentStatePreserved'].map(key =>
+          [key, measured.filter(sample => sample[phase][key]).length]))])),
+      controlRoundTrip: summarize(collected.roundTrips), controlRoundTripsMs: collected.roundTrips, samples: collected.results };
     return { ...scenario, namespaces: 1, catalogFiles: fixture.catalogFiles, catalogBytes: fixture.catalogBytes,
       renderedMessages: 2, changedKeysPerSave: 1, editedLocale: 'en', emitTsDeclarations: false, fixturePreparationMs,
       outputStructure: 'locale-modules (development default)', browser, serverStartupMs, browserBootMs: readyAt - launchedAt,
@@ -125,7 +142,8 @@ async function runScenario(scenario) {
       reloads: measured.reduce((sum, sample) => sum + sample.reloads, 0),
       controlRoundTrip: summarize(collected.roundTrips), controlRoundTripsMs: collected.roundTrips, samples: collected.results };
   } finally {
-    channel?.dispose(); await stopBrowser(child); await vite?.close();
+    channel?.dispose(); await stopBrowser(child);
+    await vite?.watcher.close(); await awaitCompilerIdle?.(); await vite?.close();
     process.removeListener('SIGINT', interrupted); process.removeListener('SIGTERM', interrupted);
     const resolved = path.resolve(root);
     if (path.dirname(resolved) !== path.resolve(directory) || !path.basename(resolved).startsWith('.live-update-paraglide-')) throw new Error('Unsafe cleanup path.');
@@ -135,13 +153,15 @@ async function runScenario(scenario) {
 const out = path.resolve(values.out), results = [], failures = [];
 await mkdir(path.dirname(out), { recursive: true });
 async function saveOutput() {
-  await writeFile(out, `${JSON.stringify({ schema: 'saylo-paraglide-benchmark-v1', mode: 'edit', measuredAt: new Date().toISOString(),
+  await writeFile(out, `${JSON.stringify({ schema: 'saylo-paraglide-benchmark-v1', mode: values.mode, measuredAt: new Date().toISOString(),
     gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(),
     workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(), codeHashes, settings,
     environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
       cpu: os.cpus()[0]?.model, logicalCpus: os.cpus().length, memoryGiB: os.totalmem() / 1024 ** 3, versions },
     clock: 'Node performance.now: writeFile resolved -> DOM commit HTTP ack body received. Browser commitToAckDispatch uses its own clock. Never subtract clocks or control RTT.',
-    scope: 'Same catalog content/dimensions as Saylo; message-format plugin copied from installed package, no runtime CDN access. React Fast Refresh enabled. DOM commit, no paint timing. Separate run, not paired speedup evidence.',
+    scope: values.mode === 'locale-add'
+      ? 'Fresh en-GB catalog then settings.locales update per round. Node clock starts after both writes resolve. Directory creation excluded. Default setLocale document navigation, no reload:false escape hatch. Generated locale functions can be transferred before selection; not a lazy cold-catalog comparison. DOM commit, no paint timing.'
+      : 'Same catalog content/dimensions as Saylo; message-format plugin copied from installed package, no runtime CDN access. React Fast Refresh enabled. DOM commit, no paint timing. Separate run, not paired speedup evidence.',
     results, failures }, null, 2)}\n`);
 }
 for (const scenario of selected) {
@@ -156,6 +176,7 @@ for (const scenario of selected) {
   await writeFile(path.join(path.dirname(out), samplesFile), `${JSON.stringify({ scenario: scenario.id, samples: result.samples }, null, 2)}\n`);
   delete result.samples; result.samplesFile = samplesFile; results.push(result);
   await saveOutput(); // A later scenario failing must not discard completed scenario metadata.
-  console.log(`[paraglide] ${scenario.id}: p95=${result.summary.saveToAckMs.p95Ms.toFixed(2)}ms; reloads=${result.reloads}`);
+  const metric = values.mode === 'locale-add' ? result.summary.saveToListAckMs : result.summary.saveToAckMs;
+  console.log(`[paraglide] ${scenario.id}: ${values.mode} p95=${metric.p95Ms.toFixed(2)}ms`);
 }
 console.log(`[paraglide] result: ${out}`);

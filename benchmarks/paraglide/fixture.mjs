@@ -5,10 +5,14 @@ import { fileURLToPath } from 'node:url';
 import { createFixture } from '../live-update/fixture.mjs';
 
 const require = createRequire(import.meta.url);
-export async function createParaglideFixture(root, scenario) {
+export async function createParaglideFixture(root, scenario, mode = 'edit') {
   const fixture = await createFixture(root, scenario);
   for (const file of ['app.jsx', 'main.jsx', 'control.js'])
     await copyFile(fileURLToPath(new URL(file, import.meta.url)), path.join(root, file));
+  if (mode === 'locale-add') {
+    await copyFile(fileURLToPath(new URL('locale-app.jsx', import.meta.url)), path.join(root, 'app.jsx'));
+    await copyFile(fileURLToPath(new URL('locale-control.js', import.meta.url)), path.join(root, 'control.js'));
+  }
   const localeNames = ['ko', 'en', 'ja', 'fr', 'de', 'es', 'it', 'pt', 'nl', 'sv', 'pl', 'tr', 'cs', 'uk', 'ar', 'hi', 'th', 'vi', 'id', 'zh'].slice(0, scenario.localeCount);
   const project = path.join(root, 'project.inlang');
   await mkdir(project);

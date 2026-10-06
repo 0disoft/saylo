@@ -22,6 +22,21 @@ node benchmarks/live-update/run.mjs --samples 10 --warmup 2 --calibrations 10 --
 - 원시 sample은 warmup을 포함하며 요약에서 제외한다. p95는 nearest-rank다. 10회 p95는 최대값이므로 넓은 분포나 안정적인 목표 달성을 주장할 수 없다.
 - 선택 파일 SHA-256, 두 lockfile, 실제 도구 버전과 Git 작업 상태를 기록한다. 종료 시 browser process tree·Vite를 닫고 소유한 임시 fixture와 browser profile만 지운다.
 
-로케일 추가·선택, 다른 compiler 옵션, production bundle·SSR, i18next/Wuchale 위 얇은 계층의 계약 충족 여부는 이 문구 수정 벤치마크의 범위가 아니다.
+## 로케일 추가 모드
+
+```sh
+node benchmarks/paraglide/run.mjs --mode locale-add --scenario 1k-3-locales --samples 10 --warmup 2 --calibrations 10 --out benchmarks/results/paraglide-locale-small.json
+node benchmarks/live-update/run.mjs --mode locale-add --scenario 1k-3-locales --samples 10 --warmup 2 --calibrations 10 --out benchmarks/results/saylo-comparison-locale-small.json
+```
+
+새 en-GB 디렉터리에 bench.json을 쓴 뒤 settings.locales에도 en-GB를 추가한다. 저장→목록 측정은 **두 저장이 모두 끝난 시점**부터 select option을 DOM에서 확인한 HTTP ack까지다. 파일 저장과 settings 저장 사이도 raw sample에 남긴다. 디렉터리 생성과 내용 준비는 제외한다. Saylo는 settings 변경이 필요 없으므로 동일한 파일 개수의 저장 실험은 아니다.
+
+목록 확인 뒤 `/selecting` 요청을 서버가 받은 시점부터 기본 `setLocale('en-GB')`의 첫 번역 commit ack까지 잰다. 기본 document navigation을 그대로 사용한다. 다른 document의 browser clock을 빼지 않으므로 브라우저 setter→commit은 보고하지 않는다. 초기 boot에서만 en을 `reload:false`로 설정하며 실제 측정·en 복귀는 기본 setter다.
+
+en으로 복귀한 뒤 settings에서 en-GB를 빼고 파일·디렉터리를 삭제한다. option 제거와 compiler idle을 확인한 뒤 다음 회차를 시작한다. 생성된 locale 함수가 선택 전에 전송될 수 있으므로 Saylo의 cold full catalog 로드와 같은 작업이 아니다. catalog wire 바이트나 미로드 조건을 강제로 맞추지 않는다.
+
+목록 표시·선택 단계의 reload 횟수와 처음 만든 입력 노드·값·React 상태의 보존 여부를 각각 남긴다. 초기 기준 상태는 warmup을 포함한 실행 첫 document에서만 만든다. 초기화·삭제 직후 지연된 reload도 document 총수에 포함하지만 두 측정 구간의 reload 수에는 넣지 않는다.
+
+다른 compiler 옵션, production bundle·SSR, i18next/Wuchale 위 얇은 계층의 계약 충족 여부는 이 벤치마크의 범위가 아니다. 대규모 초기 compile 실패 기록은 [비교 문서](../../docs/13-paraglide-comparison.md)를 따른다.
 
 공식 근거: [Vite 설정](https://paraglidejs.com/vite), [로케일 전략](https://paraglidejs.com/basics), [inlang 설정](https://inlang.com/docs/settings). 실제 설치 버전의 기본 출력과 compiler hook은 설치된 package 소스에서도 확인했다.
