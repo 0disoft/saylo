@@ -25,10 +25,19 @@ export function createStageProbe() {
     }
     return original.apply(this, args);
   });
+  wrap(LiveRegistry.prototype, 'prepareTranslations', function (original, args) {
+    const sample = current;
+    const start = performance.now();
+    if (sample?.candidateStartedAt !== undefined) {
+      sample.readAndCandidateMs += start - sample.candidateStartedAt;
+      sample.candidateStartedAt = undefined;
+    }
+    try { return original.apply(this, args); }
+    finally { if (sample) sample.translationPreparationMs += performance.now() - start; }
+  });
   wrap(LiveRegistry.prototype, 'validate', function (original, args) {
     const sample = current;
     const start = performance.now();
-    if (sample?.candidateStartedAt !== undefined) sample.readAndCandidateMs += start - sample.candidateStartedAt;
     try { return original.apply(this, args); }
     finally { if (sample) sample.validationMs += performance.now() - start; }
   });
@@ -41,7 +50,7 @@ export function createStageProbe() {
     });
   }
   return {
-    begin() { current = { readAndCandidateMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 }; },
+    begin() { current = { readAndCandidateMs: 0, translationPreparationMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 }; },
     finish() {
       if (!current || !Number.isFinite(current.queueToDrainMs) || !current.drains) throw new Error('Missing server stage sample.');
       const { firstEventAt, candidateStartedAt, ...result } = current;

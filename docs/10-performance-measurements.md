@@ -164,3 +164,33 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 같은 앱의 초기 JS를 비교하면 vanilla는 원본 25,599 B·gzip 6,860 B(34.9%) 감소, React는 원본 25,621 B·gzip 7,102 B(7.7%) 감소다. React의 en/demo 동적 import 청크는 두 빌드에서 모두 유지됐고 원본 크기는 3,774 B로 같았다. 모든 빌드에서 초기 JS는 1청크였고, vanilla는 지연 청크 0개, React는 1개였다. parser 오류 표식 `EXPECT_ARGUMENT_CLOSING_BRACE`는 각 앱의 false 초기 JS에 존재하고 true에서는 모든 JS에서 사라졌다. 측정 입력과 React 생성 타입의 hash도 빌드 전후 같았다.
 
 React 수치에는 React·ReactDOM·데모 UI가 포함되므로 위 합계를 Saylo 단독 런타임 크기로 쓰거나 vanilla 합계와 단순 비교하지 않는다. HTML·CSS·source map·HTTP 헤더·Brotli·SSR·로드 시간은 제외했다. 빌드별 session UUID가 무작위여서 gzip과 output hash는 재실행 때 조금 달라질 수 있고, 지연 청크의 1 B 차이를 최적화 효과로 보지 않는다. 이 결과는 실제 저장소 데모의 한 번 측정이며 일반 앱·다른 데이터 규모·다른 bundler로 확대하지 않는다. parser 제거는 로컬 구현으로, 게시된 `0.1.0-alpha.1`에는 없다. 라이브 갱신 지연 목표와 Paraglide 비교는 별도 측정으로 남아 있다.
+
+## 격리 구현 후 라이브 반영 재측정 (2026-10-07 KST)
+
+`npm run bench:live -- --out benchmarks/results/live-update-quarantine.json`로 현재 runtime을 빌드한 뒤 측정했다. 기준 revision은 58999f2이고, 그 위의 benchmark `profile.mjs`·`run.mjs` 변경은 결과의 `workingTreeStatus`·`codeHashes`로 식별한다. 라이브러리 코드는 이 측정에서 바꾸지 않았다. 원본 결과는 [live-update-quarantine.json](../benchmarks/results/live-update-quarantine.json), raw sample은 그 파일이 가리키는 시나리오별 `.samples.json`에 있다.
+
+기존 parser run과 같은 warmup 5회·측정 50회·control 25회, CPU profiler 끔 조건이다. namespace 1개, loaded ko+en, 바뀐 메시지 1개·바뀌지 않은 메시지 1개를 렌더하고 en의 probe 키 1개만 수정한다. 환경은 Windows x64, Node v24.18.0, Vite 8.3.2, React 19.3.0, HeadlessChrome 154, AMD Ryzen 5 7430U, logical CPU 12, memory 31.3GiB다. 정상 문구 수정이므로 격리·복원의 오류 경로, 로케일 추가·삭제, paint는 이 run에서 재지 않았다.
+
+| 시나리오 | save→DOM ack p50 | save→DOM ack p95 | save→manifest broadcast p95 | receive→commit p95 | fileWrite p95 | control 왕복 p95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1k×3 로케일 | 63.02ms | 72.26ms | 60.57ms | 5.60ms | 8.96ms | 5.09ms |
+| 10k×20 로케일 | 176.48ms | 209.23ms | 142.61ms | 47.20ms | 10.44ms | 6.68ms |
+
+직전 profiler 없는 parser run의 p95는 small 69.82ms·large 200.63ms였고 이번에는 각각 2.45ms·8.60ms 높았다. p50은 small 62.63→63.02ms, large 181.06→176.48ms다. control 왕복 p95는 small 5.23→5.09ms, large 5.34→6.68ms이고 두 결과는 별도 시점의 단일 run이다. 이 차이를 격리 구현으로 인한 회귀나 개선으로 단정하지 않는다. small은 이번 run에서 100ms 목표 안에 들었고 large는 여전히 넘었다.
+
+이번 계측은 `prepareTranslations` 진입에서 읽기·candidate 구간을 끝내고 번역 준비를 따로 잰다. 과거에는 `validate` 진입에서 끝났다. 격리 구현 뒤 번역 검증의 대부분은 준비 과정으로 옮겨졌으므로 과거 `validationMs`와 이번 최종 검증 시간을 직접 비교하지 않는다. save→DOM ack의 clock과 구간 정의는 그대로다.
+
+| 서버 구간 p95 | small(1k×3) | large(10k×20) |
+| --- | --- | --- |
+| queueToDrainMs(quiet window 포함) | 53.37ms | 54.12ms |
+| readAndCandidateMs(prepareTranslations 진입까지) | 9.29ms | 64.39ms |
+| translationPreparationMs(schema 조회·번역 검증·격리 준비) | 2.29ms | 25.75ms |
+| validationMs(최종 active catalog 검증) | 0.01ms | 0.03ms |
+| registryReplaceMs | 0.64ms | 8.11ms |
+| catalogDeltaMs | 1.88ms | 20.35ms |
+
+각 sample에서 file event와 drain은 1회였다. 두 시나리오 모두 patch 50회·full 0회, 최대 changed message 1개·position 갱신 0개였고, catalog 응답 JSON p95는 small 930 B·large 936 B였다. warmup은 위 집계에서 제외했다. 이 바이트는 서버가 `client.send`에 넘긴 catalog 응답 객체의 JSON이며 manifest·WS 헤더·압축은 포함하지 않는다. 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐고 생성 `.d.ts`의 mtime·size는 바뀌지 않았다. 두 raw 파일은 각각 55개(측정 50개)이며 5개 timing metric·6개 서버 구간·control 요약과 기록된 code hash를 확인했다. 종료 후 임시 fixture·browser profile 디렉터리와 해당 브라우저 프로세스는 남지 않았다.
+
+다음 최적화 후보는 브라우저의 patch 적용·snapshot 생성에서 전체 메시지를 반복 처리하는 부분이다. `catalog-patch.ts`는 메시지 하나가 바뀌어도 전체 메시지 맵을 복사하고 개수를 센다. `loading-registry.ts`의 `createLoadedSnapshot`은 loaded catalog 전체 키를 정렬하고 source를 직렬화해 signature를 만든다. 실제 브라우저 receive→commit p95는 large 47.20ms지만, 이 run에서는 patch 적용·freeze·검증·signature·React commit을 각각 나누지 않았으므로 어느 코드가 얼마를 차지하는지는 아직 확정하지 않는다. 다음 작은 작업은 이 비용을 분리해 확인하고, 변하지 않은 immutable catalog의 정렬·직렬화 재사용을 검토하는 것이다. no-op 갱신의 snapshot 동일성, schema 변경, full resync 동작은 유지한다.
+
+서버 readAndCandidate p95 64.39ms도 남아 있지만 읽기와 파싱은 아직 합쳐진 값이다. 서버 quiet window는 40ms 설정이고 이번 queue p95는 약 54ms였다. 이 구간들을 더해 종단 간 p95로 쓰거나 control 왕복을 빼지 않는다. 로케일 추가 지연과 Paraglide 동일 조건 비교는 후속이며, 현재 수치로 대규모 목표 달성이나 다른 라이브러리 대비 우위를 주장하지 않는다.

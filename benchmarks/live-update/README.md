@@ -40,11 +40,13 @@ npm run bench:live
 
 ## 서버 단계 계측
 
-`profile.mjs`는 benchmark 전용 prototype wrapper다. 라이브러리에 clock이나 profiling API가 없으므로, run 중 `LiveRegistry.prototype`의 `enqueue`·`drain`·`validate`와 `CatalogRegistry.prototype`의 `replace`·`loadDelta`를 임시로 감싸 stage 시간을 모으고 끝나면 원래 메서드로 되돌린다. 결과의 `serverStages`가 이 값이다.
+`profile.mjs`는 benchmark 전용 prototype wrapper다. 라이브러리에 clock이나 profiling API가 없으므로, run 중 `LiveRegistry.prototype`의 `enqueue`·`drain`·`prepareTranslations`·`validate`와 `CatalogRegistry.prototype`의 `replace`·`loadDelta`를 임시로 감싸 stage 시간을 모으고 끝나면 원래 메서드로 되돌린다. 결과의 `serverStages`가 이 값이다.
 
 - `queueToDrainMs`는 첫 파일 이벤트부터 drain 직전까지다. quiet window를 포함한다.
-- `readAndCandidateMs`는 경로 검증·파일 읽기·파싱, candidate 정리, base stat, 직렬화된 drain 대기를 함께 담는다. read와 parse를 따로 뗀 값이 아니다.
-- `validationMs`는 `LiveRegistry.validate`, `registryReplaceMs`는 `CatalogRegistry.replace`, `catalogDeltaMs`는 `CatalogRegistry.loadDelta` 시간이다.
+- `readAndCandidateMs`는 drain 호출부터 `prepareTranslations` 진입까지로, 경로 검증·파일 읽기·파싱, candidate 정리, base stat, 직렬화된 drain 대기를 함께 담는다. read와 parse를 따로 뗀 값이 아니다.
+- `translationPreparationMs`는 `LiveRegistry.prepareTranslations`의 schema 조회·번역 검증·격리 준비 시간이다. 정상 문구 수정에서는 실제로 부적합 번역을 격리하지 않으므로 격리 오류 처리 성능을 측정하는 값이 아니다.
+- `validationMs`는 준비 뒤 active catalog의 최종 `LiveRegistry.validate`, `registryReplaceMs`는 `CatalogRegistry.replace`, `catalogDeltaMs`는 `CatalogRegistry.loadDelta` 시간이다.
+- 격리 구현 전 결과의 `readAndCandidateMs`는 `validate` 진입까지였고 `translationPreparationMs`는 없었다. 그 당시 번역 검증은 `validationMs`에 들어갔다. 새 구간 수치와 과거 구간 수치를 직접 비교하지 않는다. save→DOM ack의 clock·구간 정의는 그대로다.
 - stage p95는 서로 더하거나 종단 간 값으로 환산하지 않는다.
 
 ## CPU 프로파일
@@ -69,7 +71,9 @@ node benchmarks/live-update/parse-compare.mjs 4d1f6fc benchmarks/results/parse-c
 
 parser 최적화 측정은 [../results/live-update-profile-before.json](../results/live-update-profile-before.json), [../results/live-update-profile-context-trial.json](../results/live-update-profile-context-trial.json), [../results/live-update-profile-after.json](../results/live-update-profile-after.json)(profiler 켬)와 [../results/live-update-parser.json](../results/live-update-parser.json)(profiler 끔, 두 시나리오)에 있다. 파서 자체 비교는 [../results/parse-compare.json](../results/parse-compare.json)에 있다.
 
-결과 파일은 `codeHashes`로 실제 실행한 파일을 식별한다. `measuredFiles`의 core·vite `dist`와 `profile.mjs`·`channel.mjs`·`run.mjs`의 sha256을 담는다. 최적화 trial은 대개 같은 `gitRevision` 위의 uncommitted 변경이라 revision만으로 어느 runtime을 쟀는지 구분되지 않는다. `codeHashes`가 그 구분을 남기고, [../results/live-update-profile-after.json](../results/live-update-profile-after.json)과 [../results/live-update-parser.json](../results/live-update-parser.json)은 hash가 같아 같은 runtime이다. `codeHashes`가 없는 이전 결과는 `gitRevision`과 변경 내용으로 구분한다.
+격리 구현 후 현재 코드의 재측정은 [../results/live-update-quarantine.json](../results/live-update-quarantine.json)에 있다. `npm run bench:live -- --out benchmarks/results/live-update-quarantine.json`로 두 시나리오를 기본 옵션(warmup 5·측정 50·control 25, CPU profiler 끔)으로 실행했다. 새 서버 구간 경계는 위 계측 정의를 따른다. 정상 문구만 수정했으므로 실제 격리·복원 처리 지연은 측정하지 않았다.
+
+결과 파일은 `codeHashes`로 측정에 관련된 선택 파일을 식별한다. `measuredFiles`의 core·vite·typegen `dist`와 `profile.mjs`·`channel.mjs`·`run.mjs`의 sha256을 담는다. 격리 구현 후 재측정부터 `translation-quarantine.js`·`app.jsx`·fixture·통계 함수·lockfile과 `workingTreeStatus`도 기록한다. 최적화 trial은 대개 같은 `gitRevision` 위의 uncommitted 변경이라 revision만으로 어느 runtime을 쟀는지 구분되지 않는다. `codeHashes`가 그 구분을 남기고, [../results/live-update-profile-after.json](../results/live-update-profile-after.json)과 [../results/live-update-parser.json](../results/live-update-parser.json)은 hash가 같아 같은 runtime이다. `codeHashes`가 없는 이전 결과는 `gitRevision`과 변경 내용으로 구분한다.
 
 ## wire 크기 재구성
 

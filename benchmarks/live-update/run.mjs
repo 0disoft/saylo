@@ -48,8 +48,9 @@ const executable = await browserExecutable();
 // Include the actual loaded modules, so uncommitted optimization trials are identifiable.
 const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json.js',
   'packages/core/dist/diagnostics.js', 'packages/core/dist/schema.js', 'packages/typegen/dist/catalog-files.js',
-  'packages/vite/dist/live-registry.js', 'packages/vite/dist/catalog-registry.js', 'packages/vite/dist/catalog-patch.js',
-  'benchmarks/live-update/profile.mjs', 'benchmarks/live-update/channel.mjs', 'benchmarks/live-update/run.mjs'];
+  'packages/vite/dist/live-registry.js', 'packages/vite/dist/translation-quarantine.js', 'packages/vite/dist/catalog-registry.js', 'packages/vite/dist/catalog-patch.js',
+  'benchmarks/live-update/profile.mjs', 'benchmarks/live-update/channel.mjs', 'benchmarks/live-update/run.mjs',
+  'benchmarks/live-update/app.jsx', 'benchmarks/live-update/fixture.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json'];
 const codeHashes = Object.fromEntries(await Promise.all(measuredFiles.map(async file =>
   [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
 
@@ -116,8 +117,8 @@ async function runScenario(scenario) {
         maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),
         catalogReplyBytes: { p50Bytes: replySizes.p50Ms, p95Bytes: replySizes.p95Ms, minBytes: replySizes.minMs, maxBytes: replySizes.maxMs } },
       browserBootMs: readyAt - launchedAt, summary, controlRoundTrip: summarize(collected.roundTrips),
-      serverStages: { scope: 'Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; stage p95s must not be added.',
-        ...Object.fromEntries(['queueToDrainMs', 'readAndCandidateMs', 'validationMs', 'registryReplaceMs', 'catalogDeltaMs']
+      serverStages: { scope: 'Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.',
+        ...Object.fromEntries(['queueToDrainMs', 'readAndCandidateMs', 'translationPreparationMs', 'validationMs', 'registryReplaceMs', 'catalogDeltaMs']
           .map(metric => [metric, summarize(measured.map(sample => sample.serverStages[metric]))])),
         maxFileEvents: Math.max(...measured.map(sample => sample.serverStages.fileEvents)),
         maxDrains: Math.max(...measured.map(sample => sample.serverStages.drains)) },
@@ -144,6 +145,7 @@ for (const scenario of selected) {
 }
 const output = { schema: 'saylo-live-update-benchmark-v1', measuredAt: new Date().toISOString(),
   gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(), settings,
+  workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(),
   codeHashes,
   environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
     cpu: os.cpus()[0]?.model, logicalCpus: os.cpus().length, memoryGiB: os.totalmem() / 1024 ** 3,
