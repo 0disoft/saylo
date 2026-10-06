@@ -121,6 +121,8 @@ node benchmarks/live-update/parse-compare.mjs 4d1f6fc benchmarks/results/parse-c
 
 첫 인자는 baseline revision, 둘째는 결과 경로다. 결과는 warmup 뒤 pair별 `beforeMs`·`afterMs`·`afterMinusBeforeMs`, `before`·`after` 요약, `pairedDifference`, `currentCodeHashes`를 담는다.
 
+선택적 세 번째 인자 `cold`는 previous catalog 없이 매번 새 AST·인자 schema를 만드는 비교다. 기본 `incremental`의 warmup 50·측정 100쌍을 유지하고 cold는 warmup 5·측정 20쌍이다. source 준비·동등성 검사는 timing에서 제외하며 매 pair의 parsed catalog 전체를 대조한다. 단순 메시지 최적화는 `node benchmarks/live-update/parse-compare.mjs a7367b9 benchmarks/results/parse-compare-simple-cold.json cold`로 확인했다. 동일 설정의 로케일 추가 재측정과 p95 미개선 결과도 [../../docs/15-simple-message-parser.md](../../docs/15-simple-message-parser.md)에 함께 남겼다.
+
 ## 결과
 
 결과는 기본 경로 [../results/live-update.json](../results/live-update.json)에 남고 `--out`으로 경로를 바꿀 수 있다. 최적화 후 재측정은 [../results/live-update-optimized.json](../results/live-update-optimized.json)에 있다. request-scoped patch 적용 후 첫 run과 같은 코드·fixture 재실행은 [../results/live-update-patch.json](../results/live-update-patch.json)와 [../results/live-update-patch-repeat.json](../results/live-update-patch-repeat.json)에 있다. 두 run 결과를 모두 보존한다. patch 결과의 `gitRevision` 793d94f는 측정 대상 core·Vite 코드 변경을 가리키고, patch wire 관측 계측기(app.jsx·channel.mjs·run.mjs)와 raw 결과는 별도 measurement 커밋에 함께 들어간다. 각 파일은 환경(Node·OS·CPU·memory·Vite·React·브라우저 UA), git revision, UTC `measuredAt`, 시나리오 차원과 파일 바이트, 시나리오별 summary와 control 왕복 raw 값을 담는다. 시나리오별 raw sample(기본값은 warmup 포함 55개)은 결과 파일이 `samplesFile`로 가리키는 `live-update.<case>.samples.json`에 따로 둔다.

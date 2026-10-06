@@ -53,4 +53,4 @@ Node 24.18.0·Windows x64·Vite 8.3.2·React 19.3.0·HeadlessChrome 154에서 wa
 
 기존 [50회 계측 없는 run](12-locale-add-measurements.md)의 large 목록 p95 3,437.01ms와 이번 1,808.23ms는 실행 시점·부하·sample 수·계측 유무가 다르다. 성능 개선으로 해석하지 않는다. 현재 구조의 주요 수집 비용을 식별한 단일 run이며 아직 250ms 목표를 달성하지 못했다.
 
-다음 작업은 새 카탈로그의 cold 파싱 비용을 줄이는 한 커밋이다. 기존 파서 내부 계측으로 JSON/token 처리와 메시지별 ICU·인자 추론·동결 중 개선할 구간을 좁힐 수 있다. locale-aware ICU 처리, 오류 위치, 중복 ID 거부와 immutable catalog 계약을 유지해야 한다. 이번 단계에서 parser 변경이나 선택 뒤 full 응답 최적화는 하지 않았다.
+후속 단순 메시지 파싱 최적화와 cold 교차 비교는 [15-simple-message-parser.md](15-simple-message-parser.md)에 기록했다. locale-aware ICU 처리, 오류 위치, 중복 ID 거부와 immutable catalog 계약을 유지해야 한다. 이 14번 기록 단계에서는 parser 변경이나 선택 뒤 full 응답 최적화를 하지 않았다.

@@ -70,7 +70,7 @@
 | message delta 비용 | request-scoped message delta·immutable catalog signature 재사용·LF 위치 색인 최적화를 로컬 구현했다. 2026-10-07 최종 서버 파일 계측 설정에서 small p95 72.66ms·large 165.94ms였고 각각 측정 50회 모두 patch였다. 파서 key 디코딩 trial은 되돌렸다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. JSON token/임시 entry·메시지 맵 할당, 브라우저 patch 복사·검증 순회, 로케일 추가 시 cold 파싱·full 전송 최적화와 비교 실험이 남아 있다. 조건·되돌린 실험·부하 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [11-parser-measurements.md](11-parser-measurements.md)를 따른다 |
 | 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 비교 실험은 아직 실시하지 않았다 |
 
-대규모 로케일 추가는 서버 파일 구간 계측을 연결해 10회 측정했다. 목록 표시 p95 1,808.23ms, cold 카탈로그 파싱 p95 1,132.23ms였고 10회 모두 파싱이 다른 개별 수집 구간보다 컸다. 다음 대상은 cold 파싱 비용이다. 기존 50회 run 대비 개선 주장은 하지 않으며 조건·한계는 [14-locale-add-server-measurements.md](14-locale-add-server-measurements.md)를 따른다.
+대규모 로케일 추가의 서버 구간 계측([14](14-locale-add-server-measurements.md))에서 cold 파싱을 다음 대상으로 확인했다. 이후 일반 텍스트·ASCII 단순 인자용 경로를 로컬 구현했다. 같은 프로세스 cold 비교 20쌍 중 18쌍이 빨랐지만 parser p95는 개선되지 않았다. 실제 대규모 목록 표시 p95는 514.47ms로 관측했으며 250ms 목표는 미달이다. 조건·원시 결과·부하 한계는 [15-simple-message-parser.md](15-simple-message-parser.md)를 따른다. full catalog 선택 비용과 추가 파싱 최적화가 남아 있다.
 
 ## 다른 도구와의 관계
 

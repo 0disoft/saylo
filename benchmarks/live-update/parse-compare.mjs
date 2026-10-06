@@ -14,6 +14,10 @@ const repository = fileURLToPath(new URL('../..', import.meta.url));
 const benchmarkDirectory = path.join(repository, 'benchmarks');
 const baseline = process.argv[2] ?? 'HEAD';
 const out = path.resolve(process.argv[3] ?? 'benchmarks/results/parse-compare.json');
+const mode = process.argv[4] ?? 'incremental';
+if (!['incremental', 'cold'].includes(mode)) throw new Error('Parser mode must be incremental or cold.');
+const warmup = mode === 'cold' ? 5 : 50;
+const pairs = mode === 'cold' ? 20 : 100;
 const exec = promisify(execFile);
 const temporary = await mkdtemp(path.join(benchmarkDirectory, '.live-update-parser-'));
 try {
@@ -32,31 +36,33 @@ try {
   const original = (await import(pathToFileURL(path.join(temporary, 'dist/catalog.js')).href)).parseCatalog;
   const messages = { probe: 'saylo:00000' };
   for (let index = 1; index < 10000; index++) messages[`message${index}`] = `en Message ${index} {name}`;
-  const options = { locale: 'en', namespace: 'bench', sourceName: 'en/bench.json' };
+  const options = { locale: mode === 'cold' ? 'en-GB' : 'en', namespace: 'bench', sourceName: mode === 'cold' ? 'en-GB/bench.json' : 'en/bench.json' };
   const parsers = [original, parseCatalog];
   const previous = parsers.map(parser => parser(JSON.stringify(messages), options));
   const samples = [];
-  for (let index = 0; index < 150; index++) {
+  for (let index = 0; index < warmup + pairs; index++) {
     messages.probe = `saylo:${String(index).padStart(5, '0')}`;
     const source = JSON.stringify(messages);
     const durations = [];
     const order = index % 2 ? [1, 0] : [0, 1];
     for (const variant of order) {
       const started = performance.now();
-      previous[variant] = parsers[variant](source, options, previous[variant]);
+      previous[variant] = parsers[variant](source, options, mode === 'cold' ? undefined : previous[variant]);
       durations[variant] = performance.now() - started;
     }
     assert.deepEqual(previous[0], previous[1]);
-    if (index >= 50) samples.push({ beforeMs: durations[0], afterMs: durations[1], afterMinusBeforeMs: durations[1] - durations[0] });
+    if (index >= warmup) samples.push({ beforeMs: durations[0], afterMs: durations[1], afterMinusBeforeMs: durations[1] - durations[0] });
   }
-  const hashes = Object.fromEntries(await Promise.all(['catalog.js', 'json.js'].map(async name =>
+  const hashes = Object.fromEntries(await Promise.all(['catalog.js', 'json.js', 'simple-message.js', 'schema.js', 'diagnostics.js'].map(async name =>
     [name, createHash('sha256').update(await readFile(path.join(repository, 'packages/core/dist', name))).digest('hex')])));
   const differences = samples.map(sample => sample.afterMinusBeforeMs).sort((a, b) => a - b);
   const result = { schema: 'saylo-parser-comparison-v1', measuredAt: new Date().toISOString(), baselineRevision,
-    currentCodeHashes: hashes, node: process.version, messages: 10000, warmup: 50, measuredPairs: samples.length,
-    scope: 'Same-process alternating incremental parser calls; one same-length value edit; excludes JSON.stringify, equality checks, disk, watcher, validation and browser.',
+    currentCodeHashes: hashes, node: process.version, mode, messages: 10000, warmup, measuredPairs: samples.length,
+    scope: mode === 'cold'
+      ? 'Same-process alternating cold parser calls with no previous catalog; fresh ICU AST/argument objects for 10k plain/ASCII argument messages; excludes JSON.stringify, equality checks, disk, watcher, translation validation and browser.'
+      : 'Same-process alternating incremental parser calls; one same-length value edit; excludes JSON.stringify, equality checks, disk, watcher, validation and browser.',
     before: summarize(samples.map(sample => sample.beforeMs)), after: summarize(samples.map(sample => sample.afterMs)),
-    pairedDifference: { medianMs: differences[49], p95Ms: differences[94], improvedPairs: differences.filter(value => value < 0).length }, samples };
+    pairedDifference: { medianMs: differences[Math.ceil(samples.length * 0.5) - 1], p95Ms: differences[Math.ceil(samples.length * 0.95) - 1], improvedPairs: differences.filter(value => value < 0).length }, samples };
   await mkdir(path.dirname(out), { recursive: true });
   await writeFile(out, `${JSON.stringify(result, null, 2)}\n`);
   console.log(JSON.stringify({ before: result.before, after: result.after, pairedDifference: result.pairedDifference }, null, 2));
