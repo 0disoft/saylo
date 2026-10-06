@@ -1,0 +1,1333 @@
+{
+  "measuredAt": "2026-10-06T16:40:39.089Z",
+  "gitRevision": "d64199c6b0224fb75ce53e4922044b9872b751b3",
+  "workingTreeStatus": "M packages/core/src/diagnostics.ts\n M packages/core/test/catalog.test.mjs\n?? benchmarks/results/live-update-key.10k-20-locales.samples.json\n?? benchmarks/results/live-update-key.1k-3-locales.samples.json\n?? benchmarks/results/live-update-key.json\n?? benchmarks/results/parse-compare-key.json\n?? benchmarks/results/parser-stages-key-after.json",
+  "node": "v24.18.0",
+  "settings": {
+    "warmup": 10,
+    "samples": 50
+  },
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "4923cee24e118548901554268bd44126325e207d7ba15f624a8e74da9c55680a",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/diagnostics.js": "5efe48b5d153f843ac39de31d8f3b115a850092e15efd931b0972448dddb4ee6",
+    "benchmarks/live-update/parser-stages.mjs": "e960353804156b88ae151adc62cace632f2c06933f82457ad94a67964d9a9072",
+    "benchmarks/live-update/parser-probe.mjs": "a2cbebc0749709c447c93367980c6d38b1c02b0c03d6e778bf1c4eced63d0fc9",
+    "package-lock.json": "376fef212eb14bf1c3fad0514dac30e3ce9de7ab5892e5fb8a710c31edbe8078"
+  },
+  "scope": "Synchronous parser-only benchmark, one same-length probe edit; immutable prior catalog; input stringify, disk, watcher, validation and browser excluded. tokenScan includes key decoding; json includes strictJson and tokenScan. Nested p95s must not be added. Clock overhead included.",
+  "results": [
+    {
+      "messagesPerLocale": 1000,
+      "summary": {
+        "totalMs": {
+          "count": 50,
+          "p50Ms": 2.6058000000000447,
+          "p95Ms": 4.691200000000038,
+          "minMs": 1.7180999999999926,
+          "maxMs": 6.166399999999953
+        },
+        "jsonMs": {
+          "count": 50,
+          "p50Ms": 1.576599999999985,
+          "p95Ms": 2.7613999999999805,
+          "minMs": 1.085300000000018,
+          "maxMs": 4.604600000000005
+        },
+        "strictJsonMs": {
+          "count": 50,
+          "p50Ms": 0.4432000000000471,
+          "p95Ms": 1.0795999999999708,
+          "minMs": 0.30930000000000746,
+          "maxMs": 2.288499999999999
+        },
+        "tokenScanMs": {
+          "count": 50,
+          "p50Ms": 0.9576000000000136,
+          "p95Ms": 2.081200000000024,
+          "minMs": 0.7135999999999854,
+          "maxMs": 3.7742999999999824
+        },
+        "positionIndexMs": {
+          "count": 50,
+          "p50Ms": 0.00879999999995107,
+          "p95Ms": 0.014400000000023283,
+          "minMs": 0.004899999999963711,
+          "maxMs": 0.030300000000011096
+        },
+        "messageLoopMs": {
+          "count": 50,
+          "p50Ms": 0.43250000000000455,
+          "p95Ms": 1.1118000000000166,
+          "minMs": 0.23879999999996926,
+          "maxMs": 1.869199999999978
+        },
+        "freezeMs": {
+          "count": 50,
+          "p50Ms": 0.45879999999999654,
+          "p95Ms": 0.8254999999999768,
+          "minMs": 0.3499999999999659,
+          "maxMs": 1.237199999999973
+        }
+      },
+      "samples": [
+        {
+          "warmup": true,
+          "totalMs": 10.191300000000012,
+          "jsonMs": 7.533500000000004,
+          "strictJsonMs": 0.6483000000000061,
+          "tokenScanMs": 6.814899999999994,
+          "positionIndexMs": 0.021600000000006503,
+          "messageLoopMs": 1.7068000000000154,
+          "freezeMs": 0.566299999999984
+        },
+        {
+          "warmup": true,
+          "totalMs": 6.391600000000011,
+          "jsonMs": 4.008499999999998,
+          "strictJsonMs": 0.8093999999999824,
+          "tokenScanMs": 3.135799999999989,
+          "positionIndexMs": 0.021500000000003183,
+          "messageLoopMs": 1.4632000000000005,
+          "freezeMs": 0.7738999999999976
+        },
+        {
+          "warmup": true,
+          "totalMs": 4.0449999999999875,
+          "jsonMs": 2.770800000000037,
+          "strictJsonMs": 0.8000000000000114,
+          "tokenScanMs": 1.9444000000000017,
+          "positionIndexMs": 0.013599999999996726,
+          "messageLoopMs": 0.547999999999945,
+          "freezeMs": 0.5603000000000407
+        },
+        {
+          "warmup": true,
+          "totalMs": 4.697799999999972,
+          "jsonMs": 3.812000000000012,
+          "strictJsonMs": 0.6564999999999941,
+          "tokenScanMs": 3.1369000000000256,
+          "positionIndexMs": 0.015800000000012915,
+          "messageLoopMs": 0.3953000000000202,
+          "freezeMs": 0.3953999999999951
+        },
+        {
+          "warmup": true,
+          "totalMs": 3.1884999999999764,
+          "jsonMs": 1.3670999999999935,
+          "strictJsonMs": 0.4531000000000063,
+          "tokenScanMs": 0.9034000000000333,
+          "positionIndexMs": 0.014299999999991542,
+          "messageLoopMs": 1.1064999999999827,
+          "freezeMs": 0.6161000000000172
+        },
+        {
+          "warmup": true,
+          "totalMs": 3.8392000000000053,
+          "jsonMs": 2.11220000000003,
+          "strictJsonMs": 0.6845000000000141,
+          "tokenScanMs": 1.41640000000001,
+          "positionIndexMs": 0.016899999999964166,
+          "messageLoopMs": 0.6740999999999531,
+          "freezeMs": 0.9266999999999825
+        },
+        {
+          "warmup": true,
+          "totalMs": 3.5125999999999635,
+          "jsonMs": 1.9816000000000145,
+          "strictJsonMs": 0.6899999999999977,
+          "tokenScanMs": 1.2823000000000206,
+          "positionIndexMs": 0.019900000000006912,
+          "messageLoopMs": 0.6741999999999848,
+          "freezeMs": 0.7194999999999823
+        },
+        {
+          "warmup": true,
+          "totalMs": 4.187199999999962,
+          "jsonMs": 2.786800000000028,
+          "strictJsonMs": 1.203300000000013,
+          "tokenScanMs": 1.5688000000000102,
+          "positionIndexMs": 0.02039999999999509,
+          "messageLoopMs": 0.6118000000000166,
+          "freezeMs": 0.6783999999999537
+        },
+        {
+          "warmup": true,
+          "totalMs": 4.293799999999976,
+          "jsonMs": 2.551300000000026,
+          "strictJsonMs": 0.6867000000000303,
+          "tokenScanMs": 1.8525999999999954,
+          "positionIndexMs": 0.044699999999977535,
+          "messageLoopMs": 0.7379000000000246,
+          "freezeMs": 0.8365999999999758
+        },
+        {
+          "warmup": true,
+          "totalMs": 2.4536999999999694,
+          "jsonMs": 1.4576999999999884,
+          "strictJsonMs": 0.5815000000000055,
+          "tokenScanMs": 0.8693000000000097,
+          "positionIndexMs": 0.008200000000044838,
+          "messageLoopMs": 0.4800000000000182,
+          "freezeMs": 0.4045000000000414
+        },
+        {
+          "warmup": false,
+          "totalMs": 4.691200000000038,
+          "jsonMs": 2.290200000000027,
+          "strictJsonMs": 0.6774000000000342,
+          "tokenScanMs": 1.6064000000000078,
+          "positionIndexMs": 0.00889999999998281,
+          "messageLoopMs": 1.869199999999978,
+          "freezeMs": 0.43840000000000146
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.050800000000038,
+          "jsonMs": 1.2504000000000133,
+          "strictJsonMs": 0.4703999999999837,
+          "tokenScanMs": 0.7764999999999986,
+          "positionIndexMs": 0.005999999999971806,
+          "messageLoopMs": 0.342899999999986,
+          "freezeMs": 0.3994000000000142
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.9200999999999908,
+          "jsonMs": 1.1919000000000324,
+          "strictJsonMs": 0.4130999999999858,
+          "tokenScanMs": 0.7748999999999455,
+          "positionIndexMs": 0.006099999999946704,
+          "messageLoopMs": 0.3009000000000128,
+          "freezeMs": 0.37649999999996453
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.568899999999985,
+          "jsonMs": 1.4956000000000245,
+          "strictJsonMs": 0.30930000000000746,
+          "tokenScanMs": 1.1821999999999662,
+          "positionIndexMs": 0.007599999999968077,
+          "messageLoopMs": 0.5307000000000244,
+          "freezeMs": 0.4742999999999711
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.1224000000000274,
+          "jsonMs": 1.2507000000000517,
+          "strictJsonMs": 0.4309000000000083,
+          "tokenScanMs": 0.8138000000000147,
+          "positionIndexMs": 0.006199999999978445,
+          "messageLoopMs": 1.1118000000000166,
+          "freezeMs": 0.6506999999999721
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.8799999999999955,
+          "jsonMs": 2.072399999999959,
+          "strictJsonMs": 0.5886999999999603,
+          "tokenScanMs": 1.477800000000002,
+          "positionIndexMs": 0.011799999999993815,
+          "messageLoopMs": 0.33089999999998554,
+          "freezeMs": 0.40200000000004366
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.9102999999999497,
+          "jsonMs": 1.1873999999999683,
+          "strictJsonMs": 0.3994999999999891,
+          "tokenScanMs": 0.7837999999999852,
+          "positionIndexMs": 0.005899999999996908,
+          "messageLoopMs": 0.2837999999999852,
+          "freezeMs": 0.39210000000002765
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.7180999999999926,
+          "jsonMs": 1.0962999999999852,
+          "strictJsonMs": 0.30930000000000746,
+          "tokenScanMs": 0.7848999999999933,
+          "positionIndexMs": 0.004899999999963711,
+          "messageLoopMs": 0.23879999999996926,
+          "freezeMs": 0.3499999999999659
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.2900999999999954,
+          "jsonMs": 1.6245000000000118,
+          "strictJsonMs": 0.33909999999997353,
+          "tokenScanMs": 1.282100000000014,
+          "positionIndexMs": 0.006100000000003547,
+          "messageLoopMs": 0.2545000000000073,
+          "freezeMs": 0.36700000000001864
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.3682999999999765,
+          "jsonMs": 1.3243999999999687,
+          "strictJsonMs": 0.3130999999999631,
+          "tokenScanMs": 1.007000000000005,
+          "positionIndexMs": 0.009200000000021191,
+          "messageLoopMs": 0.42880000000002383,
+          "freezeMs": 0.547999999999945
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.2986999999999966,
+          "jsonMs": 1.3389999999999986,
+          "strictJsonMs": 0.5343999999999482,
+          "tokenScanMs": 0.7991000000000099,
+          "positionIndexMs": 0.006599999999991724,
+          "messageLoopMs": 0.42480000000000473,
+          "freezeMs": 0.4522999999999797
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.2275999999999954,
+          "jsonMs": 1.2767000000000053,
+          "strictJsonMs": 0.4193000000000211,
+          "tokenScanMs": 0.8536000000000286,
+          "positionIndexMs": 0.009700000000009368,
+          "messageLoopMs": 0.4386000000000081,
+          "freezeMs": 0.441599999999994
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.041499999999985,
+          "jsonMs": 1.972500000000025,
+          "strictJsonMs": 0.4432000000000471,
+          "tokenScanMs": 1.5230999999999995,
+          "positionIndexMs": 0.010199999999997544,
+          "messageLoopMs": 0.5428999999999746,
+          "freezeMs": 0.4352999999999838
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.949799999999982,
+          "jsonMs": 1.1562000000000126,
+          "strictJsonMs": 0.38280000000003156,
+          "tokenScanMs": 0.7706999999999766,
+          "positionIndexMs": 0.0056000000000153705,
+          "messageLoopMs": 0.3123000000000502,
+          "freezeMs": 0.4293999999999869
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.9438000000000102,
+          "jsonMs": 1.1405000000000314,
+          "strictJsonMs": 0.3321000000000254,
+          "tokenScanMs": 0.8061000000000149,
+          "positionIndexMs": 0.0056000000000153705,
+          "messageLoopMs": 0.33590000000003783,
+          "freezeMs": 0.37630000000001473
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.5083999999999946,
+          "jsonMs": 1.1157999999999788,
+          "strictJsonMs": 0.32490000000001373,
+          "tokenScanMs": 0.7888000000000375,
+          "positionIndexMs": 0.005899999999996908,
+          "messageLoopMs": 0.7404999999999973,
+          "freezeMs": 0.6052000000000248
+        },
+        {
+          "warmup": false,
+          "totalMs": 5.364500000000021,
+          "jsonMs": 3.981999999999971,
+          "strictJsonMs": 2.288499999999999,
+          "tokenScanMs": 1.682799999999986,
+          "positionIndexMs": 0.013299999999958345,
+          "messageLoopMs": 0.6361999999999739,
+          "freezeMs": 0.6433000000000106
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.6621999999999844,
+          "jsonMs": 2.2749999999999773,
+          "strictJsonMs": 0.6811999999999898,
+          "tokenScanMs": 1.520399999999995,
+          "positionIndexMs": 0.012299999999981992,
+          "messageLoopMs": 0.6379000000000019,
+          "freezeMs": 0.6455000000000268
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.625499999999988,
+          "jsonMs": 2.204999999999984,
+          "strictJsonMs": 0.7246000000000095,
+          "tokenScanMs": 1.4757999999999925,
+          "positionIndexMs": 0.010600000000010823,
+          "messageLoopMs": 0.5955000000000155,
+          "freezeMs": 0.740099999999984
+        },
+        {
+          "warmup": false,
+          "totalMs": 6.166399999999953,
+          "jsonMs": 4.604600000000005,
+          "strictJsonMs": 0.7445000000000164,
+          "tokenScanMs": 3.7742999999999824,
+          "positionIndexMs": 0.014400000000023283,
+          "messageLoopMs": 0.7452999999999861,
+          "freezeMs": 0.6961000000000013
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.984100000000012,
+          "jsonMs": 2.5772999999999797,
+          "strictJsonMs": 1.3659999999999854,
+          "tokenScanMs": 1.202600000000018,
+          "positionIndexMs": 0.010500000000035925,
+          "messageLoopMs": 0.6333000000000197,
+          "freezeMs": 0.6648000000000138
+        },
+        {
+          "warmup": false,
+          "totalMs": 4.128300000000024,
+          "jsonMs": 2.7427000000000135,
+          "strictJsonMs": 0.7133999999999787,
+          "tokenScanMs": 2.0224999999999795,
+          "positionIndexMs": 0.012799999999970169,
+          "messageLoopMs": 0.6073000000000093,
+          "freezeMs": 0.666499999999985
+        },
+        {
+          "warmup": false,
+          "totalMs": 4.009800000000041,
+          "jsonMs": 2.145500000000027,
+          "strictJsonMs": 0.6508999999999787,
+          "tokenScanMs": 1.4886000000000195,
+          "positionIndexMs": 0.011500000000012278,
+          "messageLoopMs": 0.6451999999999884,
+          "freezeMs": 1.1186999999999898
+        },
+        {
+          "warmup": false,
+          "totalMs": 4.672799999999995,
+          "jsonMs": 2.7613999999999805,
+          "strictJsonMs": 0.6680999999999813,
+          "tokenScanMs": 2.081200000000024,
+          "positionIndexMs": 0.01239999999995689,
+          "messageLoopMs": 0.5655000000000427,
+          "freezeMs": 1.237199999999973
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.9518999999999664,
+          "jsonMs": 1.9841000000000122,
+          "strictJsonMs": 1.042699999999968,
+          "tokenScanMs": 0.9320999999999913,
+          "positionIndexMs": 0.009000000000014552,
+          "messageLoopMs": 0.42669999999998254,
+          "freezeMs": 0.4508000000000152
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.8736999999999853,
+          "jsonMs": 1.7282000000000153,
+          "strictJsonMs": 0.34440000000000737,
+          "tokenScanMs": 1.3788000000000125,
+          "positionIndexMs": 0.009399999999970987,
+          "messageLoopMs": 0.41550000000000864,
+          "freezeMs": 0.6567000000000007
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.7087000000000216,
+          "jsonMs": 2.1691000000000145,
+          "strictJsonMs": 0.5960000000000036,
+          "tokenScanMs": 1.5646999999999593,
+          "positionIndexMs": 0.009999999999990905,
+          "messageLoopMs": 0.7370999999999981,
+          "freezeMs": 0.7023000000000366
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.556100000000015,
+          "jsonMs": 2.297300000000007,
+          "strictJsonMs": 0.6392999999999915,
+          "tokenScanMs": 1.6474000000000046,
+          "positionIndexMs": 0.013599999999996726,
+          "messageLoopMs": 0.6596000000000117,
+          "freezeMs": 0.47210000000001173
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.706800000000044,
+          "jsonMs": 2.2730000000000246,
+          "strictJsonMs": 0.4393999999999778,
+          "tokenScanMs": 1.8257999999999583,
+          "positionIndexMs": 0.011300000000005639,
+          "messageLoopMs": 0.8847000000000094,
+          "freezeMs": 0.45879999999999654
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.7391000000000076,
+          "jsonMs": 1.7691000000000372,
+          "strictJsonMs": 0.9010000000000105,
+          "tokenScanMs": 0.8605000000000018,
+          "positionIndexMs": 0.008300000000019736,
+          "messageLoopMs": 0.4334999999999809,
+          "freezeMs": 0.4289999999999736
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.992999999999995,
+          "jsonMs": 1.2678999999999974,
+          "strictJsonMs": 0.4522000000000048,
+          "tokenScanMs": 0.8117000000000303,
+          "positionIndexMs": 0.006599999999991724,
+          "messageLoopMs": 0.2855000000000132,
+          "freezeMs": 0.3823000000000434
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.5085000000000264,
+          "jsonMs": 1.1043000000000234,
+          "strictJsonMs": 0.32679999999999154,
+          "tokenScanMs": 0.7753999999999905,
+          "positionIndexMs": 0.008000000000038199,
+          "messageLoopMs": 0.9174000000000433,
+          "freezeMs": 0.432899999999961
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.936399999999992,
+          "jsonMs": 2.6668999999999983,
+          "strictJsonMs": 0.4744000000000028,
+          "tokenScanMs": 2.183499999999981,
+          "positionIndexMs": 0.010800000000017462,
+          "messageLoopMs": 0.5178999999999974,
+          "freezeMs": 0.6539999999999964
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.8922000000000025,
+          "jsonMs": 1.693300000000022,
+          "strictJsonMs": 0.4390000000000214,
+          "tokenScanMs": 1.2498999999999683,
+          "positionIndexMs": 0.010100000000022646,
+          "messageLoopMs": 0.4703999999999837,
+          "freezeMs": 0.6455000000000268
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.453700000000026,
+          "jsonMs": 2.565400000000011,
+          "strictJsonMs": 1.0795999999999708,
+          "tokenScanMs": 1.4782000000000153,
+          "positionIndexMs": 0.008600000000001273,
+          "messageLoopMs": 0.37599999999997635,
+          "freezeMs": 0.429300000000012
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.8390999999999735,
+          "jsonMs": 1.1000000000000227,
+          "strictJsonMs": 0.3842999999999961,
+          "tokenScanMs": 0.7135999999999854,
+          "positionIndexMs": 0.005999999999971806,
+          "messageLoopMs": 0.268100000000004,
+          "freezeMs": 0.4235999999999649
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.076999999999998,
+          "jsonMs": 1.085300000000018,
+          "strictJsonMs": 0.3143000000000029,
+          "tokenScanMs": 0.7696000000000254,
+          "positionIndexMs": 0.005400000000008731,
+          "messageLoopMs": 0.26279999999997017,
+          "freezeMs": 0.6872999999999934
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.6089000000000055,
+          "jsonMs": 1.6476000000000113,
+          "strictJsonMs": 0.6831000000000245,
+          "tokenScanMs": 0.9576000000000136,
+          "positionIndexMs": 0.00879999999995107,
+          "messageLoopMs": 0.41629999999997835,
+          "freezeMs": 0.4581999999999766
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.168700000000001,
+          "jsonMs": 1.3080999999999676,
+          "strictJsonMs": 0.3971000000000231,
+          "tokenScanMs": 0.9089999999999918,
+          "positionIndexMs": 0.006600000000048567,
+          "messageLoopMs": 0.3960999999999899,
+          "freezeMs": 0.4101999999999748
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.4320000000000164,
+          "jsonMs": 1.262299999999982,
+          "strictJsonMs": 0.3883999999999901,
+          "tokenScanMs": 0.8716999999999757,
+          "positionIndexMs": 0.030300000000011096,
+          "messageLoopMs": 0.3235000000000241,
+          "freezeMs": 0.7750999999999522
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.2257999999999925,
+          "jsonMs": 1.3976000000000113,
+          "strictJsonMs": 0.4677000000000362,
+          "tokenScanMs": 0.9266000000000076,
+          "positionIndexMs": 0.006899999999973261,
+          "messageLoopMs": 0.35259999999999536,
+          "freezeMs": 0.4071999999999889
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.3683000000000334,
+          "jsonMs": 1.576599999999985,
+          "strictJsonMs": 0.7719999999999914,
+          "tokenScanMs": 0.8000999999999863,
+          "positionIndexMs": 0.006899999999973261,
+          "messageLoopMs": 0.28539999999998145,
+          "freezeMs": 0.45139999999997826
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.461999999999989,
+          "jsonMs": 1.3613000000000284,
+          "strictJsonMs": 0.4016000000000304,
+          "tokenScanMs": 0.953899999999976,
+          "positionIndexMs": 0.010699999999985721,
+          "messageLoopMs": 0.43250000000000455,
+          "freezeMs": 0.5856999999999744
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.6058000000000447,
+          "jsonMs": 1.3564999999999827,
+          "strictJsonMs": 0.4522000000000048,
+          "tokenScanMs": 0.8993999999999573,
+          "positionIndexMs": 0.00940000000002783,
+          "messageLoopMs": 0.6081999999999539,
+          "freezeMs": 0.497099999999989
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.8865000000000123,
+          "jsonMs": 1.1675000000000182,
+          "strictJsonMs": 0.4275000000000091,
+          "tokenScanMs": 0.7379999999999995,
+          "positionIndexMs": 0.007400000000018281,
+          "messageLoopMs": 0.27530000000001564,
+          "freezeMs": 0.38030000000003383
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.684599999999989,
+          "jsonMs": 1.6750999999999863,
+          "strictJsonMs": 0.309599999999989,
+          "tokenScanMs": 1.3614000000000033,
+          "positionIndexMs": 0.010600000000010823,
+          "messageLoopMs": 0.44659999999998945,
+          "freezeMs": 0.4959999999999809
+        },
+        {
+          "warmup": false,
+          "totalMs": 1.9771000000000072,
+          "jsonMs": 1.2241000000000213,
+          "strictJsonMs": 0.370900000000006,
+          "tokenScanMs": 0.8514000000000124,
+          "positionIndexMs": 0.005799999999965166,
+          "messageLoopMs": 0.30930000000000746,
+          "freezeMs": 0.39549999999997
+        },
+        {
+          "warmup": false,
+          "totalMs": 2.5154999999999745,
+          "jsonMs": 1.5577000000000112,
+          "strictJsonMs": 0.43729999999999336,
+          "tokenScanMs": 1.116199999999992,
+          "positionIndexMs": 0.006200000000035288,
+          "messageLoopMs": 0.43319999999999936,
+          "freezeMs": 0.46460000000001855
+        },
+        {
+          "warmup": false,
+          "totalMs": 3.1569999999999823,
+          "jsonMs": 1.8944000000000187,
+          "strictJsonMs": 0.5427000000000248,
+          "tokenScanMs": 1.3466999999999985,
+          "positionIndexMs": 0.006599999999991724,
+          "messageLoopMs": 0.3575999999999908,
+          "freezeMs": 0.8254999999999768
+        },
+        {
+          "warmup": false,
+          "totalMs": 4.274100000000033,
+          "jsonMs": 2.245800000000031,
+          "strictJsonMs": 0.6379000000000019,
+          "tokenScanMs": 1.5989999999999895,
+          "positionIndexMs": 0.014499999999998181,
+          "messageLoopMs": 1.23539999999997,
+          "freezeMs": 0.6632000000000176
+        }
+      ]
+    },
+    {
+      "messagesPerLocale": 10000,
+      "summary": {
+        "totalMs": {
+          "count": 50,
+          "p50Ms": 27.58510000000001,
+          "p95Ms": 41.78729999999996,
+          "minMs": 22.678200000000288,
+          "maxMs": 48.553499999999985
+        },
+        "jsonMs": {
+          "count": 50,
+          "p50Ms": 17.266200000000026,
+          "p95Ms": 29.9371000000001,
+          "minMs": 12.045700000000124,
+          "maxMs": 35.85440000000017
+        },
+        "strictJsonMs": {
+          "count": 50,
+          "p50Ms": 4.951399999999921,
+          "p95Ms": 9.293899999999894,
+          "minMs": 3.774999999999636,
+          "maxMs": 19.788300000000163
+        },
+        "tokenScanMs": {
+          "count": 50,
+          "p50Ms": 12.232100000000173,
+          "p95Ms": 20.314699999999903,
+          "minMs": 8.259000000000015,
+          "maxMs": 23.96210000000019
+        },
+        "positionIndexMs": {
+          "count": 50,
+          "p50Ms": 0.0545999999999367,
+          "p95Ms": 0.08699999999998909,
+          "minMs": 0.046700000000328146,
+          "maxMs": 0.33809999999994034
+        },
+        "messageLoopMs": {
+          "count": 50,
+          "p50Ms": 4.469200000000001,
+          "p95Ms": 6.675499999999829,
+          "minMs": 3.727600000000166,
+          "maxMs": 8.153099999999995
+        },
+        "freezeMs": {
+          "count": 50,
+          "p50Ms": 6.108899999999721,
+          "p95Ms": 9.25890000000004,
+          "minMs": 5.0300000000002,
+          "maxMs": 10.734699999999975
+        }
+      },
+      "samples": [
+        {
+          "warmup": true,
+          "totalMs": 80.27489999999989,
+          "jsonMs": 32.72809999999993,
+          "strictJsonMs": 11.078800000000001,
+          "tokenScanMs": 21.628400000000056,
+          "positionIndexMs": 0.05960000000004584,
+          "messageLoopMs": 38.3587,
+          "freezeMs": 8.993400000000065
+        },
+        {
+          "warmup": true,
+          "totalMs": 36.59770000000003,
+          "jsonMs": 22.03710000000001,
+          "strictJsonMs": 7.231600000000071,
+          "tokenScanMs": 14.73310000000015,
+          "positionIndexMs": 0.049500000000080036,
+          "messageLoopMs": 5.112599999999929,
+          "freezeMs": 9.173000000000002
+        },
+        {
+          "warmup": true,
+          "totalMs": 30.690200000000004,
+          "jsonMs": 17.46050000000014,
+          "strictJsonMs": 4.585700000000088,
+          "tokenScanMs": 12.854700000000093,
+          "positionIndexMs": 0.05770000000006803,
+          "messageLoopMs": 6.839300000000094,
+          "freezeMs": 6.218399999999974
+        },
+        {
+          "warmup": true,
+          "totalMs": 44.62439999999992,
+          "jsonMs": 28.882100000000037,
+          "strictJsonMs": 6.671699999999873,
+          "tokenScanMs": 22.187999999999874,
+          "positionIndexMs": 0.0787000000000262,
+          "messageLoopMs": 7.679499999999962,
+          "freezeMs": 7.8663000000001375
+        },
+        {
+          "warmup": true,
+          "totalMs": 97.93020000000001,
+          "jsonMs": 40.7346,
+          "strictJsonMs": 6.86869999999999,
+          "tokenScanMs": 33.83679999999981,
+          "positionIndexMs": 0.39039999999999964,
+          "messageLoopMs": 43.70820000000003,
+          "freezeMs": 12.950000000000045
+        },
+        {
+          "warmup": true,
+          "totalMs": 52.061500000000024,
+          "jsonMs": 31.431500000000142,
+          "strictJsonMs": 8.61999999999989,
+          "tokenScanMs": 22.786599999999908,
+          "positionIndexMs": 0.1450999999999567,
+          "messageLoopMs": 10.189100000000053,
+          "freezeMs": 9.95659999999998
+        },
+        {
+          "warmup": true,
+          "totalMs": 36.56010000000015,
+          "jsonMs": 24.4054000000001,
+          "strictJsonMs": 7.003200000000106,
+          "tokenScanMs": 17.378800000000183,
+          "positionIndexMs": 0.10609999999996944,
+          "messageLoopMs": 5.742300000000114,
+          "freezeMs": 6.192199999999957
+        },
+        {
+          "warmup": true,
+          "totalMs": 34.66610000000014,
+          "jsonMs": 22.348399999999856,
+          "strictJsonMs": 7.1073999999998705,
+          "tokenScanMs": 15.219700000000103,
+          "positionIndexMs": 0.05519999999978609,
+          "messageLoopMs": 5.110400000000027,
+          "freezeMs": 7.046100000000024
+        },
+        {
+          "warmup": true,
+          "totalMs": 33.52059999999983,
+          "jsonMs": 20.539400000000114,
+          "strictJsonMs": 4.891300000000001,
+          "tokenScanMs": 15.625299999999925,
+          "positionIndexMs": 0.051199999999880674,
+          "messageLoopMs": 4.886700000000019,
+          "freezeMs": 7.94840000000022
+        },
+        {
+          "warmup": true,
+          "totalMs": 29.564399999999978,
+          "jsonMs": 16.800899999999956,
+          "strictJsonMs": 5.420599999999922,
+          "tokenScanMs": 11.360300000000052,
+          "positionIndexMs": 0.04930000000013024,
+          "messageLoopMs": 5.166100000000142,
+          "freezeMs": 7.457300000000032
+        },
+        {
+          "warmup": false,
+          "totalMs": 27.58510000000001,
+          "jsonMs": 15.89370000000008,
+          "strictJsonMs": 7.071100000000115,
+          "tokenScanMs": 8.801899999999932,
+          "positionIndexMs": 0.049399999999877764,
+          "messageLoopMs": 5.763300000000072,
+          "freezeMs": 5.77170000000001
+        },
+        {
+          "warmup": false,
+          "totalMs": 34.66120000000001,
+          "jsonMs": 22.963599999999815,
+          "strictJsonMs": 11.2820999999999,
+          "tokenScanMs": 11.660899999999856,
+          "positionIndexMs": 0.05569999999988795,
+          "messageLoopMs": 4.671399999999949,
+          "freezeMs": 6.876700000000028
+        },
+        {
+          "warmup": false,
+          "totalMs": 25.871900000000096,
+          "jsonMs": 15.756999999999834,
+          "strictJsonMs": 4.345500000000129,
+          "tokenScanMs": 11.392000000000053,
+          "positionIndexMs": 0.05819999999994252,
+          "messageLoopMs": 4.3250000000000455,
+          "freezeMs": 5.632600000000139
+        },
+        {
+          "warmup": false,
+          "totalMs": 38.4362000000001,
+          "jsonMs": 23.351100000000088,
+          "strictJsonMs": 6.054100000000062,
+          "tokenScanMs": 17.275500000000193,
+          "positionIndexMs": 0.05379999999991014,
+          "messageLoopMs": 5.66170000000011,
+          "freezeMs": 9.25890000000004
+        },
+        {
+          "warmup": false,
+          "totalMs": 38.72370000000001,
+          "jsonMs": 23.980999999999995,
+          "strictJsonMs": 5.857300000000123,
+          "tokenScanMs": 18.10480000000007,
+          "positionIndexMs": 0.05709999999999127,
+          "messageLoopMs": 4.792400000000043,
+          "freezeMs": 9.78729999999996
+        },
+        {
+          "warmup": false,
+          "totalMs": 41.64300000000003,
+          "jsonMs": 27.309200000000146,
+          "strictJsonMs": 8.153600000000097,
+          "tokenScanMs": 19.130899999999883,
+          "positionIndexMs": 0.08470000000011169,
+          "messageLoopMs": 6.1521999999999935,
+          "freezeMs": 7.968499999999949
+        },
+        {
+          "warmup": false,
+          "totalMs": 34.38319999999999,
+          "jsonMs": 21.218900000000076,
+          "strictJsonMs": 5.384600000000091,
+          "tokenScanMs": 15.814399999999978,
+          "positionIndexMs": 0.06829999999990832,
+          "messageLoopMs": 6.506399999999985,
+          "freezeMs": 6.472700000000032
+        },
+        {
+          "warmup": false,
+          "totalMs": 36.309799999999996,
+          "jsonMs": 20.983000000000175,
+          "strictJsonMs": 6.455799999999954,
+          "tokenScanMs": 14.50709999999981,
+          "positionIndexMs": 0.05040000000008149,
+          "messageLoopMs": 8.153099999999995,
+          "freezeMs": 7.025700000000143
+        },
+        {
+          "warmup": false,
+          "totalMs": 24.5166999999999,
+          "jsonMs": 14.576199999999972,
+          "strictJsonMs": 4.386199999999917,
+          "tokenScanMs": 10.171500000000151,
+          "positionIndexMs": 0.051899999999932334,
+          "messageLoopMs": 4.02780000000007,
+          "freezeMs": 5.7611000000001695
+        },
+        {
+          "warmup": false,
+          "totalMs": 31.185500000000047,
+          "jsonMs": 18.52189999999996,
+          "strictJsonMs": 5.608500000000049,
+          "tokenScanMs": 12.893299999999954,
+          "positionIndexMs": 0.05190000000015971,
+          "messageLoopMs": 5.517500000000155,
+          "freezeMs": 7.001800000000003
+        },
+        {
+          "warmup": false,
+          "totalMs": 26.044799999999896,
+          "jsonMs": 15.914099999999962,
+          "strictJsonMs": 4.155700000000024,
+          "tokenScanMs": 11.732700000000023,
+          "positionIndexMs": 0.07799999999997453,
+          "messageLoopMs": 4.408300000000054,
+          "freezeMs": 5.526499999999942
+        },
+        {
+          "warmup": false,
+          "totalMs": 33.88739999999984,
+          "jsonMs": 21.42859999999996,
+          "strictJsonMs": 5.6228000000000975,
+          "tokenScanMs": 15.783699999999953,
+          "positionIndexMs": 0.05150000000003274,
+          "messageLoopMs": 4.822799999999916,
+          "freezeMs": 7.47609999999986
+        },
+        {
+          "warmup": false,
+          "totalMs": 24.94380000000001,
+          "jsonMs": 13.779099999999971,
+          "strictJsonMs": 4.107099999999946,
+          "tokenScanMs": 9.655700000000024,
+          "positionIndexMs": 0.05340000000001055,
+          "messageLoopMs": 4.303100000000086,
+          "freezeMs": 6.691000000000031
+        },
+        {
+          "warmup": false,
+          "totalMs": 35.148099999999886,
+          "jsonMs": 25.492299999999886,
+          "strictJsonMs": 9.293899999999894,
+          "tokenScanMs": 16.173899999999776,
+          "positionIndexMs": 0.06260000000020227,
+          "messageLoopMs": 4.265300000000025,
+          "freezeMs": 5.203299999999672
+        },
+        {
+          "warmup": false,
+          "totalMs": 29.379399999999805,
+          "jsonMs": 19.635099999999966,
+          "strictJsonMs": 6.945500000000266,
+          "tokenScanMs": 12.662600000000111,
+          "positionIndexMs": 0.07319999999981519,
+          "messageLoopMs": 4.469200000000001,
+          "freezeMs": 5.1021999999998116
+        },
+        {
+          "warmup": false,
+          "totalMs": 26.986499999999978,
+          "jsonMs": 17.39890000000014,
+          "strictJsonMs": 5.570099999999911,
+          "tokenScanMs": 11.80639999999994,
+          "positionIndexMs": 0.05920000000014625,
+          "messageLoopMs": 4.130300000000261,
+          "freezeMs": 5.301200000000335
+        },
+        {
+          "warmup": false,
+          "totalMs": 24.576400000000376,
+          "jsonMs": 15.504100000000108,
+          "strictJsonMs": 4.037899999999809,
+          "tokenScanMs": 11.449599999999919,
+          "positionIndexMs": 0.04890000000023065,
+          "messageLoopMs": 3.727600000000166,
+          "freezeMs": 5.213799999999992
+        },
+        {
+          "warmup": false,
+          "totalMs": 25.378299999999854,
+          "jsonMs": 15.211500000000342,
+          "strictJsonMs": 4.1380999999996675,
+          "tokenScanMs": 11.05600000000004,
+          "positionIndexMs": 0.05239999999957945,
+          "messageLoopMs": 4.555299999999988,
+          "freezeMs": 5.469900000000052
+        },
+        {
+          "warmup": false,
+          "totalMs": 26.75460000000021,
+          "jsonMs": 17.203199999999924,
+          "strictJsonMs": 4.951399999999921,
+          "tokenScanMs": 12.232100000000173,
+          "positionIndexMs": 0.06530000000020664,
+          "messageLoopMs": 4.286699999999655,
+          "freezeMs": 5.089300000000094
+        },
+        {
+          "warmup": false,
+          "totalMs": 22.678200000000288,
+          "jsonMs": 13.19380000000001,
+          "strictJsonMs": 4.616800000000239,
+          "tokenScanMs": 8.555599999999686,
+          "positionIndexMs": 0.33809999999994034,
+          "messageLoopMs": 4.008299999999963,
+          "freezeMs": 5.0300000000002
+        },
+        {
+          "warmup": false,
+          "totalMs": 27.278000000000247,
+          "jsonMs": 16.52480000000014,
+          "strictJsonMs": 4.504299999999603,
+          "tokenScanMs": 12.002700000000004,
+          "positionIndexMs": 0.05349999999998545,
+          "messageLoopMs": 5.252500000000055,
+          "freezeMs": 5.363200000000234
+        },
+        {
+          "warmup": false,
+          "totalMs": 24.589100000000144,
+          "jsonMs": 14.005799999999908,
+          "strictJsonMs": 4.51260000000002,
+          "tokenScanMs": 9.477100000000064,
+          "positionIndexMs": 0.04739999999992506,
+          "messageLoopMs": 3.8233000000000175,
+          "freezeMs": 6.598999999999705
+        },
+        {
+          "warmup": false,
+          "totalMs": 39.12219999999979,
+          "jsonMs": 29.9371000000001,
+          "strictJsonMs": 5.95659999999998,
+          "tokenScanMs": 23.96210000000019,
+          "positionIndexMs": 0.0498000000002321,
+          "messageLoopMs": 3.9765000000002146,
+          "freezeMs": 5.046100000000024
+        },
+        {
+          "warmup": false,
+          "totalMs": 26.837999999999738,
+          "jsonMs": 14.73889999999983,
+          "strictJsonMs": 4.6117999999996755,
+          "tokenScanMs": 10.101400000000012,
+          "positionIndexMs": 0.08480000000008658,
+          "messageLoopMs": 6.675499999999829,
+          "freezeMs": 5.218000000000302
+        },
+        {
+          "warmup": false,
+          "totalMs": 28.110400000000027,
+          "jsonMs": 13.768099999999777,
+          "strictJsonMs": 4.232899999999972,
+          "tokenScanMs": 9.517299999999977,
+          "positionIndexMs": 0.049100000000180444,
+          "messageLoopMs": 5.1229000000003,
+          "freezeMs": 9.077299999999923
+        },
+        {
+          "warmup": false,
+          "totalMs": 24.49019999999973,
+          "jsonMs": 14.17470000000003,
+          "strictJsonMs": 5.06899999999996,
+          "tokenScanMs": 9.086599999999635,
+          "positionIndexMs": 0.04899999999997817,
+          "messageLoopMs": 4.066400000000158,
+          "freezeMs": 6.108899999999721
+        },
+        {
+          "warmup": false,
+          "totalMs": 25.781800000000203,
+          "jsonMs": 14.209400000000187,
+          "strictJsonMs": 4.445999999999913,
+          "tokenScanMs": 9.744200000000092,
+          "positionIndexMs": 0.04899999999997817,
+          "messageLoopMs": 4.085700000000088,
+          "freezeMs": 7.344500000000153
+        },
+        {
+          "warmup": false,
+          "totalMs": 24.934200000000146,
+          "jsonMs": 14.992899999999736,
+          "strictJsonMs": 4.106500000000324,
+          "tokenScanMs": 10.867999999999938,
+          "positionIndexMs": 0.05279999999993379,
+          "messageLoopMs": 3.969100000000253,
+          "freezeMs": 5.812600000000202
+        },
+        {
+          "warmup": false,
+          "totalMs": 25.765800000000127,
+          "jsonMs": 16.53899999999976,
+          "strictJsonMs": 4.940099999999802,
+          "tokenScanMs": 11.579699999999775,
+          "positionIndexMs": 0.0545999999999367,
+          "messageLoopMs": 3.92450000000008,
+          "freezeMs": 5.150200000000041
+        },
+        {
+          "warmup": false,
+          "totalMs": 27.57669999999962,
+          "jsonMs": 16.613799999999628,
+          "strictJsonMs": 4.386300000000119,
+          "tokenScanMs": 12.208000000000084,
+          "positionIndexMs": 0.0805000000000291,
+          "messageLoopMs": 4.780999999999949,
+          "freezeMs": 5.99330000000009
+        },
+        {
+          "warmup": false,
+          "totalMs": 31.952999999999975,
+          "jsonMs": 20.424599999999828,
+          "strictJsonMs": 6.700900000000274,
+          "tokenScanMs": 13.703999999999724,
+          "positionIndexMs": 0.05879999999979191,
+          "messageLoopMs": 4.061400000000049,
+          "freezeMs": 7.316000000000258
+        },
+        {
+          "warmup": false,
+          "totalMs": 24.67579999999998,
+          "jsonMs": 14.882600000000366,
+          "strictJsonMs": 4.623400000000402,
+          "tokenScanMs": 10.240600000000086,
+          "positionIndexMs": 0.04999999999972715,
+          "messageLoopMs": 4.37310000000025,
+          "freezeMs": 5.279599999999846
+        },
+        {
+          "warmup": false,
+          "totalMs": 36.04020000000037,
+          "jsonMs": 21.356500000000324,
+          "strictJsonMs": 4.297299999999723,
+          "tokenScanMs": 17.03789999999981,
+          "positionIndexMs": 0.08699999999998909,
+          "messageLoopMs": 7.251099999999951,
+          "freezeMs": 7.23680000000013
+        },
+        {
+          "warmup": false,
+          "totalMs": 32.00410000000011,
+          "jsonMs": 21.995499999999993,
+          "strictJsonMs": 5.164499999999862,
+          "tokenScanMs": 16.808799999999792,
+          "positionIndexMs": 0.056999999999789,
+          "messageLoopMs": 4.339800000000196,
+          "freezeMs": 5.512100000000373
+        },
+        {
+          "warmup": false,
+          "totalMs": 25.390199999999822,
+          "jsonMs": 14.396999999999935,
+          "strictJsonMs": 4.07549999999992,
+          "tokenScanMs": 10.304399999999987,
+          "positionIndexMs": 0.05539999999973588,
+          "messageLoopMs": 5.630300000000261,
+          "freezeMs": 5.222600000000057
+        },
+        {
+          "warmup": false,
+          "totalMs": 23.302700000000186,
+          "jsonMs": 13.236499999999978,
+          "strictJsonMs": 4.4968000000003485,
+          "tokenScanMs": 8.72380000000021,
+          "positionIndexMs": 0.04839999999967404,
+          "messageLoopMs": 3.8514000000000124,
+          "freezeMs": 6.079899999999725
+        },
+        {
+          "warmup": false,
+          "totalMs": 33.45539999999983,
+          "jsonMs": 19.471300000000156,
+          "strictJsonMs": 5.247099999999591,
+          "tokenScanMs": 14.202400000000125,
+          "positionIndexMs": 0.05389999999988504,
+          "messageLoopMs": 5.119299999999839,
+          "freezeMs": 8.716199999999844
+        },
+        {
+          "warmup": false,
+          "totalMs": 41.78729999999996,
+          "jsonMs": 26.262700000000223,
+          "strictJsonMs": 6.646100000000388,
+          "tokenScanMs": 19.58759999999984,
+          "positionIndexMs": 0.06550000000015643,
+          "messageLoopMs": 4.623999999999796,
+          "freezeMs": 10.734699999999975
+        },
+        {
+          "warmup": false,
+          "totalMs": 26.659799999999905,
+          "jsonMs": 16.592499999999745,
+          "strictJsonMs": 4.102399999999761,
+          "tokenScanMs": 12.472200000000157,
+          "positionIndexMs": 0.05040000000008149,
+          "messageLoopMs": 4.192499999999654,
+          "freezeMs": 5.73299999999972
+        },
+        {
+          "warmup": false,
+          "totalMs": 27.101000000000113,
+          "jsonMs": 17.266200000000026,
+          "strictJsonMs": 4.1965000000000146,
+          "tokenScanMs": 13.05159999999978,
+          "positionIndexMs": 0.0500000000001819,
+          "messageLoopMs": 3.9988000000003012,
+          "freezeMs": 5.68769999999995
+        },
+        {
+          "warmup": false,
+          "totalMs": 24.953999999999724,
+          "jsonMs": 15.033599999999751,
+          "strictJsonMs": 4.154700000000048,
+          "tokenScanMs": 10.860700000000179,
+          "positionIndexMs": 0.05150000000003274,
+          "messageLoopMs": 4.095799999999599,
+          "freezeMs": 5.676100000000133
+        },
+        {
+          "warmup": false,
+          "totalMs": 23.215000000000146,
+          "jsonMs": 12.045700000000124,
+          "strictJsonMs": 3.774999999999636,
+          "tokenScanMs": 8.259000000000015,
+          "positionIndexMs": 0.046700000000328146,
+          "messageLoopMs": 3.7774999999996908,
+          "freezeMs": 7.2642000000000735
+        },
+        {
+          "warmup": false,
+          "totalMs": 42.38079999999991,
+          "jsonMs": 30.153400000000147,
+          "strictJsonMs": 6.436699999999746,
+          "tokenScanMs": 23.692299999999705,
+          "positionIndexMs": 0.07969999999977517,
+          "messageLoopMs": 5.190500000000156,
+          "freezeMs": 6.839500000000044
+        },
+        {
+          "warmup": false,
+          "totalMs": 48.553499999999985,
+          "jsonMs": 35.85440000000017,
+          "strictJsonMs": 19.788300000000163,
+          "tokenScanMs": 16.04430000000002,
+          "positionIndexMs": 0.08570000000008804,
+          "messageLoopMs": 4.683800000000247,
+          "freezeMs": 7.828899999999976
+        },
+        {
+          "warmup": false,
+          "totalMs": 36.04809999999998,
+          "jsonMs": 22.718999999999596,
+          "strictJsonMs": 6.539200000000164,
+          "tokenScanMs": 16.16020000000026,
+          "positionIndexMs": 0.06210000000010041,
+          "messageLoopMs": 5.291900000000169,
+          "freezeMs": 7.86830000000009
+        },
+        {
+          "warmup": false,
+          "totalMs": 32.4052999999999,
+          "jsonMs": 19.51279999999997,
+          "strictJsonMs": 4.7973000000001775,
+          "tokenScanMs": 14.695500000000266,
+          "positionIndexMs": 0.08039999999982683,
+          "messageLoopMs": 4.919100000000071,
+          "freezeMs": 7.769200000000183
+        },
+        {
+          "warmup": false,
+          "totalMs": 40.108600000000024,
+          "jsonMs": 25.77559999999994,
+          "strictJsonMs": 5.440900000000056,
+          "tokenScanMs": 20.314699999999903,
+          "positionIndexMs": 0.08889999999973952,
+          "messageLoopMs": 6.424399999999878,
+          "freezeMs": 7.701100000000224
+        },
+        {
+          "warmup": false,
+          "totalMs": 34.73259999999982,
+          "jsonMs": 23.444100000000162,
+          "strictJsonMs": 6.511400000000322,
+          "tokenScanMs": 16.914900000000216,
+          "positionIndexMs": 0.050300000000333966,
+          "messageLoopMs": 3.8114999999997963,
+          "freezeMs": 7.335000000000036
+        },
+        {
+          "warmup": false,
+          "totalMs": 36.88709999999992,
+          "jsonMs": 23.46810000000005,
+          "strictJsonMs": 6.489399999999932,
+          "tokenScanMs": 16.95759999999973,
+          "positionIndexMs": 0.06859999999960564,
+          "messageLoopMs": 5.957499999999982,
+          "freezeMs": 7.2676000000001295
+        },
+        {
+          "warmup": false,
+          "totalMs": 36.721900000000005,
+          "jsonMs": 22.572200000000066,
+          "strictJsonMs": 6.002899999999954,
+          "tokenScanMs": 16.54989999999998,
+          "positionIndexMs": 0.07120000000031723,
+          "messageLoopMs": 5.854100000000017,
+          "freezeMs": 8.11429999999973
+        }
+      ]
+    }
+  ]
+}

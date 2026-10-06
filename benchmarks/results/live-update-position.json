@@ -1,0 +1,432 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-06T16:41:35.494Z",
+  "gitRevision": "d64199c6b0224fb75ce53e4922044b9872b751b3",
+  "settings": {
+    "samples": 50,
+    "warmup": 5,
+    "calibrations": 25,
+    "timeoutMs": 30000
+  },
+  "instrumentation": {
+    "cpuProfile": false,
+    "browserStages": false,
+    "serverFileStages": true
+  },
+  "workingTreeStatus": "M packages/core/src/diagnostics.ts\n M packages/core/test/catalog.test.mjs\n?? benchmarks/results/live-update-key.10k-20-locales.samples.json\n?? benchmarks/results/live-update-key.1k-3-locales.samples.json\n?? benchmarks/results/live-update-key.json\n?? benchmarks/results/parse-compare-key.json\n?? benchmarks/results/parser-stages-key-after.json\n?? benchmarks/results/parser-stages-position-after.json",
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "4923cee24e118548901554268bd44126325e207d7ba15f624a8e74da9c55680a",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/diagnostics.js": "5efe48b5d153f843ac39de31d8f3b115a850092e15efd931b0972448dddb4ee6",
+    "packages/core/dist/schema.js": "50b1b59c71956e3ead5b47317a0fb9e0ef0d1db4142d608b5847757125c769ce",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "packages/vite/dist/live-registry.js": "fd6592615105b978987bd82b56bb5855f008669a314f606f969d6b1d6a54a1e6",
+    "packages/vite/dist/translation-quarantine.js": "e64ed9e9567f2793c36a7269ab393dedcbf8e1fc915ddaae405fc4d3cf6fd1f2",
+    "packages/vite/dist/catalog-registry.js": "8cf8ff87809c152fe8599a260ec7f7b7145bb74518d4499cfd99ccd965ce925e",
+    "packages/vite/dist/catalog-patch.js": "7a39eec7384e7eaebaefa4ace0de05653287a1e86897d20adae6ce79e087e50b",
+    "benchmarks/live-update/profile.mjs": "997bf60be68568e72f624b6317371b80711b4c7561cde0fb238075d06b9f0a23",
+    "benchmarks/live-update/channel.mjs": "62c2c61186e6c2799f6219f6d9c15d2f8264cc4f03445488459bfcce0db887ff",
+    "benchmarks/live-update/run.mjs": "b056e5be1e402c11e2f9cae3632891a0050d564c88d89e8f712266d69767c317",
+    "benchmarks/live-update/app.jsx": "cb6123093d311022c5bea5f719295aecaa529330e82f3d5974b0a0fbea2bf8ad",
+    "benchmarks/live-update/fixture.mjs": "8d67977800012a8985fb8e648c72b6c7d9d2ebeccc04e4cf0196fada577da162",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "376fef212eb14bf1c3fad0514dac30e3ce9de7ab5892e5fb8a710c31edbe8078",
+    "benchmarks/live-update/browser-profile.mjs": "a10535443dcc071b277b2284132e4314de32d5ecd2d67761c187f0ba622b3770",
+    "benchmarks/live-update/browser-probe.mjs": "1bcddbf9a39500c23088d37e0568ac2b83f390c1a054b348dc731cd3cec11fa9",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/snapshot-signature.js": "1ef671cd30f6b8c694693b8cce921e569d10d523596664713317f936e289f348",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f",
+    "packages/vite/dist/catalog-source.js": "0a7f2415b9ad6f2172ac9f849d9dac93708d3aece30478e54d3be89d0d22b226",
+    "packages/vite/dist/freeze.js": "d5a2ad10a099c77db9ba4fdd0567d25fa23c3cee0d4f3b163ce96e55bec354f5",
+    "benchmarks/live-update/server-file-profile.mjs": "2545266c3442d08ea6213305e20701ca9f8ff5b1da64eabc8eacfc36b2eb0738"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26200",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+  "results": [
+    {
+      "id": "1k-3-locales",
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "namespaces": 1,
+      "catalogFiles": 3,
+      "catalogBytes": 110292,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 404.8054,
+      "wire": {
+        "patchReplies": 50,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 931,
+          "p95Bytes": 931,
+          "minBytes": 927,
+          "maxBytes": 931
+        }
+      },
+      "browserBootMs": 1265.4418,
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 64.31539999999995,
+          "p95Ms": 72.65500000000065,
+          "minMs": 52.367200000000594,
+          "maxMs": 104.40000000000009
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 55.009900000000016,
+          "p95Ms": 62.89350000000013,
+          "minMs": 45.78350000000046,
+          "maxMs": 93.25890000000027
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 3.899999998509884,
+          "p95Ms": 4.900000002235174,
+          "minMs": 2.699999999254942,
+          "maxMs": 5.5
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 5.950600000000122,
+          "p95Ms": 10.353799999999865,
+          "minMs": 3.1865999999999985,
+          "maxMs": 13.459100000000035
+        }
+      },
+      "controlRoundTrip": {
+        "count": 25,
+        "p50Ms": 3.0635999999999513,
+        "p95Ms": 7.28859999999986,
+        "minMs": 2.0997999999999593,
+        "maxMs": 7.574399999999969
+      },
+      "serverFileStages": {
+        "scope": "Benchmark-only in-memory Node module transform. Path check and UTF-8 read are async wall times; parse is synchronous parseCatalog call including argument construction. candidateOther is a per-sample residual inside readAndCandidate. These stages are included in readAndCandidate; do not add their p95s or treat wall times as CPU times.",
+        "pathCheckMs": {
+          "count": 50,
+          "p50Ms": 0.6213999999999942,
+          "p95Ms": 1.0432999999993626,
+          "minMs": 0.4934000000002925,
+          "maxMs": 3.3409999999998945
+        },
+        "fileReadMs": {
+          "count": 50,
+          "p50Ms": 0.6098999999994703,
+          "p95Ms": 1.1346000000003187,
+          "minMs": 0.47899999999981446,
+          "maxMs": 26.943900000000212
+        },
+        "catalogParseMs": {
+          "count": 50,
+          "p50Ms": 3.501999999999498,
+          "p95Ms": 5.21349999999984,
+          "minMs": 2.3481000000001586,
+          "maxMs": 8.289999999999964
+        },
+        "candidateOtherMs": {
+          "count": 50,
+          "p50Ms": 0.43760000000020227,
+          "p95Ms": 1.6935999999996056,
+          "minMs": 0.3268000000007305,
+          "maxMs": 5.306500000000142
+        },
+        "maxCalls": {
+          "pathCheckMs": 1,
+          "fileReadMs": 1,
+          "catalogParseMs": 1
+        }
+      },
+      "serverStages": {
+        "scope": "Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.",
+        "queueToDrainMs": {
+          "count": 50,
+          "p50Ms": 50.45020000000022,
+          "p95Ms": 54.72180000000026,
+          "minMs": 40.52089999999953,
+          "maxMs": 56.44770000000062
+        },
+        "readAndCandidateMs": {
+          "count": 50,
+          "p50Ms": 5.173499999999876,
+          "p95Ms": 9.685699999999997,
+          "minMs": 3.841500000000451,
+          "maxMs": 43.865600000000086
+        },
+        "translationPreparationMs": {
+          "count": 50,
+          "p50Ms": 1.2970000000004802,
+          "p95Ms": 2.1806000000001404,
+          "minMs": 0.8888999999999214,
+          "maxMs": 5.94360000000006
+        },
+        "validationMs": {
+          "count": 50,
+          "p50Ms": 0.00580000000036307,
+          "p95Ms": 0.013500000000021828,
+          "minMs": 0.003800000000410364,
+          "maxMs": 0.01720000000022992
+        },
+        "registryReplaceMs": {
+          "count": 50,
+          "p50Ms": 0.4351999999998952,
+          "p95Ms": 0.6318999999998596,
+          "minMs": 0.31640000000061264,
+          "maxMs": 0.9816999999993641
+        },
+        "catalogDeltaMs": {
+          "count": 50,
+          "p50Ms": 1.2118000000000393,
+          "p95Ms": 1.540899999999965,
+          "minMs": 0.7336999999997715,
+          "maxMs": 1.7955000000001746
+        },
+        "maxFileEvents": 1,
+        "maxDrains": 1
+      },
+      "controlRoundTripsMs": [
+        4.776700000000346,
+        2.9831999999996697,
+        2.360200000000077,
+        2.670100000000275,
+        7.28859999999986,
+        5.875800000000254,
+        2.0997999999999593,
+        2.145599999999831,
+        2.9410000000002583,
+        2.2333000000003267,
+        3.9045999999998457,
+        2.4857999999999265,
+        4.9684000000002015,
+        3.0635999999999513,
+        6.071400000000267,
+        2.464600000000246,
+        3.449200000000019,
+        7.574399999999969,
+        3.0976000000000568,
+        2.977599999999711,
+        5.040199999999913,
+        2.260200000000168,
+        5.58640000000014,
+        3.5875999999998385,
+        2.2998999999999796
+      ],
+      "samplesFile": "live-update-position.1k-3-locales.samples.json"
+    },
+    {
+      "id": "10k-20-locales",
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "namespaces": 1,
+      "catalogFiles": 20,
+      "catalogBytes": 7755280,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 13279.514500000001,
+      "wire": {
+        "patchReplies": 50,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 934,
+          "p95Bytes": 934,
+          "minBytes": 930,
+          "maxBytes": 934
+        }
+      },
+      "browserBootMs": 4244.360499999999,
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 153.4350000000013,
+          "p95Ms": 165.93939999999566,
+          "minMs": 128.8341999999975,
+          "maxMs": 177.67950000000565
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 105.12240000000384,
+          "p95Ms": 115.44540000000052,
+          "minMs": 84.7358000000022,
+          "maxMs": 125.29950000000099
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 30.5,
+          "p95Ms": 34.100000001490116,
+          "minMs": 22.600000001490116,
+          "maxMs": 37.099999997764826
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 7.806200000006356,
+          "p95Ms": 9.962800000001153,
+          "minMs": 6.090200000002369,
+          "maxMs": 15.70720000000074
+        }
+      },
+      "controlRoundTrip": {
+        "count": 25,
+        "p50Ms": 3.4276999999965483,
+        "p95Ms": 4.976399999999558,
+        "minMs": 2.886800000000221,
+        "maxMs": 5.19119999999748
+      },
+      "serverFileStages": {
+        "scope": "Benchmark-only in-memory Node module transform. Path check and UTF-8 read are async wall times; parse is synchronous parseCatalog call including argument construction. candidateOther is a per-sample residual inside readAndCandidate. These stages are included in readAndCandidate; do not add their p95s or treat wall times as CPU times.",
+        "pathCheckMs": {
+          "count": 50,
+          "p50Ms": 0.614000000001397,
+          "p95Ms": 0.7127999999938766,
+          "minMs": 0.4874999999992724,
+          "maxMs": 0.7365000000027067
+        },
+        "fileReadMs": {
+          "count": 50,
+          "p50Ms": 1.0156000000024505,
+          "p95Ms": 1.3139999999984866,
+          "minMs": 0.864000000001397,
+          "maxMs": 1.6221000000005006
+        },
+        "catalogParseMs": {
+          "count": 50,
+          "p50Ms": 34.73960000000079,
+          "p95Ms": 41.88839999999618,
+          "minMs": 22.15950000000157,
+          "maxMs": 47.539199999999255
+        },
+        "candidateOtherMs": {
+          "count": 50,
+          "p50Ms": 0.520700000000943,
+          "p95Ms": 3.9477999999944586,
+          "minMs": 0.42849999999816646,
+          "maxMs": 4.71990000000369
+        },
+        "maxCalls": {
+          "pathCheckMs": 1,
+          "fileReadMs": 1,
+          "catalogParseMs": 1
+        }
+      },
+      "serverStages": {
+        "scope": "Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.",
+        "queueToDrainMs": {
+          "count": 50,
+          "p50Ms": 47.77079999999842,
+          "p95Ms": 54.8156999999992,
+          "minMs": 40.359700000000885,
+          "maxMs": 55.943599999998696
+        },
+        "readAndCandidateMs": {
+          "count": 50,
+          "p50Ms": 37.09509999999864,
+          "p95Ms": 45.28889999999956,
+          "minMs": 24.314800000000105,
+          "maxMs": 49.66649999999936
+        },
+        "translationPreparationMs": {
+          "count": 50,
+          "p50Ms": 16.057099999998172,
+          "p95Ms": 19.434799999995448,
+          "minMs": 11.89770000000135,
+          "maxMs": 21.00050000000192
+        },
+        "validationMs": {
+          "count": 50,
+          "p50Ms": 0.015099999996891711,
+          "p95Ms": 0.02990000000136206,
+          "minMs": 0.008399999998800922,
+          "maxMs": 0.08980000000155997
+        },
+        "registryReplaceMs": {
+          "count": 50,
+          "p50Ms": 6.291199999999662,
+          "p95Ms": 7.905399999999645,
+          "minMs": 4.921099999999569,
+          "maxMs": 9.163000000000466
+        },
+        "catalogDeltaMs": {
+          "count": 50,
+          "p50Ms": 14.462899999998626,
+          "p95Ms": 15.908400000000256,
+          "minMs": 10.299200000001292,
+          "maxMs": 17.451999999997497
+        },
+        "maxFileEvents": 1,
+        "maxDrains": 1
+      },
+      "controlRoundTripsMs": [
+        3.1309000000001106,
+        3.675999999999476,
+        3.4530000000013388,
+        3.342499999998836,
+        3.3188999999983935,
+        3.346400000002177,
+        3.828400000002148,
+        3.212600000002567,
+        3.0987999999997555,
+        3.123200000001816,
+        4.976399999999558,
+        4.209800000000541,
+        3.4276999999965483,
+        3.3884999999972933,
+        3.419099999999162,
+        3.582800000000134,
+        3.6319000000003143,
+        3.4398000000001048,
+        3.319199999998091,
+        4.205600000001141,
+        5.19119999999748,
+        4.040100000001985,
+        3.617500000000291,
+        3.022799999998824,
+        2.886800000000221
+      ],
+      "samplesFile": "live-update-position.10k-20-locales.samples.json"
+    }
+  ]
+}

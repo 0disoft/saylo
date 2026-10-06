@@ -27,8 +27,8 @@ export class CatalogError extends Error {
 /** UTF-16 offsets and columns, matching JS strings and the ICU parser. */
 export function createPositionLocator(source: string): (offset: number) => SourcePosition {
   const lineStarts = [0];
-  for (let index = 0; index < source.length; index++) {
-    if (source[index] === '\n') lineStarts.push(index + 1);
+  for (let index = source.indexOf('\n'); index !== -1; index = source.indexOf('\n', index + 1)) {
+    lineStarts.push(index + 1);
   }
   return offset => {
     let low = 0;

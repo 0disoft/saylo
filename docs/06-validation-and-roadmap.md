@@ -80,6 +80,8 @@ Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/run
 
 서버 파일 구간을 benchmark-only Node hook으로 분리 계측했다. large의 UTF-8 읽기 p95는 1.43ms, parseCatalog 호출은 46.82ms였다. runtime 변경 없이 측정했고 다음 최적화 대상은 파서 내부 JSON 처리·위치 계산·메시지 순회다. 읽기·파싱 내부 clock 및 비동기 대기, 원시 residual 정의, 정상 단일 파일 편집이라는 한계는 [10-performance-measurements.md](10-performance-measurements.md)의 서버 파일 계측 기록을 따른다.
 
+파서 내부 구간을 나눠 측정한 뒤 key 디코딩 생략 trial은 되돌리고, 줄 위치 색인을 `indexOf`로 구성하는 최적화만 로컬 적용했다. parser-only에서 1만 메시지 색인 생성 p95는 3.449→0.087ms로 관측됐고, 최종 실제 갱신 p95는 small 72.66ms·large 165.94ms였다. 전체 감소를 한 변경의 효과로 귀속하지 않으며 대규모 목표는 여전히 미달이다. core build와 카탈로그·patch 테스트 25개가 통과했다. 원시 결과·되돌린 실험·측정 한계는 [11-parser-measurements.md](11-parser-measurements.md)에 보존했다. npm 게시본에는 아직 없다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |

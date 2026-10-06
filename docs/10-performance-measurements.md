@@ -270,3 +270,5 @@ core build와 관련 테스트 44개(core snapshot signature·lazy loading·SSR 
 직전 계측 없는 일반 run의 p95는 68.00ms·185.87ms였다. 이번에는 runtime이 같고 계측·실행 시점만 달라졌으므로 이 차이를 성능 개선이나 회귀로 보지 않는다. 대규모 100ms 목표는 여전히 미달이다. cold disk, 로케일 추가·삭제, 부적합 번역 격리·복원, 여러 파일 동시 저장은 이번 측정 대상이 아니다.
 
 두 시나리오 raw sample은 각각 55개(측정 50개)이며, 모든 sample에서 경로 검사·읽기·파싱이 각각 1회였다. 원시 residual 합과 candidate 전체, 5개 종단 timing·6개 서버·4개 파일 구간·control nearest-rank 요약, 기록된 code hash를 확인했다. 측정 50회 모두 patch 1개 메시지·position 갱신 0개였고 full 응답은 0회였다. 모든 ack에서 입력 노드·값과 컴포넌트 state가 유지됐으며 타입 파일은 다시 쓰이지 않았다. 임시 fixture·browser profile과 해당 브라우저 프로세스는 남지 않았다. 라이브러리 구현을 바꾸지 않아 기존 제품 테스트는 반복하지 않았다.
+
+파서 내부 구간과 후속 최적화는 [11-parser-measurements.md](11-parser-measurements.md)로 분리했다. key 디코딩 trial은 tail latency 개선 근거가 없어 되돌렸고, 최종 변경은 LF 위치 색인을 `indexOf`로 생성하는 것이다. 최종 같은 서버 파일 계측 설정의 p95는 small 72.66ms·large 165.94ms이며 대규모 목표는 여전히 미달이다. 단일 run의 부하 차이와 parser-only 수치를 분리해 해석한다.

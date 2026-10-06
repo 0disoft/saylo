@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
-import { freeze } from '../dist/diagnostics.js';
+import { freeze, createPositionLocator } from '../dist/diagnostics.js';
 
 const options = { locale: 'ko', namespace: 'cart', sourceName: 'locales/ko/cart.json' };
 const catalog = (messages, locale = 'ko') => parseCatalog(JSON.stringify(messages), { ...options, locale });
@@ -49,6 +49,35 @@ test('prototype-like IDs and argument names are literal own keys', () => {
   assert.deepEqual(base.keys.__proto__.__proto__.acceptedTypes, ['string', 'number']);
   validateTranslation(base, parseCatalog('{"__proto__":"{__proto__}"}', { ...options, locale: 'en' }));
   rejectsCode(() => validateTranslation(createBaseSchema(catalog({ x: 'ok' })), catalog({ constructor: 'new' }, 'en')), 'UNKNOWN_MESSAGE');
+});
+
+test('plain and escaped key tokens preserve decoded IDs and exact source positions', () => {
+  const source = String.raw`{
+    "한글😀": "plain",
+    "ti\u0074le": "escaped",
+    "quote\"key": "quoted",
+    "back\\slash": "slash",
+    "__proto__": "literal"
+  }`;
+  const decoded = JSON.parse(source);
+  const parsed = parseCatalog(source, options);
+  assert.deepEqual(Object.keys(parsed.messages), Object.keys(decoded));
+  for (const id of Object.keys(decoded)) assert.equal(parsed.messages[id].source, decoded[id]);
+  assert.deepEqual(parsed.messages.title.position, { offset: source.indexOf('"escaped"'), line: 3, column: 19 });
+  for (const duplicate of [String.raw`{"ti\u0074le":"A","title":"B"}`, String.raw`{"title":"A","ti\u0074le":"B"}`])
+    rejectsCode(() => parseCatalog(duplicate, options, parsed), 'DUPLICATE_ID');
+  rejectsCode(() => parseCatalog('{"bad\nkey":"value"}', options), 'INVALID_JSON');
+});
+
+test('position indexing preserves UTF-16 columns at LF, CRLF, trailing LF and escaped newline boundaries', () => {
+  for (const source of ['', 'single line 😀', '\n\n', '😀\r\n한글\nlast\n', String.raw`{"x":"a\nb"}`]) {
+    const locate = createPositionLocator(source);
+    for (let offset = 0; offset <= source.length; offset++) {
+      const prefix = source.slice(0, offset);
+      const lastLf = prefix.lastIndexOf('\n');
+      assert.deepEqual(locate(offset), { offset, line: prefix.split('\n').length, column: offset - lastLf });
+    }
+  }
 });
 
 test('invalid locale, namespace and IDs produce structured errors', () => {

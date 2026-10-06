@@ -92,6 +92,8 @@ node benchmarks/live-update/run.mjs --browser-stages --out benchmarks/results/li
 
 파서 내부 구간은 `node benchmarks/live-update/parser-stages.mjs`로 잰다. 선택적 첫 인자는 출력 경로이고 기본은 `benchmarks/results/parser-stages-before.json`이다. `parser-probe.mjs`의 Node hook으로 JSON 처리·strict parse·token scan·위치 색인·메시지 loop·최종 동결을 감싼다. source·dist를 수정하지 않고 변환 모듈 2개를 확인한다. warmup 10·측정 50이며, 각 메시지에 clock을 붙이지 않는다. 세부 정의·기준 결과는 [../../docs/11-parser-measurements.md](../../docs/11-parser-measurements.md)에 있다.
 
+키 디코딩 trial의 `parser-stages-key-after.json`·`parse-compare-key.json`·`live-update-key.json`은 되돌린 실험 코드의 결과다. 최종 위치 색인 최적화는 `parser-stages-position-after.json`·`live-update-position.json`으로 구분한다. 일반 화면 반영 수치와 parser-only 수치를 혼합하지 않는다.
+
 `parse-compare.mjs`는 한 프로세스에서 baseline parser와 현재 parser를 교차 호출해 파서 자체 비용만 비교한다. baseline의 `packages/core/src`를 git에서 임시 디렉터리로 꺼내 `tsc`로 compile하므로 현재 `packages/core/dist` build가 있어야 한다. 같은 길이의 값 1개를 수정한 뒤 두 parser를 번갈아 호출하고 `JSON.stringify`·동등성 검사·디스크·watcher·검증·browser는 측정에서 뺀다. 끝나면 임시 디렉터리를 지운다.
 
 ```sh
