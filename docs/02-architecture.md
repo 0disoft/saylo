@@ -65,7 +65,7 @@ delete, rename, add도 같은 경로를 탄다. 파일 삭제·이름 변경·�
 - `instance.dispose`는 그 instance가 붙인 bridge 구독을 해제한다. HMR `hot.dispose`와 prune 정리 경로에서도 Saylo가 등록한 listener만 해제하고 공유 server websocket은 유지한다.
 - plugin은 dev 서버 종료 시 자신이 등록한 listener, route, channel binding만 정리한다.
 
-현재 eager 프로토타입은 `store.onDispose(cleanup)`을 통해 bridge를 정리한다. Vite watcher의 add/unlink listener, pending timer, 진행 중 읽기의 늦은 게시도 종료 시 해제·차단한다. 해제 후 `connectDev`를 다시 호출하면 최신 전체 snapshot과 현재 진단을 요청한다. 부분 전송과 자동 재연결의 세션·갭 처리는 이후 프로토콜 단계에서 구현한다.
+현재 eager 프로토타입은 `store.onDispose(cleanup)`을 통해 bridge를 정리한다. Vite watcher의 add/unlink listener, pending timer, 진행 중 읽기의 늦은 게시도 종료 시 해제·차단한다. 해제 후 `connectDev`를 다시 호출하면 최신 전체 snapshot과 현재 진단을 요청한다. 부분 전송과 자동 재연결의 세션·갭 처리는 9~13단계에서 로컬 구현했다.
 
 ## 시작 핸드셰이크
 

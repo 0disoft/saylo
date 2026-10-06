@@ -4,9 +4,9 @@ Saylo의 Vite 8 플러그인과 개발 클라이언트다. 카탈로그 파일 �
 
 ## 상태
 
-아직 npm에 게시하지 않았다. 첫 공개 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`다. 아래 설치 명령은 게시 후 기준이고 현재는 저장소 workspace에서 쓴다.
+2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`)을 npm 공개 registry에 게시했다. 이 저장소의 workspace에서도 쓸 수 있다.
 
-## 설치 (게시 후)
+## 설치
 
 앱 런타임에는 `@0disoft/saylo-core`를 설치하고, 플러그인과 dev client는 개발 의존성으로 넣는다. `vite`는 peer 의존성이며 현재 조건은 Vite 8이다.
 
@@ -15,7 +15,7 @@ npm install @0disoft/saylo-core@alpha
 npm install -D @0disoft/saylo-vite@alpha vite@8
 ```
 
-아직 `latest`로 게시하지 않으므로 Saylo 패키지는 `@alpha`를 지정한다.
+Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `@alpha`를 지정한다.
 
 ## 설정
 

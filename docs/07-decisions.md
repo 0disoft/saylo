@@ -19,6 +19,7 @@
 - i18next·Wuchale 같은 기존 도구의 공개 확장점 위에 얇은 검증·갱신·typegen 계층을 얹는 비교 실험을 먼저 둔다.
 - 그 실험으로 필수 계약을 충족하는지 확인하고, 남는 차별점이 독립 런타임을 정당화하는지 판단한다.
 - 비교 실험 결과로 제품 형태를 결정한다. 현재 설계의 목표는 독립 라이브러리다.
+- 이 비교 실험은 아직 실시하지 않았다.
 
 ## 초기 설계 결정 (검증 전, 바뀔 수 있음)
 
@@ -26,7 +27,7 @@
 | --- | --- |
 | 코어 형태 | 프레임워크 중립 TypeScript, 배포는 ESM JS + `.d.ts` |
 | instance 생성 | 동기 `createI18n<AppSchema>` + `initialSnapshot`(BootSnapshot) + `catalogSource`. schema는 타입 전용, 런타임 schema는 boot 메타에서 |
-| 첫 dev plugin | Vite plugin, `handleHotUpdate`에서 커스텀 이벤트 + `[]` 반환 |
+| 첫 dev plugin | Vite 8 plugin, `hotUpdate`에서 커스텀 이벤트 + `[]` 반환 |
 | 첫 프레임워크 어댑터 | vanilla subscription과 React. Svelte/Vue는 후속 |
 | React 연결 | `createSayloReact<AppSchema>()` factory가 Provider와 hook을 같은 context로 생성. hook의 t는 그 렌더가 선택한 UI snapshot에 바인딩 |
 | 상태 구분 | transport 상태(내부), 카탈로그 레코드(불변), UiSnapshot(공개), BootSnapshot(wire) 4종 |
@@ -55,20 +56,23 @@
 
 | 항목 | 상태 |
 | --- | --- |
-| 라이선스 | 미해결. 자동으로 정하지 않는다 |
-| npm `saylo` 이름 확보 | 미검증 |
-| 성능 목표 달성 | 미측정. 목표치만 존재 |
-| 지원 버전 범위 | 미해결 |
-| build-time parser 런타임 제거 | bundler 경계 검증 필요 |
-| unused message 제거 최적화 | 동적 t 키 tradeoff 검증 필요 |
+| 라이선스 | Apache-2.0 확정. 배포 tarball에 `LICENSE`·`NOTICE`를 함께 싣는다 |
+| npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-typegen`·`saylo-vite` 네 이름으로 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`) 게시 완료 |
+| 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 로케일 추가·paint·번들 크기는 아직 미측정 |
+| 지원 버전 범위 | Node 24.x, Vite 8, React 19, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
+| build-time parser 런타임 제거 | 미구현. bundler 경계 검증 필요 |
+| requireCompleteTranslations(완역 강제) | 후속. 기본은 불완전한 번역 허용 |
+| unused message 제거 최적화 | 후속. 동적 t 키 tradeoff 검증 필요 |
 | selector 미세구독 최적화 | 후속 |
-| ICU 정규화·중복 감지 | parser 전처리 필요 |
-| full catalog replacement 비용 | 큰 namespace 변경 시 payload·parse 비용이 커진다. 대규모 fixture 벤치마크 후 message delta 도입 여부를 판단한다(후속) |
-| 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다 |
+| Svelte·Vue 어댑터 | 후속. 현재는 vanilla subscription과 React |
+| secondary schema quarantine | 미구현(작업 시작). 현재는 기준 schema와 맞지 않는 후보를 배치 단위로 거부한다. 구현을 시작한 상태이며 완료·검증 전이다 |
+| JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
+| message delta 비용 | request-scoped message delta를 로컬 구현했다. 대규모 반영 성능 목표는 여전히 미달이고 대규모 fixture 재측정이 남았다 |
+| 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 비교 실험은 아직 실시하지 않았다 |
 
 ## 다른 도구와의 관계
 
-Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 구체 수치 비교나 측정 결과는 아직 없으므로 비교는 정성적·한정적 표현에 머문다.
+Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 구체 수치 비교나 측정 결과는 아직 없으므로 비교는 정성적·한정적 표현에 머문다. 위 비교 실험도 아직 실시하지 않았다.
 
 ## 참고 자료
 

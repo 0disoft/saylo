@@ -4,15 +4,15 @@ Saylo의 React 19 바인딩이다. `createSayloReact`가 typed Provider와 hook�
 
 ## 상태
 
-아직 npm에 게시하지 않았다. 첫 공개 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`다. 현재는 이 저장소의 workspace나 `npm pack` tarball로 쓴다. 아래 설치 명령은 게시 후 기준이다.
+2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`)을 npm 공개 registry에 게시했다. 이 저장소의 workspace나 `npm pack` tarball로도 쓸 수 있다.
 
-## 설치 (게시 후)
+## 설치
 
 ```sh
 npm install @0disoft/saylo-react@alpha @0disoft/saylo-core@alpha react@19 react-dom@19
 ```
 
-아직 `latest`로 게시하지 않으므로 Saylo 패키지는 `@alpha`를 지정한다. `react`는 peer 의존성이며 현재 조건은 React 19다. `react-dom`은 앱에서 렌더링할 때 필요하고, `@0disoft/saylo-core`는 런타임 의존성이다.
+Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `@alpha`를 지정한다. `react`는 peer 의존성이며 현재 조건은 React 19다. `react-dom`은 앱에서 렌더링할 때 필요하고, `@0disoft/saylo-core`는 런타임 의존성이다.
 
 ## 사용
 

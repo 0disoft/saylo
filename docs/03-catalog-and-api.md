@@ -1,6 +1,6 @@
 # 03. 카탈로그와 API
 
-이 문서는 카탈로그 파일 형식, ID·namespace 규칙, ICU 정책, argument 계약, 공개 API와 예제를 정한다. 갱신 프로토콜의 wire 타입과 적용 규칙은 [08-update-protocol.md](08-update-protocol.md)가 단일 출처다. 이 문서는 그 정의를 중복하지 않는다. 모듈 이름과 패키지 이름은 아직 확정되지 않은 제안이다.
+이 문서는 카탈로그 파일 형식, ID·namespace 규칙, ICU 정책, argument 계약, 공개 API와 예제를 정한다. 갱신 프로토콜의 wire 타입과 적용 규칙은 [08-update-protocol.md](08-update-protocol.md)가 단일 출처다. 이 문서는 그 정의를 중복하지 않는다. 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite`로 확정했고 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`)로 게시했다. 이 문서의 API 시그니처 중 아직 구현하지 않은 부분은 설계 제안이다.
 
 ## 파일 레이아웃
 
@@ -161,7 +161,7 @@ argument 없는 키는 그대로 호출한다. `t("cart:title")`.
 
 ## 공개 API
 
-현재 `createI18n` 코어는 parsed catalog 기반 프로토타입이다. 실제 생성 옵션은 `catalogSource`, `locale`, `initialNamespaces`, `initialCatalogs`이며 실제 타입은 `packages/core/src/loading-types.ts`에 있다. `CatalogManifest.catalogs`의 pair별 version·schema fingerprint·missing tombstone과 모든 초기 base+target outcome을 검증한다. 비동기 `setLocale`·`loadNamespace`·어댑터용 `refresh`, `StoreSnapshot` 형태의 불변 조회를 제공한다. 아래 `initialSnapshot: BootSnapshot` 생성 옵션과 wire catalog record는 SSR·production 연결을 위한 설계이며 아직 구현하지 않았다. 실행 예제는 `npm run demo:lazy`다.
+현재 코어는 parsed catalog 기반이다. 실제 생성 옵션은 두 갈래로, `catalogSource`·`locale`·`initialNamespaces`·`initialCatalogs`로 시작하는 eager 경로와 `initialSnapshot`(BootSnapshot)을 받는 SSR·hydration 경로가 있다. 실제 타입은 `packages/core/src/loading-types.ts`에 있다. `CatalogManifest.catalogs`의 pair별 version·schema fingerprint·missing tombstone과 모든 초기 base+target outcome을 검증한다. 비동기 `setLocale`·`loadNamespace`·어댑터용 `refresh`, `getSnapshot`·`getServerSnapshot`·`getBootSnapshot` 형태의 불변 조회, `onDispose`를 제공한다. 비동기 request-scoped 생성은 별도 `createServerI18n` factory가 맡는다. SSR 부팅 데이터는 `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`으로 구현했다. 아래 `UiSnapshot.catalogs`의 `Map<string, CatalogRecord>` 모형과 wire catalog record는 설계 초안이고, 현행 구현은 `CatalogOutcome` 배열과 parsed catalog를 쓴다. 실행 예제는 `npm run demo:lazy`, SSR 예제는 `npm run demo:ssr`·`npm run dev:ssr`다.
 
 초기 구현 선택은 동기 생성 + 명시적 로드다. 부팅에 필요한 로케일과 namespace는 `initialSnapshot`으로 함께 넘기고, 나머지는 필요할 때 로드한다. async 생성 함수는 두지 않는다.
 

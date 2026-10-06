@@ -4,16 +4,16 @@ Saylo 기준 카탈로그에서 `AppSchema` 타입 선언(`.d.ts`)을 생성한�
 
 ## 상태
 
-아직 npm에 게시하지 않았다. 첫 공개 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`다. 아래 설치·실행 명령은 게시 후 기준이다. 현재는 저장소 workspace에서 `node packages/typegen/dist/cli.js`로 실행한다.
+2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`)을 npm 공개 registry에 게시했다. 저장소 workspace에서 `node packages/typegen/dist/cli.js`로 직접 실행할 수도 있다.
 
-## 설치 (게시 후)
+## 설치
 
 ```sh
 npm install --save-dev @0disoft/saylo-typegen@alpha
 npm install @0disoft/saylo-core@alpha
 ```
 
-아직 `latest`로 게시하지 않으므로 `@alpha`를 지정한다. `@0disoft/saylo-core`는 생성한 타입을 코어 제네릭으로 소비할 때 필요하다. 타입 선언만 생성할 때는 필요하지 않다. CLI를 이미 설치했다면 아래 실행 예시의 `npx saylo-typegen`을 그대로 쓴다.
+Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `@alpha`를 지정한다. `@0disoft/saylo-core`는 생성한 타입을 코어 제네릭으로 소비할 때 필요하다. 타입 선언만 생성할 때는 필요하지 않다. CLI를 이미 설치했다면 아래 실행 예시의 `npx saylo-typegen`을 그대로 쓴다.
 
 ## 카탈로그
 

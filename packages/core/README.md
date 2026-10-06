@@ -4,15 +4,15 @@ Saylo 코어 패키지다. 카탈로그 파싱과 스키마 검증, 동기 번�
 
 ## 상태
 
-아직 npm에 게시하지 않았다. 첫 공개 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`다. 현재는 이 저장소의 workspace에서 쓰거나 `npm pack`으로 만든 tarball을 설치해 쓴다. 아래 설치 명령은 게시 후 기준이다.
+2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`)을 npm 공개 registry에 게시했다. 이 저장소의 workspace에서 쓰거나 `npm pack`으로 만든 tarball을 설치할 수도 있다.
 
-## 설치 (게시 후)
+## 설치
 
 ```sh
 npm install @0disoft/saylo-core@alpha
 ```
 
-아직 `latest`로 게시하지 않으므로 `@alpha`를 지정한다. 앱 런타임 의존성(`dependencies`)으로 설치한다.
+`latest`는 아직 등록용 placeholder를 가리키므로 `@alpha`를 지정한다. 앱 런타임 의존성(`dependencies`)으로 설치한다.
 
 ## 사용
 

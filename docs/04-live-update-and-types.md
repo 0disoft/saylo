@@ -18,7 +18,7 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 
 ## desired-state 조정
 
-현재 코어 구현은 `packages/core/src/i18n.ts`와 `catalog-loader.ts`다. desired locale·namespace의 준비를 합치고 pair/version별 요청을 공유한다. 미로드 namespace는 명시적으로 로드하며, present/missing 전체가 준비된 뒤 한 번 게시한다. stale 응답은 최대 3회 조회하고 실패 시 이전 UI를 유지한다. Vite는 manifest 전체와 요청한 parsed pair의 본문을 별도로 전달하며, loaded scope의 변경만 다시 조회한다. 아래 스키마 quarantine와 push 방식의 부분 patch는 후속 단계다. 현재 lazy 후보도 번역 스키마 검증에 실패하면 후보 전체를 거부한다.
+현재 코어 구현은 `packages/core/src/i18n.ts`와 `catalog-loader.ts`다. desired locale·namespace의 준비를 합치고 pair/version별 요청을 공유한다. 미로드 namespace는 명시적으로 로드하며, present/missing 전체가 준비된 뒤 한 번 게시한다. stale 응답은 최대 3회 조회하고 실패 시 이전 UI를 유지한다. Vite는 manifest 전체와 요청한 parsed pair의 본문을 별도로 전달하며, loaded scope의 변경만 다시 조회한다. 직전 baseline과 맞는 pair 응답은 바뀐 메시지 request-scoped delta가 되고, 그 밖에는 full present/missing 응답으로 돌아간다(13단계, 로컬 구현 완료). 서버가 patch를 밀어주는 push 방식 전송은 후속이다. secondary 스키마 quarantine는 미구현이며, 현재는 번역 스키마 검증에 실패한 후보를 배치 단위로 거부한다. quarantine 구현을 시작한 상태이고 완료·검증 전이다.
 
 로케일 전환과 namespace 로드는 하나의 desired state(locale + 원하는 namespace 집합)로 조정한다. generation은 transport의 오래된 완료를 차단하기 위한 값이지, generation이 바뀔 때마다 모든 호출자를 취소한다는 뜻이 아니다.
 
@@ -66,6 +66,7 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 - 유효한 base 변경은 커밋한다. 커밋을 미루지 않는다.
 - 부적합해진 기존 secondary 메시지는 개발 중 quarantine(격리)하고 진단을 낸다. 그 메시지는 base 값으로 fallback해 화면이 깨지지 않게 한다.
 - base 변경과 locale 카탈로그는 후보 트랜잭션에서 함께 검증한다. 기준 schema와 각 locale schema가 맞는 조합만 커밋한다.
+- 위 quarantine는 아직 미구현이다. 현재는 기준 schema와 맞지 않는 후보를 배치 단위로 거부한다.
 
 DOM 상태 보존 범위는 편집 종류로 나눈다.
 

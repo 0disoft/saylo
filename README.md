@@ -10,7 +10,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - `npm run verify:pack`으로 외부 JS/TS 소비를 검증한다. 2026-10-06 Node 24.18.0·Vite 8.3.2에서 exit 0으로 통과했다. tarball의 README 포함과 metadata 일치, README 예제 블록(core JS 실행, React·typegen·Vite TS) 검사도 함께 한다. 스크립트는 [scripts/pack-smoke.mjs](scripts/pack-smoke.mjs)에 있다. 게시된 registry 실물은 `npm run verify:registry`가 [releases/0.1.0-alpha.1.json](releases/0.1.0-alpha.1.json)의 CI 승인 integrity와 대조한다.
 - 지원 버전은 Node 24.x(`engines.node`)다. 로컬 검증 환경은 Node 24.18.0이고 TypeScript 7을 기준으로 검증하지만 `typescript`를 peer로 강제하지 않는다. `packages/core`·`packages/react`는 ES2022 브라우저 대상이라 Node API가 필요 없고, `packages/vite`·`packages/typegen`은 Node에서 실행한다. 배포 방식과 릴리스 절차는 [릴리스](docs/09-release.md)에 있다.
 - 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개이고, 2026-10-06 `0.1.0-alpha.1`·dist-tag `alpha`로 npm 공개 registry에 게시했다. 라이선스는 Apache-2.0이다.
-- docs의 전체 모듈 구조, 이벤트 이름, i18n API 시그니처는 설계 제안이다. 현재 구현된 파싱 API와 구분하며 구현 과정에서 바뀔 수 있다.
+- docs에는 설계 초안과 로컬 검증 기록이 섞여 있다. 전체 모듈 구조, 이벤트 이름, 아직 구현하지 않은 i18n API 시그니처는 설계 제안이고, 문서와 실제 코드가 어긋나면 `packages/*/README.md`와 `packages/*/src`의 현행 코드를 따른다.
 - 문서 기준일: 2026-10-06
 
 ## 로컬 실행
@@ -245,7 +245,7 @@ npm run release:pack
 
 | 문서 | 내용 |
 | --- | --- |
-| [docs/README.md](docs/README.md) | 문서 읽는 순서와 상태 표기 규칙 |
+| [docs/README.md](docs/README.md) | 문서 읽는 순서, 상태 표기 규칙, 설계 초안과 현행 코드 구분 |
 | [docs/01-product-and-scope.md](docs/01-product-and-scope.md) | 문제 정의, 목표, 범위, 비목표, DOM 보존 범위, 용어 |
 | [docs/02-architecture.md](docs/02-architecture.md) | 개발 파이프라인, 코어/어댑터 경계, store 모델, 소유권 |
 | [docs/03-catalog-and-api.md](docs/03-catalog-and-api.md) | 카탈로그 파일, ID/namespace, ICU 정책, argument 계약, 공개 API와 예제 |

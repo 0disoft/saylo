@@ -175,6 +175,8 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 
 초기 구현이 만족해야 할 핵심 사례다. 아직 통과를 주장하지 않는다.
 
+아래 단계별 검증 기록은 작성 시점의 상태를 그대로 남긴 역사 기록이다. 이후 단계에서 바뀐 항목(예: 패키지 공개 배포와 version)은 그때 문장을 고치지 않고 [09-release.md](09-release.md)와 앞 절의 현행 값을 따른다.
+
 2026-10-05 로컬 구현은 8단계까지 진행했다. 코어 33개, Vite 어댑터 28개, React 어댑터 5개, typegen 5개 테스트와 JS/TS 소비 타입 검사, React 데모 TS 검사가 통과했다. vanilla와 React production 빌드가 통과했다. 개발 브라우저에서 한국어·영어 파일 저장 후 문구 갱신, 입력값·포커스·커서·스크롤·열린 모달 유지, 잘못된 JSON의 마지막 정상 상태 유지와 수정 후 복구를 확인했다. vanilla에서 일본어 로케일·namespace 추가, 임시 파일 교체 저장, 현재 로케일 삭제 후 기준 언어 전환도 실제 watcher로 확인했다. React StrictMode에서 controlled input과 수량·모달 상태 보존, JSON 오류 복구와 언어 전환을 확인했다. 새 기준 키 추가로 `.d.ts`가 갱신되는 동안에도 React 상태가 유지되고, 문구만 수정하면 선언 파일의 수정 시간이 바뀌지 않는 것을 확인했다. typegen 검사는 초기 readiness, snapshot 우선 게시, generation 취소·최신 결과 수렴, 동일 내용의 쓰기 생략, 실패 후 선언 유지·재시도, 생성 파일 watch 제외와 생성된 타입의 TS/checkJs 소비를 확인한다. 성능 측정·부분 전송·SSR은 미완료다.
 
 9단계의 eager handshake를 추가했다. Vite 어댑터 38개 테스트로 초기 연결, 요청 범위 echo, 중복·과거 응답, revision gap, 새 세션, 재연결 generation 무효화, 여러 store의 요청 분리, 제한된 재시도와 timer 정리를 검증했다. 전체 81개 테스트와 소비 타입 검사가 통과했다. React 개발 브라우저에서 문구 저장 후 입력·포커스·열린 모달 유지, 서버 중단·재기동 후 페이지 새로고침과 최신 카탈로그 복구를 확인했다. 부분 전송·pair별 version은 10단계에서 연결한다.
@@ -205,7 +207,7 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 | 2 | 추가·수정·삭제 | 키 추가, 값 수정, 키 삭제가 각각 수렴한다 |
 | 3 | 파싱 복구 | 깨진 JSON/ICU를 넣어도 마지막 정상값이 유지되고 진단이 나온다 |
 | 4 | 재연결·갭 | 새 세션·revision gap에서 full snapshot으로 복구하고, 중복·오래된 patch는 discard한다. Vite 재시작 후 DOM 보존은 요구하지 않는다 |
-| 5 | 비동기 타입 schema | baseline schema 변경 시 quarantine과 fallback이 동작한다. 키 삭제·필수 인자 추가 후 기존 호출 오류는 진단하며 DOM 보존을 요구하지 않는다 |
+| 5 | 비동기 타입 schema | baseline schema 변경 시 quarantine과 fallback이 동작한다(quarantine는 미구현이고 현재는 부적합 후보를 배치 거부한다). 키 삭제·필수 인자 추가 후 기존 호출 오류는 진단하며 DOM 보존을 요구하지 않는다 |
 | 6 | 포맷 일치 | 변수, number/date/time, plural/select가 같은 Intl locale data·런타임에서 dev/prod 동일 출력을 낸다(고정 timeZone, 고정 시각 입력) |
 | 7 | SSR 동시성 | 요청 간 로케일·카탈로그가 섞이지 않는다 |
 | 8 | JS/TS 소비 | JS 프로젝트와 TS 프로젝트에서 모두 설치·소비가 된다(스모크) |
@@ -231,7 +233,7 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 
 ## 로드맵
 
-작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 현재 13단계 request-scoped patch까지 로컬 구현을 진행했다.
+작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 1~13단계 로컬 구현을 마쳤다. quarantine·build-time parser 제거·unused message 제거·selector 미세구독·completeTranslations·Svelte/Vue 어댑터·대규모 성능 목표·비교 실험은 후속이다.
 
 | 순서 | 커밋의 한 가지 책임 | 완료 기준 |
 | --- | --- | --- |
@@ -250,4 +252,4 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 | 12 | SSR serializer와 hydration fixture | 요청별 snapshot, boot escape, hydration 직전 갱신을 검증한다. 로컬 구현 완료 |
 | 13 | 변경 메시지별 patch 전송 | 바뀐 메시지만 보내고 상태 보존·수렴을 유지한다. wire 크기와 브라우저 검증·동결 비용이 줄어든다. 로컬 구현 완료 |
 
-1–8단계에서는 작은 fixture를 eager로 실어도 된다. 9–10단계에서 부분 전송과 미로드 상태가 들어올 때 카탈로그별 버전 계약을 적용한다.
+1~8단계에서는 작은 fixture를 eager로 실어도 된다. 9~10단계에서 부분 전송과 미로드 상태가 들어올 때 카탈로그별 버전 계약을 적용한다. 위 표의 완료 기준은 그 단계의 데모·검증 목표이고, 1~13단계는 로컬 구현을 마쳤다.
