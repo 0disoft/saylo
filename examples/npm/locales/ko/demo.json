@@ -1,0 +1,10 @@
+{
+  "heading": "npm으로 설치해 쓰는 Saylo",
+  "greeting": "{name}님, 로케일 JSON을 고치면 이 문구가 바로 바뀝니다.",
+  "nameLabel": "이름",
+  "noteLabel": "메모",
+  "openDialog": "확인 창 열기",
+  "dialogTitle": "{name}님, 입력한 내용을 확인해 주세요",
+  "dialogNoteLabel": "확인 메모",
+  "closeDialog": "닫기"
+}

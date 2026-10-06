@@ -1,0 +1,10 @@
+{
+  "heading": "Saylo from npm",
+  "greeting": "Hi {name}, edit the locale JSON and this sentence changes.",
+  "nameLabel": "Name",
+  "noteLabel": "Note",
+  "openDialog": "Open confirmation",
+  "dialogTitle": "Check your input, {name}",
+  "dialogNoteLabel": "Confirmation note",
+  "closeDialog": "Close"
+}

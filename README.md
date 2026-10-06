@@ -239,6 +239,8 @@ npm run release:pack
 | `@0disoft/saylo-typegen` | [npm](https://www.npmjs.com/package/@0disoft/saylo-typegen) | [packages/typegen/README.md](packages/typegen/README.md) |
 | `@0disoft/saylo-vite` | [npm](https://www.npmjs.com/package/@0disoft/saylo-vite) | [packages/vite/README.md](packages/vite/README.md) |
 
+설치 후 프레임워크 없이 Vite에서 바로 실행하는 예제는 [examples/npm/README.md](examples/npm/README.md)에 있다.
+
 ## 문서
 
 | 문서 | 내용 |

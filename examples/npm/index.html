@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Saylo · npm example</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1 data-i18n="demo:heading"></h1>
+        <select id="locale" aria-label="Locale"></select>
+      </header>
+      <section class="panel">
+        <p data-i18n="demo:greeting"></p>
+        <label>
+          <span data-i18n="demo:nameLabel"></span>
+          <input id="name" value="Saylo" autocomplete="off">
+        </label>
+        <label>
+          <span data-i18n="demo:noteLabel"></span>
+          <textarea id="note" rows="3"></textarea>
+        </label>
+        <div class="controls">
+          <button id="open-dialog" type="button" data-i18n="demo:openDialog"></button>
+        </div>
+        <p id="status" class="status" role="status"></p>
+      </section>
+    </main>
+    <dialog id="confirmation">
+      <h2 data-i18n="demo:dialogTitle"></h2>
+      <label>
+        <span data-i18n="demo:dialogNoteLabel"></span>
+        <input id="dialog-note" autocomplete="off">
+      </label>
+      <div class="controls">
+        <button id="close-dialog" type="button" class="secondary" data-i18n="demo:closeDialog"></button>
+      </div>
+    </dialog>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
