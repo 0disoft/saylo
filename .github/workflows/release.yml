@@ -1,0 +1,75 @@
+name: Validate and publish npm release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact version already committed in all four packages
+        required: true
+        default: 0.1.0-alpha.1
+        type: string
+      dist_tag:
+        description: npm distribution tag
+        required: true
+        default: alpha
+        type: choice
+        options: [alpha, next, latest]
+      publish:
+        description: Publish validated artifacts (false only validates and uploads)
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: saylo-npm-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main' && github.repository == '0disoft/saylo'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm-release
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_TAG: ${{ inputs.dist_tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Install publishing npm CLI
+        run: npm install --global npm@11
+      - name: Validate committed release metadata
+        run: npm run release:check -- --version "$RELEASE_VERSION" --tag "$RELEASE_TAG"
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Check runtime and consumer types
+        run: npm run check
+      - name: Pack and verify the artifacts to be published
+        run: npm run release:pack
+      - name: Validate publication plan without registry writes
+        run: npm run release:publish -- --version "$RELEASE_VERSION" --tag "$RELEASE_TAG"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: saylo-npm-${{ inputs.version }}
+          path: .release/npm/
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+      - name: Publish verified artifacts through OIDC
+        if: inputs.publish
+        env:
+          NPM_CONFIG_PROVENANCE: ${{ github.event.repository.private && 'false' || 'true' }}
+        run: npm run release:publish -- --version "$RELEASE_VERSION" --tag "$RELEASE_TAG" --publish

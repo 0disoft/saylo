@@ -4,15 +4,15 @@ Saylo의 React 19 바인딩이다. `createSayloReact`가 typed Provider와 hook�
 
 ## 상태
 
-아직 npm에 게시하지 않았다. 현재는 이 저장소의 workspace나 `npm pack` tarball로 쓴다. 아래 설치 명령은 게시 후 기준이다.
+아직 npm에 게시하지 않았다. 첫 공개 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`다. 현재는 이 저장소의 workspace나 `npm pack` tarball로 쓴다. 아래 설치 명령은 게시 후 기준이다.
 
 ## 설치 (게시 후)
 
 ```sh
-npm install @0disoft/saylo-react @0disoft/saylo-core react@19 react-dom@19
+npm install @0disoft/saylo-react@alpha @0disoft/saylo-core@alpha react@19 react-dom@19
 ```
 
-`react`는 peer 의존성이며 현재 조건은 React 19다. `react-dom`은 앱에서 렌더링할 때 필요하고, `@0disoft/saylo-core`는 런타임 의존성이다.
+아직 `latest`로 게시하지 않으므로 Saylo 패키지는 `@alpha`를 지정한다. `react`는 peer 의존성이며 현재 조건은 React 19다. `react-dom`은 앱에서 렌더링할 때 필요하고, `@0disoft/saylo-core`는 런타임 의존성이다.
 
 ## 사용
 
@@ -60,4 +60,10 @@ createRoot(document.getElementById('root')!).render(
 
 ## 버전
 
-Node.js·TypeScript 지원 범위는 아직 확정하지 않았다. peer 조건은 React 19이고, Vite 8은 [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme)의 조건이다.
+Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환경은 Node 24.18.0이다. TypeScript 7을 기준으로 검증하며 `typescript`를 peer로 강제하지 않는다.
+
+런타임 target은 ES2022이고 브라우저 대상이라 Node API에 의존하지 않는다. peer 조건은 React 19이고, Vite 8은 [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme)의 조건이다.
+
+## 라이선스
+
+Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.

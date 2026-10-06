@@ -17,7 +17,10 @@
     "typegen:react": "npm run build && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts",
     "build:react": "npm run typegen:react && tsc -p examples/react/tsconfig.json && vite build --config examples/react/vite.config.mjs",
     "test": "npm run build && npm run test --workspaces",
-    "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json"
+    "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json",
+    "release:check": "node scripts/release-check.mjs",
+    "release:pack": "npm run build && node scripts/pack-smoke.mjs --save-release",
+    "release:publish": "node scripts/release-publish.mjs"
   },
   "devDependencies": {
     "@types/node": "24",
@@ -28,5 +31,9 @@
     "react-dom": "19",
     "typescript": "7",
     "vite": "8"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": "24.x"
   }
 }

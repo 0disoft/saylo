@@ -5,6 +5,7 @@ import { cp, lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'no
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkRelease, releaseInput } from './release-check.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const fixtures = fileURLToPath(new URL('./pack-fixtures/', import.meta.url));
@@ -16,6 +17,10 @@ const packs = path.join(root, 'packs');
 const majors = JSON.parse(await readFile(path.join(repository, 'package.json'), 'utf8')).devDependencies;
 const packages = Object.fromEntries(['core', 'react', 'typegen', 'vite'].map(id => [`@0disoft/saylo-${id}`, id]));
 const names = Object.keys(packages);
+const saveRelease = process.argv.slice(2).includes('--save-release');
+assert.ok(process.argv.slice(2).every(arg => arg === '--save-release'), 'Unsupported pack argument.');
+const license = await readFile(path.join(repository, 'LICENSE'), 'utf8');
+const notice = await readFile(path.join(repository, 'NOTICE'), 'utf8');
 // npm run can export .npmrc allow-scripts as an env override, which newer npm
 // rejects for project installs. Install scripts are disabled explicitly below.
 const childEnv = { ...Object.fromEntries(Object.entries(process.env)
@@ -44,12 +49,22 @@ try {
   const metadata = JSON.parse(await npm(['pack', '--workspaces', '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
   assert.deepEqual(packed.map(pack => pack.name).sort(), [...names].sort());
+  if (saveRelease) {
+    const core = JSON.parse(await readFile(path.join(repository, 'packages/core/package.json'), 'utf8'));
+    await checkRelease(releaseInput(['--version', core.version, '--tag', core.publishConfig.tag]));
+  }
   const packageDocs = new Map();
   for (const pack of packed) {
     const directory = path.join(repository, 'packages', packages[pack.name]);
     const manifest = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
     const files = new Set(pack.files.map(file => file.path));
     assert.ok(files.has('README.md'), `${pack.name} is missing its README`);
+    assert.ok(files.has('LICENSE') && files.has('NOTICE'), `${pack.name} needs license files`);
+    assert.ok([...files].every(file => file.startsWith('dist/') || ['package.json', 'README.md', 'LICENSE', 'NOTICE'].includes(file)), `${pack.name} contains unexpected release files`);
+    assert.equal(manifest.license, 'Apache-2.0');
+    assert.equal(manifest.private, undefined);
+    assert.equal(pack.version, manifest.version);
+    assert.deepEqual(manifest.engines, { node: '24.x' });
     assert.ok(typeof manifest.description === 'string' && manifest.description.trim(), `${pack.name} needs a description`);
     assert.deepEqual(manifest.repository, { type: 'git', url: 'git+https://github.com/0disoft/saylo.git', directory: `packages/${packages[pack.name]}` });
     assert.equal(manifest.homepage, `https://github.com/0disoft/saylo/tree/main/packages/${packages[pack.name]}#readme`);
@@ -83,9 +98,11 @@ try {
       assert.ok(inside(await realpath(app), await realpath(installed)), `${name} escaped the consumer`);
       const shipped = JSON.parse(await readFile(path.join(installed, 'package.json'), 'utf8'));
       const expected = packageDocs.get(name);
-      for (const field of ['description', 'repository', 'homepage', 'bugs', 'keywords'])
+      for (const field of ['version', 'license', 'engines', 'publishConfig', 'dependencies', 'peerDependencies', 'description', 'repository', 'homepage', 'bugs', 'keywords'])
         assert.deepEqual(shipped[field], expected.manifest[field], `${name} lost packed ${field}`);
       assert.equal(await readFile(path.join(installed, 'README.md'), 'utf8'), expected.readme, `${name} shipped a stale README`);
+      assert.equal(await readFile(path.join(installed, 'LICENSE'), 'utf8'), license);
+      assert.equal(await readFile(path.join(installed, 'NOTICE'), 'utf8'), notice);
     }
     if (language === 'ts') {
       // Check the actual shipped examples against the independently installed packages.
@@ -110,6 +127,18 @@ try {
     console.log(`[pack] ${language}: CLI, ${language === 'js' ? 'checkJs' : 'TypeScript'}, runtime/React SSR, Vite lazy build passed`);
   }
   console.log('[pack] All four packed packages passed independent JS and TS consumption.');
+  if (saveRelease) {
+    const destination = path.join(repository, '.release', 'npm');
+    await mkdir(destination, { recursive: true });
+    const resolved = await realpath(destination);
+    assert.equal(resolved, path.join(await realpath(repository), '.release', 'npm'), 'Unsafe release output path.');
+    assert.equal((await lstat(destination)).isSymbolicLink(), false);
+    await rm(resolved, { recursive: true, force: true });
+    await mkdir(destination);
+    for (const pack of packed) await cp(path.join(packs, pack.filename), path.join(destination, pack.filename));
+    await writeFile(path.join(destination, 'manifest.json'), JSON.stringify(packed.map(({ name, version, filename, integrity }) => ({ name, version, filename, integrity })), null, 2) + '\n');
+    console.log('[pack] Saved the verified release artifacts to .release/npm.');
+  }
 } finally {
   const resolved = path.resolve(root);
   const temporaryParent = path.resolve(os.tmpdir());

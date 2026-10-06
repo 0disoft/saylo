@@ -1,25 +1,65 @@
 {
   "name": "@0disoft/saylo-vite",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0-alpha.1",
   "type": "module",
   "description": "Vite 8 plugin and dev client that live-update Saylo catalogs without a full reload.",
-  "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/vite" },
-  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/vite#readme",
-  "bugs": { "url": "https://github.com/0disoft/saylo/issues" },
-  "keywords": ["i18n", "intl", "localization", "vite", "hmr"],
-  "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./client": { "types": "./dist/client.d.ts", "import": "./dist/client.js" },
-    "./server": { "types": "./dist/server-source.d.ts", "import": "./dist/server-source.js" },
-    "./virtual": { "types": "./dist/virtual.d.ts" }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0disoft/saylo.git",
+    "directory": "packages/vite"
   },
-  "files": ["dist"],
+  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/vite#readme",
+  "bugs": {
+    "url": "https://github.com/0disoft/saylo/issues"
+  },
+  "keywords": [
+    "i18n",
+    "intl",
+    "localization",
+    "vite",
+    "hmr"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./server": {
+      "types": "./dist/server-source.d.ts",
+      "import": "./dist/server-source.js"
+    },
+    "./virtual": {
+      "types": "./dist/virtual.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json && node -e \"require('node:fs').copyFileSync('src/virtual.d.ts', 'dist/virtual.d.ts')\"",
     "test": "node --test test/plugin.test.mjs test/client.test.mjs test/lazy.test.mjs test/patch.test.mjs test/production.test.mjs test/server.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
-  "dependencies": { "@0disoft/saylo-core": "0", "@0disoft/saylo-typegen": "0" },
-  "peerDependencies": { "vite": "8" }
+  "dependencies": {
+    "@0disoft/saylo-core": "0.1.0-alpha.1",
+    "@0disoft/saylo-typegen": "0.1.0-alpha.1"
+  },
+  "peerDependencies": {
+    "vite": "8"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha",
+    "registry": "https://registry.npmjs.org/"
+  }
 }

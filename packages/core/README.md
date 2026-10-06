@@ -4,15 +4,15 @@ Saylo 코어 패키지다. 카탈로그 파싱과 스키마 검증, 동기 번�
 
 ## 상태
 
-아직 npm에 게시하지 않았다. 현재는 이 저장소의 workspace에서 쓰거나 `npm pack`으로 만든 tarball을 설치해 쓴다. 아래 설치 명령은 게시 후 기준이다.
+아직 npm에 게시하지 않았다. 첫 공개 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`다. 현재는 이 저장소의 workspace에서 쓰거나 `npm pack`으로 만든 tarball을 설치해 쓴다. 아래 설치 명령은 게시 후 기준이다.
 
 ## 설치 (게시 후)
 
 ```sh
-npm install @0disoft/saylo-core
+npm install @0disoft/saylo-core@alpha
 ```
 
-앱 런타임 의존성(`dependencies`)으로 설치한다.
+아직 `latest`로 게시하지 않으므로 `@alpha`를 지정한다. 앱 런타임 의존성(`dependencies`)으로 설치한다.
 
 ## 사용
 
@@ -59,4 +59,10 @@ TypeScript에서는 `createStore<AppSchema>(...)`로, JS에서는 JSDoc `Store<A
 
 ## 버전
 
-Node.js·TypeScript 지원 범위는 아직 확정하지 않았다. 이 패키지에는 런타임 peer 의존성이 없다.
+Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환경은 Node 24.18.0이다. TypeScript 7을 기준으로 검증하지만 `typescript`를 peer로 강제하지 않는다.
+
+런타임 target은 ES2022이고 브라우저 대상이라 Node API에 의존하지 않는다. 이 패키지에는 런타임 peer 의존성이 없다.
+
+## 라이선스
+
+Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.

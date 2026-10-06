@@ -4,16 +4,18 @@ Saylo의 Vite 8 플러그인과 개발 클라이언트다. 카탈로그 파일 �
 
 ## 상태
 
-아직 npm에 게시하지 않았다. 아래 설치 명령은 게시 후 기준이고 현재는 저장소 workspace에서 쓴다.
+아직 npm에 게시하지 않았다. 첫 공개 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`다. 아래 설치 명령은 게시 후 기준이고 현재는 저장소 workspace에서 쓴다.
 
 ## 설치 (게시 후)
 
 앱 런타임에는 `@0disoft/saylo-core`를 설치하고, 플러그인과 dev client는 개발 의존성으로 넣는다. `vite`는 peer 의존성이며 현재 조건은 Vite 8이다.
 
 ```sh
-npm install @0disoft/saylo-core
-npm install -D @0disoft/saylo-vite vite@8
+npm install @0disoft/saylo-core@alpha
+npm install -D @0disoft/saylo-vite@alpha vite@8
 ```
+
+아직 `latest`로 게시하지 않으므로 Saylo 패키지는 `@alpha`를 지정한다.
 
 ## 설정
 
@@ -77,4 +79,10 @@ SSR은 `@0disoft/saylo-vite/server`와 `virtual:saylo/server`를 쓴다. 예제�
 
 ## 버전
 
-Node.js·TypeScript 지원 범위는 아직 확정하지 않았다. peer 조건은 Vite 8이다.
+Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환경은 Node 24.18.0이다. TypeScript 7을 기준으로 검증하며 `typescript`를 peer로 강제하지 않는다.
+
+런타임 target은 ES2022이고 Vite 개발 서버·빌드에서 실행한다. peer 조건은 Vite 8이다.
+
+## 라이선스
+
+Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.

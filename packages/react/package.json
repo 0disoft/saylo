@@ -1,22 +1,52 @@
 {
   "name": "@0disoft/saylo-react",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0-alpha.1",
   "type": "module",
   "description": "React 19 bindings for Saylo with a typed provider and snapshot-bound hooks.",
-  "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/react" },
-  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/react#readme",
-  "bugs": { "url": "https://github.com/0disoft/saylo/issues" },
-  "keywords": ["i18n", "intl", "localization", "react"],
-  "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0disoft/saylo.git",
+    "directory": "packages/react"
   },
-  "files": ["dist"],
+  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/react#readme",
+  "bugs": {
+    "url": "https://github.com/0disoft/saylo/issues"
+  },
+  "keywords": [
+    "i18n",
+    "intl",
+    "localization",
+    "react"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "node --test test/react.test.mjs test/hydration.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
-  "dependencies": { "@0disoft/saylo-core": "0" },
-  "peerDependencies": { "react": "19" }
+  "dependencies": {
+    "@0disoft/saylo-core": "0.1.0-alpha.1"
+  },
+  "peerDependencies": {
+    "react": "19"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha",
+    "registry": "https://registry.npmjs.org/"
+  }
 }

@@ -4,18 +4,18 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 
 ## 현재 상태
 
-- `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 패키지는 아직 비공개이며 npm에 배포하지 않았다.
+- `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 공개 패키지 네 개에서 `private`를 떼고 첫 버전을 `0.1.0-alpha.1`(dist-tag `alpha`)로 정했지만, 아직 npm에 배포하지 않았다. 루트 workspace package는 `private`를 유지한다.
 - 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR boot serializer·요청별 instance·React hydration 어댑터를 구현했고 전체 check와 실제 브라우저 검증을 마쳤다.
 - 성능 목표는 [검증과 로드맵](docs/06-validation-and-roadmap.md)에 있다. 라이브 갱신 벤치마크는 `npm run bench:live`로 돌리고 결과는 [benchmarks/results/live-update.json](benchmarks/results/live-update.json), 최적화 후 재측정은 [benchmarks/results/live-update-optimized.json](benchmarks/results/live-update-optimized.json), request-scoped patch 적용 후 첫 run과 재실행은 [benchmarks/results/live-update-patch.json](benchmarks/results/live-update-patch.json)·[benchmarks/results/live-update-patch-repeat.json](benchmarks/results/live-update-patch-repeat.json)에 남는다. 방법과 조건은 [benchmarks/live-update/README.md](benchmarks/live-update/README.md)에 정리했다. request-scoped patch 뒤 small은 재실행에서 p95 목표 안에 들어왔지만 같은 코드의 첫 run은 넘었고, large는 두 run 모두 목표 p95 ≤ 100ms를 넘었다.
 - `npm run verify:pack`으로 외부 JS/TS 소비를 검증한다. 2026-10-06 Node 24.18.0·Vite 8.3.2에서 exit 0으로 통과했다. tarball의 README 포함과 metadata 일치, README 예제 블록(core JS 실행, React·typegen·Vite TS) 검사도 함께 한다. 스크립트는 [scripts/pack-smoke.mjs](scripts/pack-smoke.mjs)에 있다.
-- 지원 버전 범위, 패키지 배포 방식, 런타임 요구사항은 확정하지 않았다.
-- 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개로 정했다. 2026-10-06 npm 공개 registry에서 네 이름을 조회해 모두 HTTP 404를 받았고, 이는 공개 등록이 아직 없다는 조회 기록이다. 라이선스는 아직 정하지 않았다.
+- 지원 버전은 Node 24.x(`engines.node`)다. 로컬 검증 환경은 Node 24.18.0이고 TypeScript 7을 기준으로 검증하지만 `typescript`를 peer로 강제하지 않는다. `packages/core`·`packages/react`는 ES2022 브라우저 대상이라 Node API가 필요 없고, `packages/vite`·`packages/typegen`은 Node에서 실행한다. 배포 방식과 릴리스 절차는 [릴리스](docs/09-release.md)에 있다.
+- 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개로 정했다. 2026-10-06 npm 공개 registry에서 네 이름을 조회해 모두 HTTP 404를 받았고, 이는 공개 등록이 아직 없다는 조회 기록이다. 라이선스는 Apache-2.0이다.
 - docs의 전체 모듈 구조, 이벤트 이름, i18n API 시그니처는 설계 제안이다. 현재 구현된 파싱 API와 구분하며 구현 과정에서 바뀔 수 있다.
 - 문서 기준일: 2026-10-06
 
 ## 로컬 실행
 
-Node.js와 npm으로 저장소 루트에서 실행한다. 초기 검증 환경은 Node.js 24.18.0, TypeScript 7.0.2다. 전체 지원 버전 범위는 아직 확정하지 않았다.
+Node.js와 npm으로 저장소 루트에서 실행한다. 지원 버전은 Node 24.x이고 검증 환경은 Node.js 24.18.0, TypeScript 7.0.2다.
 
 ```sh
 npm install
@@ -214,6 +214,18 @@ const root = hydrateRoot(document.getElementById('root'), h(SayloProvider, { ins
 
 실행용 SSR fixture는 `examples/ssr/`에 있고, `npm run demo:ssr`가 ko/en 동시 요청 renderToString과 boot locale 검사를 수행한 뒤 종료한다. `npm run dev:ssr`는 127.0.0.1:5190/?locale=en에서 실제 SSR 서버를 띄워 client hydrateRoot(StrictMode)와 live connectDev까지 확인한다.
 
+## 릴리스
+
+공개 대상은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 패키지다. 첫 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`이고 아직 게시하지 않았다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. 아직 `latest`가 없으므로 설치할 때는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 지정한다.
+
+```sh
+npm run release:check -- --version 0.1.0-alpha.1 --tag alpha
+npm run check
+npm run release:pack
+```
+
+`release:check`는 네 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 네 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch로 같은 검증을 돌리고 `publish`가 true일 때만 게시한다.
+
 ## 설계 방향 한 줄 요약
 
 개발 서버가 파일 변경을 감지하면 그 파일만 파싱한다. 기준 스키마 변경은 영향받는 번역도 재검증한다. 로케일+namespace 단위의 카탈로그 스냅샷(또는 패치)을 클라이언트 store에 전달하고, UI에 보이는 변화가 있으면 구독자를 다시 렌더링한다. 정상 번역 변경은 JS 코드 생성과 typegen 완료를 기다리지 않고, 전체 앱 모듈 무효화나 full reload도 하지 않는다. 파싱과 검증에 드는 시간은 남는다. 갱신 wire 프로토콜의 단일 출처는 [docs/08-update-protocol.md](docs/08-update-protocol.md)다.
@@ -240,3 +252,4 @@ const root = hydrateRoot(document.getElementById('root'), h(SayloProvider, { ins
 | [docs/06-validation-and-roadmap.md](docs/06-validation-and-roadmap.md) | 성능 목표와 측정 정의, 인수 사례, 로드맵 |
 | [docs/07-decisions.md](docs/07-decisions.md) | 결정 대장, 제품 형태, 미해결 위험, 참고 자료 |
 | [docs/08-update-protocol.md](docs/08-update-protocol.md) | 갱신 wire 프로토콜, 적용·resync, boot 인코딩 |
+| [docs/09-release.md](docs/09-release.md) | 릴리스 계약, 검증 명령, 배포 워크플로, Trusted Publisher |

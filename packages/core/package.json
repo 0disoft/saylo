@@ -1,13 +1,25 @@
 {
   "name": "@0disoft/saylo-core",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0-alpha.1",
   "type": "module",
   "description": "Core catalog parsing, schema validation, translation and i18n stores for Saylo.",
-  "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/core" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0disoft/saylo.git",
+    "directory": "packages/core"
+  },
   "homepage": "https://github.com/0disoft/saylo/tree/main/packages/core#readme",
-  "bugs": { "url": "https://github.com/0disoft/saylo/issues" },
-  "keywords": ["i18n", "intl", "localization", "icu", "javascript", "typescript"],
+  "bugs": {
+    "url": "https://github.com/0disoft/saylo/issues"
+  },
+  "keywords": [
+    "i18n",
+    "intl",
+    "localization",
+    "icu",
+    "javascript",
+    "typescript"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,7 +27,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -26,5 +40,14 @@
     "@formatjs/icu-messageformat-parser": "3",
     "@noble/hashes": "2",
     "intl-messageformat": "12"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha",
+    "registry": "https://registry.npmjs.org/"
   }
 }

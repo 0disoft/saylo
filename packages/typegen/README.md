@@ -4,16 +4,16 @@ Saylo 기준 카탈로그에서 `AppSchema` 타입 선언(`.d.ts`)을 생성한�
 
 ## 상태
 
-아직 npm에 게시하지 않았다. 아래 설치·실행 명령은 게시 후 기준이다. 현재는 저장소 workspace에서 `node packages/typegen/dist/cli.js`로 실행한다.
+아직 npm에 게시하지 않았다. 첫 공개 버전은 `0.1.0-alpha.1`, dist-tag는 `alpha`다. 아래 설치·실행 명령은 게시 후 기준이다. 현재는 저장소 workspace에서 `node packages/typegen/dist/cli.js`로 실행한다.
 
 ## 설치 (게시 후)
 
 ```sh
-npm install --save-dev @0disoft/saylo-typegen
-npm install @0disoft/saylo-core
+npm install --save-dev @0disoft/saylo-typegen@alpha
+npm install @0disoft/saylo-core@alpha
 ```
 
-`@0disoft/saylo-core`는 생성한 타입을 코어 제네릭으로 소비할 때 필요하다. 타입 선언만 생성할 때는 필요하지 않다.
+아직 `latest`로 게시하지 않으므로 `@alpha`를 지정한다. `@0disoft/saylo-core`는 생성한 타입을 코어 제네릭으로 소비할 때 필요하다. 타입 선언만 생성할 때는 필요하지 않다. CLI를 이미 설치했다면 아래 실행 예시의 `npx saylo-typegen`을 그대로 쓴다.
 
 ## 카탈로그
 
@@ -74,4 +74,10 @@ JS 프로젝트에서는 JSDoc `/** @type {import('@0disoft/saylo-core').Store<i
 
 ## 버전
 
-Node.js·TypeScript 지원 범위는 아직 확정하지 않았다.
+Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환경은 Node 24.18.0이다. TypeScript 7을 기준으로 검증하며 `typescript`를 peer로 강제하지 않는다.
+
+Node에서 실행하는 CLI·worker이고 런타임 target은 ES2022다.
+
+## 라이선스
+
+Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.
