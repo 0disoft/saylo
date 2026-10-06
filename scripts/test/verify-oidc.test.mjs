@@ -16,7 +16,7 @@ test('exchanges package-scoped tokens without exposing them in output', async ()
   await verifyOidc({ env, log: line => logs.push(line), request: async (url, options) => {
     calls.push({ url: String(url), options });
     if (calls.length === 1) return response({ value: 'id-secret' });
-    return response({ token_type: 'oidc', token: 'registry-secret', expires: new Date(Date.now() + 60000).toISOString() });
+    return response({ token: 'registry-secret' });
   } });
   assert.equal(calls.length, 5);
   assert.equal(new URL(calls[0].url).searchParams.get('audience'), 'npm:registry.npmjs.org');
@@ -35,7 +35,7 @@ test('redacts backend, transport and malformed-token failures', async () => {
   for (const failure of [
     () => { throw new Error('transport exposed id-secret'); },
     () => ({ ok: false, status: 401, json: async () => ({ error: 'registry-secret' }) }),
-    () => response({ token_type: 'oidc', token: 'registry-secret', expires: 'invalid' }),
+    () => response({ token_type: 'oidc', token: { secret: 'registry-secret' } }),
   ]) {
     let count = 0;
     await assert.rejects(verifyOidc({ env, request: async () => ++count === 1 ? response({ value: 'id-secret' }) : failure() }),

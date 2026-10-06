@@ -22,19 +22,25 @@ export async function verifyOidc({ env = process.env, request = fetch, log = con
   for (const id of packageIds) {
     const name = `@0disoft/saylo-${id}`;
     let token;
+    let phase = 'request';
+    let status;
     try {
       const response = await request(`https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/${name.replace('/', '%2f')}`, {
         method: 'POST', redirect: 'error', signal: AbortSignal.timeout(30000),
         headers: { Accept: 'application/json', Authorization: `Bearer ${idToken}` } });
+      status = response.status;
       if (!response.ok) throw new Error(`npm OIDC exchange failed for ${name}: HTTP ${response.status}`);
+      phase = 'response JSON';
       token = await response.json();
-      if (token.token_type !== 'oidc' || typeof token.token !== 'string' || !token.token || !(Date.parse(token.expires) > Date.now()))
+      phase = 'token validation';
+      // Match npm CLI's OIDC helper: the token is required; auxiliary fields vary by registry version.
+      if (typeof token?.token !== 'string' || !token.token)
         throw new Error(`npm OIDC exchange returned an invalid token for ${name}.`);
     } catch (error) {
       // Never forward response bodies or transport errors that might contain credentials.
       const expected = `npm OIDC exchange failed for ${name}: HTTP `;
       if (error.message.startsWith(expected) && /^\d{3}$/.test(error.message.slice(expected.length))) throw new Error(error.message);
-      throw new Error(`npm OIDC exchange failed for ${name}.`);
+      throw new Error(`npm OIDC exchange failed for ${name} (${phase}${status ? `, HTTP ${status}` : ''}).`);
     }
     token = undefined;
     log(`[oidc] Package-scoped npm token exchange verified: ${name}`);
