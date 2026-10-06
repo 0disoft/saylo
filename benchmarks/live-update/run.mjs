@@ -38,8 +38,8 @@ const settings = { samples: integer('samples', 1), warmup: integer('warmup', 0),
 const selected = scenarios.filter(s => values.scenario === 'all' || s.id === values.scenario);
 if (!selected.length) throw new Error('Unknown scenario; use all, 1k-3-locales or 10k-20-locales.');
 if (!['edit', 'locale-add'].includes(values.mode)) throw new Error('Use --mode edit or locale-add.');
-if (values.mode === 'locale-add' && (values['cpu-profile'] || values['browser-stages'] || values['server-file-stages']))
-  throw new Error('Locale addition uses no stage profiling; omit profiling flags.');
+if (values.mode === 'locale-add' && (values['cpu-profile'] || values['browser-stages']))
+  throw new Error('Locale addition supports only --server-file-stages profiling.');
 const fileProbe = registerFileProbe(values['server-file-stages']);
 // Node hooks must be registered before the server dependency graph is loaded.
 const { default: saylo } = await import('@0disoft/saylo-vite');
@@ -86,7 +86,7 @@ async function stopBrowser(child) {
 async function runScenario(scenario) {
   const root = await mkdtemp(path.join(directory, '.live-update-'));
   let vite, child, channel;
-  const stageProbe = values.mode === 'edit' ? createStageProbe() : undefined;
+  const stageProbe = values.mode === 'edit' || values['server-file-stages'] ? createStageProbe() : undefined;
   const cpuProbe = createCpuProbe(values['cpu-profile']);
   let cancelled = false;
   const interrupted = () => { cancelled = true; channel?.fail(new Error('Benchmark interrupted.')); };
@@ -131,10 +131,26 @@ async function runScenario(scenario) {
       const summary = summarize(values);
       return { count: summary.count, p50Bytes: summary.p50Ms, p95Bytes: summary.p95Ms, minBytes: summary.minMs, maxBytes: summary.maxMs };
     };
+    const serverFileStages = values['server-file-stages'] ? {
+      scope: 'Benchmark-only in-memory Node module transform. Path check and UTF-8 read are async wall times; parse is synchronous parseCatalog call including argument construction. candidateOther is a per-sample residual inside readAndCandidate. These stages are included in readAndCandidate; do not add their p95s or treat wall times as CPU times.',
+      ...Object.fromEntries(fileMetrics.map(metric => [metric, summarize(measured.map(sample => sample.serverStages.fileStages.timings[metric]))])),
+      maxCalls: Object.fromEntries(fileMetrics.slice(0, -1).map(metric => [metric, Math.max(...measured.map(sample => sample.serverStages.fileStages.calls[metric]))])),
+    } : undefined;
+    const serverStages = stageProbe ? {
+      scope: values.mode === 'locale-add'
+        ? 'Benchmark-only method wrappers, captured from before catalog write to list DOM ack. Excludes initial boot, selection/full response and removal. queueToDrain includes quiet window; readAndCandidate includes serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, fresh translation validation and quarantine preparation; validation is final active-catalog validation. Do not add stage p95s.'
+        : 'Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.',
+      ...Object.fromEntries(['queueToDrainMs', 'readAndCandidateMs', 'translationPreparationMs', 'validationMs', 'registryReplaceMs', 'catalogDeltaMs']
+        .map(metric => [metric, summarize(measured.map(sample => sample.serverStages[metric]))])),
+      maxFileEvents: Math.max(...measured.map(sample => sample.serverStages.fileEvents)),
+      maxDrains: Math.max(...measured.map(sample => sample.serverStages.drains)),
+    } : undefined;
     if (values.mode === 'locale-add') return { ...scenario, namespaces: fixture.namespaces, initialCatalogFiles: fixture.catalogFiles,
       initialCatalogBytes: fixture.catalogBytes, addedLocale, addedFilesPerRound: 1, addedMessages: scenario.messagesPerLocale,
       typegenEnabled: !values['no-typegen'], declarationRewritten: false, browser, serverStartupMs, browserBootMs: readyAt - launchedAt,
       summary: Object.fromEntries(localeMetrics.map(metric => [metric, summarize(measured.map(sample => sample[metric]))])),
+      ...(serverStages ? { serverStages, profiledPhase: 'catalog-addition-before-list-ack' } : {}),
+      ...(serverFileStages ? { serverFileStages } : {}),
       wire: { preSelectionCatalogReplies: measured.reduce((sum, sample) => sum + sample.preSelectionCatalogReplies, 0),
         fullReplies: measured.reduce((sum, sample) => sum + sample.fullReplies, 0),
         catalogReplyBytes: byteSummary(measured.map(sample => sample.catalogReplyBytes)),
@@ -152,21 +168,13 @@ async function runScenario(scenario) {
         maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),
         catalogReplyBytes: { p50Bytes: replySizes.p50Ms, p95Bytes: replySizes.p95Ms, minBytes: replySizes.minMs, maxBytes: replySizes.maxMs } },
       browserBootMs: readyAt - launchedAt, summary, controlRoundTrip: summarize(collected.roundTrips),
-      ...(values['server-file-stages'] ? { serverFileStages: {
-        scope: 'Benchmark-only in-memory Node module transform. Path check and UTF-8 read are async wall times; parse is synchronous parseCatalog call including argument construction. candidateOther is a per-sample residual inside readAndCandidate. These stages are included in readAndCandidate; do not add their p95s or treat wall times as CPU times.',
-        ...Object.fromEntries(fileMetrics.map(metric => [metric, summarize(measured.map(sample => sample.serverStages.fileStages.timings[metric]))])),
-        maxCalls: Object.fromEntries(fileMetrics.slice(0, -1).map(metric => [metric, Math.max(...measured.map(sample => sample.serverStages.fileStages.calls[metric]))])),
-      } } : {}),
+      ...(serverFileStages ? { serverFileStages } : {}),
       ...(values['browser-stages'] ? { browserStages: {
         scope: 'Synchronous benchmark-only client transforms; Saylo dependency prebundling disabled. Snapshot includes translator and signature; do not add nested stages or compare directly with uninstrumented runs.',
         ...Object.fromEntries(browserMetrics.map(metric => [metric, summarize(measured.map(sample => sample.browserStages.timings[metric]))])),
         maxCalls: Object.fromEntries(browserMetrics.map(metric => [metric, Math.max(...measured.map(sample => sample.browserStages.calls[metric]))])),
       } } : {}),
-      serverStages: { scope: 'Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.',
-        ...Object.fromEntries(['queueToDrainMs', 'readAndCandidateMs', 'translationPreparationMs', 'validationMs', 'registryReplaceMs', 'catalogDeltaMs']
-          .map(metric => [metric, summarize(measured.map(sample => sample.serverStages[metric]))])),
-        maxFileEvents: Math.max(...measured.map(sample => sample.serverStages.fileEvents)),
-        maxDrains: Math.max(...measured.map(sample => sample.serverStages.drains)) },
+      serverStages,
       ...(collected.cpuProfile ? { cpuProfile: collected.cpuProfile } : {}),
       controlRoundTripsMs: collected.roundTrips, samples: collected.results };
   } finally {

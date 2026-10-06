@@ -56,4 +56,4 @@ large의 목록 표시 max는 14275.76ms였고 fileWrite max는 252.35ms였다. 
 
 작은 2회 locale-add smoke와 기존 edit 모드 1회 smoke도 통과했다. 제품 코드를 바꾸지 않아 기존 전체 테스트·release check·pack은 반복하지 않았다. 이번 기록은 단일 namespace·단일 새 파일·full key 수의 정상 번역이다. 여러 namespace 일괄 추가, 불완전/잘못된 번역, 처음 켠 서버, paint, UI 전체 메시지 렌더와 다른 라이브러리 비교로 확대하지 않는다. 측정 앱은 probe 한 메시지만 표시한다.
 
-로케일 추가 기능과 입력 상태 유지는 작동하지만 대규모의 250ms 성능 목표는 미달이다. 다음은 같은 fixture·완료 지점으로 Paraglide를 비교하는 작업이다. 그 비교에서 재컴파일·reload 여부와 상태 유지도 별도로 관측하며, 현재 결과만으로 다른 도구보다 빠르다고 주장하지 않는다. 이 측정은 로컬 checkout runtime이고 최신 최적화는 npm `0.1.0-alpha.1`에 포함되지 않았다.
+로케일 추가 기능과 입력 상태 유지는 작동하지만 대규모의 250ms 성능 목표는 미달이다. 이후 Paraglide small 비교는 [13](13-paraglide-comparison.md)에, large 로케일 추가의 서버 구간 계측은 [14](14-locale-add-server-measurements.md)에 기록했다. 다음 최적화 대상은 새 카탈로그의 cold 파싱이다. 이 측정은 로컬 checkout runtime이고 최신 최적화는 npm `0.1.0-alpha.1`에 포함되지 않았다.

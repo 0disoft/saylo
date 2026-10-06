@@ -32,7 +32,7 @@ export function finishFileSample(candidateMs) {
   const sample = current;
   current = undefined;
   if (!sample || observedMetrics.some(metric => sample.calls[metric] !== 1))
-    throw new Error('Expected exactly one catalog path check, read and parse per edit.');
+    throw new Error('Expected exactly one catalog path check, read and parse per sample.');
   const accountedMs = observedMetrics.reduce((total, metric) => total + sample.timings[metric], 0);
   const residual = candidateMs - accountedMs;
   if (!Number.isFinite(residual) || residual < 0) throw new Error('File timings exceed their candidate window.');

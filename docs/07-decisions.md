@@ -70,6 +70,8 @@
 | message delta 비용 | request-scoped message delta·immutable catalog signature 재사용·LF 위치 색인 최적화를 로컬 구현했다. 2026-10-07 최종 서버 파일 계측 설정에서 small p95 72.66ms·large 165.94ms였고 각각 측정 50회 모두 patch였다. 파서 key 디코딩 trial은 되돌렸다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. JSON token/임시 entry·메시지 맵 할당, 브라우저 patch 복사·검증 순회, 로케일 추가 시 cold 파싱·full 전송 최적화와 비교 실험이 남아 있다. 조건·되돌린 실험·부하 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [11-parser-measurements.md](11-parser-measurements.md)를 따른다 |
 | 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 비교 실험은 아직 실시하지 않았다 |
 
+대규모 로케일 추가는 서버 파일 구간 계측을 연결해 10회 측정했다. 목록 표시 p95 1,808.23ms, cold 카탈로그 파싱 p95 1,132.23ms였고 10회 모두 파싱이 다른 개별 수집 구간보다 컸다. 다음 대상은 cold 파싱 비용이다. 기존 50회 run 대비 개선 주장은 하지 않으며 조건·한계는 [14-locale-add-server-measurements.md](14-locale-add-server-measurements.md)를 따른다.
+
 ## 다른 도구와의 관계
 
 Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 2026-10-07 Paraglide 2.25.4와 같은 fixture의 small 문구 수정·로케일 추가를 각각 10회 측정했다. Paraglide 문구 편집은 Fast Refresh로 입력과 상태를 유지했고, 로케일 추가·기본 setter 선택은 document reload로 최초 상태를 잃었다. Saylo는 두 흐름에서 상태 보존을 확인했다. large는 Paraglide 초기 compile의 하위 SDK timeout으로 비교를 완료하지 못했다. 조건·원시 결과·한계는 [13-paraglide-comparison.md](13-paraglide-comparison.md)를 따른다. 위 i18next/Wuchale 얇은 계층 비교 실험은 아직 실시하지 않았으며 이 측정으로 독립 런타임 필요성을 확정하지 않는다.

@@ -6,7 +6,7 @@ export const localeMetrics = ['saveToListAckMs', 'selectToTranslationAckMs', 'sa
   'selectToCommitMs', 'saveToBroadcastMs', 'fileWriteMs'];
 export const addedLocale = 'en-GB';
 
-export function createLocaleChannel({ scenario, target, samples, warmup, calibrations, timeoutMs }) {
+export function createLocaleChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe }) {
   const directory = path.join(path.dirname(path.dirname(target.file)), addedLocale);
   const file = path.join(directory, 'bench.json');
   const results = [], roundTrips = [], clients = new Map();
@@ -58,6 +58,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
       const source = JSON.stringify(messages);
       await mkdir(directory); // A fresh directory every round; creation time is outside file-save latency.
       current.catalogBytes = Buffer.byteLength(source);
+      stageProbe?.begin();
       current.writeStartedAt = performance.now();
       await writeFile(file, source);
       current.saveFinishedAt = performance.now(); reply(res);
@@ -66,6 +67,9 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
       expect(data, 'adding');
       if (current.replies || !Number.isFinite(current.saveFinishedAt) || !Number.isFinite(current.broadcastAt))
         throw new Error('Unexpected pre-selection catalog transfer or missing list timing.');
+      // Stop before selection: its full response and the following removal must not
+      // be attributed to the server work that made this locale selectable.
+      current.serverStages = stageProbe?.finish();
       current.listAckAt = ackAt; current.phase = 'listed'; reply(res);
     } else if (route === '/selecting') {
       expect(data, 'listed'); current.selectingAt = performance.now(); current.phase = 'selecting'; reply(res);
@@ -86,6 +90,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
         selectToCommitMs: data.selectToCommitMs,
         saveToBroadcastMs: current.broadcastAt - current.saveFinishedAt,
         fileWriteMs: current.saveFinishedAt - current.writeStartedAt,
+        ...(current.serverStages ? { serverStages: current.serverStages } : {}),
         addedCatalogBytes: current.catalogBytes, preSelectionCatalogReplies: 0, fullReplies: current.replies,
         catalogReplyBytes: Buffer.byteLength(JSON.stringify(frame)) });
       current.phase = 'translated';

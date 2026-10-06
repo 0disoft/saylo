@@ -27,6 +27,7 @@
 
 상세 벤치마크 결과와 프로파일 기록은 [10-performance-measurements.md](10-performance-measurements.md)에 있다.
 Paraglide와 같은 fixture의 small 문구 수정·로케일 추가 측정과 대규모 초기 준비 실패는 [13-paraglide-comparison.md](13-paraglide-comparison.md)에 별도로 기록했다. 얇은 계층 대안의 계약 비교 실험과 제품 우열 판정은 남아 있다.
+대규모 로케일 추가의 서버 구간 계측은 [14-locale-add-server-measurements.md](14-locale-add-server-measurements.md)에 있다. 10회 모두 새 카탈로그 파싱이 개별 수집 구간 중 가장 오래 걸렸으며 cold 파싱 최적화가 다음 단계다.
 
 ## 인수 사례
 

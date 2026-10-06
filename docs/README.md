@@ -18,6 +18,7 @@
 10. [11-parser-measurements.md](11-parser-measurements.md) — 파서 내부 비용과 최적화 검증
 11. [12-locale-add-measurements.md](12-locale-add-measurements.md) — 새 로케일 목록·최초 번역 반영 측정
 12. [13-paraglide-comparison.md](13-paraglide-comparison.md) — Paraglide 동일 규모 측정과 초기 준비 실패 관측
+13. [14-locale-add-server-measurements.md](14-locale-add-server-measurements.md) — 대규모 로케일 추가의 서버 읽기·파싱·검증 비용
 
 ## 상태 표기 규칙
 

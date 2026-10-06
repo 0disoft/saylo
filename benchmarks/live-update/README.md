@@ -39,7 +39,13 @@ npm run bench:live -- --mode locale-add --out benchmarks/results/locale-add.json
 
 `locale-app.jsx`·`locale-channel.mjs`가 회차마다 새 en-GB 디렉터리와 bench.json을 추가하고, select option 표시→자동 setLocale→최초 번역→en 복귀→파일/디렉터리 삭제·option 제거를 확인한다. 초기 규모는 edit와 같은 1k×3/10k×20이며 namespace는 1개다. target 선택 전 응답 0개, 선택 뒤 known baseline 없는 full 응답 1개를 요구한다. 추가로 schema를 바꾸지 않으므로 생성 타입 파일이 다시 쓰이지 않아야 한다.
 
-이 모드는 상세 profiling 옵션을 함께 받지 않는다. 기본 warmup 5·측정 50·control 25다. Node 저장→목록/첫 번역 ack, Node 선택 준비→번역 ack와 브라우저 setter→commit을 분리하며 clock을 섞지 않는다. 디렉터리 생성·내용 준비는 파일 저장 latency에서 제외한다. 정의·결과·바이트·한계는 [../../docs/12-locale-add-measurements.md](../../docs/12-locale-add-measurements.md)를 따른다. 기본 edit 모드의 입력·구간 정의는 아래와 같다.
+이 모드는 `--server-file-stages`만 상세 profiling 옵션으로 받는다. CPU·브라우저 상세 옵션은 받지 않는다. 기본 warmup 5·측정 50·control 25다. Node 저장→목록/첫 번역 ack, Node 선택 준비→번역 ack와 브라우저 setter→commit을 분리하며 clock을 섞지 않는다. 디렉터리 생성·내용 준비는 파일 저장 latency에서 제외한다. 정의·결과·바이트·한계는 [../../docs/12-locale-add-measurements.md](../../docs/12-locale-add-measurements.md)를 따른다. 기본 edit 모드의 입력·구간 정의는 아래와 같다.
+
+```sh
+node benchmarks/live-update/run.mjs --mode locale-add --server-file-stages --scenario 10k-20-locales --samples 10 --warmup 2 --calibrations 10 --out benchmarks/results/locale-add-server-files.json
+```
+
+로케일 추가 계측은 새 파일 저장 직전에 시작하고 목록 DOM ack에서 끝낸다. 결과의 `profiledPhase`는 `catalog-addition-before-list-ack`다. 각 sample에 기존 `serverStages`와 그 안의 `fileStages`를 저장한다. 초기 boot·선택 뒤 full 응답·en 복귀·삭제를 해당 구간에 넣지 않는다. 따라서 `catalogDeltaMs`가 0인 것은 선택 뒤 로드가 무료라는 뜻이 아니라 수집 구간 밖이라는 뜻이다. 경로 검사·읽기·파싱은 각 회차 정확히 1회여야 하며 파일 이벤트가 여러 번이면 quiet window에서 묶일 수 있다. 결과·해석은 [../../docs/14-locale-add-server-measurements.md](../../docs/14-locale-add-server-measurements.md)를 따른다.
 
 - `1k-3-locales`는 로케일당 메시지 1,000개 × 로케일 3개, `10k-20-locales`는 로케일당 10,000개 × 20개다. namespace는 1개다.
 - 앱은 loaded base `ko` + target `en`을 싣고 `en`의 `bench` namespace에서 바뀐 키 1개와 바뀌지 않은 키 1개를 렌더한다. 매 저장마다 `en` 본문 키 1개만 수정한다.
