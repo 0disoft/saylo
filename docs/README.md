@@ -20,6 +20,7 @@
 12. [13-paraglide-comparison.md](13-paraglide-comparison.md) — Paraglide 동일 규모 측정과 초기 준비 실패 관측
 13. [14-locale-add-server-measurements.md](14-locale-add-server-measurements.md) — 대규모 로케일 추가의 서버 읽기·파싱·검증 비용
 14. [15-simple-message-parser.md](15-simple-message-parser.md) — 단순 메시지 파싱 최적화와 cold 교차 비교
+15. [16-compact-catalog-transport.md](16-compact-catalog-transport.md) — lazy full 카탈로그의 compact 개발 전송과 검증
 
 ## 상태 표기 규칙
 

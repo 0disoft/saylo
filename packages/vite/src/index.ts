@@ -4,6 +4,7 @@ import { createBaseSchema, createStore } from '@0disoft/saylo-core';
 import { isGeneratedFile, TypeGenerator } from '@0disoft/saylo-typegen';
 import type { Plugin, ViteDevServer, WebSocketClient } from 'vite';
 import { CatalogRegistry } from './catalog-registry.js';
+import { encodeCatalogResult } from './catalog-wire.js';
 import { scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
@@ -66,7 +67,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
         result: { status: 'failed', code: 'INVALID_REQUEST', message: 'Invalid catalog request.' } } });
       return;
     }
-    client.send({ type: 'custom', event: CATALOG_EVENT, data: { request: data, result: registry.loadDelta(data.locale, data.namespace, data.known) } });
+    client.send({ type: 'custom', event: CATALOG_EVENT, data: { request: data,
+      result: encodeCatalogResult(registry.loadDelta(data.locale, data.namespace, data.known)) } });
   };
   const onFile = (file: string) => { void live?.enqueue(file); };
   function detachLive() {

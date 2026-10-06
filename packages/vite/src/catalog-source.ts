@@ -5,6 +5,7 @@ import { catalogId as id, immutable, matches } from './catalog-outcome.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';
 import type { CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, ManifestEvent } from './types.js';
 import { applyCatalogPatch } from './catalog-patch.js';
+import { decodeCatalogResult } from './catalog-wire.js';
 import type { PresentCatalog } from './catalog-patch.js';
 
 type HotContext = NonNullable<ImportMeta['hot']>;
@@ -77,7 +78,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     if (!entry || !ready || reply.request.generation !== entry.request.generation ||
         reply.request.locale !== entry.key.locale || reply.request.namespace !== entry.key.namespace) return;
     try {
-      const wire = reply.result;
+      const wire = decodeCatalogResult(reply.result);
       if (wire?.status === 'patch' && !entry.request.known) throw new Error('Unexpected patch in a full catalog reply.');
       const result = wire?.status === 'patch' ? applyCatalogPatch(entry.baseline, wire) : wire;
       if (!result || (result.status !== 'failed' && (!result.key || id(result.key) !== id(entry.key) || !matches(manifest, result))))

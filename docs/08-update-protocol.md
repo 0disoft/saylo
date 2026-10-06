@@ -19,18 +19,28 @@
 
 ## wire 타입
 
-현재 lazy 경로는 manifest 조회와 pair 조회를 분리한다. pair 응답은 기본이 전체 present/missing/failed outcome이고, 직전 baseline이 맞으면 request-scoped 메시지 delta patch가 된다. 아래 push wire 설계 초안(`kind: "patch"`, 파일 단위 replacements/deletions, `SerializedCatalog`)은 아직 구현 전이며 지금의 delta patch와 다른 계약이다.
+현재 lazy 경로는 manifest 조회와 pair 조회를 분리한다. 전체 present 응답은 compact 인코딩으로 보내고 missing/failed는 기존 outcome이다. 직전 baseline이 맞으면 request-scoped 메시지 delta patch가 된다. 아래 push wire 설계 초안(`kind: "patch"`, 파일 단위 replacements/deletions, `SerializedCatalog`)은 아직 구현 전이며 지금의 delta patch와 다른 계약이다.
 
 | 이벤트 | 현재 lazy 전송 |
 | --- | --- |
 | `saylo:request-manifest` | eager handshake의 요청 ID·generation을 사용해 전체 metadata 요청 |
 | `saylo:manifest` | snapshot 응답 또는 `baseRevision`을 가진 update. 전체 목록·pair version·schema fingerprint·missing tombstone이며 AST 없음 |
 | `saylo:request-catalog` | 고유 요청 ID·generation과 locale·namespace 한 pair. 직전에 받은 present pair가 있으면 선택적 `known { sessionId, catalogVersion }`을 함께 보낸다 |
-| `saylo:catalog` | 요청 echo와 결과. baseline이 맞으면 `status: "patch"` delta, 아니면 present/missing/failed 전체 outcome. 전체 present와 patch에만 catalog 또는 메시지 delta를 싣는다 |
+| `saylo:catalog` | 요청 echo와 결과. baseline이 맞으면 `status: "patch"` delta, 전체 present는 `status: "compact"`, `encoding: "saylo-catalog-v1"`로 보낸다. missing/failed는 기존 outcome이다 |
 
 `virtual:saylo/lazy`는 초기 범위의 base+target outcome만 싣고 source handle을 내보낸다. 기존 설계의 push patch와 달리 서버가 patch를 밀어주지 않는다. manifest 응답을 적용한 뒤 core의 `refresh`가 현재 desired scope를 다시 준비하면 `catalogSource`가 pair마다 직전 baseline을 기준으로 조회한다. 미로드·비활성 pair의 AST는 받지 않는다. 조회 응답은 요청 identity·session·pair version·schema를 검사하고 재연결은 identity를 무효화한 뒤 현재 manifest로 재요청한다. 여러 instance는 source를 공유하며 자신의 연결·구독만 해제한다. 기존 eager 전체 갱신은 eager snapshot을 요청한 Vite client에만 보낸다.
 
 namespace schema fingerprint는 정규화한 namespace·키·인자 acceptedTypes JSON의 UTF-8 SHA-256(`saylo-schema-v2:sha256:` + 64자리 16진수)이다. 로케일·pair마다 큰 스키마 문자열을 반복 전송하지 않도록 고정 길이 digest로 바꿨고, `saylo-schema-v1:` 형식으로 저장된 기존 boot·chunk는 재생성해야 한다.
+
+### 현행 compact 전체 카탈로그 (2026-10-07)
+
+실제 타입은 `packages/vite/src/catalog-wire.ts`에 있다. lazy 개발 소켓의 full present 응답만 compact로 인코딩하며, 클라이언트는 decode 뒤 기존 manifest 검사와 immutable 처리를 거쳐 core에 일반 present outcome을 넘긴다. 구현·측정 기록은 [16-compact-catalog-transport.md](16-compact-catalog-transport.md)에 있다.
+
+- envelope는 `status: "compact"`, `encoding: "saylo-catalog-v1"`과 현재 `sessionId`, `key`, `catalogVersion`, `namespaceSchemaFingerprint`를 담는다.
+- catalog payload는 `{ sourceName, schemas, messages }`다. 메시지는 `[id, source, offset, line, column, ast, schemaIndex]`이며 같은 arguments JSON은 `schemas`의 항목을 공유한다.
+- AST의 top-level literal·argument 노드는 위치가 없으면 `[type, value]`, 있으면 `[type, value, startOffset, startLine, startColumn, endOffset, endLine, endColumn]`로 보낸다. 복잡한 ICU 노드와 그 중첩 내용은 기존 AST 형태를 유지한다. 파일 위치·AST 위치의 offset/line/column 값은 바꾸지 않으며 클라이언트 ICU 재파싱은 없다.
+- encoding·stamp·tuple·위치·schema 참조·중복 ID 검사 실패는 해당 요청을 거절하고 마지막 정상 UI를 유지한다. 이후 별도의 새 요청으로 회복할 수 있다. 깨진 patch에 대한 기존 timeout 안의 full 재요청 규칙과 구분한다.
+- missing·failed·patch, eager snapshot, 초기 boot, production chunk와 SSR boot wire는 기존 형식이다. 클라이언트는 기존 일반 present 응답도 받는다. 새 compact 응답을 보내는 plugin과 dev client는 같은 패키지 구현을 사용해야 한다.
 
 ### 현행 request-scoped delta patch (2026-10-06)
 

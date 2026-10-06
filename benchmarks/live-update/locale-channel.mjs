@@ -81,7 +81,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
       expect(data, 'selecting');
       const frame = current.catalogReply;
       if (data.text !== current.expected || !Number.isFinite(data.selectToCommitMs) || data.selectToCommitMs < 0 ||
-          current.replies !== 1 || frame?.data.result.status !== 'present' || frame.data.result.key.namespace !== 'bench' || frame.data.request.known)
+          current.replies !== 1 || !['present', 'compact'].includes(frame?.data.result.status) || frame.data.result.key.namespace !== 'bench' || frame.data.request.known)
         throw new Error('Missing fresh full catalog or incorrect first translation.');
       results.push({ token: current.token, warmup: results.length < warmup,
         saveToListAckMs: current.listAckAt - current.saveFinishedAt,
@@ -92,6 +92,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
         fileWriteMs: current.saveFinishedAt - current.writeStartedAt,
         ...(current.serverStages ? { serverStages: current.serverStages } : {}),
         addedCatalogBytes: current.catalogBytes, preSelectionCatalogReplies: 0, fullReplies: current.replies,
+        catalogReplyEncoding: frame.data.result.encoding ?? 'parsed-catalog',
         catalogReplyBytes: Buffer.byteLength(JSON.stringify(frame)) });
       current.phase = 'translated';
       if (results.length % 10 === 0) console.log(`[bench] ${scenario.id}: ${results.length}/${samples + warmup} locale additions acknowledged`);

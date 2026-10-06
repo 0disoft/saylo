@@ -4,6 +4,7 @@ import test from 'node:test';
 import { createI18n, parseCatalog } from '@0disoft/saylo-core';
 import { connectDev, createDevCatalogSource, createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
+import { encodeCatalogResult } from '../dist/catalog-wire.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest } from '../dist/types.js';
 
 const catalog = (text, locale = 'ko', namespace = 'demo') => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
@@ -25,7 +26,7 @@ function fixture(t) {
     else {
       assert.equal(event, CATALOG_REQUEST_EVENT);
       assert.ok(isCatalogRequest(request), 'Client catalog frames must satisfy the actual server validator.');
-      const reply = JSON.parse(JSON.stringify({ request, result: registry.loadDelta(request.locale, request.namespace, request.known) }));
+      const reply = JSON.parse(JSON.stringify({ request, result: encodeCatalogResult(registry.loadDelta(request.locale, request.namespace, request.known)) }));
       replies.push(reply);
       delayCatalogs ? delayed.push(reply) : hot.emit(CATALOG_EVENT, reply);
     }
@@ -217,7 +218,7 @@ test('a broken delta retries once with a new full request and ignores the supers
   const recovered = f.delayed.shift();
   assert.equal(recovered.request.known, undefined);
   assert.notEqual(recovered.request.requestId, broken.request.requestId);
-  assert.equal(recovered.result.status, 'present');
+  assert.equal(recovered.result.status, 'compact');
   f.hot.emit(CATALOG_EVENT, broken);
   assert.equal(f.instance.t('demo:title'), '한국어');
   f.hot.emit(CATALOG_EVENT, recovered);
@@ -274,7 +275,7 @@ test('reconnecting with a patch pending uses the new session and retains the las
   f.hot.emit(CATALOG_EVENT, oldPatch);
   assert.equal(f.instance.t('demo:title'), '한국어');
   const full = f.delayed.at(-1);
-  assert.equal(full.result.status, 'present');
+  assert.equal(full.result.status, 'compact');
   assert.equal(full.result.sessionId, 'two');
   f.hot.emit(CATALOG_EVENT, full);
   await tick();
@@ -298,4 +299,25 @@ test('base and translation schema deltas publish together after both current pai
   await tick();
   assert.equal(f.instance.t('demo:title', { n: 3 }), 'items');
   assert.throws(() => f.instance.t('demo:title'), /argument/i);
+});
+
+test('a malformed compact full reply rejects without changing the accepted UI and a later request recovers', async t => {
+  const f = fixture(t);
+  f.delay(true);
+  const stop = f.source.connect();
+  t.after(stop);
+  const before = f.instance.getSnapshot();
+  const pending = f.source.loadCatalog('en', 'demo');
+  const rejected = assert.rejects(pending, /Invalid compact/);
+  const reply = f.delayed.shift();
+  assert.equal(reply.result.status, 'compact');
+  reply.result.catalog.messages[0][6] = 99;
+  f.hot.emit(CATALOG_EVENT, reply);
+  await rejected;
+  assert.equal(f.instance.getSnapshot(), before);
+  assert.equal(f.sent.filter(e => e.event === CATALOG_REQUEST_EVENT).length, 1);
+  const recovered = f.source.loadCatalog('en', 'demo');
+  f.hot.emit(CATALOG_EVENT, f.delayed.shift());
+  assert.equal((await recovered).catalog.messages.title.source, 'English');
+  assert.equal(f.instance.getSnapshot(), before);
 });

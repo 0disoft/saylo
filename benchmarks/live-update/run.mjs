@@ -66,7 +66,7 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'benchmarks/live-update/app.jsx', 'benchmarks/live-update/fixture.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json',
   'benchmarks/live-update/browser-profile.mjs', 'benchmarks/live-update/browser-probe.mjs',
   'packages/core/dist/loading-registry.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
-  'packages/vite/dist/catalog-source.js', 'packages/vite/dist/freeze.js'];
+  'packages/vite/dist/catalog-source.js', 'packages/vite/dist/catalog-wire.js', 'packages/vite/dist/index.js', 'packages/vite/dist/freeze.js'];
 measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
 if (values.mode === 'locale-add') measuredFiles.push('benchmarks/live-update/locale-channel.mjs', 'benchmarks/live-update/locale-app.jsx');
 const codeHashes = Object.fromEntries(await Promise.all(measuredFiles.map(async file =>
@@ -154,6 +154,7 @@ async function runScenario(scenario) {
       ...(serverFileStages ? { serverFileStages } : {}),
       wire: { preSelectionCatalogReplies: measured.reduce((sum, sample) => sum + sample.preSelectionCatalogReplies, 0),
         fullReplies: measured.reduce((sum, sample) => sum + sample.fullReplies, 0),
+        catalogReplyEncodings: [...new Set(measured.map(sample => sample.catalogReplyEncoding))],
         catalogReplyBytes: byteSummary(measured.map(sample => sample.catalogReplyBytes)),
         addedCatalogBytes: byteSummary(measured.map(sample => sample.addedCatalogBytes)) },
       controlRoundTrip: summarize(collected.roundTrips), controlRoundTripsMs: collected.roundTrips, samples: collected.results };
@@ -164,7 +165,7 @@ async function runScenario(scenario) {
       renderedMessages: 2, editedLocale: 'en', editedNamespace: 'bench', changedKeysPerSave: 1,
       typegenEnabled: !values['no-typegen'], declarationRewritten: false, browser, serverStartupMs,
       wire: { patchReplies: measured.filter(s => s.catalogReplyKind === 'patch').length,
-        fullReplies: measured.filter(s => s.catalogReplyKind === 'present').length,
+        fullReplies: measured.filter(s => s.catalogReplyKind === 'present' || s.catalogReplyKind === 'compact').length,
         maxChangedMessages: Math.max(...measured.map(s => s.changedMessages)),
         maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),
         catalogReplyBytes: { p50Bytes: replySizes.p50Ms, p95Bytes: replySizes.p95Ms, minBytes: replySizes.minMs, maxBytes: replySizes.maxMs } },

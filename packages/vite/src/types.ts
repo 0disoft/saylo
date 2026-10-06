@@ -1,5 +1,6 @@
-import type { CatalogDiagnostic, CatalogLoadResult, CatalogManifest, ParsedCatalog } from '@0disoft/saylo-core';
-import type { CatalogPatch, CatalogStamp } from './catalog-patch.js';
+import type { CatalogDiagnostic, CatalogManifest, ParsedCatalog } from '@0disoft/saylo-core';
+import type { CatalogStamp } from './catalog-patch.js';
+import type { CatalogWireResult } from './catalog-wire.js';
 
 export interface SayloViteOptions {
   /** Relative to Vite root: <localesDir>/<locale>/<namespace>.json. */
@@ -80,7 +81,7 @@ export interface CatalogRequest {
 }
 export interface CatalogReply {
   readonly request: CatalogRequest;
-  readonly result: CatalogLoadResult | CatalogPatch;
+  readonly result: CatalogWireResult;
 }
 export function isCatalogRequest(value: unknown): value is CatalogRequest {
   if (!value || typeof value !== 'object') return false;

@@ -22,9 +22,10 @@ const fail = error => { void request('fail', { message: String(error) }).catch((
 import.meta.hot.on('saylo:catalog', reply => {
   const receivedAt = performance.now();
   const result = reply?.result;
-  if ((result?.status === 'present' || result?.status === 'patch') && result.key.locale === 'en' && result.key.namespace === 'bench') {
-    const probe = result.status === 'patch' ? result.upsert.find(([id]) => id === 'probe')?.[1] : result.catalog.messages.probe;
-    if (probe) receipts.set(probe.source, receivedAt);
+  if (['present', 'compact', 'patch'].includes(result?.status) && result.key.locale === 'en' && result.key.namespace === 'bench') {
+    const source = result.status === 'compact' ? result.catalog.messages.find(([id]) => id === 'probe')?.[1] :
+      (result.status === 'patch' ? result.upsert.find(([id]) => id === 'probe')?.[1] : result.catalog.messages.probe)?.source;
+    if (source !== undefined) receipts.set(source, receivedAt);
   }
 });
 connectDev(instance, { catalogSource, onDiagnostic: diagnostic => { if (diagnostic.message) fail(diagnostic.message); } });

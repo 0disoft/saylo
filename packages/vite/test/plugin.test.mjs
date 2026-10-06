@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import saylo from '../dist/index.js';
+import { decodeCatalogResult } from '../dist/catalog-wire.js';
 import { createStore, createI18n } from '@0disoft/saylo-core';
 import { assertInside, scanCatalogs } from '../dist/catalog-files.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
@@ -173,7 +174,7 @@ test('server catalog requests negotiate a delta only with an available client ba
   const request = { requestId: 'pair-1', generation: 1, locale: 'ko', namespace: 'demo' };
   ws.emit(CATALOG_REQUEST_EVENT, request, client);
   const initial = replies.at(-1).result;
-  assert.equal(initial.status, 'present');
+  assert.equal(initial.status, 'compact');
   await change('ko', '{"hello":"Changed {name}"}');
   ws.emit(CATALOG_REQUEST_EVENT, { ...request, requestId: 'pair-2', known: {
     sessionId: initial.sessionId, catalogVersion: initial.catalogVersion,
@@ -181,7 +182,7 @@ test('server catalog requests negotiate a delta only with an available client ba
   assert.equal(replies.at(-1).result.status, 'patch');
   assert.deepEqual(replies.at(-1).result.upsert.map(([id]) => id), ['hello']);
   ws.emit(CATALOG_REQUEST_EVENT, { ...request, requestId: 'full' }, client);
-  assert.equal(replies.at(-1).result.status, 'present');
+  assert.equal(replies.at(-1).result.status, 'compact');
 });
 
 test('base schema change publishes immediately with incompatible translation quarantined', async t => {
@@ -263,8 +264,8 @@ test('lazy pair metadata and payload converge after quarantine and restoration',
   const source = {
     readManifest: () => send(MANIFEST_REQUEST_EVENT, { scope: 'eager', requestId: `m-${++requestNumber}`,
       generation: 1, locale: 'en', namespaces: ['demo'] }).manifest,
-    loadCatalog: async (locale, namespace) => send(CATALOG_REQUEST_EVENT, {
-      requestId: `c-${++requestNumber}`, generation: 1, locale, namespace }).result,
+    loadCatalog: async (locale, namespace) => decodeCatalogResult(send(CATALOG_REQUEST_EVENT, {
+      requestId: `c-${++requestNumber}`, generation: 1, locale, namespace }).result),
   };
   const initialCatalogs = await Promise.all(['ko', 'en'].map(locale => source.loadCatalog(locale, 'demo')));
   const instance = createI18n({ catalogSource: source, locale: 'en', initialNamespaces: ['demo'], initialCatalogs });
@@ -469,8 +470,10 @@ test('lazy virtual boot includes only its base/target scope and catalog requests
   ws.emit(CATALOG_REQUEST_EVENT, { requestId: 'lazy:1', generation: 1, locale: 'ko', namespace: 'help' }, { send: event => replies.push(event) });
   assert.equal(replies.length, 1);
   assert.equal(replies[0].event, CATALOG_EVENT);
-  assert.equal(replies[0].data.result.catalog.messages.title.source, 'PRIVATE_HELP_TEXT');
-  assert.equal(replies[0].data.result.catalog.namespace, 'help');
+  assert.equal(replies[0].data.result.status, 'compact');
+  const result = decodeCatalogResult(JSON.parse(JSON.stringify(replies[0].data.result)));
+  assert.equal(result.catalog.messages.title.source, 'PRIVATE_HELP_TEXT');
+  assert.equal(result.catalog.namespace, 'help');
   ws.emit(CATALOG_REQUEST_EVENT, { requestId: 'lazy:2', generation: 1, locale: 'en', namespace: 'help' }, { send: event => replies.push(event) });
   assert.equal(replies[1].data.result.status, 'missing');
   assert.equal(replies[1].data.result.catalogVersion, 0);

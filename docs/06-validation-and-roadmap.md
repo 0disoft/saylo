@@ -30,6 +30,8 @@ Paraglide와 같은 fixture의 small 문구 수정·로케일 추가 측정과 �
 대규모 로케일 추가의 서버 구간 계측은 [14-locale-add-server-measurements.md](14-locale-add-server-measurements.md)에 있다. 10회 모두 새 카탈로그 파싱이 개별 수집 구간 중 가장 오래 걸렸으며 cold 파싱 최적화가 다음 단계다.
 후속으로 단순 메시지 파싱 경로를 로컬 구현하고 core·typegen·Vite 146개 테스트와 실제 browser 재측정을 통과했다. 같은 프로세스 cold 비교 20쌍 중 18쌍은 빨랐지만 parser p95 개선은 확인하지 못했고, 목록 표시 p95 514.47ms도 목표를 넘는다. 조건·원시 결과는 [15-simple-message-parser.md](15-simple-message-parser.md)를 따른다.
 
+이후 lazy 개발 경로의 full present 응답을 compact로 인코딩했다. Vite 77개 테스트·패키지 build·소비자 typecheck와 실제 브라우저 검증을 통과했다. 대규모 응답 JSON p95는 4,421,174 B에서 1,241,402 B로 약 71.92% 작아졌다. 이번 run의 선택 준비→첫 번역 ack p95는 400.42ms, 목록 표시 p95는 1,128.04ms로 목록 250ms 목표는 여전히 미달이다. run 간 부하 차이로 지연 개선·퇴행의 원인은 단정하지 않는다. 구현 범위·원시 결과·남은 파싱 비용은 [16-compact-catalog-transport.md](16-compact-catalog-transport.md)를 따른다. npm `0.1.0-alpha.1`에는 포함되지 않은 로컬 변경이다.
+
 ## 인수 사례
 
 초기 구현이 만족해야 할 핵심 사례다. 아직 통과를 주장하지 않는다.
