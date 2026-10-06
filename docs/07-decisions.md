@@ -58,7 +58,7 @@
 | --- | --- |
 | 라이선스 | Apache-2.0 확정. 배포 tarball에 `LICENSE`·`NOTICE`를 함께 싣는다 |
 | npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-typegen`·`saylo-vite` 네 이름으로 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`) 게시 완료 |
-| 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 로케일 추가·paint는 미측정. 2026-10-07 실제 vanilla·React 데모에서 parser 제거 전후의 기본 minify 적용 JS를 측정했다. 초기 JS gzip 합은 vanilla 19,656→12,796 B, React 92,241→85,139 B이고 영어 지연 청크는 유지됐다. 조건·원본/gzip·한계는 [10-performance-measurements.md](10-performance-measurements.md)를 따른다. 일반 앱이나 다른 bundler로 확대하지 않는다 |
+| 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 2026-10-07 새 로케일 목록 표시 p95는 small 226.86ms·large 3437.01ms였고 첫 번역 commit은 64.70ms·843.70ms였다. paint는 미측정. 실제 데모 초기 JS gzip 합은 parser 제거 전후 vanilla 19,656→12,796 B·React 92,241→85,139 B였고 영어 지연 청크가 유지됐다. 조건·원본/gzip·단일 run 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [12-locale-add-measurements.md](12-locale-add-measurements.md)를 따른다 |
 | 지원 버전 범위 | Node 24.x, Vite 8, React 19, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
 | build-time parser 런타임 제거 | Vite plugin에 로컬 구현(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. 로컬 변경이고 게시본에는 없다 |
 | requireCompleteTranslations(완역 강제) | 후속. 기본은 불완전한 번역 허용 |
@@ -67,7 +67,7 @@
 | Svelte·Vue 어댑터 | 후속. 현재는 vanilla subscription과 React |
 | secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트와 2026-10-07 실제 브라우저 검증을 통과했다. schema-breaking 편집이라 입력·dialog 상태 보존은 일반 보장이 아니다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
 | JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
-| message delta 비용 | request-scoped message delta·immutable catalog signature 재사용·LF 위치 색인 최적화를 로컬 구현했다. 2026-10-07 최종 서버 파일 계측 설정에서 small p95 72.66ms·large 165.94ms였고 각각 측정 50회 모두 patch였다. 파서 key 디코딩 trial은 되돌렸다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. JSON token/임시 entry·메시지 맵 할당, 브라우저 patch 복사·검증 순회, 로케일 추가 지연과 비교 실험이 남아 있다. 조건·되돌린 실험·부하 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [11-parser-measurements.md](11-parser-measurements.md)를 따른다 |
+| message delta 비용 | request-scoped message delta·immutable catalog signature 재사용·LF 위치 색인 최적화를 로컬 구현했다. 2026-10-07 최종 서버 파일 계측 설정에서 small p95 72.66ms·large 165.94ms였고 각각 측정 50회 모두 patch였다. 파서 key 디코딩 trial은 되돌렸다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. JSON token/임시 entry·메시지 맵 할당, 브라우저 patch 복사·검증 순회, 로케일 추가 시 cold 파싱·full 전송 최적화와 비교 실험이 남아 있다. 조건·되돌린 실험·부하 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [11-parser-measurements.md](11-parser-measurements.md)를 따른다 |
 | 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 비교 실험은 아직 실시하지 않았다 |
 
 ## 다른 도구와의 관계

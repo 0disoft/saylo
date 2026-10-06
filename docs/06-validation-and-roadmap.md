@@ -82,6 +82,8 @@ Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/run
 
 파서 내부 구간을 나눠 측정한 뒤 key 디코딩 생략 trial은 되돌리고, 줄 위치 색인을 `indexOf`로 구성하는 최적화만 로컬 적용했다. parser-only에서 1만 메시지 색인 생성 p95는 3.449→0.087ms로 관측됐고, 최종 실제 갱신 p95는 small 72.66ms·large 165.94ms였다. 전체 감소를 한 변경의 효과로 귀속하지 않으며 대규모 목표는 여전히 미달이다. core build와 카탈로그·patch 테스트 25개가 통과했다. 원시 결과·되돌린 실험·측정 한계는 [11-parser-measurements.md](11-parser-measurements.md)에 보존했다. npm 게시본에는 아직 없다.
 
+2026-10-07 새 로케일 추가를 각각 50회 측정했다. 저장→언어 목록 DOM ack p95는 small 226.86ms·large 3437.01ms로 large는 250ms 목표를 넘었다. 브라우저 setLocale→첫 번역 commit p95는 64.70ms·843.70ms다. 선택 전 target 카탈로그 응답은 없고 선택 뒤 매번 full 1개였으며 입력 노드·값과 변경한 component state가 유지됐다. 타입 파일은 다시 쓰이지 않았다. 전체 결과·단일 run 및 namespace 한계는 [12-locale-add-measurements.md](12-locale-add-measurements.md)를 따른다. 다음 비교 작업은 Paraglide 동일 조건 측정이다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |

@@ -8,10 +8,11 @@ export const scenarios = [
   { id: '10k-20-locales', messagesPerLocale: 10000, localeCount: 20 },
 ];
 
-export async function createFixture(root, scenario) {
+export async function createFixture(root, scenario, app = 'app.jsx') {
   await mkdir(root, { recursive: true });
   await writeFile(path.join(root, 'package.json'), '{"type":"module"}');
-  for (const file of ['app.jsx', 'index.html']) await copyFile(fileURLToPath(new URL(file, import.meta.url)), path.join(root, file));
+  await copyFile(fileURLToPath(new URL(app, import.meta.url)), path.join(root, 'app.jsx'));
+  await copyFile(fileURLToPath(new URL('index.html', import.meta.url)), path.join(root, 'index.html'));
   let catalogBytes = 0;
   let target;
   for (const locale of locales.slice(0, scenario.localeCount)) {

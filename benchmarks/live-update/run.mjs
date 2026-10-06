@@ -10,6 +10,7 @@ import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
 import { createServer } from 'vite';
 import { createChannel } from './channel.mjs';
+import { createLocaleChannel, localeMetrics, addedLocale } from './locale-channel.mjs';
 import { createFixture, scenarios } from './fixture.mjs';
 import { summarize } from './statistics.mjs';
 import { browserStagePlugin, browserMetrics } from './browser-profile.mjs';
@@ -21,6 +22,7 @@ const directory = fileURLToPath(new URL('..', import.meta.url));
 const repository = fileURLToPath(new URL('../..', import.meta.url));
 const { values } = parseArgs({ options: { samples: { type: 'string', default: '50' }, warmup: { type: 'string', default: '5' },
   calibrations: { type: 'string', default: '25' }, scenario: { type: 'string', default: 'all' },
+  mode: { type: 'string', default: 'edit' },
   browser: { type: 'string' }, out: { type: 'string', default: 'benchmarks/results/live-update.json' },
   'no-typegen': { type: 'boolean', default: false }, 'cpu-profile': { type: 'boolean', default: false },
   'browser-stages': { type: 'boolean', default: false },
@@ -35,6 +37,9 @@ const settings = { samples: integer('samples', 1), warmup: integer('warmup', 0),
   timeoutMs: integer('timeout-ms', 1000) };
 const selected = scenarios.filter(s => values.scenario === 'all' || s.id === values.scenario);
 if (!selected.length) throw new Error('Unknown scenario; use all, 1k-3-locales or 10k-20-locales.');
+if (!['edit', 'locale-add'].includes(values.mode)) throw new Error('Use --mode edit or locale-add.');
+if (values.mode === 'locale-add' && (values['cpu-profile'] || values['browser-stages'] || values['server-file-stages']))
+  throw new Error('Locale addition uses no stage profiling; omit profiling flags.');
 const fileProbe = registerFileProbe(values['server-file-stages']);
 // Node hooks must be registered before the server dependency graph is loaded.
 const { default: saylo } = await import('@0disoft/saylo-vite');
@@ -62,6 +67,7 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'packages/core/dist/loading-registry.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
   'packages/vite/dist/catalog-source.js', 'packages/vite/dist/freeze.js'];
 measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
+if (values.mode === 'locale-add') measuredFiles.push('benchmarks/live-update/locale-channel.mjs', 'benchmarks/live-update/locale-app.jsx');
 const codeHashes = Object.fromEntries(await Promise.all(measuredFiles.map(async file =>
   [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
 
@@ -80,16 +86,17 @@ async function stopBrowser(child) {
 async function runScenario(scenario) {
   const root = await mkdtemp(path.join(directory, '.live-update-'));
   let vite, child, channel;
-  const stageProbe = createStageProbe();
+  const stageProbe = values.mode === 'edit' ? createStageProbe() : undefined;
   const cpuProbe = createCpuProbe(values['cpu-profile']);
   let cancelled = false;
   const interrupted = () => { cancelled = true; channel?.fail(new Error('Benchmark interrupted.')); };
   process.once('SIGINT', interrupted); process.once('SIGTERM', interrupted);
   try {
     const appRoot = path.join(root, 'app');
-    const fixture = await createFixture(appRoot, scenario);
+    const fixture = await createFixture(appRoot, scenario, values.mode === 'locale-add' ? 'locale-app.jsx' : 'app.jsx');
     if (cancelled) throw new Error('Benchmark interrupted.');
-    channel = createChannel({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe, browserStages: values['browser-stages'] });
+    const channelFactory = values.mode === 'locale-add' ? createLocaleChannel : createChannel;
+    channel = channelFactory({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe, browserStages: values['browser-stages'] });
     const browserProbe = browserStagePlugin(values['browser-stages']);
     console.log(`[bench] ${scenario.id}: ${fixture.catalogFiles} files, ${fixture.catalogBytes} catalog bytes; starting Vite`);
     const startupAt = performance.now();
@@ -118,8 +125,21 @@ async function runScenario(scenario) {
     if (measured.length !== settings.samples) throw new Error('Incomplete benchmark sample set.');
     const afterDeclaration = declaration ? await stat(path.join(appRoot, 'generated.d.ts')) : undefined;
     if (declaration && (declaration.mtimeMs !== afterDeclaration.mtimeMs || declaration.size !== afterDeclaration.size))
-      throw new Error('Text-only edits unexpectedly rewrote generated declarations.');
+      throw new Error('Catalog edits unexpectedly rewrote generated declarations.');
     const { readyAt, ...browser } = collected.browser;
+    const byteSummary = values => {
+      const summary = summarize(values);
+      return { count: summary.count, p50Bytes: summary.p50Ms, p95Bytes: summary.p95Ms, minBytes: summary.minMs, maxBytes: summary.maxMs };
+    };
+    if (values.mode === 'locale-add') return { ...scenario, namespaces: fixture.namespaces, initialCatalogFiles: fixture.catalogFiles,
+      initialCatalogBytes: fixture.catalogBytes, addedLocale, addedFilesPerRound: 1, addedMessages: scenario.messagesPerLocale,
+      typegenEnabled: !values['no-typegen'], declarationRewritten: false, browser, serverStartupMs, browserBootMs: readyAt - launchedAt,
+      summary: Object.fromEntries(localeMetrics.map(metric => [metric, summarize(measured.map(sample => sample[metric]))])),
+      wire: { preSelectionCatalogReplies: measured.reduce((sum, sample) => sum + sample.preSelectionCatalogReplies, 0),
+        fullReplies: measured.reduce((sum, sample) => sum + sample.fullReplies, 0),
+        catalogReplyBytes: byteSummary(measured.map(sample => sample.catalogReplyBytes)),
+        addedCatalogBytes: byteSummary(measured.map(sample => sample.addedCatalogBytes)) },
+      controlRoundTrip: summarize(collected.roundTrips), controlRoundTripsMs: collected.roundTrips, samples: collected.results };
     const summary = Object.fromEntries(['saveToAckMs', 'saveToManifestBroadcastMs', 'receiveToCommitMs', 'commitToAckDispatchMs', 'fileWriteMs']
       .map(metric => [metric, summarize(measured.map(sample => sample[metric]))]));
     const replySizes = summarize(measured.map(sample => sample.catalogReplyBytes));
@@ -153,7 +173,7 @@ async function runScenario(scenario) {
     channel?.dispose();
     await stopBrowser(child);
     await vite?.close();
-    stageProbe.dispose(); cpuProbe.dispose();
+    stageProbe?.dispose(); cpuProbe.dispose();
     process.removeListener('SIGINT', interrupted); process.removeListener('SIGTERM', interrupted);
     const resolved = path.resolve(root);
     if (path.dirname(resolved) !== path.resolve(directory) || !path.basename(resolved).startsWith('.live-update-'))
@@ -166,19 +186,22 @@ const results = [];
 for (const scenario of selected) {
   const result = await runScenario(scenario);
   results.push(result);
-  console.log(`[bench] ${scenario.id}: save-to-DOM-ack p50=${result.summary.saveToAckMs.p50Ms.toFixed(2)}ms p95=${result.summary.saveToAckMs.p95Ms.toFixed(2)}ms`);
+  const metric = values.mode === 'locale-add' ? result.summary.saveToListAckMs : result.summary.saveToAckMs;
+  console.log(`[bench] ${scenario.id}: ${values.mode} p50=${metric.p50Ms.toFixed(2)}ms p95=${metric.p95Ms.toFixed(2)}ms`);
 }
 const output = { schema: 'saylo-live-update-benchmark-v1', measuredAt: new Date().toISOString(),
-  gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(), settings,
+  gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(), settings, mode: values.mode,
   instrumentation: { cpuProfile: values['cpu-profile'], browserStages: values['browser-stages'], serverFileStages: values['server-file-stages'] },
   workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(),
   codeHashes,
   environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
     cpu: os.cpus()[0]?.model, logicalCpus: os.cpus().length, memoryGiB: os.totalmem() / 1024 ** 3,
     vite: require('vite/package.json').version },
-  clock: 'Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately',
+  clock: values.mode === 'locale-add' ? 'Node: file write resolved -> list/translation ack received; selection-ready request received -> translation ack. Browser: before setLocale -> translation commit. Never subtract clocks across processes.'
+    : 'Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately',
   acknowledgement: 'Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.',
-  scope: 'Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.',
+  scope: values.mode === 'locale-add' ? 'Fresh en-GB directory and catalog per round; directory creation excluded from file-save latency. List option commit then automated locale selection; target never loaded before list ack. Reset to en and await locale removal before next round. React development, no paint timing.'
+    : 'Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.',
   results };
 const out = path.resolve(values.out);
 await mkdir(path.dirname(out), { recursive: true });
