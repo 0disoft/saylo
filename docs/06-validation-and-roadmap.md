@@ -72,7 +72,7 @@ Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/run
 
 전체 `npm run check`가 exit 0으로 통과했다(core 58·React 9·typegen 5·Vite 72, 합 144개, JS/TS 소비·React TS 검사, OIDC helper 3개 별도). production 검사는 AST-only 번들의 parser 오류 표식 부재, 숫자·날짜·시간 skeleton·plural offset·selectordinal·select·중첩·태그 8벡터의 최적화 전후 출력 일치, 외부 FormatJS 문자열 번역, lazy chunk 실행·fallback, 잘못된 디스크 카탈로그의 build 거부를 확인했다. `npm run verify:pack`도 exit 0으로 통과했다. 저장소 밖 JS·TS 앱에서 tarball 설치·CLI·typegen·checkJs·strict TS·README 예제·runtime 엔트리·React SSR·Vite lazy build와 parser 오류 표식 부재를 확인했다.
 
-이 run에서 비교 fixture의 압축 전 JS 청크 합은 168,462 B → 117,385 B였다. 같은 fixture의 `astRuntime: false`/`true` 빌드 비교이며, gzip 크기나 대표 앱 결과가 아니다. 대표 앱 번들 크기와 대규모 라이브 반영 성능의 재측정은 남아 있다.
+이 run에서 비교 fixture의 압축 전 JS 청크 합은 168,462 B → 117,385 B였다. 같은 fixture의 `astRuntime: false`/`true` 빌드 비교이며, gzip 크기나 대표 앱 결과가 아니다. 이후 2026-10-07 실제 vanilla·React 데모의 기본 minify 적용 JS를 같은 옵션으로 비교했다. 초기 JS gzip 합은 vanilla 19,656→12,796 B, React 92,241→85,139 B이고 React의 영어 지연 청크는 유지됐다. 조건·청크별 원본과 gzip 크기는 [10-performance-measurements.md](10-performance-measurements.md)에 기록했다. 대규모 라이브 반영 성능의 재측정은 남아 있다.
 
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |

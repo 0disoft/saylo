@@ -1,0 +1,294 @@
+{
+  "measuredAt": "2026-10-06T15:39:17.943Z",
+  "gitRevision": "46ee8d77869e7e7a362b35521805f13c685bb84a",
+  "workingTreeStatus": "M examples/react/vite.config.mjs\n M examples/vanilla/vite.config.mjs\n?? benchmarks/bundle-size/",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "vite": "8.3.2",
+    "react": "19.3.0"
+  },
+  "method": {
+    "command": "npm run build && node benchmarks/bundle-size/run.mjs",
+    "initial": "HTML JS entries plus transitive static JS imports; dynamic imports excluded",
+    "deferred": "All remaining emitted JS chunks; shared chunks counted once, no assumed navigation",
+    "gzip": "Sum of individual chunk gzipSync sizes, level 9",
+    "scope": "Default-minified client JS only; no HTML, CSS, maps, HTTP headers, Brotli, server output or load timing",
+    "variance": "Each build generates a random session UUID; hashes and gzip sizes may vary slightly on repeat"
+  },
+  "codeHashes": {
+    "benchmarks/bundle-size/README.md": "fb3d4495cd05d5ab26b717972579a634b686f33fd3223b120494921113974614",
+    "benchmarks/bundle-size/run.mjs": "4a1d9c96822e35c3b98af908e6f138a0915a3c1e6b29915295a419369c2622de",
+    "examples/react/generated.d.ts": "0539149a64a6f41c4d5a231c254758a409361da6324e3e13e2661fa47941303e",
+    "examples/react/i18n.ts": "a8f30dbefd42ef5802bb2042c59ff626cf65174f4bbd7c85161d84e3532dfb6a",
+    "examples/react/index.html": "ae4d91dd46c3caf3f2ed4fc2c7220abda4d5085cf94a8c6a54e556d6ca92042a",
+    "examples/react/main.tsx": "3c754ffd6c60ae343bbfd0a4ad1bf2660a38939372e40cc3460f516c9663f7b3",
+    "examples/react/tsconfig.json": "97ca9225933ef74540b72eb47308242477b606eb2a7492b23499b6a1498fbb91",
+    "examples/react/vite.config.mjs": "3e50340c739fcde74124feed592918676ec33f42fb332b8b83f90640627e30d7",
+    "examples/vanilla/index.html": "1321d00763a1d8f321854eea015965762db2bf8449e4955addb88a6e702d40dc",
+    "examples/vanilla/locales/en/demo.json": "da53893079e277bc5266443ceca7c5c06129caf918cf4695396adfa175c7da79",
+    "examples/vanilla/locales/ko/demo.json": "6feee75ce63e89318429cc5f6f049ab02b268f70b4e5fcaebf443e555ecced75",
+    "examples/vanilla/main.js": "8d4c21c9106efaa7e830f313a964ce4607928fa85ae480ee67d0a17cd327a901",
+    "examples/vanilla/style.css": "9b44ebbb3dc0a78ed535c5277e6c40990712d51f384ea6cf4085751faa7b9158",
+    "examples/vanilla/vite.config.mjs": "9301a9ed493d20d4c1f33478f20fc954abf2f351ea5897737d1979df4711774d",
+    "package-lock.json": "376fef212eb14bf1c3fad0514dac30e3ce9de7ab5892e5fb8a710c31edbe8078",
+    "packages/core/dist/boot.d.ts": "14a4f5b76940634e968b1d22bb4f4cd9649ae70b3ae9b053e99268c11d0090b3",
+    "packages/core/dist/boot.js": "6a7dfdd9b2e452b8595c3caa093c49774a87b26034f7c25bad7f653ccbdde4f2",
+    "packages/core/dist/catalog-loader.d.ts": "e4992040d69920952c71253911a7505016d305841e877f1ae6980edefbea1094",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/catalog.d.ts": "fa6f37ffadf8822cf795081956ce330f5e4bea7a3cb275e78b4ff4a59f3b4937",
+    "packages/core/dist/catalog.js": "4923cee24e118548901554268bd44126325e207d7ba15f624a8e74da9c55680a",
+    "packages/core/dist/diagnostics.d.ts": "64b0b092186be6b929f605f9d3d2db9f8c5a135cb372aec9fe16cd1dad049774",
+    "packages/core/dist/diagnostics.js": "888d73aa1904cfb179e4868ecaafe065f8def0c156339f6aa3142994f322fc7f",
+    "packages/core/dist/formatters.d.ts": "427f31b1e85cc39dbf2e78404395ecdc05a33448e7dc7cc77812eb8ef8d539a0",
+    "packages/core/dist/formatters.js": "37925d7ac2976d7ed54df233a03cee48f970f4c94dec13e7e73ddf5cafa61a3e",
+    "packages/core/dist/i18n.d.ts": "cbf09f48725cd3b434b151497e3fba96f54ebb0d0ee788d3700f6a06b51e9c18",
+    "packages/core/dist/i18n.js": "b9817d53c0e29c8e1ad7a8d4a64ede77adb6222a913664bb45c49aa79463db92",
+    "packages/core/dist/index.d.ts": "1463dd264287f55ce5ea59adc6fb055b7374bb97de1c787130f1f37a7aae77c5",
+    "packages/core/dist/index.js": "1463dd264287f55ce5ea59adc6fb055b7374bb97de1c787130f1f37a7aae77c5",
+    "packages/core/dist/json.d.ts": "d68496c5226dd718ec3c8a8f250c452441a49d498a14a48d340b3627c481b378",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/loading-errors.d.ts": "6ecc14a24ec485485789200e5c6c1db3f41ff0c59768d506277501d05782acbd",
+    "packages/core/dist/loading-errors.js": "b3b98d081db4a3ad06a8b9833af95a5b353ed55d2d4f4405dcb8f1630d03850a",
+    "packages/core/dist/loading-registry.d.ts": "20dd5b255a7e34a5b09ea7a6fe10492ac85e1a12c79cb2f0b65e19642c175f4a",
+    "packages/core/dist/loading-registry.js": "37c003b3e43f7f860b318ed2ea045a9de638775f6ecb63aa65e725f6dec77bed",
+    "packages/core/dist/loading-types.d.ts": "0ee3deea3cbe4621c74cac6cd8ec4b307b56659761eb1c8d06c58b98c7de1c81",
+    "packages/core/dist/loading-types.js": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+    "packages/core/dist/runtime.d.ts": "84daf6419415ea359e60a9d2a297adedc8365aa883c2fe8bbbae3907ee835cbc",
+    "packages/core/dist/runtime.js": "6006c791d6665375edfcb39461334664828b75fc22c00d239871a7e2fcd800d8",
+    "packages/core/dist/schema.d.ts": "d3153a77fec2ba83aa611d0ccb49a8a3a913516f9077272b40817df65a4eb21f",
+    "packages/core/dist/schema.js": "50b1b59c71956e3ead5b47317a0fb9e0ef0d1db4142d608b5847757125c769ce",
+    "packages/core/dist/server.d.ts": "abecec66a470265d988749342b4eaa60e4812f89ae9faebb30b7942bc61db480",
+    "packages/core/dist/server.js": "765b4c8e8ae8f58519a80978f07cbd8d643a076519cd50c94a617dfe941b7cda",
+    "packages/core/dist/store.d.ts": "31297c1deba66407c152864249c826fec472fcb711a07dad437e5f0a9a5b0e5c",
+    "packages/core/dist/store.js": "24c2be703171a664b352278d12e2b98021a46abd26eda459c1a9a67b889368ea",
+    "packages/core/dist/translation-errors.d.ts": "3d6952d5691df8c38d0519007816bff8769fb0f1e46f9f73f3e33721465dc36f",
+    "packages/core/dist/translation-errors.js": "a96e06bb4e28e0ae02c6ea08d66c318f2c7c93130522e18ccc343478e794753f",
+    "packages/core/dist/translator.d.ts": "866f7f3c73d669a1e158b7f7ea6cda6a374d9d4aa364039e980e2f8bd9363327",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f",
+    "packages/core/dist/types.d.ts": "14254fd99b5b808f5c4fefa4a7b988dbe576ae58ad1c8853e55ef432c4f09dd1",
+    "packages/core/dist/types.js": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+    "packages/core/package.json": "d0d5c406224354ca618cc3ae758af25856ba73974ee984d244e715a3dde63550",
+    "packages/react/dist/hydration.d.ts": "78f8b25fdf1db17a1122648c593c7fc4aceb2731dd0d0c30a838673bce5072b3",
+    "packages/react/dist/hydration.js": "b67e59e3447568bf8a8b704c8b1d3c7f3942f41abeb8475c8032a3829f8bc0f5",
+    "packages/react/dist/index.d.ts": "25f267795009d8595cd70c7ab146d92ae6ea8da4c76b5228b41d0836631f9201",
+    "packages/react/dist/index.js": "a6250666d41f283956724e2ea07a570f3cc1452fc43864413c94198676558ec1",
+    "packages/react/package.json": "4e7e9dad3aae3c13be0289d6b574465fc3406522885f26f0c2818f8e9563a5e7",
+    "packages/typegen/dist/catalog-files.d.ts": "31a16b3543ff2f8a71fc612f49a56a681bd3539a9f38f51e6f35241ab03bc8b5",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "packages/typegen/dist/cli.d.ts": "43e818adf60173644896298637f47b01d5819b17eda46eaa32d0c7d64724d012",
+    "packages/typegen/dist/cli.js": "ec1aa303685625b3286084e121996bda99f02dca97d3097b9b3ed6f414b6af59",
+    "packages/typegen/dist/generator.d.ts": "9b9bb4d8aafd86a9df4bc92e44ed63095b0d955851f4c8f3fde9693150aeab32",
+    "packages/typegen/dist/generator.js": "7b2946a3a7c99d9ed8866ff62421ff39fdbb78f56e522a19a762dcc17453038d",
+    "packages/typegen/dist/index.d.ts": "c177a4916a26058892149d0741665b311c671f517f7150f6d0989529580bc9e3",
+    "packages/typegen/dist/index.js": "119ea9fbe52458c2c76a25320e564e1127a708474f47852851e7a05250d8f607",
+    "packages/typegen/dist/render.d.ts": "96a5657759ae63007027cfcca5bc086b1dd66d296460b41416f846abcef4bce1",
+    "packages/typegen/dist/render.js": "6f45edb71b198742e2c65845cd6a1f112ee895572b5dc65879d5aef745d1cab0",
+    "packages/typegen/dist/worker.d.ts": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+    "packages/typegen/dist/worker.js": "4129ff97d49ab363c094bab353425fd2ced7b3f7db5fc81a31078816c17353d7",
+    "packages/typegen/dist/write.d.ts": "9b322dc9b4bbac4f03bb2bbf1a5d24f594c7dbcd03366e122941cd15f27255b0",
+    "packages/typegen/dist/write.js": "135e6ddc16dc2a4f7230c9cd7996adfc394a5ec3b3d76c6c65bb53146c2477a5",
+    "packages/typegen/package.json": "e0461345968983ffc2b2d3f7afbd46f974a1799071ceb1f5e30ec12e98db7489",
+    "packages/vite/dist/ast-formatter.d.ts": "4f28ecdbc44863a45d3e5d6e0faeeccea233c2e102edbd613e39c6b2256e1d86",
+    "packages/vite/dist/ast-formatter.js": "d47a8c37fb07949a1b40e6ac15729e1cf83137a7ae8549d594be969f10bc562c",
+    "packages/vite/dist/catalog-files.d.ts": "5def5d92497fac1ea720df99727788041cab142b05f1b26bf656b1436e2e524f",
+    "packages/vite/dist/catalog-files.js": "10d7af374c223f60b22884902c44b506ec2f612ef6178e1560e9c026a6788db8",
+    "packages/vite/dist/catalog-outcome.d.ts": "d54ccddc64facad6e2e771c199a30b8541e5c55a06ec4c8ffe788324d87986a5",
+    "packages/vite/dist/catalog-outcome.js": "ac5faae1368bc907455f199739443ee125352c5820b4a0607b898f2e2d264985",
+    "packages/vite/dist/catalog-patch.d.ts": "a3ca0b28430f1c44946f27ded45a972efc872160ff0dce18dd3344d78186f9c4",
+    "packages/vite/dist/catalog-patch.js": "7a39eec7384e7eaebaefa4ace0de05653287a1e86897d20adae6ce79e087e50b",
+    "packages/vite/dist/catalog-registry.d.ts": "22c2723f8dd5a0aa4644869fc84944b1f03aa054d1ae2b3241e4ac70e8500c78",
+    "packages/vite/dist/catalog-registry.js": "8cf8ff87809c152fe8599a260ec7f7b7145bb74518d4499cfd99ccd965ce925e",
+    "packages/vite/dist/catalog-source.d.ts": "4c04d24f21a36cf9bb214795220e19621fd6b7927701d0ed8bd52e72361183a0",
+    "packages/vite/dist/catalog-source.js": "0a7f2415b9ad6f2172ac9f849d9dac93708d3aece30478e54d3be89d0d22b226",
+    "packages/vite/dist/client.d.ts": "6ae4ab53c2c92bc28b550eda5ec584b60830b161571dd225e8f89552fb1424e4",
+    "packages/vite/dist/client.js": "7b5016eb414d03ce82ba2edfb275f357e068d5ade6e83533bae930da06217a68",
+    "packages/vite/dist/dev-sync.d.ts": "4f88c3874f65133c7d55dcfa9eea2aa1abc55279398d745be76b9703a36cde87",
+    "packages/vite/dist/dev-sync.js": "7b07406b0b45863ce8aab79f0cf4ea03979e941893cea295d79baf25075ed7bc",
+    "packages/vite/dist/freeze.d.ts": "4732e2dcd4562e48302278e9a1052e17780218f05970d4cb50388a4fc7d60827",
+    "packages/vite/dist/freeze.js": "d5a2ad10a099c77db9ba4fdd0567d25fa23c3cee0d4f3b163ce96e55bec354f5",
+    "packages/vite/dist/index.d.ts": "f6ab971c316d5b49ebb341b8c8b941d22e7ee5a4208ef17257be3ccf1e38ed75",
+    "packages/vite/dist/index.js": "e085dd4a6ac661d12b054efacd57a879de912e55ee1d97c3f686f073b9ea9144",
+    "packages/vite/dist/lazy-connection.d.ts": "b4f6c6624e19afc76e57ff97a5046017c29e673933e7d084cd663814845399d0",
+    "packages/vite/dist/lazy-connection.js": "902d3ce4f25d6a1055aff5f7b5db5858620c2a9f5004d7c6ac236733bce827bd",
+    "packages/vite/dist/live-registry.d.ts": "31334d83c2d77e0f9c535de5c128d7d389532f5a9e3babc1ce61598f07bfac7a",
+    "packages/vite/dist/live-registry.js": "fd6592615105b978987bd82b56bb5855f008669a314f606f969d6b1d6a54a1e6",
+    "packages/vite/dist/server-source.d.ts": "7407ebc91fd8776b5d6edd2fa34f468a9155fe0176a2d6c54f6eaab0f6df209e",
+    "packages/vite/dist/server-source.js": "fc207e5437658e4c06b17504e24578c8ad0f545470513efe2dce2eff0ffb0789",
+    "packages/vite/dist/static-catalog-source.d.ts": "6d17ae492253c23fbdc2135403cdb01bc8f596225a4097aeca5b0e88ba665ec7",
+    "packages/vite/dist/static-catalog-source.js": "441e1dbc220ecfeb0cf3f4e912ddcdf6c8fe62101b650d805318059cd1f0a073",
+    "packages/vite/dist/translation-quarantine.d.ts": "20f27a0bbe6819cb52a0512c936caefd273eb831dce4196d3afdcd627c8265d3",
+    "packages/vite/dist/translation-quarantine.js": "e64ed9e9567f2793c36a7269ab393dedcbf8e1fc915ddaae405fc4d3cf6fd1f2",
+    "packages/vite/dist/types.d.ts": "4202e84dc8b3348d51b7ca9278cb60550b6cd2fd32a22116e9463aab2359ed10",
+    "packages/vite/dist/types.js": "d2edf90c0ac039adc309a2e87789cce8dc7a84069ba3577b9f0e0995a02d1548",
+    "packages/vite/dist/virtual.d.ts": "aa58072a2921f160e66a3d0597035c2338edfcc91aab1d9056901b56eed69b21",
+    "packages/vite/package.json": "7ec20449bb8bc880d07023ef7ff33a8917125894682824fcd0a0855c53d1b674"
+  },
+  "cases": [
+    {
+      "app": "vanilla",
+      "astRuntime": false,
+      "minify": "Vite default",
+      "initial": {
+        "bytes": 63263,
+        "gzipBytes": 19656,
+        "chunks": 1
+      },
+      "deferred": {
+        "bytes": 0,
+        "gzipBytes": 0,
+        "chunks": 0
+      },
+      "total": {
+        "bytes": 63263,
+        "gzipBytes": 19656,
+        "chunks": 1
+      },
+      "chunks": [
+        {
+          "fileName": "assets/index-B9PHV7ka.js",
+          "group": "initial",
+          "isEntry": true,
+          "isDynamicEntry": false,
+          "imports": [],
+          "dynamicImports": [],
+          "bytes": 63263,
+          "gzipBytes": 19656,
+          "sha256": "fff56bf15775f7244fc96efc3d70570da18af02f03a37c9718f5624d7cb40c1c",
+          "parserSentinel": true
+        }
+      ]
+    },
+    {
+      "app": "vanilla",
+      "astRuntime": true,
+      "minify": "Vite default",
+      "initial": {
+        "bytes": 37664,
+        "gzipBytes": 12796,
+        "chunks": 1
+      },
+      "deferred": {
+        "bytes": 0,
+        "gzipBytes": 0,
+        "chunks": 0
+      },
+      "total": {
+        "bytes": 37664,
+        "gzipBytes": 12796,
+        "chunks": 1
+      },
+      "chunks": [
+        {
+          "fileName": "assets/index-gLmJSU-H.js",
+          "group": "initial",
+          "isEntry": true,
+          "isDynamicEntry": false,
+          "imports": [],
+          "dynamicImports": [],
+          "bytes": 37664,
+          "gzipBytes": 12796,
+          "sha256": "9cf369a34768f8ec7a0b759ba2d83e3ec316d1e8d75ad669e2cd1f90e7436da1",
+          "parserSentinel": false
+        }
+      ]
+    },
+    {
+      "app": "react",
+      "astRuntime": false,
+      "minify": "Vite default",
+      "initial": {
+        "bytes": 298571,
+        "gzipBytes": 92241,
+        "chunks": 1
+      },
+      "deferred": {
+        "bytes": 3774,
+        "gzipBytes": 958,
+        "chunks": 1
+      },
+      "total": {
+        "bytes": 302345,
+        "gzipBytes": 93199,
+        "chunks": 2
+      },
+      "chunks": [
+        {
+          "fileName": "assets/demo-DyIvdzUx.js",
+          "group": "deferred",
+          "isEntry": false,
+          "isDynamicEntry": true,
+          "imports": [],
+          "dynamicImports": [],
+          "bytes": 3774,
+          "gzipBytes": 958,
+          "sha256": "d81eeb8e5e52c338e5429d91b4dd15d1b95bf7059d94eefa3c575d70c65819ff",
+          "parserSentinel": false
+        },
+        {
+          "fileName": "assets/index-BXBZ4O1G.js",
+          "group": "initial",
+          "isEntry": true,
+          "isDynamicEntry": false,
+          "imports": [],
+          "dynamicImports": [
+            "assets/demo-DyIvdzUx.js"
+          ],
+          "bytes": 298571,
+          "gzipBytes": 92241,
+          "sha256": "364b0833160c479501ff9d213c839b9a6a997646044a226e5d35a89f9b863dfd",
+          "parserSentinel": true
+        }
+      ]
+    },
+    {
+      "app": "react",
+      "astRuntime": true,
+      "minify": "Vite default",
+      "initial": {
+        "bytes": 272950,
+        "gzipBytes": 85139,
+        "chunks": 1
+      },
+      "deferred": {
+        "bytes": 3774,
+        "gzipBytes": 957,
+        "chunks": 1
+      },
+      "total": {
+        "bytes": 276724,
+        "gzipBytes": 86096,
+        "chunks": 2
+      },
+      "chunks": [
+        {
+          "fileName": "assets/demo-CjR09ptO.js",
+          "group": "deferred",
+          "isEntry": false,
+          "isDynamicEntry": true,
+          "imports": [],
+          "dynamicImports": [],
+          "bytes": 3774,
+          "gzipBytes": 957,
+          "sha256": "8ca5581334068aba218361bd3dc1b65e4bdcfe4bc650c82366be02ac5da0aed8",
+          "parserSentinel": false
+        },
+        {
+          "fileName": "assets/index-DpwGb4Qw.js",
+          "group": "initial",
+          "isEntry": true,
+          "isDynamicEntry": false,
+          "imports": [],
+          "dynamicImports": [
+            "assets/demo-CjR09ptO.js"
+          ],
+          "bytes": 272950,
+          "gzipBytes": 85139,
+          "sha256": "67cb8490ec74dd3180fd155f46363033544d0212100a31b493ef3af6f6f4eaad",
+          "parserSentinel": false
+        }
+      ]
+    }
+  ]
+}

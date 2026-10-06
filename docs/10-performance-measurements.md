@@ -146,4 +146,21 @@ pair별 차이 median은 -3.92ms이고 100 pair 중 85 pair가 개선됐다. p50
 
 같은 프로세스 parser 비교로 메시지 1만 파일 1개 수정의 중앙 파싱 비용이 약 13.3% 줄어든 것은 확인했다. 다만 profiler를 켠 after run의 종단 간 p95는 1074.94ms로 크게 나왔고, profiler를 끈 parser run의 small p95 69.82ms·large p95 200.63ms는 단일 run이므로 목표 p95 ≤ 100ms의 안정적 달성을 주장하지 않는다. 큰 지연의 원인도 확정하지 않았다. 운영 pack 소비 검증은 `npm run verify:pack`으로 완료했고, 첫 배포 준비는 별도로 남아 있다.
 
-기록한 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 로케일 추가·삭제와 paint는 아직 측정하지 않았고, 번들 크기는 이 기록에서 재지 않았다. parser 런타임 제거 뒤 fixture 청크 크기 측정은 아래 새 기록에 있고 대표 앱 번들 크기는 아직 미측정이다.
+기록한 run에서 문구만 수정한 50회 편집 뒤에도 생성 `.d.ts`의 mtime과 size는 바뀌지 않았고, 모든 ack에서 입력 노드 identity·값과 컴포넌트 state가 유지됐다. 임시 fixture 디렉터리와 browser profile은 run 뒤 남지 않았고 추가 브라우저 프로세스도 종료됐다. 로케일 추가·삭제와 paint는 아직 측정하지 않았고, 이 라이브 갱신 run에서는 번들 크기를 재지 않았다. parser 런타임 제거 fixture의 unminified JS 청크 합(168,462→117,385 B)은 [06-validation-and-roadmap.md](06-validation-and-roadmap.md)에 있고, 실제 데모의 minify·gzip 측정은 다음 기록으로 구분한다.
+
+## 실제 데모의 운영 JS 번들 (2026-10-07 KST)
+
+`npm run build` 후 `node benchmarks/bundle-size/run.mjs`로 vanilla와 React 데모를 각각 `astRuntime:false`/`true`로 빌드했다. 원본 결과는 [demo-bundle-size.json](../benchmarks/results/demo-bundle-size.json), 재실행과 크기 정의는 [benchmarks/bundle-size/README.md](../benchmarks/bundle-size/README.md)에 있다. 환경은 Windows x64, Node v24.18.0, Vite 8.3.2, React 19.3.0이다. 기준 revision은 46ee8d7이고, 그 위의 config factory·측정 스크립트 변경은 결과의 `workingTreeStatus`·`codeHashes`로 구분한다.
+
+기존 config를 재사용해 기본 minify를 적용하고 `write:false`로 메모리에서 결과를 받았다. vanilla는 eager `virtual:saylo`, React는 `virtual:saylo/lazy`와 `initialNamespaces:['demo']`를 쓴다. 두 앱 모두 한국어(`ko`)로 시작하고 같은 ko·en 번역 파일(namespace demo)을 쓴다. 초기 JS는 HTML 진입 청크와 재귀적인 정적 JS import 합이고, 지연 JS는 그 밖의 emitted JS 청크 합이다. 원본은 minify된 JS의 UTF-8 바이트, gzip은 청크마다 level 9로 압축한 크기의 합이며 단위는 B다.
+
+| 앱 | astRuntime | 초기 JS 원본 | 초기 JS gzip | 지연 JS 원본 | 지연 JS gzip |
+| --- | --- | --- | --- | --- | --- |
+| vanilla eager | false | 63,263 | 19,656 | 0 | 0 |
+| vanilla eager | true | 37,664 | 12,796 | 0 | 0 |
+| React lazy | false | 298,571 | 92,241 | 3,774 | 958 |
+| React lazy | true | 272,950 | 85,139 | 3,774 | 957 |
+
+같은 앱의 초기 JS를 비교하면 vanilla는 원본 25,599 B·gzip 6,860 B(34.9%) 감소, React는 원본 25,621 B·gzip 7,102 B(7.7%) 감소다. React의 en/demo 동적 import 청크는 두 빌드에서 모두 유지됐고 원본 크기는 3,774 B로 같았다. 모든 빌드에서 초기 JS는 1청크였고, vanilla는 지연 청크 0개, React는 1개였다. parser 오류 표식 `EXPECT_ARGUMENT_CLOSING_BRACE`는 각 앱의 false 초기 JS에 존재하고 true에서는 모든 JS에서 사라졌다. 측정 입력과 React 생성 타입의 hash도 빌드 전후 같았다.
+
+React 수치에는 React·ReactDOM·데모 UI가 포함되므로 위 합계를 Saylo 단독 런타임 크기로 쓰거나 vanilla 합계와 단순 비교하지 않는다. HTML·CSS·source map·HTTP 헤더·Brotli·SSR·로드 시간은 제외했다. 빌드별 session UUID가 무작위여서 gzip과 output hash는 재실행 때 조금 달라질 수 있고, 지연 청크의 1 B 차이를 최적화 효과로 보지 않는다. 이 결과는 실제 저장소 데모의 한 번 측정이며 일반 앱·다른 데이터 규모·다른 bundler로 확대하지 않는다. parser 제거는 로컬 구현으로, 게시된 `0.1.0-alpha.1`에는 없다. 라이브 갱신 지연 목표와 Paraglide 비교는 별도 측정으로 남아 있다.

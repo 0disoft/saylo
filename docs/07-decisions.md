@@ -58,7 +58,7 @@
 | --- | --- |
 | 라이선스 | Apache-2.0 확정. 배포 tarball에 `LICENSE`·`NOTICE`를 함께 싣는다 |
 | npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-typegen`·`saylo-vite` 네 이름으로 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`) 게시 완료 |
-| 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 로케일 추가·paint·번들 크기는 parser 제거 fixture의 unminified JS 청크 합만 확인(최신 run 168462→117385 B)했고 대표 앱 측정은 남았다 |
+| 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 로케일 추가·paint는 미측정. 2026-10-07 실제 vanilla·React 데모에서 parser 제거 전후의 기본 minify 적용 JS를 측정했다. 초기 JS gzip 합은 vanilla 19,656→12,796 B, React 92,241→85,139 B이고 영어 지연 청크는 유지됐다. 조건·원본/gzip·한계는 [10-performance-measurements.md](10-performance-measurements.md)를 따른다. 일반 앱이나 다른 bundler로 확대하지 않는다 |
 | 지원 버전 범위 | Node 24.x, Vite 8, React 19, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
 | build-time parser 런타임 제거 | Vite plugin에 로컬 구현(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. 로컬 변경이고 게시본에는 없다 |
 | requireCompleteTranslations(완역 강제) | 후속. 기본은 불완전한 번역 허용 |
