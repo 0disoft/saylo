@@ -23,6 +23,7 @@ npm run bench:live
 | `--no-typegen` | 꺼짐 | typegen을 끄고 실행 |
 | `--cpu-profile` | 꺼짐 | `node:inspector`로 측정 구간 edit loop의 CPU profile을 켜고 결과에 `cpuProfile`을 넣는다 |
 | `--browser-stages` | 꺼짐 | benchmark 전용 Vite transform으로 브라우저 patch·freeze·snapshot·translator·signature 시간을 따로 잰다 |
+| `--server-file-stages` | 꺼짐 | benchmark 전용 Node module transform으로 경로 검사·UTF-8 읽기·카탈로그 파싱을 따로 잰다 |
 | `--timeout-ms` | `30000` | 단계별 대기 timeout |
 
 ## 픽스처와 측정
@@ -49,6 +50,23 @@ npm run bench:live
 - `validationMs`는 준비 뒤 active catalog의 최종 `LiveRegistry.validate`, `registryReplaceMs`는 `CatalogRegistry.replace`, `catalogDeltaMs`는 `CatalogRegistry.loadDelta` 시간이다.
 - 격리 구현 전 결과의 `readAndCandidateMs`는 `validate` 진입까지였고 `translationPreparationMs`는 없었다. 그 당시 번역 검증은 `validationMs`에 들어갔다. 새 구간 수치와 과거 구간 수치를 직접 비교하지 않는다. save→DOM ack의 clock·구간 정의는 그대로다.
 - stage p95는 서로 더하거나 종단 간 값으로 환산하지 않는다.
+
+## 서버 파일 구간 계측
+
+`--server-file-stages`는 Saylo import 전에 Node 24의 module hook을 등록한다. `server-file-profile.mjs`가 실제 typegen `dist/catalog-files.js`의 `readCatalogFile` 호출 경계를 메모리에서만 감싼다. source·dist 파일을 수정하지 않고, 변환이 적용됐는지 확인한다. 편집마다 경로 검사·읽기·파싱 호출이 각각 정확히 1회 관측되어야 하며 startup·warmup은 측정 요약에서 제외한다. 종료 시 hook을 해제한다.
+
+- `pathCheckMs`: `assertInside`의 realpath 기반 경로 확인. 비동기 wall time이다.
+- `fileReadMs`: 실제 `read()`(UTF-8 readFile)의 Promise 완료까지. 디스크·OS cache·디코딩·스케줄링 대기가 섞이며 디스크 I/O나 CPU만의 값이 아니다.
+- `catalogParseMs`: `parseCatalog`의 동기 호출과 sourceName 등 인자 구성. JSON 처리·ICU·이전 메시지 재사용·위치·동결을 포함하며 CPU profiler 값이 아니다.
+- `candidateOtherMs`: 각 sample의 `readAndCandidateMs`에서 위 세 구간의 시간을 뺀 나머지. candidate map·필터·base stat·직렬화된 drain 대기와 clock wrapper overhead를 포함할 수 있다. 원시 sample별로 계산한 뒤 요약하며 구간별 p95를 서로 빼거나 더하지 않는다.
+
+네 값은 모두 `readAndCandidateMs` 안에 포함된다. clock·추가 Promise wrapper 비용이 있으므로 이전 계측 없는 run 대비 성능 변화나 최적화 효과를 주장하지 않는다. 이 옵션은 브라우저 prebundle 설정을 바꾸지 않는다. 삭제·오류 경로·다중 파일 편집은 이 단일 파일 정상 편집 측정의 범위가 아니다.
+
+```sh
+node benchmarks/live-update/run.mjs --server-file-stages --out benchmarks/results/live-update-server-files.json
+```
+
+측정 결과는 [../results/live-update-server-files.json](../results/live-update-server-files.json)에 있다. 실행 옵션도 `instrumentation`에 함께 기록한다. warmup 5·측정 50·control 25, CPU·브라우저 상세 계측은 끔 조건이다.
 
 ## 브라우저 구간 계측
 

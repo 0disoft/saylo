@@ -78,6 +78,8 @@ Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/run
 
 이후 benchmark 전용 브라우저 구간 계측을 추가하고 immutable catalog의 signature fragment를 재사용했다. 같은 계측 옵션에서 large signature 생성 p95는 16.90→6.20ms, snapshot 생성은 28.60→16.00ms로 낮게 관측됐다. 계측 없는 일반 개발 설정의 최적화 후 p95는 small 68.00ms·large 185.87ms여서 대규모 목표는 여전히 미달이다. content 기반 no-op·schema 변경·SSR boot·full resync를 포함한 관련 테스트 44개가 통과했다. 옵션에 따른 prebundle 차이, control 왕복과 run 간 부하, 메모리 비용을 포함한 조건·한계는 [10-performance-measurements.md](10-performance-measurements.md)를 따른다. 로컬 변경이며 npm 게시본에는 없다.
 
+서버 파일 구간을 benchmark-only Node hook으로 분리 계측했다. large의 UTF-8 읽기 p95는 1.43ms, parseCatalog 호출은 46.82ms였다. runtime 변경 없이 측정했고 다음 최적화 대상은 파서 내부 JSON 처리·위치 계산·메시지 순회다. 읽기·파싱 내부 clock 및 비동기 대기, 원시 residual 정의, 정상 단일 파일 편집이라는 한계는 [10-performance-measurements.md](10-performance-measurements.md)의 서버 파일 계측 기록을 따른다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |

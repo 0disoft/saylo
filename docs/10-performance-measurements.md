@@ -243,3 +243,30 @@ signature 생성 p95는 large에서 약 63.3% 낮게 관측됐다. 하지만 변
 core build와 관련 테스트 44개(core snapshot signature·lazy loading·SSR boot 24개, Vite lazy·patch 20개)가 통과했다. canonical 문자열 호환성, 빈 scope·이스케이프·prototype 같은 literal ID, immutable 캐시 재사용·mutable 입력 비캐시, 같은 문구의 새 pair version에서 snapshot 동일성, schema·문구 변경 시 정상 게시와 이전 translator 유지, malformed patch의 full 재요청·resync를 확인했다. 전체 release check·pack·재게시·푸시는 이번 범위에서 실행하지 않았다.
 
 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. 일반 run의 서버 readAndCandidate p95는 55.92ms로 읽기·파싱을 포함하며 다음 분리 계측 대상이다. 비동기 읽기와 drain 대기도 섞여 있으므로 CPU 비용으로 환산하지 않는다. 브라우저에서는 patch 전체 맵 복사, translator 검증 순회, 변경된 카탈로그의 signature 계산도 남는다. 로케일 추가 지연·paint·Paraglide 비교도 아직 측정하지 않았다.
+
+## 서버 파일 읽기·파싱 분리 계측 (2026-10-07 KST)
+
+`node benchmarks/live-update/run.mjs --server-file-stages --out benchmarks/results/live-update-server-files.json`로 두 시나리오를 측정했다. 결과는 [live-update-server-files.json](../benchmarks/results/live-update-server-files.json)과 시나리오별 raw sample에 있다. 기준 revision은 f863e58이고, 그 위의 benchmark-only 계측기 변경은 `workingTreeStatus`·`codeHashes`에 기록했다. 제품 runtime hash는 직전 signature run과 같고 라이브러리 source·dist는 수정하지 않았다.
+
+기존과 같은 warmup 5·측정 50·control 25, 정상 en 문구 1개 수정·loaded ko+en·namespace 1 조건이다. CPU profiler와 브라우저 상세 계측은 끄고 기존 Saylo dependency prebundle을 유지했다. 환경은 Windows x64, Node v24.18.0, Vite 8.3.2, React 19.3.0, HeadlessChrome 154, Ryzen 5 7430U, memory 31.3GiB다. 시작 때 Node module hook을 등록해 실제 `typegen/dist/catalog-files.js`의 `readCatalogFile`만 메모리에서 변환하고 끝나면 hook을 해제한다. source·dist 파일이나 제품 공개 API에는 계측기를 넣지 않았다.
+
+| candidate 내부 구간 p95 | small(1k×3) | large(10k×20) |
+| --- | --- | --- |
+| 경로 검사(assertInside) | 1.17ms | 0.84ms |
+| UTF-8 파일 읽기(read) | 0.90ms | 1.43ms |
+| 카탈로그 파싱(parseCatalog 호출·인자 구성) | 4.60ms | 46.82ms |
+| 나머지 candidate 처리(sample별 residual) | 0.87ms | 3.32ms |
+| readAndCandidate 전체 | 6.65ms | 49.40ms |
+
+경로 검사와 읽기는 비동기 wall time이다. 파싱은 JSON 처리·ICU·이전 메시지 재사용·위치 계산·동결을 포함한 동기 호출 elapsed time이고 CPU profiler 값은 아니다. residual은 각 원시 sample에서 전체 candidate 시간에서 세 구간의 시간을 뺀 뒤 집계한다. 이 표의 p95들을 더하거나 서로 빼서 단계·전체 시간을 만들지 않는다. clock·Promise wrapper overhead와 OS 스케줄링 영향이 들어간다.
+
+이번 warm 정상 편집에서 large read p95는 1.43ms, parse p95는 46.82ms였다. 따라서 다음 최적화 대상은 파일 읽기 교체가 아니라 파서 내부의 JSON 처리·위치 계산·메시지 순회다. `catalog.ts`는 문구가 같은 메시지의 ICU AST를 이미 재사용하지만, `readJson`의 전체 token 스캔·decoded key 처리, 위치 계산, messages 맵 구성은 매 저장마다 수행한다. 이 run에서는 파서 내부 세부 구간을 나누지 않았으므로 JSON 스캔 하나가 단독 원인이라고 단정하지 않는다. 다음 작은 작업은 이 내부 비용을 나눠 확인하고 재사용 가능한 부분을 줄이는 것으로 잡는다. strict JSON, decoded 중복 ID, 오류 위치, 길이가 달라지는 문구·추가/삭제 키의 처리 계약은 유지한다.
+
+| 시나리오 | save→DOM ack p50 | save→DOM ack p95 | save→manifest broadcast p95 | receive→commit p95 | control 왕복 p95 |
+| --- | --- | --- | --- | --- | --- |
+| 1k×3 로케일 | 62.95ms | 71.85ms | 62.32ms | 4.80ms | 10.26ms |
+| 10k×20 로케일 | 151.45ms | 180.93ms | 125.13ms | 40.10ms | 7.18ms |
+
+직전 계측 없는 일반 run의 p95는 68.00ms·185.87ms였다. 이번에는 runtime이 같고 계측·실행 시점만 달라졌으므로 이 차이를 성능 개선이나 회귀로 보지 않는다. 대규모 100ms 목표는 여전히 미달이다. cold disk, 로케일 추가·삭제, 부적합 번역 격리·복원, 여러 파일 동시 저장은 이번 측정 대상이 아니다.
+
+두 시나리오 raw sample은 각각 55개(측정 50개)이며, 모든 sample에서 경로 검사·읽기·파싱이 각각 1회였다. 원시 residual 합과 candidate 전체, 5개 종단 timing·6개 서버·4개 파일 구간·control nearest-rank 요약, 기록된 code hash를 확인했다. 측정 50회 모두 patch 1개 메시지·position 갱신 0개였고 full 응답은 0회였다. 모든 ack에서 입력 노드·값과 컴포넌트 state가 유지됐으며 타입 파일은 다시 쓰이지 않았다. 임시 fixture·browser profile과 해당 브라우저 프로세스는 남지 않았다. 라이브러리 구현을 바꾸지 않아 기존 제품 테스트는 반복하지 않았다.

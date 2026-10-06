@@ -9,12 +9,11 @@ import { performance } from 'node:perf_hooks';
 import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
 import { createServer } from 'vite';
-import saylo from '@0disoft/saylo-vite';
 import { createChannel } from './channel.mjs';
 import { createFixture, scenarios } from './fixture.mjs';
 import { summarize } from './statistics.mjs';
-import { createStageProbe, createCpuProbe } from './profile.mjs';
 import { browserStagePlugin, browserMetrics } from './browser-profile.mjs';
+import { registerFileProbe, fileMetrics } from './server-file-profile.mjs';
 
 const exec = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -25,6 +24,7 @@ const { values } = parseArgs({ options: { samples: { type: 'string', default: '5
   browser: { type: 'string' }, out: { type: 'string', default: 'benchmarks/results/live-update.json' },
   'no-typegen': { type: 'boolean', default: false }, 'cpu-profile': { type: 'boolean', default: false },
   'browser-stages': { type: 'boolean', default: false },
+  'server-file-stages': { type: 'boolean', default: false },
   'timeout-ms': { type: 'string', default: '30000' } } });
 function integer(name, min) {
   const value = Number(values[name]);
@@ -35,6 +35,11 @@ const settings = { samples: integer('samples', 1), warmup: integer('warmup', 0),
   timeoutMs: integer('timeout-ms', 1000) };
 const selected = scenarios.filter(s => values.scenario === 'all' || s.id === values.scenario);
 if (!selected.length) throw new Error('Unknown scenario; use all, 1k-3-locales or 10k-20-locales.');
+const fileProbe = registerFileProbe(values['server-file-stages']);
+// Node hooks must be registered before the server dependency graph is loaded.
+const { default: saylo } = await import('@0disoft/saylo-vite');
+const { createStageProbe, createCpuProbe } = await import('./profile.mjs');
+fileProbe.assertTransformed();
 
 async function browserExecutable() {
   if (values.browser) { await access(values.browser); return path.resolve(values.browser); }
@@ -56,6 +61,7 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'benchmarks/live-update/browser-profile.mjs', 'benchmarks/live-update/browser-probe.mjs',
   'packages/core/dist/loading-registry.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
   'packages/vite/dist/catalog-source.js', 'packages/vite/dist/freeze.js'];
+measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
 const codeHashes = Object.fromEntries(await Promise.all(measuredFiles.map(async file =>
   [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
 
@@ -126,6 +132,11 @@ async function runScenario(scenario) {
         maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),
         catalogReplyBytes: { p50Bytes: replySizes.p50Ms, p95Bytes: replySizes.p95Ms, minBytes: replySizes.minMs, maxBytes: replySizes.maxMs } },
       browserBootMs: readyAt - launchedAt, summary, controlRoundTrip: summarize(collected.roundTrips),
+      ...(values['server-file-stages'] ? { serverFileStages: {
+        scope: 'Benchmark-only in-memory Node module transform. Path check and UTF-8 read are async wall times; parse is synchronous parseCatalog call including argument construction. candidateOther is a per-sample residual inside readAndCandidate. These stages are included in readAndCandidate; do not add their p95s or treat wall times as CPU times.',
+        ...Object.fromEntries(fileMetrics.map(metric => [metric, summarize(measured.map(sample => sample.serverStages.fileStages.timings[metric]))])),
+        maxCalls: Object.fromEntries(fileMetrics.slice(0, -1).map(metric => [metric, Math.max(...measured.map(sample => sample.serverStages.fileStages.calls[metric]))])),
+      } } : {}),
       ...(values['browser-stages'] ? { browserStages: {
         scope: 'Synchronous benchmark-only client transforms; Saylo dependency prebundling disabled. Snapshot includes translator and signature; do not add nested stages or compare directly with uninstrumented runs.',
         ...Object.fromEntries(browserMetrics.map(metric => [metric, summarize(measured.map(sample => sample.browserStages.timings[metric]))])),
@@ -159,6 +170,7 @@ for (const scenario of selected) {
 }
 const output = { schema: 'saylo-live-update-benchmark-v1', measuredAt: new Date().toISOString(),
   gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(), settings,
+  instrumentation: { cpuProfile: values['cpu-profile'], browserStages: values['browser-stages'], serverFileStages: values['server-file-stages'] },
   workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(),
   codeHashes,
   environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
@@ -178,3 +190,4 @@ for (const result of output.results) {
 }
 await writeFile(out, `${JSON.stringify(output, null, 2)}\n`);
 console.log(`[bench] result: ${out}`);
+fileProbe.dispose();

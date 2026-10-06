@@ -2,6 +2,7 @@ import { Session } from 'node:inspector';
 import { performance } from 'node:perf_hooks';
 import { LiveRegistry } from '../../packages/vite/dist/live-registry.js';
 import { CatalogRegistry } from '../../packages/vite/dist/catalog-registry.js';
+import { beginFileSample, finishFileSample } from './server-file-profile.mjs';
 
 // Benchmark-only wrappers: the library ships no clocks or profiling API.
 export function createStageProbe() {
@@ -50,10 +51,12 @@ export function createStageProbe() {
     });
   }
   return {
-    begin() { current = { readAndCandidateMs: 0, translationPreparationMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 }; },
+    begin() { beginFileSample(); current = { readAndCandidateMs: 0, translationPreparationMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 }; },
     finish() {
       if (!current || !Number.isFinite(current.queueToDrainMs) || !current.drains) throw new Error('Missing server stage sample.');
       const { firstEventAt, candidateStartedAt, ...result } = current;
+      const fileStages = finishFileSample(current.readAndCandidateMs);
+      if (fileStages) result.fileStages = fileStages;
       current = undefined;
       return result;
     },
