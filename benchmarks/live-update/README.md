@@ -22,6 +22,7 @@ npm run bench:live
 | `--out` | `benchmarks/results/live-update.json` | 결과 JSON 경로 |
 | `--no-typegen` | 꺼짐 | typegen을 끄고 실행 |
 | `--cpu-profile` | 꺼짐 | `node:inspector`로 측정 구간 edit loop의 CPU profile을 켜고 결과에 `cpuProfile`을 넣는다 |
+| `--browser-stages` | 꺼짐 | benchmark 전용 Vite transform으로 브라우저 patch·freeze·snapshot·translator·signature 시간을 따로 잰다 |
 | `--timeout-ms` | `30000` | 단계별 대기 timeout |
 
 ## 픽스처와 측정
@@ -48,6 +49,18 @@ npm run bench:live
 - `validationMs`는 준비 뒤 active catalog의 최종 `LiveRegistry.validate`, `registryReplaceMs`는 `CatalogRegistry.replace`, `catalogDeltaMs`는 `CatalogRegistry.loadDelta` 시간이다.
 - 격리 구현 전 결과의 `readAndCandidateMs`는 `validate` 진입까지였고 `translationPreparationMs`는 없었다. 그 당시 번역 검증은 `validationMs`에 들어갔다. 새 구간 수치와 과거 구간 수치를 직접 비교하지 않는다. save→DOM ack의 clock·구간 정의는 그대로다.
 - stage p95는 서로 더하거나 종단 간 값으로 환산하지 않는다.
+
+## 브라우저 구간 계측
+
+`--browser-stages`는 `browser-profile.mjs`의 Vite transform으로 client 모듈의 `applyCatalogPatch`, `freezeCatalogs`, `createLoadedSnapshot`, `createBoundTranslator`와 signature 생성식을 감싼다. 라이브러리 source·dist는 수정하지 않는다. `browser-probe.mjs`는 편집 직전부터 DOM commit까지 각 함수의 동기 시간을 합산하고 호출 수를 기록한다. sample마다 모든 구간이 관측되어야 하며, 변환된 모듈 4개를 확인한다. startup·초기 boot·control 왕복은 구간 집계에서 제외한다.
+
+snapshot 시간 안에는 translator와 signature가 포함된다. 중첩 값이나 구간별 p95를 더하지 않는다. receive→commit에는 함수 밖의 비동기 조정·React commit도 들어간다. 이 계측은 browser CPU profiler가 아니며 clock 호출 비용을 포함한다.
+
+변환이 Vite 의존성 prebundle 안에 숨지 않도록 이 옵션에서는 Saylo core·React adapter·Vite client의 prebundle을 끈다. React·ReactDOM은 계속 prebundle한다. 따라서 기존 옵션 없는 run과 직접 전후 비교하지 않고, **같은 옵션의 before·after**를 비교한다. 일반 개발 설정에서의 종단 간 변화는 옵션 없는 run으로 따로 확인한다.
+
+```sh
+node benchmarks/live-update/run.mjs --browser-stages --out benchmarks/results/live-update-browser-before.json
+```
 
 ## CPU 프로파일
 

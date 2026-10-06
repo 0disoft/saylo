@@ -1,7 +1,8 @@
 import { writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
+import { browserMetrics } from './browser-profile.mjs';
 
-export function createChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, cpuProbe }) {
+export function createChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, cpuProbe, browserStages }) {
   const results = [];
   const roundTrips = [];
   let current;
@@ -76,12 +77,16 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
             !Number.isFinite(data.commitToAckDispatchMs) || data.commitToAckDispatchMs < 0 || !current.catalogReply) throw new Error('Invalid sample timing or DOM text.');
         // Serialize only after the ack clock is captured, keeping size accounting out of latency.
         const catalog = current.catalogReply.data.result;
+        if (browserStages && browserMetrics.some(metric => !Number.isFinite(data.browserStages?.timings?.[metric]) ||
+            data.browserStages.timings[metric] < 0 || !Number.isSafeInteger(data.browserStages?.calls?.[metric]) ||
+            data.browserStages.calls[metric] < 1)) throw new Error('Invalid browser stage timings.');
         results.push({ token: current.token, warmup: results.length < warmup,
           saveToAckMs: acknowledgedAt - current.saveFinishedAt,
           saveToManifestBroadcastMs: current.broadcastAt - current.saveFinishedAt,
           fileWriteMs: current.saveFinishedAt - current.writeStartedAt,
           receiveToCommitMs: data.receiveToCommitMs, commitToAckDispatchMs: data.commitToAckDispatchMs,
           serverStages: stageProbe.finish(),
+          ...(browserStages ? { browserStages: data.browserStages } : {}),
           catalogReplyKind: catalog.status, catalogReplyBytes: Buffer.byteLength(JSON.stringify(current.catalogReply)),
           changedMessages: catalog.status === 'patch' ? catalog.upsert.length : Object.keys(catalog.catalog.messages).length,
           positionUpdates: catalog.status === 'patch' ? (catalog.positionShift ? catalog.messageCount - catalog.upsert.length : catalog.positions.length) : 0 });

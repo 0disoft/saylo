@@ -14,6 +14,7 @@ import { createChannel } from './channel.mjs';
 import { createFixture, scenarios } from './fixture.mjs';
 import { summarize } from './statistics.mjs';
 import { createStageProbe, createCpuProbe } from './profile.mjs';
+import { browserStagePlugin, browserMetrics } from './browser-profile.mjs';
 
 const exec = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -23,6 +24,7 @@ const { values } = parseArgs({ options: { samples: { type: 'string', default: '5
   calibrations: { type: 'string', default: '25' }, scenario: { type: 'string', default: 'all' },
   browser: { type: 'string' }, out: { type: 'string', default: 'benchmarks/results/live-update.json' },
   'no-typegen': { type: 'boolean', default: false }, 'cpu-profile': { type: 'boolean', default: false },
+  'browser-stages': { type: 'boolean', default: false },
   'timeout-ms': { type: 'string', default: '30000' } } });
 function integer(name, min) {
   const value = Number(values[name]);
@@ -50,7 +52,10 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'packages/core/dist/diagnostics.js', 'packages/core/dist/schema.js', 'packages/typegen/dist/catalog-files.js',
   'packages/vite/dist/live-registry.js', 'packages/vite/dist/translation-quarantine.js', 'packages/vite/dist/catalog-registry.js', 'packages/vite/dist/catalog-patch.js',
   'benchmarks/live-update/profile.mjs', 'benchmarks/live-update/channel.mjs', 'benchmarks/live-update/run.mjs',
-  'benchmarks/live-update/app.jsx', 'benchmarks/live-update/fixture.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json'];
+  'benchmarks/live-update/app.jsx', 'benchmarks/live-update/fixture.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json',
+  'benchmarks/live-update/browser-profile.mjs', 'benchmarks/live-update/browser-probe.mjs',
+  'packages/core/dist/loading-registry.js', 'packages/core/dist/translator.js', 'packages/core/dist/diagnostics.js',
+  'packages/vite/dist/catalog-source.js', 'packages/vite/dist/freeze.js'];
 const codeHashes = Object.fromEntries(await Promise.all(measuredFiles.map(async file =>
   [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
 
@@ -78,14 +83,17 @@ async function runScenario(scenario) {
     const appRoot = path.join(root, 'app');
     const fixture = await createFixture(appRoot, scenario);
     if (cancelled) throw new Error('Benchmark interrupted.');
-    channel = createChannel({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe });
+    channel = createChannel({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe, browserStages: values['browser-stages'] });
+    const browserProbe = browserStagePlugin(values['browser-stages']);
     console.log(`[bench] ${scenario.id}: ${fixture.catalogFiles} files, ${fixture.catalogBytes} catalog bytes; starting Vite`);
     const startupAt = performance.now();
     vite = await createServer({ configFile: false, root: appRoot, logLevel: 'error', clearScreen: false,
-      plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', initialNamespaces: ['bench'],
+      plugins: [browserProbe, saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', initialNamespaces: ['bench'],
         ...(values['no-typegen'] ? {} : { typegen: { outFile: 'generated.d.ts' } }) }), channel.plugin],
       server: { host: '127.0.0.1', port: 0, strictPort: true },
-      optimizeDeps: { include: ['react', 'react-dom/client', '@0disoft/saylo-core', '@0disoft/saylo-react'] } });
+      optimizeDeps: values['browser-stages'] ? { include: ['react', 'react-dom/client'],
+        exclude: ['@0disoft/saylo-core', '@0disoft/saylo-react', '@0disoft/saylo-vite/client'] }
+        : { include: ['react', 'react-dom/client', '@0disoft/saylo-core', '@0disoft/saylo-react'] } });
     await vite.listen();
     if (cancelled) throw new Error('Benchmark interrupted.');
     const serverStartupMs = performance.now() - startupAt;
@@ -99,6 +107,7 @@ async function runScenario(scenario) {
     child.once('error', error => channel.fail(error));
     child.once('exit', code => channel.fail(new Error(`Benchmark browser exited early (${code}).`)));
     const collected = await channel.completion;
+    if (values['browser-stages'] && browserProbe.transformed.size !== 4) throw new Error('Incomplete browser stage transforms.');
     const measured = collected.results.filter(sample => !sample.warmup);
     if (measured.length !== settings.samples) throw new Error('Incomplete benchmark sample set.');
     const afterDeclaration = declaration ? await stat(path.join(appRoot, 'generated.d.ts')) : undefined;
@@ -117,6 +126,11 @@ async function runScenario(scenario) {
         maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),
         catalogReplyBytes: { p50Bytes: replySizes.p50Ms, p95Bytes: replySizes.p95Ms, minBytes: replySizes.minMs, maxBytes: replySizes.maxMs } },
       browserBootMs: readyAt - launchedAt, summary, controlRoundTrip: summarize(collected.roundTrips),
+      ...(values['browser-stages'] ? { browserStages: {
+        scope: 'Synchronous benchmark-only client transforms; Saylo dependency prebundling disabled. Snapshot includes translator and signature; do not add nested stages or compare directly with uninstrumented runs.',
+        ...Object.fromEntries(browserMetrics.map(metric => [metric, summarize(measured.map(sample => sample.browserStages.timings[metric]))])),
+        maxCalls: Object.fromEntries(browserMetrics.map(metric => [metric, Math.max(...measured.map(sample => sample.browserStages.calls[metric]))])),
+      } } : {}),
       serverStages: { scope: 'Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.',
         ...Object.fromEntries(['queueToDrainMs', 'readAndCandidateMs', 'translationPreparationMs', 'validationMs', 'registryReplaceMs', 'catalogDeltaMs']
           .map(metric => [metric, summarize(measured.map(sample => sample.serverStages[metric]))])),

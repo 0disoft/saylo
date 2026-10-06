@@ -194,3 +194,21 @@ React 수치에는 React·ReactDOM·데모 UI가 포함되므로 위 합계를 S
 다음 최적화 후보는 브라우저의 patch 적용·snapshot 생성에서 전체 메시지를 반복 처리하는 부분이다. `catalog-patch.ts`는 메시지 하나가 바뀌어도 전체 메시지 맵을 복사하고 개수를 센다. `loading-registry.ts`의 `createLoadedSnapshot`은 loaded catalog 전체 키를 정렬하고 source를 직렬화해 signature를 만든다. 실제 브라우저 receive→commit p95는 large 47.20ms지만, 이 run에서는 patch 적용·freeze·검증·signature·React commit을 각각 나누지 않았으므로 어느 코드가 얼마를 차지하는지는 아직 확정하지 않는다. 다음 작은 작업은 이 비용을 분리해 확인하고, 변하지 않은 immutable catalog의 정렬·직렬화 재사용을 검토하는 것이다. no-op 갱신의 snapshot 동일성, schema 변경, full resync 동작은 유지한다.
 
 서버 readAndCandidate p95 64.39ms도 남아 있지만 읽기와 파싱은 아직 합쳐진 값이다. 서버 quiet window는 40ms 설정이고 이번 queue p95는 약 54ms였다. 이 구간들을 더해 종단 간 p95로 쓰거나 control 왕복을 빼지 않는다. 로케일 추가 지연과 Paraglide 동일 조건 비교는 후속이며, 현재 수치로 대규모 목표 달성이나 다른 라이브러리 대비 우위를 주장하지 않는다.
+
+## 브라우저 구간 기준 측정 (2026-10-07 KST)
+
+`node benchmarks/live-update/run.mjs --browser-stages --out benchmarks/results/live-update-browser-before.json`로 warmup 5·측정 50·control 25, CPU profiler 끔 조건을 실행했다. 결과는 [live-update-browser-before.json](../benchmarks/results/live-update-browser-before.json)과 시나리오별 raw sample에 있다. 기준 revision은 3d4fa5b이며 그 위의 계측기 변경은 `workingTreeStatus`·`codeHashes`로 식별한다. runtime은 격리 구현 후 재측정과 같고, 환경·fixture도 동일하다.
+
+benchmark 전용 Vite transform이 브라우저 함수의 동기 시간을 감싼다. 라이브러리 source·dist는 변경하지 않았다. 변환을 적용하기 위해 Saylo 패키지의 dependency prebundle을 끄고 React·ReactDOM은 유지했다. 따라서 이전 prebundle 사용 run의 수치와 직접 전후 비교하지 않는다. clock 호출 overhead도 들어가며 CPU profiler가 아니다. 방법은 [benchmarks/live-update/README.md](../benchmarks/live-update/README.md)를 따른다.
+
+| 브라우저 구간 p95 | small(1k×3) | large(10k×20) |
+| --- | --- | --- |
+| patch 적용 | 1.40ms | 11.60ms |
+| Vite catalog freeze | 0.60ms | 7.70ms |
+| snapshot 생성 | 3.10ms | 28.60ms |
+| translator 생성(snapshot 안) | 1.80ms | 13.90ms |
+| signature 생성(snapshot 안) | 1.30ms | 16.90ms |
+| receive→commit | 6.70ms | 56.00ms |
+| save→DOM ack | 78.89ms | 257.51ms |
+
+signature와 translator는 snapshot 시간에 포함된다. 위 구간별 p95를 더하지 않는다. 두 시나리오에서 각 구간은 편집마다 1회였고, 측정 50회 모두 patch 1개 메시지·position 갱신 0개였다. 입력 노드·값과 컴포넌트 state가 유지됐으며 타입 파일은 다시 쓰이지 않았다. 첫 최적화 대상은 signature 생성이다. 바뀌지 않은 깊게 동결한 카탈로그의 정렬·직렬화를 재사용하되, signature 문자열의 의미와 no-op snapshot 동일성은 유지하는 작은 변경으로 진행한다.

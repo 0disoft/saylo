@@ -4,6 +4,7 @@ import { createI18n } from '@0disoft/saylo-core';
 import { createSayloReact } from '@0disoft/saylo-react';
 import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
+import { beginBrowserSample, finishBrowserSample } from 'virtual:saylo-benchmark/browser-profile';
 
 const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });
 const { SayloProvider, useI18n } = createSayloReact();
@@ -37,6 +38,7 @@ async function control() {
     let resolve;
     const completed = new Promise(yes => { resolve = yes; });
     active = { ...command, resolve, acknowledging: false };
+    beginBrowserSample();
     await request('armed', { token: command.token });
     await completed;
   }
@@ -59,7 +61,9 @@ function Probe() {
     }
     active.acknowledging = true;
     const sample = active;
-    void request('ack', { token: sample.token, text, receiveToCommitMs: committedAt - receivedAt,
+    let browserStages;
+    try { browserStages = finishBrowserSample(); } catch (error) { fail(error); return; }
+    void request('ack', { token: sample.token, text, browserStages, receiveToCommitMs: committedAt - receivedAt,
       commitToAckDispatchMs: performance.now() - committedAt }).then(() => {
       receipts.delete(text); active = undefined; sample.resolve();
     }).catch(fail);
