@@ -67,7 +67,7 @@
 | Svelte·Vue 어댑터 | 후속. 현재는 vanilla subscription과 React |
 | secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트와 2026-10-07 실제 브라우저 검증을 통과했다. schema-breaking 편집이라 입력·dialog 상태 보존은 일반 보장이 아니다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
 | JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
-| message delta 비용 | request-scoped message delta를 로컬 구현했다. 2026-10-07 격리 구현 후 재측정에서 small p95 72.26ms, large p95 209.23ms였고 각각 측정 50회 모두 patch였다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. 다음 최적화 후보는 브라우저 patch 적용·snapshot 생성의 전체 메시지 순회이며, 세부 비용을 먼저 분리해 확인한다. 읽기·파싱 분리, 로케일 추가 지연, 비교 실험도 남아 있다 |
+| message delta 비용 | request-scoped message delta와 immutable catalog signature 재사용을 로컬 구현했다. 2026-10-07 최적화 후 일반 설정 재측정에서 small p95 68.00ms, large p95 185.87ms였고 각각 측정 50회 모두 patch였다. 별도 브라우저 구간 측정은 signature 생성 p95 16.90→6.20ms였다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. 읽기·파싱 분리, 브라우저의 patch 복사·검증 순회, 로케일 추가 지연과 비교 실험이 남아 있다. 조건·부하 한계는 [10-performance-measurements.md](10-performance-measurements.md)를 따른다 |
 | 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 비교 실험은 아직 실시하지 않았다 |
 
 ## 다른 도구와의 관계

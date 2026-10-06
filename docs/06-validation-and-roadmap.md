@@ -76,6 +76,8 @@ Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/run
 
 2026-10-07 격리 구현 후 현재 코드로 라이브 반영도 재측정했다. warmup 5회·측정 50회·control 25회, CPU profiler 끔 조건에서 small(1k×3) save→DOM ack p95는 72.26ms, large(10k×20)는 209.23ms였다. 두 시나리오의 50회 측정 모두 patch 응답이고 full 응답은 0회였으며 입력 노드·값과 컴포넌트 state가 유지되고 생성 `.d.ts`는 다시 쓰이지 않았다. 대규모 목표는 여전히 미달이다. 서버 번역 준비를 별도 구간으로 분리한 조건·raw 결과·다음 최적화 후보는 [10-performance-measurements.md](10-performance-measurements.md)의 격리 구현 후 기록을 따른다. 로케일 추가 지연과 다른 라이브러리 비교는 아직 측정하지 않았다.
 
+이후 benchmark 전용 브라우저 구간 계측을 추가하고 immutable catalog의 signature fragment를 재사용했다. 같은 계측 옵션에서 large signature 생성 p95는 16.90→6.20ms, snapshot 생성은 28.60→16.00ms로 낮게 관측됐다. 계측 없는 일반 개발 설정의 최적화 후 p95는 small 68.00ms·large 185.87ms여서 대규모 목표는 여전히 미달이다. content 기반 no-op·schema 변경·SSR boot·full resync를 포함한 관련 테스트 44개가 통과했다. 옵션에 따른 prebundle 차이, control 왕복과 run 간 부하, 메모리 비용을 포함한 조건·한계는 [10-performance-measurements.md](10-performance-measurements.md)를 따른다. 로컬 변경이며 npm 게시본에는 없다.
+
 | # | 사례 | 확인 내용 |
 | --- | --- | --- |
 | 1 | 상태 보존 | 문구 수정 후 입력값·모달·스크롤 위치가 유지된다 |

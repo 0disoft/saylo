@@ -2,6 +2,7 @@ import { freeze } from './diagnostics.js';
 import { CatalogLoadError } from './loading-errors.js';
 import { createBaseSchema } from './schema.js';
 import { createBoundTranslator } from './translator.js';
+import { createLoadedSignature } from './snapshot-signature.js';
 import { NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
 import type { createTextFormatter } from './formatters.js';
 import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome } from './loading-types.js';
@@ -130,8 +131,7 @@ export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest
     if (!namespaces.includes(namespace)) throw new NamespaceNotLoadedError(namespace, key);
     return (bound!.t as Translate<Schema>)(key, args);
   };
-  const signature = JSON.stringify([locale, manifest.availableLocales, manifest.availableNamespaces, namespaces,
-    catalogs.map(c => [c.locale, c.namespace, Object.keys(c.messages).sort().map(id => [id, c.messages[id]!.source])])]);
+  const signature = createLoadedSignature(manifest, locale, namespaces, catalogs);
   return { signature, snapshot: Object.freeze({ locale, baseLocale: manifest.baseLocale, timeZone, t: translate as Translate<S>,
     stateRevision, availableLocales: manifest.availableLocales, availableNamespaces: manifest.availableNamespaces,
     loadedNamespaces: Object.freeze([...namespaces]) }) };

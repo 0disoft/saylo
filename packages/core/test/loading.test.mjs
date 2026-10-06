@@ -7,6 +7,24 @@ const catalog = (text, locale = 'ko', namespace = 'common') => parseCatalog(JSON
 const id = (locale, namespace) => `${locale}/${namespace}`;
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
+test('new pair versions with identical text keep the snapshot; schema and text changes still publish', async t => {
+  const { i18n, change } = fixture(t);
+  await i18n.setLocale('en');
+  const before = i18n.getSnapshot();
+  change('en', 'common', 'English');
+  await i18n.refresh();
+  assert.equal(i18n.getSnapshot(), before);
+  change('ko', 'common', '기준 {name}');
+  await i18n.refresh();
+  const schemaChanged = i18n.getSnapshot();
+  assert.notEqual(schemaChanged, before);
+  assert.equal(schemaChanged.t('common:title', { name: 'test' }), 'English');
+  change('en', 'common', 'Hello {name}');
+  await i18n.refresh();
+  assert.equal(i18n.t('common:title', { name: 'test' }), 'Hello test');
+  assert.equal(schemaChanged.t('common:title', { name: 'test' }), 'English');
+});
+
 function fixture(t, options = {}) {
   const records = new Map([
     ['ko/common', catalog('기준')], ['en/common', catalog('English', 'en')], ['fr/common', catalog('Français', 'fr')],

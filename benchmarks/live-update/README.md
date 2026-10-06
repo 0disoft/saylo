@@ -62,6 +62,8 @@ snapshot 시간 안에는 translator와 signature가 포함된다. 중첩 값이
 node benchmarks/live-update/run.mjs --browser-stages --out benchmarks/results/live-update-browser-before.json
 ```
 
+기준 측정은 [../results/live-update-browser-before.json](../results/live-update-browser-before.json), immutable signature 재사용 후 같은 옵션의 측정은 [../results/live-update-browser-after.json](../results/live-update-browser-after.json)에 있다. prebundle을 사용하는 일반 설정의 최적화 후 결과는 [../results/live-update-signature.json](../results/live-update-signature.json)이고 `node benchmarks/live-update/run.mjs --out benchmarks/results/live-update-signature.json`로 실행했다. 각 run은 warmup 5·측정 50·control 25, CPU profiler 끔 조건이다. 실행 시점의 부하가 다르므로 종단 간 감소 전체를 signature 변경 효과로 보지 않는다.
+
 ## CPU 프로파일
 
 `--cpu-profile`을 주면 `node:inspector` Session으로 측정 구간의 edit loop만 profile해 결과에 `cpuProfile`을 넣는다. startup·calibration·warmup은 제외하고 fixture 준비·HTTP·대기는 포함하며 browser CPU가 아니다. `topSelf`는 self 시간, `sayloInclusive`는 `packages/core|vite|typegen/dist` frame의 inclusive 시간이다.

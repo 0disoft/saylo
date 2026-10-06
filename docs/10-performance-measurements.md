@@ -212,3 +212,34 @@ benchmark 전용 Vite transform이 브라우저 함수의 동기 시간을 감�
 | save→DOM ack | 78.89ms | 257.51ms |
 
 signature와 translator는 snapshot 시간에 포함된다. 위 구간별 p95를 더하지 않는다. 두 시나리오에서 각 구간은 편집마다 1회였고, 측정 50회 모두 patch 1개 메시지·position 갱신 0개였다. 입력 노드·값과 컴포넌트 state가 유지됐으며 타입 파일은 다시 쓰이지 않았다. 첫 최적화 대상은 signature 생성이다. 바뀌지 않은 깊게 동결한 카탈로그의 정렬·직렬화를 재사용하되, signature 문자열의 의미와 no-op snapshot 동일성은 유지하는 작은 변경으로 진행한다.
+
+## Immutable catalog signature 재사용 후 (2026-10-07 KST)
+
+`core/src/snapshot-signature.ts`로 signature 생성을 분리했다. core의 깊은 동결 검사로 확인한 카탈로그만 WeakMap에 canonical JSON fragment를 보관하고, 변하지 않은 카탈로그는 키 정렬·source 배열 생성·직렬화를 반복하지 않는다. scope 메타와 fragment를 결합한 문자열은 기존 전체 `JSON.stringify` 결과와 같게 유지한다. 새 translation catalog는 다시 계산하고 mutable·shallow-frozen 입력은 캐시하지 않는다. 캐시는 카탈로그 객체 생존 동안 직렬화 문자열을 추가로 보관하므로 메모리 비용은 있다. 공개 API·pair version·snapshot의 content 기반 no-op 판정은 변경하지 않았다.
+
+최적화 후 `--browser-stages`를 유지해 [live-update-browser-after.json](../benchmarks/results/live-update-browser-after.json)에 기록했고, 계측을 끄고 Saylo prebundle을 쓰는 일반 설정은 [live-update-signature.json](../benchmarks/results/live-update-signature.json)에 따로 기록했다. 두 run 모두 기준 revision은 9d2ac96이며 그 위의 변경은 `workingTreeStatus`·`codeHashes`로 식별한다. `snapshot-signature.js`도 hash에 추가했다. 환경·fixture·warmup 5·측정 50·control 25·CPU profiler 끔 조건은 동일하다.
+
+| 브라우저 구간 p95 | small 전 | small 후 | large 전 | large 후 |
+| --- | --- | --- | --- | --- |
+| patch 적용 | 1.40ms | 0.80ms | 11.60ms | 8.10ms |
+| Vite catalog freeze | 0.60ms | 0.50ms | 7.70ms | 5.40ms |
+| snapshot 생성 | 3.10ms | 2.00ms | 28.60ms | 16.00ms |
+| translator 생성(snapshot 안) | 1.80ms | 1.40ms | 13.90ms | 11.10ms |
+| signature 생성(snapshot 안) | 1.30ms | 0.60ms | 16.90ms | 6.20ms |
+| receive→commit | 6.70ms | 5.00ms | 56.00ms | 36.70ms |
+| save→DOM ack | 78.89ms | 73.51ms | 257.51ms | 186.03ms |
+
+signature 생성 p95는 large에서 약 63.3% 낮게 관측됐다. 하지만 변경하지 않은 patch·freeze·translator 구간도 낮아졌고, control 왕복 p95도 small 7.61→4.23ms·large 11.48→4.52ms로 낮아졌다. 별도 시점의 단일 run들이므로 종단 간 감소 전체나 구간 변화 전체를 signature 변경으로 귀속하지 않는다. signature 재사용 자체는 변하지 않은 trusted catalog의 key enumeration이 두 번째 호출에서 발생하지 않는 테스트로 별도 확인했다. snapshot 안의 중첩 구간과 p95를 더하지 않는다.
+
+일반 개발 설정의 결과는 다음과 같다. 직전 일반 설정의 격리 후 run(small p95 72.26ms·large 209.23ms)과 비교할 수 있으나 역시 별도 시점의 단일 run이다.
+
+| 시나리오 | save→DOM ack p50 | save→DOM ack p95 | save→manifest broadcast p95 | receive→commit p95 | control 왕복 p95 |
+| --- | --- | --- | --- | --- | --- |
+| 1k×3 로케일 | 61.50ms | 68.00ms | 60.55ms | 4.80ms | 4.27ms |
+| 10k×20 로케일 | 145.40ms | 185.87ms | 124.49ms | 37.90ms | 5.48ms |
+
+최적화 후 두 run의 4개 case 모두 측정 50회가 patch 응답이며 full 0회, 최대 changed message 1개·position 갱신 0개였다. 입력 노드·값과 컴포넌트 state가 유지됐고 `.d.ts`는 다시 쓰이지 않았다. raw sample(각 55개)과 timing·서버·브라우저·control 요약, 기록된 code hash를 대조했다. 임시 fixture·browser profile과 해당 브라우저 프로세스는 모두 정리됐다.
+
+core build와 관련 테스트 44개(core snapshot signature·lazy loading·SSR boot 24개, Vite lazy·patch 20개)가 통과했다. canonical 문자열 호환성, 빈 scope·이스케이프·prototype 같은 literal ID, immutable 캐시 재사용·mutable 입력 비캐시, 같은 문구의 새 pair version에서 snapshot 동일성, schema·문구 변경 시 정상 게시와 이전 translator 유지, malformed patch의 full 재요청·resync를 확인했다. 전체 release check·pack·재게시·푸시는 이번 범위에서 실행하지 않았다.
+
+대규모 목표 p95 ≤ 100ms는 여전히 미달이다. 일반 run의 서버 readAndCandidate p95는 55.92ms로 읽기·파싱을 포함하며 다음 분리 계측 대상이다. 비동기 읽기와 drain 대기도 섞여 있으므로 CPU 비용으로 환산하지 않는다. 브라우저에서는 patch 전체 맵 복사, translator 검증 순회, 변경된 카탈로그의 signature 계산도 남는다. 로케일 추가 지연·paint·Paraglide 비교도 아직 측정하지 않았다.
