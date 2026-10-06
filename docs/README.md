@@ -15,6 +15,7 @@
 7. [07-decisions.md](07-decisions.md) — 결정 대장과 미해결 항목
 8. [08-update-protocol.md](08-update-protocol.md) — 갱신 wire 프로토콜의 단일 출처
 9. [10-performance-measurements.md](10-performance-measurements.md) — 로컬 벤치마크 결과와 프로파일 기록
+10. [11-parser-measurements.md](11-parser-measurements.md) — 파서 내부 비용과 최적화 검증
 
 ## 상태 표기 규칙
 
