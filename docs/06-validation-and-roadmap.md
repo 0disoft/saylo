@@ -34,6 +34,8 @@ Paraglide와 같은 fixture의 small 문구 수정·로케일 추가 측정과 �
 
 ## 인수 사례
 
+cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.
+
 초기 구현이 만족해야 할 핵심 사례다. 아직 통과를 주장하지 않는다.
 
 아래 단계별 검증 기록은 작성 시점의 상태를 그대로 남긴 역사 기록이다. 이후 단계에서 바뀐 항목(예: 패키지 공개 배포와 version)은 그때 문장을 고치지 않고 [09-release.md](09-release.md)와 앞 절의 현행 값을 따른다.

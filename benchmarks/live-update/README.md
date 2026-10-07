@@ -109,7 +109,13 @@ node benchmarks/live-update/run.mjs --browser-stages --out benchmarks/results/li
 
 ## 파서 비용 비교
 
-파서 내부 구간은 `node benchmarks/live-update/parser-stages.mjs`로 잰다. 선택적 첫 인자는 출력 경로이고 기본은 `benchmarks/results/parser-stages-before.json`이다. `parser-probe.mjs`의 Node hook으로 JSON 처리·strict parse·token scan·위치 색인·메시지 loop·최종 동결을 감싼다. source·dist를 수정하지 않고 변환 모듈 2개를 확인한다. warmup 10·측정 50이며, 각 메시지에 clock을 붙이지 않는다. 세부 정의·기준 결과는 [../../docs/11-parser-measurements.md](../../docs/11-parser-measurements.md)에 있다.
+파서 내부 구간은 `node benchmarks/live-update/parser-stages.mjs`로 잰다. 선택적 첫 인자는 출력 경로이고 기본은 `benchmarks/results/parser-stages-before.json`이다. 기본 `incremental`은 Node hook으로 JSON 처리·strict parse·token scan·위치 색인·메시지 loop·최종 동결을 감싼다. source·dist를 수정하지 않고 변환 모듈 2개를 확인한다. warmup 10·측정 50이며, 각 메시지에 clock을 붙이지 않는다. 세부 정의·과거 기준 결과는 [../../docs/11-parser-measurements.md](../../docs/11-parser-measurements.md)에 있다.
+
+두 번째 선택 인자 `cold`는 previous catalog 없이 warmup 5·측정 20회를 실행한다. 변환 모듈 3개(catalog/json/schema)를 확인하고 AST 생성·인자 추론·인자 스키마 동결·메시지 동결을 각각 기록한다. GC는 `PerformanceObserver`의 발생 시각으로 파싱 구간과 대조하며 중첩된 GC 시간은 union으로 센다. 강제 GC는 하지 않고, heapUsed 전후 차이를 총 할당량으로 해석하거나 GC 시간을 파싱 시간에서 차감하지 않는다. 두 모드의 `saylo-parser-stages-v2` 결과는 원시 표본을 `samplesFile`이 가리키는 파일로 분리한다. JSON·메시지 loop·인자 추론의 중첩 지표와 계측 overhead를 포함한 결과는 [../../docs/17-cold-parser-measurements.md](../../docs/17-cold-parser-measurements.md)를 따른다.
+
+```sh
+node benchmarks/live-update/parser-stages.mjs benchmarks/results/parser-stages-cold-final.json cold
+```
 
 키 디코딩 trial의 `parser-stages-key-after.json`·`parse-compare-key.json`·`live-update-key.json`은 되돌린 실험 코드의 결과다. 최종 위치 색인 최적화는 `parser-stages-position-after.json`·`live-update-position.json`으로 구분한다. 일반 화면 반영 수치와 parser-only 수치를 혼합하지 않는다.
 

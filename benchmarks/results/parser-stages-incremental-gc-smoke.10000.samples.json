@@ -1,0 +1,1832 @@
+{
+  "mode": "incremental",
+  "messagesPerLocale": 10000,
+  "samples": [
+    {
+      "warmup": true,
+      "startTimeMs": 722.9219,
+      "endTimeMs": 792.768,
+      "totalMs": 69.84609999999998,
+      "heapBeforeBytes": 40497288,
+      "heapAfterBytes": 32707336,
+      "heapDeltaBytes": -7789952,
+      "jsonMs": 57.313499999999976,
+      "strictJsonMs": 4.061400000000049,
+      "tokenScanMs": 53.23249999999996,
+      "positionIndexMs": 0.0645999999999276,
+      "messageLoopMs": 6.7753999999999905,
+      "freezeMs": 5.57039999999995,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.12220000000013442,
+      "gc": {
+        "count": 3,
+        "observedOverlapMs": 40.20219999551773,
+        "events": [
+          {
+            "startTimeMs": 728.8093,
+            "durationMs": 15.41099999845028,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 15.41099999845028
+          },
+          {
+            "startTimeMs": 744.2288,
+            "durationMs": 0.38179999589920044,
+            "kind": "incremental",
+            "flags": 0,
+            "overlapMs": 0.38179999589920044
+          },
+          {
+            "startTimeMs": 748.8011,
+            "durationMs": 24.40940000116825,
+            "kind": "major",
+            "flags": 64,
+            "overlapMs": 24.40940000116825
+          }
+        ]
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 798.9693,
+      "endTimeMs": 822.0365,
+      "totalMs": 23.06720000000007,
+      "heapBeforeBytes": 33437016,
+      "heapAfterBytes": 42788808,
+      "heapDeltaBytes": 9351792,
+      "jsonMs": 13.734100000000012,
+      "strictJsonMs": 4.700899999999933,
+      "tokenScanMs": 9.016300000000001,
+      "positionIndexMs": 0.04660000000001219,
+      "messageLoopMs": 3.9482000000000426,
+      "freezeMs": 5.084600000000023,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.2536999999999807,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 827.9694,
+      "endTimeMs": 858.6805,
+      "totalMs": 30.7111000000001,
+      "heapBeforeBytes": 43518704,
+      "heapAfterBytes": 35596112,
+      "heapDeltaBytes": -7922592,
+      "jsonMs": 19.955600000000004,
+      "strictJsonMs": 5.503399999999942,
+      "tokenScanMs": 14.430500000000052,
+      "positionIndexMs": 0.056100000000014916,
+      "messageLoopMs": 4.465100000000007,
+      "freezeMs": 6.143700000000081,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.0905999999999949,
+      "gc": {
+        "count": 1,
+        "observedOverlapMs": 3.5120999962091446,
+        "events": [
+          {
+            "startTimeMs": 839.9483,
+            "durationMs": 3.5120999962091446,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 3.5120999962091446
+          }
+        ]
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 865.118,
+      "endTimeMs": 887.2746,
+      "totalMs": 22.156599999999912,
+      "heapBeforeBytes": 36325792,
+      "heapAfterBytes": 46076640,
+      "heapDeltaBytes": 9750848,
+      "jsonMs": 12.737799999999993,
+      "strictJsonMs": 4.289699999999925,
+      "tokenScanMs": 8.432099999999991,
+      "positionIndexMs": 0.04750000000001364,
+      "messageLoopMs": 4.190099999999916,
+      "freezeMs": 5.096900000000005,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.08429999999998472,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 893.2119,
+      "endTimeMs": 920.8657,
+      "totalMs": 27.653799999999933,
+      "heapBeforeBytes": 46806320,
+      "heapAfterBytes": 56557168,
+      "heapDeltaBytes": 9750848,
+      "jsonMs": 16.87740000000008,
+      "strictJsonMs": 4.753000000000043,
+      "tokenScanMs": 12.107399999999984,
+      "positionIndexMs": 0.06180000000006203,
+      "messageLoopMs": 4.587800000000016,
+      "freezeMs": 6.027400000000057,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.0993999999997186,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 926.6567,
+      "endTimeMs": 954.2529,
+      "totalMs": 27.596199999999953,
+      "heapBeforeBytes": 57286848,
+      "heapAfterBytes": 67075312,
+      "heapDeltaBytes": 9788464,
+      "jsonMs": 16.11229999999989,
+      "strictJsonMs": 5.146200000000022,
+      "tokenScanMs": 10.94870000000003,
+      "positionIndexMs": 0.0483000000000402,
+      "messageLoopMs": 5.396600000000035,
+      "freezeMs": 5.898900000000026,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.14009999999996126,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 960.1876,
+      "endTimeMs": 986.466,
+      "totalMs": 26.278400000000033,
+      "heapBeforeBytes": 67801680,
+      "heapAfterBytes": 36903816,
+      "heapDeltaBytes": -30897864,
+      "jsonMs": 17.225000000000023,
+      "strictJsonMs": 4.029300000000035,
+      "tokenScanMs": 13.17840000000001,
+      "positionIndexMs": 0.048900000000003274,
+      "messageLoopMs": 3.7291000000000167,
+      "freezeMs": 5.189300000000003,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.08609999999998763,
+      "gc": {
+        "count": 1,
+        "observedOverlapMs": 2.842299997806549,
+        "events": [
+          {
+            "startTimeMs": 969.2267,
+            "durationMs": 2.842299997806549,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 2.842299997806549
+          }
+        ]
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 992.3819,
+      "endTimeMs": 1015.4339,
+      "totalMs": 23.05200000000002,
+      "heapBeforeBytes": 37692680,
+      "heapAfterBytes": 46598008,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 13.753400000000056,
+      "strictJsonMs": 4.299099999999953,
+      "tokenScanMs": 9.435600000000022,
+      "positionIndexMs": 0.04879999999991469,
+      "messageLoopMs": 3.9657999999999447,
+      "freezeMs": 5.192900000000009,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09110000000009677,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 1022.499,
+      "endTimeMs": 1044.6739,
+      "totalMs": 22.17489999999998,
+      "heapBeforeBytes": 47386872,
+      "heapAfterBytes": 56292200,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 12.896200000000022,
+      "strictJsonMs": 4.046000000000049,
+      "tokenScanMs": 8.837600000000066,
+      "positionIndexMs": 0.04680000000007567,
+      "messageLoopMs": 4.074000000000069,
+      "freezeMs": 5.07770000000005,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.08019999999976335,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": true,
+      "startTimeMs": 1050.4431,
+      "endTimeMs": 1074.707,
+      "totalMs": 24.26390000000015,
+      "heapBeforeBytes": 57081064,
+      "heapAfterBytes": 65986392,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 14.303300000000036,
+      "strictJsonMs": 4.252300000000105,
+      "tokenScanMs": 10.036999999999807,
+      "positionIndexMs": 0.047000000000025466,
+      "messageLoopMs": 4.386600000000044,
+      "freezeMs": 5.442900000000009,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.08410000000003492,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1081.3163,
+      "endTimeMs": 1113.372,
+      "totalMs": 32.055700000000115,
+      "heapBeforeBytes": 66775256,
+      "heapAfterBytes": 33662232,
+      "heapDeltaBytes": -33113024,
+      "jsonMs": 19.598600000000033,
+      "strictJsonMs": 4.3551000000002205,
+      "tokenScanMs": 15.222200000000157,
+      "positionIndexMs": 0.05150000000003274,
+      "messageLoopMs": 4.201699999999846,
+      "freezeMs": 8.096900000000005,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10700000000019827,
+      "gc": {
+        "count": 1,
+        "observedOverlapMs": 2.3764000087976456,
+        "events": [
+          {
+            "startTimeMs": 1105.2919,
+            "durationMs": 2.3764000087976456,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 2.3764000087976456
+          }
+        ]
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1119.5264,
+      "endTimeMs": 1143.8302,
+      "totalMs": 24.303800000000138,
+      "heapBeforeBytes": 34392160,
+      "heapAfterBytes": 43397424,
+      "heapDeltaBytes": 9005264,
+      "jsonMs": 14.693699999999808,
+      "strictJsonMs": 4.445600000000013,
+      "tokenScanMs": 10.22889999999984,
+      "positionIndexMs": 0.0543999999999869,
+      "messageLoopMs": 4.085699999999861,
+      "freezeMs": 5.372500000000173,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09750000000030923,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1149.759,
+      "endTimeMs": 1172.3518,
+      "totalMs": 22.592799999999897,
+      "heapBeforeBytes": 44186288,
+      "heapAfterBytes": 53091616,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 13.47810000000004,
+      "strictJsonMs": 4.4435000000000855,
+      "tokenScanMs": 9.01780000000008,
+      "positionIndexMs": 0.04790000000002692,
+      "messageLoopMs": 3.9139000000000124,
+      "freezeMs": 5.065500000000156,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.0873999999996613,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1178.0966,
+      "endTimeMs": 1201.7976,
+      "totalMs": 23.701000000000022,
+      "heapBeforeBytes": 53880480,
+      "heapAfterBytes": 62785808,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 14.127099999999928,
+      "strictJsonMs": 3.917299999999841,
+      "tokenScanMs": 10.192900000000009,
+      "positionIndexMs": 0.049600000000054933,
+      "messageLoopMs": 4.141599999999926,
+      "freezeMs": 5.291300000000092,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09140000000002146,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1207.6987,
+      "endTimeMs": 1232.102,
+      "totalMs": 24.403300000000172,
+      "heapBeforeBytes": 63574672,
+      "heapAfterBytes": 72480000,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 14.809500000000071,
+      "strictJsonMs": 4.222999999999956,
+      "tokenScanMs": 10.568700000000035,
+      "positionIndexMs": 0.049299999999902866,
+      "messageLoopMs": 4.2263000000000375,
+      "freezeMs": 5.226599999999962,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09160000000019863,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1238.4169,
+      "endTimeMs": 1265.7711,
+      "totalMs": 27.35419999999999,
+      "heapBeforeBytes": 73268864,
+      "heapAfterBytes": 39655896,
+      "heapDeltaBytes": -33612968,
+      "jsonMs": 16.92410000000018,
+      "strictJsonMs": 4.517900000000054,
+      "tokenScanMs": 12.382799999999861,
+      "positionIndexMs": 0.06600000000003092,
+      "messageLoopMs": 4.825799999999845,
+      "freezeMs": 5.414299999999912,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.12400000000002365,
+      "gc": {
+        "count": 1,
+        "observedOverlapMs": 2.845100000500679,
+        "events": [
+          {
+            "startTimeMs": 1248.7403,
+            "durationMs": 2.845100000500679,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 2.845100000500679
+          }
+        ]
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1272.5552,
+      "endTimeMs": 1301.5365,
+      "totalMs": 28.98129999999992,
+      "heapBeforeBytes": 40424240,
+      "heapAfterBytes": 49329568,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 18.034200000000055,
+      "strictJsonMs": 4.946899999999914,
+      "tokenScanMs": 13.066499999999905,
+      "positionIndexMs": 0.05269999999995889,
+      "messageLoopMs": 5.296299999999974,
+      "freezeMs": 5.489500000000135,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10859999999979664,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1308.4087,
+      "endTimeMs": 1333.379,
+      "totalMs": 24.970299999999952,
+      "heapBeforeBytes": 50118432,
+      "heapAfterBytes": 59023760,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 15.020700000000033,
+      "strictJsonMs": 5.326600000000099,
+      "tokenScanMs": 9.67430000000013,
+      "positionIndexMs": 0.049500000000080036,
+      "messageLoopMs": 4.535499999999956,
+      "freezeMs": 5.247900000000072,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11669999999980973,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1339.8342,
+      "endTimeMs": 1366.1602,
+      "totalMs": 26.326000000000022,
+      "heapBeforeBytes": 59812624,
+      "heapAfterBytes": 68717952,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 16.383199999999988,
+      "strictJsonMs": 4.145400000000109,
+      "tokenScanMs": 12.214699999999993,
+      "positionIndexMs": 0.07230000000004111,
+      "messageLoopMs": 4.236400000000003,
+      "freezeMs": 5.52189999999996,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11220000000002983,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1372.3273,
+      "endTimeMs": 1404.6349,
+      "totalMs": 32.30760000000009,
+      "heapBeforeBytes": 69506816,
+      "heapAfterBytes": 78412144,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 21.34849999999983,
+      "strictJsonMs": 5.615800000000036,
+      "tokenScanMs": 15.709700000000112,
+      "positionIndexMs": 0.0625,
+      "messageLoopMs": 4.731800000000021,
+      "freezeMs": 6.055899999999838,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10890000000040345,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1414.0581,
+      "endTimeMs": 1450.1737,
+      "totalMs": 36.115600000000086,
+      "heapBeforeBytes": 36809288,
+      "heapAfterBytes": 45634600,
+      "heapDeltaBytes": 8825312,
+      "jsonMs": 23.953199999999924,
+      "strictJsonMs": 4.580699999999979,
+      "tokenScanMs": 19.347200000000157,
+      "positionIndexMs": 0.06750000000010914,
+      "messageLoopMs": 5.856700000000046,
+      "freezeMs": 6.10329999999999,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.134900000000016,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1458.6334,
+      "endTimeMs": 1486.8267,
+      "totalMs": 28.193300000000136,
+      "heapBeforeBytes": 46423464,
+      "heapAfterBytes": 55328792,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.038700000000063,
+      "strictJsonMs": 5.944600000000037,
+      "tokenScanMs": 11.074699999999893,
+      "positionIndexMs": 0.06330000000002656,
+      "messageLoopMs": 5.328099999999949,
+      "freezeMs": 5.638699999999972,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.12450000000012551,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1493.2935,
+      "endTimeMs": 1518.8324,
+      "totalMs": 25.538900000000012,
+      "heapBeforeBytes": 56117656,
+      "heapAfterBytes": 65022984,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 14.661799999999857,
+      "strictJsonMs": 4.365000000000009,
+      "tokenScanMs": 10.276900000000069,
+      "positionIndexMs": 0.04820000000017899,
+      "messageLoopMs": 4.7085000000001855,
+      "freezeMs": 6.028099999999995,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09229999999979555,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1525.0558,
+      "endTimeMs": 1559.8413,
+      "totalMs": 34.785499999999956,
+      "heapBeforeBytes": 65811848,
+      "heapAfterBytes": 74717176,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 22.282100000000128,
+      "strictJsonMs": 4.247499999999945,
+      "tokenScanMs": 18.01559999999995,
+      "positionIndexMs": 0.14570000000003347,
+      "messageLoopMs": 6.592200000000048,
+      "freezeMs": 5.640300000000025,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.12519999999972242,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1565.821,
+      "endTimeMs": 1597.9286,
+      "totalMs": 32.10760000000005,
+      "heapBeforeBytes": 75506040,
+      "heapAfterBytes": 42909336,
+      "heapDeltaBytes": -32596704,
+      "jsonMs": 21.961099999999988,
+      "strictJsonMs": 4.289099999999962,
+      "tokenScanMs": 17.651200000000017,
+      "positionIndexMs": 0.049999999999954525,
+      "messageLoopMs": 4.428900000000112,
+      "freezeMs": 5.573200000000043,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09439999999995052,
+      "gc": {
+        "count": 1,
+        "observedOverlapMs": 2.916500002145767,
+        "events": [
+          {
+            "startTimeMs": 1581.199,
+            "durationMs": 2.916500002145767,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 2.916500002145767
+          }
+        ]
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1605.7774,
+      "endTimeMs": 1633.2759,
+      "totalMs": 27.49850000000015,
+      "heapBeforeBytes": 43677680,
+      "heapAfterBytes": 52584976,
+      "heapDeltaBytes": 8907296,
+      "jsonMs": 17.96289999999999,
+      "strictJsonMs": 4.180899999999838,
+      "tokenScanMs": 13.762699999999995,
+      "positionIndexMs": 0.07429999999999382,
+      "messageLoopMs": 3.964000000000169,
+      "freezeMs": 5.387399999999843,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10990000000015243,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1639.6879,
+      "endTimeMs": 1666.0889,
+      "totalMs": 26.401000000000067,
+      "heapBeforeBytes": 53373840,
+      "heapAfterBytes": 62279168,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 16.375600000000077,
+      "strictJsonMs": 4.417599999999993,
+      "tokenScanMs": 11.937599999999975,
+      "positionIndexMs": 0.06539999999995416,
+      "messageLoopMs": 4.519800000000032,
+      "freezeMs": 5.324900000000071,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11529999999993379,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1672.0304,
+      "endTimeMs": 1697.873,
+      "totalMs": 25.842599999999948,
+      "heapBeforeBytes": 63068032,
+      "heapAfterBytes": 71973360,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 14.87909999999988,
+      "strictJsonMs": 4.9430999999999585,
+      "tokenScanMs": 9.91319999999996,
+      "positionIndexMs": 0.06290000000012697,
+      "messageLoopMs": 5.209800000000087,
+      "freezeMs": 5.5779999999999745,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11279999999987922,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1704.6045,
+      "endTimeMs": 1731.943,
+      "totalMs": 27.338500000000067,
+      "heapBeforeBytes": 72762224,
+      "heapAfterBytes": 81667552,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.098399999999856,
+      "strictJsonMs": 5.598199999999906,
+      "tokenScanMs": 11.48090000000002,
+      "positionIndexMs": 0.04850000000010368,
+      "messageLoopMs": 4.5210000000001855,
+      "freezeMs": 5.576499999999896,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09410000000002583,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1740.9536,
+      "endTimeMs": 1769.69,
+      "totalMs": 28.736400000000003,
+      "heapBeforeBytes": 40064696,
+      "heapAfterBytes": 48890008,
+      "heapDeltaBytes": 8825312,
+      "jsonMs": 17.386799999999994,
+      "strictJsonMs": 4.136399999999867,
+      "tokenScanMs": 13.23050000000012,
+      "positionIndexMs": 0.05290000000013606,
+      "messageLoopMs": 4.878799999999956,
+      "freezeMs": 6.317999999999984,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09989999999993415,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1778.2197,
+      "endTimeMs": 1806.4213,
+      "totalMs": 28.20159999999987,
+      "heapBeforeBytes": 49678872,
+      "heapAfterBytes": 58584200,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 18.25850000000014,
+      "strictJsonMs": 7.2000000000000455,
+      "tokenScanMs": 11.037700000000086,
+      "positionIndexMs": 0.048300000000153887,
+      "messageLoopMs": 3.7092999999999847,
+      "freezeMs": 6.094500000000153,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09099999999943975,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1812.7846,
+      "endTimeMs": 1842.0342,
+      "totalMs": 29.2496000000001,
+      "heapBeforeBytes": 59373064,
+      "heapAfterBytes": 68278392,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.548999999999978,
+      "strictJsonMs": 4.277000000000044,
+      "tokenScanMs": 13.253500000000031,
+      "positionIndexMs": 0.051799999999957436,
+      "messageLoopMs": 5.068700000000035,
+      "freezeMs": 6.481800000000021,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09830000000010841,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1849.7424,
+      "endTimeMs": 1874.2618,
+      "totalMs": 24.519399999999905,
+      "heapBeforeBytes": 69067256,
+      "heapAfterBytes": 77972584,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 15.113600000000133,
+      "strictJsonMs": 4.797199999999975,
+      "tokenScanMs": 10.29690000000005,
+      "positionIndexMs": 0.049100000000180444,
+      "messageLoopMs": 4.072699999999941,
+      "freezeMs": 5.191500000000133,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09249999999951797,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1881.041,
+      "endTimeMs": 1912.279,
+      "totalMs": 31.238000000000056,
+      "heapBeforeBytes": 78761448,
+      "heapAfterBytes": 46164496,
+      "heapDeltaBytes": -32596952,
+      "jsonMs": 19.99000000000001,
+      "strictJsonMs": 4.456700000000183,
+      "tokenScanMs": 15.510300000000143,
+      "positionIndexMs": 0.070699999999988,
+      "messageLoopMs": 4.764899999999898,
+      "freezeMs": 6.298000000000002,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11440000000015971,
+      "gc": {
+        "count": 1,
+        "observedOverlapMs": 4.344400003552437,
+        "events": [
+          {
+            "startTimeMs": 1891.4092,
+            "durationMs": 4.344400003552437,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 4.344400003552437
+          }
+        ]
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1919.3625,
+      "endTimeMs": 1951.5709,
+      "totalMs": 32.20839999999998,
+      "heapBeforeBytes": 46932840,
+      "heapAfterBytes": 55838168,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 20.3570000000002,
+      "strictJsonMs": 7.456899999999905,
+      "tokenScanMs": 12.879300000000057,
+      "positionIndexMs": 0.04989999999997963,
+      "messageLoopMs": 5.357299999999896,
+      "freezeMs": 6.336700000000064,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10749999999984539,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1958.1418,
+      "endTimeMs": 1986.4722,
+      "totalMs": 28.330399999999827,
+      "heapBeforeBytes": 56627032,
+      "heapAfterBytes": 65532360,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.79340000000002,
+      "strictJsonMs": 4.3055000000001655,
+      "tokenScanMs": 13.466700000000174,
+      "positionIndexMs": 0.08589999999981046,
+      "messageLoopMs": 4.487899999999854,
+      "freezeMs": 5.851499999999987,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11170000000015534,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 1992.2666,
+      "endTimeMs": 2015.811,
+      "totalMs": 23.544399999999996,
+      "heapBeforeBytes": 66321224,
+      "heapAfterBytes": 75226552,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 14.183399999999892,
+      "strictJsonMs": 3.933899999999994,
+      "tokenScanMs": 10.230200000000195,
+      "positionIndexMs": 0.0501000000001568,
+      "messageLoopMs": 4.09050000000002,
+      "freezeMs": 5.126099999999951,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09429999999997563,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2023.2181,
+      "endTimeMs": 2049.3062,
+      "totalMs": 26.08809999999994,
+      "heapBeforeBytes": 76015416,
+      "heapAfterBytes": 84920744,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 16.01570000000015,
+      "strictJsonMs": 4.929899999999861,
+      "tokenScanMs": 11.065600000000131,
+      "positionIndexMs": 0.05089999999995598,
+      "messageLoopMs": 4.163999999999987,
+      "freezeMs": 5.756099999999833,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10140000000001237,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2058.7977,
+      "endTimeMs": 2088.1434,
+      "totalMs": 29.34569999999985,
+      "heapBeforeBytes": 43317888,
+      "heapAfterBytes": 52143200,
+      "heapDeltaBytes": 8825312,
+      "jsonMs": 17.96199999999999,
+      "strictJsonMs": 5.211699999999837,
+      "tokenScanMs": 12.72970000000032,
+      "positionIndexMs": 0.050499999999829015,
+      "messageLoopMs": 5.277000000000044,
+      "freezeMs": 5.961999999999989,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09420000000000073,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2096.7229,
+      "endTimeMs": 2135.9592,
+      "totalMs": 39.236299999999574,
+      "heapBeforeBytes": 52932064,
+      "heapAfterBytes": 61837392,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 26.27579999999989,
+      "strictJsonMs": 7.300499999999829,
+      "tokenScanMs": 18.952600000000075,
+      "positionIndexMs": 0.07650000000012369,
+      "messageLoopMs": 5.309400000000096,
+      "freezeMs": 7.459600000000137,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11499999999932697,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2144.1855,
+      "endTimeMs": 2171.4943,
+      "totalMs": 27.308799999999792,
+      "heapBeforeBytes": 62626256,
+      "heapAfterBytes": 71531584,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.502899999999954,
+      "strictJsonMs": 4.925699999999779,
+      "tokenScanMs": 12.556900000000041,
+      "positionIndexMs": 0.05889999999999418,
+      "messageLoopMs": 3.896400000000085,
+      "freezeMs": 5.748399999999947,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10219999999981155,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2177.2029,
+      "endTimeMs": 2215.311,
+      "totalMs": 38.10809999999992,
+      "heapBeforeBytes": 72320448,
+      "heapAfterBytes": 81225776,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 24.859799999999723,
+      "strictJsonMs": 6.239900000000034,
+      "tokenScanMs": 18.598099999999704,
+      "positionIndexMs": 0.05319999999983338,
+      "messageLoopMs": 5.222200000000157,
+      "freezeMs": 7.86889999999994,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10400000000026921,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2222.6033,
+      "endTimeMs": 2255.2154,
+      "totalMs": 32.61209999999983,
+      "heapBeforeBytes": 82014640,
+      "heapAfterBytes": 49417576,
+      "heapDeltaBytes": -32597064,
+      "jsonMs": 22.460199999999986,
+      "strictJsonMs": 5.513600000000224,
+      "tokenScanMs": 16.922599999999875,
+      "positionIndexMs": 0.06529999999975189,
+      "messageLoopMs": 4.067599999999857,
+      "freezeMs": 5.913400000000365,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10559999999986758,
+      "gc": {
+        "count": 1,
+        "observedOverlapMs": 3.792600005865097,
+        "events": [
+          {
+            "startTimeMs": 2235.6529,
+            "durationMs": 3.792600005865097,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 3.792600005865097
+          }
+        ]
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2262.9137,
+      "endTimeMs": 2291.8988,
+      "totalMs": 28.985099999999875,
+      "heapBeforeBytes": 50186872,
+      "heapAfterBytes": 59092200,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 18.770500000000084,
+      "strictJsonMs": 5.023999999999887,
+      "tokenScanMs": 13.72340000000031,
+      "positionIndexMs": 0.1309000000001106,
+      "messageLoopMs": 4.168499999999767,
+      "freezeMs": 5.805000000000291,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11019999999962238,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2300.4022,
+      "endTimeMs": 2323.6076,
+      "totalMs": 23.205399999999827,
+      "heapBeforeBytes": 59881064,
+      "heapAfterBytes": 68786392,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 13.509199999999964,
+      "strictJsonMs": 4.714199999999892,
+      "tokenScanMs": 8.777300000000196,
+      "positionIndexMs": 0.04989999999997963,
+      "messageLoopMs": 3.8153000000002066,
+      "freezeMs": 5.733200000000124,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.0977999999995518,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2329.3515,
+      "endTimeMs": 2358.767,
+      "totalMs": 29.41549999999961,
+      "heapBeforeBytes": 69575256,
+      "heapAfterBytes": 78480584,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.809799999999996,
+      "strictJsonMs": 5.2771999999999935,
+      "tokenScanMs": 12.509000000000015,
+      "positionIndexMs": 0.05029999999987922,
+      "messageLoopMs": 4.772500000000036,
+      "freezeMs": 6.6797999999998865,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10309999999981301,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2364.9929,
+      "endTimeMs": 2393.3881,
+      "totalMs": 28.39519999999993,
+      "heapBeforeBytes": 79269448,
+      "heapAfterBytes": 88174776,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.05139999999983,
+      "strictJsonMs": 5.474099999999908,
+      "tokenScanMs": 11.555399999999736,
+      "positionIndexMs": 0.08459999999968204,
+      "messageLoopMs": 4.8846999999996115,
+      "freezeMs": 6.2645000000002256,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11000000000058208,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2404.0824,
+      "endTimeMs": 2431.5416,
+      "totalMs": 27.459200000000237,
+      "heapBeforeBytes": 46571920,
+      "heapAfterBytes": 55397232,
+      "heapDeltaBytes": 8825312,
+      "jsonMs": 16.79989999999998,
+      "strictJsonMs": 4.638900000000376,
+      "tokenScanMs": 12.136700000000019,
+      "positionIndexMs": 0.0706000000000131,
+      "messageLoopMs": 4.54110000000037,
+      "freezeMs": 5.889000000000124,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.15859999999975116,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2438.7868,
+      "endTimeMs": 2470.5795,
+      "totalMs": 31.792699999999968,
+      "heapBeforeBytes": 56186096,
+      "heapAfterBytes": 65091424,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 20.677200000000084,
+      "strictJsonMs": 6.768099999999777,
+      "tokenScanMs": 13.887300000000323,
+      "positionIndexMs": 0.0555000000003929,
+      "messageLoopMs": 4.2456999999999425,
+      "freezeMs": 6.713000000000193,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10129999999935535,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2477.0639,
+      "endTimeMs": 2504.8703,
+      "totalMs": 27.80639999999994,
+      "heapBeforeBytes": 65880288,
+      "heapAfterBytes": 74785616,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.262300000000323,
+      "strictJsonMs": 4.781500000000051,
+      "tokenScanMs": 12.459800000000087,
+      "positionIndexMs": 0.09580000000005384,
+      "messageLoopMs": 4.457000000000335,
+      "freezeMs": 5.872699999999895,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.1185999999993328,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2510.4993,
+      "endTimeMs": 2535.8006,
+      "totalMs": 25.301300000000083,
+      "heapBeforeBytes": 75574480,
+      "heapAfterBytes": 84479808,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 15.038299999999708,
+      "strictJsonMs": 4.776299999999992,
+      "tokenScanMs": 10.242699999999786,
+      "positionIndexMs": 0.04959999999982756,
+      "messageLoopMs": 4.1658000000002176,
+      "freezeMs": 5.95699999999988,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09060000000044965,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2542.1282,
+      "endTimeMs": 2570.7457,
+      "totalMs": 28.617499999999836,
+      "heapBeforeBytes": 85268672,
+      "heapAfterBytes": 52651760,
+      "heapDeltaBytes": -32616912,
+      "jsonMs": 17.265199999999822,
+      "strictJsonMs": 4.276899999999841,
+      "tokenScanMs": 12.9679000000001,
+      "positionIndexMs": 0.05949999999984357,
+      "messageLoopMs": 4.037199999999757,
+      "freezeMs": 7.165199999999913,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09040000000049986,
+      "gc": {
+        "count": 1,
+        "observedOverlapMs": 2.9281000047922134,
+        "events": [
+          {
+            "startTimeMs": 2553.0404,
+            "durationMs": 2.9281000047922134,
+            "kind": "minor",
+            "flags": 0,
+            "overlapMs": 2.9281000047922134
+          }
+        ]
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2578.8139,
+      "endTimeMs": 2605.422,
+      "totalMs": 26.608099999999922,
+      "heapBeforeBytes": 53440624,
+      "heapAfterBytes": 62345952,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 15.991100000000188,
+      "strictJsonMs": 4.9242999999996755,
+      "tokenScanMs": 11.047700000000077,
+      "positionIndexMs": 0.049500000000080036,
+      "messageLoopMs": 4.110700000000179,
+      "freezeMs": 6.352699999999913,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.10409999999956199,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2611.1983,
+      "endTimeMs": 2633.6018,
+      "totalMs": 22.403499999999894,
+      "heapBeforeBytes": 63134816,
+      "heapAfterBytes": 72040144,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 13.350300000000061,
+      "strictJsonMs": 4.173000000000229,
+      "tokenScanMs": 9.159100000000308,
+      "positionIndexMs": 0.049399999999877764,
+      "messageLoopMs": 3.7932999999998174,
+      "freezeMs": 5.124000000000251,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.08649999999988722,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2640.0112,
+      "endTimeMs": 2667.0726,
+      "totalMs": 27.06140000000005,
+      "heapBeforeBytes": 72829008,
+      "heapAfterBytes": 81734336,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 17.08680000000004,
+      "strictJsonMs": 4.687199999999848,
+      "tokenScanMs": 12.378400000000056,
+      "positionIndexMs": 0.05470000000013897,
+      "messageLoopMs": 4.359400000000278,
+      "freezeMs": 5.461299999999937,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09919999999965512,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2673.173,
+      "endTimeMs": 2696.7779,
+      "totalMs": 23.60490000000027,
+      "heapBeforeBytes": 82523200,
+      "heapAfterBytes": 91428528,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 14.152300000000196,
+      "strictJsonMs": 4.242699999999786,
+      "tokenScanMs": 9.891700000000128,
+      "positionIndexMs": 0.0500000000001819,
+      "messageLoopMs": 4.192300000000159,
+      "freezeMs": 5.117799999999988,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09249999999974534,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2705.8755,
+      "endTimeMs": 2731.7417,
+      "totalMs": 25.866199999999935,
+      "heapBeforeBytes": 49825672,
+      "heapAfterBytes": 58650984,
+      "heapDeltaBytes": 8825312,
+      "jsonMs": 15.588600000000042,
+      "strictJsonMs": 4.240800000000036,
+      "tokenScanMs": 11.328500000000076,
+      "positionIndexMs": 0.049399999999877764,
+      "messageLoopMs": 4.549399999999878,
+      "freezeMs": 5.583099999999831,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09570000000030632,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2738.939,
+      "endTimeMs": 2763.4771,
+      "totalMs": 24.538100000000213,
+      "heapBeforeBytes": 59439848,
+      "heapAfterBytes": 68345176,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 14.572099999999864,
+      "strictJsonMs": 4.237799999999879,
+      "tokenScanMs": 10.313000000000102,
+      "positionIndexMs": 0.06890000000021246,
+      "messageLoopMs": 4.341099999999642,
+      "freezeMs": 5.408100000000104,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.14790000000039072,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2769.9497,
+      "endTimeMs": 2802.8192,
+      "totalMs": 32.86949999999979,
+      "heapBeforeBytes": 69134040,
+      "heapAfterBytes": 78039368,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 20.862300000000232,
+      "strictJsonMs": 5.943899999999758,
+      "tokenScanMs": 14.897300000000087,
+      "positionIndexMs": 0.06870000000026266,
+      "messageLoopMs": 5.001299999999901,
+      "freezeMs": 6.8224999999997635,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.11469999999962965,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    },
+    {
+      "warmup": false,
+      "startTimeMs": 2809.9346,
+      "endTimeMs": 2842.9564,
+      "totalMs": 33.021799999999985,
+      "heapBeforeBytes": 78828232,
+      "heapAfterBytes": 87733560,
+      "heapDeltaBytes": 8905328,
+      "jsonMs": 21.19380000000001,
+      "strictJsonMs": 5.279400000000351,
+      "tokenScanMs": 15.893500000000131,
+      "positionIndexMs": 0.05070000000023356,
+      "messageLoopMs": 4.921299999999974,
+      "freezeMs": 6.761400000000322,
+      "calls": {
+        "jsonMs": 1,
+        "strictJsonMs": 1,
+        "tokenScanMs": 1,
+        "positionIndexMs": 1,
+        "messageLoopMs": 1,
+        "freezeMs": 1
+      },
+      "unattributedMs": 0.09459999999944557,
+      "gc": {
+        "count": 0,
+        "observedOverlapMs": 0,
+        "events": []
+      }
+    }
+  ]
+}
