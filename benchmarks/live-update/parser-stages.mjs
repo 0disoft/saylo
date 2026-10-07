@@ -52,7 +52,9 @@ try {
       assert.ok(Object.isFrozen(next.messages.message1.ast));
       if (detailed) {
         assert.equal(previous, undefined);
-        for (const metric of ['astMs', 'argumentsMs', 'argumentFreezeMs', 'messageFreezeMs']) assert.equal(stages.calls[metric], messagesPerLocale);
+        for (const metric of ['astMs', 'argumentsMs', 'messageFreezeMs']) assert.equal(stages.calls[metric], messagesPerLocale);
+        assert.equal(stages.calls.argumentFreezeMs, 2, 'Only empty and name argument contracts need freezing in this fixture.');
+        assert.equal(next.messages.message1.arguments, next.messages.message2.arguments);
         assert.equal(stages.calls.reusedMessageFreezeMs, 0);
       } else assert.equal(next.messages.message1, previous.messages.message1);
       for (const metric of parserMetrics) assert.equal(stages.calls[metric], 1);

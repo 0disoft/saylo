@@ -127,7 +127,9 @@ node benchmarks/live-update/parse-compare.mjs 4d1f6fc benchmarks/results/parse-c
 
 첫 인자는 baseline revision, 둘째는 결과 경로다. 결과는 warmup 뒤 pair별 `beforeMs`·`afterMs`·`afterMinusBeforeMs`, `before`·`after` 요약, `pairedDifference`, `currentCodeHashes`를 담는다.
 
-선택적 세 번째 인자 `cold`는 previous catalog 없이 매번 새 AST·인자 schema를 만드는 비교다. 기본 `incremental`의 warmup 50·측정 100쌍을 유지하고 cold는 warmup 5·측정 20쌍이다. source 준비·동등성 검사는 timing에서 제외하며 매 pair의 parsed catalog 전체를 대조한다. 단순 메시지 최적화는 `node benchmarks/live-update/parse-compare.mjs a7367b9 benchmarks/results/parse-compare-simple-cold.json cold`로 확인했다. 동일 설정의 로케일 추가 재측정과 p95 미개선 결과도 [../../docs/15-simple-message-parser.md](../../docs/15-simple-message-parser.md)에 함께 남겼다.
+선택적 세 번째 인자 `cold`는 previous catalog 없이 매번 파싱하는 비교다. 현재 파서는 한 호출 안에서 같은 인자 스키마를 공유하지만 AST와 메시지 위치는 각각 만든다. 기본 `incremental`의 warmup 50·측정 100쌍을 유지하고 cold는 warmup 5·측정 20쌍이다. source 준비·동등성 검사는 timing에서 제외하며 매 pair의 parsed catalog 전체를 대조한다. 단순 메시지 최적화는 `node benchmarks/live-update/parse-compare.mjs a7367b9 benchmarks/results/parse-compare-simple-cold.json cold`로 확인했다. 동일 설정의 로케일 추가 재측정과 p95 미개선 결과도 [../../docs/15-simple-message-parser.md](../../docs/15-simple-message-parser.md)에 함께 남겼다.
+
+인자 스키마 공유는 `node benchmarks/live-update/parse-compare.mjs 4b69398 benchmarks/results/parse-compare-schema-sharing-cold.json cold`로 비교했다. 내부 계측은 `node benchmarks/live-update/parser-stages.mjs benchmarks/results/parser-stages-schema-sharing-cold.json cold`로 실행하며 이 fixture의 인자 동결 호출 수는 빈 계약과 name 계약의 2회이다. 20쌍 중 17쌍과 중앙값에서 개선됐지만 p95는 증가했다. 실행 조건·원시 결과와 남은 메시지 동결 비용은 [../../docs/18-shared-argument-schemas.md](../../docs/18-shared-argument-schemas.md)를 따른다.
 
 ## 결과
 

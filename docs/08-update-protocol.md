@@ -73,7 +73,7 @@ interface CatalogPatch extends CatalogStamp {
 - 과거 version gap, 새 세션, 밀집 변경, 삭제·재생성, `known` 없음은 전체 present/missing으로 돌아간다. 깨진 patch는 기존 timeout 안에서 새 `requestId`로 `known` 없는 full을 한 번 재요청하고, 그마저 patch면 거절하고 이전 정상 UI를 유지한다.
 - 기존 eager 전체 snapshot, production chunk loader, SSR boot wire는 그대로 유지한다.
 
-core는 깊게 동결한 번역 인자 스키마와 기준 메시지의 인자 스키마가 이전 검증 때와 같은 객체이고 ID도 같으면 `validateTranslation` 결과를 재사용하고, mutable 입력이나 계약·키가 바뀌면 다시 검증한다. 서버는 pair version 판정에서 정렬·stringify 없이 key·source·position을 직접 비교한다.
+core는 ID가 기준에 있는지 먼저 확인한 뒤, 깊게 동결한 번역 인자 스키마와 기준 메시지의 인자 스키마가 이전에 검증에 성공한 객체 쌍이면 `validateTranslation` 결과를 재사용한다. 한 번역 스키마에 복수 기준 계약의 성공 기록을 둘 수 있고, mutable 입력·새 계약은 다시 검증한다. 파싱 호출 내 동일 인자 스키마 공유와 검증 기록의 범위는 [18](18-shared-argument-schemas.md)를 따른다. 서버는 pair version 판정에서 정렬·stringify 없이 key·source·position을 직접 비교한다.
 
 ### 설계 초안: push wire
 

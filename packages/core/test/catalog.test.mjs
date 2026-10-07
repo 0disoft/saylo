@@ -173,6 +173,71 @@ test('validation reuse follows immutable argument contracts, never stale keys or
   rejectsCode(() => validateTranslation(base, mutableTranslation), 'ARGUMENT_TYPE_NARROWING');
 });
 
+test('each parse shares exact immutable argument contracts without sharing message AST or positions', () => {
+  const messages = { a: '{name}', b: 'Hello {name} {name}', c: '', d: 'literal',
+    numeric: '{n, number}', plural: '{n, plural, other {#}}', ordinal: '{n, selectordinal, other {#}}',
+    date: '{at, date}', time: '{at, time}', proto: '{__proto__}', protoAgain: 'Hello {__proto__}',
+    other: '{other}', forward: '{a} {b}', reverse: '{b} {a}' };
+  const parsed = catalog(messages);
+  assert.equal(parsed.messages.a.arguments, parsed.messages.b.arguments);
+  assert.equal(parsed.messages.c.arguments, parsed.messages.d.arguments);
+  assert.equal(parsed.messages.numeric.arguments, parsed.messages.plural.arguments);
+  assert.equal(parsed.messages.numeric.arguments, parsed.messages.ordinal.arguments);
+  assert.equal(parsed.messages.date.arguments, parsed.messages.time.arguments);
+  assert.equal(parsed.messages.proto.arguments, parsed.messages.protoAgain.arguments);
+  assert.notEqual(parsed.messages.a.arguments, parsed.messages.other.arguments);
+  assert.notEqual(parsed.messages.a.ast, parsed.messages.b.ast);
+  assert.notEqual(parsed.messages.a.position, parsed.messages.b.position);
+  assert.deepEqual(Object.keys(parsed.messages.forward.arguments), ['a', 'b']);
+  assert.deepEqual(Object.keys(parsed.messages.reverse.arguments), ['b', 'a']);
+  assert.throws(() => parsed.messages.a.arguments.name.acceptedTypes.push('date'), TypeError);
+  assert.notEqual(catalog(messages).messages.a.arguments, parsed.messages.a.arguments, 'Pool is local to one parse.');
+  const source = JSON.stringify({ ...messages, b: 'Edited {name}' });
+  const next = parseCatalog(source, options, parsed);
+  assert.equal(next.messages.a, parsed.messages.a);
+  assert.equal(next.messages.a.ast, parsed.messages.a.ast);
+  assert.notEqual(next.messages.b.ast, parsed.messages.b.ast);
+});
+
+test('a cached successful contract never hides later ICU conflicts or their source locations', () => {
+  const source = '{\n  "good": "{n, number}",\n  "bad": "prefix {n, number} {n, select, other {text}}"\n}';
+  assert.throws(() => parseCatalog(source, options), error => {
+    const diagnostic = error.diagnostics.find(d => d.code === 'ARGUMENT_CONFLICT');
+    assert.equal(diagnostic.id, 'bad');
+    assert.equal(diagnostic.argument, 'n');
+    assert.equal(diagnostic.position.offset, source.indexOf('{n, select'));
+    assert.equal(diagnostic.position.line, 3);
+    return true;
+  });
+});
+
+test('shared validation contracts still check every ID, changed base types and failing diagnostics', () => {
+  const base = createBaseSchema(catalog({ a: '{n, number}', b: '{n, select, other {text}}', date: '{n, date}' }));
+  const translation = catalog({ a: '{n}', b: 'Text {n}' }, 'en');
+  assert.equal(translation.messages.a.arguments, translation.messages.b.arguments);
+  const entries = Object.entries;
+  let scans = 0;
+  Object.entries = value => { if (value === translation.messages.a.arguments) scans++; return entries(value); };
+  try {
+    validateTranslation(base, translation);
+    assert.equal(scans, 2, 'Both distinct immutable base contracts are checked first.');
+    scans = 0;
+    validateTranslation(base, translation);
+    assert.equal(scans, 0, 'A shared translation keeps both successful contract pairs.');
+  } finally { Object.entries = entries; }
+  const unknown = freeze({ ...translation, messages: { ...translation.messages, extra: translation.messages.a } });
+  rejectsCode(() => validateTranslation(base, unknown), 'UNKNOWN_MESSAGE');
+  const invalid = freeze({ ...translation, messages: { ...translation.messages, date: translation.messages.a } });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    assert.throws(() => validateTranslation(base, invalid), error => {
+      assert.deepEqual(error.diagnostics.map(d => [d.id, d.code]), [['date', 'ARGUMENT_TYPE_NARROWING']]);
+      return true;
+    });
+  }
+  const changed = createBaseSchema(catalog({ a: '{other}', b: '{n, number}' }));
+  rejectsCode(() => validateTranslation(changed, translation), 'UNKNOWN_ARGUMENT');
+});
+
 test('fingerprint depends on namespace and argument contract, not text or key order', () => {
   const first = createBaseSchema(catalog({ title: 'Cart', x: '{n, number}' }));
   const edited = createBaseSchema(catalog({ x: 'Total {n, number}', title: 'Edited' }));

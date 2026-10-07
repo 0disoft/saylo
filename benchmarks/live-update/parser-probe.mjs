@@ -49,7 +49,7 @@ export function registerParserProbe({ detailed = false } = {}) {
       ['const entries = [];', 'const __tokensStart = parserClock();\nconst entries = [];'],
       ['if (diagnostics.length)', "recordParserStage('tokenScanMs', __tokensStart);\nif (diagnostics.length)"],
     ] : [
-      ['return freeze(schema);', "return measureParserFreeze('argumentFreezeMs', freeze, schema);"],
+      ['const frozenSchema = freeze(schema);', "const frozenSchema = measureParserFreeze('argumentFreezeMs', freeze, schema);"],
     ];
     if (detailed && url === catalog) changes.push(
       ['const ast = parseSimpleMessage(entry.value) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });',

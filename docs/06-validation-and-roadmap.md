@@ -111,6 +111,8 @@ Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/run
 
 날짜·시간을 다루는 검사는 timeZone을 고정하고 고정 시각 입력을 쓴다. 런타임에서 현재 시각(`Date.now`/`currentTime`)을 호출하지 않는다. 네이티브 ICU 지원은 OS·브라우저마다 다르므로 parity는 같은 Intl 데이터·런타임 매트릭스 아래에서만 의미가 있다.
 
+동일 인자 스키마를 파싱 호출 안에서 공유하고, 불변 번역·기준 계약 쌍의 검증 성공 결과를 재사용하도록 로컬 구현했다. 10k cold 교차 비교 20쌍 중 17쌍이 빨랐고 pair별 차이 중앙값은 -36.08ms였지만 p95는 396.18→563.63ms로 증가했다. 반복 fixture의 인자 동결은 호출당 2회로 줄었으며 메시지 동결 경로가 다음 후보이다. workspace 테스트 163개와 consumer 타입 검사를 통과했다. 종단 간 지연은 재측정하지 않았으며 조건·원시 결과는 [18-shared-argument-schemas.md](18-shared-argument-schemas.md)에 있다.
+
 ## 빌드 순서
 
 순서는 typegen(generate) → tsc(consumer 타입 체크) → build(Vite)다. Vite build 자체는 consumer TS 타입 체크를 하지 않으므로 tsc를 build 앞에 둔다. 별도 package/version 설정 파일 구현은 이번 범위 밖이다.

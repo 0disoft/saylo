@@ -3,7 +3,7 @@ import { CatalogError, freeze, createPositionLocator, isDeepFrozen } from './dia
 import { messageOffset, readJson } from './json.js';
 import { inferArguments } from './schema.js';
 import { parseSimpleMessage } from './simple-message.js';
-import type { CatalogDiagnostic, CatalogOptions, ParsedCatalog, ParsedMessage } from './types.js';
+import type { CatalogDiagnostic, CatalogOptions, MessageSchema, ParsedCatalog, ParsedMessage } from './types.js';
 
 /** An immutable previous catalog lets live readers reuse unchanged ICU messages. */
 export function parseCatalog(source: string, options: CatalogOptions, previous?: ParsedCatalog): ParsedCatalog {
@@ -22,6 +22,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
   const diagnostics: CatalogDiagnostic[] = [];
   const messages: Record<string, ParsedMessage> = Object.create(null);
   const locale = new Intl.Locale(context.locale);
+  const argumentSchemas = new Map<string, MessageSchema>();
   const reusable = previous && isDeepFrozen(previous) && previous.locale === context.locale &&
     previous.namespace === context.namespace && previous.sourceName === context.sourceName ? previous.messages : undefined;
   for (const entry of entries) {
@@ -42,7 +43,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
     try {
       const ast = parseSimpleMessage(entry.value) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
-        position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }));
+        position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
       messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast, arguments: argumentsSchema });
     } catch (error) {
       if (error instanceof CatalogError) diagnostics.push(...error.diagnostics);

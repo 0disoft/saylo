@@ -8,6 +8,7 @@ import type { ArgumentType, CatalogDiagnostic, CatalogSchema, MessageSchema, Par
 export function inferArguments(
   ast: readonly MessageFormatElement[],
   conflict: (argument: string, offset: number) => CatalogDiagnostic,
+  cache: Map<string, MessageSchema>,
 ): MessageSchema {
   const types = new Map<string, ArgumentType[]>();
   const diagnostics: CatalogDiagnostic[] = [];
@@ -37,9 +38,16 @@ export function inferArguments(
   }
   walk(ast);
   if (diagnostics.length) throw new CatalogError(diagnostics);
+  // Keep encounter/type order in the key, preserving the serialized schema.
+  // Always walk first so a prior success cannot hide a message-local conflict.
+  const signature = JSON.stringify([...types]);
+  const cached = cache.get(signature);
+  if (cached) return cached;
   const schema: Record<string, { required: true; acceptedTypes: ArgumentType[] }> = Object.create(null);
   for (const [name, acceptedTypes] of types) schema[name] = { required: true, acceptedTypes };
-  return freeze(schema);
+  const frozenSchema = freeze(schema);
+  cache.set(signature, frozenSchema);
+  return frozenSchema;
 }
 
 const schemas = new WeakMap<ParsedCatalog, CatalogSchema>();
@@ -59,7 +67,7 @@ export function createBaseSchema(catalog: ParsedCatalog): CatalogSchema {
   return schema;
 }
 
-const validatedArguments = new WeakMap<MessageSchema, { id: string; base: MessageSchema }>();
+const validatedArguments = new WeakMap<MessageSchema, WeakSet<MessageSchema>>();
 
 /** Missing keys/arguments are allowed; supplied translations cannot narrow the base. */
 export function validateTranslation(base: CatalogSchema, translation: ParsedCatalog): void {
@@ -76,7 +84,7 @@ export function validateTranslation(base: CatalogSchema, translation: ParsedCata
     }
     const cacheable = isDeepFrozen(message.arguments) && isDeepFrozen(original);
     const cached = cacheable ? validatedArguments.get(message.arguments) : undefined;
-    if (cached?.id === id && cached.base === original) continue;
+    if (cached?.has(original)) continue;
     const start = diagnostics.length;
     for (const [argument, translated] of Object.entries(message.arguments)) {
       const accepted = Object.hasOwn(original, argument) ? original[argument] : undefined;
@@ -87,7 +95,11 @@ export function validateTranslation(base: CatalogSchema, translation: ParsedCata
           message: `Translation argument ${JSON.stringify(argument)} must accept all base types (${accepted.acceptedTypes.join(' | ')}). If it needs a numeric contract, express that in the base message first.` });
       }
     }
-    if (cacheable && diagnostics.length === start) validatedArguments.set(message.arguments, { id, base: original });
+    if (cacheable && diagnostics.length === start) {
+      const contracts = cached ?? new WeakSet<MessageSchema>();
+      contracts.add(original);
+      if (!cached) validatedArguments.set(message.arguments, contracts);
+    }
   }
   if (diagnostics.length) throw new CatalogError(diagnostics);
 }
