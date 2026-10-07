@@ -1,5 +1,7 @@
 # 14. 로케일 추가 서버 비용 측정
 
+이 문서는 파서 최적화 전 계측 기록이다. 현행 코드의 같은 fixture·옵션 재계측은 [21-locale-add-server-remeasurement.md](21-locale-add-server-remeasurement.md)에 있다.
+
 2026-10-07 기존 서버 계측을 로케일 추가 모드에 연결했다. 대규모 10회에서 목록 표시 p95는 1,808.23ms로 250ms 목표를 넘었다. 수집한 각 구간 중 새 카탈로그 파싱이 매회 가장 오래 걸렸으며 다음 최적화 대상이다. 이번 변경은 benchmark에만 있으며 제품 source·dist를 수정하지 않았다.
 
 ## 실행과 조건
