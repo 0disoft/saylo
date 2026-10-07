@@ -15,6 +15,8 @@ import { createFixture, scenarios } from './fixture.mjs';
 import { summarize } from './statistics.mjs';
 import { browserStagePlugin, browserMetrics, localeBrowserMetrics, localeBrowserReportedMetrics } from './browser-profile.mjs';
 import { registerFileProbe, fileMetrics } from './server-file-profile.mjs';
+import { registerReplyProbe, replyReceiptPlugin } from './reply-profile.mjs';
+import { replyServerMetrics, replyBrowserMetrics, replyObservedMetrics } from './reply-receipt.mjs';
 
 const exec = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -27,6 +29,7 @@ const { values } = parseArgs({ options: { samples: { type: 'string', default: '5
   'no-typegen': { type: 'boolean', default: false }, 'cpu-profile': { type: 'boolean', default: false },
   'browser-stages': { type: 'boolean', default: false },
   'server-file-stages': { type: 'boolean', default: false },
+  'reply-stages': { type: 'boolean', default: false },
   'timeout-ms': { type: 'string', default: '30000' } } });
 function integer(name, min) {
   const value = Number(values[name]);
@@ -38,13 +41,17 @@ const settings = { samples: integer('samples', 1), warmup: integer('warmup', 0),
 const selected = scenarios.filter(s => values.scenario === 'all' || s.id === values.scenario);
 if (!selected.length) throw new Error('Unknown scenario; use all, 1k-3-locales or 10k-20-locales.');
 if (!['edit', 'locale-add'].includes(values.mode)) throw new Error('Use --mode edit or locale-add.');
+if (values['reply-stages'] && (values.mode !== 'locale-add' || values['browser-stages']))
+  throw new Error('--reply-stages requires locale-add with normal prebundling; do not combine with --browser-stages.');
 if (values.mode === 'locale-add' && values['cpu-profile'])
   throw new Error('Locale addition does not support --cpu-profile.');
 const fileProbe = registerFileProbe(values['server-file-stages']);
+const replyProbe = registerReplyProbe(values['reply-stages']);
 // Node hooks must be registered before the server dependency graph is loaded.
 const { default: saylo } = await import('@0disoft/saylo-vite');
 const { createStageProbe, createCpuProbe } = await import('./profile.mjs');
 fileProbe.assertTransformed();
+replyProbe.assertTransformed();
 
 async function browserExecutable() {
   if (values.browser) { await access(values.browser); return path.resolve(values.browser); }
@@ -69,6 +76,7 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'packages/core/dist/catalog-freeze.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
   'packages/vite/dist/catalog-source.js', 'packages/vite/dist/catalog-wire.js', 'packages/vite/dist/index.js', 'packages/vite/dist/freeze.js'];
 measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
+measuredFiles.push('benchmarks/live-update/reply-profile.mjs', 'benchmarks/live-update/reply-receipt.mjs');
 if (values.mode === 'locale-add') measuredFiles.push('benchmarks/live-update/locale-channel.mjs', 'benchmarks/live-update/locale-app.jsx');
 const codeHashes = Object.fromEntries(await Promise.all(measuredFiles.map(async file =>
   [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
@@ -98,12 +106,13 @@ async function runScenario(scenario) {
     const fixture = await createFixture(appRoot, scenario, values.mode === 'locale-add' ? 'locale-app.jsx' : 'app.jsx');
     if (cancelled) throw new Error('Benchmark interrupted.');
     const channelFactory = values.mode === 'locale-add' ? createLocaleChannel : createChannel;
-    channel = channelFactory({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe, browserStages: values['browser-stages'] });
+    channel = channelFactory({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe,
+      browserStages: values['browser-stages'], replyStages: values['reply-stages'] });
     const browserProbe = browserStagePlugin(values['browser-stages'], values.mode);
     console.log(`[bench] ${scenario.id}: ${fixture.catalogFiles} files, ${fixture.catalogBytes} catalog bytes; starting Vite`);
     const startupAt = performance.now();
     vite = await createServer({ configFile: false, root: appRoot, logLevel: 'error', clearScreen: false,
-      plugins: [browserProbe, saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', initialNamespaces: ['bench'],
+      plugins: [browserProbe, replyReceiptPlugin(values['reply-stages']), saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', initialNamespaces: ['bench'],
         ...(values['no-typegen'] ? {} : { typegen: { outFile: 'generated.d.ts' } }) }), channel.plugin],
       server: { host: '127.0.0.1', port: 0, strictPort: true },
       optimizeDeps: values['browser-stages'] ? { include: ['react', 'react-dom/client'],
@@ -153,6 +162,13 @@ async function runScenario(scenario) {
       summary: Object.fromEntries(localeMetrics.map(metric => [metric, summarize(measured.map(sample => sample[metric]))])),
       ...(serverStages ? { serverStages, profiledPhase: 'catalog-addition-before-list-ack' } : {}),
       ...(serverFileStages ? { serverFileStages } : {}),
+      ...(values['reply-stages'] ? { replyStages: {
+        scope: 'Normal dependency prebundling retained. Node request handler: lookup, compact encoding, request-to-send preparation, send call including Vite JSON serialization/socket enqueue and per-sample handler residual. Node selection-ready request to handler includes HTTP control response/browser scheduling/request delivery. Browser receipt is the first benchmark hot listener, after Vite WS JSON parsing but before Saylo decoding/freezing; select-to-receive and receive-to-DOM partition the browser selection window. Separate process clocks, no cross-clock subtraction; waiting is not pure network time. Excludes boot, list addition, reset/removal. Probe costs/runtime pauses included; not an uninstrumented performance claim.',
+        server: Object.fromEntries(replyServerMetrics.map(m => [m, summarize(measured.map(s => s.replyStages.server.timings[m]))])),
+        browser: Object.fromEntries(replyBrowserMetrics.map(m => [m, summarize(measured.map(s => s.replyStages.browser.timings[m]))])),
+        maxCalls: Object.fromEntries(replyObservedMetrics.map(m => [m, Math.max(...measured.map(s => s.replyStages.server.calls[m]))])),
+        maxReceipts: Math.max(...measured.map(s => s.replyStages.browser.receipts)),
+      } } : {}),
       ...(values['browser-stages'] ? { browserStages: {
         scope: 'Benchmark-only client transforms from before setLocale to first translation DOM commit; excludes initial boot, list acknowledgement, reset and removal. Saylo prebundling disabled. Decode includes compact validation; accept includes core pair/version/payload/schema checks and outcome/key copy plus deep freeze; snapshot includes translator and signature. Residuals computed per sample; selectionOther excludes accept and includes transport, WS JSON parsing, other client work and React commit, not just network. Do not add nested p95s or compare directly with uninstrumented runs. Older selectionOther without accept instrumentation has a different boundary.',
         ...Object.fromEntries(localeBrowserReportedMetrics.map(metric => [metric, summarize(measured.map(sample => sample.browserStages.timings[metric]))])),
@@ -207,7 +223,7 @@ for (const scenario of selected) {
 }
 const output = { schema: 'saylo-live-update-benchmark-v1', measuredAt: new Date().toISOString(),
   gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(), settings, mode: values.mode,
-  instrumentation: { cpuProfile: values['cpu-profile'], browserStages: values['browser-stages'], serverFileStages: values['server-file-stages'] },
+  instrumentation: { cpuProfile: values['cpu-profile'], browserStages: values['browser-stages'], serverFileStages: values['server-file-stages'], replyStages: values['reply-stages'] },
   workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(),
   codeHashes,
   environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
@@ -230,3 +246,4 @@ for (const result of output.results) {
 await writeFile(out, `${JSON.stringify(output, null, 2)}\n`);
 console.log(`[bench] result: ${out}`);
 fileProbe.dispose();
+replyProbe.dispose();

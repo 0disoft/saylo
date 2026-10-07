@@ -1,0 +1,2480 @@
+{
+  "scenario": "10k-20-locales",
+  "samples": [
+    {
+      "token": "10k-20-locales:26",
+      "warmup": true,
+      "saveToListAckMs": 203.6828000000005,
+      "selectToTranslationAckMs": 319.6107000000011,
+      "saveToTranslationAckMs": 526.2703000000001,
+      "selectToCommitMs": 316.40000000596046,
+      "saveToBroadcastMs": 185.32879999999932,
+      "fileWriteMs": 11.772699999999531,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:1",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.18029999999998836,
+            "encodeMs": 40.14509999999973,
+            "sendMs": 18.839500000000044,
+            "handlerMs": 59.909599999999045,
+            "selectionToRequestMs": 3.2318000000013853,
+            "requestToSendMs": 41.044599999999264,
+            "handlerOtherMs": 0.744699999999284
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:1",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 83.1000000089407,
+            "receiveToCommitMs": 233.29999999701977
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241398
+    },
+    {
+      "token": "10k-20-locales:27",
+      "warmup": true,
+      "saveToListAckMs": 153.3752000000004,
+      "selectToTranslationAckMs": 257.52970000000096,
+      "saveToTranslationAckMs": 413.46080000000075,
+      "selectToCommitMs": 254.6000000089407,
+      "saveToBroadcastMs": 139.9914000000008,
+      "fileWriteMs": 14.71559999999954,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:2",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.05429999999978463,
+            "encodeMs": 41.19659999999931,
+            "sendMs": 20.4916000000012,
+            "handlerMs": 61.928900000000795,
+            "selectionToRequestMs": 2.055500000000393,
+            "requestToSendMs": 41.43189999999959,
+            "handlerOtherMs": 0.1864000000005035
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:2",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 95.6000000089407,
+            "receiveToCommitMs": 159
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241398
+    },
+    {
+      "token": "10k-20-locales:28",
+      "warmup": true,
+      "saveToListAckMs": 167.6257000000005,
+      "selectToTranslationAckMs": 500.883600000001,
+      "saveToTranslationAckMs": 672.4014000000006,
+      "selectToCommitMs": 497.5,
+      "saveToBroadcastMs": 155.3721000000005,
+      "fileWriteMs": 10.926900000000387,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:3",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.05199999999967986,
+            "encodeMs": 36.71320000000014,
+            "sendMs": 17.29160000000047,
+            "handlerMs": 54.17959999999948,
+            "selectionToRequestMs": 2.5235000000011496,
+            "requestToSendMs": 36.87079999999878,
+            "handlerOtherMs": 0.122799999999188
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:3",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 81.5,
+            "receiveToCommitMs": 416
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241398
+    },
+    {
+      "token": "10k-20-locales:29",
+      "warmup": true,
+      "saveToListAckMs": 170.7395000000015,
+      "selectToTranslationAckMs": 224.22979999999916,
+      "saveToTranslationAckMs": 397.39350000000013,
+      "selectToCommitMs": 221.6000000089407,
+      "saveToBroadcastMs": 157.7530000000006,
+      "fileWriteMs": 10.720099999998638,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:4",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.07959999999911815,
+            "encodeMs": 38.00240000000122,
+            "sendMs": 19.614199999999983,
+            "handlerMs": 57.878200000001016,
+            "selectionToRequestMs": 1.7925999999988562,
+            "requestToSendMs": 38.25260000000162,
+            "handlerOtherMs": 0.1820000000006985
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:4",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 70.80000001192093,
+            "receiveToCommitMs": 150.79999999701977
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241398
+    },
+    {
+      "token": "10k-20-locales:30",
+      "warmup": true,
+      "saveToListAckMs": 153.96090000000004,
+      "selectToTranslationAckMs": 190.6172999999999,
+      "saveToTranslationAckMs": 347.22049999999945,
+      "selectToCommitMs": 187.90000000596046,
+      "saveToBroadcastMs": 141.70600000000013,
+      "fileWriteMs": 9.25250000000051,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:5",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.0661999999992986,
+            "encodeMs": 28.21940000000177,
+            "sendMs": 16.119199999999182,
+            "handlerMs": 44.54210000000057,
+            "selectionToRequestMs": 1.9778999999998632,
+            "requestToSendMs": 28.415200000001278,
+            "handlerOtherMs": 0.13730000000032305
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:5",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 57.6000000089407,
+            "receiveToCommitMs": 130.29999999701977
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241398
+    },
+    {
+      "token": "10k-20-locales:31",
+      "warmup": false,
+      "saveToListAckMs": 179.41440000000148,
+      "selectToTranslationAckMs": 334.7025999999987,
+      "saveToTranslationAckMs": 516.509,
+      "selectToCommitMs": 331.69999998807907,
+      "saveToBroadcastMs": 167.9423000000006,
+      "fileWriteMs": 10.437199999998484,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:6",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.08209999999962747,
+            "encodeMs": 26.73489999999947,
+            "sendMs": 13.798400000001493,
+            "handlerMs": 40.74239999999918,
+            "selectionToRequestMs": 1.6908000000003085,
+            "requestToSendMs": 26.937699999998586,
+            "handlerOtherMs": 0.12699999999858846
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:6",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 64.69999998807907,
+            "receiveToCommitMs": 267
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:32",
+      "warmup": false,
+      "saveToListAckMs": 157.5725999999995,
+      "selectToTranslationAckMs": 251.99969999999848,
+      "saveToTranslationAckMs": 411.97929999999906,
+      "selectToCommitMs": 249,
+      "saveToBroadcastMs": 141.20080000000053,
+      "fileWriteMs": 12.29490000000078,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:7",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.06060000000070431,
+            "encodeMs": 27.70470000000023,
+            "sendMs": 14.96060000000034,
+            "handlerMs": 42.863900000000285,
+            "selectionToRequestMs": 1.8308999999990192,
+            "requestToSendMs": 27.895300000000134,
+            "handlerOtherMs": 0.13799999999901047
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:7",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 59.79999999701977,
+            "receiveToCommitMs": 189.20000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:33",
+      "warmup": false,
+      "saveToListAckMs": 184.70039999999972,
+      "selectToTranslationAckMs": 196.7570999999989,
+      "saveToTranslationAckMs": 384.007599999999,
+      "selectToCommitMs": 194,
+      "saveToBroadcastMs": 171.52889999999934,
+      "fileWriteMs": 12.78020000000106,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:8",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03449999999975262,
+            "encodeMs": 32.23750000000109,
+            "sendMs": 16.179599999999482,
+            "handlerMs": 48.58530000000064,
+            "selectionToRequestMs": 2.1206999999994878,
+            "requestToSendMs": 32.39689999999973,
+            "handlerOtherMs": 0.13370000000031723
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:8",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 61.5,
+            "receiveToCommitMs": 132.5
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:34",
+      "warmup": false,
+      "saveToListAckMs": 173.86509999999907,
+      "selectToTranslationAckMs": 240.73130000000128,
+      "saveToTranslationAckMs": 417.07550000000083,
+      "selectToCommitMs": 237.70000000298023,
+      "saveToBroadcastMs": 161.64509999999973,
+      "fileWriteMs": 11.075800000000527,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:9",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.035200000000259024,
+            "encodeMs": 31.399199999999837,
+            "sendMs": 13.863000000001193,
+            "handlerMs": 45.45720000000074,
+            "selectionToRequestMs": 1.9282000000002881,
+            "requestToSendMs": 31.558199999999488,
+            "handlerOtherMs": 0.15979999999944994
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:9",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 63.70000000298023,
+            "receiveToCommitMs": 174
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:35",
+      "warmup": false,
+      "saveToListAckMs": 188.45089999999982,
+      "selectToTranslationAckMs": 286.83550000000105,
+      "saveToTranslationAckMs": 479.27670000000035,
+      "selectToCommitMs": 283.59999999403954,
+      "saveToBroadcastMs": 173.16359999999986,
+      "fileWriteMs": 11.916699999999764,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:10",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.0544000000008964,
+            "encodeMs": 45.41860000000088,
+            "sendMs": 23.802599999999074,
+            "handlerMs": 69.53109999999833,
+            "selectionToRequestMs": 2.4341000000003987,
+            "requestToSendMs": 45.666699999999764,
+            "handlerOtherMs": 0.2554999999974825
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:10",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 99,
+            "receiveToCommitMs": 184.59999999403954
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:36",
+      "warmup": false,
+      "saveToListAckMs": 221.10499999999956,
+      "selectToTranslationAckMs": 256.89849999999933,
+      "saveToTranslationAckMs": 480.89429999999993,
+      "selectToCommitMs": 252.40000000596046,
+      "saveToBroadcastMs": 201.25790000000052,
+      "fileWriteMs": 11.691299999998591,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:11",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03540000000066357,
+            "encodeMs": 41.628499999998894,
+            "sendMs": 22.96350000000166,
+            "handlerMs": 64.72919999999795,
+            "selectionToRequestMs": 3.6820000000006985,
+            "requestToSendMs": 41.75819999999658,
+            "handlerOtherMs": 0.10179999999672873
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:11",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 85,
+            "receiveToCommitMs": 167.40000000596046
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:37",
+      "warmup": false,
+      "saveToListAckMs": 151.96659999999974,
+      "selectToTranslationAckMs": 242.5626000000011,
+      "saveToTranslationAckMs": 408.96270000000004,
+      "selectToCommitMs": 239.20000000298023,
+      "saveToBroadcastMs": 136.67529999999897,
+      "fileWriteMs": 9.573899999999412,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:12",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.030099999999947613,
+            "encodeMs": 32.004399999997986,
+            "sendMs": 15.424199999997654,
+            "handlerMs": 47.53700000000026,
+            "selectionToRequestMs": 2.209100000000035,
+            "requestToSendMs": 32.108900000002905,
+            "handlerOtherMs": 0.07830000000467408
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:12",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 103.1000000089407,
+            "receiveToCommitMs": 136.09999999403954
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:38",
+      "warmup": false,
+      "saveToListAckMs": 172.98370000000068,
+      "selectToTranslationAckMs": 542.9196999999986,
+      "saveToTranslationAckMs": 718.3666999999987,
+      "selectToCommitMs": 540.0999999940395,
+      "saveToBroadcastMs": 160.08729999999923,
+      "fileWriteMs": 8.774000000001251,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:13",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.04110000000218861,
+            "encodeMs": 31.86869999999908,
+            "sendMs": 19.865200000000186,
+            "handlerMs": 51.869200000001,
+            "selectionToRequestMs": 1.852999999999156,
+            "requestToSendMs": 31.998999999999796,
+            "handlerOtherMs": 0.09419999999954598
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:13",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 77.09999999403954,
+            "receiveToCommitMs": 463
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:39",
+      "warmup": false,
+      "saveToListAckMs": 474.73039999999673,
+      "selectToTranslationAckMs": 231.4304000000011,
+      "saveToTranslationAckMs": 708.784599999999,
+      "selectToCommitMs": 228.6000000089407,
+      "saveToBroadcastMs": 461.7550999999985,
+      "fileWriteMs": 8.959200000001147,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:14",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.031899999998131534,
+            "encodeMs": 37.381099999998696,
+            "sendMs": 15.994800000000396,
+            "handlerMs": 53.48489999999947,
+            "selectionToRequestMs": 1.7734000000018568,
+            "requestToSendMs": 37.48539999999775,
+            "handlerOtherMs": 0.07710000000224682
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:14",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 70.6000000089407,
+            "receiveToCommitMs": 158
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:40",
+      "warmup": false,
+      "saveToListAckMs": 159.99329999999827,
+      "selectToTranslationAckMs": 242.8047000000006,
+      "saveToTranslationAckMs": 405.7518999999993,
+      "selectToCommitMs": 239.5,
+      "saveToBroadcastMs": 145.41939999999886,
+      "fileWriteMs": 7.883100000002742,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:15",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.04399999999805004,
+            "encodeMs": 36.159499999997934,
+            "sendMs": 22.6124000000018,
+            "handlerMs": 58.91990000000078,
+            "selectionToRequestMs": 2.4547999999995227,
+            "requestToSendMs": 36.30169999999998,
+            "handlerOtherMs": 0.1040000000029977
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:15",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 70.5,
+            "receiveToCommitMs": 169
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:41",
+      "warmup": false,
+      "saveToListAckMs": 161.60259999999835,
+      "selectToTranslationAckMs": 207.9503999999979,
+      "saveToTranslationAckMs": 372.41769999999815,
+      "selectToCommitMs": 205.09999999403954,
+      "saveToBroadcastMs": 146.90710000000036,
+      "fileWriteMs": 8.25090000000273,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:16",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.040000000000873115,
+            "encodeMs": 39.72989999999845,
+            "sendMs": 16.259099999999307,
+            "handlerMs": 56.12540000000081,
+            "selectionToRequestMs": 1.8898999999983062,
+            "requestToSendMs": 39.86019999999917,
+            "handlerOtherMs": 0.09640000000217697
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:16",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 77.90000000596046,
+            "receiveToCommitMs": 127.19999998807907
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:42",
+      "warmup": false,
+      "saveToListAckMs": 159.3716999999997,
+      "selectToTranslationAckMs": 199.825499999999,
+      "saveToTranslationAckMs": 361.1841999999997,
+      "selectToCommitMs": 197.30000001192093,
+      "saveToBroadcastMs": 147.28830000000016,
+      "fileWriteMs": 7.358599999999569,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:17",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03320000000167056,
+            "encodeMs": 27.88159999999698,
+            "sendMs": 16.859200000002602,
+            "handlerMs": 44.852100000000064,
+            "selectionToRequestMs": 1.7452999999986787,
+            "requestToSendMs": 27.987199999999575,
+            "handlerOtherMs": 0.07809999999881256
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:17",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 56,
+            "receiveToCommitMs": 141.30000001192093
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:43",
+      "warmup": false,
+      "saveToListAckMs": 159.04809999999998,
+      "selectToTranslationAckMs": 213.27960000000166,
+      "saveToTranslationAckMs": 374.5427000000018,
+      "selectToCommitMs": 210.6000000089407,
+      "saveToBroadcastMs": 146.45250000000306,
+      "fileWriteMs": 7.018199999998615,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:18",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.031500000000960426,
+            "encodeMs": 28.566399999999703,
+            "sendMs": 14.599300000001676,
+            "handlerMs": 43.27140000000145,
+            "selectionToRequestMs": 1.4264000000002852,
+            "requestToSendMs": 28.667600000000675,
+            "handlerOtherMs": 0.07419999999910942
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:18",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 54.29999999701977,
+            "receiveToCommitMs": 156.30000001192093
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:44",
+      "warmup": false,
+      "saveToListAckMs": 149.43929999999818,
+      "selectToTranslationAckMs": 184.36829999999827,
+      "saveToTranslationAckMs": 337.3830999999991,
+      "selectToCommitMs": 182,
+      "saveToBroadcastMs": 138.2360000000008,
+      "fileWriteMs": 7.038100000001577,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:19",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03430000000298605,
+            "encodeMs": 28.162100000001374,
+            "sendMs": 15.79739999999947,
+            "handlerMs": 44.07430000000022,
+            "selectionToRequestMs": 1.7691999999988184,
+            "requestToSendMs": 28.272099999998318,
+            "handlerOtherMs": 0.08049999999639113
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:19",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 55.69999998807907,
+            "receiveToCommitMs": 126.30000001192093
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:45",
+      "warmup": false,
+      "saveToListAckMs": 155.83689999999842,
+      "selectToTranslationAckMs": 196.79149999999936,
+      "saveToTranslationAckMs": 354.78609999999753,
+      "selectToCommitMs": 194.5,
+      "saveToBroadcastMs": 142.10189999999784,
+      "fileWriteMs": 4.341800000001967,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:20",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03570000000036089,
+            "encodeMs": 25.304299999999785,
+            "sendMs": 13.976800000000367,
+            "handlerMs": 39.40049999999974,
+            "selectionToRequestMs": 1.5290999999997439,
+            "requestToSendMs": 25.417100000002392,
+            "handlerOtherMs": 0.08369999999922584
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:20",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 51.3999999910593,
+            "receiveToCommitMs": 143.1000000089407
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:46",
+      "warmup": false,
+      "saveToListAckMs": 151.84879999999976,
+      "selectToTranslationAckMs": 188.73040000000037,
+      "saveToTranslationAckMs": 342.9438999999984,
+      "selectToCommitMs": 186.20000000298023,
+      "saveToBroadcastMs": 140.9310000000005,
+      "fileWriteMs": 4.691399999999703,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:21",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03379999999742722,
+            "encodeMs": 26.54320000000007,
+            "sendMs": 15.843400000001566,
+            "handlerMs": 42.49689999999828,
+            "selectionToRequestMs": 1.886000000002241,
+            "requestToSendMs": 26.649099999998725,
+            "handlerOtherMs": 0.0764999999992142
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:21",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 54.20000000298023,
+            "receiveToCommitMs": 132
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:47",
+      "warmup": false,
+      "saveToListAckMs": 144.5054999999993,
+      "selectToTranslationAckMs": 218.22529999999824,
+      "saveToTranslationAckMs": 365.22629999999845,
+      "selectToCommitMs": 215.59999999403954,
+      "saveToBroadcastMs": 128.29550000000017,
+      "fileWriteMs": 7.751000000000204,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:22",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03749999999854481,
+            "encodeMs": 32.86419999999998,
+            "sendMs": 14.16400000000067,
+            "handlerMs": 47.14220000000205,
+            "selectionToRequestMs": 1.58719999999812,
+            "requestToSendMs": 32.974700000002485,
+            "handlerOtherMs": 0.07650000000285218
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:22",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 59.3999999910593,
+            "receiveToCommitMs": 156.20000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:48",
+      "warmup": false,
+      "saveToListAckMs": 987.8411000000015,
+      "selectToTranslationAckMs": 192.94740000000093,
+      "saveToTranslationAckMs": 1183.076100000002,
+      "selectToCommitMs": 190.70000000298023,
+      "saveToBroadcastMs": 975.0720000000001,
+      "fileWriteMs": 7.923999999999069,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:23",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.07769999999800348,
+            "encodeMs": 28.996399999999994,
+            "sendMs": 15.253499999998894,
+            "handlerMs": 44.40229999999792,
+            "selectionToRequestMs": 1.6005000000004657,
+            "requestToSendMs": 29.145000000000437,
+            "handlerOtherMs": 0.07470000000103028
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:23",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 56,
+            "receiveToCommitMs": 134.70000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:49",
+      "warmup": false,
+      "saveToListAckMs": 145.6755000000012,
+      "selectToTranslationAckMs": 180.16109999999753,
+      "saveToTranslationAckMs": 327.90780000000086,
+      "selectToCommitMs": 177.3999999910593,
+      "saveToBroadcastMs": 133.83300000000236,
+      "fileWriteMs": 7.231899999998859,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:24",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03409999999712454,
+            "encodeMs": 24.946100000001024,
+            "sendMs": 15.290400000001682,
+            "handlerMs": 40.378499999998894,
+            "selectionToRequestMs": 1.5548999999991793,
+            "requestToSendMs": 25.083199999997305,
+            "handlerOtherMs": 0.10789999999906286
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:24",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 52,
+            "receiveToCommitMs": 125.3999999910593
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:50",
+      "warmup": false,
+      "saveToListAckMs": 151.59130000000005,
+      "selectToTranslationAckMs": 1082.0587999999989,
+      "saveToTranslationAckMs": 1235.8103999999985,
+      "selectToCommitMs": 1079.2999999970198,
+      "saveToBroadcastMs": 140.2515999999996,
+      "fileWriteMs": 6.4311000000016065,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:25",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.0352999999995518,
+            "encodeMs": 24.0795999999973,
+            "sendMs": 14.608899999999267,
+            "handlerMs": 38.808499999999185,
+            "selectionToRequestMs": 1.6252000000022235,
+            "requestToSendMs": 24.195299999999406,
+            "handlerOtherMs": 0.08470000000306754
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:25",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 50.1000000089407,
+            "receiveToCommitMs": 1029.199999988079
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:51",
+      "warmup": false,
+      "saveToListAckMs": 251.2391000000025,
+      "selectToTranslationAckMs": 643.9521000000022,
+      "saveToTranslationAckMs": 898.0856000000022,
+      "selectToCommitMs": 641,
+      "saveToBroadcastMs": 230.43610000000263,
+      "fileWriteMs": 6.247100000000501,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:26",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.041499999999359716,
+            "encodeMs": 44.26469999999972,
+            "sendMs": 21.69380000000092,
+            "handlerMs": 66.14080000000104,
+            "selectionToRequestMs": 2.595600000000559,
+            "requestToSendMs": 44.440999999998894,
+            "handlerOtherMs": 0.1408000000010361
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:26",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 83.20000000298023,
+            "receiveToCommitMs": 557.7999999970198
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:52",
+      "warmup": false,
+      "saveToListAckMs": 137.36239999999816,
+      "selectToTranslationAckMs": 198.2561999999998,
+      "saveToTranslationAckMs": 337.7044999999998,
+      "selectToCommitMs": 195.40000000596046,
+      "saveToBroadcastMs": 126.13750000000073,
+      "fileWriteMs": 5.35989999999947,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:27",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.033100000000558794,
+            "encodeMs": 25.61460000000079,
+            "sendMs": 14.043799999999464,
+            "handlerMs": 39.767400000000634,
+            "selectionToRequestMs": 1.5802000000003318,
+            "requestToSendMs": 25.71889999999985,
+            "handlerOtherMs": 0.07589999999981956
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:27",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 55,
+            "receiveToCommitMs": 140.40000000596046
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:53",
+      "warmup": false,
+      "saveToListAckMs": 133.93220000000292,
+      "selectToTranslationAckMs": 194.799500000001,
+      "saveToTranslationAckMs": 330.7498000000014,
+      "selectToCommitMs": 192.59999999403954,
+      "saveToBroadcastMs": 122.98440000000119,
+      "fileWriteMs": 4.508200000000215,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:28",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03810000000157743,
+            "encodeMs": 24.99539999999979,
+            "sendMs": 14.88969999999972,
+            "handlerMs": 39.99669999999969,
+            "selectionToRequestMs": 1.3650000000016007,
+            "requestToSendMs": 25.103299999998853,
+            "handlerOtherMs": 0.07349999999860302
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:28",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 67.59999999403954,
+            "receiveToCommitMs": 125
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:54",
+      "warmup": false,
+      "saveToListAckMs": 138.0652000000009,
+      "selectToTranslationAckMs": 173.84960000000137,
+      "saveToTranslationAckMs": 313.8448000000026,
+      "selectToCommitMs": 171.59999999403954,
+      "saveToBroadcastMs": 127.05299999999988,
+      "fileWriteMs": 6.890999999999622,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:29",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03020000000105938,
+            "encodeMs": 24.69419999999809,
+            "sendMs": 14.018200000002253,
+            "handlerMs": 38.82080000000133,
+            "selectionToRequestMs": 1.430499999998574,
+            "requestToSendMs": 24.79449999999997,
+            "handlerOtherMs": 0.07819999999992433
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:29",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 50.3999999910593,
+            "receiveToCommitMs": 121.20000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:55",
+      "warmup": false,
+      "saveToListAckMs": 141.60350000000108,
+      "selectToTranslationAckMs": 183.54589999999735,
+      "saveToTranslationAckMs": 327.3178999999982,
+      "selectToCommitMs": 181.29999999701977,
+      "saveToBroadcastMs": 130.34619999999995,
+      "fileWriteMs": 6.972900000000664,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:30",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.029999999998835847,
+            "encodeMs": 25.0112999999983,
+            "sendMs": 13.777699999998731,
+            "handlerMs": 38.893300000003364,
+            "selectionToRequestMs": 1.4980999999970663,
+            "requestToSendMs": 25.111800000002404,
+            "handlerOtherMs": 0.07430000000749715
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:30",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 50.6000000089407,
+            "receiveToCommitMs": 130.69999998807907
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:56",
+      "warmup": false,
+      "saveToListAckMs": 129.82530000000042,
+      "selectToTranslationAckMs": 173.3721000000005,
+      "saveToTranslationAckMs": 305.0060999999987,
+      "selectToCommitMs": 171.09999999403954,
+      "saveToBroadcastMs": 118.90339999999924,
+      "fileWriteMs": 12.34519999999975,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:31",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.030099999999947613,
+            "encodeMs": 25.924200000001292,
+            "sendMs": 14.116299999997864,
+            "handlerMs": 40.15629999999874,
+            "selectionToRequestMs": 1.5073000000011234,
+            "requestToSendMs": 26.036700000000565,
+            "handlerOtherMs": 0.08569999999963329
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:31",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 51,
+            "receiveToCommitMs": 120.09999999403954
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:57",
+      "warmup": false,
+      "saveToListAckMs": 151.96120000000155,
+      "selectToTranslationAckMs": 188.3672000000006,
+      "saveToTranslationAckMs": 342.4935000000005,
+      "selectToCommitMs": 185.79999999701977,
+      "saveToBroadcastMs": 140.97660000000178,
+      "fileWriteMs": 7.331899999997404,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:32",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03320000000167056,
+            "encodeMs": 25.176699999999983,
+            "sendMs": 14.310100000002421,
+            "handlerMs": 39.60160000000178,
+            "selectionToRequestMs": 1.5542999999997846,
+            "requestToSendMs": 25.28770000000077,
+            "handlerOtherMs": 0.08159999999770662
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:32",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 50.79999999701977,
+            "receiveToCommitMs": 135
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:58",
+      "warmup": false,
+      "saveToListAckMs": 234.06620000000112,
+      "selectToTranslationAckMs": 181.07489999999962,
+      "saveToTranslationAckMs": 475.4029999999984,
+      "selectToCommitMs": 177.79999999701977,
+      "saveToBroadcastMs": 138.6797000000006,
+      "fileWriteMs": 6.534899999998743,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:33",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03949999999895226,
+            "encodeMs": 28.063200000004144,
+            "sendMs": 14.556700000001001,
+            "handlerMs": 42.800899999994726,
+            "selectionToRequestMs": 2.4523000000044703,
+            "requestToSendMs": 28.235499999995227,
+            "handlerOtherMs": 0.14149999999062857
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:33",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 54.5,
+            "receiveToCommitMs": 123.29999999701977
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:59",
+      "warmup": false,
+      "saveToListAckMs": 1058.9767999999967,
+      "selectToTranslationAckMs": 175.6382999999987,
+      "saveToTranslationAckMs": 1237.0446999999986,
+      "selectToCommitMs": 172.90000000596046,
+      "saveToBroadcastMs": 1048.0841999999975,
+      "fileWriteMs": 7.3223999999972875,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:34",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03650000000197906,
+            "encodeMs": 27.22030000000086,
+            "sendMs": 14.624400000000605,
+            "handlerMs": 41.96620000000257,
+            "selectionToRequestMs": 1.6697999999960302,
+            "requestToSendMs": 27.337600000006205,
+            "handlerOtherMs": 0.08499999999912689
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:34",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 53.79999999701977,
+            "receiveToCommitMs": 119.1000000089407
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:60",
+      "warmup": false,
+      "saveToListAckMs": 136.97759999999835,
+      "selectToTranslationAckMs": 187.568299999999,
+      "saveToTranslationAckMs": 326.6602999999959,
+      "selectToCommitMs": 185.09999999403954,
+      "saveToBroadcastMs": 124.8969999999972,
+      "fileWriteMs": 7.583700000002864,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:35",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.035799999997834675,
+            "encodeMs": 25.627999999996973,
+            "sendMs": 14.30580000000191,
+            "handlerMs": 40.06090000000404,
+            "selectionToRequestMs": 1.484199999998964,
+            "requestToSendMs": 25.75050000000192,
+            "handlerOtherMs": 0.09130000000732252
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:35",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 53.099999994039536,
+            "receiveToCommitMs": 132
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:61",
+      "warmup": false,
+      "saveToListAckMs": 134.69130000000587,
+      "selectToTranslationAckMs": 176.03209999999672,
+      "saveToTranslationAckMs": 312.81470000000263,
+      "selectToCommitMs": 173.3999999910593,
+      "saveToBroadcastMs": 123.70380000000296,
+      "fileWriteMs": 7.135999999998603,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:36",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03380000000470318,
+            "encodeMs": 25.1108000000022,
+            "sendMs": 14.289599999996426,
+            "handlerMs": 39.51190000000497,
+            "selectionToRequestMs": 1.488099999995029,
+            "requestToSendMs": 25.218100000005506,
+            "handlerOtherMs": 0.07770000000164146
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:36",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 50.3999999910593,
+            "receiveToCommitMs": 123
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:62",
+      "warmup": false,
+      "saveToListAckMs": 132.91459999999643,
+      "selectToTranslationAckMs": 191.63259999999718,
+      "saveToTranslationAckMs": 326.56959999999526,
+      "selectToCommitMs": 189.5,
+      "saveToBroadcastMs": 121.4765999999945,
+      "fileWriteMs": 6.126000000003842,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:37",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03280000000086147,
+            "encodeMs": 25.16359999999986,
+            "sendMs": 17.271099999998114,
+            "handlerMs": 42.54239999999845,
+            "selectionToRequestMs": 1.3755999999993946,
+            "requestToSendMs": 25.266300000002957,
+            "handlerOtherMs": 0.07489999999961583
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:37",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 53.5,
+            "receiveToCommitMs": 136
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:63",
+      "warmup": false,
+      "saveToListAckMs": 161.96250000000146,
+      "selectToTranslationAckMs": 183.70670000000246,
+      "saveToTranslationAckMs": 348.19630000000325,
+      "selectToCommitMs": 181,
+      "saveToBroadcastMs": 150.30140000000392,
+      "fileWriteMs": 13.828799999995681,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:38",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03709999999409774,
+            "encodeMs": 27.375400000004447,
+            "sendMs": 14.200599999996484,
+            "handlerMs": 41.70069999999396,
+            "selectionToRequestMs": 1.952000000004773,
+            "requestToSendMs": 27.495499999997264,
+            "handlerOtherMs": 0.08759999999892898
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:38",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 53,
+            "receiveToCommitMs": 128
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:64",
+      "warmup": false,
+      "saveToListAckMs": 141.09040000000095,
+      "selectToTranslationAckMs": 190.36420000000362,
+      "saveToTranslationAckMs": 333.5269000000044,
+      "selectToCommitMs": 188,
+      "saveToBroadcastMs": 130.00040000000445,
+      "fileWriteMs": 6.649099999995087,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:39",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03329999999550637,
+            "encodeMs": 25.12840000000142,
+            "sendMs": 14.951200000003155,
+            "handlerMs": 40.19129999999859,
+            "selectionToRequestMs": 1.6499000000039814,
+            "requestToSendMs": 25.235499999995227,
+            "handlerOtherMs": 0.07839999999850988
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:39",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 51.5,
+            "receiveToCommitMs": 136.5
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:65",
+      "warmup": false,
+      "saveToListAckMs": 152.42599999999948,
+      "selectToTranslationAckMs": 213.5751999999993,
+      "saveToTranslationAckMs": 367.90529999999853,
+      "selectToCommitMs": 210.70000000298023,
+      "saveToBroadcastMs": 140.92199999999866,
+      "fileWriteMs": 6.7983000000022,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:40",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.0349999999962165,
+            "encodeMs": 29.02479999999923,
+            "sendMs": 13.516299999995681,
+            "handlerMs": 42.65060000000085,
+            "selectionToRequestMs": 1.423899999994319,
+            "requestToSendMs": 29.130000000004657,
+            "handlerOtherMs": 0.07450000000972068
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:40",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 66.1000000089407,
+            "receiveToCommitMs": 144.59999999403954
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:66",
+      "warmup": false,
+      "saveToListAckMs": 172.56499999999505,
+      "selectToTranslationAckMs": 194.36479999999574,
+      "saveToTranslationAckMs": 369.2247999999963,
+      "selectToCommitMs": 191.70000000298023,
+      "saveToBroadcastMs": 161.99229999999807,
+      "fileWriteMs": 5.387600000001839,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:41",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.040600000000267755,
+            "encodeMs": 24.67500000000291,
+            "sendMs": 14.119500000000698,
+            "handlerMs": 38.922700000002806,
+            "selectionToRequestMs": 1.7052999999941676,
+            "requestToSendMs": 24.798600000001898,
+            "handlerOtherMs": 0.08759999999892898
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:41",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 52,
+            "receiveToCommitMs": 139.70000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:67",
+      "warmup": false,
+      "saveToListAckMs": 152.15679999999702,
+      "selectToTranslationAckMs": 218.71560000000318,
+      "saveToTranslationAckMs": 374.0653999999995,
+      "selectToCommitMs": 215.79999999701977,
+      "saveToBroadcastMs": 136.6803,
+      "fileWriteMs": 8.570299999999406,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:42",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.033999999999650754,
+            "encodeMs": 28.226000000002387,
+            "sendMs": 17.7358000000022,
+            "handlerMs": 46.0769999999975,
+            "selectionToRequestMs": 1.8070000000006985,
+            "requestToSendMs": 28.335500000001048,
+            "handlerOtherMs": 0.08119999999325955
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:42",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 58.5,
+            "receiveToCommitMs": 157.29999999701977
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:68",
+      "warmup": false,
+      "saveToListAckMs": 294.82079999999405,
+      "selectToTranslationAckMs": 345.7047999999995,
+      "saveToTranslationAckMs": 644.0787999999957,
+      "selectToCommitMs": 342.20000000298023,
+      "saveToBroadcastMs": 277.00479999999516,
+      "fileWriteMs": 14.2245000000039,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:43",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.05460000000311993,
+            "encodeMs": 75.01169999999547,
+            "sendMs": 32.01039999999921,
+            "handlerMs": 107.18630000000121,
+            "selectionToRequestMs": 2.616600000001199,
+            "requestToSendMs": 75.17020000000048,
+            "handlerOtherMs": 0.10960000000341097
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:43",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 142.80000001192093,
+            "receiveToCommitMs": 199.3999999910593
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:69",
+      "warmup": false,
+      "saveToListAckMs": 223.87449999999808,
+      "selectToTranslationAckMs": 299.9779999999955,
+      "saveToTranslationAckMs": 527.4381999999969,
+      "selectToCommitMs": 296.1000000089407,
+      "saveToBroadcastMs": 204.87950000000274,
+      "fileWriteMs": 12.558899999996356,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:44",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.07400000000052387,
+            "encodeMs": 47.514799999997194,
+            "sendMs": 20.40179999999964,
+            "handlerMs": 68.1224000000002,
+            "selectionToRequestMs": 3.125500000001921,
+            "requestToSendMs": 47.71469999999681,
+            "handlerOtherMs": 0.13180000000284053
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:44",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 99.40000000596046,
+            "receiveToCommitMs": 196.70000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:70",
+      "warmup": false,
+      "saveToListAckMs": 218.1748000000007,
+      "selectToTranslationAckMs": 339.0861999999979,
+      "saveToTranslationAckMs": 560.2240999999995,
+      "selectToCommitMs": 335.09999999403954,
+      "saveToBroadcastMs": 201.51460000000225,
+      "fileWriteMs": 10.43630000000121,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:45",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.15369999999529682,
+            "encodeMs": 54.822299999999814,
+            "sendMs": 30.83419999999751,
+            "handlerMs": 85.91800000000512,
+            "selectionToRequestMs": 2.9156999999977415,
+            "requestToSendMs": 55.07880000000296,
+            "handlerOtherMs": 0.107800000012503
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:45",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 104.20000000298023,
+            "receiveToCommitMs": 230.8999999910593
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:71",
+      "warmup": false,
+      "saveToListAckMs": 239.89749999999913,
+      "selectToTranslationAckMs": 310.32510000000184,
+      "saveToTranslationAckMs": 553.3104999999996,
+      "selectToCommitMs": 305.5,
+      "saveToBroadcastMs": 222.4873000000007,
+      "fileWriteMs": 13.889400000000023,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:46",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.047899999997753184,
+            "encodeMs": 47.283400000000256,
+            "sendMs": 23.344499999999243,
+            "handlerMs": 70.78590000000258,
+            "selectionToRequestMs": 3.3271999999997206,
+            "requestToSendMs": 47.435199999999895,
+            "handlerOtherMs": 0.11010000000533182
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:46",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 96.5,
+            "receiveToCommitMs": 209
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:72",
+      "warmup": false,
+      "saveToListAckMs": 428.6731,
+      "selectToTranslationAckMs": 841.8126000000047,
+      "saveToTranslationAckMs": 1275.5273000000016,
+      "selectToCommitMs": 836.8999999910593,
+      "saveToBroadcastMs": 369.0564999999988,
+      "fileWriteMs": 24.00379999999859,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:47",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.04499999999825377,
+            "encodeMs": 64.93559999999707,
+            "sendMs": 26.710800000000745,
+            "handlerMs": 91.80679999999847,
+            "selectionToRequestMs": 3.467500000006112,
+            "requestToSendMs": 65.08809999999357,
+            "handlerOtherMs": 0.1154000000024098
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:47",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 111.5,
+            "receiveToCommitMs": 725.3999999910593
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:73",
+      "warmup": false,
+      "saveToListAckMs": 217.97189999999682,
+      "selectToTranslationAckMs": 269.53259999999864,
+      "saveToTranslationAckMs": 491.133600000001,
+      "selectToCommitMs": 266.3999999910593,
+      "saveToBroadcastMs": 205.36609999999928,
+      "fileWriteMs": 12.082399999999325,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:48",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03520000000571599,
+            "encodeMs": 39.44389999999839,
+            "sendMs": 21.38749999999709,
+            "handlerMs": 60.94870000000083,
+            "selectionToRequestMs": 2.050599999995029,
+            "requestToSendMs": 39.55490000000282,
+            "handlerOtherMs": 0.08209999999962747
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:48",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 78.5,
+            "receiveToCommitMs": 187.8999999910593
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:74",
+      "warmup": false,
+      "saveToListAckMs": 223.42459999999846,
+      "selectToTranslationAckMs": 261.3127999999997,
+      "saveToTranslationAckMs": 487.38610000000335,
+      "selectToCommitMs": 258.40000000596046,
+      "saveToBroadcastMs": 208.3839999999982,
+      "fileWriteMs": 8.850200000000768,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:49",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.04430000000138534,
+            "encodeMs": 41.14280000000144,
+            "sendMs": 23.246800000000803,
+            "handlerMs": 64.53609999999753,
+            "selectionToRequestMs": 1.9496999999973923,
+            "requestToSendMs": 41.28379999999743,
+            "handlerOtherMs": 0.10219999999389984
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:49",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 89.20000000298023,
+            "receiveToCommitMs": 169.20000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:75",
+      "warmup": false,
+      "saveToListAckMs": 169.95729999999458,
+      "selectToTranslationAckMs": 234.58460000000196,
+      "saveToTranslationAckMs": 407.4444999999978,
+      "selectToCommitMs": 232.1000000089407,
+      "saveToBroadcastMs": 152.88299999999435,
+      "fileWriteMs": 8.336600000002363,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:50",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.034899999998742715,
+            "encodeMs": 37.07869999999821,
+            "sendMs": 15.847399999998743,
+            "handlerMs": 53.048500000004424,
+            "selectionToRequestMs": 1.6517999999996391,
+            "requestToSendMs": 37.1958999999988,
+            "handlerOtherMs": 0.08750000000873115
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:50",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 65.1000000089407,
+            "receiveToCommitMs": 167
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:76",
+      "warmup": false,
+      "saveToListAckMs": 157.90259999999398,
+      "selectToTranslationAckMs": 215.74960000000283,
+      "saveToTranslationAckMs": 376.6751000000004,
+      "selectToCommitMs": 212.90000000596046,
+      "saveToBroadcastMs": 137.64839999999822,
+      "fileWriteMs": 9.405000000006112,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:51",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.04080000000249129,
+            "encodeMs": 30.813399999999092,
+            "sendMs": 23.92170000000624,
+            "handlerMs": 54.86989999999787,
+            "selectionToRequestMs": 2.0209000000031665,
+            "requestToSendMs": 30.94149999999354,
+            "handlerOtherMs": 0.09399999999004649
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:51",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 68.70000000298023,
+            "receiveToCommitMs": 144.20000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:77",
+      "warmup": false,
+      "saveToListAckMs": 146.39429999999993,
+      "selectToTranslationAckMs": 212.09940000000643,
+      "saveToTranslationAckMs": 360.82270000000426,
+      "selectToCommitMs": 209.90000000596046,
+      "saveToBroadcastMs": 134.60710000000108,
+      "fileWriteMs": 7.786199999995006,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:52",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.0371000000013737,
+            "encodeMs": 27.730400000000373,
+            "sendMs": 14.718699999997625,
+            "handlerMs": 42.56399999999849,
+            "selectionToRequestMs": 1.4427000000068801,
+            "requestToSendMs": 27.84049999999843,
+            "handlerOtherMs": 0.07779999999911524
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:52",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 55.5,
+            "receiveToCommitMs": 154.40000000596046
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:78",
+      "warmup": false,
+      "saveToListAckMs": 139.4132000000027,
+      "selectToTranslationAckMs": 194.75449999999546,
+      "saveToTranslationAckMs": 336.10570000000007,
+      "selectToCommitMs": 192.29999999701977,
+      "saveToBroadcastMs": 128.26310000000376,
+      "fileWriteMs": 7.147400000001653,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:53",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.038800000002083834,
+            "encodeMs": 26.8408000000054,
+            "sendMs": 15.277000000001863,
+            "handlerMs": 42.25630000000092,
+            "selectionToRequestMs": 1.479799999993702,
+            "requestToSendMs": 26.972900000000664,
+            "handlerOtherMs": 0.09969999999157153
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:53",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 58.3999999910593,
+            "receiveToCommitMs": 133.90000000596046
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:79",
+      "warmup": false,
+      "saveToListAckMs": 167.16619999999966,
+      "selectToTranslationAckMs": 199.35710000000108,
+      "saveToTranslationAckMs": 368.76090000000113,
+      "selectToCommitMs": 196.79999999701977,
+      "saveToBroadcastMs": 155.11529999999766,
+      "fileWriteMs": 9.91070000000036,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:54",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.03559999999561114,
+            "encodeMs": 26.952799999999115,
+            "sendMs": 17.79950000000099,
+            "handlerMs": 44.86859999999433,
+            "selectionToRequestMs": 1.5895000000018626,
+            "requestToSendMs": 27.062999999994645,
+            "handlerOtherMs": 0.08069999999861466
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:54",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 57.5,
+            "receiveToCommitMs": 139.29999999701977
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:80",
+      "warmup": false,
+      "saveToListAckMs": 151.94279999999708,
+      "selectToTranslationAckMs": 248.4788999999946,
+      "saveToTranslationAckMs": 402.5997999999963,
+      "selectToCommitMs": 244.90000000596046,
+      "saveToBroadcastMs": 139.5043000000005,
+      "fileWriteMs": 11.187200000000303,
+      "replyStages": {
+        "server": {
+          "requestId": "215776666-2689746121-4118698251-768598656:55",
+          "generation": 1,
+          "timings": {
+            "lookupMs": 0.037999999993189704,
+            "encodeMs": 31.459899999994377,
+            "sendMs": 15.053899999998976,
+            "handlerMs": 46.63210000000254,
+            "selectionToRequestMs": 1.704699999994773,
+            "requestToSendMs": 31.57340000000113,
+            "handlerOtherMs": 0.08030000001599547
+          },
+          "calls": {
+            "lookupMs": 1,
+            "encodeMs": 1,
+            "sendMs": 1,
+            "handlerMs": 1
+          }
+        },
+        "browser": {
+          "receipts": 1,
+          "requestId": "215776666-2689746121-4118698251-768598656:55",
+          "generation": 1,
+          "timings": {
+            "selectToReceiveMs": 58.70000000298023,
+            "receiveToCommitMs": 186.20000000298023
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "scenario": "1k-3-locales",
+  "samples": [
+    {
+      "token": "1k-3-locales:2",
+      "warmup": false,
+      "saveToListAckMs": 90.3802999999998,
+      "selectToTranslationAckMs": 38.446100000000115,
+      "saveToTranslationAckMs": 131.95280000000002,
+      "selectToCommitMs": 34.900000005960464,
+      "saveToBroadcastMs": 82.51879999999983,
+      "fileWriteMs": 8.644200000000183,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 4,
+          "freezeMs": 9.599999994039536,
+          "acceptMs": 0.10000000894069672,
+          "acceptCheckMs": 0,
+          "acceptFreezeMs": 0.10000000894069672,
+          "snapshotMs": 1.6000000089406967,
+          "translatorMs": 1.1000000089406967,
+          "signatureMs": 0.29999999701976776,
+          "acceptOtherMs": 0,
+          "snapshotOtherMs": 0.20000000298023224,
+          "selectionOtherMs": 19.599999994039536
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "acceptMs": 1,
+          "acceptCheckMs": 1,
+          "acceptFreezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 36780,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 119636
+    }
+  ]
+}

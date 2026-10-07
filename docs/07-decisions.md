@@ -98,6 +98,8 @@ Vite의 카탈로그 동결은 core `/runtime`의 `freezeCatalogs`를 사용한�
 
 일반 prebundle의 규모별 50회 재측정에서 large 목록 p95는 621.18ms로 목표 미달이고 선택 p95는 631.70ms로 이전 일반 run보다 높게 관측됐다. 다음은 기본 prebundle을 유지한 서버 full 응답 준비·브라우저 수신 이후 구간을 나누는 benchmark 작업으로 정한다. 원인을 특정하거나 추가 제품 최적화를 먼저 적용하지 않으며 근거는 [27](27-shared-freeze-locale-add.md)를 따른다.
 
+기본 prebundle의 full 응답 계측에서 수신 이후→DOM 구간이 50/50회 모두 수신 전 구간보다 컸다. 다음은 같은 설정에서 client 디코딩·검증·동결·snapshot과 React commit 구간 분리로 정한다. 먼저 prebundle 그래프에서도 core 깊은 동결 신뢰가 공유되는지 확인한다. 수신 후 p95 557.80ms를 특정 함수나 GC에 귀속하지 않으며 근거는 [28](28-full-reply-stages.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화
