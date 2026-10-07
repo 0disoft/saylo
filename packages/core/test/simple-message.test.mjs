@@ -35,6 +35,51 @@ test('simple messages keep argument contracts and formatter results', () => {
   assert.equal(translator.t('bench:empty'), '');
 });
 
+test('catalog-relative positions share exact tuples without merging Unicode columns or source positions', () => {
+  const messages = { first: 'x{name}', second: 'y{name}', unicode: '😀{name}', bmp: 'ab{name}',
+    multiline: 'a\n{name}', crlf: '\r\n{name}', twoLines: '\n\n{name}', lone: '\ud800{name}' };
+  const config = { locale: 'en', namespace: 'bench' };
+  const source = JSON.stringify(messages);
+  const catalog = parseCatalog(source, config);
+  const argumentStart = id => catalog.messages[id].ast[1].location.start;
+  assert.equal(argumentStart('first'), argumentStart('second'));
+  assert.equal(catalog.messages.first.ast[1].location, catalog.messages.second.ast[1].location);
+  assert.equal(catalog.messages.first.ast[0].location, catalog.messages.second.ast[0].location);
+  assert.equal(catalog.messages.first.ast[0].location.end, argumentStart('first'));
+  assert.equal(argumentStart('first'), argumentStart('lone'));
+  assert.notEqual(argumentStart('unicode'), argumentStart('bmp'));
+  assert.deepEqual(argumentStart('unicode'), { offset: 2, line: 1, column: 2 });
+  assert.deepEqual(argumentStart('bmp'), { offset: 2, line: 1, column: 3 });
+  assert.equal(argumentStart('multiline'), argumentStart('crlf'));
+  assert.deepEqual(argumentStart('multiline'), { offset: 2, line: 2, column: 1 });
+  assert.deepEqual(argumentStart('twoLines'), { offset: 2, line: 3, column: 1 });
+  assert.notEqual(argumentStart('multiline'), argumentStart('twoLines'));
+  assert.notEqual(argumentStart('multiline'), argumentStart('unicode'));
+  assert.notEqual(catalog.messages.first.position, catalog.messages.second.position);
+  assert.equal(catalog.messages.first.position.offset, source.indexOf('"x{name}"'));
+  assert.equal(catalog.messages.second.position.offset, source.indexOf('"y{name}"'));
+  for (const [id, text] of Object.entries(messages))
+    assert.deepEqual(catalog.messages[id].ast, parse(text, options('en')));
+  assert.throws(() => { argumentStart('first').column = 0; }, TypeError);
+  const independent = parseCatalog(source, config);
+  assert.notEqual(argumentStart('first'), independent.messages.first.ast[1].location.start);
+  const next = parseCatalog(JSON.stringify({ ...messages, first: 'z{name}' }), config, catalog);
+  assert.equal(next.messages.second, catalog.messages.second);
+  assert.notEqual(next.messages.first.ast[1].location.start, argumentStart('first'));
+  assert.deepEqual(next.messages.first.ast, parse('z{name}', options('en')));
+});
+
+test('a failed simple parse after a shared position preserves fallback ICU diagnostics', () => {
+  const source = JSON.stringify({ good: '😀\n{name}', bad: '😀\n{name}{broken' });
+  assert.throws(() => parseCatalog(source, { locale: 'en', namespace: 'bench' }), error => {
+    assert.ok(error instanceof CatalogError);
+    assert.equal(error.diagnostics[0].code, 'INVALID_ICU');
+    assert.equal(error.diagnostics[0].id, 'bad');
+    assert.equal(error.diagnostics[0].position.offset, source.indexOf('{broken'));
+    return true;
+  });
+});
+
 test('quotes, whitespace/Unicode/numeric argument names and complex ICU delegate to FormatJS', () => {
   const sources = ["I'm {name}", "'{name}'", "''{name}", "'{broken", '}', 'a{name} tail}', '{ name }', '{한글}', '{0}',
     '{name\n}', '{name\r}', '{name\r\n}', '{name\u2028}', '{name\u2029}',

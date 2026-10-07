@@ -2,7 +2,7 @@ import { parse } from '@formatjs/icu-messageformat-parser';
 import { CatalogError, freeze, freezeMessageAst, createPositionLocator, isDeepFrozen } from './diagnostics.js';
 import { messageOffset, readJson } from './json.js';
 import { inferArguments } from './schema.js';
-import { parseSimpleMessage } from './simple-message.js';
+import { createSimplePositionPool, parseSimpleMessage } from './simple-message.js';
 import type { CatalogDiagnostic, CatalogOptions, MessageSchema, ParsedCatalog, ParsedMessage } from './types.js';
 
 /** An immutable previous catalog lets live readers reuse unchanged ICU messages. */
@@ -23,6 +23,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
   const messages: Record<string, ParsedMessage> = Object.create(null);
   const locale = new Intl.Locale(context.locale);
   const argumentSchemas = new Map<string, MessageSchema>();
+  const simplePosition = createSimplePositionPool();
   const reusable = previous && isDeepFrozen(previous) && previous.locale === context.locale &&
     previous.namespace === context.namespace && previous.sourceName === context.sourceName ? previous.messages : undefined;
   for (const entry of entries) {
@@ -41,7 +42,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
     }
     const details = { ...context, id: entry.id };
     try {
-      const ast = parseSimpleMessage(entry.value) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
+      const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
         position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
       messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });

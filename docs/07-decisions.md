@@ -86,6 +86,8 @@ Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 
 
 현행 서버 재계측에서도 10회 모두 cold 파싱이 가장 큰 개별 수집 구간이었다. 번역 준비 p50은 13.06ms, 최종 active 검증은 0.04ms였으므로 다음 작은 실험은 파서의 반복 상대 위치 객체 공유로 정한다. 소스 위치·Unicode·ICU·불변성 계약을 유지하고 교차 비교 결과로 채택 여부를 판단한다. 구현 전 후보이며 근거·한계는 [21](21-locale-add-server-remeasurement.md)에 있다.
 
+호출 내 단순 AST 상대 좌표와 위치 구간 공유를 로컬 채택했다. pool 없는 동일 fixture보다 참조 좌표·구간 객체가 줄었고 cold pair 중앙값에서 개선을 관측했다. cold 최장 시간과 incremental p95는 개선되지 않아 안정적 tail 개선은 주장하지 않는다. 절대 위치·Unicode·ICU·불변성은 유지한다. 초기 좌표만 공유한 실험과 최종 결과·다음 종단 간 재측정은 [22](22-relative-position-sharing.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

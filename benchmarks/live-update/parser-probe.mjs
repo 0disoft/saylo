@@ -52,8 +52,8 @@ export function registerParserProbe({ detailed = false } = {}) {
       ['const frozenSchema = freeze(schema);', "const frozenSchema = measureParserFreeze('argumentFreezeMs', freeze, schema);"],
     ];
     if (detailed && url === catalog) changes.push(
-      ['const ast = parseSimpleMessage(entry.value) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });',
-        "const __astStart = parserClock();\nconst ast = parseSimpleMessage(entry.value) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });\nrecordParserStage('astMs', __astStart);"],
+      ['const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });',
+        "const __astStart = parserClock();\nconst ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });\nrecordParserStage('astMs', __astStart);"],
       ['const argumentsSchema = inferArguments(ast,', 'const __argumentsStart = parserClock();\nconst argumentsSchema = inferArguments(ast,'],
       ['messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });',
         "recordParserStage('argumentsMs', __argumentsStart);\nconst __messageFreezeStart = parserClock();\nconst __frozenAst = freezeMessageAst(ast);\nmessages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: __frozenAst, arguments: argumentsSchema });\nrecordParserStage('messageFreezeMs', __messageFreezeStart);"],

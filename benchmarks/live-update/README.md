@@ -153,6 +153,8 @@ AST 동결 최적화 후 종단 간 재측정은 `node benchmarks/live-update/ru
 
 현행 large 서버 재계측은 `node benchmarks/live-update/run.mjs --mode locale-add --server-file-stages --scenario 10k-20-locales --samples 10 --warmup 2 --calibrations 10 --out benchmarks/results/locale-add-ast-freeze-server-files.json`로 실행했다. 10회 모두 파싱이 가장 큰 개별 수집 구간이었다. p50은 파싱 191.37ms·번역 준비 13.06ms·최종 검증 0.04ms이며 목록 p95는 1,092.85ms로 목표를 넘었다. 상세 경계·원시 표본·cache 해석과 다음 후보는 [../../docs/21-locale-add-server-remeasurement.md](../../docs/21-locale-add-server-remeasurement.md)를 따른다.
 
+상대 위치 공유는 `0a1beb2` 기준으로 `parse-compare-position-pool-final-cold.json`·`parse-compare-position-pool-final-incremental.json`에 기록했다. 내부 계측은 `parser-stages-position-pool-cold.json`과 같은 stem의 원시 파일이다. pool 생성·최초 좌표/구간 동결은 AST 구간에 포함되며 동결 비용이 과거 메시지 구간에서 이동한 점을 고려한다. `parse-compare-position-pool-cold.json`은 좌표만 공유한 초기 실험이다. cold 중앙값은 낮게 관측됐지만 최장 시간과 incremental p95는 개선되지 않았다. 재현 명령·객체 수·원시·한계는 [../../docs/22-relative-position-sharing.md](../../docs/22-relative-position-sharing.md)를 따른다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

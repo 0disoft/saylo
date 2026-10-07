@@ -26,7 +26,7 @@ export function freezeMessageAst(ast: MessageFormatElement[]): DeepReadonly<Mess
   }
   for (const element of ast) {
     if (element.type === TYPE.literal || element.type === TYPE.argument) {
-      if (element.location) {
+      if (element.location && !frozen.has(element.location)) {
         seal(element.location.start);
         seal(element.location.end);
         seal(element.location);

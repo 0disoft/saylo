@@ -26,6 +26,7 @@
 18. [19-ast-freeze-measurements.md](19-ast-freeze-measurements.md) — 파서 소유 AST 동결 최적화와 cold·incremental 비교
 19. [20-locale-add-remeasurement.md](20-locale-add-remeasurement.md) — 최적화 후 로케일 추가·선택의 종단 간 재측정
 20. [21-locale-add-server-remeasurement.md](21-locale-add-server-remeasurement.md) — 현행 대규모 로케일 추가의 서버 구간과 다음 파서 후보
+21. [22-relative-position-sharing.md](22-relative-position-sharing.md) — 단순 AST 상대 좌표·구간 공유와 파서 비교
 
 ## 상태 표기 규칙
 
