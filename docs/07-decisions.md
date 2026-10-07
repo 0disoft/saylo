@@ -104,6 +104,8 @@ client 수신 이후 계측에서 같은 Vite 동결 카탈로그 참조가 core
 
 Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 신뢰를 공유한다. 대규모 50회 모두 공유했고 production parser 제거도 유지했다. 다음은 상세 계측을 끈 small/large 50회 종단 간 재측정이다. 조건·한계는 [30](30-prebundle-freeze-sharing.md)를 따른다.
 
+상세 계측을 끈 재측정에서 large 목록 p95는 268.54ms로 250ms 목표를 넘었다. 두 규모의 50회 모두 저장→broadcast 구간이 broadcast→목록 ack보다 컸다. 다음은 현행 large 서버의 경로 검사·파일 읽기·파싱·번역 준비를 재계측한 뒤 최적화를 정한다. 이번 측정만으로 특정 함수나 GC를 원인으로 확정하지 않으며 근거는 [31](31-prebundle-freeze-locale-add.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

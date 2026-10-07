@@ -173,6 +173,8 @@ Vite/core 깊은 동결 경로 공유는 같은 대규모 locale-add 브라우�
 
 Vite 동결 import를 core root로 바꾼 뒤 같은 정상 prebundle·client 계측 조건의 50회 모두 깊은 동결 신뢰가 공유됐다. core acceptFreeze p50/p95는 0.00/0.00ms, 표본별 동결 합은 75.20/92.80ms였다. 원시와 별도 run 비교의 한계는 [../../docs/30-prebundle-freeze-sharing.md](../../docs/30-prebundle-freeze-sharing.md)를 따른다.
 
+root 동결 공유 후 상세 계측을 끈 규모별 50회 재측정은 [../../docs/31-prebundle-freeze-locale-add.md](../../docs/31-prebundle-freeze-locale-add.md)에 있다. 목록 p95는 small 152.13ms·large 268.54ms, 선택→첫 번역 commit p95는 54.60ms·284.40ms였다. large 목록의 250ms 목표는 미달이며 다음은 현행 목록 서버 구간 재계측이다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

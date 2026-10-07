@@ -35,6 +35,7 @@
 27. [28-full-reply-stages.md](28-full-reply-stages.md) — 기본 prebundle의 full 응답 준비·수신 이후 구간 계측
 28. [29-prebundle-client-stages.md](29-prebundle-client-stages.md) — 기본 prebundle의 client 수신 이후·publication·commit 구간 계측
 29. [30-prebundle-freeze-sharing.md](30-prebundle-freeze-sharing.md) — core root import로 정상 prebundle의 동결 신뢰 공유
+30. [31-prebundle-freeze-locale-add.md](31-prebundle-freeze-locale-add.md) — 상세 계측을 끈 로케일 목록·첫 번역 반영 50회 재측정
 
 ## 상태 표기 규칙
 
