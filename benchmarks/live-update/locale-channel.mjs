@@ -4,12 +4,13 @@ import { performance } from 'node:perf_hooks';
 import { validateLocaleBrowserStages } from './browser-profile.mjs';
 import { beginReplySample, measureReplySync, finishReplySample } from './reply-profile.mjs';
 import { validateReplyStages } from './reply-receipt.mjs';
+import { validateClientStages } from './client-profile.mjs';
 
 export const localeMetrics = ['saveToListAckMs', 'selectToTranslationAckMs', 'saveToTranslationAckMs',
   'selectToCommitMs', 'saveToBroadcastMs', 'fileWriteMs'];
 export const addedLocale = 'en-GB';
 
-export function createLocaleChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, browserStages, replyStages }) {
+export function createLocaleChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, browserStages, replyStages, clientStages }) {
   const directory = path.join(path.dirname(path.dirname(target.file)), addedLocale);
   const file = path.join(directory, 'bench.json');
   const results = [], roundTrips = [], clients = new Map();
@@ -97,6 +98,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
           throw new Error('Full reply profiling identity mismatch.');
         replyStageSample = { server, browser: data.replyReceipt };
       }
+      if (clientStages) validateClientStages(data.clientStages, data.replyReceipt.timings.receiveToCommitMs);
       results.push({ token: current.token, warmup: results.length < warmup,
         saveToListAckMs: current.listAckAt - current.saveFinishedAt,
         selectToTranslationAckMs: ackAt - current.selectingAt,
@@ -107,6 +109,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
         ...(current.serverStages ? { serverStages: current.serverStages } : {}),
         ...(browserStages ? { browserStages: data.browserStages } : {}),
         ...(replyStageSample ? { replyStages: replyStageSample } : {}),
+        ...(clientStages ? { clientStages: data.clientStages } : {}),
         addedCatalogBytes: current.catalogBytes, preSelectionCatalogReplies: 0, fullReplies: current.replies,
         catalogReplyEncoding: frame.data.result.encoding ?? 'parsed-catalog',
         catalogReplyBytes: Buffer.byteLength(JSON.stringify(frame)) });

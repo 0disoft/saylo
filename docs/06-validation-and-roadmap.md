@@ -50,6 +50,8 @@ Vite가 core의 깊은 동결 경로를 공유하도록 변경했다. 같은 조
 
 기본 prebundle을 유지하는 `--reply-stages` 계측을 추가했다. large의 full 요청 처리와 수신 이벤트→DOM 시간을 각 프로세스 clock으로 나눴다. 수신 이후 구간이 매회 더 컸으며 상세 수치·검증·다음 client 계측은 [28-full-reply-stages.md](28-full-reply-stages.md)를 따른다.
 
+기본 prebundle의 `--client-stages` 계측에서 동일 카탈로그 참조가 core에 50/50 전달됐지만 깊은 동결 신뢰는 0/50이었다. 표본별 동결 합계 p50/p95는 175.80/570.10ms다. 다음은 dev 동결 경로 공유이며 조건·원시·제품 수정안은 [29-prebundle-client-stages.md](29-prebundle-client-stages.md)에 있다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.

@@ -100,6 +100,8 @@ Vite의 카탈로그 동결은 core `/runtime`의 `freezeCatalogs`를 사용한�
 
 기본 prebundle의 full 응답 계측에서 수신 이후→DOM 구간이 50/50회 모두 수신 전 구간보다 컸다. 다음은 같은 설정에서 client 디코딩·검증·동결·snapshot과 React commit 구간 분리로 정한다. 먼저 prebundle 그래프에서도 core 깊은 동결 신뢰가 공유되는지 확인한다. 수신 후 p95 557.80ms를 특정 함수나 GC에 귀속하지 않으며 근거는 [28](28-full-reply-stages.md)를 따른다.
 
+client 수신 이후 계측에서 같은 Vite 동결 카탈로그 참조가 core 수락에 50/50 전달됐지만 core의 깊은 동결 신뢰는 0/50이었다. core 동결 신뢰가 모듈 지역 WeakSet에 있어 dev의 core root prebundle과 `/runtime` subpath가 다른 graph면 공유되지 않는다. 다음 후보는 Vite `freeze.ts`가 `/runtime` 대신 core root의 기존 `freezeCatalogs`를 가져와 같은 prebundle 경로를 쓰는 것으로 정하고, production `astRuntime` parser 제거를 깨지 않는지 먼저 확인한다. 전역 WeakSet 제품 도입과 `Object.isFrozen` shallow 신뢰는 쓰지 않는다. 이번은 계측 작업이고 제품 최적화는 적용하지 않았다. 근거는 [29](29-prebundle-client-stages.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

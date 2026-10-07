@@ -33,6 +33,7 @@
 25. [26-shared-catalog-freeze.md](26-shared-catalog-freeze.md) — Vite/core 깊은 동결 경로 공유와 같은 조건의 전후 비교
 26. [27-shared-freeze-locale-add.md](27-shared-freeze-locale-add.md) — 일반 prebundle 설정의 목록·첫 번역 반영 50회 재측정
 27. [28-full-reply-stages.md](28-full-reply-stages.md) — 기본 prebundle의 full 응답 준비·수신 이후 구간 계측
+28. [29-prebundle-client-stages.md](29-prebundle-client-stages.md) — 기본 prebundle의 client 수신 이후·publication·commit 구간 계측
 
 ## 상태 표기 규칙
 

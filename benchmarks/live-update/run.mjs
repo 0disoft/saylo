@@ -17,6 +17,7 @@ import { browserStagePlugin, browserMetrics, localeBrowserMetrics, localeBrowser
 import { registerFileProbe, fileMetrics } from './server-file-profile.mjs';
 import { registerReplyProbe, replyReceiptPlugin } from './reply-profile.mjs';
 import { replyServerMetrics, replyBrowserMetrics, replyObservedMetrics } from './reply-receipt.mjs';
+import { clientStagePlugins, clientMetrics } from './client-profile.mjs';
 
 const exec = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -30,6 +31,7 @@ const { values } = parseArgs({ options: { samples: { type: 'string', default: '5
   'browser-stages': { type: 'boolean', default: false },
   'server-file-stages': { type: 'boolean', default: false },
   'reply-stages': { type: 'boolean', default: false },
+  'client-stages': { type: 'boolean', default: false },
   'timeout-ms': { type: 'string', default: '30000' } } });
 function integer(name, min) {
   const value = Number(values[name]);
@@ -43,6 +45,8 @@ if (!selected.length) throw new Error('Unknown scenario; use all, 1k-3-locales o
 if (!['edit', 'locale-add'].includes(values.mode)) throw new Error('Use --mode edit or locale-add.');
 if (values['reply-stages'] && (values.mode !== 'locale-add' || values['browser-stages']))
   throw new Error('--reply-stages requires locale-add with normal prebundling; do not combine with --browser-stages.');
+if (values['client-stages'] && !values['reply-stages'])
+  throw new Error('--client-stages requires --reply-stages with normal prebundling.');
 if (values.mode === 'locale-add' && values['cpu-profile'])
   throw new Error('Locale addition does not support --cpu-profile.');
 const fileProbe = registerFileProbe(values['server-file-stages']);
@@ -77,6 +81,7 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'packages/vite/dist/catalog-source.js', 'packages/vite/dist/catalog-wire.js', 'packages/vite/dist/index.js', 'packages/vite/dist/freeze.js'];
 measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
 measuredFiles.push('benchmarks/live-update/reply-profile.mjs', 'benchmarks/live-update/reply-receipt.mjs');
+measuredFiles.push('benchmarks/live-update/client-profile.mjs', 'benchmarks/live-update/client-probe.mjs');
 if (values.mode === 'locale-add') measuredFiles.push('benchmarks/live-update/locale-channel.mjs', 'benchmarks/live-update/locale-app.jsx');
 const codeHashes = Object.fromEntries(await Promise.all(measuredFiles.map(async file =>
   [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
@@ -107,17 +112,19 @@ async function runScenario(scenario) {
     if (cancelled) throw new Error('Benchmark interrupted.');
     const channelFactory = values.mode === 'locale-add' ? createLocaleChannel : createChannel;
     channel = channelFactory({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe,
-      browserStages: values['browser-stages'], replyStages: values['reply-stages'] });
+      browserStages: values['browser-stages'], replyStages: values['reply-stages'], clientStages: values['client-stages'] });
     const browserProbe = browserStagePlugin(values['browser-stages'], values.mode);
+    const clientProbe = clientStagePlugins(values['client-stages']);
     console.log(`[bench] ${scenario.id}: ${fixture.catalogFiles} files, ${fixture.catalogBytes} catalog bytes; starting Vite`);
     const startupAt = performance.now();
     vite = await createServer({ configFile: false, root: appRoot, logLevel: 'error', clearScreen: false,
-      plugins: [browserProbe, replyReceiptPlugin(values['reply-stages']), saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', initialNamespaces: ['bench'],
+      plugins: [browserProbe, clientProbe.plugin, replyReceiptPlugin(values['reply-stages']), saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', initialNamespaces: ['bench'],
         ...(values['no-typegen'] ? {} : { typegen: { outFile: 'generated.d.ts' } }) }), channel.plugin],
       server: { host: '127.0.0.1', port: 0, strictPort: true },
       optimizeDeps: values['browser-stages'] ? { include: ['react', 'react-dom/client'],
         exclude: ['@0disoft/saylo-core', '@0disoft/saylo-react', '@0disoft/saylo-vite/client'] }
-        : { include: ['react', 'react-dom/client', '@0disoft/saylo-core', '@0disoft/saylo-react'] } });
+        : { include: ['react', 'react-dom/client', '@0disoft/saylo-core', '@0disoft/saylo-react'],
+          ...(values['client-stages'] ? { rolldownOptions: { plugins: [clientProbe.optimizer] } } : {}) } });
     await vite.listen();
     if (cancelled) throw new Error('Benchmark interrupted.');
     const serverStartupMs = performance.now() - startupAt;
@@ -132,6 +139,7 @@ async function runScenario(scenario) {
     child.once('exit', code => channel.fail(new Error(`Benchmark browser exited early (${code}).`)));
     const collected = await channel.completion;
     browserProbe.assertTransformed();
+    clientProbe.assertTransformed();
     const measured = collected.results.filter(sample => !sample.warmup);
     if (measured.length !== settings.samples) throw new Error('Incomplete benchmark sample set.');
     const afterDeclaration = declaration ? await stat(path.join(appRoot, 'generated.d.ts')) : undefined;
@@ -162,6 +170,14 @@ async function runScenario(scenario) {
       summary: Object.fromEntries(localeMetrics.map(metric => [metric, summarize(measured.map(sample => sample[metric]))])),
       ...(serverStages ? { serverStages, profiledPhase: 'catalog-addition-before-list-ack' } : {}),
       ...(serverFileStages ? { serverFileStages } : {}),
+      ...(values['client-stages'] ? { clientStages: {
+        scope: 'Normal Saylo prebundling retained; in-memory transforms in Vite and optimizer. Starts at the reply hot listener after Vite JSON parsing. Synchronous decode/freeze/accept/snapshot (snapshot includes translator/signature); receive-to-publication ends at the first store subscriber, before React subscription; publication-to-layout-effect includes React scheduling/render/commit and probe overhead, not paint or pure React CPU. Per-sample residuals; no nested p95 addition. Trust observes core isDeepFrozen and the exact Vite-frozen catalog reference before core acceptance. Benchmark helper state is shared separately from product freeze caches.',
+        ...Object.fromEntries(clientMetrics.map(m => [m, summarize(measured.map(s => s.clientStages.timings[m]))])),
+        maxCalls: Object.fromEntries(localeBrowserMetrics.map(m => [m, Math.max(...measured.map(s => s.clientStages.calls[m]))])),
+        trust: { observed: measured.length, sameCatalog: measured.filter(s => s.clientStages.trust.sameCatalog).length,
+          trusted: measured.filter(s => s.clientStages.trust.trusted).length },
+        optimizerTransformed: [...clientProbe.optimizerTransformed].map(id => path.relative(repository, id).replaceAll('\\', '/')).sort(),
+      } } : {}),
       ...(values['reply-stages'] ? { replyStages: {
         scope: 'Normal dependency prebundling retained. Node request handler: lookup, compact encoding, request-to-send preparation, send call including Vite JSON serialization/socket enqueue and per-sample handler residual. Node selection-ready request to handler includes HTTP control response/browser scheduling/request delivery. Browser receipt is the first benchmark hot listener, after Vite WS JSON parsing but before Saylo decoding/freezing; select-to-receive and receive-to-DOM partition the browser selection window. Separate process clocks, no cross-clock subtraction; waiting is not pure network time. Excludes boot, list addition, reset/removal. Probe costs/runtime pauses included; not an uninstrumented performance claim.',
         server: Object.fromEntries(replyServerMetrics.map(m => [m, summarize(measured.map(s => s.replyStages.server.timings[m]))])),
@@ -223,7 +239,7 @@ for (const scenario of selected) {
 }
 const output = { schema: 'saylo-live-update-benchmark-v1', measuredAt: new Date().toISOString(),
   gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(), settings, mode: values.mode,
-  instrumentation: { cpuProfile: values['cpu-profile'], browserStages: values['browser-stages'], serverFileStages: values['server-file-stages'], replyStages: values['reply-stages'] },
+  instrumentation: { cpuProfile: values['cpu-profile'], browserStages: values['browser-stages'], serverFileStages: values['server-file-stages'], replyStages: values['reply-stages'], clientStages: values['client-stages'] },
   workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(),
   codeHashes,
   environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,

@@ -6,13 +6,23 @@ import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { beginBrowserSample, finishBrowserSample } from 'virtual:saylo-benchmark/browser-profile';
 import { replyStagesEnabled, captureReplyReceipt, finishReplyReceipt } from 'virtual:saylo-benchmark/reply-profile';
+import { clientStagesEnabled, beginClientSample, captureClientPublication, finishClientSample } from 'virtual:saylo-benchmark/client-profile';
 
 let active, inputNode, ready = false;
-const onReply = reply => captureReplyReceipt(active, reply, performance.now());
+const onReply = reply => {
+  const receivedAt = performance.now();
+  captureReplyReceipt(active, reply, receivedAt);
+  if (clientStagesEnabled && active?.replyReceipt?.receivedAt === receivedAt) beginClientSample(receivedAt);
+};
 // Register before the source connects so receipt precedes its synchronous decoding/freezing.
 if (replyStagesEnabled) import.meta.hot.on('saylo:catalog', onReply);
 
 const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });
+// Before React subscribes: timestamp completed snapshot publication, not paint.
+const unsubscribePublication = clientStagesEnabled ? instance.subscribe(() => {
+  if (active?.phase === 'translation' && instance.getSnapshot().locale === active.locale)
+    captureClientPublication(performance.now());
+}) : () => {};
 const { SayloProvider, useI18n } = createSayloReact();
 async function request(route, data) {
   const response = await fetch(`/__bench/${route}`, data === undefined ? {} : { method: 'POST',
@@ -71,13 +81,14 @@ function Probe() {
         fail('First translation did not reach the DOM.'); return;
       }
       sample.phase = 'translation-ack';
-      let browserStages, replyReceipt;
+      let browserStages, replyReceipt, clientStages;
       try {
         browserStages = finishBrowserSample(committedAt - sample.selectedAt);
         if (replyStagesEnabled) replyReceipt = finishReplyReceipt(sample, committedAt);
+        if (clientStagesEnabled) clientStages = finishClientSample(committedAt);
       } catch (error) { fail(error); return; }
       void (async () => {
-        await request('ack', { token: sample.token, text, browserStages, replyReceipt, selectToCommitMs: committedAt - sample.selectedAt });
+        await request('ack', { token: sample.token, text, browserStages, replyReceipt, clientStages, selectToCommitMs: committedAt - sample.selectedAt });
         sample.phase = 'resetting'; await instance.setLocale('en');
         sample.phase = 'removing'; await request('remove', { token: sample.token });
         // A delete commit may arrive before /remove returns; that is handled by the effect.
@@ -97,6 +108,7 @@ function Probe() {
 const root = createRoot(document.getElementById('root'));
 root.render(<SayloProvider instance={instance}><Probe /></SayloProvider>);
 function cleanup() {
+  unsubscribePublication();
   if (replyStagesEnabled) import.meta.hot.off('saylo:catalog', onReply);
   root.unmount(); instance.dispose();
 }

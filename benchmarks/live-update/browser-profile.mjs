@@ -30,7 +30,7 @@ const stages = [
 ];
 
 // Benchmark-only Vite transforms; published sources and dist files stay intact.
-export function browserStagePlugin(enabled, mode = 'edit') {
+export function browserStagePlugin(enabled, mode = 'edit', { probeSpecifier = virtual, trust = false } = {}) {
   if (!['edit', 'locale-add'].includes(mode)) throw new Error('Unknown browser stage mode.');
   const selected = mode === 'locale-add' ? [
     ['packages/vite/dist/catalog-wire.js', 'decodeCatalogResult', 'decodeMs'],
@@ -66,14 +66,18 @@ export function browserStagePlugin(enabled, mode = 'edit') {
           const acceptance = /function __bench_acceptOutcome\(manifest, key, outcome\) \{\r?\n([\s\S]*?)    return freeze\(\{ \.\.\.outcome, key: \{ \.\.\.key \} \}\);\r?\n\}/g;
           if ([...next.matchAll(acceptance)].length !== 1) throw new Error('Missing or ambiguous outcome acceptance split.');
           next = next.replace(acceptance, (_, checks) => `function __bench_acceptOutcome(manifest, key, outcome) {\n` +
+            (trust ? `    observeCoreTrust(outcome, isDeepFrozen);\n` : '') +
             `    measureBrowserStage('acceptCheckMs', () => {\n${checks}    });\n` +
             `    return measureBrowserStage('acceptFreezeMs', () => freeze({ ...outcome, key: { ...key } }));\n}`);
         }
-        next += `\nexport function ${name}(...args) { return measureBrowserStage('${metric}', () => __bench_${name}(...args)); }\n`;
+        next += `\nexport function ${name}(...args) { const result = measureBrowserStage('${metric}', () => __bench_${name}(...args)); ${trust && metric === 'freezeMs' ? 'observeViteFrozen(result); ' : ''}return result; }\n`;
         completed.push(metric);
       }
       completed.forEach(metric => transformed.add(metric));
-      return { code: `import { measureBrowserStage } from '${virtual}';\n${next}\n`, map: null };
+      const helpers = trust ? 'measureBrowserStage, observeCoreTrust, observeViteFrozen' : 'measureBrowserStage';
+      const trustImport = trust && matches.some(([, name]) => name === 'acceptOutcome')
+        ? "import { isDeepFrozen } from './diagnostics.js';\n" : '';
+      return { code: `import { ${helpers} } from '${probeSpecifier}';\n${trustImport}${next}\n`, map: null };
     },
     transformed,
     assertTransformed() {

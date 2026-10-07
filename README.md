@@ -12,7 +12,8 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - 지원 버전은 Node 24.x(`engines.node`)다. 로컬 검증 환경은 Node 24.18.0이고 TypeScript 7을 기준으로 검증하지만 `typescript`를 peer로 강제하지 않는다. `packages/core`·`packages/react`는 ES2022 브라우저 대상이라 Node API가 필요 없고, `packages/vite`·`packages/typegen`은 Node에서 실행한다. 배포 방식과 릴리스 절차는 [릴리스](docs/09-release.md)에 있다.
 - 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개이고, 2026-10-06 `0.1.0-alpha.1`·dist-tag `alpha`로 npm 공개 registry에 게시했다. 라이선스는 Apache-2.0이다.
 - docs에는 설계 초안과 로컬 검증 기록이 섞여 있다. 전체 모듈 구조, 이벤트 이름, 아직 구현하지 않은 i18n API 시그니처는 설계 제안이고, 문서와 실제 코드가 어긋나면 `packages/*/README.md`와 `packages/*/src`의 현행 코드를 따른다.
-- 문서 기준일: 2026-10-06
+- 문서 기준일: 2026-10-07
+- 기본 prebundle을 유지하는 `--client-stages` 계측을 추가했다. 같은 Vite 동결 카탈로그 참조가 core 수락에 50/50 전달됐지만 core의 깊은 동결 신뢰는 0/50이었고, 결과·검증은 [docs/29-prebundle-client-stages.md](docs/29-prebundle-client-stages.md)에 있다.
 
 ## 로컬 실행
 
