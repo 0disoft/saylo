@@ -177,6 +177,8 @@ root 동결 공유 후 상세 계측을 끈 규모별 50회 재측정은 [../../
 
 현행 large의 서버 파일 구간 재계측은 [../../docs/32-prebundle-server-measurements.md](../../docs/32-prebundle-server-measurements.md)에 있다. `--server-file-stages`로 측정 10회·warmup 2회·control 10회를 수집했고, 파싱은 10/10회 가장 큰 개별 구간이었다(p50 133.78ms). 기존 내부 파서 계측의 core hash 일치도 확인해 다음 메시지·위치 동결 실험 후보를 정했다.
 
+메시지·위치 직접 동결 실험의 cold·incremental 교차 비교는 [../../docs/33-owned-message-freeze-trial.md](../../docs/33-owned-message-freeze-trial.md)에 있다. 개선을 확인하지 못해 제품과 프로브를 원복했고 패치를 보존했다. 실험 전 상세 스냅샷과 실험 비교의 코드 hash를 구분한다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

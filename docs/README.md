@@ -37,6 +37,7 @@
 29. [30-prebundle-freeze-sharing.md](30-prebundle-freeze-sharing.md) — core root import로 정상 prebundle의 동결 신뢰 공유
 30. [31-prebundle-freeze-locale-add.md](31-prebundle-freeze-locale-add.md) — 상세 계측을 끈 로케일 목록·첫 번역 반영 50회 재측정
 31. [32-prebundle-server-measurements.md](32-prebundle-server-measurements.md) — 현행 large 목록의 서버 파일 구간과 파서 비용 재계측
+32. [33-owned-message-freeze-trial.md](33-owned-message-freeze-trial.md) — 메시지·위치 직접 동결 실험의 비교 결과와 원복
 
 ## 상태 표기 규칙
 

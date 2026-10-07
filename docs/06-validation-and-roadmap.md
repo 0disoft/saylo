@@ -52,6 +52,8 @@ Vite가 core의 깊은 동결 경로를 공유하도록 변경했다. 같은 조
 
 [31](31-prebundle-freeze-locale-add.md)의 large 목록 목표 미달 후 서버 재계측에서 파싱이 10/10회 가장 컸다(p50 133.78ms). 다음은 파서 소유 메시지·위치의 동결 순회를 줄이는 실험이며 재사용한 내부 계측·조건·원시는 [32](32-prebundle-server-measurements.md)에 있다.
 
+파서 소유 메시지·위치를 직접 동결하는 실험은 채택하지 않았다. cold p95는 195.72→221.65ms, incremental p95는 76.64→86.21ms로 관측됐고 개선 근거가 부족해 원복했다. 결과 동등성·불변성·소비 타입 검사는 통과했다. 다음은 messageFreeze 내부의 AST 동결·절대 위치·레코드 동결 비용 분리이다. 원시와 되돌린 패치는 [33](33-owned-message-freeze-trial.md)에 있다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.

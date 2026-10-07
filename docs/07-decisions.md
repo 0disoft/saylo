@@ -108,6 +108,8 @@ Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 �
 
 현행 large 서버 재계측에서 파싱이 10/10회 가장 컸다. parser core 5개 파일의 hash가 같은 기존 내부 계측도 재사용하며, 메시지 생성·동결 구간은 17/20회 가장 컸다. 다음 후보는 파서가 만든 메시지·숫자 위치의 구조를 활용해 일반 동결 순회를 줄이는 작은 실험이다. 깊은 불변성·소스 위치·ICU 오류와 외부 입력 처리를 유지하고 cold/incremental 교차 비교로 채택 여부를 정한다. 아직 구현하지 않았으며 근거는 [32](32-prebundle-server-measurements.md)를 따른다.
 
+파서 소유 메시지·숫자 위치의 직접 동결 실험은 개선을 확인하지 못해 되돌렸다. cold 10/20쌍·incremental 47/100쌍만 빨랐고 두 비교의 p95는 높았다. 결과 원인을 확정하지 않으며 다음은 messageFreeze 내부 비용 분리이다. 재현 패치·원시·검증은 [33](33-owned-message-freeze-trial.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

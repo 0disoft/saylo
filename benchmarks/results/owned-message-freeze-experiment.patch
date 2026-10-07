@@ -1,0 +1,117 @@
+diff --git a/benchmarks/live-update/parser-probe.mjs b/benchmarks/live-update/parser-probe.mjs
+index 6427e9d..30f3b68 100644
+--- a/benchmarks/live-update/parser-probe.mjs
++++ b/benchmarks/live-update/parser-probe.mjs
+@@ -55,8 +55,8 @@ export function registerParserProbe({ detailed = false } = {}) {
+       ['const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });',
+         "const __astStart = parserClock();\nconst ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });\nrecordParserStage('astMs', __astStart);"],
+       ['const argumentsSchema = inferArguments(ast,', 'const __argumentsStart = parserClock();\nconst argumentsSchema = inferArguments(ast,'],
+-      ['messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });',
+-        "recordParserStage('argumentsMs', __argumentsStart);\nconst __messageFreezeStart = parserClock();\nconst __frozenAst = freezeMessageAst(ast);\nmessages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: __frozenAst, arguments: argumentsSchema });\nrecordParserStage('messageFreezeMs', __messageFreezeStart);"],
++      ['messages[entry.id] = freezeParsedMessage({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });',
++        "recordParserStage('argumentsMs', __argumentsStart);\nconst __messageFreezeStart = parserClock();\nconst __frozenAst = freezeMessageAst(ast);\nmessages[entry.id] = freezeParsedMessage({ source: entry.value, position: positionAt(entry.valueOffset), ast: __frozenAst, arguments: argumentsSchema });\nrecordParserStage('messageFreezeMs', __messageFreezeStart);"],
+       ['? before : freeze({ ...before, position });', "? before : measureParserFreeze('reusedMessageFreezeMs', freeze, { ...before, position });"],
+     );
+     for (const [before, after] of changes) {
+diff --git a/packages/core/src/catalog.ts b/packages/core/src/catalog.ts
+index 34a9cd8..9ac9a23 100644
+--- a/packages/core/src/catalog.ts
++++ b/packages/core/src/catalog.ts
+@@ -1,5 +1,5 @@
+ import { parse } from '@formatjs/icu-messageformat-parser';
+-import { CatalogError, freeze, freezeMessageAst, createPositionLocator, isDeepFrozen } from './diagnostics.js';
++import { CatalogError, freeze, freezeMessageAst, freezeParsedMessage, createPositionLocator, isDeepFrozen } from './diagnostics.js';
+ import { messageOffset, readJson } from './json.js';
+ import { inferArguments } from './schema.js';
+ import { createSimplePositionPool, parseSimpleMessage } from './simple-message.js';
+@@ -45,7 +45,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
+       const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
+       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
+         position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
+-      messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });
++      messages[entry.id] = freezeParsedMessage({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });
+     } catch (error) {
+       if (error instanceof CatalogError) diagnostics.push(...error.diagnostics);
+       else {
+diff --git a/packages/core/src/diagnostics.ts b/packages/core/src/diagnostics.ts
+index 01aba8a..f48c719 100644
+--- a/packages/core/src/diagnostics.ts
++++ b/packages/core/src/diagnostics.ts
+@@ -1,6 +1,6 @@
+ import { TYPE } from '@formatjs/icu-messageformat-parser/no-parser.js';
+ import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
+-import type { CatalogDiagnostic, DeepReadonly, SourcePosition } from './types.js';
++import type { CatalogDiagnostic, DeepReadonly, ParsedMessage, SourcePosition } from './types.js';
+
+ // Only objects traversed by this helper are trusted to be deeply frozen.
+ const frozen = new WeakSet<object>();
+@@ -16,6 +16,17 @@ export function freeze<T>(value: T): DeepReadonly<T> {
+   return value as DeepReadonly<T>;
+ }
+
++/** Only for fresh parser-owned messages with a numeric createPositionLocator result. */
++export function freezeParsedMessage(value: ParsedMessage): ParsedMessage {
++  // Trust our traversal cache, never an external object's shallow freeze.
++  if (!frozen.has(value.ast) || !frozen.has(value.arguments)) return freeze(value);
++  Object.freeze(value.position);
++  frozen.add(value.position);
++  Object.freeze(value);
++  frozen.add(value);
++  return value;
++}
++
+ /** Only for fresh ASTs owned by the catalog parser, with FormatJS node shapes. */
+ export function freezeMessageAst(ast: MessageFormatElement[]): DeepReadonly<MessageFormatElement[]> {
+   // Each call below follows its children; numeric/string leaves need no walk.
+diff --git a/packages/core/test/catalog.test.mjs b/packages/core/test/catalog.test.mjs
+index 8aee34f..94dcae4 100644
+--- a/packages/core/test/catalog.test.mjs
++++ b/packages/core/test/catalog.test.mjs
+@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
+ import { test } from 'node:test';
+ import { createHash } from 'node:crypto';
+ import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
+-import { freeze, isDeepFrozen, createPositionLocator } from '../dist/diagnostics.js';
++import { freeze, freezeParsedMessage, isDeepFrozen, createPositionLocator } from '../dist/diagnostics.js';
+
+ const options = { locale: 'ko', namespace: 'cart', sourceName: 'locales/ko/cart.json' };
+ const catalog = (messages, locale = 'ko') => parseCatalog(JSON.stringify(messages), { ...options, locale });
+@@ -298,6 +298,12 @@ test('parser-owned AST freezing covers simple locations, FormatJS literals and n
+     for (const child of Object.values(value)) verify(child);
+   }
+   verify(parsed);
++  for (const message of Object.values(parsed.messages)) {
++    assert.throws(() => { message.source = 'edited'; }, TypeError);
++    assert.throws(() => { message.position.offset = 0; }, TypeError);
++    assert.throws(() => { message.ast = []; }, TypeError);
++    assert.throws(() => { message.arguments = {}; }, TypeError);
++  }
+   const start = parsed.messages.simple.ast[1].location.start;
+   assert.deepEqual(start, { offset: 3, line: 2, column: 1 });
+   assert.throws(() => { start.offset = 0; }, TypeError);
+@@ -305,6 +311,25 @@ test('parser-owned AST freezing covers simple locations, FormatJS literals and n
+   assert.equal(freeze(parsed), parsed);
+ });
+
++test('parser message freezing deeply traverses AST and contracts not trusted by core', () => {
++  const parsed = catalog({ x: '{n, plural, other {#}}' }).messages.x;
++  const received = JSON.parse(JSON.stringify(parsed));
++  Object.freeze(received.ast);
++  Object.freeze(received.arguments);
++  assert.equal(isDeepFrozen(received.ast), false);
++  assert.equal(isDeepFrozen(received.arguments), false);
++  assert.equal(freezeParsedMessage(received), received);
++  function verify(value) {
++    if (value === null || typeof value !== 'object') return;
++    assert.ok(Object.isFrozen(value) && isDeepFrozen(value));
++    for (const child of Object.values(value)) verify(child);
++  }
++  verify(received);
++  assert.deepEqual(received, JSON.parse(JSON.stringify(parsed)));
++  assert.throws(() => { received.arguments.n.acceptedTypes.push('string'); }, TypeError);
++  assert.throws(() => { received.ast[0].options.other.value.push({ type: 0, value: 'changed' }); }, TypeError);
++});
++
+ test('incremental parsing reuses unchanged ICU but refreshes source positions and validates changed entries', () => {
+   const first = parseCatalog('{"x":"{n, number}","keep":"{name}"}', options);
+   const source = '{\n  "x":"Changed {n, number}",\n  "keep":"{name}"\n}';

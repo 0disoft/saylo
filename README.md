@@ -14,6 +14,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - docs에는 설계 초안과 로컬 검증 기록이 섞여 있다. 전체 모듈 구조, 이벤트 이름, 아직 구현하지 않은 i18n API 시그니처는 설계 제안이고, 문서와 실제 코드가 어긋나면 `packages/*/README.md`와 `packages/*/src`의 현행 코드를 따른다.
 - 문서 기준일: 2026-10-07
 - Vite 동결 import를 core root로 바꿔 기본 prebundle에서 깊은 동결 신뢰 공유를 50/50회 확인했다. 상세 계측을 끈 최신 목록 p95는 small 152.13ms·large 268.54ms로, large의 250ms 목표는 미달이다. 결과·검증은 [docs/31-prebundle-freeze-locale-add.md](docs/31-prebundle-freeze-locale-add.md)에 있다.
+- 후속 메시지·위치 직접 동결 실험은 cold·incremental 비교에서 개선을 확인하지 못해 되돌렸다. 결과와 재현 패치는 [docs/33-owned-message-freeze-trial.md](docs/33-owned-message-freeze-trial.md)에 보존했다.
 
 ## 로컬 실행
 
