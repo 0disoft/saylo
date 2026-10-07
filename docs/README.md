@@ -34,6 +34,7 @@
 26. [27-shared-freeze-locale-add.md](27-shared-freeze-locale-add.md) — 일반 prebundle 설정의 목록·첫 번역 반영 50회 재측정
 27. [28-full-reply-stages.md](28-full-reply-stages.md) — 기본 prebundle의 full 응답 준비·수신 이후 구간 계측
 28. [29-prebundle-client-stages.md](29-prebundle-client-stages.md) — 기본 prebundle의 client 수신 이후·publication·commit 구간 계측
+29. [30-prebundle-freeze-sharing.md](30-prebundle-freeze-sharing.md) — core root import로 정상 prebundle의 동결 신뢰 공유
 
 ## 상태 표기 규칙
 

@@ -171,6 +171,8 @@ Vite/core 깊은 동결 경로 공유는 같은 대규모 locale-add 브라우�
 
 `--client-stages`는 정상 prebundle을 유지하는 Vite·optimizer transform으로 수신→첫 store publication→DOM commit을 분리한다. 같은 Vite 동결 카탈로그 참조가 core 수락에 50/50 전달됐지만 core의 깊은 동결 신뢰는 0/50이었다. helper 상태 공유는 계측 전용이고 제품 freeze cache를 바꾸지 않는다. 실행 명령·구간 정의·원시 결과·검증은 [../../docs/29-prebundle-client-stages.md](../../docs/29-prebundle-client-stages.md)를 따른다.
 
+Vite 동결 import를 core root로 바꾼 뒤 같은 정상 prebundle·client 계측 조건의 50회 모두 깊은 동결 신뢰가 공유됐다. core acceptFreeze p50/p95는 0.00/0.00ms, 표본별 동결 합은 75.20/92.80ms였다. 원시와 별도 run 비교의 한계는 [../../docs/30-prebundle-freeze-sharing.md](../../docs/30-prebundle-freeze-sharing.md)를 따른다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

@@ -48,7 +48,7 @@ TypeScript에서는 `createStore<AppSchema>(...)`로, JS에서는 JSDoc `Store<A
 
 ## 전송 카탈로그 동결
 
-`freezeCatalogs(catalogs)`는 JSON 전송 뒤 카탈로그 배열·AST·위치·인자 스키마를 깊게 동결하고 같은 배열을 반환한다. 루트와 `/runtime` 엔트리에서 제공한다. core가 이미 깊게 동결한 객체는 재순회하지 않으며, 외부에서 겉만 동결한 객체는 내부까지 순회한다. 유효성 검사는 기존 decoder·store·i18n에서 수행한다. 이 함수는 게시된 `0.1.0-alpha.1`에 아직 없으며 구현과 측정은 [동결 경로 공유 기록](../../docs/26-shared-catalog-freeze.md)에 있다.
+`freezeCatalogs(catalogs)`는 JSON 전송 뒤 카탈로그 배열·AST·위치·인자 스키마를 깊게 동결하고 같은 배열을 반환한다. 루트와 `/runtime` 엔트리에서 제공한다. 같은 core 모듈이 이미 깊게 동결한 객체는 재순회하지 않으며, 외부에서 겉만 동결한 객체는 내부까지 순회한다. 유효성 검사는 기존 decoder·store·i18n에서 수행한다. 이 함수는 게시된 `0.1.0-alpha.1`에 아직 없으며 구현과 측정은 [동결 경로 공유 기록](../../docs/26-shared-catalog-freeze.md)과 [개발 prebundle 공유 기록](../../docs/30-prebundle-freeze-sharing.md)에 있다.
 
 ## 로컬 파싱 최적화
 

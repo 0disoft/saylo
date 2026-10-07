@@ -102,6 +102,8 @@ Vite의 카탈로그 동결은 core `/runtime`의 `freezeCatalogs`를 사용한�
 
 client 수신 이후 계측에서 같은 Vite 동결 카탈로그 참조가 core 수락에 50/50 전달됐지만 core의 깊은 동결 신뢰는 0/50이었다. core 동결 신뢰가 모듈 지역 WeakSet에 있어 dev의 core root prebundle과 `/runtime` subpath가 다른 graph면 공유되지 않는다. 다음 후보는 Vite `freeze.ts`가 `/runtime` 대신 core root의 기존 `freezeCatalogs`를 가져와 같은 prebundle 경로를 쓰는 것으로 정하고, production `astRuntime` parser 제거를 깨지 않는지 먼저 확인한다. 전역 WeakSet 제품 도입과 `Object.isFrozen` shallow 신뢰는 쓰지 않는다. 이번은 계측 작업이고 제품 최적화는 적용하지 않았다. 근거는 [29](29-prebundle-client-stages.md)를 따른다.
 
+Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 신뢰를 공유한다. 대규모 50회 모두 공유했고 production parser 제거도 유지했다. 다음은 상세 계측을 끈 small/large 50회 종단 간 재측정이다. 조건·한계는 [30](30-prebundle-freeze-sharing.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화
