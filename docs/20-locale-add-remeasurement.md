@@ -1,5 +1,7 @@
 # 20. AST 동결 최적화 후 로케일 추가 재측정
 
+이 문서는 상대 위치 공유 전 기록이다. 같은 설정의 후속 측정은 [23-position-sharing-locale-add.md](23-position-sharing-locale-add.md)에 있다.
+
 2026-10-07 KST, 단순 메시지 파싱·compact 전송·인자 스키마 공유·AST 동결 최적화를 포함한 로컬 코드로 로케일 추가를 재측정했다. 목록 표시 p95는 small 153.98ms, large 1,056.40ms였다. small은 이 실행에서 250ms 목표를 충족했고 large는 여전히 미달이다.
 
 ## 실행 조건

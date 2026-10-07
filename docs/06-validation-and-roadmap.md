@@ -38,6 +38,8 @@ AST 동결 최적화 후 초기 기록과 같은 설정(warmup 5·측정 50·con
 
 단순 AST의 동일 상대 좌표·위치 구간을 호출 내에서 공유하도록 로컬 구현했다. 10k cold 비교의 p50은 118.42→95.26ms, p95는 382.37→271.70ms로 관측됐지만 최장 시간은 늘었다. incremental pair 중앙값은 -0.83ms였고 p95 개선은 확인하지 못했다. Unicode·절대/오류 위치·불변성을 유지했고 workspace 테스트 166개와 consumer 타입 검사를 통과했다. 다음은 로케일 추가의 종단 간 재측정이며 객체 수·원시·한계는 [22-relative-position-sharing.md](22-relative-position-sharing.md)에 있다.
 
+상대 위치 공유 후 같은 50회 설정으로 종단 간 재측정을 완료했다. 목록 p95는 small 109.68ms·large 878.98ms이며 large의 250ms 이내는 15/50회로 목표는 여전히 미달이다. 선택→첫 번역 commit p95는 48.00ms·486.80ms로 직전 run보다 높게 관측됐다. 입력 상태·선언 파일·선택 전 0회/후 1회 full 응답을 유지했다. 다음은 선택 후 full 디코딩·동결·snapshot 계측이며 단일 run의 시간 차이를 코드 효과로 단정하지 않는다. 조건·원시는 [23-position-sharing-locale-add.md](23-position-sharing-locale-add.md)에 있다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.

@@ -88,6 +88,8 @@ Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 
 
 호출 내 단순 AST 상대 좌표와 위치 구간 공유를 로컬 채택했다. pool 없는 동일 fixture보다 참조 좌표·구간 객체가 줄었고 cold pair 중앙값에서 개선을 관측했다. cold 최장 시간과 incremental p95는 개선되지 않아 안정적 tail 개선은 주장하지 않는다. 절대 위치·Unicode·ICU·불변성은 유지한다. 초기 좌표만 공유한 실험과 최종 결과·다음 종단 간 재측정은 [22](22-relative-position-sharing.md)를 따른다.
 
+위치 공유 후 50회 재측정에서 large 목록 p95는 878.98ms로 낮게 관측됐지만 250ms 목표는 미달이다. 첫 번역 선택 p95는 486.80ms로 직전 run보다 높게 관측돼 전체 흐름의 일관된 개선은 확인하지 못했다. 다음은 benchmark의 locale-add full 응답 디코딩·동결·snapshot 구간 계측으로 정한다. 브라우저 디코딩을 확정 병목으로 단정하지 않으며 근거는 [23](23-position-sharing-locale-add.md)이다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화
