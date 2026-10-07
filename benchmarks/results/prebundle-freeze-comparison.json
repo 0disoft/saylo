@@ -1,0 +1,507 @@
+{
+  "schema": "saylo-prebundle-freeze-comparison-v1",
+  "scope": "Same normal-prebundle client-stage harness, sequential runs on one machine. Per-sample Vite freeze plus core acceptFreeze; no nested percentile addition. Cache recognition is observed directly. Timing differences include run load/probe/runtime pauses and are not causal end-to-end performance claims.",
+  "runs": {
+    "before": {
+      "summaryFile": "locale-add-client-stages.json",
+      "samplesFile": "locale-add-client-stages.10k-20-locales.samples.json",
+      "gitRevision": "4d2783c96e923e809fba7e4af82bfb0aece4963e",
+      "measuredAt": "2026-10-07T13:06:35.789Z",
+      "trust": {
+        "observed": 50,
+        "sameCatalog": 50,
+        "trusted": 0
+      },
+      "freezeSum": {
+        "count": 50,
+        "p50Ms": 175.80000001192093,
+        "p95Ms": 570.0999999791384,
+        "minMs": 150.8999999910593,
+        "maxMs": 2808.3999999910593
+      },
+      "acceptFreeze": {
+        "count": 50,
+        "p50Ms": 83.59999999403954,
+        "p95Ms": 281.8999999910593,
+        "minMs": 73.59999999403954,
+        "maxMs": 1424.5
+      },
+      "selectToCommit": {
+        "count": 50,
+        "p50Ms": 335.90000000596046,
+        "p95Ms": 716.0999999940395,
+        "minMs": 285.59999999403954,
+        "maxMs": 2986.1000000089407
+      },
+      "receiveToCommit": {
+        "count": 50,
+        "p50Ms": 219.8999999910593,
+        "p95Ms": 604.4000000059605,
+        "minMs": 187.5,
+        "maxMs": 2850
+      },
+      "list": {
+        "count": 50,
+        "p50Ms": 316.2975000000006,
+        "p95Ms": 627.4463000000105,
+        "minMs": 210.76020000000426,
+        "maxMs": 2744.205600000001
+      },
+      "listWithin250": 7,
+      "samples": [
+        {
+          "token": "10k-20-locales:31",
+          "freezeSumMs": 166.40000000596046
+        },
+        {
+          "token": "10k-20-locales:32",
+          "freezeSumMs": 199.2000000178814
+        },
+        {
+          "token": "10k-20-locales:33",
+          "freezeSumMs": 162.90000000596046
+        },
+        {
+          "token": "10k-20-locales:34",
+          "freezeSumMs": 164.5
+        },
+        {
+          "token": "10k-20-locales:35",
+          "freezeSumMs": 183.20000000298023
+        },
+        {
+          "token": "10k-20-locales:36",
+          "freezeSumMs": 158.40000000596046
+        },
+        {
+          "token": "10k-20-locales:37",
+          "freezeSumMs": 570.0999999791384
+        },
+        {
+          "token": "10k-20-locales:38",
+          "freezeSumMs": 153.2000000178814
+        },
+        {
+          "token": "10k-20-locales:39",
+          "freezeSumMs": 151.80000001192093
+        },
+        {
+          "token": "10k-20-locales:40",
+          "freezeSumMs": 192.8999999910593
+        },
+        {
+          "token": "10k-20-locales:41",
+          "freezeSumMs": 150.8999999910593
+        },
+        {
+          "token": "10k-20-locales:42",
+          "freezeSumMs": 154.1000000089407
+        },
+        {
+          "token": "10k-20-locales:43",
+          "freezeSumMs": 168
+        },
+        {
+          "token": "10k-20-locales:44",
+          "freezeSumMs": 157.09999999403954
+        },
+        {
+          "token": "10k-20-locales:45",
+          "freezeSumMs": 200.80000001192093
+        },
+        {
+          "token": "10k-20-locales:46",
+          "freezeSumMs": 154.2000000178814
+        },
+        {
+          "token": "10k-20-locales:47",
+          "freezeSumMs": 164.5
+        },
+        {
+          "token": "10k-20-locales:48",
+          "freezeSumMs": 154.3999999910593
+        },
+        {
+          "token": "10k-20-locales:49",
+          "freezeSumMs": 1803.9000000059605
+        },
+        {
+          "token": "10k-20-locales:50",
+          "freezeSumMs": 160.5
+        },
+        {
+          "token": "10k-20-locales:51",
+          "freezeSumMs": 175.80000001192093
+        },
+        {
+          "token": "10k-20-locales:52",
+          "freezeSumMs": 169.40000000596046
+        },
+        {
+          "token": "10k-20-locales:53",
+          "freezeSumMs": 200.79999999701977
+        },
+        {
+          "token": "10k-20-locales:54",
+          "freezeSumMs": 175
+        },
+        {
+          "token": "10k-20-locales:55",
+          "freezeSumMs": 172.79999999701977
+        },
+        {
+          "token": "10k-20-locales:56",
+          "freezeSumMs": 205.79999999701977
+        },
+        {
+          "token": "10k-20-locales:57",
+          "freezeSumMs": 158.20000000298023
+        },
+        {
+          "token": "10k-20-locales:58",
+          "freezeSumMs": 171.40000000596046
+        },
+        {
+          "token": "10k-20-locales:59",
+          "freezeSumMs": 184
+        },
+        {
+          "token": "10k-20-locales:60",
+          "freezeSumMs": 170.6000000089407
+        },
+        {
+          "token": "10k-20-locales:61",
+          "freezeSumMs": 197.20000000298023
+        },
+        {
+          "token": "10k-20-locales:62",
+          "freezeSumMs": 168.59999997913837
+        },
+        {
+          "token": "10k-20-locales:63",
+          "freezeSumMs": 178.2000000178814
+        },
+        {
+          "token": "10k-20-locales:64",
+          "freezeSumMs": 170.09999999403954
+        },
+        {
+          "token": "10k-20-locales:65",
+          "freezeSumMs": 166.20000000298023
+        },
+        {
+          "token": "10k-20-locales:66",
+          "freezeSumMs": 205.09999999403954
+        },
+        {
+          "token": "10k-20-locales:67",
+          "freezeSumMs": 181.50000001490116
+        },
+        {
+          "token": "10k-20-locales:68",
+          "freezeSumMs": 176.6000000089407
+        },
+        {
+          "token": "10k-20-locales:69",
+          "freezeSumMs": 177.3999999910593
+        },
+        {
+          "token": "10k-20-locales:70",
+          "freezeSumMs": 189.29999999701977
+        },
+        {
+          "token": "10k-20-locales:71",
+          "freezeSumMs": 205.49999998509884
+        },
+        {
+          "token": "10k-20-locales:72",
+          "freezeSumMs": 173.30000001192093
+        },
+        {
+          "token": "10k-20-locales:73",
+          "freezeSumMs": 199.29999999701977
+        },
+        {
+          "token": "10k-20-locales:74",
+          "freezeSumMs": 186.09999999403954
+        },
+        {
+          "token": "10k-20-locales:75",
+          "freezeSumMs": 2808.3999999910593
+        },
+        {
+          "token": "10k-20-locales:76",
+          "freezeSumMs": 227.3999999910593
+        },
+        {
+          "token": "10k-20-locales:77",
+          "freezeSumMs": 181.70000000298023
+        },
+        {
+          "token": "10k-20-locales:78",
+          "freezeSumMs": 186.79999999701977
+        },
+        {
+          "token": "10k-20-locales:79",
+          "freezeSumMs": 206.40000000596046
+        },
+        {
+          "token": "10k-20-locales:80",
+          "freezeSumMs": 203.09999999403954
+        }
+      ]
+    },
+    "after": {
+      "summaryFile": "prebundle-freeze-shared.json",
+      "samplesFile": "prebundle-freeze-shared.10k-20-locales.samples.json",
+      "gitRevision": "6ee51ffcd1b77793e68f5057c4974cddd6f34024",
+      "measuredAt": "2026-10-07T13:22:54.610Z",
+      "trust": {
+        "observed": 50,
+        "sameCatalog": 50,
+        "trusted": 50
+      },
+      "freezeSum": {
+        "count": 50,
+        "p50Ms": 75.20000000298023,
+        "p95Ms": 92.79999999701977,
+        "minMs": 52.400000005960464,
+        "maxMs": 426.5
+      },
+      "acceptFreeze": {
+        "count": 50,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "minMs": 0,
+        "maxMs": 0.09999999403953552
+      },
+      "selectToCommit": {
+        "count": 50,
+        "p50Ms": 190,
+        "p95Ms": 449.70000000298023,
+        "minMs": 121.79999999701977,
+        "maxMs": 701.2000000029802
+      },
+      "receiveToCommit": {
+        "count": 50,
+        "p50Ms": 103.8999999910593,
+        "p95Ms": 127.59999999403954,
+        "minMs": 71.3999999910593,
+        "maxMs": 447.70000000298023
+      },
+      "list": {
+        "count": 50,
+        "p50Ms": 205.530399999996,
+        "p95Ms": 479.10919999999896,
+        "minMs": 136.59650000000147,
+        "maxMs": 1249.720100000006
+      },
+      "listWithin250": 37,
+      "samples": [
+        {
+          "token": "10k-20-locales:31",
+          "freezeSumMs": 62.29999999701977
+        },
+        {
+          "token": "10k-20-locales:32",
+          "freezeSumMs": 53.19999998807907
+        },
+        {
+          "token": "10k-20-locales:33",
+          "freezeSumMs": 59.5
+        },
+        {
+          "token": "10k-20-locales:34",
+          "freezeSumMs": 56.5
+        },
+        {
+          "token": "10k-20-locales:35",
+          "freezeSumMs": 57.5
+        },
+        {
+          "token": "10k-20-locales:36",
+          "freezeSumMs": 263.3999999910593
+        },
+        {
+          "token": "10k-20-locales:37",
+          "freezeSumMs": 59.6000000089407
+        },
+        {
+          "token": "10k-20-locales:38",
+          "freezeSumMs": 68
+        },
+        {
+          "token": "10k-20-locales:39",
+          "freezeSumMs": 70
+        },
+        {
+          "token": "10k-20-locales:40",
+          "freezeSumMs": 67.29999999701977
+        },
+        {
+          "token": "10k-20-locales:41",
+          "freezeSumMs": 84.09999999403954
+        },
+        {
+          "token": "10k-20-locales:42",
+          "freezeSumMs": 80.20000000298023
+        },
+        {
+          "token": "10k-20-locales:43",
+          "freezeSumMs": 72.59999999403954
+        },
+        {
+          "token": "10k-20-locales:44",
+          "freezeSumMs": 83.69999998807907
+        },
+        {
+          "token": "10k-20-locales:45",
+          "freezeSumMs": 78.79999999701977
+        },
+        {
+          "token": "10k-20-locales:46",
+          "freezeSumMs": 79.3999999910593
+        },
+        {
+          "token": "10k-20-locales:47",
+          "freezeSumMs": 79.1000000089407
+        },
+        {
+          "token": "10k-20-locales:48",
+          "freezeSumMs": 80.6000000089407
+        },
+        {
+          "token": "10k-20-locales:49",
+          "freezeSumMs": 79.6000000089407
+        },
+        {
+          "token": "10k-20-locales:50",
+          "freezeSumMs": 84.5
+        },
+        {
+          "token": "10k-20-locales:51",
+          "freezeSumMs": 78.29999999701977
+        },
+        {
+          "token": "10k-20-locales:52",
+          "freezeSumMs": 80
+        },
+        {
+          "token": "10k-20-locales:53",
+          "freezeSumMs": 72.5
+        },
+        {
+          "token": "10k-20-locales:54",
+          "freezeSumMs": 78.79999999701977
+        },
+        {
+          "token": "10k-20-locales:55",
+          "freezeSumMs": 63.30000001192093
+        },
+        {
+          "token": "10k-20-locales:56",
+          "freezeSumMs": 52.400000005960464
+        },
+        {
+          "token": "10k-20-locales:57",
+          "freezeSumMs": 86.20000000298023
+        },
+        {
+          "token": "10k-20-locales:58",
+          "freezeSumMs": 57.3999999910593
+        },
+        {
+          "token": "10k-20-locales:59",
+          "freezeSumMs": 81
+        },
+        {
+          "token": "10k-20-locales:60",
+          "freezeSumMs": 77.79999999701977
+        },
+        {
+          "token": "10k-20-locales:61",
+          "freezeSumMs": 426.5
+        },
+        {
+          "token": "10k-20-locales:62",
+          "freezeSumMs": 72.8999999910593
+        },
+        {
+          "token": "10k-20-locales:63",
+          "freezeSumMs": 76.09999999403954
+        },
+        {
+          "token": "10k-20-locales:64",
+          "freezeSumMs": 78.79999999701977
+        },
+        {
+          "token": "10k-20-locales:65",
+          "freezeSumMs": 68.90000000596046
+        },
+        {
+          "token": "10k-20-locales:66",
+          "freezeSumMs": 81
+        },
+        {
+          "token": "10k-20-locales:67",
+          "freezeSumMs": 76.90000000596046
+        },
+        {
+          "token": "10k-20-locales:68",
+          "freezeSumMs": 68.3999999910593
+        },
+        {
+          "token": "10k-20-locales:69",
+          "freezeSumMs": 74.20000000298023
+        },
+        {
+          "token": "10k-20-locales:70",
+          "freezeSumMs": 73.8999999910593
+        },
+        {
+          "token": "10k-20-locales:71",
+          "freezeSumMs": 75.20000000298023
+        },
+        {
+          "token": "10k-20-locales:72",
+          "freezeSumMs": 74.90000000596046
+        },
+        {
+          "token": "10k-20-locales:73",
+          "freezeSumMs": 72.09999999403954
+        },
+        {
+          "token": "10k-20-locales:74",
+          "freezeSumMs": 81
+        },
+        {
+          "token": "10k-20-locales:75",
+          "freezeSumMs": 59.19999998807907
+        },
+        {
+          "token": "10k-20-locales:76",
+          "freezeSumMs": 92.79999999701977
+        },
+        {
+          "token": "10k-20-locales:77",
+          "freezeSumMs": 83.1000000089407
+        },
+        {
+          "token": "10k-20-locales:78",
+          "freezeSumMs": 60.5
+        },
+        {
+          "token": "10k-20-locales:79",
+          "freezeSumMs": 56.8999999910593
+        },
+        {
+          "token": "10k-20-locales:80",
+          "freezeSumMs": 75.6000000089407
+        }
+      ]
+    }
+  },
+  "changedMeasuredFiles": [
+    "packages/vite/dist/freeze.js"
+  ]
+}

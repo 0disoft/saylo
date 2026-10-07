@@ -1,0 +1,74 @@
+{
+  "scenario": "1k-3-locales",
+  "samples": [
+    {
+      "token": "1k-3-locales:3",
+      "warmup": true,
+      "saveToAckMs": 89.8449999999998,
+      "saveToManifestBroadcastMs": 62.22849999999971,
+      "fileWriteMs": 22.74850000000015,
+      "receiveToCommitMs": 14.800000011920929,
+      "commitToAckDispatchMs": 0.09999999403953552,
+      "serverStages": {
+        "readAndCandidateMs": 16.963400000000092,
+        "translationPreparationMs": 3.220800000000054,
+        "validationMs": 0.02040000000033615,
+        "registryReplaceMs": 0.7661000000002787,
+        "catalogDeltaMs": 4.373399999999947,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 47.50669999999991
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 990,
+      "changedMessages": 1,
+      "positionUpdates": 999
+    },
+    {
+      "token": "1k-3-locales:4",
+      "warmup": false,
+      "saveToAckMs": 66.61239999999998,
+      "saveToManifestBroadcastMs": 52.928499999999985,
+      "fileWriteMs": 8.35149999999976,
+      "receiveToCommitMs": 5.5,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "readAndCandidateMs": 8.61389999999983,
+        "translationPreparationMs": 1.3740999999999985,
+        "validationMs": 0.05040000000008149,
+        "registryReplaceMs": 0.779700000000048,
+        "catalogDeltaMs": 3.0836999999996806,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 44.57569999999987
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 924,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:5",
+      "warmup": false,
+      "saveToAckMs": 60.67749999999978,
+      "saveToManifestBroadcastMs": 49.62909999999965,
+      "fileWriteMs": 17.708100000000286,
+      "receiveToCommitMs": 4.5,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "readAndCandidateMs": 7.123599999999897,
+        "translationPreparationMs": 0.9756999999999607,
+        "validationMs": 0.04529999999977008,
+        "registryReplaceMs": 0.6448999999997795,
+        "catalogDeltaMs": 1.5333000000000538,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 40.98959999999988
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 924,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    }
+  ]
+}
