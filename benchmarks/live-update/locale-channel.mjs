@@ -1,12 +1,13 @@
 import { mkdir, writeFile, unlink, rmdir } from 'node:fs/promises';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { validateLocaleBrowserStages } from './browser-profile.mjs';
 
 export const localeMetrics = ['saveToListAckMs', 'selectToTranslationAckMs', 'saveToTranslationAckMs',
   'selectToCommitMs', 'saveToBroadcastMs', 'fileWriteMs'];
 export const addedLocale = 'en-GB';
 
-export function createLocaleChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe }) {
+export function createLocaleChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, browserStages }) {
   const directory = path.join(path.dirname(path.dirname(target.file)), addedLocale);
   const file = path.join(directory, 'bench.json');
   const results = [], roundTrips = [], clients = new Map();
@@ -83,6 +84,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
       if (data.text !== current.expected || !Number.isFinite(data.selectToCommitMs) || data.selectToCommitMs < 0 ||
           current.replies !== 1 || !['present', 'compact'].includes(frame?.data.result.status) || frame.data.result.key.namespace !== 'bench' || frame.data.request.known)
         throw new Error('Missing fresh full catalog or incorrect first translation.');
+      if (browserStages) validateLocaleBrowserStages(data.browserStages, data.selectToCommitMs);
       results.push({ token: current.token, warmup: results.length < warmup,
         saveToListAckMs: current.listAckAt - current.saveFinishedAt,
         selectToTranslationAckMs: ackAt - current.selectingAt,
@@ -91,6 +93,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
         saveToBroadcastMs: current.broadcastAt - current.saveFinishedAt,
         fileWriteMs: current.saveFinishedAt - current.writeStartedAt,
         ...(current.serverStages ? { serverStages: current.serverStages } : {}),
+        ...(browserStages ? { browserStages: data.browserStages } : {}),
         addedCatalogBytes: current.catalogBytes, preSelectionCatalogReplies: 0, fullReplies: current.replies,
         catalogReplyEncoding: frame.data.result.encoding ?? 'parsed-catalog',
         catalogReplyBytes: Buffer.byteLength(JSON.stringify(frame)) });

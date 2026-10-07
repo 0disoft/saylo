@@ -13,7 +13,7 @@ import { createChannel } from './channel.mjs';
 import { createLocaleChannel, localeMetrics, addedLocale } from './locale-channel.mjs';
 import { createFixture, scenarios } from './fixture.mjs';
 import { summarize } from './statistics.mjs';
-import { browserStagePlugin, browserMetrics } from './browser-profile.mjs';
+import { browserStagePlugin, browserMetrics, localeBrowserMetrics, localeBrowserReportedMetrics } from './browser-profile.mjs';
 import { registerFileProbe, fileMetrics } from './server-file-profile.mjs';
 
 const exec = promisify(execFile);
@@ -38,8 +38,8 @@ const settings = { samples: integer('samples', 1), warmup: integer('warmup', 0),
 const selected = scenarios.filter(s => values.scenario === 'all' || s.id === values.scenario);
 if (!selected.length) throw new Error('Unknown scenario; use all, 1k-3-locales or 10k-20-locales.');
 if (!['edit', 'locale-add'].includes(values.mode)) throw new Error('Use --mode edit or locale-add.');
-if (values.mode === 'locale-add' && (values['cpu-profile'] || values['browser-stages']))
-  throw new Error('Locale addition supports only --server-file-stages profiling.');
+if (values.mode === 'locale-add' && values['cpu-profile'])
+  throw new Error('Locale addition does not support --cpu-profile.');
 const fileProbe = registerFileProbe(values['server-file-stages']);
 // Node hooks must be registered before the server dependency graph is loaded.
 const { default: saylo } = await import('@0disoft/saylo-vite');
@@ -98,7 +98,7 @@ async function runScenario(scenario) {
     if (cancelled) throw new Error('Benchmark interrupted.');
     const channelFactory = values.mode === 'locale-add' ? createLocaleChannel : createChannel;
     channel = channelFactory({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe, browserStages: values['browser-stages'] });
-    const browserProbe = browserStagePlugin(values['browser-stages']);
+    const browserProbe = browserStagePlugin(values['browser-stages'], values.mode);
     console.log(`[bench] ${scenario.id}: ${fixture.catalogFiles} files, ${fixture.catalogBytes} catalog bytes; starting Vite`);
     const startupAt = performance.now();
     vite = await createServer({ configFile: false, root: appRoot, logLevel: 'error', clearScreen: false,
@@ -121,7 +121,7 @@ async function runScenario(scenario) {
     child.once('error', error => channel.fail(error));
     child.once('exit', code => channel.fail(new Error(`Benchmark browser exited early (${code}).`)));
     const collected = await channel.completion;
-    if (values['browser-stages'] && browserProbe.transformed.size !== 4) throw new Error('Incomplete browser stage transforms.');
+    browserProbe.assertTransformed();
     const measured = collected.results.filter(sample => !sample.warmup);
     if (measured.length !== settings.samples) throw new Error('Incomplete benchmark sample set.');
     const afterDeclaration = declaration ? await stat(path.join(appRoot, 'generated.d.ts')) : undefined;
@@ -152,6 +152,11 @@ async function runScenario(scenario) {
       summary: Object.fromEntries(localeMetrics.map(metric => [metric, summarize(measured.map(sample => sample[metric]))])),
       ...(serverStages ? { serverStages, profiledPhase: 'catalog-addition-before-list-ack' } : {}),
       ...(serverFileStages ? { serverFileStages } : {}),
+      ...(values['browser-stages'] ? { browserStages: {
+        scope: 'Benchmark-only client transforms from before setLocale to first translation DOM commit; excludes initial boot, list acknowledgement, reset and removal. Saylo prebundling disabled. Decode includes compact validation; snapshot includes translator and signature. Residuals computed per sample; selectionOther includes transport, WS JSON parsing, other client work and React commit, not just network. Do not add nested p95s or compare directly with uninstrumented runs.',
+        ...Object.fromEntries(localeBrowserReportedMetrics.map(metric => [metric, summarize(measured.map(sample => sample.browserStages.timings[metric]))])),
+        maxCalls: Object.fromEntries(localeBrowserMetrics.map(metric => [metric, Math.max(...measured.map(sample => sample.browserStages.calls[metric]))])),
+      }, profiledBrowserPhase: 'locale-selection-before-translation-commit' } : {}),
       wire: { preSelectionCatalogReplies: measured.reduce((sum, sample) => sum + sample.preSelectionCatalogReplies, 0),
         fullReplies: measured.reduce((sum, sample) => sum + sample.fullReplies, 0),
         catalogReplyEncodings: [...new Set(measured.map(sample => sample.catalogReplyEncoding))],

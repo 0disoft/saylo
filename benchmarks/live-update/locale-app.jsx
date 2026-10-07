@@ -4,6 +4,7 @@ import { createI18n } from '@0disoft/saylo-core';
 import { createSayloReact } from '@0disoft/saylo-react';
 import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
+import { beginBrowserSample, finishBrowserSample } from 'virtual:saylo-benchmark/browser-profile';
 
 const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });
 const { SayloProvider, useI18n } = createSayloReact();
@@ -56,6 +57,7 @@ function Probe() {
         await request('listed', { token: sample.token });
         await request('selecting', { token: sample.token });
         sample.phase = 'translation'; sample.selectedAt = performance.now();
+        beginBrowserSample('locale-add');
         await instance.setLocale(sample.locale);
       })().catch(fail);
     } else if (sample.phase === 'translation' && snapshot.locale === sample.locale && text === sample.expected) {
@@ -64,8 +66,10 @@ function Probe() {
         fail('First translation did not reach the DOM.'); return;
       }
       sample.phase = 'translation-ack';
+      let browserStages;
+      try { browserStages = finishBrowserSample(committedAt - sample.selectedAt); } catch (error) { fail(error); return; }
       void (async () => {
-        await request('ack', { token: sample.token, text, selectToCommitMs: committedAt - sample.selectedAt });
+        await request('ack', { token: sample.token, text, browserStages, selectToCommitMs: committedAt - sample.selectedAt });
         sample.phase = 'resetting'; await instance.setLocale('en');
         sample.phase = 'removing'; await request('remove', { token: sample.token });
         // A delete commit may arrive before /remove returns; that is handled by the effect.

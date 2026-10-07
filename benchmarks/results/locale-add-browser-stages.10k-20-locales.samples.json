@@ -1,0 +1,401 @@
+{
+  "scenario": "10k-20-locales",
+  "samples": [
+    {
+      "token": "10k-20-locales:11",
+      "warmup": true,
+      "saveToListAckMs": 203.14720000000125,
+      "selectToTranslationAckMs": 267.01840000000084,
+      "saveToTranslationAckMs": 473.89050000000134,
+      "selectToCommitMs": 263.29999999701977,
+      "saveToBroadcastMs": 186.37950000000092,
+      "fileWriteMs": 9.085900000000038,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 21.599999994039536,
+          "freezeMs": 43.79999999701977,
+          "snapshotMs": 20.399999991059303,
+          "translatorMs": 15.099999994039536,
+          "signatureMs": 5.100000008940697,
+          "snapshotOtherMs": 0.19999998807907104,
+          "selectionOtherMs": 177.50000001490116
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:12",
+      "warmup": true,
+      "saveToListAckMs": 181.60950000000048,
+      "selectToTranslationAckMs": 193.47860000000037,
+      "saveToTranslationAckMs": 379.83060000000114,
+      "selectToCommitMs": 190.20000000298023,
+      "saveToBroadcastMs": 168.9387000000006,
+      "fileWriteMs": 13.858399999999165,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 6.299999997019768,
+          "freezeMs": 30,
+          "snapshotMs": 13.300000011920929,
+          "translatorMs": 9.200000002980232,
+          "signatureMs": 3.9000000059604645,
+          "snapshotOtherMs": 0.20000000298023224,
+          "selectionOtherMs": 140.59999999403954
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:13",
+      "warmup": false,
+      "saveToListAckMs": 159.41399999999885,
+      "selectToTranslationAckMs": 221.40129999999954,
+      "saveToTranslationAckMs": 383.66239999999925,
+      "selectToCommitMs": 218.40000000596046,
+      "saveToBroadcastMs": 145.23509999999987,
+      "fileWriteMs": 10.03900000000067,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 9,
+          "freezeMs": 41.900000005960464,
+          "snapshotMs": 22.80000001192093,
+          "translatorMs": 18.100000008940697,
+          "signatureMs": 4.700000002980232,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 144.69999998807907
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:14",
+      "warmup": false,
+      "saveToListAckMs": 183.28169999999955,
+      "selectToTranslationAckMs": 280.9764000000014,
+      "saveToTranslationAckMs": 467.14840000000004,
+      "selectToCommitMs": 277.90000000596046,
+      "saveToBroadcastMs": 169.52429999999913,
+      "fileWriteMs": 10.912400000001071,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 6.100000008940697,
+          "freezeMs": 35.099999994039536,
+          "snapshotMs": 17,
+          "translatorMs": 12.299999997019768,
+          "signatureMs": 4.700000002980232,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 219.70000000298023
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:15",
+      "warmup": false,
+      "saveToListAckMs": 181.26480000000083,
+      "selectToTranslationAckMs": 189.60399999999936,
+      "saveToTranslationAckMs": 373.90029999999933,
+      "selectToCommitMs": 186.59999999403954,
+      "saveToBroadcastMs": 169.64769999999953,
+      "fileWriteMs": 12.200000000000728,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 7.5999999940395355,
+          "freezeMs": 35.099999994039536,
+          "snapshotMs": 18,
+          "translatorMs": 12.400000005960464,
+          "signatureMs": 5.5999999940395355,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 125.90000000596046
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:16",
+      "warmup": false,
+      "saveToListAckMs": 165.71800000000076,
+      "selectToTranslationAckMs": 214.82550000000083,
+      "saveToTranslationAckMs": 382.9251000000004,
+      "selectToCommitMs": 212,
+      "saveToBroadcastMs": 155.08569999999963,
+      "fileWriteMs": 11.899999999999636,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 7.800000011920929,
+          "freezeMs": 44.79999999701977,
+          "snapshotMs": 17.799999997019768,
+          "translatorMs": 13.299999997019768,
+          "signatureMs": 4.5,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 141.59999999403954
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:17",
+      "warmup": false,
+      "saveToListAckMs": 148.28789999999935,
+      "selectToTranslationAckMs": 197.90000000000146,
+      "saveToTranslationAckMs": 348.70050000000083,
+      "selectToCommitMs": 195.1000000089407,
+      "saveToBroadcastMs": 132.66710000000057,
+      "fileWriteMs": 10.785099999999147,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 4.9000000059604645,
+          "freezeMs": 39.599999994039536,
+          "snapshotMs": 19.099999994039536,
+          "translatorMs": 13.799999997019768,
+          "signatureMs": 5.299999997019768,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 131.50000001490116
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:18",
+      "warmup": false,
+      "saveToListAckMs": 169.89869999999974,
+      "selectToTranslationAckMs": 220.8811999999998,
+      "saveToTranslationAckMs": 393.6252000000004,
+      "selectToCommitMs": 217.6000000089407,
+      "saveToBroadcastMs": 158.77200000000084,
+      "fileWriteMs": 10.746900000000096,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 7.799999997019768,
+          "freezeMs": 47.599999994039536,
+          "snapshotMs": 22.599999994039536,
+          "translatorMs": 15.799999997019768,
+          "signatureMs": 6.799999997019768,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 139.60000002384186
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:19",
+      "warmup": false,
+      "saveToListAckMs": 184.89440000000104,
+      "selectToTranslationAckMs": 238.76560000000063,
+      "saveToTranslationAckMs": 426.6313000000009,
+      "selectToCommitMs": 235.5,
+      "saveToBroadcastMs": 169.59350000000086,
+      "fileWriteMs": 13.708999999998923,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 8.199999988079071,
+          "freezeMs": 38.79999999701977,
+          "snapshotMs": 31.700000002980232,
+          "translatorMs": 26.799999997019768,
+          "signatureMs": 4.9000000059604645,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 156.80000001192093
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:20",
+      "warmup": false,
+      "saveToListAckMs": 402.60229999999865,
+      "selectToTranslationAckMs": 211.35609999999724,
+      "saveToTranslationAckMs": 617.2837999999974,
+      "selectToCommitMs": 208.5,
+      "saveToBroadcastMs": 387.0529999999999,
+      "fileWriteMs": 13.55710000000181,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 7.5,
+          "freezeMs": 44.099999994039536,
+          "snapshotMs": 18.400000005960464,
+          "translatorMs": 12.700000002980232,
+          "signatureMs": 5.700000002980232,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 138.5
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:21",
+      "warmup": false,
+      "saveToListAckMs": 289.1873000000014,
+      "selectToTranslationAckMs": 224.51829999999973,
+      "saveToTranslationAckMs": 518.0786000000007,
+      "selectToCommitMs": 221.5,
+      "saveToBroadcastMs": 275.21900000000096,
+      "fileWriteMs": 14.1349999999984,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 7.100000008940697,
+          "freezeMs": 41.099999994039536,
+          "snapshotMs": 16.599999994039536,
+          "translatorMs": 12.299999997019768,
+          "signatureMs": 4.299999997019768,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 156.70000000298023
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:22",
+      "warmup": false,
+      "saveToListAckMs": 195.4172000000035,
+      "selectToTranslationAckMs": 226.03900000000067,
+      "saveToTranslationAckMs": 424.1725000000006,
+      "selectToCommitMs": 222.5,
+      "saveToBroadcastMs": 180.25220000000263,
+      "fileWriteMs": 8.04229999999734,
+      "browserStages": {
+        "timings": {
+          "decodeMs": 7.700000002980232,
+          "freezeMs": 37.70000000298023,
+          "snapshotMs": 17.799999997019768,
+          "translatorMs": 13.399999991059303,
+          "signatureMs": 4.4000000059604645,
+          "snapshotOtherMs": 0,
+          "selectionOtherMs": 159.29999999701977
+        },
+        "calls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    }
+  ]
+}

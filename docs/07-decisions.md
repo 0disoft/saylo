@@ -90,6 +90,8 @@ Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 
 
 위치 공유 후 50회 재측정에서 large 목록 p95는 878.98ms로 낮게 관측됐지만 250ms 목표는 미달이다. 첫 번역 선택 p95는 486.80ms로 직전 run보다 높게 관측돼 전체 흐름의 일관된 개선은 확인하지 못했다. 다음은 benchmark의 locale-add full 응답 디코딩·동결·snapshot 구간 계측으로 정한다. 브라우저 디코딩을 확정 병목으로 단정하지 않으며 근거는 [23](23-position-sharing-locale-add.md)이다.
 
+첫 선택 계측에서 Vite 동결이 수집한 동기 구간 중 가장 컸지만 선택 잔여가 매회 전체 선택 시간의 64.15% 이상이었다. 다음 구현은 동결 최적화에 바로 귀속하기보다 snapshot 이전 core acceptOutcome의 검증·동결 경계를 추가하는 benchmark 작업으로 정한다. full/patch 모드별 필수 호출을 구분하고 잔여를 네트워크 비용으로 단정하지 않는다. 근거·검증은 [24](24-full-selection-browser-stages.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

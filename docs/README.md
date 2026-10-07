@@ -28,6 +28,7 @@
 20. [21-locale-add-server-remeasurement.md](21-locale-add-server-remeasurement.md) — 현행 대규모 로케일 추가의 서버 구간과 다음 파서 후보
 21. [22-relative-position-sharing.md](22-relative-position-sharing.md) — 단순 AST 상대 좌표·구간 공유와 파서 비교
 22. [23-position-sharing-locale-add.md](23-position-sharing-locale-add.md) — 상대 위치 공유 후 목록·첫 번역 반영 재측정
+23. [24-full-selection-browser-stages.md](24-full-selection-browser-stages.md) — 첫 언어 선택의 full 디코딩·동결·snapshot 계측
 
 ## 상태 표기 규칙
 

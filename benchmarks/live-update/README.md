@@ -25,7 +25,7 @@ npm run bench:live
 | `--out` | `benchmarks/results/live-update.json` | 결과 JSON 경로 |
 | `--no-typegen` | 꺼짐 | typegen을 끄고 실행 |
 | `--cpu-profile` | 꺼짐 | `node:inspector`로 측정 구간 edit loop의 CPU profile을 켜고 결과에 `cpuProfile`을 넣는다 |
-| `--browser-stages` | 꺼짐 | benchmark 전용 Vite transform으로 브라우저 patch·freeze·snapshot·translator·signature 시간을 따로 잰다 |
+| `--browser-stages` | 꺼짐 | benchmark 전용 Vite transform. edit는 patch·freeze·snapshot, locale-add는 첫 선택의 full decode·freeze·snapshot을 수집하며 translator·signature도 구분한다 |
 | `--server-file-stages` | 꺼짐 | benchmark 전용 Node module transform으로 경로 검사·UTF-8 읽기·카탈로그 파싱을 따로 잰다 |
 | `--timeout-ms` | `30000` | 단계별 대기 timeout |
 
@@ -156,6 +156,8 @@ AST 동결 최적화 후 종단 간 재측정은 `node benchmarks/live-update/ru
 상대 위치 공유는 `0a1beb2` 기준으로 `parse-compare-position-pool-final-cold.json`·`parse-compare-position-pool-final-incremental.json`에 기록했다. 내부 계측은 `parser-stages-position-pool-cold.json`과 같은 stem의 원시 파일이다. pool 생성·최초 좌표/구간 동결은 AST 구간에 포함되며 동결 비용이 과거 메시지 구간에서 이동한 점을 고려한다. `parse-compare-position-pool-cold.json`은 좌표만 공유한 초기 실험이다. cold 중앙값은 낮게 관측됐지만 최장 시간과 incremental p95는 개선되지 않았다. 재현 명령·객체 수·원시·한계는 [../../docs/22-relative-position-sharing.md](../../docs/22-relative-position-sharing.md)를 따른다.
 
 상대 위치 공유 후 종단 간 재측정은 `node benchmarks/live-update/run.mjs --mode locale-add --out benchmarks/results/locale-add-position-pool.json`로 실행했다. warmup 5·측정 50·control 25, 상세 계측 끔·typegen 켬 조건이다. 목록 p95는 small 109.68ms·large 878.98ms, 선택→첫 번역 commit p95는 48.00ms·486.80ms였다. large 목록은 15/50회만 250ms 이내였고 p95 목표는 미달이다. 선택 p95는 직전 run보다 높게 관측돼 전체 개선이나 원인을 확정하지 않는다. 상태 보존·원시·hash 확인과 다음 full 응답 브라우저 계측 후보는 [../../docs/23-position-sharing-locale-add.md](../../docs/23-position-sharing-locale-add.md)를 따른다.
+
+locale-add의 첫 언어 선택 계측은 `node benchmarks/live-update/run.mjs --mode locale-add --browser-stages --scenario 10k-20-locales --samples 10 --warmup 2 --calibrations 10 --out benchmarks/results/locale-add-browser-stages.json`로 실행했다. 선택 직전→첫 번역 DOM commit만 수집하고 boot·목록 추가·복귀·삭제는 제외한다. full 디코딩·Vite 동결·snapshot p50은 7.60/39.60/18.00ms였다. snapshot은 translator·signature를 포함하고, snapshotOther·selectionOther는 sample별 잔여이다. 큰 선택 잔여를 네트워크 비용으로 해석하지 않는다. Saylo prebundle을 끄므로 계측 없는 run과 직접 비교하지 않는다. full/patch/계측 끔 smoke와 `node --test benchmarks/live-update/browser-profile.test.mjs` 검증, 원시·세부 정의는 [../../docs/24-full-selection-browser-stages.md](../../docs/24-full-selection-browser-stages.md)를 따른다.
 
 ## 한계
 

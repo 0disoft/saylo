@@ -40,6 +40,8 @@ AST 동결 최적화 후 초기 기록과 같은 설정(warmup 5·측정 50·con
 
 상대 위치 공유 후 같은 50회 설정으로 종단 간 재측정을 완료했다. 목록 p95는 small 109.68ms·large 878.98ms이며 large의 250ms 이내는 15/50회로 목표는 여전히 미달이다. 선택→첫 번역 commit p95는 48.00ms·486.80ms로 직전 run보다 높게 관측됐다. 입력 상태·선언 파일·선택 전 0회/후 1회 full 응답을 유지했다. 다음은 선택 후 full 디코딩·동결·snapshot 계측이며 단일 run의 시간 차이를 코드 효과로 단정하지 않는다. 조건·원시는 [23-position-sharing-locale-add.md](23-position-sharing-locale-add.md)에 있다.
 
+locale-add의 첫 선택 브라우저 계측을 benchmark에 추가했다. 대규모 10회에서 동기 구간 p50은 full 디코딩 7.60ms·Vite 동결 39.60ms·snapshot 18.00ms였다. 선택→commit p50/p95는 217.60/277.90ms이며 잔여 p50은 141.60ms로 더 컸다. 제품 변경은 없고 모드별 필수 호출·중첩 잔여 검사와 실제 full/patch/계측 끔 smoke를 통과했다. 다음은 core acceptOutcome 등 잔여 구간 분리이며 prebundle 차이·범위·원시는 [24-full-selection-browser-stages.md](24-full-selection-browser-stages.md)에 있다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.
