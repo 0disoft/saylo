@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
-import { freeze, createPositionLocator } from '../dist/diagnostics.js';
+import { freeze, isDeepFrozen, createPositionLocator } from '../dist/diagnostics.js';
 
 const options = { locale: 'ko', namespace: 'cart', sourceName: 'locales/ko/cart.json' };
 const catalog = (messages, locale = 'ko') => parseCatalog(JSON.stringify(messages), { ...options, locale });
@@ -286,6 +286,23 @@ test('deep freeze visits children of an externally shallow-frozen object', () =>
   freeze(value);
   assert.throws(() => { value.nested.values.push('after'); }, TypeError);
   assert.equal(freeze(value), value);
+});
+
+test('parser-owned AST freezing covers simple locations, FormatJS literals and nested skeletons', () => {
+  const parsed = catalog({ empty: '', simple: '😀\n{name} {other}', quoted: "'{literal}' {name}",
+    complex: '{n, plural, one {{at, date, ::yyyyMMdd}} other {{who, select, a {{n, number, ::currency/USD}} other {#}}}}' });
+  function verify(value) {
+    if (value === null || typeof value !== 'object') return;
+    assert.ok(Object.isFrozen(value));
+    assert.ok(isDeepFrozen(value));
+    for (const child of Object.values(value)) verify(child);
+  }
+  verify(parsed);
+  const start = parsed.messages.simple.ast[1].location.start;
+  assert.deepEqual(start, { offset: 3, line: 2, column: 1 });
+  assert.throws(() => { start.offset = 0; }, TypeError);
+  assert.throws(() => { parsed.messages.quoted.ast[0].value = 'edited'; }, TypeError);
+  assert.equal(freeze(parsed), parsed);
 });
 
 test('incremental parsing reuses unchanged ICU but refreshes source positions and validates changed entries', () => {

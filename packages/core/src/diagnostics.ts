@@ -1,3 +1,5 @@
+import { TYPE } from '@formatjs/icu-messageformat-parser/no-parser.js';
+import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import type { CatalogDiagnostic, DeepReadonly, SourcePosition } from './types.js';
 
 // Only objects traversed by this helper are trusted to be deeply frozen.
@@ -12,6 +14,27 @@ export function freeze<T>(value: T): DeepReadonly<T> {
     frozen.add(value);
   }
   return value as DeepReadonly<T>;
+}
+
+/** Only for fresh ASTs owned by the catalog parser, with FormatJS node shapes. */
+export function freezeMessageAst(ast: MessageFormatElement[]): DeepReadonly<MessageFormatElement[]> {
+  // Each call below follows its children; numeric/string leaves need no walk.
+  function seal<T extends object>(value: T): DeepReadonly<T> {
+    Object.freeze(value);
+    frozen.add(value);
+    return value as DeepReadonly<T>;
+  }
+  for (const element of ast) {
+    if (element.type === TYPE.literal || element.type === TYPE.argument) {
+      if (element.location) {
+        seal(element.location.start);
+        seal(element.location.end);
+        seal(element.location);
+      }
+      seal(element);
+    } else freeze(element); // Includes nested branches, tags and skeletons.
+  }
+  return seal(ast);
 }
 
 export class CatalogError extends Error {

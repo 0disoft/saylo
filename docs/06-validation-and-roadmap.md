@@ -113,6 +113,8 @@ Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/run
 
 동일 인자 스키마를 파싱 호출 안에서 공유하고, 불변 번역·기준 계약 쌍의 검증 성공 결과를 재사용하도록 로컬 구현했다. 10k cold 교차 비교 20쌍 중 17쌍이 빨랐고 pair별 차이 중앙값은 -36.08ms였지만 p95는 396.18→563.63ms로 증가했다. 반복 fixture의 인자 동결은 호출당 2회로 줄었으며 메시지 동결 경로가 다음 후보이다. workspace 테스트 163개와 consumer 타입 검사를 통과했다. 종단 간 지연은 재측정하지 않았으며 조건·원시 결과는 [18-shared-argument-schemas.md](18-shared-argument-schemas.md)에 있다.
 
+파서 소유 literal·argument AST에 구조별 동결 경로를 로컬 적용했다. 10k cold 교차 비교에서 p50은 135.39→107.54ms, p95는 356.05→279.60ms로 관측했고 20쌍 중 15쌍이 빨랐다. incremental 100쌍의 차이 중앙값은 +1.17ms여서 일반 편집 개선은 확인하지 못했다. workspace 테스트 164개와 consumer 타입 검사를 통과했다. 다음은 종단 간 로케일 추가 재측정이며, 되돌린 일반 동결 순회 실험과 조건·원시 결과는 [19-ast-freeze-measurements.md](19-ast-freeze-measurements.md)를 따른다.
+
 ## 빌드 순서
 
 순서는 typegen(generate) → tsc(consumer 타입 체크) → build(Vite)다. Vite build 자체는 consumer TS 타입 체크를 하지 않으므로 tsc를 build 앞에 둔다. 별도 package/version 설정 파일 구현은 이번 범위 밖이다.

@@ -147,6 +147,8 @@ parser 최적화 측정은 [../results/live-update-profile-before.json](../resul
 
 manifest frame 크기는 [manifest-size.mjs](manifest-size.mjs)로 비교한다. 기존 v1과 현재 v2의 update envelope JSON을 재구성해 UTF-8 바이트만 재는 값이며 실제 네트워크 계측이 아니다. 이 재구성 값은 run에서 캡처한 `wire.catalogReplyBytes`와 다른 값이다. 결과는 [../results/live-update-wire-sizes.json](../results/live-update-wire-sizes.json)에 남는다. small(1k×3) 162,256 B → 871 B, large(10k×20) 10,980,273 B → 4,373 B이고, fingerprint 문자열은 45,886자 → 87자, 468,886자 → 87자다. 실행은 `node benchmarks/live-update/manifest-size.mjs`다.
 
+파서 소유 literal·argument AST 동결은 `6e67555` 기준으로 비교했다. cold 결과는 `parse-compare-ast-freeze-cold.json`, incremental은 `parse-compare-ast-freeze-incremental.json`, 내부 계측은 `parser-stages-ast-freeze-cold.json`과 같은 stem의 원시 표본이다. cold p50·p95는 낮게 관측됐지만 incremental 중앙값 개선은 확인하지 못했다. 현재 messageFreeze 계측은 AST 동결과 메시지 구성·위치 생성도 포함한다. `parse-compare-freeze-traversal-cold.json`은 되돌린 일반 동결 순회 실험이며 최종 코드의 결과가 아니다. 재현 명령·범위·한계는 [../../docs/19-ast-freeze-measurements.md](../../docs/19-ast-freeze-measurements.md)를 따른다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

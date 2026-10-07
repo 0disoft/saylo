@@ -80,6 +80,8 @@ cold 내부 계측에서는 인자 스키마·메시지·최종 카탈로그 동
 
 Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 2026-10-07 Paraglide 2.25.4와 같은 fixture의 small 문구 수정·로케일 추가를 각각 10회 측정했다. Paraglide 문구 편집은 Fast Refresh로 입력과 상태를 유지했고, 로케일 추가·기본 setter 선택은 document reload로 최초 상태를 잃었다. Saylo는 두 흐름에서 상태 보존을 확인했다. large는 Paraglide 초기 compile의 하위 SDK timeout으로 비교를 완료하지 못했다. 조건·원시 결과·한계는 [13-paraglide-comparison.md](13-paraglide-comparison.md)를 따른다. 위 i18next/Wuchale 얇은 계층 비교 실험은 아직 실시하지 않았으며 이 측정으로 독립 런타임 필요성을 확정하지 않는다.
 
+파서 소유 literal·argument AST에는 알려진 구조의 위치·노드를 직접 동결하는 경로를 선택했다. 복잡한 ICU와 외부 입력의 일반 동결은 유지한다. cold 교차 비교 p50·p95는 낮게 관측됐지만 incremental 중앙값에서는 개선을 확인하지 못했다. 일반 동결을 for...in으로 바꾼 실험은 느려져 되돌렸다. 다음은 로케일 추가 종단 간 재측정이며 조건·한계는 [19](19-ast-freeze-measurements.md)에 있다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

@@ -23,6 +23,7 @@
 15. [16-compact-catalog-transport.md](16-compact-catalog-transport.md) — lazy full 카탈로그의 compact 개발 전송과 검증
 16. [17-cold-parser-measurements.md](17-cold-parser-measurements.md) — 새 카탈로그 파싱의 내부 구간과 GC 관측
 17. [18-shared-argument-schemas.md](18-shared-argument-schemas.md) — 동일 인자 스키마 공유와 cold 교차 비교
+18. [19-ast-freeze-measurements.md](19-ast-freeze-measurements.md) — 파서 소유 AST 동결 최적화와 cold·incremental 비교
 
 ## 상태 표기 규칙
 

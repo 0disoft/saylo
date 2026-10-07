@@ -1,5 +1,5 @@
 import { parse } from '@formatjs/icu-messageformat-parser';
-import { CatalogError, freeze, createPositionLocator, isDeepFrozen } from './diagnostics.js';
+import { CatalogError, freeze, freezeMessageAst, createPositionLocator, isDeepFrozen } from './diagnostics.js';
 import { messageOffset, readJson } from './json.js';
 import { inferArguments } from './schema.js';
 import { parseSimpleMessage } from './simple-message.js';
@@ -44,7 +44,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
       const ast = parseSimpleMessage(entry.value) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
         position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
-      messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast, arguments: argumentsSchema });
+      messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });
     } catch (error) {
       if (error instanceof CatalogError) diagnostics.push(...error.diagnostics);
       else {

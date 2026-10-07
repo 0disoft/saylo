@@ -1,0 +1,560 @@
+{
+  "schema": "saylo-parser-stages-v2",
+  "measuredAt": "2026-10-07T10:16:08.844Z",
+  "gitRevision": "6e675552c315a8c112198af9765b6294fe939c0c",
+  "workingTreeStatus": "M benchmarks/live-update/parser-probe.mjs\n M packages/core/src/catalog.ts\n M packages/core/src/diagnostics.ts\n M packages/core/test/catalog.test.mjs\n?? benchmarks/results/parse-compare-ast-freeze-cold.json\n?? benchmarks/results/parse-compare-freeze-traversal-cold.json\n?? benchmarks/results/parser-stages-ast-freeze-cold.1000.samples.json\n?? benchmarks/results/parser-stages-ast-freeze-cold.10000.samples.json",
+  "node": "v24.18.0",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         "
+  },
+  "mode": "cold",
+  "settings": {
+    "warmup": 5,
+    "samples": 20,
+    "detailed": true,
+    "forcedGc": false
+  },
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "6912917cfd1897ff00431722d92a4d53d0129ec8c89fb6fc207ad9d433dd143e",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/diagnostics.js": "c9bd0ea205287dd47dbaf856669030e7852a459bf6f855889ff3882aad46928a",
+    "packages/core/dist/schema.js": "155be26cf1422c0c02095b83b97bcf6696d42a08c9d495b3bacd644504ee210c",
+    "packages/core/dist/simple-message.js": "4fd2761cd258e4a6f7654baa7078bbcace29877cd67e234dbc297b03c572040a",
+    "benchmarks/live-update/gc-profile.mjs": "31f34fbafd5b2983dcf71f41e373a7c328b623a153b47818e774b8581b919234",
+    "benchmarks/live-update/parser-stages.mjs": "fcce04e0bc16040943ff1e2a41d07a0aabce491a441a6ef8937ff47bc973a78e",
+    "benchmarks/live-update/parser-probe.mjs": "f151a3abdd87776c97383c4e15c4a4cf67f8da88e530a0f6e14d61e29e2b0dc5",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "376fef212eb14bf1c3fad0514dac30e3ce9de7ab5892e5fb8a710c31edbe8078"
+  },
+  "scope": "Synchronous parser-only benchmark. Cold: no previous catalog; full literal/simple interpolation parsing each call. Incremental: same-length single probe edit, immutable prior catalog. Input stringify, heapUsed readings, assertions, disk, watcher, translation validation and browser excluded. json includes strictJson and tokenScan; messageLoop includes AST, arguments and message freeze; arguments includes argument freeze. Residuals are calculated per sample before summarizing. Nested p95s must not be added. Clock/counter instrumentation overhead included; GC observed asynchronously and matched by timestamp.",
+  "results": [
+    {
+      "messagesPerLocale": 1000,
+      "locale": "en-GB",
+      "inputBytes": 36772,
+      "summary": {
+        "totalMs": {
+          "count": 20,
+          "p50Ms": 16.09179999999992,
+          "p95Ms": 50.390600000000006,
+          "minMs": 13.230699999999956,
+          "maxMs": 93.76030000000003
+        },
+        "jsonMs": {
+          "count": 20,
+          "p50Ms": 1.2858999999999696,
+          "p95Ms": 1.6777999999999338,
+          "minMs": 1.1969999999999459,
+          "maxMs": 19.383500000000026
+        },
+        "strictJsonMs": {
+          "count": 20,
+          "p50Ms": 0.47300000000007003,
+          "p95Ms": 0.5739999999999554,
+          "minMs": 0.35779999999999745,
+          "maxMs": 0.5749999999999886
+        },
+        "tokenScanMs": {
+          "count": 20,
+          "p50Ms": 0.8093000000000075,
+          "p95Ms": 1.2068000000000438,
+          "minMs": 0.7552000000000021,
+          "maxMs": 18.79989999999998
+        },
+        "positionIndexMs": {
+          "count": 20,
+          "p50Ms": 0.007099999999923057,
+          "p95Ms": 0.015499999999974534,
+          "minMs": 0.005899999999996908,
+          "maxMs": 0.027699999999981628
+        },
+        "messageLoopMs": {
+          "count": 20,
+          "p50Ms": 14.036500000000046,
+          "p95Ms": 48.41429999999997,
+          "minMs": 11.524699999999996,
+          "maxMs": 91.62249999999995
+        },
+        "freezeMs": {
+          "count": 20,
+          "p50Ms": 0.4093000000000302,
+          "p95Ms": 0.5214000000000851,
+          "minMs": 0.3593000000000188,
+          "maxMs": 0.522199999999998
+        },
+        "astMs": {
+          "count": 20,
+          "p50Ms": 0.970599999997944,
+          "p95Ms": 7.082300000000487,
+          "minMs": 0.7152000000021417,
+          "maxMs": 7.93170000000157
+        },
+        "argumentsMs": {
+          "count": 20,
+          "p50Ms": 1.4853000000005636,
+          "p95Ms": 2.0275000000004866,
+          "minMs": 1.3948999999994385,
+          "maxMs": 6.45490000000035
+        },
+        "argumentFreezeMs": {
+          "count": 20,
+          "p50Ms": 0.01839999999998554,
+          "p95Ms": 0.02650000000005548,
+          "minMs": 0.015300000000024738,
+          "maxMs": 0.032800000000065666
+        },
+        "messageFreezeMs": {
+          "count": 20,
+          "p50Ms": 9.65589999999986,
+          "p95Ms": 38.629899999999,
+          "minMs": 8.023100000000056,
+          "maxMs": 87.3247999999976
+        },
+        "reusedMessageFreezeMs": {
+          "count": 20,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "minMs": 0,
+          "maxMs": 0
+        },
+        "argumentInferenceOnlyMs": {
+          "count": 20,
+          "p50Ms": 1.4612000000005878,
+          "p95Ms": 2.0073000000004413,
+          "minMs": 1.3782999999994558,
+          "maxMs": 6.43400000000031
+        },
+        "messageLoopOtherMs": {
+          "count": 20,
+          "p50Ms": 0.9997999999995955,
+          "p95Ms": 1.2556999999989102,
+          "minMs": 0.7481000000021822,
+          "maxMs": 1.317399999998429
+        },
+        "unattributedMs": {
+          "count": 20,
+          "p50Ms": 0.07970000000000255,
+          "p95Ms": 0.1373999999998432,
+          "minMs": 0.054800000000057025,
+          "maxMs": 0.16440000000000055
+        }
+      },
+      "gcSummary": {
+        "scope": "Timestamp overlap with synchronous parser calls. Observed GC durations are not measured pause/CPU time and must not be subtracted from parser timings. Heap deltas are net heapUsed changes, including uncollected garbage, not allocated bytes.",
+        "samplesWithGc": 9,
+        "overlap": {
+          "count": 20,
+          "p50Ms": 0,
+          "p95Ms": 6.630999997258186,
+          "minMs": 0,
+          "maxMs": 17.503200009465218
+        },
+        "withGc": {
+          "count": 9,
+          "p50Ms": 32.851999999999975,
+          "p95Ms": 93.76030000000003,
+          "minMs": 16.813099999999963,
+          "maxMs": 93.76030000000003
+        },
+        "withoutGc": {
+          "count": 11,
+          "p50Ms": 14.136500000000012,
+          "p95Ms": 16.637400000000014,
+          "minMs": 13.230699999999956,
+          "maxMs": 16.637400000000014
+        },
+        "scenario": {
+          "count": 15,
+          "observedOverlapMs": 72.60900002717972,
+          "events": [
+            {
+              "startTimeMs": 130.4099,
+              "durationMs": 0.8790999948978424,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 0.8790999948978424
+            },
+            {
+              "startTimeMs": 134.9433,
+              "durationMs": 3.8579999953508377,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 3.8579999953508377
+            },
+            {
+              "startTimeMs": 161.6355,
+              "durationMs": 2.8022000044584274,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 2.8022000044584274
+            },
+            {
+              "startTimeMs": 187.771,
+              "durationMs": 4.778200000524521,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 4.778200000524521
+            },
+            {
+              "startTimeMs": 204.5525,
+              "durationMs": 2.99159999191761,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 2.99159999191761
+            },
+            {
+              "startTimeMs": 218.7798,
+              "durationMs": 2.4461000114679337,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 2.4461000114679337
+            },
+            {
+              "startTimeMs": 261.39,
+              "durationMs": 4.711400002241135,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 4.711400002241135
+            },
+            {
+              "startTimeMs": 295.4549,
+              "durationMs": 6.165300011634827,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 6.165300011634827
+            },
+            {
+              "startTimeMs": 361.3636,
+              "durationMs": 5.4840999990701675,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 5.4840999990701675
+            },
+            {
+              "startTimeMs": 396.0984,
+              "durationMs": 4.660700008273125,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 4.660700008273125
+            },
+            {
+              "startTimeMs": 459.0502,
+              "durationMs": 4.550400003790855,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 4.550400003790855
+            },
+            {
+              "startTimeMs": 491.2219,
+              "durationMs": 4.751200005412102,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 4.751200005412102
+            },
+            {
+              "startTimeMs": 553.6044,
+              "durationMs": 6.630999997258186,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 6.630999997258186
+            },
+            {
+              "startTimeMs": 651.3922,
+              "durationMs": 0.39649999141693115,
+              "kind": "incremental",
+              "flags": 0,
+              "overlapMs": 0.39649999141693115
+            },
+            {
+              "startTimeMs": 698.0711,
+              "durationMs": 17.503200009465218,
+              "kind": "major",
+              "flags": 64,
+              "overlapMs": 17.503200009465218
+            }
+          ]
+        }
+      },
+      "samplesFile": "parser-stages-ast-freeze-cold.1000.samples.json"
+    },
+    {
+      "messagesPerLocale": 10000,
+      "locale": "en-GB",
+      "inputBytes": 387772,
+      "summary": {
+        "totalMs": {
+          "count": 20,
+          "p50Ms": 219.53920000000016,
+          "p95Ms": 589.4233000000004,
+          "minMs": 150.71100000000024,
+          "maxMs": 607.1521000000002
+        },
+        "jsonMs": {
+          "count": 20,
+          "p50Ms": 14.13299999999981,
+          "p95Ms": 28.679899999999634,
+          "minMs": 12.209399999999732,
+          "maxMs": 60.78379999999993
+        },
+        "strictJsonMs": {
+          "count": 20,
+          "p50Ms": 4.363200000000006,
+          "p95Ms": 6.727799999999661,
+          "minMs": 4.037699999999859,
+          "maxMs": 7.982600000000275
+        },
+        "tokenScanMs": {
+          "count": 20,
+          "p50Ms": 9.671699999999873,
+          "p95Ms": 20.684000000000196,
+          "minMs": 8.155899999999747,
+          "maxMs": 56.40869999999995
+        },
+        "positionIndexMs": {
+          "count": 20,
+          "p50Ms": 0.04969999999980246,
+          "p95Ms": 0.06739999999990687,
+          "minMs": 0.046600000000125874,
+          "maxMs": 0.07130000000006476
+        },
+        "messageLoopMs": {
+          "count": 20,
+          "p50Ms": 201.15909999999985,
+          "p95Ms": 540.5649000000003,
+          "minMs": 132.4966999999997,
+          "maxMs": 565.4411
+        },
+        "freezeMs": {
+          "count": 20,
+          "p50Ms": 5.684400000000096,
+          "p95Ms": 8.850800000000163,
+          "minMs": 5.1305999999999585,
+          "maxMs": 9.438300000000254
+        },
+        "astMs": {
+          "count": 20,
+          "p50Ms": 8.683199999947647,
+          "p95Ms": 96.81230000004643,
+          "minMs": 7.533000000003085,
+          "maxMs": 109.11830000002283
+        },
+        "argumentsMs": {
+          "count": 20,
+          "p50Ms": 15.592599999979484,
+          "p95Ms": 83.55279999999584,
+          "minMs": 11.950999999942724,
+          "maxMs": 117.03440000001592
+        },
+        "argumentFreezeMs": {
+          "count": 20,
+          "p50Ms": 0.03760000000056607,
+          "p95Ms": 0.053800000000137516,
+          "minMs": 0.026199999999789725,
+          "maxMs": 0.06570000000010623
+        },
+        "messageFreezeMs": {
+          "count": 20,
+          "p50Ms": 114.18170000002738,
+          "p95Ms": 408.9375999999995,
+          "minMs": 99.11869999998544,
+          "maxMs": 532.1635000000106
+        },
+        "reusedMessageFreezeMs": {
+          "count": 20,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "minMs": 0,
+          "maxMs": 0
+        },
+        "argumentInferenceOnlyMs": {
+          "count": 20,
+          "p50Ms": 15.554199999980028,
+          "p95Ms": 83.50839999999607,
+          "minMs": 11.911899999943671,
+          "maxMs": 117.00110000001587
+        },
+        "messageLoopOtherMs": {
+          "count": 20,
+          "p50Ms": 9.376600000059625,
+          "p95Ms": 68.83569999999736,
+          "minMs": 6.363699999961,
+          "maxMs": 114.64790000010271
+        },
+        "unattributedMs": {
+          "count": 20,
+          "p50Ms": 0.12590000000091095,
+          "p95Ms": 0.16310000000066793,
+          "minMs": 0.11160000000018044,
+          "maxMs": 0.19770000000016807
+        }
+      },
+      "gcSummary": {
+        "scope": "Timestamp overlap with synchronous parser calls. Observed GC durations are not measured pause/CPU time and must not be subtracted from parser timings. Heap deltas are net heapUsed changes, including uncollected garbage, not allocated bytes.",
+        "samplesWithGc": 12,
+        "overlap": {
+          "count": 20,
+          "p50Ms": 57.46269999444485,
+          "p95Ms": 108.18620000779629,
+          "minMs": 0,
+          "maxMs": 150.9074999988079
+        },
+        "withGc": {
+          "count": 12,
+          "p50Ms": 240.2493000000004,
+          "p95Ms": 607.1521000000002,
+          "minMs": 200.91150000000016,
+          "maxMs": 607.1521000000002
+        },
+        "withoutGc": {
+          "count": 8,
+          "p50Ms": 159.60770000000002,
+          "p95Ms": 589.4233000000004,
+          "minMs": 150.71100000000024,
+          "maxMs": 589.4233000000004
+        },
+        "scenario": {
+          "count": 19,
+          "observedOverlapMs": 1038.6520999521017,
+          "events": [
+            {
+              "startTimeMs": 846.4703,
+              "durationMs": 11.472299993038177,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 11.472299993038177
+            },
+            {
+              "startTimeMs": 951.0339,
+              "durationMs": 15.942399993538857,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 15.942399993538857
+            },
+            {
+              "startTimeMs": 1116.2568,
+              "durationMs": 20.927299991250038,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 20.927299991250038
+            },
+            {
+              "startTimeMs": 1379.9775,
+              "durationMs": 50.489699989557266,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 50.489699989557266
+            },
+            {
+              "startTimeMs": 1557.0737,
+              "durationMs": 31.462199985980988,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 31.462199985980988
+            },
+            {
+              "startTimeMs": 1924.5513,
+              "durationMs": 45.819499999284744,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 45.819499999284744
+            },
+            {
+              "startTimeMs": 2203.4445,
+              "durationMs": 0.4886000007390976,
+              "kind": "incremental",
+              "flags": 0,
+              "overlapMs": 0.4886000007390976
+            },
+            {
+              "startTimeMs": 2207.5101,
+              "durationMs": 104.59939999878407,
+              "kind": "major",
+              "flags": 64,
+              "overlapMs": 104.59939999878407
+            },
+            {
+              "startTimeMs": 2747.0549,
+              "durationMs": 26.913699999451637,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 26.913699999451637
+            },
+            {
+              "startTimeMs": 3248.0991,
+              "durationMs": 91.95919999480247,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 91.95919999480247
+            },
+            {
+              "startTimeMs": 3641.1221,
+              "durationMs": 83.76279999315739,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 83.76279999315739
+            },
+            {
+              "startTimeMs": 4100.6484,
+              "durationMs": 61.329699993133545,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 61.329699993133545
+            },
+            {
+              "startTimeMs": 4471.0499,
+              "durationMs": 65.2141999900341,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 65.2141999900341
+            },
+            {
+              "startTimeMs": 4858.2949,
+              "durationMs": 64.04020000994205,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 64.04020000994205
+            },
+            {
+              "startTimeMs": 5633.999,
+              "durationMs": 108.18620000779629,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 108.18620000779629
+            },
+            {
+              "startTimeMs": 6004.0649,
+              "durationMs": 64.31060001254082,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 64.31060001254082
+            },
+            {
+              "startTimeMs": 6327.9496,
+              "durationMs": 70.0785000026226,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 70.0785000026226
+            },
+            {
+              "startTimeMs": 6661.3628,
+              "durationMs": 57.46269999444485,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 57.46269999444485
+            },
+            {
+              "startTimeMs": 6976.5198,
+              "durationMs": 64.19290000200272,
+              "kind": "minor",
+              "flags": 0,
+              "overlapMs": 64.19290000200272
+            }
+          ]
+        }
+      },
+      "samplesFile": "parser-stages-ast-freeze-cold.10000.samples.json"
+    }
+  ]
+}
