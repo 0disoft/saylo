@@ -82,6 +82,8 @@ Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 
 
 파서 소유 literal·argument AST에는 알려진 구조의 위치·노드를 직접 동결하는 경로를 선택했다. 복잡한 ICU와 외부 입력의 일반 동결은 유지한다. cold 교차 비교 p50·p95는 낮게 관측됐지만 incremental 중앙값에서는 개선을 확인하지 못했다. 일반 동결을 for...in으로 바꾼 실험은 느려져 되돌렸다. 다음은 로케일 추가 종단 간 재측정이며 조건·한계는 [19](19-ast-freeze-measurements.md)에 있다.
 
+후속 종단 간 재측정에서는 large 목록 p95가 1,056.40ms로 250ms 목표를 넘었고 모든 측정이 250ms를 초과했다. 목록→선택 흐름의 상태 보존은 유지했다. 다음 구현 대상을 정하기 전에 현재 코드의 서버 구간을 기존 계측기로 다시 확인한다. 과거 파싱 비용 비중이나 단일 run의 시간 차이로 원인을 확정하지 않는다. 근거는 [20](20-locale-add-remeasurement.md)이다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

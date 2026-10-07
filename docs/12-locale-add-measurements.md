@@ -1,5 +1,7 @@
 # 12. 로케일 추가 측정
 
+이 문서는 초기 50회 run의 기록이다. 최적화 후 같은 설정의 후속 측정은 [20-locale-add-remeasurement.md](20-locale-add-remeasurement.md)에 있다.
+
 2026-10-07 KST 로컬 단일 run에서 새 로케일 목록 표시 p95는 small 226.86ms, large 3437.01ms였다. small은 이 실행에서 250ms 목표 안에 들었고 large는 크게 넘었다. 단일 run이므로 안정적 달성이나 일반 앱 성능으로 확대하지 않는다. 기존 문구 수정과 파서 기록은 [10-performance-measurements.md](10-performance-measurements.md)·[11-parser-measurements.md](11-parser-measurements.md)를 따른다.
 
 ## 실행과 조건

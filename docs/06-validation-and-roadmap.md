@@ -32,6 +32,8 @@ Paraglide와 같은 fixture의 small 문구 수정·로케일 추가 측정과 �
 
 이후 lazy 개발 경로의 full present 응답을 compact로 인코딩했다. Vite 77개 테스트·패키지 build·소비자 typecheck와 실제 브라우저 검증을 통과했다. 대규모 응답 JSON p95는 4,421,174 B에서 1,241,402 B로 약 71.92% 작아졌다. 이번 run의 선택 준비→첫 번역 ack p95는 400.42ms, 목록 표시 p95는 1,128.04ms로 목록 250ms 목표는 여전히 미달이다. run 간 부하 차이로 지연 개선·퇴행의 원인은 단정하지 않는다. 구현 범위·원시 결과·남은 파싱 비용은 [16-compact-catalog-transport.md](16-compact-catalog-transport.md)를 따른다. npm `0.1.0-alpha.1`에는 포함되지 않은 로컬 변경이다.
 
+AST 동결 최적화 후 초기 기록과 같은 설정(warmup 5·측정 50·control 25, 상세 계측 끔)으로 로케일 추가를 재측정했다. 목록 표시 p95는 small 153.98ms·large 1,056.40ms, 선택→첫 번역 commit p95는 44.40ms·360.20ms였다. 목록 250ms 이내는 각각 50/50·0/50회로 large 목표는 미달이다. 입력 노드·값·React 상태와 생성 선언 파일을 유지했다. 여러 중간 변경과 부하 차이가 있어 감소 전체를 AST 변경에 귀속하지 않는다. 다음은 현행 서버 구간 재계측이며 조건·원시는 [20-locale-add-remeasurement.md](20-locale-add-remeasurement.md)를 따른다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.

@@ -24,6 +24,7 @@
 16. [17-cold-parser-measurements.md](17-cold-parser-measurements.md) — 새 카탈로그 파싱의 내부 구간과 GC 관측
 17. [18-shared-argument-schemas.md](18-shared-argument-schemas.md) — 동일 인자 스키마 공유와 cold 교차 비교
 18. [19-ast-freeze-measurements.md](19-ast-freeze-measurements.md) — 파서 소유 AST 동결 최적화와 cold·incremental 비교
+19. [20-locale-add-remeasurement.md](20-locale-add-remeasurement.md) — 최적화 후 로케일 추가·선택의 종단 간 재측정
 
 ## 상태 표기 규칙
 

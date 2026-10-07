@@ -149,6 +149,8 @@ manifest frame 크기는 [manifest-size.mjs](manifest-size.mjs)로 비교한다.
 
 파서 소유 literal·argument AST 동결은 `6e67555` 기준으로 비교했다. cold 결과는 `parse-compare-ast-freeze-cold.json`, incremental은 `parse-compare-ast-freeze-incremental.json`, 내부 계측은 `parser-stages-ast-freeze-cold.json`과 같은 stem의 원시 표본이다. cold p50·p95는 낮게 관측됐지만 incremental 중앙값 개선은 확인하지 못했다. 현재 messageFreeze 계측은 AST 동결과 메시지 구성·위치 생성도 포함한다. `parse-compare-freeze-traversal-cold.json`은 되돌린 일반 동결 순회 실험이며 최종 코드의 결과가 아니다. 재현 명령·범위·한계는 [../../docs/19-ast-freeze-measurements.md](../../docs/19-ast-freeze-measurements.md)를 따른다.
 
+AST 동결 최적화 후 종단 간 재측정은 `node benchmarks/live-update/run.mjs --mode locale-add --out benchmarks/results/locale-add-ast-freeze.json`로 실행했다. 초기 50회 기록과 같은 warmup 5·측정 50·control 25, 상세 계측 끔·typegen 켬 조건이다. 목록 표시 p95는 small 153.98ms·large 1,056.40ms, 선택→첫 번역 commit p95는 44.40ms·360.20ms였다. 두 규모에서 상태 보존과 선언 파일 유지·선택 전 0회 응답·선택 후 1회 compact full 응답을 확인했다. large의 250ms 목표는 미달이다. 여러 중간 변경과 실행 부하 때문에 감소 전체를 AST 변경 효과로 보지 않는다. 원시 결과·현재 측정 조건과 다음 계측 후보는 [../../docs/20-locale-add-remeasurement.md](../../docs/20-locale-add-remeasurement.md)를 따른다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.
