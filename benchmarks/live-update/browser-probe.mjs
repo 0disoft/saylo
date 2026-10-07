@@ -1,5 +1,5 @@
 const metrics = ['patchMs', 'freezeMs', 'snapshotMs', 'translatorMs', 'signatureMs'];
-const localeMetrics = ['decodeMs', 'freezeMs', 'snapshotMs', 'translatorMs', 'signatureMs'];
+const localeMetrics = ['decodeMs', 'freezeMs', 'acceptMs', 'acceptCheckMs', 'acceptFreezeMs', 'snapshotMs', 'translatorMs', 'signatureMs'];
 let current;
 
 export function beginBrowserSample(mode = 'edit') {
@@ -33,8 +33,9 @@ export function finishBrowserSample(elapsedMs) {
       if (!Number.isFinite(value) || value < -0.00001) throw new Error('Nested browser stages exceed their window.');
       return Math.max(0, value);
     };
+    sample.timings.acceptOtherMs = residual(sample.timings.acceptMs - sample.timings.acceptCheckMs - sample.timings.acceptFreezeMs);
     sample.timings.snapshotOtherMs = residual(sample.timings.snapshotMs - sample.timings.translatorMs - sample.timings.signatureMs);
-    sample.timings.selectionOtherMs = residual(elapsedMs - sample.timings.decodeMs - sample.timings.freezeMs - sample.timings.snapshotMs);
+    sample.timings.selectionOtherMs = residual(elapsedMs - sample.timings.decodeMs - sample.timings.freezeMs - sample.timings.acceptMs - sample.timings.snapshotMs);
   }
   return sample;
 }

@@ -65,7 +65,7 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'benchmarks/live-update/profile.mjs', 'benchmarks/live-update/channel.mjs', 'benchmarks/live-update/run.mjs',
   'benchmarks/live-update/app.jsx', 'benchmarks/live-update/fixture.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json',
   'benchmarks/live-update/browser-profile.mjs', 'benchmarks/live-update/browser-probe.mjs',
-  'packages/core/dist/loading-registry.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
+  'packages/core/dist/loading-registry.js', 'packages/core/dist/catalog-loader.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
   'packages/vite/dist/catalog-source.js', 'packages/vite/dist/catalog-wire.js', 'packages/vite/dist/index.js', 'packages/vite/dist/freeze.js'];
 measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
 if (values.mode === 'locale-add') measuredFiles.push('benchmarks/live-update/locale-channel.mjs', 'benchmarks/live-update/locale-app.jsx');
@@ -153,7 +153,7 @@ async function runScenario(scenario) {
       ...(serverStages ? { serverStages, profiledPhase: 'catalog-addition-before-list-ack' } : {}),
       ...(serverFileStages ? { serverFileStages } : {}),
       ...(values['browser-stages'] ? { browserStages: {
-        scope: 'Benchmark-only client transforms from before setLocale to first translation DOM commit; excludes initial boot, list acknowledgement, reset and removal. Saylo prebundling disabled. Decode includes compact validation; snapshot includes translator and signature. Residuals computed per sample; selectionOther includes transport, WS JSON parsing, other client work and React commit, not just network. Do not add nested p95s or compare directly with uninstrumented runs.',
+        scope: 'Benchmark-only client transforms from before setLocale to first translation DOM commit; excludes initial boot, list acknowledgement, reset and removal. Saylo prebundling disabled. Decode includes compact validation; accept includes core pair/version/payload/schema checks and outcome/key copy plus deep freeze; snapshot includes translator and signature. Residuals computed per sample; selectionOther excludes accept and includes transport, WS JSON parsing, other client work and React commit, not just network. Do not add nested p95s or compare directly with uninstrumented runs. Older selectionOther without accept instrumentation has a different boundary.',
         ...Object.fromEntries(localeBrowserReportedMetrics.map(metric => [metric, summarize(measured.map(sample => sample.browserStages.timings[metric]))])),
         maxCalls: Object.fromEntries(localeBrowserMetrics.map(metric => [metric, Math.max(...measured.map(sample => sample.browserStages.calls[metric]))])),
       }, profiledBrowserPhase: 'locale-selection-before-translation-commit' } : {}),

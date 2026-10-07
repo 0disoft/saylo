@@ -25,7 +25,7 @@ npm run bench:live
 | `--out` | `benchmarks/results/live-update.json` | 결과 JSON 경로 |
 | `--no-typegen` | 꺼짐 | typegen을 끄고 실행 |
 | `--cpu-profile` | 꺼짐 | `node:inspector`로 측정 구간 edit loop의 CPU profile을 켜고 결과에 `cpuProfile`을 넣는다 |
-| `--browser-stages` | 꺼짐 | benchmark 전용 Vite transform. edit는 patch·freeze·snapshot, locale-add는 첫 선택의 full decode·freeze·snapshot을 수집하며 translator·signature도 구분한다 |
+| `--browser-stages` | 꺼짐 | benchmark 전용 Vite transform. edit는 patch·freeze·snapshot, locale-add는 첫 선택의 full decode·Vite freeze·core acceptOutcome 검증/동결·snapshot을 수집하며 translator·signature도 구분한다 |
 | `--server-file-stages` | 꺼짐 | benchmark 전용 Node module transform으로 경로 검사·UTF-8 읽기·카탈로그 파싱을 따로 잰다 |
 | `--timeout-ms` | `30000` | 단계별 대기 timeout |
 
@@ -158,6 +158,8 @@ AST 동결 최적화 후 종단 간 재측정은 `node benchmarks/live-update/ru
 상대 위치 공유 후 종단 간 재측정은 `node benchmarks/live-update/run.mjs --mode locale-add --out benchmarks/results/locale-add-position-pool.json`로 실행했다. warmup 5·측정 50·control 25, 상세 계측 끔·typegen 켬 조건이다. 목록 p95는 small 109.68ms·large 878.98ms, 선택→첫 번역 commit p95는 48.00ms·486.80ms였다. large 목록은 15/50회만 250ms 이내였고 p95 목표는 미달이다. 선택 p95는 직전 run보다 높게 관측돼 전체 개선이나 원인을 확정하지 않는다. 상태 보존·원시·hash 확인과 다음 full 응답 브라우저 계측 후보는 [../../docs/23-position-sharing-locale-add.md](../../docs/23-position-sharing-locale-add.md)를 따른다.
 
 locale-add의 첫 언어 선택 계측은 `node benchmarks/live-update/run.mjs --mode locale-add --browser-stages --scenario 10k-20-locales --samples 10 --warmup 2 --calibrations 10 --out benchmarks/results/locale-add-browser-stages.json`로 실행했다. 선택 직전→첫 번역 DOM commit만 수집하고 boot·목록 추가·복귀·삭제는 제외한다. full 디코딩·Vite 동결·snapshot p50은 7.60/39.60/18.00ms였다. snapshot은 translator·signature를 포함하고, snapshotOther·selectionOther는 sample별 잔여이다. 큰 선택 잔여를 네트워크 비용으로 해석하지 않는다. Saylo prebundle을 끄므로 계측 없는 run과 직접 비교하지 않는다. full/patch/계측 끔 smoke와 `node --test benchmarks/live-update/browser-profile.test.mjs` 검증, 원시·세부 정의는 [../../docs/24-full-selection-browser-stages.md](../../docs/24-full-selection-browser-stages.md)를 따른다.
+
+core 응답 수락 구간은 `node benchmarks/live-update/run.mjs --mode locale-add --browser-stages --scenario 10k-20-locales --samples 10 --warmup 2 --calibrations 10 --out benchmarks/results/locale-add-accept-stages.json`로 계측했다. acceptMs는 acceptCheckMs·acceptFreezeMs를 포함하고 acceptOtherMs는 sample별 잔여이다. selectionOtherMs는 acceptMs도 차감하므로 이전 잔여와 정의가 다르다. core 동결 p50/p95는 66.00/341.90ms였고 검증 p95는 0.10ms였다. 제품 변경은 없으며 실행 조건·검증·다음 중복 순회 최적화 후보는 [../../docs/25-core-outcome-acceptance-stages.md](../../docs/25-core-outcome-acceptance-stages.md)를 따른다.
 
 ## 한계
 

@@ -29,6 +29,7 @@
 21. [22-relative-position-sharing.md](22-relative-position-sharing.md) — 단순 AST 상대 좌표·구간 공유와 파서 비교
 22. [23-position-sharing-locale-add.md](23-position-sharing-locale-add.md) — 상대 위치 공유 후 목록·첫 번역 반영 재측정
 23. [24-full-selection-browser-stages.md](24-full-selection-browser-stages.md) — 첫 언어 선택의 full 디코딩·동결·snapshot 계측
+24. [25-core-outcome-acceptance-stages.md](25-core-outcome-acceptance-stages.md) — core 응답 검증·동결 분리와 중복 순회 최적화 후보
 
 ## 상태 표기 규칙
 

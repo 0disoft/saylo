@@ -1,0 +1,20 @@
+{
+  "scenario": "1k-3-locales",
+  "samples": [
+    {
+      "token": "1k-3-locales:2",
+      "warmup": false,
+      "saveToListAckMs": 98.36410000000024,
+      "selectToTranslationAckMs": 45.00600000000031,
+      "saveToTranslationAckMs": 146.91630000000032,
+      "selectToCommitMs": 41.29999999701977,
+      "saveToBroadcastMs": 87.67210000000023,
+      "fileWriteMs": 8.156599999999798,
+      "addedCatalogBytes": 36780,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 119635
+    }
+  ]
+}

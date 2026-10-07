@@ -92,6 +92,8 @@ Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 
 
 첫 선택 계측에서 Vite 동결이 수집한 동기 구간 중 가장 컸지만 선택 잔여가 매회 전체 선택 시간의 64.15% 이상이었다. 다음 구현은 동결 최적화에 바로 귀속하기보다 snapshot 이전 core acceptOutcome의 검증·동결 경계를 추가하는 benchmark 작업으로 정한다. full/patch 모드별 필수 호출을 구분하고 잔여를 네트워크 비용으로 단정하지 않는다. 근거·검증은 [24](24-full-selection-browser-stages.md)를 따른다.
 
+core 응답 수락 계측에서 동결 p50은 66.00ms였고 검증 p95는 0.10ms였다. Vite가 동결한 객체도 core의 별도 WeakSet에 없으면 다시 순회한다. 다음 제품 작업은 신뢰 가능한 전송 카탈로그가 core의 깊은 동결 경로를 공유하도록 하는 것으로 정한다. 외부의 얕은 동결을 깊은 동결로 간주하지 않고, AST 불변성과 오류 의미를 유지한다. 이번은 계측 작업이며 최적화 효과는 아직 측정하지 않았다. 근거는 [25](25-core-outcome-acceptance-stages.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화
