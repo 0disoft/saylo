@@ -6,7 +6,7 @@ import { performance } from 'node:perf_hooks';
 import { cpus, platform, arch } from 'node:os';
 import path from 'node:path';
 import { summarize } from './statistics.mjs';
-import { beginParserSample, finishParserSample, registerParserProbe, parserMetrics, parserDetailMetrics } from './parser-probe.mjs';
+import { beginParserSample, finishParserSample, registerParserProbe, parserMetrics, parserDetailMetrics, messageFreezeMetrics } from './parser-probe.mjs';
 import { observeGc, gcInWindow } from './gc-profile.mjs';
 
 const mode = process.argv[3] ?? 'incremental';
@@ -52,7 +52,7 @@ try {
       assert.ok(Object.isFrozen(next.messages.message1.ast));
       if (detailed) {
         assert.equal(previous, undefined);
-        for (const metric of ['astMs', 'argumentsMs', 'messageFreezeMs']) assert.equal(stages.calls[metric], messagesPerLocale);
+        for (const metric of ['astMs', 'argumentsMs', 'messageFreezeMs', ...messageFreezeMetrics]) assert.equal(stages.calls[metric], messagesPerLocale);
         assert.equal(stages.calls.argumentFreezeMs, 2, 'Only empty and name argument contracts need freezing in this fixture.');
         assert.equal(next.messages.message1.arguments, next.messages.message2.arguments);
         assert.equal(stages.calls.reusedMessageFreezeMs, 0);
@@ -62,6 +62,7 @@ try {
         heapBeforeBytes, heapAfterBytes, heapDeltaBytes: heapAfterBytes - heapBeforeBytes, ...stages,
         ...(detailed ? {
           argumentInferenceOnlyMs: residual(stages.argumentsMs, [stages.argumentFreezeMs]),
+          messageFreezeOtherMs: residual(stages.messageFreezeMs, messageFreezeMetrics.map(metric => stages[metric])),
           messageLoopOtherMs: residual(stages.messageLoopMs, [stages.astMs, stages.argumentsMs, stages.messageFreezeMs, stages.reusedMessageFreezeMs]),
         } : {}),
         unattributedMs: residual(endTimeMs - startTimeMs, [stages.jsonMs, stages.positionIndexMs, stages.messageLoopMs, stages.freezeMs]),
@@ -72,7 +73,7 @@ try {
     const events = await gc.drain();
     for (const sample of samples) sample.gc = gcInWindow(events, sample.startTimeMs, sample.endTimeMs);
     const measured = samples.filter(sample => !sample.warmup);
-    const metrics = ['totalMs', ...parserMetrics, ...(detailed ? [...parserDetailMetrics, 'argumentInferenceOnlyMs', 'messageLoopOtherMs'] : []), 'unattributedMs'];
+    const metrics = ['totalMs', ...parserMetrics, ...(detailed ? [...parserDetailMetrics, 'argumentInferenceOnlyMs', 'messageFreezeOtherMs', 'messageLoopOtherMs'] : []), 'unattributedMs'];
     const summary = Object.fromEntries(metrics.map(metric => [metric, summarize(measured.map(sample => sample[metric]))]));
     const gcSummary = {
       scope: 'Timestamp overlap with synchronous parser calls. Observed GC durations are not measured pause/CPU time and must not be subtracted from parser timings. Heap deltas are net heapUsed changes, including uncollected garbage, not allocated bytes.',
@@ -88,10 +89,10 @@ try {
       samplesFile: path.basename(samplesFile) });
     console.log(JSON.stringify({ mode, messagesPerLocale, summary, samplesWithGc: gcSummary.samplesWithGc }));
   }
-  await writeFile(out, `${JSON.stringify({ schema: 'saylo-parser-stages-v2', measuredAt: new Date().toISOString(),
+  await writeFile(out, `${JSON.stringify({ schema: 'saylo-parser-stages-v3', measuredAt: new Date().toISOString(),
     gitRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     workingTreeStatus: execFileSync('git', ['status', '--short'], { encoding: 'utf8' }).trim(),
     node: process.version, environment: { platform: platform(), arch: arch(), cpu: cpus()[0]?.model },
     mode, settings: { warmup, samples: count, detailed, forcedGc: false }, codeHashes,
-    scope: 'Synchronous parser-only benchmark. Cold: no previous catalog; full literal/simple interpolation parsing each call. Incremental: same-length single probe edit, immutable prior catalog. Input stringify, heapUsed readings, assertions, disk, watcher, translation validation and browser excluded. json includes strictJson and tokenScan; messageLoop includes AST, arguments and message freeze; arguments includes argument freeze. Residuals are calculated per sample before summarizing. Nested p95s must not be added. Clock/counter instrumentation overhead included; GC observed asynchronously and matched by timestamp.', results }, null, 2)}\n`);
+    scope: 'Synchronous parser-only benchmark. Cold: no previous catalog; full literal/simple interpolation parsing each call. Incremental: same-length single probe edit, immutable prior catalog. Input stringify, heapUsed readings, assertions, disk, watcher, translation validation and browser excluded. json includes strictJson and tokenScan; messageLoop includes AST, arguments and message freeze; arguments includes argument freeze. Cold messageFreeze includes position lookup/allocation, AST freeze, record freeze (including recursive position freeze), and residual record creation/assignment/probe overhead. Position is evaluated before AST freeze, matching product evaluation order; the older v2 detailed probe evaluated AST freeze first. Record construction is outside the record-freeze timer. Residuals are calculated per sample before summarizing. Nested p95s must not be added. Clock/counter instrumentation overhead included; GC observed asynchronously and matched by timestamp.', results }, null, 2)}\n`);
 } finally { gc.dispose(); probe.dispose(); }

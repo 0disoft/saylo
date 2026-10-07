@@ -2,7 +2,8 @@ import { registerHooks } from 'node:module';
 import { performance } from 'node:perf_hooks';
 
 export const parserMetrics = ['jsonMs', 'strictJsonMs', 'tokenScanMs', 'positionIndexMs', 'messageLoopMs', 'freezeMs'];
-export const parserDetailMetrics = ['astMs', 'argumentsMs', 'argumentFreezeMs', 'messageFreezeMs', 'reusedMessageFreezeMs'];
+export const messageFreezeMetrics = ['messagePositionMs', 'messageAstFreezeMs', 'messageRecordFreezeMs'];
+export const parserDetailMetrics = ['astMs', 'argumentsMs', 'argumentFreezeMs', 'messageFreezeMs', ...messageFreezeMetrics, 'reusedMessageFreezeMs'];
 let current;
 export function measureParserStage(metric, work) {
   const sample = current;
@@ -56,7 +57,7 @@ export function registerParserProbe({ detailed = false } = {}) {
         "const __astStart = parserClock();\nconst ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });\nrecordParserStage('astMs', __astStart);"],
       ['const argumentsSchema = inferArguments(ast,', 'const __argumentsStart = parserClock();\nconst argumentsSchema = inferArguments(ast,'],
       ['messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });',
-        "recordParserStage('argumentsMs', __argumentsStart);\nconst __messageFreezeStart = parserClock();\nconst __frozenAst = freezeMessageAst(ast);\nmessages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: __frozenAst, arguments: argumentsSchema });\nrecordParserStage('messageFreezeMs', __messageFreezeStart);"],
+        "recordParserStage('argumentsMs', __argumentsStart);\nconst __messageFreezeStart = parserClock();\nconst __positionStart = parserClock();\nconst __messagePosition = positionAt(entry.valueOffset);\nrecordParserStage('messagePositionMs', __positionStart);\nconst __frozenAst = measureParserFreeze('messageAstFreezeMs', freezeMessageAst, ast);\nmessages[entry.id] = measureParserFreeze('messageRecordFreezeMs', freeze, { source: entry.value, position: __messagePosition, ast: __frozenAst, arguments: argumentsSchema });\nrecordParserStage('messageFreezeMs', __messageFreezeStart);"],
       ['? before : freeze({ ...before, position });', "? before : measureParserFreeze('reusedMessageFreezeMs', freeze, { ...before, position });"],
     );
     for (const [before, after] of changes) {

@@ -110,6 +110,8 @@ Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 �
 
 파서 소유 메시지·숫자 위치의 직접 동결 실험은 개선을 확인하지 못해 되돌렸다. cold 10/20쌍·incremental 47/100쌍만 빨랐고 두 비교의 p95는 높았다. 결과 원인을 확정하지 않으며 다음은 messageFreeze 내부 비용 분리이다. 재현 패치·원시·검증은 [33](33-owned-message-freeze-trial.md)를 따른다.
 
+메시지 동결 구간을 분리한 결과 10k의 AST 동결이 하위 구간 중 18/20회 가장 컸다. 다음 작은 실험은 `freezeMessageAst` 내부 `seal` 함수를 모듈 범위로 옮겨 호출별 헬퍼 생성을 없애는 것으로 정한다. 헬퍼 생성만의 비용은 분리하지 않아 효과는 미확인이며, 깊은 동결 신뢰·ICU·위치 계약을 유지하고 cold/incremental 교차 비교로 판단한다. 이번은 계측 작업이며 제품 변경은 없다. 근거는 [34](34-message-freeze-stages.md)이다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

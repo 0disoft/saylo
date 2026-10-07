@@ -1,0 +1,133 @@
+{
+  "schema": "saylo-message-freeze-split-analysis-v1",
+  "source": "parser-stages-message-freeze-split-cold.json",
+  "scope": "Per-sample messageFreeze subcomponent comparison; residual includes record construction, assignment and instrumentation. Fractions are dimensionless; no subtraction of GC or sum of percentiles.",
+  "results": [
+    {
+      "messagesPerLocale": 1000,
+      "measuredSamples": 20,
+      "largestComponentCounts": {
+        "messagePositionMs": 0,
+        "messageAstFreezeMs": 18,
+        "messageRecordFreezeMs": 0,
+        "messageFreezeOtherMs": 2
+      },
+      "astOverRecordSamples": 20,
+      "positionFractionOfMessageFreeze": {
+        "count": 20,
+        "p50": 0.023847878544922037,
+        "p95": 0.029313355489114623,
+        "min": 0.005510792731962123,
+        "max": 0.053784297847590534
+      },
+      "componentMs": {
+        "totalMs": {
+          "count": 20,
+          "p50Ms": 25.66130000000004,
+          "p95Ms": 61.22929999999997,
+          "minMs": 15.384199999999964,
+          "maxMs": 78.09699999999998
+        },
+        "messageFreezeMs": {
+          "count": 20,
+          "p50Ms": 11.755700000001866,
+          "p95Ms": 46.19869999999992,
+          "minMs": 8.542999999999893,
+          "maxMs": 60.08209999999889
+        },
+        "messagePositionMs": {
+          "count": 20,
+          "p50Ms": 0.2871999999978243,
+          "p95Ms": 0.446999999999548,
+          "minMs": 0.20110000000090622,
+          "maxMs": 0.571200000001113
+        },
+        "messageAstFreezeMs": {
+          "count": 20,
+          "p50Ms": 5.042500000000132,
+          "p95Ms": 39.76549999999929,
+          "minMs": 3.8306000000005724,
+          "maxMs": 51.819199999999285
+        },
+        "messageRecordFreezeMs": {
+          "count": 20,
+          "p50Ms": 4.514200000001097,
+          "p95Ms": 6.166499999999985,
+          "minMs": 3.369700000001558,
+          "maxMs": 6.961799999999926
+        },
+        "messageFreezeOtherMs": {
+          "count": 20,
+          "p50Ms": 1.6231999999962454,
+          "p95Ms": 5.250900000000684,
+          "minMs": 1.1415999999968562,
+          "maxMs": 10.87560000000127
+        }
+      },
+      "samplesWithGc": 9
+    },
+    {
+      "messagesPerLocale": 10000,
+      "measuredSamples": 20,
+      "largestComponentCounts": {
+        "messagePositionMs": 0,
+        "messageAstFreezeMs": 18,
+        "messageRecordFreezeMs": 1,
+        "messageFreezeOtherMs": 1
+      },
+      "astOverRecordSamples": 19,
+      "positionFractionOfMessageFreeze": {
+        "count": 20,
+        "p50": 0.018631975019056442,
+        "p95": 0.021597593343963196,
+        "min": 0.006683334734636784,
+        "max": 0.023288655063219487
+      },
+      "componentMs": {
+        "totalMs": {
+          "count": 20,
+          "p50Ms": 172.08770000000004,
+          "p95Ms": 277.3193000000001,
+          "minMs": 119.42810000000009,
+          "maxMs": 390.89260000000013
+        },
+        "messageFreezeMs": {
+          "count": 20,
+          "p50Ms": 81.89200000002666,
+          "p95Ms": 202.41920000005757,
+          "minMs": 69.4346000000487,
+          "maxMs": 310.41389999999
+        },
+        "messagePositionMs": {
+          "count": 20,
+          "p50Ms": 1.5168000000276152,
+          "p95Ms": 1.984699999998611,
+          "minMs": 1.2770000000123218,
+          "maxMs": 2.0745999999840024
+        },
+        "messageAstFreezeMs": {
+          "count": 20,
+          "p50Ms": 36.24250000000575,
+          "p95Ms": 166.0134999999882,
+          "minMs": 31.85770000006687,
+          "maxMs": 260.2296999999721
+        },
+        "messageRecordFreezeMs": {
+          "count": 20,
+          "p50Ms": 31.932799999965027,
+          "p95Ms": 38.92670000000044,
+          "minMs": 26.54889999995885,
+          "maxMs": 40.46280000000752
+        },
+        "messageFreezeOtherMs": {
+          "count": 20,
+          "p50Ms": 9.385599999959595,
+          "p95Ms": 12.077599999999165,
+          "minMs": 8.32549999999992,
+          "maxMs": 52.26509999996688
+        }
+      },
+      "samplesWithGc": 11
+    }
+  ]
+}
