@@ -1,0 +1,168 @@
+{
+  "schema": "saylo-freeze-comparison-v1",
+  "scope": "Sequential before/after runs on one machine, same locale-add browser instrumentation and options; no randomized repetitions. Sum nonoverlapping Vite and core acceptance freeze timings per measured sample before nearest-rank summaries. Includes runtime pauses and probe overhead; does not isolate GC. No cross-clock subtraction or sums of p95s.",
+  "runs": {
+    "before": {
+      "summaryFile": "locale-add-shared-freeze-before.json",
+      "samplesFile": "locale-add-shared-freeze-before.10k-20-locales.samples.json",
+      "settings": {
+        "samples": 10,
+        "warmup": 2,
+        "calibrations": 10,
+        "timeoutMs": 30000
+      },
+      "measuredAt": "2026-10-07T12:06:17.943Z",
+      "freezeTotalMs": {
+        "count": 10,
+        "p50Ms": 119.59999999403954,
+        "p95Ms": 368.1000000089407,
+        "minMs": 108.6000000089407,
+        "maxMs": 368.1000000089407
+      },
+      "samples": [
+        {
+          "token": "10k-20-locales:13",
+          "viteFreezeMs": 46.099999994039536,
+          "acceptFreezeMs": 71.5,
+          "freezeTotalMs": 117.59999999403954
+        },
+        {
+          "token": "10k-20-locales:14",
+          "viteFreezeMs": 47,
+          "acceptFreezeMs": 179.79999999701977,
+          "freezeTotalMs": 226.79999999701977
+        },
+        {
+          "token": "10k-20-locales:15",
+          "viteFreezeMs": 51.79999999701977,
+          "acceptFreezeMs": 72.90000000596046,
+          "freezeTotalMs": 124.70000000298023
+        },
+        {
+          "token": "10k-20-locales:16",
+          "viteFreezeMs": 48.20000000298023,
+          "acceptFreezeMs": 73.70000000298023,
+          "freezeTotalMs": 121.90000000596046
+        },
+        {
+          "token": "10k-20-locales:17",
+          "viteFreezeMs": 46.400000005960464,
+          "acceptFreezeMs": 70.3999999910593,
+          "freezeTotalMs": 116.79999999701977
+        },
+        {
+          "token": "10k-20-locales:18",
+          "viteFreezeMs": 46.20000000298023,
+          "acceptFreezeMs": 73.3999999910593,
+          "freezeTotalMs": 119.59999999403954
+        },
+        {
+          "token": "10k-20-locales:19",
+          "viteFreezeMs": 45.20000000298023,
+          "acceptFreezeMs": 73.09999999403954,
+          "freezeTotalMs": 118.29999999701977
+        },
+        {
+          "token": "10k-20-locales:20",
+          "viteFreezeMs": 44.3999999910593,
+          "acceptFreezeMs": 81.70000000298023,
+          "freezeTotalMs": 126.09999999403954
+        },
+        {
+          "token": "10k-20-locales:21",
+          "viteFreezeMs": 47.900000005960464,
+          "acceptFreezeMs": 320.20000000298023,
+          "freezeTotalMs": 368.1000000089407
+        },
+        {
+          "token": "10k-20-locales:22",
+          "viteFreezeMs": 46.900000005960464,
+          "acceptFreezeMs": 61.70000000298023,
+          "freezeTotalMs": 108.6000000089407
+        }
+      ]
+    },
+    "after": {
+      "summaryFile": "locale-add-shared-freeze-after.json",
+      "samplesFile": "locale-add-shared-freeze-after.10k-20-locales.samples.json",
+      "settings": {
+        "samples": 10,
+        "warmup": 2,
+        "calibrations": 10,
+        "timeoutMs": 30000
+      },
+      "measuredAt": "2026-10-07T12:08:41.954Z",
+      "freezeTotalMs": {
+        "count": 10,
+        "p50Ms": 84.79999999701977,
+        "p95Ms": 308.59999999403954,
+        "minMs": 79.1000000089407,
+        "maxMs": 308.59999999403954
+      },
+      "samples": [
+        {
+          "token": "10k-20-locales:13",
+          "viteFreezeMs": 79.1000000089407,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 79.1000000089407
+        },
+        {
+          "token": "10k-20-locales:14",
+          "viteFreezeMs": 90,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 90
+        },
+        {
+          "token": "10k-20-locales:15",
+          "viteFreezeMs": 206.19999998807907,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 206.19999998807907
+        },
+        {
+          "token": "10k-20-locales:16",
+          "viteFreezeMs": 84.09999999403954,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 84.09999999403954
+        },
+        {
+          "token": "10k-20-locales:17",
+          "viteFreezeMs": 100.6000000089407,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 100.6000000089407
+        },
+        {
+          "token": "10k-20-locales:18",
+          "viteFreezeMs": 83.59999999403954,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 83.59999999403954
+        },
+        {
+          "token": "10k-20-locales:19",
+          "viteFreezeMs": 81.40000000596046,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 81.40000000596046
+        },
+        {
+          "token": "10k-20-locales:20",
+          "viteFreezeMs": 84.79999999701977,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 84.79999999701977
+        },
+        {
+          "token": "10k-20-locales:21",
+          "viteFreezeMs": 94.59999999403954,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 94.59999999403954
+        },
+        {
+          "token": "10k-20-locales:22",
+          "viteFreezeMs": 308.59999999403954,
+          "acceptFreezeMs": 0,
+          "freezeTotalMs": 308.59999999403954
+        }
+      ]
+    }
+  },
+  "observedP50ReductionPercent": 29.096989965513444,
+  "observedP95ReductionPercent": 16.164085849892963
+}

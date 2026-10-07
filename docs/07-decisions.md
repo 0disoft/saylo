@@ -94,6 +94,8 @@ Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 
 
 core 응답 수락 계측에서 동결 p50은 66.00ms였고 검증 p95는 0.10ms였다. Vite가 동결한 객체도 core의 별도 WeakSet에 없으면 다시 순회한다. 다음 제품 작업은 신뢰 가능한 전송 카탈로그가 core의 깊은 동결 경로를 공유하도록 하는 것으로 정한다. 외부의 얕은 동결을 깊은 동결로 간주하지 않고, AST 불변성과 오류 의미를 유지한다. 이번은 계측 작업이며 최적화 효과는 아직 측정하지 않았다. 근거는 [25](25-core-outcome-acceptance-stages.md)를 따른다.
 
+Vite의 카탈로그 동결은 core `/runtime`의 `freezeCatalogs`를 사용한다. 같은 core 모듈의 깊은 순회 캐시를 공유하고, `Object.isFrozen`만으로 외부 객체를 신뢰하지 않는다. 전후 표본별 동결 합계 p50은 119.60→84.80ms였으나 일반 설정의 전체 성능은 별도로 재측정한다. 다음은 추가 최적화 없이 계측을 끈 small/large 종단 간 측정이며 근거는 [26](26-shared-catalog-freeze.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

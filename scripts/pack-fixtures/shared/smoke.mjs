@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
-import { createBaseSchema, createStore, InvalidArgumentError } from '@0disoft/saylo-core';
+import { createBaseSchema, createStore, InvalidArgumentError, freezeCatalogs as freezeRootCatalogs } from '@0disoft/saylo-core';
+import { freezeCatalogs } from '@0disoft/saylo-core/runtime';
 import { createSayloReact, createHydrationAdapter } from '@0disoft/saylo-react';
 import { renderTypes } from '@0disoft/saylo-typegen';
 import { scanCatalogs } from '@0disoft/saylo-typegen/catalog-files';
@@ -10,6 +11,10 @@ import { connectDev } from '@0disoft/saylo-vite/client';
 import { getServerCatalogSource } from '@0disoft/saylo-vite/server';
 
 const { files } = await scanCatalogs('locales');
+assert.equal(freezeCatalogs, freezeRootCatalogs);
+const received = Object.freeze(files.map(file => Object.freeze(JSON.parse(JSON.stringify(file.catalog)))));
+assert.equal(freezeCatalogs(received), received);
+assert.ok(received.every(catalog => Object.isFrozen(catalog.messages) && Object.values(catalog.messages).every(message => Object.isFrozen(message.ast))));
 const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: files.map(file => file.catalog) });
 try {
   assert.equal(store.t('demo:greeting', { name: 'Saylo' }), 'Hello Saylo');

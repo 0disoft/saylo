@@ -46,6 +46,10 @@ TypeScript에서는 `createStore<AppSchema>(...)`로, JS에서는 JSDoc `Store<A
 
 브라우저 런타임에서 `parseCatalog`를 빼려면 `@0disoft/saylo-core/runtime` 서브패스 엔트리를 쓴다. 여기에는 `parseCatalog`가 없고 나머지 API는 루트 엔트리와 같다. 루트 엔트리 `@0disoft/saylo-core`는 기존 API를 그대로 유지한다. 이 서브패스는 작업 트리의 로컬 변경이라 게시된 `0.1.0-alpha.1`에는 아직 없다.
 
+## 전송 카탈로그 동결
+
+`freezeCatalogs(catalogs)`는 JSON 전송 뒤 카탈로그 배열·AST·위치·인자 스키마를 깊게 동결하고 같은 배열을 반환한다. 루트와 `/runtime` 엔트리에서 제공한다. core가 이미 깊게 동결한 객체는 재순회하지 않으며, 외부에서 겉만 동결한 객체는 내부까지 순회한다. 유효성 검사는 기존 decoder·store·i18n에서 수행한다. 이 함수는 게시된 `0.1.0-alpha.1`에 아직 없으며 구현과 측정은 [동결 경로 공유 기록](../../docs/26-shared-catalog-freeze.md)에 있다.
+
 ## 로컬 파싱 최적화
 
 현재 checkout의 `parseCatalog`는 일반 텍스트와 ASCII `{name}` 보간에 내부 빠른 경로를 쓴다. AST·위치·인자 추론·불변성은 기존 계약을 유지하며, 아포스트로피·복잡한 ICU·범위 밖 인자는 FormatJS가 처리한다. 공개 API 옵션은 추가하지 않았다. 이 최적화는 게시된 `0.1.0-alpha.1`에 없으며, 측정과 한계는 [설계 기록](../../docs/15-simple-message-parser.md)에 있다.

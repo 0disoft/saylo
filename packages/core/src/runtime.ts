@@ -1,4 +1,5 @@
 export { CatalogError } from './diagnostics.js';
+export { freezeCatalogs } from './catalog-freeze.js';
 export { createBaseSchema, validateTranslation } from './schema.js';
 export { createTranslator } from './translator.js';
 export { createStore } from './store.js';

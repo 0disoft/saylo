@@ -161,6 +161,8 @@ locale-add의 첫 언어 선택 계측은 `node benchmarks/live-update/run.mjs -
 
 core 응답 수락 구간은 `node benchmarks/live-update/run.mjs --mode locale-add --browser-stages --scenario 10k-20-locales --samples 10 --warmup 2 --calibrations 10 --out benchmarks/results/locale-add-accept-stages.json`로 계측했다. acceptMs는 acceptCheckMs·acceptFreezeMs를 포함하고 acceptOtherMs는 sample별 잔여이다. selectionOtherMs는 acceptMs도 차감하므로 이전 잔여와 정의가 다르다. core 동결 p50/p95는 66.00/341.90ms였고 검증 p95는 0.10ms였다. 제품 변경은 없으며 실행 조건·검증·다음 중복 순회 최적화 후보는 [../../docs/25-core-outcome-acceptance-stages.md](../../docs/25-core-outcome-acceptance-stages.md)를 따른다.
 
+Vite/core 깊은 동결 경로 공유는 같은 대규모 locale-add 브라우저 계측 조건으로 전후 각 10회를 실행했다. Vite freeze와 core acceptFreeze를 표본별로 합친 뒤 요약한 p50은 119.60→84.80ms, p95는 368.10→308.60ms였다. 비용 일부는 최초 Vite 동결로 옮겨갔으며 p95끼리 더한 값이 아니다. 선택 p50은 247.80→237.90ms였고 목록 p95는 462.08→556.27ms였다. 순차 단일 장비 비교의 한계·원시·다음 일반 설정 재측정은 [../../docs/26-shared-catalog-freeze.md](../../docs/26-shared-catalog-freeze.md)를 따른다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

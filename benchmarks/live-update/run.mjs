@@ -65,7 +65,8 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'benchmarks/live-update/profile.mjs', 'benchmarks/live-update/channel.mjs', 'benchmarks/live-update/run.mjs',
   'benchmarks/live-update/app.jsx', 'benchmarks/live-update/fixture.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json',
   'benchmarks/live-update/browser-profile.mjs', 'benchmarks/live-update/browser-probe.mjs',
-  'packages/core/dist/loading-registry.js', 'packages/core/dist/catalog-loader.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
+  'packages/core/dist/loading-registry.js', 'packages/core/dist/catalog-loader.js', 'packages/core/dist/runtime.js',
+  'packages/core/dist/catalog-freeze.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
   'packages/vite/dist/catalog-source.js', 'packages/vite/dist/catalog-wire.js', 'packages/vite/dist/index.js', 'packages/vite/dist/freeze.js'];
 measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
 if (values.mode === 'locale-add') measuredFiles.push('benchmarks/live-update/locale-channel.mjs', 'benchmarks/live-update/locale-app.jsx');

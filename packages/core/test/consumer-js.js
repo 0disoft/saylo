@@ -1,7 +1,11 @@
 // @ts-check
 import { createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
+import { freezeCatalogs } from '@0disoft/saylo-core/runtime';
 
 const parsed = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
+const frozenCatalogs = freezeCatalogs([parsed]);
+// @ts-expect-error frozen catalog lists are readonly in typed JS too
+frozenCatalogs.push(parsed);
 const base = createBaseSchema(parsed);
 validateTranslation(base, parseCatalog('{"x":"Items"}', { locale: 'en', namespace: 'cart' }));
 // @ts-expect-error required namespace in typed JS too

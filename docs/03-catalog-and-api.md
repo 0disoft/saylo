@@ -161,6 +161,8 @@ argument 없는 키는 그대로 호출한다. `t("cart:title")`.
 
 ## 공개 API
 
+현행 구현은 `freezeCatalogs(catalogs: readonly ParsedCatalog[]): readonly ParsedCatalog[]`를 core 루트와 `@0disoft/saylo-core/runtime`에서 제공한다. JSON 전송 뒤 배열·AST·위치·인자 스키마를 깊게 동결하고 같은 배열을 반환한다. 외부의 얕은 동결은 내부까지 순회하며, core가 이미 순회한 객체는 다시 방문하지 않는다. 카탈로그·스키마 유효성 검사는 기존 decoder·store·i18n에서 수행한다. 이 함수는 게시된 `0.1.0-alpha.1`에 아직 없으며 Vite와의 동결 경로 공유는 [26-shared-catalog-freeze.md](26-shared-catalog-freeze.md)에 기록한다.
+
 현재 코어는 parsed catalog 기반이다. 실제 생성 옵션은 두 갈래로, `catalogSource`·`locale`·`initialNamespaces`·`initialCatalogs`로 초기 카탈로그를 직접 전달하는 경로와 `initialSnapshot`(BootSnapshot)을 받는 SSR·hydration 경로가 있다. 실제 타입은 `packages/core/src/loading-types.ts`에 있다. `CatalogManifest.catalogs`의 pair별 version·schema fingerprint·missing tombstone과 모든 초기 base+target outcome을 검증한다. 비동기 `setLocale`·`loadNamespace`·어댑터용 `refresh`, `getSnapshot`·`getServerSnapshot`·`getBootSnapshot` 형태의 불변 조회, `onDispose`를 제공한다. 비동기 request-scoped 생성은 별도 `createServerI18n` factory가 맡는다. SSR 부팅 데이터는 `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`으로 구현했다. 아래 `UiSnapshot.catalogs`의 `Map<string, CatalogRecord>` 모형과 wire catalog record는 설계 초안이고, 현행 구현은 `CatalogOutcome` 배열과 parsed catalog를 쓴다. 실행 예제는 `npm run demo:lazy`, SSR 예제는 `npm run demo:ssr`·`npm run dev:ssr`다.
 
 초기 구현 선택은 동기 생성 + 명시적 로드다. 부팅에 필요한 로케일과 namespace는 `initialSnapshot`으로 함께 넘기고, 나머지는 필요할 때 로드한다. `createI18n`은 동기로 생성하고, SSR 요청 범위를 비동기로 준비하는 `createServerI18n`은 별도 factory로 제공한다.

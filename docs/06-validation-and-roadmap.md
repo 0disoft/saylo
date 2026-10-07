@@ -44,6 +44,8 @@ locale-add의 첫 선택 브라우저 계측을 benchmark에 추가했다. 대�
 
 core acceptOutcome을 검증·동결로 나눠 계측했다. 대규모 10회에서 core 동결 p50/p95는 66.00/341.90ms였고 매회 다른 수집 구간보다 컸다. 검증 p95는 0.10ms이고 선택 잔여 p50은 86.50ms였다. 제품 변경 없이 계측 테스트 5개와 full/patch/계측 끔 smoke를 통과했다. 다음은 Vite와 core의 중복 동결 순회 제거이며, 변경된 잔여 정의·조건·원시는 [25-core-outcome-acceptance-stages.md](25-core-outcome-acceptance-stages.md)에 있다.
 
+Vite가 core의 깊은 동결 경로를 공유하도록 변경했다. 같은 조건의 대규모 전후 10회에서 표본별 두 동결 구간 합계 p50은 119.60→84.80ms였다. core 수락의 재순회를 제거했고 외부의 얕은 동결·ICU·위치·불변성을 유지했다. 선택 p50은 247.80→237.90ms로 낮게 관측됐지만 목록 p95는 462.08→556.27ms로 높아 전체 흐름의 개선을 확정하지 않는다. 다음은 일반 prebundle 설정의 종단 간 재측정이며 원시·검증은 [26-shared-catalog-freeze.md](26-shared-catalog-freeze.md)에 있다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.

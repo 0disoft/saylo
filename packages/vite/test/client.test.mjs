@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
-import { createStore, parseCatalog } from '@0disoft/saylo-core';
-import { connectDev } from '../dist/client.js';
+import { createBaseSchema, createStore, parseCatalog, freezeCatalogs as freezeCoreCatalogs } from '@0disoft/saylo-core';
+import { connectDev, freezeCatalogs } from '../dist/client.js';
+import { acceptOutcome, readManifest } from '../../core/dist/loading-registry.js';
+import { isDeepFrozen } from '../../core/dist/diagnostics.js';
 import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from '../dist/types.js';
 
 const catalog = text => parseCatalog(JSON.stringify({ hello: text }), { locale: 'ko', namespace: 'demo' });
@@ -26,6 +28,45 @@ function fixture(t) {
   };
   return { hot, store, disposers, pruners, requests };
 }
+
+test('transport freezing shares core trust and acceptance does not revisit the catalog tree', () => {
+  const base = catalog('base');
+  const fingerprint = createBaseSchema(base).fingerprint;
+  const received = JSON.parse(JSON.stringify({ ...base, locale: 'en' }));
+  let visits = 0;
+  Object.defineProperty(received.messages.hello.ast[0], 'value', { enumerable: true, get() { visits++; return 'translated'; } });
+  const list = [received];
+  assert.equal(freezeCatalogs(list), list);
+  assert.ok(Object.isFrozen(list) && isDeepFrozen(received) && isDeepFrozen(received.messages.hello.ast[0]));
+  assert.equal(visits, 1);
+  assert.equal(freezeCoreCatalogs(list), list);
+  freezeCatalogs([received]);
+  const key = { locale: 'en', namespace: 'demo' };
+  const meta = key => ({ key, status: 'present', catalogVersion: 1, namespaceSchemaFingerprint: fingerprint });
+  const manifest = readManifest({ sessionId: 'test', registryRevision: 1, baseLocale: 'ko',
+    availableLocales: ['ko', 'en'], availableNamespaces: ['demo'], catalogs: [meta({ locale: 'ko', namespace: 'demo' }), meta(key)] });
+  const outcome = { ...meta(key), sessionId: 'test', catalog: received };
+  const accepted = acceptOutcome(manifest, key, outcome);
+  assert.equal(accepted.catalog, received);
+  assert.ok(Object.isFrozen(accepted) && Object.isFrozen(accepted.key));
+  assert.equal(visits, 1, 'acceptance must not enumerate the trusted AST again');
+});
+
+test('transport freezing traverses externally shallow-frozen catalogs and nested ICU data', () => {
+  const parsed = catalog('{count, plural, one {{at, date, ::yMMMd}} other {<b>{name}</b>}}');
+  const received = Object.freeze(JSON.parse(JSON.stringify(parsed)));
+  const list = Object.freeze([received]);
+  assert.equal(Object.isFrozen(received.messages), false);
+  assert.equal(freezeCatalogs(list), list);
+  function check(value) {
+    if (value === null || typeof value !== 'object') return;
+    assert.ok(Object.isFrozen(value) && isDeepFrozen(value));
+    for (const child of Object.values(value)) check(child);
+  }
+  check(list);
+  assert.deepEqual(received, JSON.parse(JSON.stringify(parsed)));
+  assert.throws(() => { received.messages.hello.ast.push({ type: 0, value: 'mutated' }); }, TypeError);
+});
 
 test('connect registers before request, dedupes revisions, and accepts a new session', t => {
   const { hot, store } = fixture(t);
