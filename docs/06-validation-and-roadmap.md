@@ -50,7 +50,7 @@ Vite가 core의 깊은 동결 경로를 공유하도록 변경했다. 같은 조
 
 기본 prebundle을 유지하는 `--reply-stages` 계측을 추가했다. large의 full 요청 처리와 수신 이벤트→DOM 시간을 각 프로세스 clock으로 나눴다. 수신 이후 구간이 매회 더 컸으며 상세 수치·검증·다음 client 계측은 [28-full-reply-stages.md](28-full-reply-stages.md)를 따른다.
 
-[30](30-prebundle-freeze-sharing.md)의 root 동결 공유 후 상세 계측을 끈 50회 재측정에서 목록 p95는 small 152.13ms·large 268.54ms였다. large는 250ms 목표를 넘었다. 다음은 목록의 서버 구간 재계측이며 원시·조건·한계는 [31](31-prebundle-freeze-locale-add.md)에 있다.
+[31](31-prebundle-freeze-locale-add.md)의 large 목록 목표 미달 후 서버 재계측에서 파싱이 10/10회 가장 컸다(p50 133.78ms). 다음은 파서 소유 메시지·위치의 동결 순회를 줄이는 실험이며 재사용한 내부 계측·조건·원시는 [32](32-prebundle-server-measurements.md)에 있다.
 
 ## 인수 사례
 

@@ -106,6 +106,8 @@ Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 �
 
 상세 계측을 끈 재측정에서 large 목록 p95는 268.54ms로 250ms 목표를 넘었다. 두 규모의 50회 모두 저장→broadcast 구간이 broadcast→목록 ack보다 컸다. 다음은 현행 large 서버의 경로 검사·파일 읽기·파싱·번역 준비를 재계측한 뒤 최적화를 정한다. 이번 측정만으로 특정 함수나 GC를 원인으로 확정하지 않으며 근거는 [31](31-prebundle-freeze-locale-add.md)를 따른다.
 
+현행 large 서버 재계측에서 파싱이 10/10회 가장 컸다. parser core 5개 파일의 hash가 같은 기존 내부 계측도 재사용하며, 메시지 생성·동결 구간은 17/20회 가장 컸다. 다음 후보는 파서가 만든 메시지·숫자 위치의 구조를 활용해 일반 동결 순회를 줄이는 작은 실험이다. 깊은 불변성·소스 위치·ICU 오류와 외부 입력 처리를 유지하고 cold/incremental 교차 비교로 채택 여부를 정한다. 아직 구현하지 않았으며 근거는 [32](32-prebundle-server-measurements.md)를 따른다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화

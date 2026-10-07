@@ -1,0 +1,67 @@
+{
+  "schema": "saylo-locale-add-server-analysis-v1",
+  "summaryFile": "locale-add-prebundle-server-files.json",
+  "samplesFile": "locale-add-prebundle-server-files.10k-20-locales.samples.json",
+  "scope": "10 measured+2 warmup; parse share is per-sample wall-time percentage inside readAndCandidate, not CPU or whole save-to-list time. p95 with 10 samples is the maximum; do not add nested percentiles or compare instrumented/uninstrumented latency causally.",
+  "parseLargestObserved": 10,
+  "parseToCandidatePercent": {
+    "min": 84.43152145269865,
+    "max": 99.40509870897077,
+    "p50": 95.9869735541029
+  },
+  "listWithin250": 7,
+  "fileEvents": [
+    2
+  ],
+  "inputHashesMatchUninstrumented": true,
+  "reusedParserEvidence": {
+    "summaryFile": "parser-stages-position-pool-cold.json",
+    "matchedCoreFiles": [
+      "packages/core/dist/catalog.js",
+      "packages/core/dist/json.js",
+      "packages/core/dist/diagnostics.js",
+      "packages/core/dist/schema.js",
+      "packages/core/dist/simple-message.js"
+    ],
+    "messagesPerLocale": 10000,
+    "samples": 20,
+    "scope": "Existing parser-only detailed cold run with matching core hashes; different fixture probe text/sample count and probe overhead. messageFreeze includes freezeMessageAst, absolute position creation, message construction and freeze, not just outer-object freezing. No direct end-to-end timing attribution.",
+    "messageFreeze": {
+      "count": 20,
+      "p50Ms": 39.172999999982494,
+      "p95Ms": 94.91610000000082,
+      "minMs": 31.65510000001632,
+      "maxMs": 155.78600000001552
+    },
+    "ast": {
+      "count": 20,
+      "p50Ms": 20.186199999981,
+      "p95Ms": 56.78940000009061,
+      "minMs": 14.511500000003252,
+      "maxMs": 74.74250000000029
+    },
+    "arguments": {
+      "count": 20,
+      "p50Ms": 22.06979999998157,
+      "p95Ms": 41.29759999998896,
+      "minMs": 16.1755999999682,
+      "maxMs": 73.35080000000016
+    },
+    "json": {
+      "count": 20,
+      "p50Ms": 30.21080000000029,
+      "p95Ms": 72.66440000000057,
+      "minMs": 17.114000000000033,
+      "maxMs": 126.28279999999995
+    },
+    "messageLoopOther": {
+      "count": 20,
+      "p50Ms": 12.204800000044088,
+      "p95Ms": 24.528000000061184,
+      "minMs": 9.544399999983398,
+      "maxMs": 34.72770000001492
+    },
+    "samplesFile": "parser-stages-position-pool-cold.10000.samples.json",
+    "messageFreezeLargestObserved": 17
+  }
+}

@@ -175,6 +175,8 @@ Vite 동결 import를 core root로 바꾼 뒤 같은 정상 prebundle·client �
 
 root 동결 공유 후 상세 계측을 끈 규모별 50회 재측정은 [../../docs/31-prebundle-freeze-locale-add.md](../../docs/31-prebundle-freeze-locale-add.md)에 있다. 목록 p95는 small 152.13ms·large 268.54ms, 선택→첫 번역 commit p95는 54.60ms·284.40ms였다. large 목록의 250ms 목표는 미달이며 다음은 현행 목록 서버 구간 재계측이다.
 
+현행 large의 서버 파일 구간 재계측은 [../../docs/32-prebundle-server-measurements.md](../../docs/32-prebundle-server-measurements.md)에 있다. `--server-file-stages`로 측정 10회·warmup 2회·control 10회를 수집했고, 파싱은 10/10회 가장 큰 개별 구간이었다(p50 133.78ms). 기존 내부 파서 계측의 core hash 일치도 확인해 다음 메시지·위치 동결 실험 후보를 정했다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.
