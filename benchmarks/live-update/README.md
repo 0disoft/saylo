@@ -163,6 +163,8 @@ core 응답 수락 구간은 `node benchmarks/live-update/run.mjs --mode locale-
 
 Vite/core 깊은 동결 경로 공유는 같은 대규모 locale-add 브라우저 계측 조건으로 전후 각 10회를 실행했다. Vite freeze와 core acceptFreeze를 표본별로 합친 뒤 요약한 p50은 119.60→84.80ms, p95는 368.10→308.60ms였다. 비용 일부는 최초 Vite 동결로 옮겨갔으며 p95끼리 더한 값이 아니다. 선택 p50은 247.80→237.90ms였고 목록 p95는 462.08→556.27ms였다. 순차 단일 장비 비교의 한계·원시·다음 일반 설정 재측정은 [../../docs/26-shared-catalog-freeze.md](../../docs/26-shared-catalog-freeze.md)를 따른다.
 
+깊은 동결 경로 공유 후 일반 설정 재측정은 `node benchmarks/live-update/run.mjs --mode locale-add --scenario all --samples 50 --warmup 5 --calibrations 25 --out benchmarks/results/locale-add-shared-freeze.json`로 실행했다. 기본 prebundle·typegen 켬, 상세 계측 끔 조건이다. 목록 p95는 small 112.42ms·large 621.18ms이고 선택→첫 번역 commit p95는 74.20ms·631.70ms였다. large 목록의 250ms 이내는 9/50회이며 목표는 미달이다. 선택 p95는 이전 일반 설정 run보다 높게 관측돼 전체 개선을 확정하지 않는다. 원시·상태 보존·hash 확인과 다음 full 응답 구간 계측은 [../../docs/27-shared-freeze-locale-add.md](../../docs/27-shared-freeze-locale-add.md)를 따른다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

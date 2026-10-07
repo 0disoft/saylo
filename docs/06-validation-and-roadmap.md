@@ -46,6 +46,8 @@ core acceptOutcome을 검증·동결로 나눠 계측했다. 대규모 10회에�
 
 Vite가 core의 깊은 동결 경로를 공유하도록 변경했다. 같은 조건의 대규모 전후 10회에서 표본별 두 동결 구간 합계 p50은 119.60→84.80ms였다. core 수락의 재순회를 제거했고 외부의 얕은 동결·ICU·위치·불변성을 유지했다. 선택 p50은 247.80→237.90ms로 낮게 관측됐지만 목록 p95는 462.08→556.27ms로 높아 전체 흐름의 개선을 확정하지 않는다. 다음은 일반 prebundle 설정의 종단 간 재측정이며 원시·검증은 [26-shared-catalog-freeze.md](26-shared-catalog-freeze.md)에 있다.
 
+깊은 동결 경로 공유 후 기본 prebundle·상세 계측 끔 조건으로 규모별 50회를 재측정했다. 목록 p95는 small 112.42ms·large 621.18ms, 선택→첫 번역 commit p95는 74.20ms·631.70ms였다. 목록 250ms 이내는 각각 50/50·9/50회이고 large 목표는 미달이다. 두 규모의 선택 p95가 이전 일반 설정 run보다 높게 관측돼 전체 개선을 확정하지 않는다. 다음은 기본 prebundle을 유지한 large full 응답 준비·수신 이후 구간 분리이며 원시·검증은 [27-shared-freeze-locale-add.md](27-shared-freeze-locale-add.md)에 있다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.
