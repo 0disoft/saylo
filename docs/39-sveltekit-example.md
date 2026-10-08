@@ -24,6 +24,8 @@ source proxy는 처음에 prepared boot scope를 읽고 마운트 뒤 browser so
 | --- | --- |
 | Svelte 타입 검사 | 예제의 TS·템플릿·Vite config 진단 0 errors·0 warnings |
 | 빌드 | client·SSR 빌드와 adapter-node 출력 생성 성공 |
+| 외부 tarball 앱 | 다섯 패키지를 저장소 밖에 설치하고 symlink 없음·임시 앱 내부 설치 경로·버전 일치를 확인. 타입 진단 0 errors·0 warnings, client/SSR 빌드·개발 연결 수명·운영 HTTP 검증 통과 |
+| tarball 운영 브라우저 | HeadlessChrome 154에서 hydration·ko/en/ko 전환·공유 layout 입력과 열린 모달 유지·layout 종료와 재진입 통과. 보고된 runtime 오류·경고 없음 |
 | 개발 HTTP | ko/en 동시 요청 4개, 일치하는 SSR 언어·boot·UTC·namespace, `EN` 정규화, malformed·미등록 locale의 base fallback |
 | 운영 HTTP | 실제 `node build/index.js`에서 같은 SSR·boot 검증 통과 |
 | 연결 수명 | 실제 client 연결 함수와 hot context에서 listener 등록·종료 후 0개, 중복 stop, attach 전 종료 시 지연 연결 취소 |
@@ -45,9 +47,12 @@ npm run setup:sveltekit
 npm run dev:sveltekit
 npm run build:sveltekit
 npm run verify:sveltekit
+npm run verify:pack:sveltekit
 ```
 
 개발 포트는 5191이고 preview 포트는 5192이다. `verify:sveltekit`은 임시 개발 서버를 직접 시작하고 `finally`에서 종료한다. 실제 실행 중인 Node 빌드도 `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5192`로 HTTP 검증할 수 있다.
+
+`verify:pack:sveltekit`은 기존 로컬 `file:` 디렉터리 의존성을 tarball로 바꾼 임시 앱에서 실행한다. 서드파티 도구·peer는 예제의 메이저 범위를 그대로 사용한다. browser probe는 임시 앱에만 주입하며 검사가 끝나면 브라우저·서버·임시 폴더를 정리한다. Chrome·Edge를 자동 탐색하고 `--browser <실행파일>`로 지정할 수도 있다. 이 검사는 수동 실행 명령이며 기존 CI·릴리스 검증 횟수는 변경하지 않았다. 소스는 [pack-sveltekit.mjs](../scripts/pack-sveltekit.mjs)에 있다.
 
 ## 참고
 

@@ -24,6 +24,7 @@
     "dev:sveltekit": "npm --prefix examples/sveltekit run dev",
     "build:sveltekit": "npm --prefix examples/sveltekit run build",
     "verify:sveltekit": "npm --prefix examples/sveltekit run verify:ssr",
+    "verify:pack:sveltekit": "npm run build && node scripts/pack-sveltekit.mjs",
     "test": "npm run build && npm run test --workspaces",
     "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json && node --test scripts/test/verify-oidc.test.mjs",
     "release:check": "node scripts/release-check.mjs",
