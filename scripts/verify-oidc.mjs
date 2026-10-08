@@ -45,6 +45,6 @@ export async function verifyOidc({ env = process.env, request = fetch, log = con
     token = undefined;
     log(`[oidc] Package-scoped npm token exchange verified: ${name}`);
   }
-  log('[oidc] All four Trusted Publishers authenticated; no packages published.');
+  log(`[oidc] All ${packageIds.length} Trusted Publishers authenticated; no packages published.`);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await verifyOidc();

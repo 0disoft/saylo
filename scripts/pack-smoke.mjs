@@ -6,7 +6,7 @@ import { cp, lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'no
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { checkRelease, releaseInput } from './release-check.mjs';
+import { checkRelease, packageIds, releaseInput } from './release-check.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const fixtures = fileURLToPath(new URL('./pack-fixtures/', import.meta.url));
@@ -16,10 +16,13 @@ const exec = promisify(execFile);
 const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-pack-'));
 const packs = path.join(root, 'packs');
 const majors = JSON.parse(await readFile(path.join(repository, 'package.json'), 'utf8')).devDependencies;
-const packages = Object.fromEntries(['core', 'react', 'typegen', 'vite'].map(id => [`@0disoft/saylo-${id}`, id]));
-const names = Object.keys(packages);
+const packages = Object.fromEntries(packageIds.map(id => [`@0disoft/saylo-${id}`, id]));
 const saveRelease = process.argv.slice(2).includes('--save-release');
 const fromRegistry = process.argv.slice(2).includes('--registry');
+const baseVersion = JSON.parse(await readFile(path.join(repository, 'packages/core/package.json'), 'utf8')).version;
+const bootstrap = fromRegistry ? JSON.parse(await readFile(path.join(repository, 'releases', `${baseVersion}.json`), 'utf8')) : [];
+// Historical registry checks use their approved package set, excluding unpublished additions.
+const names = fromRegistry ? bootstrap.map(pack => pack.name) : Object.keys(packages);
 assert.ok(process.argv.slice(2).every(arg => ['--save-release', '--registry'].includes(arg)), 'Unsupported pack argument.');
 assert.ok(!(saveRelease && fromRegistry), 'Registry verification cannot replace local release artifacts.');
 const license = await readFile(path.join(repository, 'LICENSE'), 'utf8');
@@ -51,8 +54,6 @@ try {
   await mkdir(packs);
   const registryVersions = new Map();
   if (fromRegistry) {
-    const baseVersion = JSON.parse(await readFile(path.join(repository, 'packages/core/package.json'), 'utf8')).version;
-    const bootstrap = JSON.parse(await readFile(path.join(repository, 'releases', `${baseVersion}.json`), 'utf8'));
     for (const name of names) {
       const manifest = JSON.parse(await readFile(path.join(repository, 'packages', packages[name], 'package.json'), 'utf8'));
       const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(30000) });
@@ -64,7 +65,7 @@ try {
       assert.equal(version.dist.integrity, bootstrap.find(pack => pack.name === name && pack.version === manifest.version)?.integrity, `${name}: published bytes differ from approved CI artifact`);
       registryVersions.set(name, version);
     }
-    console.log('[registry] All four public alpha versions match the approved CI artifact integrity.');
+    console.log(`[registry] All ${names.length} public alpha versions match the approved CI artifact integrity.`);
   }
   const source = fromRegistry ? ['--workspaces=false', ...names.map(name => `${name}@${registryVersions.get(name).version}`), '--registry', 'https://registry.npmjs.org/'] : ['--workspaces'];
   const metadata = JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
@@ -114,12 +115,12 @@ try {
       scripts: { typegen: 'saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts',
         typecheck: 'tsc -p tsconfig.json', build: 'vite build' },
       dependencies: { ...Object.fromEntries(packed.map(pack => [pack.name, `file:../packs/${pack.filename}`])),
-        react: majors.react, 'react-dom': majors['react-dom'] },
+        react: majors.react, 'react-dom': majors['react-dom'], ...(!fromRegistry ? { svelte: majors.svelte } : {}) },
       devDependencies: Object.fromEntries(['typescript', 'vite', '@types/node', '@types/react', '@types/react-dom'].map(name => [name, majors[name]])) }, null, 2));
     await writeFile(path.join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022',
       module: 'NodeNext', moduleResolution: 'NodeNext', lib: ['ES2022', 'DOM'], strict: true,
       allowJs: true, checkJs: true, noEmit: true, jsx: 'react-jsx', types: ['node', 'vite/client', '@0disoft/saylo-vite/virtual'] },
-      include: [`src/**/*.${language}`, 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
+      include: [`src/**/*.${language}`, ...(!fromRegistry ? ['src/consumer-svelte.js'] : []), 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
     console.log(`[pack] ${language}: installing tarballs and declared peer/tool major ranges outside the workspace`);
     await npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', '--workspaces=false'], app);
     for (const name of names) {
@@ -134,6 +135,7 @@ try {
       assert.equal(await readFile(path.join(installed, 'LICENSE'), 'utf8'), license);
       assert.equal(await readFile(path.join(installed, 'NOTICE'), 'utf8'), notice);
     }
+    if (!fromRegistry) await cp(path.join(repository, 'packages/svelte/test/consumer-js.js'), path.join(app, 'src/consumer-svelte.js'));
     if (language === 'ts') {
       // Check the actual shipped examples against the independently installed packages.
       const doc = id => packageDocs.get(`@0disoft/saylo-${id}`).readme;
@@ -141,12 +143,23 @@ try {
       await writeFile(path.join(app, 'readme-react.tsx'), example(doc('react'), 'tsx'));
       await writeFile(path.join(app, 'readme-typegen.ts'), example(doc('typegen'), 'ts'));
       await writeFile(path.join(app, 'src/readme-vite.ts'), example(doc('vite'), 'ts'));
+      if (!fromRegistry) {
+        await writeFile(path.join(app, 'readme-svelte.mjs'), example(doc('svelte'), 'js'));
+        await cp(path.join(repository, 'packages/svelte/test/consumer.ts'), path.join(app, 'readme-svelte.ts'));
+        // Compile and render against the tarball's real Svelte peer, outside workspace resolution.
+        await cp(path.join(fixtures, 'svelte-smoke.mjs'), path.join(app, 'svelte-smoke.mjs'));
+      }
     }
     console.log((await npm(['run', 'typegen'], app)).trim());
     assert.match(await readFile(path.join(app, 'generated.d.ts'), 'utf8'), /"demo:items": \{ "count": number;/);
     await npm(['run', 'typecheck'], app);
     if (language === 'ts') {
       await exec(process.execPath, ['readme-core.mjs'], { cwd: app, windowsHide: true, env: childEnv });
+      if (!fromRegistry) {
+        await exec(process.execPath, ['readme-svelte.mjs'], { cwd: app, windowsHide: true, env: childEnv });
+        const svelte = await exec(process.execPath, ['svelte-smoke.mjs'], { cwd: app, windowsHide: true, env: childEnv });
+        console.log(svelte.stdout.trim());
+      }
       console.log('[pack] Shipped core README example ran; React, typegen and Vite README examples typechecked.');
     }
     const smoke = await exec(process.execPath, ['smoke.mjs'], { cwd: app, windowsHide: true, env: childEnv });
@@ -160,7 +173,7 @@ try {
     }
     console.log(`[pack] ${language}: CLI, ${language === 'js' ? 'checkJs' : 'TypeScript'}, runtime/React SSR, Vite lazy build passed`);
   }
-  console.log('[pack] All four packed packages passed independent JS and TS consumption.');
+  console.log(`[pack] All ${names.length} packed packages passed independent JS and TS consumption.`);
   if (saveRelease) {
     const destination = path.join(repository, '.release', 'npm');
     await mkdir(destination, { recursive: true });

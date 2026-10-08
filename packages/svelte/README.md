@@ -38,6 +38,6 @@ export const { setSayloContext, getI18n } = createSayloSvelte<AppSchema>();
 - 컴포넌트의 `$i18n` 구독은 Svelte가 해제한다. instance를 만든 호출자가 `dispose()`를 책임진다. 어댑터는 instance를 폐기하지 않는다.
 - SSR에서는 요청별 instance를 생성해 부모 context에 전달한다. factory는 공유할 수 있지만 instance를 서버 전역에 공유하지 않는다. 서버와 클라이언트의 최초 instance는 같은 core boot snapshot으로 생성하고, 라이브 연결은 마운트 뒤에 시작한다.
 
-검증은 `npm run test --workspace=@0disoft/saylo-svelte`와 `npm run typecheck:consumers --workspace=@0disoft/saylo-svelte`로 실행한다. SSR 요청·중첩 context 분리, 구독 해제, snapshot-bound 번역, JS/TS 소비, 컴파일한 컴포넌트의 입력·포커스·커서·dialog·state 유지가 검증 범위이다.
+검증은 `npm run test --workspace=@0disoft/saylo-svelte`와 `npm run typecheck:consumers --workspace=@0disoft/saylo-svelte`로 실행한다. SSR 요청·중첩 context 분리, 일치하는 SSR 마크업의 hydration, 구독 해제, snapshot-bound 번역, JS/TS 소비, 컴파일한 컴포넌트의 입력·포커스·커서·dialog·state 유지가 검증 범위이다. [Svelte 데모](https://github.com/0disoft/saylo/tree/main/examples/svelte)와 [구현 기록](https://github.com/0disoft/saylo/blob/main/docs/38-svelte-adapter.md)에 연결 방법과 실제 브라우저 검증을 정리했다.
 
 라이선스는 Apache-2.0이며 tarball에 `LICENSE`와 `NOTICE`를 포함한다.

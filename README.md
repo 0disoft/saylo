@@ -4,6 +4,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 
 ## 현재 상태
 
+- `packages/svelte`에 Svelte 5 어댑터를 로컬 구현했다. `$i18n` 구독·typed context·snapshot-bound 번역과 JS/TS 소비, SSR·hydration을 검증했고 [Svelte 데모](examples/svelte/README.md)에서 파일 저장·로케일 추가·선택·삭제 후 입력과 모달 유지를 확인했다. `npm run dev:svelte`로 실행한다. 새 패키지는 미게시이며 상세 범위는 [38-svelte-adapter.md](docs/38-svelte-adapter.md)에 있다.
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 공개 패키지 네 개에서 `private`를 떼고 첫 버전 `0.1.0-alpha.1`(dist-tag `alpha`)을 2026-10-06 npm에 게시했다. 루트 workspace package는 `private`를 유지한다.
 - 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송, 기준 schema 변경 시 기존 번역의 quarantine을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR boot serializer·요청별 instance·React hydration 어댑터를 구현했고 전체 check와 실제 브라우저 검증을 마쳤다.
 - `@0disoft/saylo-core/runtime` 서브패스 엔트리와 `packages/vite`의 `astRuntime`(기본 `true`, production 한정)으로 Saylo core formatter 경계에서만 parser 런타임을 제거한다. 공개 런타임 엔트리는 `parseCatalog`를 빼고 루트 엔트리는 기존 API를 유지한다. quarantine과 이 parser 제거는 로컬 변경이며 게시된 `0.1.0-alpha.1`에는 아직 없다.
@@ -231,7 +232,7 @@ npm run check
 npm run release:pack
 ```
 
-`release:check`는 네 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 네 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch로 같은 검증을 돌리고 `publish`가 true일 때만 게시한다.
+현행 로컬 릴리스 대상에는 미게시 `@0disoft/saylo-svelte`를 추가했다. `release:check`는 다섯 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 다섯 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. `verify:registry`는 기존 릴리스 manifest에 기록된 네 게시 패키지만 검사한다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch로 같은 검증을 돌리고 `publish`가 true일 때만 게시한다. 다음 게시에는 새 패키지의 Trusted Publisher 준비와 릴리스 버전 결정이 필요하다.
 
 ## 설계 방향 한 줄 요약
 
@@ -243,6 +244,7 @@ npm run release:pack
 | --- | --- | --- |
 | `@0disoft/saylo-core` | [npm](https://www.npmjs.com/package/@0disoft/saylo-core) | [packages/core/README.md](packages/core/README.md) |
 | `@0disoft/saylo-react` | [npm](https://www.npmjs.com/package/@0disoft/saylo-react) | [packages/react/README.md](packages/react/README.md) |
+| `@0disoft/saylo-svelte` | 미게시 | [packages/svelte/README.md](packages/svelte/README.md) |
 | `@0disoft/saylo-typegen` | [npm](https://www.npmjs.com/package/@0disoft/saylo-typegen) | [packages/typegen/README.md](packages/typegen/README.md) |
 | `@0disoft/saylo-vite` | [npm](https://www.npmjs.com/package/@0disoft/saylo-vite) | [packages/vite/README.md](packages/vite/README.md) |
 

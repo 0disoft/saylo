@@ -4,25 +4,27 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 
 ## 확정 사항
 
+2026-10-08 로컬 릴리스 목록에 `@0disoft/saylo-svelte`를 추가했다. 새 패키지는 미게시이고 Trusted Publisher 등록도 남아 있다. 아래의 네 패키지 게시·인증 기록은 2026-10-06 기존 릴리스의 기록이다. 현행 로컬 pack·게시 계획·OIDC 대상은 다섯 패키지이며 `verify:registry`는 해당 릴리스 manifest의 네 패키지만 검사한다. 상세 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 있다.
+
 | 항목 | 결정 |
 | --- | --- |
 | 라이선스 | Apache-2.0. 배포 tarball에 루트 `LICENSE`·`NOTICE`를 함께 싣는다 |
 | 첫 버전 | `0.1.0-alpha.1` |
 | dist-tag | `alpha` |
-| 배포 패키지 | `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` |
+| 배포 패키지 | `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-svelte`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` |
 | 루트 package | `saylo-workspace`는 `private`를 유지한다 |
 | publishConfig | `access: public`, `tag: alpha`, `registry: https://registry.npmjs.org/` |
 | Node | `engines.node`는 `24.x`. 로컬 검증 환경은 Node 24.18.0 |
 | TypeScript | 7을 기준으로 검증한다. `typescript`를 peer로 강제하지 않는다 |
-| peer 조건 | react 19, vite 8 |
-| 런타임 | core·react는 ES2022 브라우저 대상이라 Node API에 의존하지 않는다. typegen·vite는 Node에서 실행한다 |
+| peer 조건 | react 19, svelte 5, vite 8 |
+| 런타임 | core·react·svelte는 ES2022 브라우저 대상이라 Node API에 의존하지 않는다. typegen·vite는 Node에서 실행한다 |
 | provenance | 저장소가 private인 동안 `--provenance=false`로 게시한다. 공개 저장소면 true |
 
 2026-10-06 네 패키지를 `0.1.0-alpha.1`·dist-tag `alpha`로 게시했다. 공개 metadata의 dist-tags는 네 패키지 모두 `latest`가 등록용 placeholder `0.0.0-stage`를, `alpha`가 `0.1.0-alpha.1`을 가리킨다. 실제 설치는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 지정한다. `latest`를 바꾸거나 unpublish하지 않고 alpha 정책을 유지한다.
 
 ## 버전과 태그 계약
 
-- 게시 버전은 커밋된 manifest 값을 그대로 쓴다. 워크플로는 버전을 다시 쓰지 않는다. dispatch `version`과 네 `packages/*/package.json`의 `version`이 하나라도 다르면 실패한다.
+- 게시 버전은 커밋된 manifest 값을 그대로 쓴다. 워크플로는 버전을 다시 쓰지 않는다. dispatch `version`과 릴리스 대상 `packages/*/package.json`의 `version`이 하나라도 다르면 실패한다.
 - 형식은 `x.y.z` 또는 `x.y.z-alpha.N`·`-beta.N`·`-rc.N`이다.
 - tag는 `alpha`·`next`·`latest`다. prerelease는 `latest`를 쓸 수 없고 stable은 `alpha`를 쓸 수 없다.
 - 워크스페이스 내부 의존(`@0disoft/saylo-*`)은 같은 버전을 정확히 지정한다.
@@ -35,7 +37,7 @@ npm run check
 npm run release:pack
 ```
 
-`release:check`는 루트 `private`, 패키지의 `private` 부재, `license`, `engines`, `publishConfig`, 내부 의존 버전, 네 패키지의 `LICENSE`·`NOTICE` 일치를 검사한다. `check`는 빌드·워크스페이스 테스트·소비 타입 검사·typegen·React TS 검사를 돌린다. `release:pack`은 빌드 후 네 tarball을 저장소 밖 JS·TS 소비 앱에 설치해 검증하고, 통과하면 tarball과 `manifest.json`(`name`·`version`·`filename`·`integrity`)을 `.release/npm/`에 남긴다. `.release/`는 gitignore 대상이다.
+`release:check`는 루트 `private`, 패키지의 `private` 부재, `license`, `engines`, `publishConfig`, 내부 의존 버전, 다섯 패키지의 `LICENSE`·`NOTICE` 일치를 검사한다. `check`는 빌드·워크스페이스 테스트·소비 타입 검사·typegen·React TS 검사를 돌린다. Svelte 데모 빌드는 `npm run build:svelte`로 별도 실행한다. `release:pack`은 빌드 후 다섯 tarball을 저장소 밖 JS·TS 소비 앱에 설치해 검증하고, 통과하면 tarball과 `manifest.json`(`name`·`version`·`filename`·`integrity`)을 `.release/npm/`에 남긴다. `.release/`는 gitignore 대상이다.
 
 게시된 실물은 `npm run verify:registry`로 대조한다. `pack-smoke.mjs --registry`가 공개 registry에서 네 `0.1.0-alpha.1`과 `alpha` tag를 조회해 커밋된 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json)(CI가 승인한 tarball의 SHA-512 integrity를 그대로 복사한 파일)과 비교하고, registry tarball을 저장소 밖 JS·TS 앱에 `npm install`해 CLI·checkJs/TS 소비·런타임 SSR·public subpath·Vite production lazy chunk 빌드·README 예제를 검사한다. 2026-10-06 이 검증은 exit 0으로 통과했다.
 
@@ -50,9 +52,9 @@ npm run release:pack
 | `publish` | boolean. 기본 `false` |
 | `verify_oidc` | boolean. 기본 `false`. `publish`가 `false`일 때 네 Trusted Publisher의 OIDC 토큰 교환만 검증한다 |
 
-단일 job이 Ubuntu·Node 24·npm 11에서 `main`이고 저장소가 `0disoft/saylo`일 때만 돈다. environment는 `npm-release`, 권한은 `contents: read`·`id-token: write`다. `release:check` → `npm ci` → `check` → `release:pack` → `release:publish`(dry run) → artifact 업로드 순서이고, `publish`가 true일 때만 `release:publish --publish`로 게시한다. 게시 순서는 core → react → typegen → vite이고 registry secret(`NPM_TOKEN` 등)을 쓰지 않는다.
+단일 job이 Ubuntu·Node 24·npm 11에서 `main`이고 저장소가 `0disoft/saylo`일 때만 돈다. environment는 `npm-release`, 권한은 `contents: read`·`id-token: write`다. `release:check` → `npm ci` → `check` → `release:pack` → `release:publish`(dry run) → artifact 업로드 순서이고, `publish`가 true일 때만 `release:publish --publish`로 게시한다. 게시 순서는 core → react → svelte → typegen → vite이고 registry secret(`NPM_TOKEN` 등)을 쓰지 않는다.
 
-`verify_oidc`는 게시와 별개 입력이다. `true`이고 `publish`가 `false`이면 `release:oidc`가 GitHub OIDC 토큰을 `npm:registry.npmjs.org` audience로 받아 npm 공식 API [api-docs.npmjs.com](https://api-docs.npmjs.com/)의 package-scoped token exchange(`.../oidc/token/exchange/package/@0disoft/saylo-<id>`)로 네 패키지를 확인한다. 패키지 버전·게시·태그는 바꾸지 않고 토큰을 stdout에 출력하거나 디스크에 저장하지 않는다. helper의 guard·성공 교환 protocol·로그/에러 secret 누출 방지 3개 로컬 테스트와 실제 registry 토큰 교환이 모두 통과했다. 2026-10-06 [run 37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758)은 네 패키지 토큰 교환과 전체 143개 테스트·타입 검사·pack 소비 검증을 42초에 마쳤다.
+`verify_oidc`는 게시와 별개 입력이다. `true`이고 `publish`가 `false`이면 `release:oidc`가 GitHub OIDC 토큰을 `npm:registry.npmjs.org` audience로 받아 npm 공식 API [api-docs.npmjs.com](https://api-docs.npmjs.com/)의 package-scoped token exchange(`.../oidc/token/exchange/package/@0disoft/saylo-<id>`)로 현행 릴리스 대상 다섯 패키지를 확인한다. 패키지 버전·게시·태그는 바꾸지 않고 토큰을 stdout에 출력하거나 디스크에 저장하지 않는다. helper의 guard·성공 교환 protocol·로그/에러 secret 누출 방지 3개 로컬 테스트와 실제 registry 토큰 교환이 모두 통과했다. 2026-10-06 [run 37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758)은 네 패키지 토큰 교환과 전체 143개 테스트·타입 검사·pack 소비 검증을 42초에 마쳤다.
 
 `npm-release` environment는 GitHub에 존재하고 보호 규칙은 없다. dry-run run 37467769385는 140개 테스트·소비 타입 검사·JS/TS packed consumer·`release:publish` dry run까지 통과하고 tarball 4개를 artifact `saylo-npm-0.1.0-alpha.1`로 올렸다. `gh run download 37467769385 --name saylo-npm-0.1.0-alpha.1 --dir .release/bootstrap`로 받은 tarball은 SHA-512가 원본과 일치했다.
 
@@ -60,7 +62,7 @@ npm run release:pack
 
 ## Trusted Publisher
 
-패키지마다 하나씩 등록한다. 값은 네 패키지 모두 같다.
+패키지마다 하나씩 등록한다. 등록 값은 모든 패키지에 동일하게 적용한다. 기존 네 패키지는 등록 완료이고 Svelte는 등록 전이다.
 
 | 필드 | 값 |
 | --- | --- |
@@ -86,7 +88,7 @@ npm trust github @0disoft/saylo-<id> --file release.yml --repo 0disoft/saylo --e
 npm trust list @0disoft/saylo-<id>
 ```
 
-`<id>`는 `core`·`react`·`typegen`·`vite`이고 네 패키지 모두 반복한다. `npm stage publish`는 공개 placeholder `0.0.0-stage`를 등록하고, 실제 `0.1.0-alpha.1` 내용은 승인 전까지 공개되지 않는다. `npm trust`는 패키지가 registry에 이미 있고 계정 2FA가 켜져 있어야 동작한다.
+`<id>`는 `core`·`react`·`svelte`·`typegen`·`vite`이며 새 패키지 등록 시 해당 id에 적용한다. 아래의 첫 릴리스 제출 기록은 기존 네 패키지에 해당한다. `npm stage publish`는 공개 placeholder `0.0.0-stage`를 등록하고, 실제 `0.1.0-alpha.1` 내용은 승인 전까지 공개되지 않는다. `npm trust`는 패키지가 registry에 이미 있고 계정 2FA가 켜져 있어야 동작한다.
 
 ### 초기 stage와 trust 이력
 

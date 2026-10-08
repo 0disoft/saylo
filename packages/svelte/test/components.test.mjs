@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { writeFile } from 'node:fs/promises';
 import test from 'node:test';
 import { render } from 'svelte/server';
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
@@ -31,6 +32,9 @@ test('SSR isolates request and nested contexts, releases subscriptions and rejec
 });
 
 test('compiled Svelte client preserves DOM state and releases subscriptions', async () => {
+  const instance = createStore({ baseLocale: 'ko', locale: 'ko', catalogs });
+  try { await writeFile(new URL('hydration.html', output), render(Parent, { props: { instance } }).body); }
+  finally { instance.dispose(); }
   const result = await promisify(execFile)(process.execPath, ['--conditions=browser', '--test', 'test/client.mjs'], {
     cwd: new URL('..', import.meta.url), windowsHide: true,
     env: Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'NODE_TEST_CONTEXT')),

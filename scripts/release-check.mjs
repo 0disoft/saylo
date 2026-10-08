@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 export const repository = fileURLToPath(new URL('..', import.meta.url));
-export const packageIds = ['core', 'react', 'typegen', 'vite'];
+export const packageIds = ['core', 'react', 'svelte', 'typegen', 'vite'];
 export function releaseInput(args = process.argv.slice(2)) {
   let version, tag = 'alpha', publish = false;
   for (let i = 0; i < args.length; i++) {
@@ -38,6 +38,6 @@ export async function checkRelease({ version }) {
     assert.equal(await readFile(new URL('LICENSE', base), 'utf8'), license);
     assert.equal(await readFile(new URL('NOTICE', base), 'utf8'), notice);
   }
-  console.log(`[release] Four Apache-2.0 packages validated at ${version}.`);
+  console.log(`[release] ${packageIds.length} Apache-2.0 packages validated at ${version}.`);
 }
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) await checkRelease(releaseInput());

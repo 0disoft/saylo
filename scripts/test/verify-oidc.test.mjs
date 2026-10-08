@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { verifyOidc } from '../verify-oidc.mjs';
+import { packageIds } from '../release-check.mjs';
 
 const env = { GITHUB_ACTIONS: 'true', GITHUB_REPOSITORY: '0disoft/saylo', GITHUB_REF: 'refs/heads/main',
   ACTIONS_ID_TOKEN_REQUEST_URL: 'https://github.example/oidc?request=1', ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'request-secret' };
@@ -18,16 +19,16 @@ test('exchanges package-scoped tokens without exposing them in output', async ()
     if (calls.length === 1) return response({ value: 'id-secret' });
     return response({ token: 'registry-secret' });
   } });
-  assert.equal(calls.length, 5);
+  assert.equal(calls.length, packageIds.length + 1);
   assert.equal(new URL(calls[0].url).searchParams.get('audience'), 'npm:registry.npmjs.org');
   assert.equal(calls[0].options.headers.Authorization, 'Bearer request-secret');
-  for (const [i, id] of ['core', 'react', 'typegen', 'vite'].entries()) {
+  for (const [i, id] of packageIds.entries()) {
     assert.equal(calls[i + 1].url, `https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/@0disoft%2fsaylo-${id}`);
     assert.equal(calls[i + 1].options.method, 'POST');
     assert.equal(calls[i + 1].options.headers.Authorization, 'Bearer id-secret');
     assert.equal(calls[i + 1].options.redirect, 'error');
   }
-  assert.equal(logs.length, 5);
+  assert.equal(logs.length, packageIds.length + 1);
   assert.ok(!logs.join('\n').includes('secret'));
 });
 
