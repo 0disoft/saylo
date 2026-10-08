@@ -92,7 +92,24 @@ npm trust list @0disoft/saylo-<id>
 
 `<id>`는 `core`·`react`·`svelte`·`typegen`·`vite`이며 새 패키지 등록 시 해당 id에 적용한다. 아래의 첫 릴리스 제출 기록은 기존 네 패키지에 해당한다. `npm stage publish`는 공개 placeholder `0.0.0-stage`를 등록하고, 실제 `0.1.0-alpha.1` 내용은 승인 전까지 공개되지 않는다. `npm trust`는 패키지가 registry에 이미 있고 계정 2FA가 켜져 있어야 동작한다.
 
-### 초기 stage와 trust 이력
+### Svelte 등록 진행 기록
+
+2026-10-08 `0disoft` 계정으로 로컬 검증된 `.release/npm/0disoft-saylo-svelte-0.1.0-alpha.2.tgz`를 staging에 제출했다. 제출 전 SHA-512가 후보 manifest와 같음을 확인했고, `npm stage list @0disoft/saylo-svelte --json`에서 다음 값을 확인했다.
+
+| 항목 | 값 |
+| --- | --- |
+| Stage ID | `4cd95172-ad66-4bc1-9cc5-b0fc968b1dee` |
+| Package | `@0disoft/saylo-svelte` |
+| Version / tag | `0.1.0-alpha.2` / `alpha` |
+| Status | `staged` |
+| Access / actor | `public` / `0disoft` |
+| SHA-1 | `f1d4985ff0c2be9ad20a4760c915ff86716f38a7` |
+
+실제 버전의 승인·게시와 기존 네 패키지의 게시·태그 변경은 수행하지 않았다. 제출 후 `npm view`는 404를 반환했으므로 공개 placeholder 노출은 확인하지 못했다. 기존 릴리스 기록에서 보였던 placeholder 상태를 이번 제출에 그대로 가정하지 않는다.
+
+`npm trust github @0disoft/saylo-svelte --file release.yml --repo 0disoft/saylo --env npm-release --allow-publish --yes` 설정 요청은 별도 브라우저 2FA를 기다리는 중이며, 저장 완료나 OIDC 인증 성공으로 기록하지 않는다. 재개 시 위 stage를 먼저 조회하고 중복 제출하지 않는다. Trusted Publisher 저장 후 설정을 조회해 확인한다.
+
+### 기존 네 패키지 등록 이력
 
 `npm login --auth-type=web`으로 인증했고 `npm whoami`는 `0disoft`, 프로필 `tfa`는 `auth-only`다. CI tarball의 SHA-512를 확인한 뒤 네 패키지 `npm stage publish`를 제출했고 `npm stage list` 기준 네 stage status가 모두 `staged`다. `npm trust github`도 네 패키지 모두 성공했고 브라우저 2FA는 사용자가 마쳤다. `npm trust list`는 네 패키지 모두 exit 0으로 repo `0disoft/saylo`, file `release.yml`, env `npm-release`, permissions `['createPackage','createStagedPackage']`가 같음을 확인했다. 게시 전 인증된 `npm view @0disoft/saylo-core versions --json`은 `["0.0.0-stage"]`를 반환해 placeholder를 확인했다. 이후 2026-10-06 네 패키지의 `0.1.0-alpha.1`을 게시했다.
 
