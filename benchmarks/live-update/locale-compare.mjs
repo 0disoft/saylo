@@ -13,7 +13,7 @@ const repository = fileURLToPath(new URL('../..', import.meta.url));
 const benchmarkDirectory = path.join(repository, 'benchmarks');
 const exec = promisify(execFile);
 const { values } = parseArgs({ options: {
-  baseline: { type: 'string', default: 'cbd6871' }, current: { type: 'string', default: 'HEAD' },
+  baseline: { type: 'string', default: 'cbd6871' }, current: { type: 'string', default: '28d7fe5' },
   samples: { type: 'string', default: '25' }, warmup: { type: 'string', default: '5' },
   calibrations: { type: 'string', default: '10' }, smoke: { type: 'boolean', default: false },
   out: { type: 'string', default: 'benchmarks/results/locale-add-seal-comparison.json' },

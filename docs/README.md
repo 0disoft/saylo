@@ -41,6 +41,7 @@
 33. [34-message-freeze-stages.md](34-message-freeze-stages.md) — AST·절대 위치·레코드 동결 구간 분리와 다음 후보
 34. [35-shared-ast-seal.md](35-shared-ast-seal.md) — AST 동결 `seal` 헬퍼 모듈화와 cold·incremental 교차 비교
 35. [36-shared-ast-seal-locale-add.md](36-shared-ast-seal-locale-add.md) — AST 동결 seal 공유 후 상세 계측을 끈 large 로케일 목록·첫 번역 반영 재측정
+36. [37-seal-locale-add-comparison.md](37-seal-locale-add-comparison.md) — seal 공유 전후 locale-add 격리 비교와 원복 결정
 
 ## 상태 표기 규칙
 

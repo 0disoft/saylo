@@ -116,6 +116,8 @@ Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 �
 
 AST 동결 `seal` 모듈화 뒤 상세 계측을 끈 large locale-add 재측정에서 목록 p95는 767.54ms로 250ms 목표에 미달했고 250ms 이내는 11/50회였다. 직전 31 run의 large 268.54ms보다 p50·p95가 모두 크게 관측됐지만 두 run의 시점이 다르고 부하·GC를 통제하지 않아 파싱·GC나 `seal` 변경의 효과·퇴행으로 확정하지 않는다. 한 run이라 감소 효과도 확인하지 못했고 35 제품 변경 원복이나 추가 최적화는 적용하지 않는다. 다음은 변경 전후를 가까운 시점의 같은 조건으로 직접 대조하는 비교 측정이며 실효성은 미확인이다. 근거는 [36](36-shared-ast-seal-locale-add.md)이다.
 
+AST 동결 `seal` 모듈화의 이득을 가까운 시점에서 확인하기 위해 변경 전 `cbd6871`과 공유 헬퍼 실험 `4f6b5cd`를 같은 조건의 격리 스냅샷으로 순차 대조했다. 순서는 before/after/after/before이고 네 run을 합쳐 measured 100·control 40이다. 두 블록(run 1↔2, run 3↔4) 모두 after 목록 p50·p95가 before보다 컸고 pooled 목록 p95는 547.74→682.94ms, 250ms 이내는 38/50→23/50이었다. Browser 선택 p95는 236.40→293.50ms, Node 선택 ack p95는 320.33→296.96ms로 지표별로 엇갈린다. 목록 목표는 두 variant 모두 미달이다. 표본별 paired·무작위 배정이 아니라 코드 퇴행의 인과를 확정하지 않고, 이득도 확인하지 못해 35의 `seal` 공유 제품 변경을 되돌렸다(원복 커밋 `d408500`). `diagnostics.ts`의 `seal`은 다시 `freezeMessageAst` 내부 함수가 되었고, 원복 뒤 명시 역사 ref 스모크와 `node --check`가 통과했다. 이 비교의 before 547.74ms는 현행 일반 단일 run 최신 p95가 아니고 36의 767.54ms와도 직접 비교하지 않는다. 근거는 [37](37-seal-locale-add-comparison.md)이다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화
