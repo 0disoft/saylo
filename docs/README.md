@@ -7,6 +7,7 @@
 ## 읽는 순서
 
 Svelte 어댑터와 데모의 현행 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 정리했다. 기존 성능 측정 기록은 그대로 유지한다.
+SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-sveltekit-example.md](39-sveltekit-example.md)에 정리했다.
 
 1. [01-product-and-scope.md](01-product-and-scope.md) — 왜 만드는지, 무엇을 하지 않는지, DOM 보존 범위
 2. [02-architecture.md](02-architecture.md) — 개발 반영 경로, 계층 구조, 상태 모델, 소유권

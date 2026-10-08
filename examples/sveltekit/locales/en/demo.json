@@ -11,5 +11,9 @@
   "openDialog": "Open confirmation",
   "dialogTitle": "Review your input",
   "dialogNote": "Confirmation note",
-  "closeDialog": "Close"
+  "closeDialog": "Close",
+  "home": "Preview",
+  "about": "How it works",
+  "aboutHeading": "New page. Same input.",
+  "aboutBody": "Pages share one translation instance through their common layout."
 }

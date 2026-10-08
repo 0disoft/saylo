@@ -11,5 +11,9 @@
   "openDialog": "확인 창 열기",
   "dialogTitle": "입력한 내용을 확인해 주세요",
   "dialogNote": "확인 메모",
-  "closeDialog": "닫기"
+  "closeDialog": "닫기",
+  "home": "미리보기",
+  "about": "연결 설명",
+  "aboutHeading": "페이지를 이동해도, 입력은 그대로",
+  "aboutBody": "같은 layout에서 번역 instance를 공유하며 페이지 내용만 바꿉니다."
 }

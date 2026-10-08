@@ -41,3 +41,6 @@ dialog::backdrop { background: #18393055; }
 dialog h2 { margin-bottom: 24px; }
 dialog .hint { margin-bottom: 0; }
 @media (max-width: 760px) { main { padding: 20px 18px 36px; } .layout { grid-template-columns: 1fr; } .panel { padding: 22px; } .intro { padding-top: 32px; } .brand span { display: none; } .locale-control { gap: 8px; } }
+.demo-nav { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+.demo-nav a[aria-current="page"] { font-weight: 700; }
+dialog a { display: block; margin-top: 1rem; }
