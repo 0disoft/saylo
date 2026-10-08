@@ -32,6 +32,8 @@ const revisions = { before: await git(['rev-parse', values.baseline]), after: aw
 const changed = await git(['diff', '--name-only', revisions.before, revisions.after, '--', 'packages']);
 assert.equal(changed, 'packages/core/src/diagnostics.ts', 'Expected a diagnostics-only product change.');
 assert.equal(await git(['status', '--porcelain', '--untracked-files=all', '--', 'packages']), '', 'Commit product edits before comparing.');
+const checkoutChanges = await git(['diff', '--name-only', revisions.after, 'HEAD', '--', 'packages']);
+assert.ok(checkoutChanges === '' || checkoutChanges === 'packages/core/src/diagnostics.ts', 'Snapshot common product files must match the selected revisions.');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const originalDistHash = hash(await readFile(path.join(repository, 'packages/core/dist/diagnostics.js')));
 const temporary = await mkdtemp(path.join(benchmarkDirectory, '.live-update-compare-'));
@@ -92,7 +94,9 @@ async function snapshot(variant) {
 
 try {
   for (const variant of ['before', 'after']) snapshots[variant] = await snapshot(variant);
-  assert.equal(hash(await readFile(path.join(snapshots.after, 'packages/core/dist/diagnostics.js'))), originalDistHash);
+  // Explicit historical refs remain reproducible after reverting the checkout helper.
+  assert.notEqual(hash(await readFile(path.join(snapshots.before, 'packages/core/dist/diagnostics.js'))),
+    hash(await readFile(path.join(snapshots.after, 'packages/core/dist/diagnostics.js'))));
   await mkdir(path.dirname(out), { recursive: true });
   for (const [index, variant] of order.entries()) {
     const runFile = `${out.replace(/\.json$/, '')}.${index + 1}-${variant}.json`;
