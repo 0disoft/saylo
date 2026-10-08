@@ -4,9 +4,9 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 
 ## 확정 사항
 
-현행 로컬 릴리스 후보는 `0.1.0-alpha.2`이며 다섯 패키지와 내부 의존 버전을 함께 맞췄다. 아직 게시하지 않았다. 변경 범위와 검증 기록은 [후보 기록](../releases/0.1.0-alpha.2.md)에 있다. 아래의 기존 게시·인증 결과는 당시 기록으로 유지한다.
+현행 릴리스 버전은 `0.1.0-alpha.2`이며 다섯 패키지와 내부 의존 버전을 함께 맞췄다. 2026-10-09 Svelte 패키지의 `alpha.2` 공개와 Trusted Publisher 저장·조회는 확인했고, 나머지 네 패키지의 `alpha.2`는 미게시이다. 변경 범위와 검증 기록은 [후보 기록](../releases/0.1.0-alpha.2.md)에 있다. 아래의 기존 게시·인증 결과는 당시 기록으로 유지한다.
 
-2026-10-08 로컬 릴리스 목록에 `@0disoft/saylo-svelte`를 추가했다. 새 패키지는 미게시이고 Trusted Publisher 등록도 남아 있다. 아래의 네 패키지 게시·인증 기록은 2026-10-06 기존 릴리스의 기록이다. 현행 로컬 pack·게시 계획·OIDC 대상은 다섯 패키지이며 `verify:registry`는 해당 릴리스 manifest의 네 패키지만 검사한다. 상세 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 있다.
+2026-10-08 로컬 릴리스 목록에 `@0disoft/saylo-svelte`를 추가했다. 아래의 네 패키지 게시·인증 기록은 2026-10-06 기존 릴리스의 기록이다. 현행 로컬 pack·게시 계획·OIDC 대상은 다섯 패키지이며 `verify:registry`는 기존 `alpha.1` manifest의 네 패키지만 검사한다. 상세 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 있다.
 
 | 항목 | 결정 |
 | --- | --- |
@@ -64,7 +64,7 @@ npm run release:pack
 
 ## Trusted Publisher
 
-패키지마다 하나씩 등록한다. 등록 값은 모든 패키지에 동일하게 적용한다. 기존 네 패키지는 등록 완료이고 Svelte는 등록 전이다.
+패키지마다 하나씩 등록한다. 등록 값은 모든 패키지에 동일하게 적용한다. 기존 네 패키지와 Svelte 모두 등록 완료이다. Svelte의 2026-10-09 저장·조회 결과는 아래 등록 기록에 있다. Svelte의 실제 CI OIDC 교환은 아직 확인하지 않았다.
 
 | 필드 | 값 |
 | --- | --- |
@@ -105,9 +105,20 @@ npm trust list @0disoft/saylo-<id>
 | Access / actor | `public` / `0disoft` |
 | SHA-1 | `f1d4985ff0c2be9ad20a4760c915ff86716f38a7` |
 
-실제 버전의 승인·게시와 기존 네 패키지의 게시·태그 변경은 수행하지 않았다. 제출 후 `npm view`는 404를 반환했으므로 공개 placeholder 노출은 확인하지 못했다. 기존 릴리스 기록에서 보였던 placeholder 상태를 이번 제출에 그대로 가정하지 않는다.
+staging 제출 직후에는 실제 버전의 승인·게시와 기존 네 패키지의 게시·태그 변경을 수행하지 않았다. 당시 `npm view`는 404를 반환해 공개 placeholder 노출을 확인하지 못했다. 아래는 이후 조회한 현행 상태이다.
 
-`npm trust github @0disoft/saylo-svelte --file release.yml --repo 0disoft/saylo --env npm-release --allow-publish --yes` 설정 요청은 별도 브라우저 2FA를 기다리는 중이며, 저장 완료나 OIDC 인증 성공으로 기록하지 않는다. 재개 시 위 stage를 먼저 조회하고 중복 제출하지 않는다. Trusted Publisher 저장 후 설정을 조회해 확인한다.
+2026-10-09 첫 인증 완료 조회가 404로 종료되어 설정 요청을 다시 실행했다. 새 브라우저 2FA 뒤 `npm trust github @0disoft/saylo-svelte --file release.yml --repo 0disoft/saylo --env npm-release --allow-publish --yes`가 exit 0으로 성공했다. `npm trust list @0disoft/saylo-svelte --json`도 exit 0으로 같은 저장 값을 반환했다.
+
+| Trusted Publisher 항목 | 조회 값 |
+| --- | --- |
+| ID | `f9181faf-2907-4a6c-9956-520689d25568` |
+| Type / repository | `github` / `0disoft/saylo` |
+| File / environment | `release.yml` / `npm-release` |
+| Permissions | `createPackage`, `createStagedPackage` |
+
+같은 시점의 stage 목록은 비어 있고 공개 registry는 HTTP 200으로 `0.0.0-stage`·`0.1.0-alpha.2`를 반환했다. tag는 `latest: 0.0.0-stage`, `alpha: 0.1.0-alpha.2`이다. 공개 Svelte `alpha.2`의 metadata integrity와 다운로드한 tarball SHA-512가 검증된 로컬 후보와 일치한다. 이 작업에서는 stage approve 명령을 실행하지 않았으므로 승인 경로와 실행 주체는 확인하지 않았다.
+
+기존 core·react·typegen·vite의 `alpha`는 여전히 `0.1.0-alpha.1`이고 `alpha.2`는 없다. Svelte가 정확히 `@0disoft/saylo-core@0.1.0-alpha.2`를 요구하므로 나머지 패키지의 릴리스가 남아 있다. Trusted Publisher 설정 조회와 실제 GitHub Actions OIDC 인증은 구분하며, 새 CI 게시·OIDC 교환·원격 푸시는 이번 단계에서 수행하지 않았다.
 
 ### 기존 네 패키지 등록 이력
 
