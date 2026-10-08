@@ -30,6 +30,10 @@
 
 템플릿 전체의 TypeScript 진단과 실제 SvelteKit 배포는 이번 검증에 포함하지 않는다. 성능 p95 목표도 새로 측정하지 않았다.
 
+통합 검사 중 기존 Vite typegen 테스트에서 임시 선언 파일을 교체하는 `rename`이 Windows `EPERM`으로 두 번 실패했다. 단독 테스트는 통과했으나 통합 재실행에서도 발생해 writer를 보완했다. Windows `EPERM`·`EACCES`·`EBUSY`만 최대 다섯 번, 총 대기 620ms 이내로 재시도하고 새 generation이나 중단이 있으면 다음 교체 전에 취소한다. 실패가 지속되면 기존 오류를 전달하고 임시 파일은 기존 writer의 `finally`로 정리한다. 기존 선언 파일을 먼저 삭제하지 않는다. 재시도·취소·한도·비Windows 오류를 별도 테스트한다.
+
+보완 후 `npm run check` 전체가 exit 0으로 통과했다. 마지막 Node 24.18.0 tarball 검증도 다섯 패키지의 외부 JS/TS 소비·README 실행·Svelte SSR을 통과했고 `.release/npm/`에 검증한 tarball과 manifest를 저장했다. 임시 개발 서버는 종료했다.
+
 ## 릴리스 연결
 
 `scripts/release-check.mjs`의 `packageIds`를 공통 목록으로 사용해 로컬 pack·게시 계획·OIDC 검증이 다섯 패키지를 대상으로 동작한다. `verify:registry`는 기존 릴리스 manifest에 기록된 패키지만 검사해 미게시 Svelte 패키지를 기존 네 패키지의 게시 확인에 섞지 않는다.

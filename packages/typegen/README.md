@@ -4,6 +4,8 @@ Saylo 기준 카탈로그에서 `AppSchema` 타입 선언(`.d.ts`)을 생성한�
 
 ## 상태
 
+로컬 writer는 Windows에서 `EPERM`·`EACCES`·`EBUSY`로 rename이 실패하면 최대 다섯 번 재시도한다. 재시도 대기 합은 최대 620ms이며, 기다리는 동안 더 최신 작업이 들어오거나 generator가 중단되면 이전 작업의 교체를 취소한다. 기존 파일을 먼저 삭제하지 않는다. 이 변경은 아직 게시하지 않았다.
+
 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`)을 npm 공개 registry에 게시했다. 저장소 workspace에서 `node packages/typegen/dist/cli.js`로 직접 실행할 수도 있다.
 
 ## 설치

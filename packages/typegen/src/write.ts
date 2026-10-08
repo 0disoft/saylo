@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { replaceGenerated } from './replace.js';
 
 export type WriteResult = 'written' | 'unchanged' | 'cancelled';
 export function isGeneratedFile(outFile: string, file: string): boolean {
@@ -24,8 +25,6 @@ export async function writeGenerated(outFile: string, source: string, isCurrent:
   const temp = path.join(path.dirname(target), `.${path.basename(target)}.saylo-typegen-${randomUUID()}.tmp`);
   try {
     await writeFile(temp, source, { encoding: 'utf8', flag: 'wx' });
-    if (!isCurrent()) return 'cancelled';
-    await rename(temp, target);
-    return 'written';
+    return await replaceGenerated(temp, target, isCurrent);
   } finally { await rm(temp, { force: true }); }
 }
