@@ -4,7 +4,7 @@ Saylo의 React 19 바인딩이다. `createSayloReact`가 typed Provider와 hook�
 
 ## 상태
 
-2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`)을 npm 공개 registry에 게시했다. 이 저장소의 workspace나 `npm pack` tarball로도 쓸 수 있다.
+2026-10-09 `0.1.0-alpha.2`(dist-tag `alpha`)를 npm 공개 registry에 게시했다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 이 저장소의 workspace나 `npm pack` tarball로도 쓸 수 있다.
 
 ## 설치
 

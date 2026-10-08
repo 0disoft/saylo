@@ -9,13 +9,13 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - `packages/svelte`에 Svelte 5 어댑터를 구현했다. `$i18n` 구독·typed context·snapshot-bound 번역과 JS/TS 소비, SSR·hydration을 검증했고 [Svelte 데모](examples/svelte/README.md)에서 파일 저장·로케일 추가·선택·삭제 후 입력과 모달 유지를 확인했다. `npm run dev:svelte`로 실행한다. 구현 범위는 [38-svelte-adapter.md](docs/38-svelte-adapter.md), 현행 게시 상태는 위 릴리스 기록을 따른다.
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 공개 패키지 네 개에서 `private`를 떼고 첫 버전 `0.1.0-alpha.1`(dist-tag `alpha`)을 2026-10-06 npm에 게시했다. 루트 workspace package는 `private`를 유지한다.
 - 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송, 기준 schema 변경 시 기존 번역의 quarantine을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR boot serializer·요청별 instance·React hydration 어댑터를 구현했고 전체 check와 실제 브라우저 검증을 마쳤다.
-- `@0disoft/saylo-core/runtime` 서브패스 엔트리와 `packages/vite`의 `astRuntime`(기본 `true`, production 한정)으로 Saylo core formatter 경계에서만 parser 런타임을 제거한다. 공개 런타임 엔트리는 `parseCatalog`를 빼고 루트 엔트리는 기존 API를 유지한다. quarantine과 이 parser 제거는 로컬 변경이며 게시된 `0.1.0-alpha.1`에는 아직 없다.
+- `@0disoft/saylo-core/runtime` 서브패스 엔트리와 `packages/vite`의 `astRuntime`(기본 `true`, production 한정)으로 Saylo core formatter 경계에서만 parser 런타임을 제거한다. 공개 런타임 엔트리는 `parseCatalog`를 빼고 루트 엔트리는 기존 API를 유지한다. quarantine과 이 parser 제거는 `0.1.0-alpha.2` 게시본에 포함된다.
 - 성능 목표는 [검증과 로드맵](docs/06-validation-and-roadmap.md)에 있다. 라이브 갱신 벤치마크는 `npm run bench:live`로 돌리고 결과는 [benchmarks/results/live-update.json](benchmarks/results/live-update.json), 최적화 후 재측정은 [benchmarks/results/live-update-optimized.json](benchmarks/results/live-update-optimized.json), request-scoped patch 적용 후 첫 run과 재실행은 [benchmarks/results/live-update-patch.json](benchmarks/results/live-update-patch.json)·[benchmarks/results/live-update-patch-repeat.json](benchmarks/results/live-update-patch-repeat.json)에 남는다. 방법과 조건은 [benchmarks/live-update/README.md](benchmarks/live-update/README.md)에 정리했다. request-scoped patch 뒤 small은 재실행에서 p95 목표 안에 들어왔지만 같은 코드의 첫 run은 넘었고, large는 두 run 모두 목표 p95 ≤ 100ms를 넘었다.
 - `npm run verify:pack`으로 외부 JS/TS 소비를 검증한다. 2026-10-06 Node 24.18.0·Vite 8.3.2에서 exit 0으로 통과했다. tarball의 README 포함과 metadata 일치, README 예제 블록(core JS 실행, React·typegen·Vite TS) 검사도 함께 한다. 스크립트는 [scripts/pack-smoke.mjs](scripts/pack-smoke.mjs)에 있다. 게시된 registry 실물은 `npm run verify:registry`가 [releases/0.1.0-alpha.1.json](releases/0.1.0-alpha.1.json)의 CI 승인 integrity와 대조한다.
 - 지원 버전은 Node 24.x(`engines.node`)다. 로컬 검증 환경은 Node 24.18.0이고 TypeScript 7을 기준으로 검증하지만 `typescript`를 peer로 강제하지 않는다. `packages/core`·`packages/react`는 ES2022 브라우저 대상이라 Node API가 필요 없고, `packages/vite`·`packages/typegen`은 Node에서 실행한다. 배포 방식과 릴리스 절차는 [릴리스](docs/09-release.md)에 있다.
-- 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개이고, 2026-10-06 `0.1.0-alpha.1`·dist-tag `alpha`로 npm 공개 registry에 게시했다. 라이선스는 Apache-2.0이다.
+- 공개 패키지는 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-svelte`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 다섯 개다. 현행 게시 버전은 `0.1.0-alpha.2`·dist-tag `alpha`이며 라이선스는 Apache-2.0이다.
 - docs에는 설계 초안과 로컬 검증 기록이 섞여 있다. 전체 모듈 구조, 이벤트 이름, 아직 구현하지 않은 i18n API 시그니처는 설계 제안이고, 문서와 실제 코드가 어긋나면 `packages/*/README.md`와 `packages/*/src`의 현행 코드를 따른다.
-- 문서 기준일: 2026-10-08
+- 문서 기준일: 2026-10-09
 - Vite 동결 import를 core root로 바꿔 기본 prebundle에서 깊은 동결 신뢰 공유를 50/50회 확인했다. 그 시점 상세 계측을 끈 목록 p95는 small 152.13ms·large 268.54ms로 large의 250ms 목표는 미달이었다(과거 31 측정). 결과·검증은 [docs/31-prebundle-freeze-locale-add.md](docs/31-prebundle-freeze-locale-add.md)에 있다.
 - 후속 메시지·위치 직접 동결 실험은 cold·incremental 비교에서 개선을 확인하지 못해 되돌렸다. 결과와 재현 패치는 [docs/33-owned-message-freeze-trial.md](docs/33-owned-message-freeze-trial.md)에 보존했다.
 - 메시지 동결 내부를 나눈 10k 측정에서 AST 동결이 하위 구간 중 18/20회 가장 컸다. 제품 변경 없이 추가한 계측과 다음 후보는 [docs/34-message-freeze-stages.md](docs/34-message-freeze-stages.md)에 있다.
@@ -226,7 +226,7 @@ const root = hydrateRoot(document.getElementById('root'), h(SayloProvider, { ins
 
 ## 릴리스
 
-기존에 게시한 패키지는 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개다. 첫 버전 `0.1.0-alpha.1`·dist-tag `alpha`를 2026-10-06 게시했다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. `latest`는 등록용 placeholder `0.0.0-stage`를 가리키므로, 실제 `0.1.0-alpha.1` 설치에는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 명시한다.
+현행 게시 버전은 다섯 패키지의 `0.1.0-alpha.2`·dist-tag `alpha`이다. core·react·typegen·vite의 첫 버전 `0.1.0-alpha.1`은 2026-10-06 게시했고, Svelte는 2026-10-09의 `alpha.2`부터 포함된다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. `latest`는 등록용 placeholder `0.0.0-stage`를 가리키므로, 현행 alpha 설치에는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 명시한다. 과거 버전 설치에는 `@0disoft/saylo-core@0.1.0-alpha.1`처럼 버전을 지정한다.
 
 ```sh
 npm run release:check -- --version 0.1.0-alpha.2 --tag alpha

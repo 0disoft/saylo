@@ -1,6 +1,6 @@
 # @0disoft/saylo-svelte
 
-Svelte 5에서 Saylo의 불변 스냅샷을 `$i18n`으로 구독한다. ESM JavaScript와 TypeScript 선언 파일을 제공한다. 이 패키지는 로컬 구현이며 아직 npm에 게시하지 않았다.
+Svelte 5에서 Saylo의 불변 스냅샷을 `$i18n`으로 구독한다. ESM JavaScript와 TypeScript 선언 파일을 제공한다. 2026-10-09 `0.1.0-alpha.2`(dist-tag `alpha`)를 npm 공개 registry에 게시했다.
 
 ## 직접 구독
 

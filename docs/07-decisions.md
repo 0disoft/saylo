@@ -58,15 +58,15 @@
 | 항목 | 상태 |
 | --- | --- |
 | 라이선스 | Apache-2.0 확정. 배포 tarball에 `LICENSE`·`NOTICE`를 함께 싣는다 |
-| npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-typegen`·`saylo-vite` 네 이름으로 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`) 게시 완료 |
+| npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-svelte`·`saylo-typegen`·`saylo-vite` 다섯 이름으로 2026-10-09 `0.1.0-alpha.2`(dist-tag `alpha`) 게시 완료. 기존 core·react·typegen·vite의 `alpha.1` 승인 integrity는 [manifest](../releases/0.1.0-alpha.1.json)에 보존한다 |
 | 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 2026-10-07 새 로케일 목록 표시 p95는 small 226.86ms·large 3437.01ms였고 첫 번역 commit은 64.70ms·843.70ms였다. paint는 미측정. 실제 데모 초기 JS gzip 합은 parser 제거 전후 vanilla 19,656→12,796 B·React 92,241→85,139 B였고 영어 지연 청크가 유지됐다. 조건·원본/gzip·단일 run 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [12-locale-add-measurements.md](12-locale-add-measurements.md)를 따른다 |
 | 지원 버전 범위 | Node 24.x, Vite 8, React 19, Svelte 5, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
-| build-time parser 런타임 제거 | Vite plugin에 로컬 구현(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. alpha.1에는 없으며 alpha.2 게시본에서 외부 소비와 parser 제거를 검증했다([릴리스](../releases/0.1.0-alpha.2.md)) |
+| build-time parser 런타임 제거 | Vite plugin에 구현하고 alpha.2로 게시했다(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. alpha.1에는 없으며 alpha.2 게시본에서 외부 소비와 parser 제거를 검증했다([릴리스](../releases/0.1.0-alpha.2.md)) |
 | requireCompleteTranslations(완역 강제) | 후속. 기본은 불완전한 번역 허용 |
 | unused message 제거 최적화 | 후속. 동적 t 키 tradeoff 검증 필요 |
 | selector 미세구독 최적화 | 후속 |
 | Svelte 어댑터 | Svelte 5 readable·typed context·SSR·hydration과 데모 구현 완료. alpha.2 게시·외부 소비·SvelteKit 브라우저 검증 완료([38](38-svelte-adapter.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
-| SvelteKit 예제 | SvelteKit 3 요청별 SSR·boot·hydration·페이지 이동·layout 종료와 재진입을 로컬 구현. Node 운영 빌드·실제 브라우저 검증 완료([39](39-sveltekit-example.md)) |
+| SvelteKit 예제 | SvelteKit 3 요청별 SSR·boot·hydration·페이지 이동·layout 종료와 재진입을 구현. 예제는 로컬 `file:` 의존성을 유지하며, 별도 registry 검증 명령으로 alpha.2 게시본의 Node 운영 빌드·실제 브라우저 검증도 완료했다([39](39-sveltekit-example.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
 | Vue 어댑터 | 후속 |
 | secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트와 2026-10-07 실제 브라우저 검증을 통과했다. schema-breaking 편집이라 입력·dialog 상태 보존은 일반 보장이 아니다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
 | JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
@@ -115,7 +115,7 @@ Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 �
 
 메시지 동결 구간을 분리한 결과 10k의 AST 동결이 하위 구간 중 18/20회 가장 컸다. 다음 작은 실험은 `freezeMessageAst` 내부 `seal` 함수를 모듈 범위로 옮겨 호출별 헬퍼 생성을 없애는 것으로 정한다. 헬퍼 생성만의 비용은 분리하지 않아 효과는 미확인이며, 깊은 동결 신뢰·ICU·위치 계약을 유지하고 cold/incremental 교차 비교로 판단한다. 이번은 계측 작업이며 제품 변경은 없다. 근거는 [34](34-message-freeze-stages.md)이다.
 
-`freezeMessageAst` 내부 `seal`을 모듈 범위로 옮기는 단일 최적화를 채택했다. 깊은 동결 순회·`WeakSet` 신뢰·복잡한 ICU 일반 동결·공개 API는 유지한다. 두 비교의 파싱 p50·p95는 낮게 관측됐지만 쌍별 차이 p95는 양수이고 incremental 최장 시간은 늘어 안정적 tail 개선은 주장하지 않는다. 실제 로케일 목록 250ms 목표 개선은 아직 측정하지 않았다. 다음은 상세 계측을 끈 large locale-add 목록 재측정이다. 이 변경은 로컬이며 게시본에는 없다. 근거는 [35](35-shared-ast-seal.md)이다.
+[35](35-shared-ast-seal.md) 당시에는 `freezeMessageAst` 내부 `seal`을 모듈 범위로 옮기는 단일 최적화를 채택했다. 깊은 동결 순회·`WeakSet` 신뢰·복잡한 ICU 일반 동결·공개 API는 유지했다. 두 비교의 파싱 p50·p95는 낮게 관측됐지만 쌍별 차이 p95는 양수이고 incremental 최장 시간은 늘어 안정적 tail 개선은 주장하지 않았다. 당시 실제 로케일 목록 250ms 목표 개선은 아직 측정하지 않아 상세 계측을 끈 large locale-add 목록 재측정을 다음 작업으로 정했다. 이후 [37](37-seal-locale-add-comparison.md)의 비교에서 이득을 확인하지 못해 원복했다. 현행 소스와 alpha.2 게시본에는 이 실험 변경을 포함하지 않는다.
 
 AST 동결 `seal` 모듈화 뒤 상세 계측을 끈 large locale-add 재측정에서 목록 p95는 767.54ms로 250ms 목표에 미달했고 250ms 이내는 11/50회였다. 직전 31 run의 large 268.54ms보다 p50·p95가 모두 크게 관측됐지만 두 run의 시점이 다르고 부하·GC를 통제하지 않아 파싱·GC나 `seal` 변경의 효과·퇴행으로 확정하지 않는다. 한 run이라 감소 효과도 확인하지 못했고 35 제품 변경 원복이나 추가 최적화는 적용하지 않는다. 다음은 변경 전후를 가까운 시점의 같은 조건으로 직접 대조하는 비교 측정이며 실효성은 미확인이다. 근거는 [36](36-shared-ast-seal-locale-add.md)이다.
 

@@ -15,6 +15,8 @@
 
 이 예제는 루트 workspace에 속하지 않는 독립 `private` 패키지다. `workspaces`를 쓰지 않고, `file:`·`workspace:`·alias 링크 없이 npm registry에 게시된 실물 패키지를 설치한다. 그래서 루트 빌드가 필요 없다.
 
+`package.json`은 `alpha` tag를 사용하고, 현재 lockfile은 core·Vite·Vite의 전이 의존성 typegen을 `0.1.0-alpha.2`로 잠근다. `npm ci --workspaces=false`는 이 lockfile을 재현한다. tag가 이동한 뒤 새 게시본을 받으려면 `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false`를 실행한다.
+
 ## 실행
 
 ```sh
@@ -62,6 +64,17 @@ Vite 플러그인은 `saylo({ localesDir: 'locales', baseLocale: 'ko', initialLo
 키를 지우거나 필수 인자를 추가하지 않는 정상 편집은 기준 스키마를 유지하므로 위처럼 폼·dialog 상태가 보존된다. 키 삭제나 필수 인자 추가처럼 스키마를 깨는 편집은 이 보존 범위 밖이다.
 
 ## 검증 범위
+
+### alpha.2 설치·빌드 (2026-10-09)
+
+Windows, Node 24.18.0, npm 12.0.2, Vite 8.3.3에서 실행했다.
+
+- `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false --ignore-scripts --no-audit --no-fund`로 Saylo 세 패키지만 alpha.2로 갱신했다. `package.json`의 `alpha` tag와 서드파티 lockfile 항목은 유지했다.
+- 갱신한 lockfile로 `npm ci --workspaces=false --ignore-scripts --no-audit --no-fund`를 통과했다. core·Vite·typegen의 설치 버전은 모두 `0.1.0-alpha.2`이고, registry tarball URL·integrity가 [승인 manifest](../../releases/0.1.0-alpha.2.json)와 일치했다. 세 패키지 모두 symlink가 아니며 realpath는 예제의 `node_modules` 안쪽이다.
+- `npm run build` 통과: 44 modules, 출력 JavaScript 28.11 kB(gzip 10.05 kB). 루트 workspace 빌드 없이 게시본만 사용했다.
+- 이번에는 개발 서버·브라우저·preview를 실행하지 않았다. 아래 라이브 수정 기록은 alpha.1에서 수행한 과거 검증이다. 별도 alpha.2 외부 소비·SvelteKit 브라우저 검증은 [릴리스 기록](../../releases/0.1.0-alpha.2.md)을 따른다.
+
+### alpha.1 라이브 수정 (2026-10-06)
 
 2026-10-06 Windows, Node 24.18.0, Vite 8.3.3에서 실행한 결과다.
 
