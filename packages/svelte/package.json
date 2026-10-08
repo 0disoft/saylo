@@ -1,0 +1,28 @@
+{
+  "name": "@0disoft/saylo-svelte",
+  "version": "0.1.0-alpha.1",
+  "type": "module",
+  "description": "Svelte 5 bindings for Saylo with typed context and snapshot-bound translation stores.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0disoft/saylo.git",
+    "directory": "packages/svelte"
+  },
+  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/svelte#readme",
+  "bugs": { "url": "https://github.com/0disoft/saylo/issues" },
+  "keywords": ["i18n", "intl", "localization", "svelte"],
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
+  },
+  "files": ["dist/index.js", "dist/index.d.ts", "LICENSE", "NOTICE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/store.test.mjs test/components.test.mjs",
+    "typecheck:consumers": "tsc -p test/tsconfig.json"
+  },
+  "dependencies": { "@0disoft/saylo-core": "0.1.0-alpha.1" },
+  "peerDependencies": { "svelte": "5" },
+  "license": "Apache-2.0",
+  "engines": { "node": "24.x" },
+  "publishConfig": { "access": "public", "tag": "alpha", "registry": "https://registry.npmjs.org/" }
+}

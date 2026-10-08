@@ -3,4 +3,5 @@ dist/
 *.tsbuildinfo
 *.tgz
 .release/
+packages/svelte/test/.compiled/
 benchmarks/.live-update-*/
