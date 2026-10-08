@@ -183,6 +183,8 @@ root 동결 공유 후 상세 계측을 끈 규모별 50회 재측정은 [../../
 
 AST 동결 헬퍼 모듈화의 cold·incremental 교차 비교는 기준 `cbd6871`로 실행했다. 결과는 [../results/parse-compare-shared-ast-seal-cold.json](../results/parse-compare-shared-ast-seal-cold.json)·[../results/parse-compare-shared-ast-seal-incremental.json](../results/parse-compare-shared-ast-seal-incremental.json)에 있다. 두 비교의 파싱 p50·p95는 낮게 관측됐지만 쌍별 차이 p95는 양수이고 incremental 최장 시간은 늘었다. 안정적 tail 개선은 주장하지 않는다. 재현 명령·조건·경계는 [../../docs/35-shared-ast-seal.md](../../docs/35-shared-ast-seal.md)를 따른다.
 
+AST 동결 `seal` 모듈화 후 상세 계측을 끈 large 재측정은 `node benchmarks/live-update/run.mjs --mode locale-add --scenario 10k-20-locales --samples 50 --warmup 5 --calibrations 25 --out benchmarks/results/locale-add-shared-ast-seal.json`로 실행했다. 기본 prebundle·typegen 켬, 상세 계측 끔 조건이다. 목록 p95는 767.54ms로 250ms 목표는 미달이고 250ms 이내는 11/50회다. 같은 Node clock의 broadcast→목록 ack 잔여 p50/p95는 21.47/42.50ms이며 50/50회 저장→broadcast 구간이 뒤 구간보다 컸다. 직전 31 run보다 p50·p95가 크게 관측됐으나 시점이 다르고 부하·GC를 통제하지 않아 원인을 확정하지 않는다. 원시 대조는 [../results/locale-add-shared-ast-seal-analysis.json](../results/locale-add-shared-ast-seal-analysis.json)에 있고 조건·경계는 [../../docs/36-shared-ast-seal-locale-add.md](../../docs/36-shared-ast-seal-locale-add.md)를 따른다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

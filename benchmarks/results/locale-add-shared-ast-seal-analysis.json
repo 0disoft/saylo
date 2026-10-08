@@ -1,0 +1,127 @@
+{
+  "schema": "saylo-locale-add-remeasurement-analysis-v1",
+  "source": "locale-add-shared-ast-seal.json",
+  "previousSource": "locale-add-prebundle-shared-freeze.json",
+  "scenario": "10k-20-locales",
+  "rawSamples": 55,
+  "measuredSamples": 50,
+  "warmupSamples": 5,
+  "controlSamples": 25,
+  "changedCodeHashes": [
+    "packages/core/dist/diagnostics.js"
+  ],
+  "goalMs": 250,
+  "withinGoalSamples": 11,
+  "goalMet": false,
+  "broadcastToListAck": {
+    "count": 50,
+    "p50Ms": 21.465700000000652,
+    "p95Ms": 42.497199999997974,
+    "minMs": 12.760899999993853,
+    "maxMs": 300.9553999999989
+  },
+  "beforeBroadcastLargerSamples": 50,
+  "currentSummary": {
+    "saveToListAckMs": {
+      "count": 50,
+      "p50Ms": 291.46659999999974,
+      "p95Ms": 767.5374000000011,
+      "minMs": 154.94070000000647,
+      "maxMs": 2389.883600000001
+    },
+    "selectToTranslationAckMs": {
+      "count": 50,
+      "p50Ms": 246.75960000000487,
+      "p95Ms": 602.0004999999983,
+      "minMs": 124.00969999999506,
+      "maxMs": 757.1541999999972
+    },
+    "saveToTranslationAckMs": {
+      "count": 50,
+      "p50Ms": 554.7182999999932,
+      "p95Ms": 1156.2595999999976,
+      "minMs": 281.2639000000054,
+      "maxMs": 2620.7309999999998
+    },
+    "selectToCommitMs": {
+      "count": 50,
+      "p50Ms": 243.5,
+      "p95Ms": 598.0999999940395,
+      "minMs": 121.7000000178814,
+      "maxMs": 753.5
+    },
+    "saveToBroadcastMs": {
+      "count": 50,
+      "p50Ms": 270.31239999999525,
+      "p95Ms": 739.4938000000002,
+      "minMs": 142.17980000001262,
+      "maxMs": 2369.472999999998
+    },
+    "fileWriteMs": {
+      "count": 50,
+      "p50Ms": 20.80319999999483,
+      "p95Ms": 78.85159999999814,
+      "minMs": 6.084399999992456,
+      "maxMs": 158.22069999999803
+    }
+  },
+  "previousSummary": {
+    "saveToListAckMs": {
+      "count": 50,
+      "p50Ms": 189.61989999999787,
+      "p95Ms": 268.5368000000017,
+      "minMs": 144.79189999999653,
+      "maxMs": 1263.6494999999995
+    },
+    "selectToTranslationAckMs": {
+      "count": 50,
+      "p50Ms": 186.69660000000295,
+      "p95Ms": 297.5720999999976,
+      "minMs": 134.98640000000887,
+      "maxMs": 577.6588000000047
+    },
+    "saveToTranslationAckMs": {
+      "count": 50,
+      "p50Ms": 379.11069999999745,
+      "p95Ms": 663.0656999999992,
+      "minMs": 288.6921000000002,
+      "maxMs": 1447.7053000000014
+    },
+    "selectToCommitMs": {
+      "count": 50,
+      "p50Ms": 181,
+      "p95Ms": 284.40000000596046,
+      "minMs": 132.5,
+      "maxMs": 575
+    },
+    "saveToBroadcastMs": {
+      "count": 50,
+      "p50Ms": 177.70640000000276,
+      "p95Ms": 247.95380000000296,
+      "minMs": 134.11680000000342,
+      "maxMs": 1250.0785000000033
+    },
+    "fileWriteMs": {
+      "count": 50,
+      "p50Ms": 10.394599999999627,
+      "p95Ms": 24.708099999996193,
+      "minMs": 5.906699999999546,
+      "maxMs": 40.76170000000275
+    }
+  },
+  "currentControl": {
+    "count": 25,
+    "p50Ms": 3.877999999998792,
+    "p95Ms": 5.1740999999983615,
+    "minMs": 3.1700000000000728,
+    "maxMs": 7.409599999999045
+  },
+  "previousControl": {
+    "count": 25,
+    "p50Ms": 4.121800000000803,
+    "p95Ms": 8.47780000000057,
+    "minMs": 2.9530999999988126,
+    "maxMs": 8.794400000006135
+  },
+  "scope": "Single sequential run per code revision, same normal-prebundle settings and large fixture. Code hash difference is not causal timing attribution. Broadcast-to-list residual is calculated per sample on the Node clock; no GC/control subtraction or cross-clock arithmetic."
+}

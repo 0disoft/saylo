@@ -13,10 +13,11 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개이고, 2026-10-06 `0.1.0-alpha.1`·dist-tag `alpha`로 npm 공개 registry에 게시했다. 라이선스는 Apache-2.0이다.
 - docs에는 설계 초안과 로컬 검증 기록이 섞여 있다. 전체 모듈 구조, 이벤트 이름, 아직 구현하지 않은 i18n API 시그니처는 설계 제안이고, 문서와 실제 코드가 어긋나면 `packages/*/README.md`와 `packages/*/src`의 현행 코드를 따른다.
 - 문서 기준일: 2026-10-08
-- Vite 동결 import를 core root로 바꿔 기본 prebundle에서 깊은 동결 신뢰 공유를 50/50회 확인했다. 상세 계측을 끈 최신 목록 p95는 small 152.13ms·large 268.54ms로, large의 250ms 목표는 미달이다. 결과·검증은 [docs/31-prebundle-freeze-locale-add.md](docs/31-prebundle-freeze-locale-add.md)에 있다.
+- Vite 동결 import를 core root로 바꿔 기본 prebundle에서 깊은 동결 신뢰 공유를 50/50회 확인했다. 그 시점 상세 계측을 끈 목록 p95는 small 152.13ms·large 268.54ms로 large의 250ms 목표는 미달이었다(과거 31 측정). 결과·검증은 [docs/31-prebundle-freeze-locale-add.md](docs/31-prebundle-freeze-locale-add.md)에 있다.
 - 후속 메시지·위치 직접 동결 실험은 cold·incremental 비교에서 개선을 확인하지 못해 되돌렸다. 결과와 재현 패치는 [docs/33-owned-message-freeze-trial.md](docs/33-owned-message-freeze-trial.md)에 보존했다.
 - 메시지 동결 내부를 나눈 10k 측정에서 AST 동결이 하위 구간 중 18/20회 가장 컸다. 제품 변경 없이 추가한 계측과 다음 후보는 [docs/34-message-freeze-stages.md](docs/34-message-freeze-stages.md)에 있다.
-- `freezeMessageAst` 내부 `seal`을 모듈 범위로 옮기는 최적화를 채택했다. cold p95는 332.62→323.81ms, incremental p95는 88.63→80.24ms로 낮게 관측됐지만 incremental 최장 시간은 늘었다. 실제 로케일 목록 250ms 목표 개선은 아직 측정하지 않았다. 조건·원시 결과는 [docs/35-shared-ast-seal.md](docs/35-shared-ast-seal.md)에 있다.
+- `freezeMessageAst` 내부 `seal`을 모듈 범위로 옮기는 최적화를 채택했다. cold p95는 332.62→323.81ms, incremental p95는 88.63→80.24ms로 낮게 관측됐지만 incremental 최장 시간은 늘었다. 당시에는 실제 로케일 목록 250ms 목표를 측정하지 않았다. 조건·원시 결과는 [docs/35-shared-ast-seal.md](docs/35-shared-ast-seal.md)에 있다.
+- AST 동결 `seal` 모듈화 후 상세 계측을 끈 large locale-add 재측정에서 목록 p95는 767.54ms로 large 250ms 목표는 미달이다(목록 250ms 이내 11/50). 이번에는 small을 재측정하지 않아 152.13ms는 과거 31 측정값이다. 한 run이라 감소 효과나 퇴행을 확정하지 않는다. 조건·원시 결과는 [docs/36-shared-ast-seal-locale-add.md](docs/36-shared-ast-seal-locale-add.md)에 있다.
 
 ## 로컬 실행
 
