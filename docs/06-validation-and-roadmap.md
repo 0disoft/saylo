@@ -56,6 +56,8 @@ Vite가 core의 깊은 동결 경로를 공유하도록 변경했다. 같은 조
 
 메시지 동결 내부를 AST·절대 위치·레코드로 나눴다. 10k 측정 20회 중 AST 동결이 하위 구간 중 가장 큰 경우는 18회였고 위치 생성/부모 비중 p50은 1.86%였다. 제품은 변경하지 않았고 프로브 동등성 검사와 원시 요약 대조를 통과했다. 다음 후보는 AST 동결 함수의 호출별 헬퍼 생성 제거이며 조건·한계는 [34](34-message-freeze-stages.md)에 있다.
 
+AST 동결 헬퍼 모듈화는 [35](35-shared-ast-seal.md)에 있다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.

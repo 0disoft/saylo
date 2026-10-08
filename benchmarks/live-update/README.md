@@ -181,6 +181,8 @@ root 동결 공유 후 상세 계측을 끈 규모별 50회 재측정은 [../../
 
 파서 구간 결과 v3의 cold 상세 계측에는 `messagePositionMs`·`messageAstFreezeMs`·`messageRecordFreezeMs`와 표본별 `messageFreezeOtherMs`를 추가했다. 위치 생성 뒤 AST 동결을 실행해 제품의 평가 순서를 유지한다. 레코드 생성은 record-freeze 타이머 밖이며 절대 위치 동결은 record-freeze 안이다. 실행 명령·원시·검증·다음 후보는 [../../docs/34-message-freeze-stages.md](../../docs/34-message-freeze-stages.md)를 따른다. 과거 v2와 타이머·평가 순서가 달라 total 전후 개선 비교로 쓰지 않는다.
 
+AST 동결 헬퍼 모듈화의 cold·incremental 교차 비교는 기준 `cbd6871`로 실행했다. 결과는 [../results/parse-compare-shared-ast-seal-cold.json](../results/parse-compare-shared-ast-seal-cold.json)·[../results/parse-compare-shared-ast-seal-incremental.json](../results/parse-compare-shared-ast-seal-incremental.json)에 있다. 두 비교의 파싱 p50·p95는 낮게 관측됐지만 쌍별 차이 p95는 양수이고 incremental 최장 시간은 늘었다. 안정적 tail 개선은 주장하지 않는다. 재현 명령·조건·경계는 [../../docs/35-shared-ast-seal.md](../../docs/35-shared-ast-seal.md)를 따른다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

@@ -16,14 +16,16 @@ export function freeze<T>(value: T): DeepReadonly<T> {
   return value as DeepReadonly<T>;
 }
 
+// Callers follow children before sealing; share the helper across fresh ASTs.
+function seal<T extends object>(value: T): DeepReadonly<T> {
+  Object.freeze(value);
+  frozen.add(value);
+  return value as DeepReadonly<T>;
+}
+
 /** Only for fresh ASTs owned by the catalog parser, with FormatJS node shapes. */
 export function freezeMessageAst(ast: MessageFormatElement[]): DeepReadonly<MessageFormatElement[]> {
   // Each call below follows its children; numeric/string leaves need no walk.
-  function seal<T extends object>(value: T): DeepReadonly<T> {
-    Object.freeze(value);
-    frozen.add(value);
-    return value as DeepReadonly<T>;
-  }
   for (const element of ast) {
     if (element.type === TYPE.literal || element.type === TYPE.argument) {
       if (element.location && !frozen.has(element.location)) {

@@ -39,6 +39,7 @@
 31. [32-prebundle-server-measurements.md](32-prebundle-server-measurements.md) — 현행 large 목록의 서버 파일 구간과 파서 비용 재계측
 32. [33-owned-message-freeze-trial.md](33-owned-message-freeze-trial.md) — 메시지·위치 직접 동결 실험의 비교 결과와 원복
 33. [34-message-freeze-stages.md](34-message-freeze-stages.md) — AST·절대 위치·레코드 동결 구간 분리와 다음 후보
+34. [35-shared-ast-seal.md](35-shared-ast-seal.md) — AST 동결 `seal` 헬퍼 모듈화와 cold·incremental 교차 비교
 
 ## 상태 표기 규칙
 

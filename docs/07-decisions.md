@@ -112,6 +112,8 @@ Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 �
 
 메시지 동결 구간을 분리한 결과 10k의 AST 동결이 하위 구간 중 18/20회 가장 컸다. 다음 작은 실험은 `freezeMessageAst` 내부 `seal` 함수를 모듈 범위로 옮겨 호출별 헬퍼 생성을 없애는 것으로 정한다. 헬퍼 생성만의 비용은 분리하지 않아 효과는 미확인이며, 깊은 동결 신뢰·ICU·위치 계약을 유지하고 cold/incremental 교차 비교로 판단한다. 이번은 계측 작업이며 제품 변경은 없다. 근거는 [34](34-message-freeze-stages.md)이다.
 
+`freezeMessageAst` 내부 `seal`을 모듈 범위로 옮기는 단일 최적화를 채택했다. 깊은 동결 순회·`WeakSet` 신뢰·복잡한 ICU 일반 동결·공개 API는 유지한다. 두 비교의 파싱 p50·p95는 낮게 관측됐지만 쌍별 차이 p95는 양수이고 incremental 최장 시간은 늘어 안정적 tail 개선은 주장하지 않는다. 실제 로케일 목록 250ms 목표 개선은 아직 측정하지 않았다. 다음은 상세 계측을 끈 large locale-add 목록 재측정이다. 이 변경은 로컬이며 게시본에는 없다. 근거는 [35](35-shared-ast-seal.md)이다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화
