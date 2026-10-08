@@ -4,6 +4,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 
 ## 현재 상태
 
+- 다섯 패키지의 로컬 릴리스 후보는 `0.1.0-alpha.2`이다. Svelte 지원과 후속 개선을 포함하며 아직 게시하지 않았다. 변경 범위는 [후보 기록](releases/0.1.0-alpha.2.md)에 있다. 기존 `alpha.1` 게시 검증은 승인 manifest를 기준으로 유지한다.
 - [SvelteKit 3 예제](examples/sveltekit/README.md)에서 요청별 SSR·boot·hydration, 공통 layout의 페이지 이동, 번역 저장 후 입력·모달 유지와 종료·재진입을 확인했다. 실제 Node 운영 빌드의 SSR·언어 전환도 검증했다. `npm run setup:sveltekit` 후 `npm run dev:sveltekit`으로 실행한다. 예제는 로컬 패키지 복사본을 쓰는 독립 private 앱이며 본체와 공개 패키지 버전은 변경하지 않았다. 상세 범위는 [39](docs/39-sveltekit-example.md)에 있다.
 - `packages/svelte`에 Svelte 5 어댑터를 로컬 구현했다. `$i18n` 구독·typed context·snapshot-bound 번역과 JS/TS 소비, SSR·hydration을 검증했고 [Svelte 데모](examples/svelte/README.md)에서 파일 저장·로케일 추가·선택·삭제 후 입력과 모달 유지를 확인했다. `npm run dev:svelte`로 실행한다. 새 패키지는 미게시이며 상세 범위는 [38-svelte-adapter.md](docs/38-svelte-adapter.md)에 있다.
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 공개 패키지 네 개에서 `private`를 떼고 첫 버전 `0.1.0-alpha.1`(dist-tag `alpha`)을 2026-10-06 npm에 게시했다. 루트 workspace package는 `private`를 유지한다.
@@ -225,15 +226,15 @@ const root = hydrateRoot(document.getElementById('root'), h(SayloProvider, { ins
 
 ## 릴리스
 
-공개 대상은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 패키지다. 첫 버전 `0.1.0-alpha.1`·dist-tag `alpha`를 2026-10-06 게시했다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. `latest`는 등록용 placeholder `0.0.0-stage`를 가리키므로, 실제 `0.1.0-alpha.1` 설치에는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 명시한다.
+기존에 게시한 패키지는 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 네 개다. 첫 버전 `0.1.0-alpha.1`·dist-tag `alpha`를 2026-10-06 게시했다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. `latest`는 등록용 placeholder `0.0.0-stage`를 가리키므로, 실제 `0.1.0-alpha.1` 설치에는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 명시한다.
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.1 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.2 --tag alpha
 npm run check
 npm run release:pack
 ```
 
-현행 로컬 릴리스 대상에는 미게시 `@0disoft/saylo-svelte`를 추가했다. `release:check`는 다섯 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 다섯 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. `verify:registry`는 기존 릴리스 manifest에 기록된 네 게시 패키지만 검사한다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch로 같은 검증을 돌리고 `publish`가 true일 때만 게시한다. 다음 게시에는 새 패키지의 Trusted Publisher 준비와 릴리스 버전 결정이 필요하다.
+현행 로컬 릴리스 대상에는 미게시 `@0disoft/saylo-svelte`를 추가했다. `release:check`는 다섯 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 다섯 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. `verify:registry`는 기존 `alpha.1` manifest에 기록된 네 게시 패키지만 검사하며 현재 소스 버전·README·dist-tag와 분리한다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch로 같은 검증을 돌리고 `publish`가 true일 때만 게시한다. 다음 게시에는 새 패키지의 Trusted Publisher 준비가 남아 있다.
 
 ## 설계 방향 한 줄 요약
 

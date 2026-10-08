@@ -1,36 +1,38 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { parseArgs, promisify } from 'node:util';
 import { createHash } from 'node:crypto';
 import { cp, lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkRelease, packageIds, releaseInput } from './release-check.mjs';
+import { approvedRegistryRelease, verifyRegistryVersion } from './registry-release.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const fixtures = fileURLToPath(new URL('./pack-fixtures/', import.meta.url));
 const npmCli = process.env.npm_execpath;
 if (!npmCli) throw new Error('Run this smoke with npm run verify:pack.');
 const exec = promisify(execFile);
-const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-pack-'));
-const packs = path.join(root, 'packs');
 const majors = JSON.parse(await readFile(path.join(repository, 'package.json'), 'utf8')).devDependencies;
 const packages = Object.fromEntries(packageIds.map(id => [`@0disoft/saylo-${id}`, id]));
-const saveRelease = process.argv.slice(2).includes('--save-release');
-const fromRegistry = process.argv.slice(2).includes('--registry');
-const baseVersion = JSON.parse(await readFile(path.join(repository, 'packages/core/package.json'), 'utf8')).version;
-const bootstrap = fromRegistry ? JSON.parse(await readFile(path.join(repository, 'releases', `${baseVersion}.json`), 'utf8')) : [];
+const { values } = parseArgs({ options: { 'save-release': { type: 'boolean' }, registry: { type: 'boolean' },
+  'registry-version': { type: 'string' } } });
+const saveRelease = values['save-release'];
+const fromRegistry = values.registry;
+assert.ok(!(saveRelease && fromRegistry), 'Registry verification cannot replace local release artifacts.');
+assert.ok(fromRegistry || !values['registry-version'], '--registry-version requires --registry.');
+const bootstrap = fromRegistry ? await approvedRegistryRelease(values['registry-version']) : [];
 // Historical registry checks use their approved package set, excluding unpublished additions.
 const names = fromRegistry ? bootstrap.map(pack => pack.name) : Object.keys(packages);
-assert.ok(process.argv.slice(2).every(arg => ['--save-release', '--registry'].includes(arg)), 'Unsupported pack argument.');
-assert.ok(!(saveRelease && fromRegistry), 'Registry verification cannot replace local release artifacts.');
 const license = await readFile(path.join(repository, 'LICENSE'), 'utf8');
 const notice = await readFile(path.join(repository, 'NOTICE'), 'utf8');
 // npm run can export .npmrc allow-scripts as an env override, which newer npm
 // rejects for project installs. Install scripts are disabled explicitly below.
 const childEnv = { ...Object.fromEntries(Object.entries(process.env)
   .filter(([key]) => key.toLowerCase() !== 'npm_config_allow_scripts')), NODE_PATH: '' };
+const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-pack-'));
+const packs = path.join(root, 'packs');
 function inside(directory, target) {
   const relative = path.relative(directory, target);
   return relative === '' || (relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
@@ -54,18 +56,15 @@ try {
   await mkdir(packs);
   const registryVersions = new Map();
   if (fromRegistry) {
-    for (const name of names) {
-      const manifest = JSON.parse(await readFile(path.join(repository, 'packages', packages[name], 'package.json'), 'utf8'));
+    for (const pack of bootstrap) {
+      const name = pack.name;
       const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(30000) });
       assert.ok(response.ok, `${name}: public registry HTTP ${response.status}`);
       const metadata = await response.json();
-      assert.equal(metadata['dist-tags']?.alpha, manifest.version);
-      const version = metadata.versions?.[manifest.version];
-      assert.ok(version, `${name}: released version missing`);
-      assert.equal(version.dist.integrity, bootstrap.find(pack => pack.name === name && pack.version === manifest.version)?.integrity, `${name}: published bytes differ from approved CI artifact`);
+      const version = verifyRegistryVersion(pack, metadata);
       registryVersions.set(name, version);
     }
-    console.log(`[registry] All ${names.length} public alpha versions match the approved CI artifact integrity.`);
+    console.log(`[registry] All ${names.length} approved ${values['registry-version']} artifacts match published integrity; current dist-tags are independent.`);
   }
   const source = fromRegistry ? ['--workspaces=false', ...names.map(name => `${name}@${registryVersions.get(name).version}`), '--registry', 'https://registry.npmjs.org/'] : ['--workspaces'];
   const metadata = JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
@@ -82,7 +81,8 @@ try {
   const packageDocs = new Map();
   for (const pack of packed) {
     const directory = path.join(repository, 'packages', packages[pack.name]);
-    const manifest = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
+    const manifest = fromRegistry ? registryVersions.get(pack.name)
+      : JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
     const files = new Set(pack.files.map(file => file.path));
     assert.ok(files.has('README.md'), `${pack.name} is missing its README`);
     assert.ok(files.has('LICENSE') && files.has('NOTICE'), `${pack.name} needs license files`);
@@ -96,7 +96,7 @@ try {
     assert.equal(manifest.homepage, `https://github.com/0disoft/saylo/tree/main/packages/${packages[pack.name]}#readme`);
     assert.deepEqual(manifest.bugs, { url: 'https://github.com/0disoft/saylo/issues' });
     assert.ok(Array.isArray(manifest.keywords) && manifest.keywords.length && manifest.keywords.every(word => typeof word === 'string' && word.trim()), `${pack.name} needs search keywords`);
-    packageDocs.set(pack.name, { manifest, readme: await readFile(path.join(directory, 'README.md'), 'utf8') });
+    packageDocs.set(pack.name, { manifest, readme: fromRegistry ? undefined : await readFile(path.join(directory, 'README.md'), 'utf8') });
     for (const target of [...Object.values(manifest.exports).flatMap(entry => Object.values(entry)), ...Object.values(manifest.bin ?? {})])
       assert.ok(files.has(target.replace(/^\.\//, '')), `${pack.name} is missing ${target}`);
     console.log(`[pack] ${pack.name}: ${pack.files.length} files, ${pack.size} bytes`);
@@ -104,6 +104,7 @@ try {
   for (const language of ['js', 'ts']) {
     const app = path.join(root, language);
     await cp(path.join(fixtures, 'shared'), app, { recursive: true });
+    if (fromRegistry) await cp(path.join(fixtures, 'registry-smoke.mjs'), path.join(app, 'smoke.mjs'));
     await cp(path.join(fixtures, language), path.join(app, 'src'), { recursive: true });
     // Published alpha.1 predates the runtime subpath; exercise it only in local tarballs.
     if (!fromRegistry) {
@@ -131,7 +132,9 @@ try {
       const expected = packageDocs.get(name);
       for (const field of ['version', 'license', 'engines', 'publishConfig', 'dependencies', 'peerDependencies', 'description', 'repository', 'homepage', 'bugs', 'keywords'])
         assert.deepEqual(shipped[field], expected.manifest[field], `${name} lost packed ${field}`);
-      assert.equal(await readFile(path.join(installed, 'README.md'), 'utf8'), expected.readme, `${name} shipped a stale README`);
+      const shippedReadme = await readFile(path.join(installed, 'README.md'), 'utf8');
+      if (fromRegistry) expected.readme = shippedReadme;
+      else assert.equal(shippedReadme, expected.readme, `${name} shipped a stale README`);
       assert.equal(await readFile(path.join(installed, 'LICENSE'), 'utf8'), license);
       assert.equal(await readFile(path.join(installed, 'NOTICE'), 'utf8'), notice);
     }

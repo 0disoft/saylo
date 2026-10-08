@@ -1,6 +1,6 @@
 {
   "name": "@0disoft/saylo-typegen",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "type": "module",
   "description": "TypeScript declaration generator for Saylo base catalogs, usable as a CLI or worker.",
   "repository": {
@@ -44,7 +44,7 @@
     "typecheck:consumers": "node test/generate-fixture.mjs && tsc -p test/tsconfig.json"
   },
   "dependencies": {
-    "@0disoft/saylo-core": "0.1.0-alpha.1"
+    "@0disoft/saylo-core": "0.1.0-alpha.2"
   },
   "license": "Apache-2.0",
   "engines": {
