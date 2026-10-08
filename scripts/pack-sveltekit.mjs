@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { access, cp, lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import os from 'node:os';
@@ -7,8 +8,10 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { packageIds, repository } from './release-check.mjs';
+import { approvedRegistryRelease } from './registry-release.mjs';
 
-const { values } = parseArgs({ options: { browser: { type: 'string' } } });
+const { values } = parseArgs({ options: { browser: { type: 'string' }, 'registry-version': { type: 'string' } } });
+const approved = values['registry-version'] ? await approvedRegistryRelease(values['registry-version']) : undefined;
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run with npm run verify:pack:sveltekit.');
 const exec = promisify(execFile);
@@ -68,9 +71,17 @@ process.once('SIGTERM', interrupted);
 try {
   assert.ok(!inside(repository, root), 'Consumer must live outside the repository.');
   await mkdir(packs);
-  const metadata = JSON.parse(await npm(['pack', '--workspaces', '--ignore-scripts', '--json', '--pack-destination', packs], repository));
+  const source = approved ? ['--workspaces=false', ...approved.map(pack => `${pack.name}@${pack.version}`),
+    '--registry', 'https://registry.npmjs.org/'] : ['--workspaces'];
+  const metadata = JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
   assert.deepEqual(packed.map(pack => pack.name).sort(), packageIds.map(id => `@0disoft/saylo-${id}`).sort());
+  if (approved) for (const pack of packed) {
+    const expected = approved.find(entry => entry.name === pack.name);
+    assert.equal(pack.version, expected.version);
+    const integrity = `sha512-${createHash('sha512').update(await readFile(path.join(packs, pack.filename))).digest('base64')}`;
+    assert.equal(integrity, expected.integrity, `${pack.name}: registry artifact differs from approved release`);
+  }
   // Copy only app inputs. Never carry node_modules, build outputs or the file:-based lockfile.
   await mkdir(app);
   const example = path.join(repository, 'examples/sveltekit');
@@ -83,7 +94,7 @@ try {
     manifest[section][pack.name] = `file:../packs/${pack.filename}`;
   }
   await writeFile(path.join(app, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');
-  console.log('[pack:sveltekit] Installing five tarballs and declared tool/peer major ranges outside the workspace.');
+  console.log(`[pack:sveltekit] Installing five ${approved ? 'approved registry' : 'local'} tarballs and declared tool/peer major ranges outside the workspace.`);
   await npm(['install', '--workspaces=false', '--ignore-scripts', '--no-audit', '--no-fund'], app);
   const resolvedApp = await realpath(app);
   for (const pack of packed) {

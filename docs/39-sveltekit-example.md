@@ -48,6 +48,7 @@ npm run dev:sveltekit
 npm run build:sveltekit
 npm run verify:sveltekit
 npm run verify:pack:sveltekit
+npm run verify:registry:sveltekit
 ```
 
 개발 포트는 5191이고 preview 포트는 5192이다. `verify:sveltekit`은 임시 개발 서버를 직접 시작하고 `finally`에서 종료한다. 실제 실행 중인 Node 빌드도 `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5192`로 HTTP 검증할 수 있다.
@@ -55,6 +56,8 @@ npm run verify:pack:sveltekit
 `verify:pack:sveltekit`은 기존 로컬 `file:` 디렉터리 의존성을 tarball로 바꾼 임시 앱에서 실행한다. 서드파티 도구·peer는 예제의 메이저 범위를 그대로 사용한다. browser probe는 임시 앱에만 주입하며 검사가 끝나면 브라우저·서버·임시 폴더를 정리한다. Chrome·Edge를 자동 탐색하고 `--browser <실행파일>`로 지정할 수도 있다. 이 검사는 수동 실행 명령이며 기존 CI·릴리스 검증 횟수는 변경하지 않았다. 소스는 [pack-sveltekit.mjs](../scripts/pack-sveltekit.mjs)에 있다.
 
 ## 참고
+
+2026-10-09 `npm run verify:registry:sveltekit`으로 실제 npm `alpha.2`의 다섯 승인 파일을 검사했다. [CI manifest](../releases/0.1.0-alpha.2.json)의 SHA-512와 다운로드 파일이 일치한다. 이 파일을 임시 앱에 설치해 타입 진단 0 errors·0 warnings, client/SSR 빌드, 개발 연결 수명, 운영 HTTP, HeadlessChrome 154의 hydration·ko/en/ko·공유 layout 입력/모달·종료와 재진입을 통과했다. runtime 오류·경고는 없었고 임시 자원은 정리했다. 앱 소스와 harness는 이전 예제를 재사용하며 local directory 의존성 대신 registry tarball을 사용한다.
 
 - [SvelteKit 3 변경 안내](https://svelte.dev/docs/kit/migrating-to-sveltekit-3)
 - [서버 상태와 context](https://svelte.dev/docs/kit/state-management)

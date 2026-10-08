@@ -31,6 +31,7 @@ npm run dev:sveltekit
 npm run build:sveltekit
 npm run verify:sveltekit
 npm run verify:pack:sveltekit
+npm run verify:registry:sveltekit
 ```
 
 `build`는 typegen·SvelteKit sync·템플릿과 TS 검사·client/SSR 빌드·Node adapter 생성을 수행한다. `verify:ssr`는 임시 개발 서버를 직접 시작해 한국어·영어 동시 요청의 SSR과 boot 일치, 로케일 정규화와 기준 언어 fallback을 확인한다. 실제 client 연결 함수에 hot context를 제공해 등록된 listener의 해제, 중복 stop, 해제 뒤 지연 연결 취소도 검사하고 서버를 닫는다. 이미 실행 중인 서버를 검사하려면 `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5191`로 주소를 넘긴다. 주소를 넘긴 실행은 HTTP 검증만 수행한다.
@@ -38,6 +39,8 @@ npm run verify:pack:sveltekit
 `verify:pack:sveltekit`은 다섯 Saylo 패키지를 tarball로 만들어 저장소 밖 임시 앱에 설치한다. 예제의 소스·설정·카탈로그만 복사하고 기존 lockfile·node_modules·빌드 출력은 가져오지 않는다. 타입 검사·client/SSR 빌드·개발 연결 수명·Node 운영 HTTP와 실제 Chromium의 hydration·ko/en/ko 전환·입력과 열린 모달 유지·layout 종료와 재진입을 검사한다. 브라우저 probe는 임시 앱에만 넣고 종료 시 브라우저·서버·임시 폴더를 정리한다. 설치된 Chrome 또는 Edge가 필요하며 자동 탐색되지 않으면 `npm run verify:pack:sveltekit -- --browser <실행파일>`로 지정한다. 2026-10-08 Windows·Node 24.18.0·HeadlessChrome 154에서 통과했다. 이 검사는 자동으로 CI에 추가하지 않았다.
 
 ## 페이지 이동과 live 갱신
+
+`verify:registry:sveltekit`은 [승인된 alpha.2 manifest](../../releases/0.1.0-alpha.2.json)의 다섯 파일을 npm registry에서 내려받아 SHA-512를 대조한 뒤 같은 앱 검증을 수행한다. 로컬 패키지를 빌드하거나 `file:` 디렉터리를 설치하지 않는다. 2026-10-09 실제 게시본에서 전체 검증을 통과했다. 기존 `verify:pack:sveltekit`은 로컬 후보 tarball 검사로 유지한다.
 
 `/`와 `/about`은 `(saylo)` layout을 공유한다. 이름·요청 사항·모달 메모는 이 layout의 `Workbench`에 있으므로 두 페이지 사이에서 유지된다. 모달 안의 연결 설명 링크로 열린 창을 유지한 채 페이지를 이동할 수 있다. 언어 선택은 URL query를 갱신하며 locale 로드가 완료될 때까지 선택 중인 값을 표시한다.
 

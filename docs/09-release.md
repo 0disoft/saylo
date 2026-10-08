@@ -4,7 +4,7 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 
 ## 확정 사항
 
-현행 릴리스 버전은 `0.1.0-alpha.2`이며 다섯 패키지와 내부 의존 버전을 함께 맞췄다. 2026-10-09 Svelte 패키지의 `alpha.2` 공개와 Trusted Publisher 저장·조회는 확인했고, 나머지 네 패키지의 `alpha.2`는 미게시이다. 변경 범위와 검증 기록은 [후보 기록](../releases/0.1.0-alpha.2.md)에 있다. 아래의 기존 게시·인증 결과는 당시 기록으로 유지한다.
+현행 릴리스 버전은 `0.1.0-alpha.2`이며 다섯 패키지의 공개·다운로드·외부 소비와 실제 CI OIDC 인증을 2026-10-09 확인했다. 변경 범위와 검증은 [릴리스 기록](../releases/0.1.0-alpha.2.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.2.json)에 있다. 아래의 기존 게시·인증 결과는 당시 기록으로 유지한다.
 
 2026-10-08 로컬 릴리스 목록에 `@0disoft/saylo-svelte`를 추가했다. 아래의 네 패키지 게시·인증 기록은 2026-10-06 기존 릴리스의 기록이다. 현행 로컬 pack·게시 계획·OIDC 대상은 다섯 패키지이며 `verify:registry`는 기존 `alpha.1` manifest의 네 패키지만 검사한다. 상세 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 있다.
 
@@ -52,11 +52,11 @@ npm run release:pack
 | `version` | 커밋된 정확한 버전 문자열. 기본 `0.1.0-alpha.2` |
 | `dist_tag` | `alpha`·`next`·`latest`. 기본 `alpha` |
 | `publish` | boolean. 기본 `false` |
-| `verify_oidc` | boolean. 기본 `false`. `publish`가 `false`일 때 현행 다섯 패키지의 Trusted Publisher OIDC 토큰 교환만 검증한다 |
+| `verify_oidc` | boolean. 기본 `false`. `true`이면 validation 또는 publication 전에 다섯 Trusted Publisher의 OIDC 토큰 교환을 검증한다 |
 
 단일 job이 Ubuntu·Node 24·npm 11에서 `main`이고 저장소가 `0disoft/saylo`일 때만 돈다. environment는 `npm-release`, 권한은 `contents: read`·`id-token: write`다. `release:check` → `npm ci` → `check` → `release:pack` → `release:publish`(dry run) → artifact 업로드 순서이고, `publish`가 true일 때만 `release:publish --publish`로 게시한다. 게시 순서는 core → react → svelte → typegen → vite이고 registry secret(`NPM_TOKEN` 등)을 쓰지 않는다.
 
-`verify_oidc`는 게시와 별개 입력이다. `true`이고 `publish`가 `false`이면 `release:oidc`가 GitHub OIDC 토큰을 `npm:registry.npmjs.org` audience로 받아 npm 공식 API [api-docs.npmjs.com](https://api-docs.npmjs.com/)의 package-scoped token exchange(`.../oidc/token/exchange/package/@0disoft/saylo-<id>`)로 현행 릴리스 대상 다섯 패키지를 확인한다. 패키지 버전·게시·태그는 바꾸지 않고 토큰을 stdout에 출력하거나 디스크에 저장하지 않는다. helper의 guard·성공 교환 protocol·로그/에러 secret 누출 방지 3개 로컬 테스트와 실제 registry 토큰 교환이 모두 통과했다. 2026-10-06 [run 37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758)은 네 패키지 토큰 교환과 전체 143개 테스트·타입 검사·pack 소비 검증을 42초에 마쳤다.
+`verify_oidc`는 게시와 별개 입력이다. `true`이면 `release:oidc`가 GitHub OIDC 토큰을 `npm:registry.npmjs.org` audience로 받아 npm 공식 API [api-docs.npmjs.com](https://api-docs.npmjs.com/)의 package-scoped token exchange(`.../oidc/token/exchange/package/@0disoft/saylo-<id>`)로 현행 릴리스 대상 다섯 패키지를 확인한다. 패키지 버전·게시·태그는 바꾸지 않고 토큰을 stdout에 출력하거나 디스크에 저장하지 않는다. helper의 guard·성공 교환 protocol·로그/에러 secret 누출 방지 3개 로컬 테스트와 실제 registry 토큰 교환이 모두 통과했다. 2026-10-06 [run 37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758)은 네 패키지 토큰 교환과 전체 143개 테스트·타입 검사·pack 소비 검증을 42초에 마쳤다.
 
 `npm-release` environment는 GitHub에 존재하고 보호 규칙은 없다. dry-run run 37467769385는 140개 테스트·소비 타입 검사·JS/TS packed consumer·`release:publish` dry run까지 통과하고 tarball 4개를 artifact `saylo-npm-0.1.0-alpha.1`로 올렸다. `gh run download 37467769385 --name saylo-npm-0.1.0-alpha.1 --dir .release/bootstrap`로 받은 tarball은 SHA-512가 원본과 일치했다.
 
@@ -64,7 +64,7 @@ npm run release:pack
 
 ## Trusted Publisher
 
-패키지마다 하나씩 등록한다. 등록 값은 모든 패키지에 동일하게 적용한다. 기존 네 패키지와 Svelte 모두 등록 완료이다. Svelte의 2026-10-09 저장·조회 결과는 아래 등록 기록에 있다. Svelte의 실제 CI OIDC 교환은 아직 확인하지 않았다.
+패키지마다 하나씩 등록한다. 등록 값은 모든 패키지에 동일하게 적용한다. 기존 네 패키지와 Svelte 모두 등록 완료이다. Svelte의 2026-10-09 저장·조회 결과는 아래 등록 기록에 있고, 같은 날 CI에서 다섯 패키지 모두 실제 OIDC 교환을 확인했다.
 
 | 필드 | 값 |
 | --- | --- |
@@ -118,7 +118,7 @@ staging 제출 직후에는 실제 버전의 승인·게시와 기존 네 패키
 
 같은 시점의 stage 목록은 비어 있고 공개 registry는 HTTP 200으로 `0.0.0-stage`·`0.1.0-alpha.2`를 반환했다. tag는 `latest: 0.0.0-stage`, `alpha: 0.1.0-alpha.2`이다. 공개 Svelte `alpha.2`의 metadata integrity와 다운로드한 tarball SHA-512가 검증된 로컬 후보와 일치한다. 이 작업에서는 stage approve 명령을 실행하지 않았으므로 승인 경로와 실행 주체는 확인하지 않았다.
 
-기존 core·react·typegen·vite의 `alpha`는 여전히 `0.1.0-alpha.1`이고 `alpha.2`는 없다. Svelte가 정확히 `@0disoft/saylo-core@0.1.0-alpha.2`를 요구하므로 나머지 패키지의 릴리스가 남아 있다. Trusted Publisher 설정 조회와 실제 GitHub Actions OIDC 인증은 구분하며, 새 CI 게시·OIDC 교환·원격 푸시는 이번 단계에서 수행하지 않았다.
+Svelte 등록 당시에는 기존 core·react·typegen·vite가 `alpha.1`이었고, 이 단계에서 새 CI 게시·OIDC 교환·원격 푸시는 수행하지 않았다. 이후 전체 `alpha.2` 릴리스 결과는 아래에 기록한다.
 
 ### 기존 네 패키지 등록 이력
 
@@ -145,3 +145,11 @@ staging 제출 직후에는 실제 버전의 승인·게시와 기존 네 패키
 - CI 검증: `npm run check`가 Node 24.21.0에서 143개 테스트(기존 140개 + OIDC helper 3개)와 소비 타입 검사를 통과했다. 로컬에서는 Node 24.18.0으로 OIDC helper 3개와 registry 소비 검증을 실행했다. 최종 README를 반영한 `release:pack`도 통과했다. 네 tarball의 LICENSE·NOTICE·메타데이터 일치와 README 예제 실행·타입 검사, 외부 JS·TS 소비 앱의 CLI·번역·React SSR·Vite 8.3.3 lazy chunk를 확인했다. `npm run verify:registry`는 게시된 네 버전·`alpha` tag와 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json) integrity 일치, registry tarball의 CLI·checkJs/TS·런타임 SSR·public subpath·Vite production lazy chunk 검사를 exit 0으로 통과했다. `release:publish`의 dry run과 actionlint도 통과했다. 변조 tarball은 SHA-512 불일치로 거부하고, GitHub Actions 환경이 아닌 `--publish`는 registry 조회 전에 거부한다.
 - CI에서 새 버전을 실제로 게시하는 단계는 아직 실행하지 않았다. 이번 검증은 OIDC 인증까지만 확인했으며, 다음 의도적인 버전 릴리스에서 실제 CI 게시를 확인한다.
 - 성능 p95 목표는 여전히 미달이며 [검증과 로드맵](06-validation-and-roadmap.md)에 기록한다. 릴리스 게이트는 위 세 명령의 통과이며 성능 측정을 포함하지 않는다.
+
+## 2026-10-09 alpha.2 게시 완료
+
+[run 37804205176](https://github.com/0disoft/saylo/actions/runs/37804205176)은 `main` `c36ff13`, `publish=true`, `verify_oidc=true`로 실행했다. Node 24.21.0·npm 11·Ubuntu에서 다섯 Trusted Publisher 인증, 181개 테스트와 소비 타입 검사, 외부 tarball 검증, artifact 업로드를 통과했다. 1분 16초에 완료했고 core·react·typegen·vite를 게시했다. Svelte는 동일한 게시 파일과 tag를 확인해 건너뛰었다.
+
+CI artifact의 manifest를 [releases/0.1.0-alpha.2.json](../releases/0.1.0-alpha.2.json)에 기록했다. 다섯 공개 버전의 `alpha` tag·metadata·다운로드한 tarball SHA-512가 일치한다. 처음에는 React·typegen의 metadata와 다운로드 URL이 404였으나 재게시 없이 조회·다운로드 가능 상태를 확인한 뒤 소비 검증을 마쳤다. 원인은 확정하지 않는다.
+
+`npm run verify:registry:alpha2`는 실제 게시된 다섯 패키지로 JS/checkJs·TS·README 예제·core runtime·React/Svelte SSR·typegen CLI·Vite lazy build와 parser 제거를 검증한다. `npm run verify:registry:sveltekit`은 같은 승인 registry 파일로 SvelteKit 앱을 설치해 타입 진단 0 errors·0 warnings, client/SSR 빌드, 요청별 SSR·boot·연결 수명, Node 운영 HTTP, HeadlessChrome 154의 hydration·ko/en/ko 전환·입력과 열린 모달 유지·종료와 재진입을 검증했다. 보고된 runtime 오류·경고는 없다. 기존 네 `alpha.1`의 `npm run verify:registry`도 통과했다. 임시 서버·브라우저·소비 앱을 정리했다.

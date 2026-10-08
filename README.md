@@ -4,7 +4,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 
 ## 현재 상태
 
-- 다섯 패키지의 릴리스 버전은 `0.1.0-alpha.2`이다. 2026-10-09 Svelte의 `alpha.2` 공개·후보 tarball SHA-512 일치와 Trusted Publisher 저장·조회를 확인했다. 나머지 네 패키지는 아직 `alpha.1`이다. Svelte가 요구하는 `core@alpha.2`를 포함한 나머지 패키지의 게시가 남아 있다. 변경 범위는 [후보 기록](releases/0.1.0-alpha.2.md)에 있다. 기존 `alpha.1` 게시 검증은 승인 manifest를 기준으로 유지한다.
+- 다섯 패키지를 `0.1.0-alpha.2`·dist-tag `alpha`로 게시했다. 2026-10-09 [CI 릴리스](https://github.com/0disoft/saylo/actions/runs/37804205176)에서 다섯 Trusted Publisher의 OIDC 인증과 전체 검증을 통과했고 기존 Svelte는 동일 artifact로 건너뛰었다. 게시본의 외부 JS/TS 소비와 SvelteKit 브라우저 검증도 통과했다. 변경·검증 범위는 [릴리스 기록](releases/0.1.0-alpha.2.md), 승인 integrity는 [manifest](releases/0.1.0-alpha.2.json)에 있다. `npm run verify:registry:alpha2`와 `npm run verify:registry:sveltekit`으로 다시 확인한다. 기존 `alpha.1` 검증도 유지한다.
 - [SvelteKit 3 예제](examples/sveltekit/README.md)에서 요청별 SSR·boot·hydration, 공통 layout의 페이지 이동, 번역 저장 후 입력·모달 유지와 종료·재진입을 확인했다. 실제 Node 운영 빌드의 SSR·언어 전환도 검증했다. `npm run setup:sveltekit` 후 `npm run dev:sveltekit`으로 실행한다. 예제는 로컬 패키지 복사본을 쓰는 독립 private 앱이며 본체와 공개 패키지 버전은 변경하지 않았다. 상세 범위는 [39](docs/39-sveltekit-example.md)에 있다.
 - `packages/svelte`에 Svelte 5 어댑터를 구현했다. `$i18n` 구독·typed context·snapshot-bound 번역과 JS/TS 소비, SSR·hydration을 검증했고 [Svelte 데모](examples/svelte/README.md)에서 파일 저장·로케일 추가·선택·삭제 후 입력과 모달 유지를 확인했다. `npm run dev:svelte`로 실행한다. 구현 범위는 [38-svelte-adapter.md](docs/38-svelte-adapter.md), 현행 게시 상태는 위 릴리스 기록을 따른다.
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 공개 패키지 네 개에서 `private`를 떼고 첫 버전 `0.1.0-alpha.1`(dist-tag `alpha`)을 2026-10-06 npm에 게시했다. 루트 workspace package는 `private`를 유지한다.
@@ -234,7 +234,7 @@ npm run check
 npm run release:pack
 ```
 
-현행 릴리스 대상에는 `@0disoft/saylo-svelte`를 추가했다. `release:check`는 다섯 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 다섯 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. `verify:registry`는 기존 `alpha.1` manifest에 기록된 네 게시 패키지만 검사하며 현재 소스 버전·README·dist-tag와 분리한다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch로 같은 검증을 돌리고 `publish`가 true일 때만 게시한다. Svelte의 Trusted Publisher 저장·조회는 완료했으며 실제 CI OIDC 교환과 나머지 네 패키지의 `alpha.2` 게시가 남아 있다.
+현행 릴리스 대상에는 `@0disoft/saylo-svelte`를 추가했다. `release:check`는 다섯 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 다섯 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. `verify:registry`는 기존 네 `alpha.1`을, `verify:registry:alpha2`는 다섯 `alpha.2`를 승인 manifest와 대조한다. `verify:registry:sveltekit`은 승인된 다섯 게시본으로 SvelteKit 앱을 검증한다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch이며 `verify_oidc=true`이면 게시 여부와 관계없이 먼저 인증하고 `publish=true`일 때만 게시한다. 다섯 패키지의 OIDC 인증·게시·다운로드·설치 검증을 완료했다.
 
 ## 설계 방향 한 줄 요약
 
@@ -246,7 +246,7 @@ npm run release:pack
 | --- | --- | --- |
 | `@0disoft/saylo-core` | [npm](https://www.npmjs.com/package/@0disoft/saylo-core) | [packages/core/README.md](packages/core/README.md) |
 | `@0disoft/saylo-react` | [npm](https://www.npmjs.com/package/@0disoft/saylo-react) | [packages/react/README.md](packages/react/README.md) |
-| `@0disoft/saylo-svelte` | `alpha.2` 공개 확인, 필요한 core `alpha.2` 미게시 | [packages/svelte/README.md](packages/svelte/README.md) |
+| `@0disoft/saylo-svelte` | [npm](https://www.npmjs.com/package/@0disoft/saylo-svelte) | [packages/svelte/README.md](packages/svelte/README.md) |
 | `@0disoft/saylo-typegen` | [npm](https://www.npmjs.com/package/@0disoft/saylo-typegen) | [packages/typegen/README.md](packages/typegen/README.md) |
 | `@0disoft/saylo-vite` | [npm](https://www.npmjs.com/package/@0disoft/saylo-vite) | [packages/vite/README.md](packages/vite/README.md) |
 

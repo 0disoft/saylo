@@ -25,6 +25,7 @@ assert.ok(fromRegistry || !values['registry-version'], '--registry-version requi
 const bootstrap = fromRegistry ? await approvedRegistryRelease(values['registry-version']) : [];
 // Historical registry checks use their approved package set, excluding unpublished additions.
 const names = fromRegistry ? bootstrap.map(pack => pack.name) : Object.keys(packages);
+const hasSvelte = names.includes('@0disoft/saylo-svelte');
 const license = await readFile(path.join(repository, 'LICENSE'), 'utf8');
 const notice = await readFile(path.join(repository, 'NOTICE'), 'utf8');
 // npm run can export .npmrc allow-scripts as an env override, which newer npm
@@ -66,6 +67,7 @@ try {
     }
     console.log(`[registry] All ${names.length} approved ${values['registry-version']} artifacts match published integrity; current dist-tags are independent.`);
   }
+  const supportsAstRuntime = !fromRegistry || Boolean(registryVersions.get('@0disoft/saylo-core')?.exports?.['./runtime']);
   const source = fromRegistry ? ['--workspaces=false', ...names.map(name => `${name}@${registryVersions.get(name).version}`), '--registry', 'https://registry.npmjs.org/'] : ['--workspaces'];
   const metadata = JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
@@ -104,10 +106,10 @@ try {
   for (const language of ['js', 'ts']) {
     const app = path.join(root, language);
     await cp(path.join(fixtures, 'shared'), app, { recursive: true });
-    if (fromRegistry) await cp(path.join(fixtures, 'registry-smoke.mjs'), path.join(app, 'smoke.mjs'));
+    if (fromRegistry && !supportsAstRuntime) await cp(path.join(fixtures, 'registry-smoke.mjs'), path.join(app, 'smoke.mjs'));
     await cp(path.join(fixtures, language), path.join(app, 'src'), { recursive: true });
     // Published alpha.1 predates the runtime subpath; exercise it only in local tarballs.
-    if (!fromRegistry) {
+    if (supportsAstRuntime) {
       const entry = path.join(app, 'src', `main.${language}`);
       await writeFile(entry, (await readFile(entry, 'utf8')).replaceAll("'@0disoft/saylo-core'", "'@0disoft/saylo-core/runtime'"));
     }
@@ -116,12 +118,12 @@ try {
       scripts: { typegen: 'saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts',
         typecheck: 'tsc -p tsconfig.json', build: 'vite build' },
       dependencies: { ...Object.fromEntries(packed.map(pack => [pack.name, `file:../packs/${pack.filename}`])),
-        react: majors.react, 'react-dom': majors['react-dom'], ...(!fromRegistry ? { svelte: majors.svelte } : {}) },
+        react: majors.react, 'react-dom': majors['react-dom'], ...(hasSvelte ? { svelte: majors.svelte } : {}) },
       devDependencies: Object.fromEntries(['typescript', 'vite', '@types/node', '@types/react', '@types/react-dom'].map(name => [name, majors[name]])) }, null, 2));
     await writeFile(path.join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022',
       module: 'NodeNext', moduleResolution: 'NodeNext', lib: ['ES2022', 'DOM'], strict: true,
       allowJs: true, checkJs: true, noEmit: true, jsx: 'react-jsx', types: ['node', 'vite/client', '@0disoft/saylo-vite/virtual'] },
-      include: [`src/**/*.${language}`, ...(!fromRegistry ? ['src/consumer-svelte.js'] : []), 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
+      include: [`src/**/*.${language}`, ...(hasSvelte ? ['src/consumer-svelte.js'] : []), 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
     console.log(`[pack] ${language}: installing tarballs and declared peer/tool major ranges outside the workspace`);
     await npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', '--workspaces=false'], app);
     for (const name of names) {
@@ -138,7 +140,7 @@ try {
       assert.equal(await readFile(path.join(installed, 'LICENSE'), 'utf8'), license);
       assert.equal(await readFile(path.join(installed, 'NOTICE'), 'utf8'), notice);
     }
-    if (!fromRegistry) await cp(path.join(repository, 'packages/svelte/test/consumer-js.js'), path.join(app, 'src/consumer-svelte.js'));
+    if (hasSvelte) await cp(path.join(repository, 'packages/svelte/test/consumer-js.js'), path.join(app, 'src/consumer-svelte.js'));
     if (language === 'ts') {
       // Check the actual shipped examples against the independently installed packages.
       const doc = id => packageDocs.get(`@0disoft/saylo-${id}`).readme;
@@ -146,7 +148,7 @@ try {
       await writeFile(path.join(app, 'readme-react.tsx'), example(doc('react'), 'tsx'));
       await writeFile(path.join(app, 'readme-typegen.ts'), example(doc('typegen'), 'ts'));
       await writeFile(path.join(app, 'src/readme-vite.ts'), example(doc('vite'), 'ts'));
-      if (!fromRegistry) {
+      if (hasSvelte) {
         await writeFile(path.join(app, 'readme-svelte.mjs'), example(doc('svelte'), 'js'));
         await cp(path.join(repository, 'packages/svelte/test/consumer.ts'), path.join(app, 'readme-svelte.ts'));
         // Compile and render against the tarball's real Svelte peer, outside workspace resolution.
@@ -158,7 +160,7 @@ try {
     await npm(['run', 'typecheck'], app);
     if (language === 'ts') {
       await exec(process.execPath, ['readme-core.mjs'], { cwd: app, windowsHide: true, env: childEnv });
-      if (!fromRegistry) {
+      if (hasSvelte) {
         await exec(process.execPath, ['readme-svelte.mjs'], { cwd: app, windowsHide: true, env: childEnv });
         const svelte = await exec(process.execPath, ['svelte-smoke.mjs'], { cwd: app, windowsHide: true, env: childEnv });
         console.log(svelte.stdout.trim());
@@ -170,7 +172,7 @@ try {
     console.log((await npm(['run', 'build'], app)).trim());
     const bundle = JSON.parse(await readFile(path.join(app, 'dist/.vite/manifest.json'), 'utf8'));
     assert.ok(Object.values(bundle).some(entry => entry.isDynamicEntry), 'Lazy translation chunk was not emitted.');
-    if (!fromRegistry) for (const entry of Object.values(bundle)) {
+    if (supportsAstRuntime) for (const entry of Object.values(bundle)) {
       if (entry.file.endsWith('.js')) assert.ok(!(await readFile(path.join(app, 'dist', entry.file), 'utf8'))
         .includes('EXPECT_ARGUMENT_CLOSING_BRACE'), 'AST consumer shipped the ICU parser.');
     }
