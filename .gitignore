@@ -4,4 +4,6 @@ dist/
 *.tgz
 .release/
 packages/svelte/test/.compiled/
+examples/sveltekit/.svelte-kit/
+examples/sveltekit/build/
 benchmarks/.live-update-*/

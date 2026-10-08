@@ -1,0 +1,31 @@
+{
+  "name": "saylo-sveltekit-example",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "imports": { "#lib/*": "./src/lib/*" },
+  "scripts": {
+    "typegen": "saylo-typegen --locales-dir locales --base-locale ko --out-file src/lib/generated.d.ts",
+    "check": "npm run typegen && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "dev": "vite --host 127.0.0.1 --port 5191 --strictPort",
+    "build": "npm run check && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5192 --strictPort",
+    "verify:ssr": "node verify-ssr.mjs"
+  },
+  "dependencies": {
+    "@0disoft/saylo-core": "file:../../packages/core",
+    "@0disoft/saylo-svelte": "file:../../packages/svelte",
+    "svelte": "5"
+  },
+  "devDependencies": {
+    "@0disoft/saylo-typegen": "file:../../packages/typegen",
+    "@0disoft/saylo-vite": "file:../../packages/vite",
+    "@sveltejs/adapter-node": "6",
+    "@sveltejs/kit": "3",
+    "@sveltejs/vite-plugin-svelte": "7",
+    "@types/node": "24",
+    "svelte-check": "4",
+    "typescript": "6",
+    "vite": "8"
+  }
+}
