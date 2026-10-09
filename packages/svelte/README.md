@@ -50,12 +50,21 @@ const title = getI18nSelector(snapshot => snapshot.t('cart:title'));
 
 계약은 다음과 같다.
 
-- 시그니처는 `selectSvelteStore<S, T>(source: SayloSvelteStore<S>, selector: (snapshot: SayloSvelteSnapshot<S>) => T): Readable<T>`다.
-- `createSayloSvelte<S>()`는 `getI18nSelector<T>(selector): Readable<T>`를 제공하고, 같은 factory context에서 초기화 중에 호출한다.
+- 시그니처는 `selectSvelteStore<S, T>(source: SayloSvelteStore<S>, selector: (snapshot: SayloSvelteSnapshot<S>) => T, options?: SayloSelectorOptions): Readable<T>`다.
+- `createSayloSvelte<S>()`는 `getI18nSelector<T>(selector, options?: SayloSelectorOptions): Readable<T>`를 제공하고, 같은 factory context에서 초기화 중에 호출한다.
+- `SayloSelectorOptions`는 `readonly onError?: (error: unknown) => void` 하나를 갖는다.
 - 결과는 `Object.is`로 비교하고, 값 상자 `{ value }`로 Svelte `derived` 알림을 이어 준다. 같은 객체 참조와 `NaN`은 알림을 생략하고 `+0`·`-0`은 다른 값으로 알림을 전달한다.
 - source와 공유 context의 기존 core 단일 구독과 최종 해제를 유지하고, SSR render가 끝난 뒤 core 구독은 0이다.
 - 첫 구독과 재구독은 동기 최신값을 전달하고, snapshot-bound `t`와 `setLocale`/`loadNamespace`를 유지한다.
 - 기존 `createSvelteStore`·`getI18n`은 그대로 남아 있다.
+
+selector가 던진 예외는 시점에 따라 다르게 처리한다. 첫 구독이나 재구독 시점의 실패는 새 구독을 해제한 뒤 selector가 throw한 값을 그대로 동기 throw하고(Error가 아니거나 `undefined`여도 그대로 전달), 이때 `onError`는 호출하지 않는다. 이전 성공값을 대신 돌려주지 않는다. 활성 구독이 snapshot을 갱신하는 중 실패하면 마지막 성공값을 유지하고 invalidate·알림 없이 다음 snapshot에서 다시 선택한다. 이 실패는 `onError`로 보고하고, 미지정이면 `console.error('[saylo:svelte] selector failed', error)`로 남긴다. `onError` 자체가 던지면 `console.error('[saylo:svelte] selector error reporter failed', reportingError)`로 보고하고 Svelte 알림은 계속한다. `options`는 저장소 checkout의 로컬 구현이고 아직 게시본에는 없다.
+
+```ts
+const title = selectSvelteStore(i18n, snapshot => snapshot.t('cart:title'), {
+  onError: error => console.error('selector failed', error),
+});
+```
 
 제약은 다음과 같다. selector는 순수 계산으로 둔다. selector가 props를 캡처해도 prop만 바뀌면 source 알림이 없으므로 자동으로 다시 선택하지 않는다. selector가 매번 새 객체·새 배열을 반환하면 `Object.is`가 다르므로 매 snapshot마다 알림이 발생한다. 동적 컴포넌트 인자는 기존 `$i18n`와 Svelte `$derived`로 조합한다.
 

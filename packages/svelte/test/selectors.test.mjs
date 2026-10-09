@@ -106,3 +106,95 @@ test('selected stores compose with Svelte derived without mixed revisions or sta
   store.setLocale('ko');
   assert.deepEqual(values, ['ko|한국어', 'en|English', 'ko|한국어']);
 });
+
+test('initial selector failures release subscriptions and later SSR reads can recover', t => {
+  const { store, source, subscriptions, disposers } = fixture(t);
+  const failure = new Error('initial selection failed');
+  let broken = true;
+  const selection = selectSvelteStore(source, snapshot => {
+    if (broken) throw failure;
+    return snapshot.t('demo:title');
+  });
+  for (const subscribe of [() => selection.subscribe(() => assert.fail('failed selection cannot publish')), () => get(selection)]) {
+    assert.throws(subscribe, error => error === failure);
+    assert.equal(subscriptions.size, 0);
+    assert.equal(disposers.size, 0);
+  }
+  broken = false;
+  assert.equal(get(selection), '한국어');
+  broken = true;
+  assert.throws(() => get(selection), error => error === failure);
+  assert.equal(subscriptions.size, 0);
+  assert.equal(disposers.size, 0);
+  broken = false;
+  store.setLocale('en');
+  assert.equal(get(selection), 'English');
+});
+
+test('a failed new selector leaves a healthy shared source subscribed without retaining its own listener', t => {
+  const { store, source, subscriptions, disposers } = fixture(t);
+  const locale = selectSvelteStore(source, snapshot => snapshot.locale);
+  const locales = [];
+  const off = locale.subscribe(value => locales.push(value));
+  t.after(off);
+  let calls = 0;
+  const failed = selectSvelteStore(source, () => { calls++; throw undefined; });
+  let threw = false;
+  try { get(failed); } catch (error) { threw = true; assert.equal(error, undefined); }
+  assert.equal(threw, true);
+  store.setLocale('en');
+  assert.equal(calls, 1);
+  assert.deepEqual(locales, ['ko', 'en']);
+  assert.equal(subscriptions.size, 1);
+  off();
+  assert.equal(subscriptions.size, 0);
+  assert.equal(disposers.size, 0);
+});
+
+test('live selector errors retain the last value, report once and recover without stalling other derived stores', t => {
+  const { store, source, subscriptions, disposers } = fixture(t);
+  const errors = [], values = [], locales = [];
+  let invalidations = 0;
+  const selection = selectSvelteStore(source, snapshot => snapshot.t('demo:title'), { onError: error => errors.push(error) });
+  const healthy = derived(selectSvelteStore(source, snapshot => snapshot.locale), value => `locale:${value}`);
+  const off = selection.subscribe(value => values.push(value), () => invalidations++);
+  const offHealthy = healthy.subscribe(value => locales.push(value));
+  t.after(() => { off(); offHealthy(); });
+  const missing = ['ko', 'en'].map(locale => parseCatalog('{"note":"Only note"}', { locale, namespace: 'demo' }));
+  assert.doesNotThrow(() => store.replaceCatalogs(missing));
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0].name, 'UnknownMessageError');
+  assert.deepEqual(values, ['한국어']);
+  assert.equal(invalidations, 0);
+  assert.doesNotThrow(() => store.setLocale('en'));
+  assert.deepEqual(locales, ['locale:ko', 'locale:en']);
+  store.replaceCatalogs(catalogs('복구 제목'));
+  assert.deepEqual(values, ['한국어', 'English']);
+  assert.equal(invalidations, 1);
+  off(); offHealthy();
+  assert.equal(subscriptions.size, 0);
+  assert.equal(disposers.size, 0);
+});
+
+test('default reporting and a throwing reporter preserve the Svelte notification queue', t => {
+  const { store, source } = fixture(t);
+  const logged = [];
+  t.mock.method(console, 'error', (...args) => logged.push(args));
+  const failure = new Error('selector failed'), reporterFailure = new Error('reporter failed');
+  let broken = false;
+  const selector = snapshot => { if (broken) throw failure; return snapshot.locale; };
+  const defaults = selectSvelteStore(source, selector);
+  const explicit = selectSvelteStore(source, selector, { onError() { throw reporterFailure; } });
+  const first = [], second = [];
+  const offFirst = defaults.subscribe(value => first.push(value));
+  const offSecond = explicit.subscribe(value => second.push(value));
+  t.after(() => { offFirst(); offSecond(); });
+  broken = true;
+  assert.doesNotThrow(() => store.setLocale('en'));
+  assert.deepEqual(logged, [['[saylo:svelte] selector failed', failure], ['[saylo:svelte] selector error reporter failed', reporterFailure]]);
+  broken = false;
+  store.setLocale('ko');
+  store.setLocale('en');
+  assert.deepEqual(first, ['ko', 'en']);
+  assert.deepEqual(second, first);
+});

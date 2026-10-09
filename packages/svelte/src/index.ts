@@ -43,21 +43,68 @@ export function createSvelteStore<S extends Schema>(instance: SayloInstance<S>):
   }));
 }
 
+export interface SayloSelectorOptions {
+  /** Live selection failures retain the last value; defaults to console.error. Initial failures throw. */
+  readonly onError?: (error: unknown) => void;
+}
+
+type Selection<T> = { kind: 'value'; value: T } | { kind: 'error'; error: unknown };
+
 /** Pure selection; only Object.is changes invalidate or notify downstream subscribers. */
 export function selectSvelteStore<S extends Schema, T>(source: SayloSvelteStore<S>,
-  selector: (snapshot: SayloSvelteSnapshot<S>) => T): Readable<T> {
-  let previous: { value: T } | undefined;
-  const selected = derived<SayloSvelteStore<S>, { value: T }>(source, (snapshot, set) => {
-    const value = selector(snapshot);
-    if (!previous || !Object.is(previous.value, value)) {
+  selector: (snapshot: SayloSvelteSnapshot<S>) => T, options: SayloSelectorOptions = {}): Readable<T> {
+  let previous: Selection<T> | undefined;
+  let subscribers = 0;
+  const selected = derived<SayloSvelteStore<S>, Selection<T>>(source, (snapshot, set) => {
+    let value: T;
+    try { value = selector(snapshot); }
+    catch (error) {
+      if (!subscribers) {
+        // Return normally so derived can install its upstream cleanup before subscribe throws.
+        previous = { kind: 'error', error };
+        set(previous);
+      } else {
+        try {
+          if (options.onError) options.onError(error);
+          else console.error('[saylo:svelte] selector failed', error);
+        } catch (reportingError) { console.error('[saylo:svelte] selector error reporter failed', reportingError); }
+      }
+      return;
+    }
+    if (!previous || previous.kind === 'error' || !Object.is(previous.value, value)) {
       // A box preserves Object.is semantics even for signed zero and stable object references.
-      previous = { value };
+      previous = { kind: 'value', value };
       set(previous);
     }
   });
   const store: Readable<T> = {
     subscribe(run, invalidate) {
-      return selected.subscribe(box => run(box.value), () => invalidate?.());
+      let starting = true;
+      const first: { state?: Selection<T> } = {};
+      const unsubscribe = selected.subscribe(state => {
+        if (starting) first.state = state;
+        else if (state.kind === 'value') run(state.value);
+      }, () => { if (!starting) invalidate?.(); });
+      starting = false;
+      const state = first.state;
+      if (!state) {
+        unsubscribe();
+        throw new Error('Selector did not produce an initial value.');
+      }
+      if (state.kind === 'error') {
+        unsubscribe();
+        throw state.error;
+      }
+      subscribers++;
+      let active = true;
+      const stop = () => {
+        if (!active) return;
+        active = false;
+        subscribers--;
+        unsubscribe();
+      };
+      try { run(state.value); } catch (error) { stop(); throw error; }
+      return stop;
     },
   };
   return Object.freeze(store);
@@ -69,7 +116,7 @@ export interface SayloSvelteBindings<S extends Schema> {
   /** Call during child component initialization, then use $i18n in the template. */
   readonly getI18n: () => SayloSvelteStore<S>;
   /** Call during child initialization; the selection shares the context's upstream store. */
-  readonly getI18nSelector: <T>(selector: (snapshot: SayloSvelteSnapshot<S>) => T) => Readable<T>;
+  readonly getI18nSelector: <T>(selector: (snapshot: SayloSvelteSnapshot<S>) => T, options?: SayloSelectorOptions) => Readable<T>;
 }
 
 /** Create once at module scope. Each mounted provider owns its context, including SSR requests. */
@@ -85,8 +132,8 @@ export function createSayloSvelte<S extends Schema = Schema>(): SayloSvelteBindi
       return setContext(key, createSvelteStore(instance));
     },
     getI18n,
-    getI18nSelector<T>(selector: (snapshot: SayloSvelteSnapshot<S>) => T) {
-      return selectSvelteStore(getI18n(), selector);
+    getI18nSelector<T>(selector: (snapshot: SayloSvelteSnapshot<S>) => T, options?: SayloSelectorOptions) {
+      return selectSvelteStore(getI18n(), selector, options);
     },
   });
 }

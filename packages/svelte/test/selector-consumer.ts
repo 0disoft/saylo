@@ -1,12 +1,15 @@
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
 import { createSayloSvelte, createSvelteStore, selectSvelteStore } from '@0disoft/saylo-svelte';
 import type { Readable } from 'svelte/store';
+import type { SayloSelectorOptions } from '@0disoft/saylo-svelte';
 
 type AppSchema = { 'cart:title': {}; 'cart:items': { count: number } };
 const catalog = parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'en', namespace: 'cart' });
 const source = createSvelteStore(createStore<AppSchema>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] }));
 const bindings = createSayloSvelte<AppSchema>();
-const title: Readable<string> = selectSvelteStore(source, snapshot => snapshot.t('cart:items', { count: 3 }));
+const errors: unknown[] = [];
+const options: SayloSelectorOptions = { onError: error => errors.push(error) };
+const title: Readable<string> = selectSvelteStore(source, snapshot => snapshot.t('cart:items', { count: 3 }), options);
 void title;
 // @ts-expect-error selection preserves required args
 selectSvelteStore(source, snapshot => snapshot.t('cart:items'));
@@ -20,5 +23,5 @@ void wrong;
 export function selectFromContext(): Readable<string> {
   // @ts-expect-error context selection preserves required args
   bindings.getI18nSelector(snapshot => snapshot.t('cart:items'));
-  return bindings.getI18nSelector(snapshot => snapshot.t('cart:items', { count: 3 }));
+  return bindings.getI18nSelector(snapshot => snapshot.t('cart:items', { count: 3 }), options);
 }

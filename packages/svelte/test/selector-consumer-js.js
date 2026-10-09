@@ -9,7 +9,9 @@ const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: [catalog] 
 const bindings = createSayloSvelte();
 const source = createSvelteStore(store);
 /** @type {import('svelte/store').Readable<string>} */
-const title = selectSvelteStore(source, snapshot => snapshot.t('cart:items', { count: 3 }));
+const title = selectSvelteStore(source, snapshot => snapshot.t('cart:items', { count: 3 }), {
+  onError(error) { /** @type {unknown} */ const received = error; void received; },
+});
 void title;
 // @ts-expect-error checkJs selection keeps required args
 selectSvelteStore(source, snapshot => snapshot.t('cart:items'));
@@ -17,4 +19,6 @@ selectSvelteStore(source, snapshot => snapshot.t('cart:items'));
 selectSvelteStore(source, snapshot => snapshot.t('cart:items', { count: '3' }));
 // @ts-expect-error checkJs selection rejects unknown keys
 selectSvelteStore(source, snapshot => snapshot.t('cart:unknown'));
-export function selectFromContext() { return bindings.getI18nSelector(snapshot => snapshot.t('cart:items', { count: 3 })); }
+export function selectFromContext() {
+  return bindings.getI18nSelector(snapshot => snapshot.t('cart:items', { count: 3 }), { onError: error => console.error(error) });
+}
