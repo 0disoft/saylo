@@ -100,9 +100,13 @@ export default function saylo(options: SayloViteOptions): Plugin {
   return {
     name: 'saylo',
     enforce: 'pre',
-    config(config) {
+    config(config, env) {
       generatedOut = options.typegen ? path.resolve(config.root ?? process.cwd(), options.typegen.outFile) : undefined;
-      return { optimizeDeps: { exclude: ['@0disoft/saylo-vite/client'] }, ssr: { external: ['@0disoft/saylo-vite/server'] },
+      return { optimizeDeps: { exclude: ['@0disoft/saylo-vite/client'] }, ssr: {
+        external: ['@0disoft/saylo-vite/server'],
+        // Vite matches noExternal against the package name, not its /client subpath.
+        ...(env?.command === 'build' ? { noExternal: ['@0disoft/saylo-vite'] } : {}),
+      },
         ...(generatedOut ? { server: { watch: { ignored: [(file: string) => isTypegenFile(file)] } } } : {}) };
     },
     async configResolved(config) {

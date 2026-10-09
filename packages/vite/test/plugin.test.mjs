@@ -144,6 +144,15 @@ test('generated declaration and owned temporary paths are narrowly excluded from
   assert.deepEqual(await plugin.hotUpdate({ type: 'update', file: out, modules: [], server: {} }), []);
 });
 
+test('only production builds include the catalog client in SSR bundles', () => {
+  const plugin = saylo({ localesDir: 'locales', baseLocale: 'ko' });
+  const dev = plugin.config({}, { command: 'serve' });
+  const build = plugin.config({}, { command: 'build' });
+  assert.deepEqual(dev.ssr.external, ['@0disoft/saylo-vite/server']);
+  assert.equal(dev.ssr.noExternal, undefined);
+  assert.deepEqual(build.ssr.noExternal, ['@0disoft/saylo-vite']);
+});
+
 test('failed initial type readiness aborts startup and retains catalog source', async t => {
   const root = await fixture(t);
   const plugin = saylo({ localesDir: root, baseLocale: 'ko', typegen: { outFile: 'ko/demo.json' } });

@@ -55,7 +55,7 @@ test('Vite SSR dev requests see current catalogs without invalidating the server
 test('Vite production SSR bundle prepares independent requests using static catalog imports', async t => {
   const { root, config } = await fixture(t);
   const result = await build({ ...config, build: { ssr: path.join(root, 'main.mjs'), minify: false,
-    rolldownOptions: { external: [], preserveEntrySignatures: 'strict' } }, ssr: { noExternal: ['@0disoft/saylo-core', '@0disoft/saylo-vite/client'] } });
+    rolldownOptions: { external: [], preserveEntrySignatures: 'strict' } }, ssr: { noExternal: ['@0disoft/saylo-core'] } });
   const chunks = result.output.filter(o => o.type === 'chunk');
   assert.equal(chunks.filter(o => o.isDynamicEntry).length, 1);
   const entry = chunks.find(o => o.isEntry);

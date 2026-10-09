@@ -117,9 +117,12 @@ try {
     await writeFile(path.join(app, 'package.json'), JSON.stringify({ name: `saylo-packed-${language}`, private: true, type: 'module',
       scripts: { typegen: 'saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts',
         typecheck: 'tsc -p tsconfig.json', build: 'vite build' },
-      dependencies: { ...Object.fromEntries(packed.map(pack => [pack.name, `file:../packs/${pack.filename}`])),
+      dependencies: { ...Object.fromEntries(packed.filter(pack => !['@0disoft/saylo-vite', '@0disoft/saylo-typegen'].includes(pack.name))
+        .map(pack => [pack.name, `file:../packs/${pack.filename}`])),
         react: majors.react, 'react-dom': majors['react-dom'], ...(hasSvelte ? { svelte: majors.svelte } : {}) },
-      devDependencies: Object.fromEntries(['typescript', 'vite', '@types/node', '@types/react', '@types/react-dom'].map(name => [name, majors[name]])) }, null, 2));
+      devDependencies: { ...Object.fromEntries(['typescript', 'vite', '@types/node', '@types/react', '@types/react-dom'].map(name => [name, majors[name]])),
+        ...Object.fromEntries(packed.filter(pack => ['@0disoft/saylo-vite', '@0disoft/saylo-typegen'].includes(pack.name))
+          .map(pack => [pack.name, `file:../packs/${pack.filename}`])) } }, null, 2));
     await writeFile(path.join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022',
       module: 'NodeNext', moduleResolution: 'NodeNext', lib: ['ES2022', 'DOM'], strict: true,
       allowJs: true, checkJs: true, noEmit: true, jsx: 'react-jsx', types: ['node', 'vite/client', '@0disoft/saylo-vite/virtual'] },
@@ -190,6 +193,12 @@ try {
       await cp(path.join(fixtures, 'complete-translations.mjs'), path.join(app, 'complete-translations.mjs'));
       console.log((await exec(process.execPath, [path.join(app, 'complete-translations.mjs')],
         { cwd: app, env: childEnv, windowsHide: true, maxBuffer: 1024 * 1024 })).stdout.trim());
+    }
+    if (!fromRegistry && language === 'ts') {
+      for (const file of ['ssr-entry.mjs', 'ssr-build.mjs', 'ssr-runtime.mjs']) await cp(path.join(fixtures, file), path.join(app, file));
+      console.log((await exec(process.execPath, ['ssr-build.mjs'], { cwd: app, env: childEnv, windowsHide: true })).stdout.trim());
+      await npm(['prune', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund', '--workspaces=false'], app);
+      console.log((await exec(process.execPath, ['ssr-runtime.mjs'], { cwd: app, env: childEnv, windowsHide: true })).stdout.trim());
     }
     console.log(`[pack] ${language}: CLI, ${language === 'js' ? 'checkJs' : 'TypeScript'}, runtime/React SSR, Vite lazy build passed`);
   }
