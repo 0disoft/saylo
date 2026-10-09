@@ -346,3 +346,28 @@ test('incremental parsing reuses unchanged ICU but refreshes source positions an
   const translated = parseCatalog('{"keep":"{name}"}', { ...options, locale: 'en' }, first);
   assert.notEqual(translated.messages.keep.ast, first.messages.keep.ast);
 });
+
+test('final catalog maps stay deeply immutable across new, reused and untrusted previous messages', () => {
+  function verify(value) {
+    if (value === null || typeof value !== 'object') return;
+    assert.ok(Object.isFrozen(value));
+    assert.ok(isDeepFrozen(value));
+    for (const child of Object.values(value)) verify(child);
+  }
+  const source = '{"__proto__":"{name}","complex":"{n, plural, other {#}}"}';
+  const first = parseCatalog(source, options);
+  const next = parseCatalog('\n' + source, options, first);
+  const edited = parseCatalog('{"__proto__":"Edited {name}","complex":"{n, plural, other {#}}"}', options, next);
+  const untrusted = Object.freeze({ ...first, messages: Object.freeze({ ...first.messages,
+    ['__proto__']: Object.freeze({ ...first.messages.__proto__, ast: [{ type: 0, value: 'poisoned' }] }) }) });
+  const recovered = parseCatalog(source, options, untrusted);
+  assert.deepEqual(recovered, first);
+  assert.notEqual(recovered.messages.__proto__, untrusted.messages.__proto__);
+  assert.equal(next.messages.complex.ast, first.messages.complex.ast);
+  assert.notEqual(edited.messages.__proto__.ast, first.messages.__proto__.ast);
+  for (const parsed of [parseCatalog('{}', options), first, next, edited, recovered]) {
+    verify(parsed);
+    assert.throws(() => { parsed.messages.extra = first.messages.complex; }, TypeError);
+    if (Object.hasOwn(parsed.messages, 'complex')) assert.throws(() => { delete parsed.messages.complex; }, TypeError);
+  }
+});

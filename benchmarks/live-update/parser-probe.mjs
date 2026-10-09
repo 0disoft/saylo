@@ -44,7 +44,7 @@ export function registerParserProbe({ detailed = false } = {}) {
       ['const positionAt = createPositionLocator(source);', "const positionAt = measureParserStage('positionIndexMs', () => createPositionLocator(source));"],
       ['for (const entry of entries) {', 'const __loopStart = parserClock();\nfor (const entry of entries) {'],
       ['if (diagnostics.length)', "recordParserStage('messageLoopMs', __loopStart);\nif (diagnostics.length)"],
-      ['return freeze({ ...context, messages });', "return measureParserStage('freezeMs', () => freeze({ ...context, messages }));"],
+      ['return freeze({ ...context, messages: freezeOwnedMessageMap(messages) });', "return measureParserStage('freezeMs', () => freeze({ ...context, messages: freezeOwnedMessageMap(messages) }));"],
     ] : url === json ? [
       ['object = JSON.parse(source);', "object = measureParserStage('strictJsonMs', () => JSON.parse(source));"],
       ['const entries = [];', 'const __tokensStart = parserClock();\nconst entries = [];'],

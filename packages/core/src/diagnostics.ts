@@ -1,8 +1,8 @@
 import { TYPE } from '@formatjs/icu-messageformat-parser/no-parser.js';
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
-import type { CatalogDiagnostic, DeepReadonly, SourcePosition } from './types.js';
+import type { CatalogDiagnostic, DeepReadonly, ParsedMessage, SourcePosition } from './types.js';
 
-// Only objects traversed by this helper are trusted to be deeply frozen.
+// Trust recursive freezing and parser-owned containers of already frozen children.
 const frozen = new WeakSet<object>();
 export const isDeepFrozen = (value: object) => frozen.has(value);
 
@@ -14,6 +14,15 @@ export function freeze<T>(value: T): DeepReadonly<T> {
     frozen.add(value);
   }
   return value as DeepReadonly<T>;
+}
+
+/** Internal parser finalization only: every message must already be deeply frozen.
+ * The parser owns this fresh map; external/shallow-frozen maps must use freeze.
+ */
+export function freezeOwnedMessageMap(messages: Record<string, ParsedMessage>): Readonly<Record<string, ParsedMessage>> {
+  Object.freeze(messages);
+  frozen.add(messages);
+  return messages;
 }
 
 /** Only for fresh ASTs owned by the catalog parser, with FormatJS node shapes. */

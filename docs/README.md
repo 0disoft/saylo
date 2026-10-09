@@ -54,6 +54,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 43. [46-review-fixes-server-file-stages.md](46-review-fixes-server-file-stages.md) — 리뷰 수정 기준 large 읽기·후보 구간 분리 계측
 44. [47-json-field-scanner-trial.md](47-json-field-scanner-trial.md) — JSON 항목 정규식 통합을 교차 비교하고 원복한 기록
 45. [48-parser-cpu-profile.md](48-parser-cpu-profile.md) — 현행 파서의 CPU 표본·줄 귀속과 다음 맵 동결 후보
+46. [49-owned-message-map-freeze.md](49-owned-message-map-freeze.md) — 파서 소유 메시지 맵 재순회 생략과 편집·신규 파싱 교차 비교
 
 ## 상태 표기 규칙
 

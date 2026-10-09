@@ -1,5 +1,5 @@
 import { parse } from '@formatjs/icu-messageformat-parser';
-import { CatalogError, freeze, freezeMessageAst, createPositionLocator, isDeepFrozen } from './diagnostics.js';
+import { CatalogError, freeze, freezeMessageAst, freezeOwnedMessageMap, createPositionLocator, isDeepFrozen } from './diagnostics.js';
 import { messageOffset, readJson } from './json.js';
 import { inferArguments } from './schema.js';
 import { createSimplePositionPool, parseSimpleMessage } from './simple-message.js';
@@ -57,5 +57,5 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
     }
   }
   if (diagnostics.length) throw new CatalogError(diagnostics);
-  return freeze({ ...context, messages });
+  return freeze({ ...context, messages: freezeOwnedMessageMap(messages) });
 }
