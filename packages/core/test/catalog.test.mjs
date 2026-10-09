@@ -80,6 +80,30 @@ test('position indexing preserves UTF-16 columns at LF, CRLF, trailing LF and es
   }
 });
 
+test('JSON field boundaries preserve escaped text and reject overwritten non-strings at their token', () => {
+  const source = String.raw`{
+    "empty": "",
+    "quote\"key": "\"pretend\":\"value\", back\\slash",
+    "unicode": "\uD83D\uDE00\n\tend",
+    "constructor": "last"
+  }`;
+  const parsed = parseCatalog(source, options);
+  for (const [id, value] of Object.entries(JSON.parse(source))) assert.equal(parsed.messages[id].source, value);
+  assert.equal(parsed.messages.constructor.position.offset, source.indexOf('"last"'));
+  // JSON errors take priority over both duplicate IDs and invalid ICU. Do not
+  // skip a nested value even when its inner fields look like valid messages.
+  const prefix = '{\r\n  "x":"{", "\\u0078":"duplicate",\r\n  "bad" \t: \t';
+  for (const token of ['null', 'false', '-12.5', '[]', '{"inner":"text"}']) {
+    assert.throws(() => parseCatalog(`${prefix}${token},"bad":"overwritten"}`, options, parsed), error => {
+      assert.equal(error.diagnostics.length, 1);
+      assert.equal(error.diagnostics[0].code, 'INVALID_CATALOG');
+      assert.equal(error.diagnostics[0].id, 'bad');
+      assert.deepEqual(error.diagnostics[0].position, { offset: prefix.length, line: 3, column: 13 });
+      return true;
+    });
+  }
+});
+
 test('invalid locale, namespace and IDs produce structured errors', () => {
   rejectsCode(() => parseCatalog('{}', { ...options, locale: 'ko_KR' }), 'INVALID_LOCALE');
   rejectsCode(() => parseCatalog('{}', { ...options, locale: '' }), 'INVALID_LOCALE');
