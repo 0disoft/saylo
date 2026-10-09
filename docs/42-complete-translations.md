@@ -1,6 +1,6 @@
 # 42. 빌드 완역 검사 옵션
 
-production build에서 모든 로케일의 완역을 강제하는 `requireCompleteTranslations` 옵션을 Vite 플러그인에 로컬 구현했다. 기본값은 `undefined`(false 동작)이고 `true`여도 `config.command === 'build'`인 경우에만 검사한다. dev startup·live 반영, core의 `validateTranslation`, typegen CLI에는 이 옵션이 없다.
+production build에서 모든 로케일의 완역을 강제하는 `requireCompleteTranslations` 옵션을 Vite 플러그인에 구현했고 `0.1.0-alpha.3`에 포함해 게시했다. 기본값은 `undefined`(false 동작)이고 `true`여도 `config.command === 'build'`인 경우에만 검사한다. dev startup·live 반영, core의 `validateTranslation`, typegen CLI에는 이 옵션이 없다.
 
 ## 옵션 계약
 
@@ -40,14 +40,14 @@ export default {
 
 ```sh
 npm run check
-npm run release:check -- --version 0.1.0-alpha.2 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.3 --tag alpha
 npm exec -- node scripts/pack-smoke.mjs
 ```
 
 2026-10-09 Windows·Node 24.18.0에서 전체 `check`와 다섯 패키지의 릴리스 메타데이터 검사를 통과했다. 옵션 동작은 실제 Vite 빌드로 누락 진단·수정 후 성공·기존 타입 파일 유지·초기 로딩 범위 밖 namespace·빈 폴더·폴더 없는 초기 로케일·일반 스키마 오류 우선순위를 확인했다. 빈 문자열과 번역의 인자 생략은 허용했고, 개발 플러그인 테스트에서 부분 번역 fallback과 수정 후 복구도 확인했다. JS/checkJs·TS 소비 타입 검사도 통과했다.
 
-빌드 출력을 재사용한 pack 소비 검증에서 다섯 tarball의 외부 JS·TS 설치, README 예제, CLI, React/Svelte SSR, Vite lazy build와 parser 제거를 통과했다. 외부 소비 앱은 검사 후 정리했다. 새 성능 측정·브라우저 검증·registry 게시는 수행하지 않았다.
+빌드 출력을 재사용한 pack 소비 검증에서 다섯 tarball의 외부 JS·TS 설치, README 예제, CLI, React/Svelte SSR, Vite lazy build와 parser 제거를 통과했다. 외부 소비 앱은 검사 후 정리했다. 새 성능 측정·브라우저 검증·registry 게시는 이 후보 준비 단계에서 수행하지 않았고, 게시와 registry 소비 검증은 이후 릴리스 단계에서 진행했다.
 
 ## 상태
 
-구현 커밋 `d29eac7`에서는 버전을 `0.1.0-alpha.2`로 유지했고 push·publish·version bump를 하지 않았다. 이미 게시된 alpha.2에는 이 옵션이 들어 있지 않다. 이후 [alpha.3 릴리스 후보](../releases/0.1.0-alpha.3.md)에 포함했다. 실제 게시 여부는 릴리스 기록을 따른다.
+구현 커밋 `d29eac7`에서는 버전을 `0.1.0-alpha.2`로 유지했고 push·publish·version bump를 하지 않았다. 이미 게시된 alpha.2에는 이 옵션이 들어 있지 않다. 이후 [0.1.0-alpha.3](../releases/0.1.0-alpha.3.md)에 포함해 게시했고, 이 옵션은 alpha.3 게시본에 들어 있다. 게시·소비 검증 결과는 릴리스 기록을 따른다.

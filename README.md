@@ -4,7 +4,8 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 
 ## 현재 상태
 
-- 다섯 패키지를 `0.1.0-alpha.2`·dist-tag `alpha`로 게시했다. 2026-10-09 [CI 릴리스](https://github.com/0disoft/saylo/actions/runs/37804205176)에서 다섯 Trusted Publisher의 OIDC 인증과 전체 검증을 통과했고 기존 Svelte는 동일 artifact로 건너뛰었다. 게시본의 외부 JS/TS 소비와 SvelteKit 브라우저 검증도 통과했다. 변경·검증 범위는 [릴리스 기록](releases/0.1.0-alpha.2.md), 승인 integrity는 [manifest](releases/0.1.0-alpha.2.json)에 있다. `npm run verify:registry:alpha2`와 `npm run verify:registry:sveltekit`으로 다시 확인한다. 기존 `alpha.1` 검증도 유지한다.
+- 다섯 패키지를 `0.1.0-alpha.3`·dist-tag `alpha`로 게시했다. 2026-10-09 [CI 릴리스](https://github.com/0disoft/saylo/actions/runs/37935637066)에서 다섯 Trusted Publisher의 OIDC 인증과 전체 검증을 통과했고 게시 skip은 없었다. 게시본의 외부 소비와 SvelteKit 브라우저 검증도 통과했다. 변경·검증 범위는 [릴리스 기록](releases/0.1.0-alpha.3.md), 승인 integrity는 [manifest](releases/0.1.0-alpha.3.json)에 있다. `npm run verify:registry:alpha3`와 `npm run verify:registry:sveltekit:alpha3`으로 다시 확인한다.
+- 직전 `0.1.0-alpha.2` 게시·검증 기록은 [릴리스 기록](releases/0.1.0-alpha.2.md)과 [manifest](releases/0.1.0-alpha.2.json)에 남겨둔다. `npm run verify:registry:alpha2`·`npm run verify:registry:sveltekit`으로 다시 확인하고, `alpha.1` 검증도 유지한다.
 - [SvelteKit 3 예제](examples/sveltekit/README.md)에서 요청별 SSR·boot·hydration, 공통 layout의 페이지 이동, 번역 저장 후 입력·모달 유지와 종료·재진입을 확인했다. 실제 Node 운영 빌드의 SSR·언어 전환도 검증했다. `npm run setup:sveltekit` 후 `npm run dev:sveltekit`으로 실행한다. 예제는 로컬 패키지 복사본을 쓰는 독립 private 앱이며 본체와 공개 패키지 버전은 변경하지 않았다. 상세 범위는 [39](docs/39-sveltekit-example.md)에 있다.
 - `packages/svelte`에 Svelte 5 어댑터를 구현했다. `$i18n` 구독·typed context·snapshot-bound 번역과 JS/TS 소비, SSR·hydration을 검증했고 [Svelte 데모](examples/svelte/README.md)에서 파일 저장·로케일 추가·선택·삭제 후 입력과 모달 유지를 확인했다. `npm run dev:svelte`로 실행한다. 구현 범위는 [38-svelte-adapter.md](docs/38-svelte-adapter.md), 현행 게시 상태는 위 릴리스 기록을 따른다.
 - `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 공개 패키지 네 개에서 `private`를 떼고 첫 버전 `0.1.0-alpha.1`(dist-tag `alpha`)을 2026-10-06 npm에 게시했다. 루트 workspace package는 `private`를 유지한다.
@@ -13,10 +14,10 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - 성능 목표는 [검증과 로드맵](docs/06-validation-and-roadmap.md)에 있다. 라이브 갱신 벤치마크는 `npm run bench:live`로 돌리고 결과는 [benchmarks/results/live-update.json](benchmarks/results/live-update.json), 최적화 후 재측정은 [benchmarks/results/live-update-optimized.json](benchmarks/results/live-update-optimized.json), request-scoped patch 적용 후 첫 run과 재실행은 [benchmarks/results/live-update-patch.json](benchmarks/results/live-update-patch.json)·[benchmarks/results/live-update-patch-repeat.json](benchmarks/results/live-update-patch-repeat.json)에 남는다. 방법과 조건은 [benchmarks/live-update/README.md](benchmarks/live-update/README.md)에 정리했다. request-scoped patch 뒤 small은 재실행에서 p95 목표 안에 들어왔지만 같은 코드의 첫 run은 넘었고, large는 두 run 모두 목표 p95 ≤ 100ms를 넘었다.
 - `npm run verify:pack`으로 외부 JS/TS 소비를 검증한다. 2026-10-06 Node 24.18.0·Vite 8.3.2에서 exit 0으로 통과했다. tarball의 README 포함과 metadata 일치, README 예제 블록(core JS 실행, React·typegen·Vite TS) 검사도 함께 한다. 스크립트는 [scripts/pack-smoke.mjs](scripts/pack-smoke.mjs)에 있다. 게시된 registry 실물은 `npm run verify:registry`가 [releases/0.1.0-alpha.1.json](releases/0.1.0-alpha.1.json)의 CI 승인 integrity와 대조한다.
 - 지원 버전은 Node 24.x(`engines.node`)다. 로컬 검증 환경은 Node 24.18.0이고 TypeScript 7을 기준으로 검증하지만 `typescript`를 peer로 강제하지 않는다. `packages/core`·`packages/react`는 ES2022 브라우저 대상이라 Node API가 필요 없고, `packages/vite`·`packages/typegen`은 Node에서 실행한다. 배포 방식과 릴리스 절차는 [릴리스](docs/09-release.md)에 있다.
-- 공개 패키지는 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-svelte`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 다섯 개다. 현행 게시 버전은 `0.1.0-alpha.2`·dist-tag `alpha`이며 라이선스는 Apache-2.0이다.
+- 공개 패키지는 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-svelte`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 다섯 개다. 현행 게시 버전은 `0.1.0-alpha.3`·dist-tag `alpha`이며 라이선스는 Apache-2.0이다.
 - docs에는 설계 초안과 로컬 검증 기록이 섞여 있다. 전체 모듈 구조, 이벤트 이름, 아직 구현하지 않은 i18n API 시그니처는 설계 제안이고, 문서와 실제 코드가 어긋나면 `packages/*/README.md`와 `packages/*/src`의 현행 코드를 따른다.
 - 문서 기준일: 2026-10-09
-- `0.1.0-alpha.3` 릴리스 후보에 Vite의 `requireCompleteTranslations` 옵션을 포함했다. 운영 빌드에서 번역 키·namespace 누락을 거부하며 기본값은 `false`이고 개발 중 fallback은 유지한다. 기존 alpha.2 게시본에는 포함되지 않는다. 후보 검증은 [릴리스 기록](releases/0.1.0-alpha.3.md), 대상 로케일·진단은 [완역 검사 기록](docs/42-complete-translations.md)을 따른다.
+- `0.1.0-alpha.3`에 Vite의 `requireCompleteTranslations` 옵션을 포함했다. 운영 빌드에서 번역 키·namespace 누락을 거부하며 기본값은 `false`이고 개발 중 fallback은 유지한다. 기존 alpha.2 게시본에는 포함되지 않는다. 변경·검증은 [릴리스 기록](releases/0.1.0-alpha.3.md), 대상 로케일·진단은 [완역 검사 기록](docs/42-complete-translations.md)을 따른다.
 - Vite 동결 import를 core root로 바꿔 기본 prebundle에서 깊은 동결 신뢰 공유를 50/50회 확인했다. 그 시점 상세 계측을 끈 목록 p95는 small 152.13ms·large 268.54ms로 large의 250ms 목표는 미달이었다(과거 31 측정). 결과·검증은 [docs/31-prebundle-freeze-locale-add.md](docs/31-prebundle-freeze-locale-add.md)에 있다.
 - 후속 메시지·위치 직접 동결 실험은 cold·incremental 비교에서 개선을 확인하지 못해 되돌렸다. 결과와 재현 패치는 [docs/33-owned-message-freeze-trial.md](docs/33-owned-message-freeze-trial.md)에 보존했다.
 - 메시지 동결 내부를 나눈 10k 측정에서 AST 동결이 하위 구간 중 18/20회 가장 컸다. 제품 변경 없이 추가한 계측과 다음 후보는 [docs/34-message-freeze-stages.md](docs/34-message-freeze-stages.md)에 있다.
@@ -227,7 +228,7 @@ const root = hydrateRoot(document.getElementById('root'), h(SayloProvider, { ins
 
 ## 릴리스
 
-현행 게시 버전은 다섯 패키지의 `0.1.0-alpha.2`·dist-tag `alpha`이다. core·react·typegen·vite의 첫 버전 `0.1.0-alpha.1`은 2026-10-06 게시했고, Svelte는 2026-10-09의 `alpha.2`부터 포함된다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. `latest`는 등록용 placeholder `0.0.0-stage`를 가리키므로, 현행 alpha 설치에는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 명시한다. 과거 버전 설치에는 `@0disoft/saylo-core@0.1.0-alpha.1`처럼 버전을 지정한다.
+현행 게시 버전은 다섯 패키지의 `0.1.0-alpha.3`·dist-tag `alpha`이다. core·react·typegen·vite의 첫 버전 `0.1.0-alpha.1`은 2026-10-06 게시했고, Svelte는 2026-10-09의 `alpha.2`부터 포함된다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. `latest`는 등록용 placeholder `0.0.0-stage`를 가리키므로, 현행 alpha 설치에는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 명시한다. 과거 버전 설치에는 `@0disoft/saylo-core@0.1.0-alpha.1`처럼 버전을 지정한다.
 
 ```sh
 npm run release:check -- --version 0.1.0-alpha.3 --tag alpha
@@ -235,7 +236,7 @@ npm run check
 npm run release:pack
 ```
 
-현행 릴리스 대상에는 `@0disoft/saylo-svelte`를 추가했다. `release:check`는 다섯 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 다섯 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. `verify:registry`는 기존 네 `alpha.1`을, `verify:registry:alpha2`는 다섯 `alpha.2`를 승인 manifest와 대조한다. `verify:registry:sveltekit`은 승인된 다섯 게시본으로 SvelteKit 앱을 검증한다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch이며 `verify_oidc=true`이면 게시 여부와 관계없이 먼저 인증하고 `publish=true`일 때만 게시한다. 다섯 패키지의 OIDC 인증·게시·다운로드·설치 검증을 완료했다.
+현행 릴리스 대상에는 `@0disoft/saylo-svelte`를 추가했다. `release:check`는 다섯 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 다섯 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. `verify:registry`는 기존 네 `alpha.1`을, `verify:registry:alpha2`는 다섯 `alpha.2`를, `verify:registry:alpha3`는 다섯 `alpha.3`를 승인 manifest와 대조한다. `verify:registry:sveltekit`은 승인된 `alpha.2` 게시본으로, `verify:registry:sveltekit:alpha3`는 `alpha.3` 게시본으로 SvelteKit 앱을 검증한다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch이며 `verify_oidc=true`이면 게시 여부와 관계없이 먼저 인증하고 `publish=true`일 때만 게시한다. 다섯 패키지의 OIDC 인증·게시·다운로드·설치 검증을 완료했다.
 
 ## 설계 방향 한 줄 요약
 

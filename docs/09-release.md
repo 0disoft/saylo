@@ -4,9 +4,9 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 
 ## 확정 사항
 
-마지막으로 게시를 확인한 버전은 `0.1.0-alpha.2`이며 다섯 패키지의 공개·다운로드·외부 소비와 실제 CI OIDC 인증을 2026-10-09 확인했다. 변경 범위와 검증은 [릴리스 기록](../releases/0.1.0-alpha.2.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.2.json)에 있다. 아래의 기존 게시·인증 결과는 당시 기록으로 유지한다.
+현행 게시 버전은 `0.1.0-alpha.3`이며 다섯 패키지의 공개·다운로드·외부 소비와 실제 CI OIDC 인증을 2026-10-09 확인했다. 변경 범위와 검증은 [릴리스 기록](../releases/0.1.0-alpha.3.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.3.json)에 있다. 직전 `0.1.0-alpha.2`의 게시·인증 기록은 [릴리스 기록](../releases/0.1.0-alpha.2.md)과 [manifest](../releases/0.1.0-alpha.2.json)에 유지하고, 아래의 기존 게시·인증 결과도 당시 기록으로 유지한다.
 
-다음 후보는 [0.1.0-alpha.3](../releases/0.1.0-alpha.3.md)이며 완역 검사 옵션을 포함한다. 아래 로컬 명령과 workflow 기본 버전은 후보를 기준으로 한다. 로컬 `.release/npm/manifest.json`은 후보이며, 실제 CI artifact를 검증하기 전에는 `releases/0.1.0-alpha.3.json` 승인 기록을 만들지 않는다.
+`0.1.0-alpha.3`는 완역 검사 옵션을 포함한다. 아래 로컬 명령과 workflow 기본 버전은 이 버전을 기준으로 한다. 로컬 `.release/npm/`의 후보 tarball과 `manifest.json`은 gitignore 대상이고, 승인 기록은 실제 CI artifact에서 옮긴 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)이다.
 
 2026-10-08 로컬 릴리스 목록에 `@0disoft/saylo-svelte`를 추가했다. 아래의 네 패키지 게시·인증 기록은 2026-10-06 기존 릴리스의 기록이다. 현행 로컬 pack·게시 계획·OIDC 대상은 다섯 패키지이며 `verify:registry`는 기존 `alpha.1` manifest의 네 패키지만 검사한다. 상세 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 있다.
 
@@ -43,7 +43,7 @@ npm run release:pack
 
 `release:check`는 루트 `private`, 패키지의 `private` 부재, `license`, `engines`, `publishConfig`, 내부 의존 버전, 다섯 패키지의 `LICENSE`·`NOTICE` 일치를 검사한다. `check`는 빌드·워크스페이스 테스트·소비 타입 검사·typegen·React TS 검사를 돌린다. Svelte 데모 빌드는 `npm run build:svelte`로 별도 실행한다. `release:pack`은 빌드 후 다섯 tarball을 저장소 밖 JS·TS 소비 앱에 설치해 검증하고, 통과하면 tarball과 `manifest.json`(`name`·`version`·`filename`·`integrity`)을 `.release/npm/`에 남긴다. `.release/`는 gitignore 대상이다.
 
-게시된 실물은 `npm run verify:registry`로 대조한다. 현재 명령은 `pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1`을 실행해 커밋된 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json)의 네 패키지 버전과 SHA-512 integrity를 registry metadata·다운로드한 tarball과 비교한다. 현재 소스 버전이나 이동 가능한 `alpha` tag는 과거 파일의 판정에 사용하지 않는다. 설치 metadata와 README 예제도 실제 게시본을 기준으로 검사하며, alpha.1에 없는 `/runtime`·`freezeCatalogs`·Svelte API는 요구하지 않는다. registry tarball을 저장소 밖 JS·TS 앱에 설치해 CLI·checkJs/TS·런타임 SSR·public subpath·Vite production lazy chunk를 확인한다. 새로운 승인 JSON은 실제 CI artifact의 integrity를 기록하는 별도 단계이며 로컬 후보 tarball로 기존 승인 기록을 덮어쓰지 않는다.
+게시된 실물은 `npm run verify:registry`로 대조한다. 현재 명령은 `pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1`을 실행해 커밋된 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json)의 네 패키지 버전과 SHA-512 integrity를 registry metadata·다운로드한 tarball과 비교한다. 현재 소스 버전이나 이동 가능한 `alpha` tag는 과거 파일의 판정에 사용하지 않는다. 설치 metadata와 README 예제도 실제 게시본을 기준으로 검사하며, alpha.1에 없는 `/runtime`·`freezeCatalogs`·Svelte API는 요구하지 않는다. registry tarball을 저장소 밖 JS·TS 앱에 설치해 CLI·checkJs/TS·런타임 SSR·public subpath·Vite production lazy chunk를 확인한다. 새로운 승인 JSON은 실제 CI artifact의 integrity를 기록하는 별도 단계이며 로컬 후보 tarball로 기존 승인 기록을 덮어쓰지 않는다. 현행 다섯 `alpha.3`는 `npm run verify:registry:alpha3`가 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)을 기준으로 같은 방식으로 검사하고, `npm run verify:registry:sveltekit:alpha3`가 그 게시본으로 SvelteKit 앱을 검증한다. 기존 `alpha.1`·`alpha.2` 명령과 `verify:registry:sveltekit`(`alpha.2`)은 그대로 둔다.
 
 ## GitHub Actions 워크플로
 
@@ -155,3 +155,11 @@ Svelte 등록 당시에는 기존 core·react·typegen·vite가 `alpha.1`이었�
 CI artifact의 manifest를 [releases/0.1.0-alpha.2.json](../releases/0.1.0-alpha.2.json)에 기록했다. 다섯 공개 버전의 `alpha` tag·metadata·다운로드한 tarball SHA-512가 일치한다. 처음에는 React·typegen의 metadata와 다운로드 URL이 404였으나 재게시 없이 조회·다운로드 가능 상태를 확인한 뒤 소비 검증을 마쳤다. 원인은 확정하지 않는다.
 
 `npm run verify:registry:alpha2`는 실제 게시된 다섯 패키지로 JS/checkJs·TS·README 예제·core runtime·React/Svelte SSR·typegen CLI·Vite lazy build와 parser 제거를 검증한다. `npm run verify:registry:sveltekit`은 같은 승인 registry 파일로 SvelteKit 앱을 설치해 타입 진단 0 errors·0 warnings, client/SSR 빌드, 요청별 SSR·boot·연결 수명, Node 운영 HTTP, HeadlessChrome 154의 hydration·ko/en/ko 전환·입력과 열린 모달 유지·종료와 재진입을 검증했다. 보고된 runtime 오류·경고는 없다. 기존 네 `alpha.1`의 `npm run verify:registry`도 통과했다. 임시 서버·브라우저·소비 앱을 정리했다.
+
+## 2026-10-09 alpha.3 게시 완료
+
+[run 37935637066](https://github.com/0disoft/saylo/actions/runs/37935637066)은 `main` `534a912`, `publish=true`, `verify_oidc=true`로 실행했다. Node 24.21.0·npm 11·Ubuntu에서 다섯 Trusted Publisher 인증, 185개 테스트(core 75·react 9·svelte 5·typegen 8·vite 83·릴리스 helper 5, fail 0)와 소비 타입 검사, pack 검증, 게시 dry run, artifact 업로드, 실제 게시를 통과했다. 릴리스 작업은 22:16:13~22:17:35 KST에 1분 22초로 끝났고 다섯 패키지를 모두 게시했으며 skip은 없었다.
+
+CI artifact의 manifest를 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)에 기록했다. 다섯 공개 버전의 `alpha` tag·metadata·다운로드한 tarball SHA-512가 일치하고 `latest`는 placeholder `0.0.0-stage`를 유지한다. 게시 직후 공개 metadata는 `alpha.2`를 가리키고 `alpha.3` 버전 endpoint는 404였으나, 재게시 없이 조회·다운로드 가능해졌다. 원인은 확정하지 않는다.
+
+`npm run verify:registry:alpha3`는 승인 integrity와 실제 tarball 외부 설치, README 예제, JS/checkJs·TS, typegen CLI, core runtime·React/Svelte SSR, public subpath, Vite lazy build와 parser 제거, 새 완역 fixture(기본 fallback·키/namespace 누락 진단·기존 타입 유지·수정 후 빌드)의 JS/TS 소비를 exit 0으로 통과했다. `npm run verify:registry:sveltekit:alpha3`는 같은 승인 registry 파일로 SvelteKit 앱을 설치해 타입 진단 0 errors·0 warnings, client/SSR 빌드, 요청별 ko/en SSR·boot와 canonical/base fallback, dev 연결 수명(listener 정리·idempotent stop·late connection 취소), Node 운영 HTTP, HeadlessChrome 154의 hydration·ko/en/ko 전환·공통 layout 입력/모달 유지·종료/재진입을 통과했다. 임시 앱·서버·브라우저는 finally에서 정리했다. 기존 `alpha.1`·`alpha.2` 검증은 이번에 반복하지 않았다. 새 성능 측정과 `examples/npm` lock 변경은 없다.
