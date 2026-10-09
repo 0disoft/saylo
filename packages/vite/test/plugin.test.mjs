@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { mkdtemp, mkdir, writeFile, rm, rename, readFile, stat, utimes } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, rmdir, rename, readFile, stat, utimes } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -77,6 +77,8 @@ test('startup type readiness precedes serving and live publish precedes backgrou
   const { root, server, change, request, warnings } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
   const out = path.join(root, 'generated.d.ts');
   assert.ok((await readFile(out, 'utf8')).includes('"demo:hello": { "name": number | string; };'));
+  await utimes(out, new Date('2000-01-01T00:00:00Z'), new Date('2000-01-01T00:00:00Z'));
+  const beforeWrite = (await stat(out)).mtimeMs;
   const send = server.ws.send;
   server.ws.send = event => {
     if (event.event === SNAPSHOT_EVENT) assert.ok(!readFileSync(out, 'utf8').includes('demo:added'));
@@ -85,15 +87,46 @@ test('startup type readiness precedes serving and live publish precedes backgrou
   await change('ko', '{"hello":"Updated {name}","added":"{count, number}"}');
   assert.equal(request()[0].data.revision, 1);
   const deadline = Date.now() + 10000;
-  while (!(await readFile(out, 'utf8')).includes('demo:added')) {
+  // Poll metadata instead of repeatedly opening the target during Windows atomic replacement.
+  while ((await stat(out)).mtimeMs === beforeWrite) {
     assert.ok(Date.now() < deadline, `background type generation completed: ${warnings.join('\n')}`);
     await new Promise(resolve => setTimeout(resolve, 10));
   }
+  assert.ok((await readFile(out, 'utf8')).includes('demo:added'));
   server.ws.send = send;
   await utimes(out, new Date('2000-01-01T00:00:00Z'), new Date('2000-01-01T00:00:00Z'));
   const before = (await stat(out)).mtimeMs;
   await change('ko', '{"hello":"Text only {name}","added":"{count, number}"}');
   assert.equal((await stat(out)).mtimeMs, before);
+});
+
+test('failed live type generation retries an identical save without republishing catalogs', async t => {
+  const { root, change, request, warnings, events } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
+  const out = path.join(root, 'generated.d.ts');
+  const backup = path.join(root, 'previous.d.ts');
+  await rename(out, backup);
+  await mkdir(out);
+  const source = '{"hello":"Updated {name}","added":"{count, number}"}';
+  await change('ko', source);
+  assert.equal(request()[0].data.revision, 1);
+  const deadline = Date.now() + 10000;
+  while (!warnings.some(message => message.startsWith('[saylo:typegen]'))) {
+    assert.ok(Date.now() < deadline, 'failed generation reports its error');
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  await rmdir(out);
+  await rename(backup, out);
+  await utimes(out, new Date('2000-01-01T00:00:00Z'), new Date('2000-01-01T00:00:00Z'));
+  const beforeWrite = (await stat(out)).mtimeMs;
+  events.length = 0;
+  await change('ko', source);
+  while ((await stat(out)).mtimeMs === beforeWrite) {
+    assert.ok(Date.now() < deadline, 'identical save retries failed generation');
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  assert.ok((await readFile(out, 'utf8')).includes('demo:added'));
+  assert.equal(request()[0].data.revision, 1);
+  assert.equal(events.filter(event => event.event === SNAPSHOT_EVENT).length, 0);
 });
 
 test('generated declaration and owned temporary paths are narrowly excluded from watch/HMR', async t => {

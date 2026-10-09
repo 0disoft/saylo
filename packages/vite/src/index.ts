@@ -46,6 +46,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let server: ViteDevServer | undefined;
   let live: LiveRegistry | undefined;
   let typegen: TypeGenerator | undefined;
+  let typegenPending = false;
+  let typegenRequest = 0;
   let generatedOut: string | undefined;
   let removeServerSource: (() => void) | undefined;
   const isTypegenFile = (file: string) => generatedOut !== undefined && isGeneratedFile(generatedOut, file);
@@ -91,6 +93,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
     detachLive();
     const generator = typegen;
     typegen = undefined;
+    typegenPending = false;
+    typegenRequest++;
     await generator?.stop();
   }
   return {
@@ -196,9 +200,16 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
             client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: update });
           }
           server?.ws.send({ type: 'custom', event: MANIFEST_EVENT, data: { kind: 'update', baseRevision: revision - 1, manifest: registry.manifest() } });
-          const generator = typegen;
-          if (generator) void generator.update(live!.getAcceptedSchemas()).catch(error => {
-            if (typegen === generator) server?.config.logger.warn(`[saylo:typegen] ${error instanceof Error ? error.message : String(error)}`);
+        }
+        const generator = typegen;
+        if (generator && (changed || typegenPending)) {
+          typegenPending = true;
+          const request = ++typegenRequest;
+          void generator.update(live!.getAcceptedSchemas()).then(() => {
+            if (typegen === generator && request === typegenRequest) typegenPending = false;
+          }, error => {
+            if (typegen === generator && request === typegenRequest)
+              server?.config.logger.warn(`[saylo:typegen] ${error instanceof Error ? error.message : String(error)}`);
           });
         }
         if (JSON.stringify(diagnostic) !== JSON.stringify(nextDiagnostic)) {

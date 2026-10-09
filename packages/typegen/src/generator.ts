@@ -51,7 +51,8 @@ export class TypeGenerator {
     if (job.generation === this.desired?.generation) {
       if (result.error || typeof result.source !== 'string') throw new Error(result.error ?? 'Invalid typegen worker result.');
       const status = await writeGenerated(this.outFile, result.source, () => !this.stopped && job.generation === this.desired?.generation);
-      if (status !== 'cancelled' && job.generation === this.desired?.generation) this.successKey = job.key;
+      // A completed replacement describes the disk even if a newer request arrived during it.
+      if (status !== 'cancelled') this.successKey = job.key;
     }
     if (this.stopped) return;
     this.active = undefined;
