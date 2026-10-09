@@ -60,6 +60,8 @@ AST 동결 헬퍼 모듈화는 [35](35-shared-ast-seal.md)에 있다.
 
 2026-10-10(KST) 리뷰 수정 커밋 `9cfb844`의 현행 기준값을 기존 브라우저 하네스로 측정했다. small(1k×3) 편집 반영 p95는 80.08ms로 목표 안이고, large(10k×20)는 398.73ms로 초과다. 로케일 목록 p95는 small 251.27ms·large 627.48ms로 두 규모 모두 250ms 목표를 넘었다. 단일 run 측정이며 조건·한계·원본은 [45-review-fixes-performance-baseline.md](45-review-fixes-performance-baseline.md)에 있다.
 
+같은 large 시나리오를 `--server-file-stages`로 나눠 읽기·후보 구간을 계측했다. catalogParse가 edit p50/p95 35.28/47.62ms, locale-add 87.20/280.54ms로 표본 50/50에서 가장 큰 개별 구간이었고, 총 지연은 edit 저장→DOM p95 182.64ms·locale 목록 p95 389.94ms로 목표를 넘었다. 단일 run이며 조건·한계·원본은 [46-review-fixes-server-file-stages.md](46-review-fixes-server-file-stages.md)에 있다.
+
 ## 인수 사례
 
 cold 파싱의 내부 구간·GC 관측을 benchmark에 추가했다. 제품 코드는 바꾸지 않았고, 기존 incremental의 참조 재사용과 cold의 메시지별 호출 수·동결 상태를 확인했다. GC 구간 clipping·union, ICU·skeleton·오류 처리, 원시 표본과 요약·코드 hash도 대조했다. 다음 제품 최적화 대상은 동결 과정의 객체 생성·순회와 인자 스키마 재사용이다. 계측 조건과 한계는 [17-cold-parser-measurements.md](17-cold-parser-measurements.md)를 따른다. 이 파서 전용 측정으로 목록 표시 목표 달성을 주장하지 않는다.

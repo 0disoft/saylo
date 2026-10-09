@@ -51,6 +51,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 40. [43-react-selectors.md](43-react-selectors.md) — React 선택자 미세구독의 계약·로컬 검증과 현행 게시 상태
 41. [44-svelte-selectors.md](44-svelte-selectors.md) — Svelte 선택자 구독의 계약·로컬 검증과 현행 게시 상태
 42. [45-review-fixes-performance-baseline.md](45-review-fixes-performance-baseline.md) — 리뷰 수정 커밋 `9cfb844`의 편집 반영·로케일 추가 현행 성능 기준값
+43. [46-review-fixes-server-file-stages.md](46-review-fixes-server-file-stages.md) — 리뷰 수정 기준 large 읽기·후보 구간 분리 계측
 
 ## 상태 표기 규칙
 
