@@ -1,0 +1,131 @@
+diff --git a/benchmarks/live-update/parser-probe.mjs b/benchmarks/live-update/parser-probe.mjs
+index 43f0441..50608e7 100644
+--- a/benchmarks/live-update/parser-probe.mjs
++++ b/benchmarks/live-update/parser-probe.mjs
+@@ -53,9 +53,10 @@ export function registerParserProbe({ detailed = false } = {}) {
+       ['const frozenSchema = freeze(schema);', "const frozenSchema = measureParserFreeze('argumentFreezeMs', freeze, schema);"],
+     ];
+     if (detailed && url === catalog) changes.push(
+-      ['const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });',
+-        "const __astStart = parserClock();\nconst ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });\nrecordParserStage('astMs', __astStart);"],
+-      ['const argumentsSchema = inferArguments(ast,', 'const __argumentsStart = parserClock();\nconst argumentsSchema = inferArguments(ast,'],
++      ['const argumentNames = new Set();', 'const __astStart = parserClock();\nconst argumentNames = new Set();'],
++      ['const ast = simpleAst ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });',
++        "const ast = simpleAst ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });\nrecordParserStage('astMs', __astStart);"],
++      ['const argumentsSchema = simpleAst ?', 'const __argumentsStart = parserClock();\nconst argumentsSchema = simpleAst ?'],
+       ['messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });',
+         "recordParserStage('argumentsMs', __argumentsStart);\nconst __messageFreezeStart = parserClock();\nconst __positionStart = parserClock();\nconst __messagePosition = positionAt(entry.valueOffset);\nrecordParserStage('messagePositionMs', __positionStart);\nconst __frozenAst = measureParserFreeze('messageAstFreezeMs', freezeMessageAst, ast);\nmessages[entry.id] = measureParserFreeze('messageRecordFreezeMs', freeze, { source: entry.value, position: __messagePosition, ast: __frozenAst, arguments: argumentsSchema });\nrecordParserStage('messageFreezeMs', __messageFreezeStart);"],
+       ['? before : freeze({ ...before, position });', "? before : measureParserFreeze('reusedMessageFreezeMs', freeze, { ...before, position });"],
+diff --git a/packages/core/src/catalog.ts b/packages/core/src/catalog.ts
+index 34a9cd8..004172d 100644
+--- a/packages/core/src/catalog.ts
++++ b/packages/core/src/catalog.ts
+@@ -1,7 +1,7 @@
+ import { parse } from '@formatjs/icu-messageformat-parser';
+ import { CatalogError, freeze, freezeMessageAst, createPositionLocator, isDeepFrozen } from './diagnostics.js';
+ import { messageOffset, readJson } from './json.js';
+-import { inferArguments } from './schema.js';
++import { inferArguments, inferSimpleArguments } from './schema.js';
+ import { createSimplePositionPool, parseSimpleMessage } from './simple-message.js';
+ import type { CatalogDiagnostic, CatalogOptions, MessageSchema, ParsedCatalog, ParsedMessage } from './types.js';
+
+@@ -42,8 +42,12 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
+     }
+     const details = { ...context, id: entry.id };
+     try {
+-      const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
+-      const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
++      const argumentNames = new Set<string>();
++      const simpleAst = parseSimpleMessage(entry.value, simplePosition, argumentNames);
++      const ast = simpleAst ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
++      // Failed simple parses may have collected a prefix; only successful parses
++      // can bypass the full ICU walk and message-local conflict checks.
++      const argumentsSchema = simpleAst ? inferSimpleArguments(argumentNames, argumentSchemas) : inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
+         position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
+       messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });
+     } catch (error) {
+diff --git a/packages/core/src/schema.ts b/packages/core/src/schema.ts
+index 12a1a5d..ae434de 100644
+--- a/packages/core/src/schema.ts
++++ b/packages/core/src/schema.ts
+@@ -41,6 +41,18 @@ export function inferArguments(
+   // Keep encounter/type order in the key, preserving the serialized schema.
+   // Always walk first so a prior success cannot hide a message-local conflict.
+   const signature = JSON.stringify([...types]);
++  return cacheArgumentSchema(signature, types, cache);
++}
++
++/** Successful simple parses contain only unconstrained ASCII arguments. */
++export function inferSimpleArguments(names: ReadonlySet<string>, cache: Map<string, MessageSchema>): MessageSchema {
++  const types: [string, ArgumentType[]][] = Array.from(names, name => [name, ['string', 'number']]);
++  return cacheArgumentSchema(JSON.stringify(types), types, cache);
++}
++
++function cacheArgumentSchema(signature: string, types: Iterable<[string, ArgumentType[]]>,
++  cache: Map<string, MessageSchema>,
++): MessageSchema {
+   const cached = cache.get(signature);
+   if (cached) return cached;
+   const schema: Record<string, { required: true; acceptedTypes: ArgumentType[] }> = Object.create(null);
+diff --git a/packages/core/src/simple-message.ts b/packages/core/src/simple-message.ts
+index e0c742d..a8c4193 100644
+--- a/packages/core/src/simple-message.ts
++++ b/packages/core/src/simple-message.ts
+@@ -41,6 +41,7 @@ export function createSimplePositionPool(): SimplePositionPool {
+  */
+ export function parseSimpleMessage(source: string,
+   pool?: SimplePositionPool,
++  argumentNames?: Set<string>,
+ ): MessageFormatElement[] | undefined {
+   if (source.includes("'")) return undefined;
+   const elements: MessageFormatElement[] = [];
+@@ -66,6 +67,7 @@ export function parseSimpleMessage(source: string,
+       column += end + 1 - offset; // Recognized argument spans are entirely ASCII.
+       offset = end + 1;
+       elements.push({ type: TYPE.argument, value: name, location: location(start, position()) });
++      argumentNames?.add(name);
+       literalOffset = offset;
+       literalStart = position();
+     } else if (code === 10) {
+diff --git a/packages/core/test/simple-message.test.mjs b/packages/core/test/simple-message.test.mjs
+index fe64b07..9f3f626 100644
+--- a/packages/core/test/simple-message.test.mjs
++++ b/packages/core/test/simple-message.test.mjs
+@@ -3,6 +3,7 @@ import { test } from 'node:test';
+ import { parse } from '@formatjs/icu-messageformat-parser';
+ import { CatalogError, createTranslator, parseCatalog } from '@0disoft/saylo-core';
+ import { parseSimpleMessage } from '../dist/simple-message.js';
++import { inferArguments } from '../dist/schema.js';
+
+ const options = locale => ({ ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale: new Intl.Locale(locale) });
+ const simple = ['', 'plain', '한글', '😀 {name} 끝', '\ud800{name}\udc00', 'a\r\n{name}\n끝', '\r{name}\r',
+@@ -118,5 +119,29 @@ test('generated combinations preserve FormatJS AST at literal/argument boundarie
+   for (const left of fragments) for (const right of fragments) {
+     const source = `${left} {name}${right}`;
+     assert.deepEqual(parseSimpleMessage(source), parse(source, options('en')));
++    const reference = inferArguments(parse(source, options('en')), () => { throw new Error('Unexpected conflict'); }, new Map());
++    const catalog = parseCatalog(JSON.stringify({ probe: source }), { locale: 'en', namespace: 'bench' });
++    assert.deepEqual(catalog.messages.probe.arguments, reference);
++    assert.ok(Object.isFrozen(catalog.messages.probe.arguments));
+   }
+ });
++
++test('simple argument collection preserves order, cross-path sharing and atomic ICU fallback', () => {
++  const catalog = parseCatalog(JSON.stringify({ simple: '{__proto__}{b}{__proto__}{a}',
++    complex: "'{literal}' {__proto__}{b}{a}", reverse: '{a}{b}{__proto__}',
++    prefix: '{n}{n, number}', literal: 'plain', quoted: "'{'" }), { locale: 'en', namespace: 'bench' });
++  assert.deepEqual(Object.keys(catalog.messages.simple.arguments), ['__proto__', 'b', 'a']);
++  assert.equal(catalog.messages.simple.arguments, catalog.messages.complex.arguments);
++  assert.notEqual(catalog.messages.simple.arguments, catalog.messages.reverse.arguments);
++  assert.deepEqual(catalog.messages.prefix.arguments.n.acceptedTypes, ['number']);
++  assert.equal(catalog.messages.literal.arguments, catalog.messages.quoted.arguments);
++  assert.throws(() => { catalog.messages.simple.arguments.__proto__.acceptedTypes[0] = 'date'; }, TypeError);
++  assert.throws(() => parseCatalog(JSON.stringify({ simple: '{n}',
++    bad: '{n}{n, number}{n, select, other {text}}' }), { locale: 'en', namespace: 'bench' }), error => {
++    assert.ok(error instanceof CatalogError);
++    assert.equal(error.diagnostics[0].code, 'ARGUMENT_CONFLICT');
++    assert.equal(error.diagnostics[0].id, 'bad');
++    assert.equal(error.diagnostics[0].argument, 'n');
++    return true;
++  });
++});

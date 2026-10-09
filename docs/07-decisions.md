@@ -121,6 +121,8 @@ AST 동결 `seal` 모듈화 뒤 상세 계측을 끈 large locale-add 재측정�
 
 AST 동결 `seal` 모듈화의 이득을 가까운 시점에서 확인하기 위해 변경 전 `cbd6871`과 공유 헬퍼 실험 `4f6b5cd`를 같은 조건의 격리 스냅샷으로 순차 대조했다. 순서는 before/after/after/before이고 네 run을 합쳐 measured 100·control 40이다. 두 블록(run 1↔2, run 3↔4) 모두 after 목록 p50·p95가 before보다 컸고 pooled 목록 p95는 547.74→682.94ms, 250ms 이내는 38/50→23/50이었다. Browser 선택 p95는 236.40→293.50ms, Node 선택 ack p95는 320.33→296.96ms로 지표별로 엇갈린다. 목록 목표는 두 variant 모두 미달이다. 표본별 paired·무작위 배정이 아니라 코드 퇴행의 인과를 확정하지 않고, 이득도 확인하지 못해 35의 `seal` 공유 제품 변경을 되돌렸다(원복 커밋 `d408500`). `diagnostics.ts`의 `seal`은 다시 `freezeMessageAst` 내부 함수가 되었고, 원복 뒤 명시 역사 ref 스모크와 `node --check`가 통과했다. 이 비교의 before 547.74ms는 현행 일반 단일 run 최신 p95가 아니고 36의 767.54ms와도 직접 비교하지 않는다. 근거는 [37](37-seal-locale-add-comparison.md)이다.
 
+단순 메시지 파싱 중 ASCII 인자를 함께 수집해 일반 AST 인자 순회를 생략하는 실험을 수행했으나 신규 파싱 개선을 확인하지 못해 원복했다. 같은 프로세스 10k cold 비교에서 p95는 183.20→207.63ms였고 개선은 4/20쌍이었다. incremental은 p95 61.25→60.20ms·개선 54/100쌍이지만 최장 시간이 늘었으며 안정적 개선을 주장하지 않는다. 공개 API·현행 제품 코드·게시본은 유지하고 재현 패치와 원시는 [40](40-simple-argument-trial.md)에 보존한다. 다음 구조적 최적화 후보는 이번 실험만으로 확정하지 않는다.
+
 ## 참고 자료
 
 - [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화
