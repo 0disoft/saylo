@@ -4,7 +4,9 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 
 ## 확정 사항
 
-현행 릴리스 버전은 `0.1.0-alpha.2`이며 다섯 패키지의 공개·다운로드·외부 소비와 실제 CI OIDC 인증을 2026-10-09 확인했다. 변경 범위와 검증은 [릴리스 기록](../releases/0.1.0-alpha.2.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.2.json)에 있다. 아래의 기존 게시·인증 결과는 당시 기록으로 유지한다.
+마지막으로 게시를 확인한 버전은 `0.1.0-alpha.2`이며 다섯 패키지의 공개·다운로드·외부 소비와 실제 CI OIDC 인증을 2026-10-09 확인했다. 변경 범위와 검증은 [릴리스 기록](../releases/0.1.0-alpha.2.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.2.json)에 있다. 아래의 기존 게시·인증 결과는 당시 기록으로 유지한다.
+
+다음 후보는 [0.1.0-alpha.3](../releases/0.1.0-alpha.3.md)이며 완역 검사 옵션을 포함한다. 아래 로컬 명령과 workflow 기본 버전은 후보를 기준으로 한다. 로컬 `.release/npm/manifest.json`은 후보이며, 실제 CI artifact를 검증하기 전에는 `releases/0.1.0-alpha.3.json` 승인 기록을 만들지 않는다.
 
 2026-10-08 로컬 릴리스 목록에 `@0disoft/saylo-svelte`를 추가했다. 아래의 네 패키지 게시·인증 기록은 2026-10-06 기존 릴리스의 기록이다. 현행 로컬 pack·게시 계획·OIDC 대상은 다섯 패키지이며 `verify:registry`는 기존 `alpha.1` manifest의 네 패키지만 검사한다. 상세 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 있다.
 
@@ -34,7 +36,7 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 ## 로컬 검증 명령
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.2 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.3 --tag alpha
 npm run check
 npm run release:pack
 ```
@@ -49,7 +51,7 @@ npm run release:pack
 
 | 입력 | 값 |
 | --- | --- |
-| `version` | 커밋된 정확한 버전 문자열. 기본 `0.1.0-alpha.2` |
+| `version` | 커밋된 정확한 버전 문자열. 기본 `0.1.0-alpha.3` |
 | `dist_tag` | `alpha`·`next`·`latest`. 기본 `alpha` |
 | `publish` | boolean. 기본 `false` |
 | `verify_oidc` | boolean. 기본 `false`. `true`이면 validation 또는 publication 전에 다섯 Trusted Publisher의 OIDC 토큰 교환을 검증한다 |

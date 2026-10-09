@@ -41,9 +41,9 @@ export default defineConfig({
 
 카탈로그 파일 구조는 `locales/<locale>/<namespace>.json`이다. 예를 들어 `locales/ko/demo.json`, `locales/en/demo.json`이다.
 
-## 빌드 완역 검사 (로컬 구현)
+## 빌드 완역 검사
 
-`requireCompleteTranslations`(기본 `false`)를 켜면 Vite 운영 빌드에서 번역 키와 namespace 누락을 검사한다. 이 옵션은 현재 checkout에 구현했으며 기존 `0.1.0-alpha.2` 게시본에는 포함되지 않는다.
+`requireCompleteTranslations`(기본 `false`)를 켜면 Vite 운영 빌드에서 번역 키와 namespace 누락을 검사한다. `0.1.0-alpha.3`부터 제공하며 기존 `0.1.0-alpha.2` 게시본에는 포함되지 않는다.
 
 ```js
 import saylo from '@0disoft/saylo-vite';

@@ -50,4 +50,4 @@ npm exec -- node scripts/pack-smoke.mjs
 
 ## 상태
 
-현재 저장소의 로컬 구현만 반영됐다. 버전은 `0.1.0-alpha.2` 그대로이고, 이미 게시된 alpha.2에는 이 옵션이 들어 있지 않다. push·publish·version bump는 없다.
+구현 커밋 `d29eac7`에서는 버전을 `0.1.0-alpha.2`로 유지했고 push·publish·version bump를 하지 않았다. 이미 게시된 alpha.2에는 이 옵션이 들어 있지 않다. 이후 [alpha.3 릴리스 후보](../releases/0.1.0-alpha.3.md)에 포함했다. 실제 게시 여부는 릴리스 기록을 따른다.

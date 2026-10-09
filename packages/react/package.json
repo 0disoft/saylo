@@ -1,6 +1,6 @@
 {
   "name": "@0disoft/saylo-react",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "type": "module",
   "description": "React 19 bindings for Saylo with a typed provider and snapshot-bound hooks.",
   "repository": {
@@ -35,7 +35,7 @@
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": {
-    "@0disoft/saylo-core": "0.1.0-alpha.2"
+    "@0disoft/saylo-core": "0.1.0-alpha.3"
   },
   "peerDependencies": {
     "react": "19"

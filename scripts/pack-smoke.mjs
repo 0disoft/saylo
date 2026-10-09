@@ -176,6 +176,14 @@ try {
       if (entry.file.endsWith('.js')) assert.ok(!(await readFile(path.join(app, 'dist', entry.file), 'utf8'))
         .includes('EXPECT_ARGUMENT_CLOSING_BRACE'), 'AST consumer shipped the ICU parser.');
     }
+    const supportsCompleteTranslations = (await readFile(path.join(app, 'node_modules/@0disoft/saylo-vite/dist/types.d.ts'), 'utf8'))
+      .includes('requireCompleteTranslations');
+    if (!fromRegistry) assert.ok(supportsCompleteTranslations, 'Local release is missing the complete translation option.');
+    if (supportsCompleteTranslations) {
+      await cp(path.join(fixtures, 'complete-translations.mjs'), path.join(app, 'complete-translations.mjs'));
+      console.log((await exec(process.execPath, [path.join(app, 'complete-translations.mjs')],
+        { cwd: app, env: childEnv, windowsHide: true, maxBuffer: 1024 * 1024 })).stdout.trim());
+    }
     console.log(`[pack] ${language}: CLI, ${language === 'js' ? 'checkJs' : 'TypeScript'}, runtime/React SSR, Vite lazy build passed`);
   }
   console.log(`[pack] All ${names.length} packed packages passed independent JS and TS consumption.`);

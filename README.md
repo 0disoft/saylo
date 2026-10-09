@@ -16,7 +16,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - 공개 패키지는 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-svelte`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 다섯 개다. 현행 게시 버전은 `0.1.0-alpha.2`·dist-tag `alpha`이며 라이선스는 Apache-2.0이다.
 - docs에는 설계 초안과 로컬 검증 기록이 섞여 있다. 전체 모듈 구조, 이벤트 이름, 아직 구현하지 않은 i18n API 시그니처는 설계 제안이고, 문서와 실제 코드가 어긋나면 `packages/*/README.md`와 `packages/*/src`의 현행 코드를 따른다.
 - 문서 기준일: 2026-10-09
-- Vite의 `requireCompleteTranslations` 옵션을 로컬 구현했다. 운영 빌드에서 번역 키·namespace 누락을 거부하며 기본값은 `false`이고 개발 중 fallback은 유지한다. 기존 alpha.2 게시본에는 포함되지 않는다. 대상 로케일·진단·검증은 [완역 검사 기록](docs/42-complete-translations.md)을 따른다.
+- `0.1.0-alpha.3` 릴리스 후보에 Vite의 `requireCompleteTranslations` 옵션을 포함했다. 운영 빌드에서 번역 키·namespace 누락을 거부하며 기본값은 `false`이고 개발 중 fallback은 유지한다. 기존 alpha.2 게시본에는 포함되지 않는다. 후보 검증은 [릴리스 기록](releases/0.1.0-alpha.3.md), 대상 로케일·진단은 [완역 검사 기록](docs/42-complete-translations.md)을 따른다.
 - Vite 동결 import를 core root로 바꿔 기본 prebundle에서 깊은 동결 신뢰 공유를 50/50회 확인했다. 그 시점 상세 계측을 끈 목록 p95는 small 152.13ms·large 268.54ms로 large의 250ms 목표는 미달이었다(과거 31 측정). 결과·검증은 [docs/31-prebundle-freeze-locale-add.md](docs/31-prebundle-freeze-locale-add.md)에 있다.
 - 후속 메시지·위치 직접 동결 실험은 cold·incremental 비교에서 개선을 확인하지 못해 되돌렸다. 결과와 재현 패치는 [docs/33-owned-message-freeze-trial.md](docs/33-owned-message-freeze-trial.md)에 보존했다.
 - 메시지 동결 내부를 나눈 10k 측정에서 AST 동결이 하위 구간 중 18/20회 가장 컸다. 제품 변경 없이 추가한 계측과 다음 후보는 [docs/34-message-freeze-stages.md](docs/34-message-freeze-stages.md)에 있다.
@@ -230,7 +230,7 @@ const root = hydrateRoot(document.getElementById('root'), h(SayloProvider, { ins
 현행 게시 버전은 다섯 패키지의 `0.1.0-alpha.2`·dist-tag `alpha`이다. core·react·typegen·vite의 첫 버전 `0.1.0-alpha.1`은 2026-10-06 게시했고, Svelte는 2026-10-09의 `alpha.2`부터 포함된다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. `latest`는 등록용 placeholder `0.0.0-stage`를 가리키므로, 현행 alpha 설치에는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 명시한다. 과거 버전 설치에는 `@0disoft/saylo-core@0.1.0-alpha.1`처럼 버전을 지정한다.
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.2 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.3 --tag alpha
 npm run check
 npm run release:pack
 ```
