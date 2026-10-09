@@ -19,7 +19,7 @@
 
 - 제공된 번역의 문법·스키마 오류는 build를 실패시킨다. 깨진 번역을 배포하지 않는다.
 - 번역이 아예 없는 키는 baseline fallback을 기본 허용한다.
-- 모든 로케일 완역을 강제하는 `requireCompleteTranslations` 옵션은 후속·선택 사항으로 둔다. 기본 동작은 불완전한 번역을 허용하는 것이다.
+- 모든 로케일 완역을 강제하는 `requireCompleteTranslations` 옵션은 `0.1.0-alpha.3`에 구현했다. 기본값은 `false`이고 production build(`config.command === 'build'`)에서만 엄격 검증한다. 기본값과 개발 경로는 불완전한 번역 누락과 baseline fallback을 그대로 허용한다.
 - production build는 개발 캐시를 재사용하지 않는다. build는 현재 disk snapshot에서 전체를 다시 파싱·검증하고, baseline이 유효하지 않으면 build를 실패시킨다. 마지막 정상값 유지 규칙은 개발 전용이다.
 
 ## 지연 로딩

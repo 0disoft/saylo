@@ -29,6 +29,8 @@ selector 예외 처리는 시점별로 나눈다. 첫 구독·재구독 실패�
 
 ## 검증 기록
 
+이 절의 195개 전체 `check` 기록은 `98bd3f7`에서 selector를 처음 구현한 시점의 과거 기록이고, 아래 예외 처리 후속 검증과 구분한다.
+
 전체 `npm run check`가 exit 0으로 통과했다. 총 195개 테스트(core 75·react 14·svelte 10·typegen 8·vite 83·릴리스 helper 5)이고, Svelte는 새 unit 4개와 SSR 컴파일 selector 1개를 추가했으며 기존 components 테스트가 실행한 JSDOM client 3개 중 새 selector hydration 1개를 포함한다.
 
 확인한 동작은 다음과 같다. 무관한 active edit 알림은 0회이고 관련 제목·언어 전환은 최신값을 유지한다. shared source는 core 구독 1개·종료 0개를 지키고 dormant get·restart 뒤 정리된다. 값 비교는 `Object.is` 기준으로 object·function·undefined·`NaN`과 `+0`·`-0`을 구분한다. Svelte `derived` 조합은 동시 locale·text 수렴을 확인했고, SSR은 요청·중첩 context 격리·오류·subscription 0을 확인했다. 컴파일한 client selector는 hydration 마크업이 동일하고 DOM·입력·포커스·커서·dialog·state가 유지된다. JS/checkJs/TS 타입 계약도 통과했다.
@@ -38,3 +40,7 @@ selector 타입 fixture는 새 `selector-consumer.ts`·`.js`로 분리했고, �
 빌드를 재사용한 `npm exec -- node scripts/pack-smoke.mjs`는 exit 0으로 통과했다. 새로 만든 로컬 다섯 tarball을 JS/checkJs/TS 앱에 설치해 `selectSvelteStore`·`getI18nSelector` 타입 fixture(imported declarations)를 검사했고, 컴파일한 Svelte 새 selector SSR이 `<h1>Packed Svelte</h1>`을 렌더했다. React selector SSR과 기존 CLI·runtime/SSR·Vite lazy build·parser 제거·완역 검사도 함께 통과했다. `npm run verify:registry:alpha3`도 exit 0으로 통과했고, 실제 게시된 `alpha.3` 다섯 패키지의 integrity·외부 JS·TS·README·Svelte 컴파일 SSR을 확인했다. selector API가 없는 게시본에서는 declared feature gate로 새 fixture를 제외해 기존 검증을 유지한다. 임시 앱과 서버는 스크립트 finally에서 정리했다.
 
 실제 네이티브 브라우저 검증, version bump, push, publish는 예정에 없다.
+
+### selector 예외 처리 후속 검증
+
+2026-10-10 후속 검증은 관련 테스트 108개(typegen 9·Vite 85·Svelte 14)와 typegen/Vite/Svelte 소비자 typecheck, 컴파일한 Svelte client JSDOM hydration을 PASS했다. 전체 `npm run check`, 새 benchmark, 네이티브 브라우저, registry 검증은 이번에 다시 실행하지 않았다.
