@@ -4,7 +4,9 @@ import { createI18n, createStore } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 
-saylo({ localesDir: './locales', baseLocale: 'ko', astRuntime: true, typegen: { outFile: 'generated.d.ts' } });
+saylo({ localesDir: './locales', baseLocale: 'ko', astRuntime: true, requireCompleteTranslations: true, typegen: { outFile: 'generated.d.ts' } });
+// @ts-expect-error completeness is a boolean option
+saylo({ localesDir: './locales', baseLocale: 'ko', requireCompleteTranslations: 'true' });
 const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale, timeZone });
 const stop: () => void = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.message) });
 stop();

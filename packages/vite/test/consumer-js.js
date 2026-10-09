@@ -4,7 +4,9 @@ import { createI18n, createStore } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
 
-saylo({ localesDir: './locales', baseLocale: 'ko' });
+saylo({ localesDir: './locales', baseLocale: 'ko', requireCompleteTranslations: true });
+// @ts-expect-error checkJs also rejects non-boolean completeness
+saylo({ localesDir: './locales', baseLocale: 'ko', requireCompleteTranslations: 'true' });
 const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale });
 const stop = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.diagnostics) });
 stop();

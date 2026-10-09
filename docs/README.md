@@ -47,6 +47,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 36. [37-seal-locale-add-comparison.md](37-seal-locale-add-comparison.md) — seal 공유 전후 locale-add 격리 비교와 원복 결정
 37. [40-simple-argument-trial.md](40-simple-argument-trial.md) — 단순 파싱·인자 수집 통합 실험의 cold·incremental 비교와 원복
 38. [41-json-entry-visitor-trial.md](41-json-entry-visitor-trial.md) — JSON 임시 entry 배열 제거 실험의 cold·incremental 비교와 원복
+39. [42-complete-translations.md](42-complete-translations.md) — Vite 운영 빌드의 선택적 번역 키·namespace 완역 검사
 
 ## 상태 표기 규칙
 

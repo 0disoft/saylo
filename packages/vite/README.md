@@ -41,6 +41,20 @@ export default defineConfig({
 
 카탈로그 파일 구조는 `locales/<locale>/<namespace>.json`이다. 예를 들어 `locales/ko/demo.json`, `locales/en/demo.json`이다.
 
+## 빌드 완역 검사 (로컬 구현)
+
+`requireCompleteTranslations`(기본 `false`)를 켜면 Vite 운영 빌드에서 번역 키와 namespace 누락을 검사한다. 이 옵션은 현재 checkout에 구현했으며 기존 `0.1.0-alpha.2` 게시본에는 포함되지 않는다.
+
+```js
+import saylo from '@0disoft/saylo-vite';
+
+saylo({ localesDir: 'locales', baseLocale: 'ko', requireCompleteTranslations: true });
+```
+
+숨김 폴더를 제외한 로케일 폴더(빈 폴더 포함)와 `initialLocale`를 대상으로, 모든 기준 namespace·키의 존재를 확인한다. `initialNamespaces`로 초기 로딩 범위를 줄여도 검사 범위는 줄지 않는다. 폴더와 `initialLocale` 어디에도 없는 언어는 검사 대상이 아니다. 빈 번역 문자열은 존재하는 키로 인정하고 번역 문구의 언어나 인자 생략 여부는 완역 조건에 넣지 않는다. 기존 인자 타입·스키마 검사는 그대로 수행한다.
+
+누락은 `CatalogError.diagnostics`의 `MISSING_MESSAGE`·`MISSING_NAMESPACE`로 모아 빌드를 실패시킨다. 진단에 로케일·namespace·대상 파일과 누락 키를 넣고, 없는 파일은 만들어야 할 상대 경로로 안내한다. 생성 타입 파일을 갱신하기 전에 검사하므로 실패 시 기존 파일을 유지한다. 개발 서버와 라이브 수정은 옵션을 켜도 기존 부분 번역·fallback 동작을 유지한다. 상세 범위와 검증은 [완역 검사 기록](https://github.com/0disoft/saylo/blob/main/docs/42-complete-translations.md)에 있다.
+
 ## 지연 로딩 클라이언트
 
 `virtual:saylo/lazy`가 초기 pair와 `catalogSource`를 제공한다. 앱은 코어 `createI18n`으로 instance를 만들고 `connectDev`로 개발 서버에 연결한다. `typegen.outFile`은 Vite root 기준이라 아래 `src/i18n.ts`에서는 `../generated.js`를 import한다.

@@ -61,6 +61,18 @@ async function setup(t, options = {}) {
   return { root, plugin, events, warnings, ws, change, request, server, disk };
 }
 
+test('completeness enabled for builds still permits partial live translations and fallback', async t => {
+  const { change, request } = await setup(t, { requireCompleteTranslations: true });
+  await change('en', '{}');
+  const catalogs = request()[0].data.catalogs;
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs });
+  t.after(() => store.dispose());
+  assert.equal(store.t('demo:hello', { name: 'Saylo' }), 'ko Saylo');
+  await change('en', '{"hello":"Repaired {name}"}');
+  store.replaceCatalogs(request()[0].data.catalogs);
+  assert.equal(store.t('demo:hello', { name: 'Saylo' }), 'Repaired Saylo');
+});
+
 test('startup type readiness precedes serving and live publish precedes background typegen', async t => {
   const { root, server, change, request, warnings } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
   const out = path.join(root, 'generated.d.ts');

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { build } from 'vite';
-import { parseCatalog } from '@0disoft/saylo-core';
+import { CatalogError, parseCatalog } from '@0disoft/saylo-core';
 import saylo from '../dist/index.js';
 import { createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
@@ -18,6 +18,85 @@ function registry() {
 const entries = r => r.manifest().catalogs.filter(m => m.status === 'present' && m.key.locale !== 'ko')
   .map(m => ({ key: m.key, load: async () => r.load(m.key.locale, m.key.namespace) }));
 const boot = r => [r.load('ko', 'demo'), r.load('ko', 'help')];
+
+async function completeFixture(t) {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-complete-'));
+  t.after(async () => {
+    const target = path.resolve(root);
+    assert.equal(path.dirname(target), path.resolve(os.tmpdir()));
+    assert.ok(path.basename(target).startsWith('saylo-complete-'));
+    await rm(target, { recursive: true, force: true });
+  });
+  await mkdir(path.join(root, 'locales', 'ko'), { recursive: true });
+  await writeFile(path.join(root, 'locales', 'ko', 'demo.json'), '{"hello":"ko {name}","empty":"","__proto__":"literal"}');
+  await writeFile(path.join(root, 'locales', 'ko', 'help.json'), '{"title":"Help"}');
+  await writeFile(path.join(root, 'main.js'), 'export const marker = "built";');
+  return root;
+}
+
+const completeConfig = (root, options = {}) => ({ configFile: false, root, logLevel: 'silent',
+  plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', initialNamespaces: ['demo'],
+    typegen: { outFile: 'generated.d.ts' }, ...options })],
+  build: { write: false, rolldownOptions: { input: path.join(root, 'main.js') } },
+});
+
+test('real builds report all incomplete namespaces/keys before generation, and pass after repair', async t => {
+  const root = await completeFixture(t);
+  await mkdir(path.join(root, 'locales', 'en'));
+  await writeFile(path.join(root, 'locales', 'en', 'demo.json'), '{"empty":""}');
+  for (const requireCompleteTranslations of [undefined, false]) {
+    await build(completeConfig(root, { requireCompleteTranslations }));
+  }
+  const out = path.join(root, 'generated.d.ts');
+  await writeFile(out, '// Keep last generated types');
+  await assert.rejects(build(completeConfig(root, { requireCompleteTranslations: true })), error => {
+    assert.ok(error instanceof CatalogError);
+    assert.deepEqual(error.diagnostics.map(d => [d.code, d.locale, d.namespace, d.sourceName, d.id]), [
+      ['MISSING_MESSAGE', 'en', 'demo', 'en/demo.json', '__proto__'],
+      ['MISSING_MESSAGE', 'en', 'demo', 'en/demo.json', 'hello'],
+      ['MISSING_NAMESPACE', 'en', 'help', 'en/help.json', undefined],
+    ]);
+    assert.ok(error.message.includes('en/demo.json [hello]'));
+    assert.ok(error.message.includes('locale "en"'));
+    assert.ok(error.message.includes('demo:__proto__'));
+    assert.ok(error.diagnostics.every(d => d.position === undefined));
+    return true;
+  });
+  assert.equal(await readFile(out, 'utf8'), '// Keep last generated types');
+  await writeFile(path.join(root, 'locales', 'en', 'demo.json'), '{"hello":"Translated without interpolation","empty":"","__proto__":""}');
+  await writeFile(path.join(root, 'locales', 'en', 'help.json'), '{"title":""}');
+  await build(completeConfig(root, { requireCompleteTranslations: true }));
+  assert.ok((await readFile(out, 'utf8')).includes('demo:hello'));
+});
+
+test('build completeness covers empty directories and absent initial locales using actual folder names', async t => {
+  const root = await completeFixture(t);
+  await mkdir(path.join(root, 'locales', 'en-us'));
+  await assert.rejects(build(completeConfig(root, { requireCompleteTranslations: true, initialLocale: 'fr' })), error => {
+    assert.ok(error instanceof CatalogError);
+    assert.deepEqual(error.diagnostics.map(d => [d.code, d.locale, d.sourceName]), [
+      ['MISSING_NAMESPACE', 'en-US', 'en-us/demo.json'], ['MISSING_NAMESPACE', 'en-US', 'en-us/help.json'],
+      ['MISSING_NAMESPACE', 'fr', 'fr/demo.json'], ['MISSING_NAMESPACE', 'fr', 'fr/help.json'],
+    ]);
+    return true;
+  });
+  await writeFile(path.join(root, 'locales', 'en-us', 'demo.json'), '{"hello":"Hello","empty":"","__proto__":""}');
+  await writeFile(path.join(root, 'locales', 'en-us', 'help.json'), '{"title":"Help"}');
+  await build(completeConfig(root, { requireCompleteTranslations: true, initialLocale: 'en-us' }));
+});
+
+test('strict builds retain ordinary schema errors and reject non-boolean configuration', async t => {
+  const root = await completeFixture(t);
+  assert.throws(() => saylo({ localesDir: 'locales', baseLocale: 'ko', requireCompleteTranslations: 'true' }), TypeError);
+  await mkdir(path.join(root, 'locales', 'en'));
+  await writeFile(path.join(root, 'locales', 'en', 'demo.json'), '{"hello":"{newArgument}"}');
+  await assert.rejects(build(completeConfig(root, { requireCompleteTranslations: true })), error => {
+    assert.ok(error instanceof CatalogError);
+    assert.ok(error.diagnostics.some(d => d.code === 'UNKNOWN_ARGUMENT'));
+    assert.ok(error.diagnostics.every(d => d.code !== 'MISSING_MESSAGE' && d.code !== 'MISSING_NAMESPACE'));
+    return true;
+  });
+});
 
 test('static imports dedupe across consumers, cache immutable outcomes, and honor pre-abort', async () => {
   const r = registry();

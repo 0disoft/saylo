@@ -10,6 +10,7 @@ import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
 import { catalogId } from './catalog-outcome.js';
 import { createAstFormatter } from './ast-formatter.js';
+import { requireCompleteTranslations } from './complete-translations.js';
 import type { CatalogOutcome } from '@0disoft/saylo-core';
 import { registerServerSource } from './server-source.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
@@ -26,9 +27,13 @@ const CHUNK = 'virtual:saylo/catalog/';
 const encode = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
 
 export default function saylo(options: SayloViteOptions): Plugin {
+  if (options.requireCompleteTranslations !== undefined && typeof options.requireCompleteTranslations !== 'boolean') {
+    throw new TypeError('requireCompleteTranslations must be a boolean.');
+  }
   const baseLocale = Intl.getCanonicalLocales(options.baseLocale)[0];
   if (!baseLocale) throw new RangeError('baseLocale must not be empty.');
   const initialLocale = Intl.getCanonicalLocales(options.initialLocale ?? baseLocale)[0]!;
+  if (!initialLocale) throw new RangeError('initialLocale must not be empty.');
   const timeZone = options.timeZone ?? 'UTC';
   const sessionId = randomUUID();
   const astFormatter = createAstFormatter();
@@ -102,7 +107,13 @@ export default function saylo(options: SayloViteOptions): Plugin {
       files = new Map(scanned.files.map(f => [f.file, f]));
       production = config.command === 'build';
       // Fresh strict validation for startup and builds, using the same core contracts.
-      createStore({ baseLocale, locale: initialLocale, catalogs: snapshot().catalogs, timeZone }).dispose();
+      const strictBuild = production && options.requireCompleteTranslations === true;
+      // Check catalog schemas even when strict mode's initial locale has no files;
+      // the completeness pass then reports its missing paths instead of a range error.
+      createStore({ baseLocale, locale: strictBuild ? baseLocale : initialLocale, catalogs: snapshot().catalogs, timeZone }).dispose();
+      if (strictBuild) {
+        await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
+      }
       registry = new CatalogRegistry(sessionId, baseLocale, snapshot().catalogs);
       chunks.clear();
       if (production) for (const meta of registry.manifest().catalogs) {

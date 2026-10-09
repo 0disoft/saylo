@@ -43,7 +43,7 @@
 | 타입 계약 | 키·인자 상관관계를 `TypedCall` tuple로 유지. typed 경로에 넓은 `string` overload를 두지 않는다 |
 | schema 버전 | namespace 단위 `namespaceSchemaFingerprint`. 전역 schemaRevision은 없음 |
 | baseline schema 변경 | 유효한 변경은 커밋, 부적합한 secondary는 quarantine + fallback |
-| 번역 누락 | baseLocale fallback 기본 허용. 완역 강제 옵션은 후속 |
+| 번역 누락 | baseLocale fallback 기본 허용. Vite 운영 빌드의 선택적 완역 검사를 로컬 구현했다. 개발 중에는 fallback을 유지한다([42](42-complete-translations.md)) |
 | fallback 대상 | baseLocale 하나. `fallbackLocale` 옵션은 두지 않는다 |
 | 로케일 목록 타입 | 런타임 `readonly string[]` + 검증된 setter. key·인자 타입은 strict |
 | 캐시 | 메시지 formatter 캐시와 `Intl` 캐시를 분리. 문구 revision 변경이 모든 `Intl` 캐시를 비우지 않는다 |
@@ -62,7 +62,7 @@
 | 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 2026-10-07 새 로케일 목록 표시 p95는 small 226.86ms·large 3437.01ms였고 첫 번역 commit은 64.70ms·843.70ms였다. paint는 미측정. 실제 데모 초기 JS gzip 합은 parser 제거 전후 vanilla 19,656→12,796 B·React 92,241→85,139 B였고 영어 지연 청크가 유지됐다. 조건·원본/gzip·단일 run 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [12-locale-add-measurements.md](12-locale-add-measurements.md)를 따른다 |
 | 지원 버전 범위 | Node 24.x, Vite 8, React 19, Svelte 5, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
 | build-time parser 런타임 제거 | Vite plugin에 구현하고 alpha.2로 게시했다(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. alpha.1에는 없으며 alpha.2 게시본에서 외부 소비와 parser 제거를 검증했다([릴리스](../releases/0.1.0-alpha.2.md)) |
-| requireCompleteTranslations(완역 강제) | 후속. 기본은 불완전한 번역 허용 |
+| requireCompleteTranslations(완역 검사) | Vite의 운영 빌드 전용 옵션으로 로컬 구현. 기본 `false`, 누락 키·namespace를 모아 빌드 실패. 로케일 폴더와 initialLocale 전체를 검사하고 개발 fallback은 유지한다. 기존 alpha.2 게시본에는 없다([42](42-complete-translations.md)) |
 | unused message 제거 최적화 | 후속. 동적 t 키 tradeoff 검증 필요 |
 | selector 미세구독 최적화 | 후속 |
 | Svelte 어댑터 | Svelte 5 readable·typed context·SSR·hydration과 데모 구현 완료. alpha.2 게시·외부 소비·SvelteKit 브라우저 검증 완료([38](38-svelte-adapter.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
