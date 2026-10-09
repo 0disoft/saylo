@@ -131,3 +131,54 @@ test('hydration adapters have independent barriers and clean up without disposin
   assert.throws(() => two.subscribe(() => {}), /disposed/);
   two.finishHydration();
 });
+
+test('selector hydration reads fixed server data even after the client barrier has released', async t => {
+  const f = sourceFixture();
+  const server = f.create();
+  const { SayloProvider, useI18nSelector } = createSayloReact();
+  const frames = [];
+  let selected;
+  function Form() {
+    selected = useI18nSelector(snapshot => Object.freeze({
+      title: snapshot.t('demo:title'), locale: snapshot.locale, t: snapshot.t,
+      setLocale: snapshot.setLocale, loadNamespace: snapshot.loadNamespace,
+    }));
+    frames.push(selected.title);
+    return h('section', null, h('h1', { lang: selected.locale }, selected.title), h('input', { defaultValue: '' }));
+  }
+  const app = instance => h(StrictMode, null, h(SayloProvider, { instance }, h(Form)));
+  const html = renderToString(app(server));
+  const serverText = selected.title;
+  const boot = decodeBootSnapshot(serializeBootSnapshot(server.getBootSnapshot()));
+  server.dispose();
+  f.change('hydration 직전 최신 문구');
+  const client = createI18n({ catalogSource: f.source, initialSnapshot: boot });
+  const adapter = createHydrationAdapter(client);
+  await client.refresh();
+  adapter.finishHydration(); // Client reads now differ from the fixed server snapshot.
+  assert.notEqual(adapter.getSnapshot(), adapter.getServerSnapshot());
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  document.body.append(container);
+  const input = container.querySelector('input');
+  input.value = '서버 DOM 입력';
+  input.focus(); input.setSelectionRange(2, 2);
+  const errors = [];
+  frames.length = 0;
+  let root;
+  await act(() => { root = hydrateRoot(container, app(adapter), { onRecoverableError: error => errors.push(error) }); });
+  t.after(async () => { await act(() => root.unmount()); adapter.dispose(); client.dispose(); container.remove(); });
+  assert.deepEqual(errors, []);
+  assert.equal(frames[0], serverText);
+  assert.equal(container.querySelector('h1').textContent, 'hydration 직전 최신 문구');
+  const beforeLocale = selected;
+  await act(() => selected.setLocale('en'));
+  assert.equal(container.querySelector('h1').textContent, 'English');
+  assert.equal(container.querySelector('h1').lang, 'en');
+  assert.equal(beforeLocale.t('demo:title'), 'hydration 직전 최신 문구');
+  assert.equal(selected.loadNamespace, adapter.loadNamespace);
+  assert.equal(container.querySelector('input'), input);
+  assert.equal(input.value, '서버 DOM 입력');
+  assert.equal(document.activeElement, input);
+  assert.equal(input.selectionStart, 2);
+});

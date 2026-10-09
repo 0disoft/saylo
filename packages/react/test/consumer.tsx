@@ -9,9 +9,23 @@ type AppSchema = {
 };
 const catalog = parseCatalog('{"title":"Cart","items":"{count, number}","code":"{code, select, other {Code}}"}', { locale: 'en', namespace: 'cart' });
 const store = createStore<AppSchema>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
-const { SayloProvider, useI18n } = createSayloReact<AppSchema>();
+const { SayloProvider, useI18n, useI18nSelector } = createSayloReact<AppSchema>();
 
 function Cart() {
+  const countLabel: string = useI18nSelector(snapshot => snapshot.t('cart:items', { count: 3 }));
+  const revision: number = useI18nSelector(snapshot => snapshot.stateRevision);
+  const switchLocale = useI18nSelector(snapshot => snapshot.setLocale);
+  switchLocale('en');
+  void countLabel; void revision;
+  // @ts-expect-error selector retains required args
+  useI18nSelector(snapshot => snapshot.t('cart:items'));
+  // @ts-expect-error selector retains argument types
+  useI18nSelector(snapshot => snapshot.t('cart:items', { count: '3' }));
+  // @ts-expect-error selector rejects unknown keys
+  useI18nSelector(snapshot => snapshot.t('cart:unknown'));
+  // @ts-expect-error selection return type is inferred
+  const wrongSelection: number = useI18nSelector(snapshot => snapshot.locale);
+  void wrongSelection;
   const snapshot = useI18n();
   snapshot.t('cart:title');
   snapshot.t('cart:items', { count: 3 });

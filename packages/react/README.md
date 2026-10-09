@@ -1,10 +1,10 @@
 # @0disoft/saylo-react
 
-Saylo의 React 19 바인딩이다. `createSayloReact`가 typed Provider와 hook을 만들고, hook은 `useSyncExternalStore`로 store snapshot을 구독한다.
+Saylo의 React 19 바인딩이다. `createSayloReact`가 typed Provider와 hook `useI18n`·`useI18nSelector`를 만들고, 둘 다 `useSyncExternalStore`로 store snapshot을 구독한다.
 
 ## 상태
 
-2026-10-09 `0.1.0-alpha.2`(dist-tag `alpha`)를 npm 공개 registry에 게시했다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 이 저장소의 workspace나 `npm pack` tarball로도 쓸 수 있다.
+마지막으로 게시를 확인한 버전은 2026-10-09의 `0.1.0-alpha.3`(dist-tag `alpha`)이다. `0.1.0-alpha.1`은 2026-10-06, `0.1.0-alpha.2`는 2026-10-09에 게시했다. 아래 `useI18nSelector`는 아직 이 게시본에 없고 저장소 checkout의 로컬 구현이다. 이 저장소의 workspace나 `npm pack` tarball로도 쓸 수 있다.
 
 ## 설치
 
@@ -51,6 +51,42 @@ createRoot(document.getElementById('root')!).render(
 `useI18n`은 그 렌더의 불변 snapshot과 `setLocale`을 돌려준다. 같은 snapshot·instance에서는 hook 결과가 유지되고, 같은 문구나 비활성 로케일 수정은 다시 렌더하지 않는다. Provider는 instance의 수명을 소유하지 않으므로 앱이 `store.dispose()`로 정리한다. lazy instance(`createI18n`)를 쓰면 `setLocale`이 `Promise<void>`가 되고 `loadNamespace`가 함께 온다.
 
 파일 저장 즉시 반영, `virtual:saylo`, SSR hydration은 아래 관련 패키지의 Vite 연결로 넘긴다. 저장소의 [React 예제](https://github.com/0disoft/saylo/tree/main/examples/react)와 [SSR 예제](https://github.com/0disoft/saylo/tree/main/examples/ssr)도 참고할 수 있다.
+
+## 선택자 구독 (useI18nSelector)
+
+`createSayloReact<S>()`는 `useI18n`에 더해 `useI18nSelector`를 제공한다. selector는 그 렌더의 `SayloReactSnapshot<S>`를 받고 필요한 값만 골라 낸다.
+
+```tsx
+export const { SayloProvider, useI18nSelector } = createSayloReact<AppSchema>();
+
+function Greeting({ name }: { name: string }) {
+  const text = useI18nSelector(snapshot => snapshot.t('demo:greeting', { name }));
+  return <p>{text}</p>;
+}
+
+function LocaleBadge() {
+  return <span>{useI18nSelector(snapshot => snapshot.locale)}</span>;
+}
+
+function LocaleButton() {
+  const setLocale = useI18nSelector(snapshot => snapshot.setLocale);
+  return <button onClick={() => setLocale('ko')}>ko</button>;
+}
+```
+
+계약은 다음과 같다.
+
+- 시그니처는 `useI18nSelector<T>(selector: (snapshot: SayloReactSnapshot<S>) => T): T`다.
+- 내부는 `useSyncExternalStore`로 선택 결과를 구독한다. 같은 instance·selector·raw snapshot의 반복 읽기에서는 selector 결과를 캐시하므로, selector가 새 객체를 반환해도 반복 읽기 루프에 빠지지 않는다.
+- 결과는 `Object.is`로 비교한다. 선택 결과 값이나 참조가 `Object.is`로 같으면 store 갱신으로 인한 렌더를 생략한다. 부모나 자기 state 변경으로 인한 렌더는 그대로 일어난다.
+- hook은 기존과 같은 snapshot-bound `t`·`setLocale`·선택적 `loadNamespace`를 유지하고, SSR에서는 `getServerSnapshot`을 쓴다.
+- 기존 `useI18n`은 그대로 남아 있다. snapshot 전체가 필요하면 `useI18n`을 쓴다.
+
+제약은 다음과 같다.
+
+- selector는 매 snapshot마다 다시 실행될 수 있고, 렌더의 props/state를 캡처할 수 있다. 다만 부수 효과 없이 값을 계산하고, 구독되지 않은 변경 가능한 전역값에 의존하지 않는다.
+- 변경되지 않은 객체 참조를 그대로 돌려주면 다시 렌더하지 않는다. selector가 매번 새 객체·새 배열을 만들면 snapshot이 바뀔 때마다 다시 렌더된다. 파생 목록이 필요하면 원본 참조를 그대로 돌려주고 렌더에서 필요한 계산만 한다.
+- 아직 npm 게시본에는 없다. 로컬 구현이며 게시 여부는 [릴리스 기록](https://github.com/0disoft/saylo/tree/main/releases)을 따른다.
 
 ## 관련 패키지
 

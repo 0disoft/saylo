@@ -10,6 +10,15 @@ const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: [catalog] 
 const bindings = createSayloReact();
 
 function Cart() {
+  /** @type {string} */
+  const title = bindings.useI18nSelector(snapshot => snapshot.t('cart:items', { count: 3 }));
+  // @ts-expect-error checkJs selectors retain required args
+  bindings.useI18nSelector(snapshot => snapshot.t('cart:items'));
+  // @ts-expect-error checkJs selectors retain argument types
+  bindings.useI18nSelector(snapshot => snapshot.t('cart:items', { count: '3' }));
+  // @ts-expect-error checkJs selectors reject unknown keys
+  bindings.useI18nSelector(snapshot => snapshot.t('cart:unknown'));
+  void title;
   const { t, setLocale } = bindings.useI18n();
   t('cart:items', { count: 3 });
   // @ts-expect-error checkJs retains required args

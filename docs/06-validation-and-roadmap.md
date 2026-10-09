@@ -153,7 +153,9 @@ Vite production build에 parser 제거를 구현했다. `@0disoft/saylo-core/run
 
 ## 로드맵
 
-작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 1~13단계 로컬 구현에 secondary quarantine과 build-time parser 런타임 제거(`astRuntime`)를 더했다. 두 변경 모두 로컬이고 게시된 npm alpha에는 아직 없다. unused message 제거·selector 미세구독·completeTranslations·Svelte/Vue 어댑터·대규모 성능 목표·비교 실험은 후속이다.
+작은 커밋 단위로 나눠 순차 진행한다. 각 단계는 그 자체로 쓸 수 있는 데모를 남기는 것을 목표로 한다. 처음에는 작은 fixture를 eager로 실어 상태 보존을 보여주고, 이후 같은 API 아래에서 전송을 세분화한다. 1~13단계 구현을 마쳤고, 아래 표는 그 단계의 완료 기준을 남긴다.
+
+최신 구현·게시 상태와 남은 항목은 [43-react-selectors.md](43-react-selectors.md)를 따른다.
 
 | 순서 | 커밋의 한 가지 책임 | 완료 기준 |
 | --- | --- | --- |

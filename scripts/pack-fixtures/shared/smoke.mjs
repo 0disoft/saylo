@@ -24,6 +24,15 @@ try {
   function View() { return createElement('p', null, bindings.useI18n().t('demo:greeting', { name: 'Saylo' })); }
   const serverInstance = { ...store, getServerSnapshot: store.getSnapshot };
   assert.equal(renderToString(createElement(bindings.SayloProvider, { instance: serverInstance }, createElement(View))), '<p>Hello Saylo</p>');
+  // Older approved releases keep their original hook surface.
+  if (bindings.useI18nSelector) {
+    function SelectedView() {
+      const text = bindings.useI18nSelector(snapshot => snapshot.t('demo:greeting', { name: 'Selector' }));
+      return createElement('p', null, text);
+    }
+    assert.equal(renderToString(createElement(bindings.SayloProvider, { instance: serverInstance }, createElement(SelectedView))), '<p>Hello Selector</p>');
+    console.log('[pack] React selector SSR passed.');
+  }
   assert.equal(renderTypes(files.filter(file => file.catalog.locale === 'ko').map(file => createBaseSchema(file.catalog))), await readFile('generated.d.ts', 'utf8'));
   connectDev(store)();
   assert.equal(typeof createHydrationAdapter, 'function');

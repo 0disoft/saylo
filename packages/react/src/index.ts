@@ -23,6 +23,13 @@ export interface SayloReactBindings<S extends Schema> {
   readonly SayloProvider: ComponentType<SayloProviderProps<S>>;
   /** t belongs to this render's immutable snapshot, rather than the live store. */
   readonly useI18n: () => SayloReactSnapshot<S>;
+  /** Pure selection; React compares the selected value with Object.is. */
+  readonly useI18nSelector: <T>(selector: (snapshot: SayloReactSnapshot<S>) => T) => T;
+}
+
+function bindSnapshot<S extends Schema>(instance: SayloInstance<S>, snapshot: StoreSnapshot<S>): SayloReactSnapshot<S> {
+  return Object.freeze({ ...snapshot, setLocale: instance.setLocale,
+    ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}) });
 }
 
 /** Create once at module scope; the provider and hook share the same typed context. */
@@ -38,9 +45,32 @@ export function createSayloReact<S extends Schema = Schema>(): SayloReactBinding
     const instance = useContext(Context);
     if (!instance) throw new Error('useI18n must be used inside the SayloProvider from the same createSayloReact factory.');
     const snapshot = useSyncExternalStore(instance.subscribe, instance.getSnapshot, instance.getServerSnapshot);
-    return useMemo(() => Object.freeze({ ...snapshot, setLocale: instance.setLocale,
-      ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}) }), [snapshot, instance]);
+    return useMemo(() => bindSnapshot(instance, snapshot), [snapshot, instance]);
   }
 
-  return Object.freeze({ SayloProvider, useI18n });
+  function useI18nSelector<T>(selector: (snapshot: SayloReactSnapshot<S>) => T): T {
+    const instance = useContext(Context);
+    if (!instance) throw new Error('useI18nSelector must be used inside the SayloProvider from the same createSayloReact factory.');
+    const activeInstance = instance;
+    // Keep caches in this render's closure, so concurrent renders do not replace one another's selector.
+    const readers = useMemo(() => {
+      function select(readSnapshot: () => StoreSnapshot<S>) {
+        let cached: { snapshot: StoreSnapshot<S>; value: T } | undefined;
+        return () => {
+          const snapshot = readSnapshot();
+          if (!cached || cached.snapshot !== snapshot) {
+            // Commit the cache only after selection succeeds; failed reads must keep throwing.
+            const value = selector(bindSnapshot(activeInstance, snapshot));
+            cached = { snapshot, value };
+          }
+          return cached.value;
+        };
+      }
+      return { getSnapshot: select(instance.getSnapshot),
+        getServerSnapshot: instance.getServerSnapshot ? select(instance.getServerSnapshot) : undefined };
+    }, [instance, selector]);
+    return useSyncExternalStore(instance.subscribe, readers.getSnapshot, readers.getServerSnapshot);
+  }
+
+  return Object.freeze({ SayloProvider, useI18n, useI18nSelector });
 }
