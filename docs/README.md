@@ -53,6 +53,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 42. [45-review-fixes-performance-baseline.md](45-review-fixes-performance-baseline.md) — 리뷰 수정 커밋 `9cfb844`의 편집 반영·로케일 추가 현행 성능 기준값
 43. [46-review-fixes-server-file-stages.md](46-review-fixes-server-file-stages.md) — 리뷰 수정 기준 large 읽기·후보 구간 분리 계측
 44. [47-json-field-scanner-trial.md](47-json-field-scanner-trial.md) — JSON 항목 정규식 통합을 교차 비교하고 원복한 기록
+45. [48-parser-cpu-profile.md](48-parser-cpu-profile.md) — 현행 파서의 CPU 표본·줄 귀속과 다음 맵 동결 후보
 
 ## 상태 표기 규칙
 

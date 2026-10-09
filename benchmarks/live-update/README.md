@@ -187,6 +187,21 @@ AST 동결 `seal` 모듈화 후 상세 계측을 끈 large 재측정은 `node be
 
 seal 공유 전후 종단 간 대조는 `node benchmarks/live-update/locale-compare.mjs --baseline cbd6871 --current 4f6b5cd --out benchmarks/results/locale-add-seal-comparison.json`로 실행했다. 도구는 두 ref의 `diagnostics.ts`만 다른 제품 차이를 검사하고, 외부 의존은 junction으로 공유하되 `@0disoft/saylo-*` alias는 각 스냅샷 패키지로 연결한 뒤 같은 tsc로 빌드한다. 순서 before/after/after/before, run당 large(10k×20) measured 25+warm 5+control 10, 네 run 합계 raw 120·measured 100·control 40이다. pooled 목록 p50/p95는 208.81/547.74→252.49/682.94ms이고 250ms 이내는 38/50→23/50으로 두 variant 모두 목표 미달이다. pooled Browser 선택 p95는 236.40→293.50ms, Node 선택 ack p95는 320.33→296.96ms로 엇갈린다. pooled quantile은 원시 measured 표본에 대한 값이며 run p95 평균이 아니다. 표본별 paired·무작위 배정이 아니고 고정 순서 단일 장비라 인과 증명이 아니다. 결과는 [../results/locale-add-seal-comparison.json](../results/locale-add-seal-comparison.json)에 있고 조건·한계·원복 결정은 [../../docs/37-seal-locale-add-comparison.md](../../docs/37-seal-locale-add-comparison.md)를 따른다. 제품은 `d408500`으로 원복해 현재 core source는 `cbd6871` 상태이고, 원복 뒤 같은 명령이 다시 실행된다.
 
+## 파서 전용 CPU 프로파일
+
+core를 빌드한 뒤 아래 두 명령을 순차 실행한다. 파일 하나의 10k 메시지를 대상으로 하며 브라우저나 Vite는 실행하지 않는다. 마지막 인자는 측정 호출 수(기본 100, 1~1000)다.
+
+```sh
+node benchmarks/live-update/parser-cpu.mjs incremental benchmarks/results/parser-cpu-incremental.json 100
+node benchmarks/live-update/parser-cpu.mjs cold benchmarks/results/parser-cpu-cold.json 100
+```
+
+문구·입력 JSON은 profiling 전에 준비하고, incremental warmup 50회·cold warmup 5회를 제외한다. `parser-cpu.mjs`는 inspector 표본 간격을 1000µs로 요청하고 실제 원본 `.cpuprofile`, 함수별 요약·dist 위치의 line ticks·호출 wall time·코드 hash를 저장한다. 상세 파서 clock 변환과 강제 GC는 없다. 음수 timeDelta도 원본에 그대로 남기며 비중은 시간 가중치 대신 표본 수로 계산한다.
+
+`parserStack`과 `coreWithoutParserStack`을 합친 귀속 가능 표본이 함수별 비중의 분모다. GC·idle/program·귀속할 수 없는 표본은 별도다. core 스택에서 호출자가 생략돼도 버리지 않고 누락된 부모를 임의로 연결하지 않는다. 익명 실행기 표본은 실제 파서 비용이 숨겨졌을 수도 있으므로 실행기 overhead로 확정하지 않는다. V8의 인라인·native 귀속과 JIT 상태가 함수·줄 분포에 영향을 줄 수 있다. inclusive 비중은 중첩되며 exact CPU 시간·할당량이 아니다. 모든 JSON 문자열을 미리 유지하므로 실제 watcher의 heap 상태와도 다르다.
+
+요약기 검증은 `node --test benchmarks/live-update/parser-cpu-summary.test.mjs`이다. 현행 수집 결과와 다음 후보는 [48-parser-cpu-profile.md](../../docs/48-parser-cpu-profile.md)에 있다. profiler를 켠 wall-time p95로 성능 개선이나 화면 반영 목표 달성을 주장하지 않는다.
+
 ## 한계
 
 - 수치는 warm 상태의 로컬 단일 실행이 만든 headless Chromium/Edge 개발 모드 값이다. 일반 보장이 아니며 장비·부하에 따라 달라진다.

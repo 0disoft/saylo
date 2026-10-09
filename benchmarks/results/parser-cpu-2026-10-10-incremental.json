@@ -1,0 +1,798 @@
+{
+  "schema": "saylo-parser-cpu-v1",
+  "measuredAt": "2026-10-09T17:13:48.500Z",
+  "gitRevision": "abdf076d95027962a3b06e4fedaefac7b5befeaf",
+  "workingTreeStatus": "?? benchmarks/live-update/parser-cpu-summary.mjs\n?? benchmarks/live-update/parser-cpu-summary.test.mjs\n?? benchmarks/live-update/parser-cpu.mjs\n?? benchmarks/results/parser-cpu-2026-10-10-cold.cpuprofile\n?? benchmarks/results/parser-cpu-2026-10-10-cold.json\n?? benchmarks/results/parser-cpu-2026-10-10-incremental.cpuprofile\n?? benchmarks/results/parser-cpu-2026-10-10-incremental.json",
+  "node": "v24.18.0",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         "
+  },
+  "settings": {
+    "mode": "incremental",
+    "messages": 10000,
+    "warmup": 50,
+    "measuredCalls": 100,
+    "samplingIntervalUs": 1000,
+    "forcedGc": false,
+    "detailedStageClocks": false
+  },
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "496db65747dfd85fdbcc026fa44ab387ec213a3367dee23adeb3c10387dc95c1",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/simple-message.js": "a3b1be697431fcbc00dce1e1f425ac8ace9bfe5a3e55e5ca94ccd48c6ad0453f",
+    "packages/core/dist/schema.js": "155be26cf1422c0c02095b83b97bcf6696d42a08c9d495b3bacd644504ee210c",
+    "packages/core/dist/diagnostics.js": "3d512b1fba5b545937309dced114bd52da5a67b1e4f2fe01deef33080c923ed7",
+    "benchmarks/live-update/parser-cpu.mjs": "2d0c54a6be081fe1ba3406908b1066a8c8b1cf6a12c9252c7da220894af37abb",
+    "benchmarks/live-update/parser-cpu-summary.mjs": "d39d1fe3b4575a6fe1463a4f89ea51953953310f21ceeabd211543187f035171",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "rawProfileFile": "parser-cpu-2026-10-10-incremental.cpuprofile",
+  "scope": "Single-file parser-only workload of literal/ASCII argument messages. Source stringify, startup, warmup, assertions and disk writes excluded from the profiling interval. Includes loop/timer overhead and observed GC. Frame rows include stacks with parseCatalog or a core dist frame even when the parser caller is absent; missing callers are not synthesized. Percentages use attributed sample counts, not timeDelta weights or all profile samples. Anonymous harness frames are outsideOrUnattributed and must not be assumed to be harness overhead; inlining/native attribution can hide work. positionTicks retain profiler line counters at dist coordinates and are not source-level CPU times. Negative timeDeltas are reported and preserved without clamping. Counts are not exact CPU time or allocation measurements; inclusive rows overlap. Profiled wall-time quantiles are not an unprofiled performance baseline or watcher/browser latency. Cold does not reuse a previous catalog; incremental changes one same-length probe and reuses immutable messages. All input strings are prepared and retained before profiling. OS load and GC are not controlled.",
+  "wallTime": {
+    "count": 100,
+    "p50Ms": 26.876999999999953,
+    "p95Ms": 42.35050000000001,
+    "minMs": 22.124199999999746,
+    "maxMs": 52.18579999999929
+  },
+  "cpu": {
+    "samples": 1868,
+    "buckets": {
+      "parserStack": {
+        "samples": 1754
+      },
+      "coreWithoutParserStack": {
+        "samples": 0
+      },
+      "gc": {
+        "samples": 97
+      },
+      "idleProgram": {
+        "samples": 1
+      },
+      "outsideOrUnattributed": {
+        "samples": 16
+      }
+    },
+    "timeDeltas": {
+      "negativeSamples": 0,
+      "minUs": 1063,
+      "maxUs": 61461,
+      "signedSumUs": 2910663
+    },
+    "attributedSamples": 1754,
+    "frames": [
+      {
+        "functionName": "parseCatalog",
+        "scriptId": "173",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+        "lineNumber": 6,
+        "columnNumber": 28,
+        "selfSamples": 1041,
+        "inclusiveSamples": 1754,
+        "attributedSelfPercent": 59.350057012542756,
+        "attributedInclusivePercent": 100,
+        "lineTicks": [
+          {
+            "line": 20,
+            "ticks": 744
+          },
+          {
+            "line": 39,
+            "ticks": 112
+          },
+          {
+            "line": 36,
+            "ticks": 72
+          },
+          {
+            "line": 37,
+            "ticks": 65
+          },
+          {
+            "line": 30,
+            "ticks": 25
+          },
+          {
+            "line": 29,
+            "ticks": 6
+          },
+          {
+            "line": 24,
+            "ticks": 5
+          },
+          {
+            "line": 38,
+            "ticks": 4
+          },
+          {
+            "line": 62,
+            "ticks": 3
+          },
+          {
+            "line": 40,
+            "ticks": 2
+          },
+          {
+            "line": 9,
+            "ticks": 1
+          },
+          {
+            "line": 13,
+            "ticks": 1
+          },
+          {
+            "line": 46,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "functionName": "freeze",
+        "scriptId": "176",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+        "lineNumber": 4,
+        "columnNumber": 22,
+        "selfSamples": 402,
+        "inclusiveSamples": 402,
+        "attributedSelfPercent": 22.91904218928164,
+        "attributedInclusivePercent": 22.91904218928164,
+        "lineTicks": [
+          {
+            "line": 9,
+            "ticks": 311
+          },
+          {
+            "line": 7,
+            "ticks": 64
+          },
+          {
+            "line": 6,
+            "ticks": 11
+          },
+          {
+            "line": 11,
+            "ticks": 10
+          },
+          {
+            "line": 12,
+            "ticks": 3
+          },
+          {
+            "line": 10,
+            "ticks": 2
+          },
+          {
+            "line": 8,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "functionName": "readJson",
+        "scriptId": "178",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/json.js",
+        "lineNumber": 2,
+        "columnNumber": 24,
+        "selfSamples": 307,
+        "inclusiveSamples": 307,
+        "attributedSelfPercent": 17.50285062713797,
+        "attributedInclusivePercent": 17.50285062713797,
+        "lineTicks": [
+          {
+            "line": 9,
+            "ticks": 307
+          }
+        ]
+      },
+      {
+        "functionName": "createPositionLocator",
+        "scriptId": "176",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+        "lineNumber": 46,
+        "columnNumber": 37,
+        "selfSamples": 2,
+        "inclusiveSamples": 2,
+        "attributedSelfPercent": 0.11402508551881414,
+        "attributedInclusivePercent": 0.11402508551881414,
+        "lineTicks": [
+          {
+            "line": 49,
+            "ticks": 1
+          },
+          {
+            "line": 52,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "functionName": "parseSimpleMessage",
+        "scriptId": "184",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/simple-message.js",
+        "lineNumber": 35,
+        "columnNumber": 34,
+        "selfSamples": 1,
+        "inclusiveSamples": 3,
+        "attributedSelfPercent": 0.05701254275940707,
+        "attributedInclusivePercent": 0.17103762827822122,
+        "lineTicks": [
+          {
+            "line": 36,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "functionName": "seal",
+        "scriptId": "176",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+        "lineNumber": 18,
+        "columnNumber": 17,
+        "selfSamples": 1,
+        "inclusiveSamples": 1,
+        "attributedSelfPercent": 0.05701254275940707,
+        "attributedInclusivePercent": 0.05701254275940707,
+        "lineTicks": [
+          {
+            "line": 21,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "functionName": "position",
+        "scriptId": "184",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/simple-message.js",
+        "lineNumber": 8,
+        "columnNumber": 21,
+        "selfSamples": 0,
+        "inclusiveSamples": 2,
+        "attributedSelfPercent": 0,
+        "attributedInclusivePercent": 0.11402508551881414,
+        "lineTicks": []
+      },
+      {
+        "functionName": "position",
+        "scriptId": "184",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/simple-message.js",
+        "lineNumber": 41,
+        "columnNumber": 21,
+        "selfSamples": 0,
+        "inclusiveSamples": 2,
+        "attributedSelfPercent": 0,
+        "attributedInclusivePercent": 0.11402508551881414,
+        "lineTicks": []
+      },
+      {
+        "functionName": "inferArguments",
+        "scriptId": "179",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+        "lineNumber": 4,
+        "columnNumber": 30,
+        "selfSamples": 0,
+        "inclusiveSamples": 1,
+        "attributedSelfPercent": 0,
+        "attributedInclusivePercent": 0.05701254275940707,
+        "lineTicks": []
+      },
+      {
+        "functionName": "freezeMessageAst",
+        "scriptId": "176",
+        "url": "file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+        "lineNumber": 16,
+        "columnNumber": 32,
+        "selfSamples": 0,
+        "inclusiveSamples": 1,
+        "attributedSelfPercent": 0,
+        "attributedInclusivePercent": 0.05701254275940707,
+        "lineTicks": []
+      }
+    ]
+  },
+  "samples": [
+    {
+      "startTimeMs": 2347.9457,
+      "endTimeMs": 2372.686,
+      "durationMs": 24.740299999999934
+    },
+    {
+      "startTimeMs": 2372.7472,
+      "endTimeMs": 2395.6084,
+      "durationMs": 22.86120000000028
+    },
+    {
+      "startTimeMs": 2395.6348,
+      "endTimeMs": 2419.9608,
+      "durationMs": 24.326000000000022
+    },
+    {
+      "startTimeMs": 2419.9682,
+      "endTimeMs": 2442.8831,
+      "durationMs": 22.914900000000216
+    },
+    {
+      "startTimeMs": 2442.8955,
+      "endTimeMs": 2465.6024,
+      "durationMs": 22.706900000000132
+    },
+    {
+      "startTimeMs": 2465.6091,
+      "endTimeMs": 2491.0899,
+      "durationMs": 25.480799999999817
+    },
+    {
+      "startTimeMs": 2491.0959,
+      "endTimeMs": 2513.9771,
+      "durationMs": 22.881200000000263
+    },
+    {
+      "startTimeMs": 2513.9825,
+      "endTimeMs": 2538.2367,
+      "durationMs": 24.254199999999855
+    },
+    {
+      "startTimeMs": 2538.2436,
+      "endTimeMs": 2563.4672,
+      "durationMs": 25.22360000000026
+    },
+    {
+      "startTimeMs": 2563.4749,
+      "endTimeMs": 2604.3696,
+      "durationMs": 40.89469999999983
+    },
+    {
+      "startTimeMs": 2604.3765,
+      "endTimeMs": 2628.6191,
+      "durationMs": 24.24260000000004
+    },
+    {
+      "startTimeMs": 2628.6249,
+      "endTimeMs": 2655.841,
+      "durationMs": 27.216100000000097
+    },
+    {
+      "startTimeMs": 2655.8478,
+      "endTimeMs": 2679.7107,
+      "durationMs": 23.86290000000008
+    },
+    {
+      "startTimeMs": 2679.7175,
+      "endTimeMs": 2702.8069,
+      "durationMs": 23.08939999999984
+    },
+    {
+      "startTimeMs": 2702.8123,
+      "endTimeMs": 2724.9365,
+      "durationMs": 22.124199999999746
+    },
+    {
+      "startTimeMs": 2724.9425,
+      "endTimeMs": 2748.7536,
+      "durationMs": 23.811099999999897
+    },
+    {
+      "startTimeMs": 2748.8478,
+      "endTimeMs": 2773.2205,
+      "durationMs": 24.372699999999895
+    },
+    {
+      "startTimeMs": 2773.2279,
+      "endTimeMs": 2797.5554,
+      "durationMs": 24.327500000000327
+    },
+    {
+      "startTimeMs": 2797.5611,
+      "endTimeMs": 2835.8267,
+      "durationMs": 38.26560000000018
+    },
+    {
+      "startTimeMs": 2835.8337,
+      "endTimeMs": 2860.9601,
+      "durationMs": 25.12639999999965
+    },
+    {
+      "startTimeMs": 2860.9662,
+      "endTimeMs": 2886.6037,
+      "durationMs": 25.637500000000273
+    },
+    {
+      "startTimeMs": 2886.6102,
+      "endTimeMs": 2910.6473,
+      "durationMs": 24.03710000000001
+    },
+    {
+      "startTimeMs": 2910.6537,
+      "endTimeMs": 2935.1508,
+      "durationMs": 24.497100000000046
+    },
+    {
+      "startTimeMs": 2935.1604,
+      "endTimeMs": 2959.9615,
+      "durationMs": 24.80109999999968
+    },
+    {
+      "startTimeMs": 2959.9684,
+      "endTimeMs": 2985.5751,
+      "durationMs": 25.60669999999982
+    },
+    {
+      "startTimeMs": 2985.5818,
+      "endTimeMs": 3016.3925,
+      "durationMs": 30.810699999999997
+    },
+    {
+      "startTimeMs": 3016.3998,
+      "endTimeMs": 3046.1834,
+      "durationMs": 29.78359999999975
+    },
+    {
+      "startTimeMs": 3046.1897,
+      "endTimeMs": 3075.0296,
+      "durationMs": 28.839899999999943
+    },
+    {
+      "startTimeMs": 3075.0382,
+      "endTimeMs": 3117.3887,
+      "durationMs": 42.35050000000001
+    },
+    {
+      "startTimeMs": 3117.3957,
+      "endTimeMs": 3146.3439,
+      "durationMs": 28.948199999999815
+    },
+    {
+      "startTimeMs": 3146.3508,
+      "endTimeMs": 3175.9163,
+      "durationMs": 29.5654999999997
+    },
+    {
+      "startTimeMs": 3175.9235,
+      "endTimeMs": 3203.2785,
+      "durationMs": 27.355000000000018
+    },
+    {
+      "startTimeMs": 3203.2851,
+      "endTimeMs": 3231.1217,
+      "durationMs": 27.83660000000009
+    },
+    {
+      "startTimeMs": 3231.1284,
+      "endTimeMs": 3260.9876,
+      "durationMs": 29.859199999999873
+    },
+    {
+      "startTimeMs": 3260.9959,
+      "endTimeMs": 3288.9382,
+      "durationMs": 27.94230000000016
+    },
+    {
+      "startTimeMs": 3288.9444,
+      "endTimeMs": 3317.5948,
+      "durationMs": 28.65039999999999
+    },
+    {
+      "startTimeMs": 3317.6012,
+      "endTimeMs": 3345.354,
+      "durationMs": 27.752799999999752
+    },
+    {
+      "startTimeMs": 3345.3682,
+      "endTimeMs": 3374.6364,
+      "durationMs": 29.26819999999998
+    },
+    {
+      "startTimeMs": 3374.649,
+      "endTimeMs": 3424.0813,
+      "durationMs": 49.43229999999994
+    },
+    {
+      "startTimeMs": 3424.0883,
+      "endTimeMs": 3453.8898,
+      "durationMs": 29.801500000000033
+    },
+    {
+      "startTimeMs": 3453.8995,
+      "endTimeMs": 3479.8541,
+      "durationMs": 25.954600000000028
+    },
+    {
+      "startTimeMs": 3479.8624,
+      "endTimeMs": 3509.1744,
+      "durationMs": 29.311999999999898
+    },
+    {
+      "startTimeMs": 3509.1814,
+      "endTimeMs": 3534.4695,
+      "durationMs": 25.288100000000213
+    },
+    {
+      "startTimeMs": 3534.476,
+      "endTimeMs": 3559.3813,
+      "durationMs": 24.905299999999897
+    },
+    {
+      "startTimeMs": 3559.3895,
+      "endTimeMs": 3586.3013,
+      "durationMs": 26.911799999999857
+    },
+    {
+      "startTimeMs": 3586.3103,
+      "endTimeMs": 3614.5047,
+      "durationMs": 28.19439999999986
+    },
+    {
+      "startTimeMs": 3614.5147,
+      "endTimeMs": 3641.9401,
+      "durationMs": 27.425399999999627
+    },
+    {
+      "startTimeMs": 3641.9481,
+      "endTimeMs": 3687.1552,
+      "durationMs": 45.20710000000008
+    },
+    {
+      "startTimeMs": 3687.1623,
+      "endTimeMs": 3714.0393,
+      "durationMs": 26.876999999999953
+    },
+    {
+      "startTimeMs": 3714.046,
+      "endTimeMs": 3740.0419,
+      "durationMs": 25.995900000000347
+    },
+    {
+      "startTimeMs": 3740.0482,
+      "endTimeMs": 3766.0565,
+      "durationMs": 26.008299999999963
+    },
+    {
+      "startTimeMs": 3766.064,
+      "endTimeMs": 3795.7997,
+      "durationMs": 29.73570000000018
+    },
+    {
+      "startTimeMs": 3795.8064,
+      "endTimeMs": 3830.8473,
+      "durationMs": 35.040899999999965
+    },
+    {
+      "startTimeMs": 3830.8563,
+      "endTimeMs": 3868.875,
+      "durationMs": 38.01870000000008
+    },
+    {
+      "startTimeMs": 3868.8823,
+      "endTimeMs": 3894.1034,
+      "durationMs": 25.22109999999975
+    },
+    {
+      "startTimeMs": 3894.1095,
+      "endTimeMs": 3921.1195,
+      "durationMs": 27.009999999999764
+    },
+    {
+      "startTimeMs": 3921.1271,
+      "endTimeMs": 3946.3961,
+      "durationMs": 25.268999999999778
+    },
+    {
+      "startTimeMs": 3946.4022,
+      "endTimeMs": 3987.9383,
+      "durationMs": 41.536099999999806
+    },
+    {
+      "startTimeMs": 3987.9536,
+      "endTimeMs": 4012.5554,
+      "durationMs": 24.601800000000367
+    },
+    {
+      "startTimeMs": 4012.5618,
+      "endTimeMs": 4039.7167,
+      "durationMs": 27.154899999999998
+    },
+    {
+      "startTimeMs": 4039.7241,
+      "endTimeMs": 4064.3065,
+      "durationMs": 24.582400000000234
+    },
+    {
+      "startTimeMs": 4064.3129,
+      "endTimeMs": 4091.0759,
+      "durationMs": 26.76299999999992
+    },
+    {
+      "startTimeMs": 4091.0832,
+      "endTimeMs": 4117.6506,
+      "durationMs": 26.567399999999907
+    },
+    {
+      "startTimeMs": 4117.658,
+      "endTimeMs": 4142.4391,
+      "durationMs": 24.781099999999242
+    },
+    {
+      "startTimeMs": 4142.4464,
+      "endTimeMs": 4170.9287,
+      "durationMs": 28.482300000000578
+    },
+    {
+      "startTimeMs": 4170.9357,
+      "endTimeMs": 4198.941,
+      "durationMs": 28.005299999999806
+    },
+    {
+      "startTimeMs": 4198.9485,
+      "endTimeMs": 4251.1343,
+      "durationMs": 52.18579999999929
+    },
+    {
+      "startTimeMs": 4251.1425,
+      "endTimeMs": 4275.8754,
+      "durationMs": 24.732899999999972
+    },
+    {
+      "startTimeMs": 4275.8822,
+      "endTimeMs": 4302.7099,
+      "durationMs": 26.827699999999822
+    },
+    {
+      "startTimeMs": 4302.7196,
+      "endTimeMs": 4326.3256,
+      "durationMs": 23.605999999999767
+    },
+    {
+      "startTimeMs": 4326.3324,
+      "endTimeMs": 4355.8183,
+      "durationMs": 29.485899999999674
+    },
+    {
+      "startTimeMs": 4355.8252,
+      "endTimeMs": 4383.2848,
+      "durationMs": 27.459600000000137
+    },
+    {
+      "startTimeMs": 4383.2938,
+      "endTimeMs": 4408.4305,
+      "durationMs": 25.13670000000002
+    },
+    {
+      "startTimeMs": 4408.4359,
+      "endTimeMs": 4435.3907,
+      "durationMs": 26.954799999999523
+    },
+    {
+      "startTimeMs": 4435.3978,
+      "endTimeMs": 4460.7499,
+      "durationMs": 25.352100000000064
+    },
+    {
+      "startTimeMs": 4460.7572,
+      "endTimeMs": 4490.8565,
+      "durationMs": 30.099299999999857
+    },
+    {
+      "startTimeMs": 4490.8636,
+      "endTimeMs": 4538.43,
+      "durationMs": 47.56640000000061
+    },
+    {
+      "startTimeMs": 4538.4437,
+      "endTimeMs": 4568.0774,
+      "durationMs": 29.633700000000317
+    },
+    {
+      "startTimeMs": 4568.0867,
+      "endTimeMs": 4595.2444,
+      "durationMs": 27.15769999999975
+    },
+    {
+      "startTimeMs": 4595.2523,
+      "endTimeMs": 4621.1888,
+      "durationMs": 25.936499999999796
+    },
+    {
+      "startTimeMs": 4621.1963,
+      "endTimeMs": 4648.1662,
+      "durationMs": 26.969900000000052
+    },
+    {
+      "startTimeMs": 4648.1726,
+      "endTimeMs": 4676.537,
+      "durationMs": 28.364400000000387
+    },
+    {
+      "startTimeMs": 4676.5434,
+      "endTimeMs": 4703.1839,
+      "durationMs": 26.64050000000043
+    },
+    {
+      "startTimeMs": 4703.1926,
+      "endTimeMs": 4731.4559,
+      "durationMs": 28.263299999999617
+    },
+    {
+      "startTimeMs": 4731.4651,
+      "endTimeMs": 4761.5262,
+      "durationMs": 30.061099999999897
+    },
+    {
+      "startTimeMs": 4761.5329,
+      "endTimeMs": 4789.7188,
+      "durationMs": 28.185899999999492
+    },
+    {
+      "startTimeMs": 4789.7265,
+      "endTimeMs": 4817.9849,
+      "durationMs": 28.25840000000062
+    },
+    {
+      "startTimeMs": 4817.9942,
+      "endTimeMs": 4860.3468,
+      "durationMs": 42.352600000000166
+    },
+    {
+      "startTimeMs": 4860.3566,
+      "endTimeMs": 4885.9367,
+      "durationMs": 25.58010000000013
+    },
+    {
+      "startTimeMs": 4885.9453,
+      "endTimeMs": 4909.2155,
+      "durationMs": 23.27019999999993
+    },
+    {
+      "startTimeMs": 4909.2217,
+      "endTimeMs": 4937.7731,
+      "durationMs": 28.551400000000285
+    },
+    {
+      "startTimeMs": 4937.7803,
+      "endTimeMs": 4962.6709,
+      "durationMs": 24.890599999999722
+    },
+    {
+      "startTimeMs": 4962.6767,
+      "endTimeMs": 4987.4891,
+      "durationMs": 24.812399999999798
+    },
+    {
+      "startTimeMs": 4987.4955,
+      "endTimeMs": 5012.5222,
+      "durationMs": 25.026700000000346
+    },
+    {
+      "startTimeMs": 5012.5291,
+      "endTimeMs": 5038.8131,
+      "durationMs": 26.28400000000056
+    },
+    {
+      "startTimeMs": 5038.8199,
+      "endTimeMs": 5064.9252,
+      "durationMs": 26.10529999999926
+    },
+    {
+      "startTimeMs": 5064.9316,
+      "endTimeMs": 5103.8181,
+      "durationMs": 38.886500000000524
+    },
+    {
+      "startTimeMs": 5103.8252,
+      "endTimeMs": 5130.6014,
+      "durationMs": 26.776199999999335
+    },
+    {
+      "startTimeMs": 5130.61,
+      "endTimeMs": 5165.0046,
+      "durationMs": 34.39460000000054
+    },
+    {
+      "startTimeMs": 5165.0112,
+      "endTimeMs": 5195.7289,
+      "durationMs": 30.71770000000015
+    }
+  ]
+}
