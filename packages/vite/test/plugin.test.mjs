@@ -416,12 +416,28 @@ test('atomic unlink/add save reads final file without publishing removal', async
 });
 
 test('translation arriving before new baseline is retried without resaving translation', async t => {
-  const { disk, request } = await setup(t);
+  const { root, disk, request } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
+  const out = path.join(root, 'generated.d.ts');
+  await utimes(out, new Date('2000-01-01T00:00:00Z'), new Date('2000-01-01T00:00:00Z'));
+  const beforeWrite = (await stat(out)).mtimeMs;
   await disk('create', 'en', 'help', '{"title":"Help"}');
   assert.equal(request()[0].data.revision, 0);
   assert.ok(request()[1].data.message);
-  await disk('create', 'ko', 'help', '{"title":"도움말"}');
+  await disk('update', 'ko', 'demo', '{"hello":"Updated {name}","added":"Added"}');
   assert.equal(request()[0].data.revision, 1);
+  assert.ok(request()[1].data.diagnostics.some(item => item.code === 'NAMESPACE_MISMATCH'));
+  assert.equal(request()[0].data.catalogs.some(catalog => catalog.namespace === 'help'), false);
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: request()[0].data.catalogs });
+  t.after(() => store.dispose());
+  assert.equal(store.t('demo:added'), 'Added');
+  const deadline = Date.now() + 10000;
+  while ((await stat(out)).mtimeMs === beforeWrite) {
+    assert.ok(Date.now() < deadline, 'unrelated namespace still generates updated types');
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  assert.ok((await readFile(out, 'utf8')).includes('demo:added'));
+  await disk('create', 'ko', 'help', '{"title":"도움말"}');
+  assert.equal(request()[0].data.revision, 2);
   assert.equal(request()[1].data.message, '');
   assert.equal(request()[0].data.catalogs.filter(c => c.namespace === 'help').length, 2);
 });

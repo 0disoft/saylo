@@ -73,8 +73,13 @@ export class LiveRegistry {
     const active = files.flatMap(item => {
       if (item.catalog.locale === this.baseLocale) return [item];
       const schema = bases.get(item.catalog.namespace);
-      if (!schema) throw new CatalogError([{ sourceName: item.catalog.sourceName, locale: item.catalog.locale,
-        namespace: item.catalog.namespace, code: 'NAMESPACE_MISMATCH', message: 'Every translation namespace needs a base catalog.' }]);
+      if (!schema) {
+        errors.set(`schema:${item.file}`, this.failure(new CatalogError([{ sourceName: item.catalog.sourceName, locale: item.catalog.locale,
+          namespace: item.catalog.namespace, code: 'NAMESPACE_MISMATCH', message: 'Every translation namespace needs a base catalog.' }])));
+        // Keep the file in desired so creating its baseline can activate it without another save.
+        translations.delete(item.file);
+        return [];
+      }
       try {
         if (this.validated.get(item.catalog) !== schema.fingerprint) {
           validateTranslation(schema, item.catalog);
