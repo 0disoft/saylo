@@ -1,0 +1,121 @@
+diff --git a/packages/core/src/catalog.ts b/packages/core/src/catalog.ts
+index 34a9cd8..e8a2e6e 100644
+--- a/packages/core/src/catalog.ts
++++ b/packages/core/src/catalog.ts
+@@ -17,8 +17,9 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
+   } catch {
+     throw new CatalogError([{ ...context, code: 'INVALID_LOCALE', message: 'Locale must be a valid BCP 47 language tag.' }]);
+   }
+-  const entries = readJson(source, context);
+-  const positionAt = createPositionLocator(source);
++  // JSON validation runs before the first visit, including the source type check.
++  let locate: ReturnType<typeof createPositionLocator> | undefined;
++  const positionAt = (offset: number) => (locate ??= createPositionLocator(source))(offset);
+   const diagnostics: CatalogDiagnostic[] = [];
+   const messages: Record<string, ParsedMessage> = Object.create(null);
+   const locale = new Intl.Locale(context.locale);
+@@ -26,10 +27,10 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
+   const simplePosition = createSimplePositionPool();
+   const reusable = previous && isDeepFrozen(previous) && previous.locale === context.locale &&
+     previous.namespace === context.namespace && previous.sourceName === context.sourceName ? previous.messages : undefined;
+-  for (const entry of entries) {
++  readJson(source, context, entry => {
+     if (entry.id.length === 0 || entry.id.includes(':')) {
+       diagnostics.push({ ...context, id: entry.id, code: 'INVALID_ID', position: positionAt(entry.keyOffset), message: 'Message IDs must be nonempty and cannot contain colons. Dots are literal.' });
+-      continue;
++      return;
+     }
+     // Most live entries are immutable reuse hits. Build diagnostic context only
+     // for messages that actually need parsing, avoiding a spread per cached ID.
+@@ -38,7 +39,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
+       const position = positionAt(entry.valueOffset);
+       messages[entry.id] = before.position.offset === position.offset && before.position.line === position.line &&
+         before.position.column === position.column ? before : freeze({ ...before, position });
+-      continue;
++      return;
+     }
+     const details = { ...context, id: entry.id };
+     try {
+@@ -55,7 +56,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
+           message: `Invalid ICU message: ${error instanceof Error ? error.message : String(error)}` });
+       }
+     }
+-  }
++  });
+   if (diagnostics.length) throw new CatalogError(diagnostics);
+   return freeze({ ...context, messages });
+ }
+diff --git a/packages/core/src/json.ts b/packages/core/src/json.ts
+index fa82ab0..655b7bd 100644
+--- a/packages/core/src/json.ts
++++ b/packages/core/src/json.ts
+@@ -10,7 +10,7 @@ export interface JsonEntry {
+ }
+
+ /** Strict flat JSON. JSON.parse checks syntax; tokens retain decoded duplicate keys. */
+-export function readJson(source: string, context: Required<CatalogOptions>): JsonEntry[] {
++export function readJson(source: string, context: Required<CatalogOptions>, visit: (entry: JsonEntry) => void): void {
+   if (typeof source !== 'string') {
+     throw new CatalogError([{ ...context, code: 'INVALID_JSON', message: 'Catalog source must be a JSON string.' }]);
+   }
+@@ -24,7 +24,6 @@ export function readJson(source: string, context: Required<CatalogOptions>): Jso
+     throw new CatalogError([{ ...context, code: 'INVALID_CATALOG', message: 'A catalog must be a flat JSON object of string messages.' }]);
+   }
+   // Check every value token below, including values overwritten by duplicate keys.
+-  const entries: JsonEntry[] = [];
+   let locate: ReturnType<typeof createPositionLocator> | undefined;
+   const positionAt = (offset: number) => (locate ??= createPositionLocator(source))(offset);
+   const diagnostics: CatalogDiagnostic[] = [];
+@@ -47,12 +46,11 @@ export function readJson(source: string, context: Required<CatalogOptions>): Jso
+       diagnostics.push({ ...context, code: 'DUPLICATE_ID', id, position: positionAt(key.index), message: `Duplicate message ID ${JSON.stringify(id)}.` });
+     }
+     seen.add(id);
+-    // The initial strict parse already decoded these values. Duplicate IDs or
+-    // overwritten non-string tokens still fail before entries leave this function.
+-    entries.push({ id, value: (object as Record<string, string>)[id]!, keyOffset: key.index, valueOffset, rawValue: value[0] });
++    // The initial strict parse already decoded these values. A consumer may
++    // collect message errors, but JSON diagnostics must still win on return.
++    if (!diagnostics.length) visit({ id, value: (object as Record<string, string>)[id]!, keyOffset: key.index, valueOffset, rawValue: value[0] });
+   }
+   if (diagnostics.length) throw new CatalogError(diagnostics);
+-  return entries;
+ }
+
+ /** Translate an ICU offset in decoded text back to its JSON source string. */
+diff --git a/packages/core/test/catalog.test.mjs b/packages/core/test/catalog.test.mjs
+index 8aee34f..54e15f9 100644
+--- a/packages/core/test/catalog.test.mjs
++++ b/packages/core/test/catalog.test.mjs
+@@ -42,6 +42,32 @@ test('duplicate decoded JSON IDs are rejected before overwritten values disappea
+   rejectsCode(() => parseCatalog('{"x":"ok","x":{}}', options), 'INVALID_CATALOG');
+ });
+
++test('JSON diagnostics outrank message errors discovered in earlier tokens', () => {
++  for (const [source, code, id] of [
++    ['{"bad":"{broken","x":"A","x":"B"}', 'DUPLICATE_ID', 'x'],
++    [String.raw`{"bad":"{broken","x":"A","\u0078":"B"}`, 'DUPLICATE_ID', 'x'],
++    ['{"bad":"{broken","x":3}', 'INVALID_CATALOG', 'x'],
++    ['{"a:b":"invalid ID","x":null}', 'INVALID_CATALOG', 'x'],
++    ['{"bad":"{n, number}{n, select, other {text}}","x":"A","x":"B"}', 'DUPLICATE_ID', 'x'],
++    ['{"x":"{broken","x":3}', 'INVALID_CATALOG', 'x'],
++    ['{"x":3,"x":"ok"}', 'INVALID_CATALOG', 'x'],
++    ['{"bad":"{broken","x":"A","x":"B","later":{}}', 'INVALID_CATALOG', 'later'],
++  ]) assert.throws(() => parseCatalog(source, options), error => {
++    assert.ok(error instanceof CatalogError);
++    assert.equal(error.diagnostics.length, 1);
++    assert.equal(error.diagnostics[0].code, code);
++    assert.equal(error.diagnostics[0].id, id);
++    return true;
++  });
++  const source = '{"bad":"{broken","a":"A","a":"B","b":"C","b":"D"}';
++  assert.throws(() => parseCatalog(source, options), error => {
++    assert.deepEqual(error.diagnostics.map(d => [d.code, d.id, d.position.offset]), [
++      ['DUPLICATE_ID', 'a', source.indexOf('"a":"B"')], ['DUPLICATE_ID', 'b', source.indexOf('"b":"D"')],
++    ]);
++    return true;
++  });
++});
++
+ test('prototype-like IDs and argument names are literal own keys', () => {
+   const parsed = parseCatalog('{"__proto__":"{__proto__}","constructor":"ok"}', options);
+   const base = createBaseSchema(parsed);

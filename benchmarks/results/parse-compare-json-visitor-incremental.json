@@ -1,0 +1,539 @@
+{
+  "schema": "saylo-parser-comparison-v1",
+  "measuredAt": "2026-10-09T08:25:55.980Z",
+  "baselineRevision": "257ea857126a1d4856bbfb7a125db28b9417dd16",
+  "currentCodeHashes": {
+    "catalog.js": "25e14273509a4c7d7544dab987a5d30a4698f6a47c896ed32236f322ec042091",
+    "json.js": "0dda9104862681dda701974d7b3398e26c876e9e5a3a912919d3490699aa4d01",
+    "simple-message.js": "a3b1be697431fcbc00dce1e1f425ac8ace9bfe5a3e55e5ca94ccd48c6ad0453f",
+    "schema.js": "155be26cf1422c0c02095b83b97bcf6696d42a08c9d495b3bacd644504ee210c",
+    "diagnostics.js": "3d512b1fba5b545937309dced114bd52da5a67b1e4f2fe01deef33080c923ed7"
+  },
+  "node": "v24.18.0",
+  "mode": "incremental",
+  "messages": 10000,
+  "warmup": 50,
+  "measuredPairs": 100,
+  "scope": "Same-process alternating incremental parser calls; one same-length value edit; excludes JSON.stringify, equality checks, disk, watcher, validation and browser.",
+  "before": {
+    "count": 100,
+    "p50Ms": 23.36819999999716,
+    "p95Ms": 35.703700000000026,
+    "minMs": 20.69300000000112,
+    "maxMs": 40.85499999999956
+  },
+  "after": {
+    "count": 100,
+    "p50Ms": 24.419599999997445,
+    "p95Ms": 35.46570000000065,
+    "minMs": 21.074400000001333,
+    "maxMs": 56.6333999999988
+  },
+  "pairedDifference": {
+    "medianMs": 0.7220000000015716,
+    "p95Ms": 9.260299999998097,
+    "improvedPairs": 37
+  },
+  "samples": [
+    {
+      "beforeMs": 27.780500000000757,
+      "afterMs": 26.978000000000975,
+      "afterMinusBeforeMs": -0.8024999999997817
+    },
+    {
+      "beforeMs": 26.041800000000876,
+      "afterMs": 35.578700000000026,
+      "afterMinusBeforeMs": 9.53689999999915
+    },
+    {
+      "beforeMs": 25.150500000001557,
+      "afterMs": 34.410799999999654,
+      "afterMinusBeforeMs": 9.260299999998097
+    },
+    {
+      "beforeMs": 23.15400000000045,
+      "afterMs": 27.10769999999866,
+      "afterMinusBeforeMs": 3.953699999998207
+    },
+    {
+      "beforeMs": 25.26839999999902,
+      "afterMs": 30.41529999999875,
+      "afterMinusBeforeMs": 5.146899999999732
+    },
+    {
+      "beforeMs": 23.889500000001135,
+      "afterMs": 25.539300000000367,
+      "afterMinusBeforeMs": 1.6497999999992317
+    },
+    {
+      "beforeMs": 26.077799999999115,
+      "afterMs": 25.467800000000352,
+      "afterMinusBeforeMs": -0.6099999999987631
+    },
+    {
+      "beforeMs": 23.438000000000102,
+      "afterMs": 24.78270000000157,
+      "afterMinusBeforeMs": 1.3447000000014668
+    },
+    {
+      "beforeMs": 23.49529999999868,
+      "afterMs": 22.004300000000512,
+      "afterMinusBeforeMs": -1.4909999999981665
+    },
+    {
+      "beforeMs": 36.82809999999881,
+      "afterMs": 34.81549999999879,
+      "afterMinusBeforeMs": -2.0126000000000204
+    },
+    {
+      "beforeMs": 26.863499999999476,
+      "afterMs": 26.842899999999645,
+      "afterMinusBeforeMs": -0.020599999999831198
+    },
+    {
+      "beforeMs": 23.64429999999993,
+      "afterMs": 24.88929999999891,
+      "afterMinusBeforeMs": 1.2449999999989814
+    },
+    {
+      "beforeMs": 22.708800000000338,
+      "afterMs": 23.321600000001126,
+      "afterMinusBeforeMs": 0.6128000000007887
+    },
+    {
+      "beforeMs": 21.78479999999945,
+      "afterMs": 22.28440000000046,
+      "afterMinusBeforeMs": 0.4996000000010099
+    },
+    {
+      "beforeMs": 35.703700000000026,
+      "afterMs": 33.35540000000037,
+      "afterMinusBeforeMs": -2.3482999999996537
+    },
+    {
+      "beforeMs": 30.381400000000212,
+      "afterMs": 27.80029999999897,
+      "afterMinusBeforeMs": -2.5811000000012427
+    },
+    {
+      "beforeMs": 24.200299999998606,
+      "afterMs": 26.253500000000713,
+      "afterMinusBeforeMs": 2.053200000002107
+    },
+    {
+      "beforeMs": 21.71190000000024,
+      "afterMs": 24.59809999999925,
+      "afterMinusBeforeMs": 2.8861999999990076
+    },
+    {
+      "beforeMs": 21.847799999999552,
+      "afterMs": 22.78139999999985,
+      "afterMinusBeforeMs": 0.9336000000002969
+    },
+    {
+      "beforeMs": 26.147500000000946,
+      "afterMs": 22.412499999998545,
+      "afterMinusBeforeMs": -3.735000000002401
+    },
+    {
+      "beforeMs": 23.117200000000594,
+      "afterMs": 24.059400000000096,
+      "afterMinusBeforeMs": 0.9421999999995023
+    },
+    {
+      "beforeMs": 25.36789999999928,
+      "afterMs": 34.63160000000062,
+      "afterMinusBeforeMs": 9.263700000001336
+    },
+    {
+      "beforeMs": 32.23999999999978,
+      "afterMs": 30.99789999999848,
+      "afterMinusBeforeMs": -1.242100000001301
+    },
+    {
+      "beforeMs": 22.354699999999866,
+      "afterMs": 22.11410000000069,
+      "afterMinusBeforeMs": -0.24059999999917636
+    },
+    {
+      "beforeMs": 22.231299999999464,
+      "afterMs": 28.16870000000017,
+      "afterMinusBeforeMs": 5.937400000000707
+    },
+    {
+      "beforeMs": 21.897100000000137,
+      "afterMs": 22.901600000001054,
+      "afterMinusBeforeMs": 1.0045000000009168
+    },
+    {
+      "beforeMs": 21.366700000000492,
+      "afterMs": 23.899499999999534,
+      "afterMinusBeforeMs": 2.5327999999990425
+    },
+    {
+      "beforeMs": 22.59809999999925,
+      "afterMs": 22.604099999998652,
+      "afterMinusBeforeMs": 0.0059999999994033715
+    },
+    {
+      "beforeMs": 22.38510000000133,
+      "afterMs": 22.798399999999674,
+      "afterMinusBeforeMs": 0.413299999998344
+    },
+    {
+      "beforeMs": 26.53189999999995,
+      "afterMs": 56.6333999999988,
+      "afterMinusBeforeMs": 30.10149999999885
+    },
+    {
+      "beforeMs": 24.35269999999946,
+      "afterMs": 30.824400000001333,
+      "afterMinusBeforeMs": 6.471700000001874
+    },
+    {
+      "beforeMs": 26.375200000000405,
+      "afterMs": 23.677200000000084,
+      "afterMinusBeforeMs": -2.69800000000032
+    },
+    {
+      "beforeMs": 21.92229999999836,
+      "afterMs": 23.184500000001208,
+      "afterMinusBeforeMs": 1.2622000000028493
+    },
+    {
+      "beforeMs": 21.559300000000803,
+      "afterMs": 23.310499999999593,
+      "afterMinusBeforeMs": 1.7511999999987893
+    },
+    {
+      "beforeMs": 24.354699999999866,
+      "afterMs": 21.85200000000077,
+      "afterMinusBeforeMs": -2.502699999999095
+    },
+    {
+      "beforeMs": 21.499799999999595,
+      "afterMs": 21.991500000000087,
+      "afterMinusBeforeMs": 0.49170000000049185
+    },
+    {
+      "beforeMs": 22.769200000000637,
+      "afterMs": 26.619199999999182,
+      "afterMinusBeforeMs": 3.849999999998545
+    },
+    {
+      "beforeMs": 20.972900000000664,
+      "afterMs": 22.73160000000098,
+      "afterMinusBeforeMs": 1.7587000000003172
+    },
+    {
+      "beforeMs": 22.60030000000006,
+      "afterMs": 22.493000000000393,
+      "afterMinusBeforeMs": -0.10729999999966822
+    },
+    {
+      "beforeMs": 22.234800000000178,
+      "afterMs": 25.8820999999989,
+      "afterMinusBeforeMs": 3.6472999999987223
+    },
+    {
+      "beforeMs": 21.346999999999753,
+      "afterMs": 21.868599999999788,
+      "afterMinusBeforeMs": 0.5216000000000349
+    },
+    {
+      "beforeMs": 21.643200000000434,
+      "afterMs": 23.816600000000108,
+      "afterMinusBeforeMs": 2.173399999999674
+    },
+    {
+      "beforeMs": 21.85689999999886,
+      "afterMs": 24.021999999999025,
+      "afterMinusBeforeMs": 2.165100000000166
+    },
+    {
+      "beforeMs": 22.78950000000077,
+      "afterMs": 22.49409999999989,
+      "afterMinusBeforeMs": -0.29540000000088185
+    },
+    {
+      "beforeMs": 24.98199999999997,
+      "afterMs": 22.459199999999328,
+      "afterMinusBeforeMs": -2.522800000000643
+    },
+    {
+      "beforeMs": 21.46860000000015,
+      "afterMs": 30.116700000000492,
+      "afterMinusBeforeMs": 8.64810000000034
+    },
+    {
+      "beforeMs": 20.980599999998958,
+      "afterMs": 22.73149999999987,
+      "afterMinusBeforeMs": 1.750900000000911
+    },
+    {
+      "beforeMs": 20.69300000000112,
+      "afterMs": 21.528299999999945,
+      "afterMinusBeforeMs": 0.8352999999988242
+    },
+    {
+      "beforeMs": 23.237299999998868,
+      "afterMs": 21.795200000000477,
+      "afterMinusBeforeMs": -1.4420999999983906
+    },
+    {
+      "beforeMs": 21.51429999999891,
+      "afterMs": 24.943999999999505,
+      "afterMinusBeforeMs": 3.4297000000005937
+    },
+    {
+      "beforeMs": 21.973900000000867,
+      "afterMs": 22.373599999998987,
+      "afterMinusBeforeMs": 0.3996999999981199
+    },
+    {
+      "beforeMs": 21.468800000000556,
+      "afterMs": 22.74619999999959,
+      "afterMinusBeforeMs": 1.2773999999990338
+    },
+    {
+      "beforeMs": 21.130699999997887,
+      "afterMs": 25.509099999999307,
+      "afterMinusBeforeMs": 4.37840000000142
+    },
+    {
+      "beforeMs": 21.755799999999,
+      "afterMs": 24.345799999999144,
+      "afterMinusBeforeMs": 2.5900000000001455
+    },
+    {
+      "beforeMs": 22.018299999999726,
+      "afterMs": 22.308600000000297,
+      "afterMinusBeforeMs": 0.29030000000057044
+    },
+    {
+      "beforeMs": 22.906699999999546,
+      "afterMs": 26.013200000001234,
+      "afterMinusBeforeMs": 3.106500000001688
+    },
+    {
+      "beforeMs": 21.749700000000303,
+      "afterMs": 22.347799999999552,
+      "afterMinusBeforeMs": 0.5980999999992491
+    },
+    {
+      "beforeMs": 25.224099999999453,
+      "afterMs": 24.79820000000109,
+      "afterMinusBeforeMs": -0.42589999999836436
+    },
+    {
+      "beforeMs": 21.533400000000256,
+      "afterMs": 22.91519999999946,
+      "afterMinusBeforeMs": 1.3817999999992026
+    },
+    {
+      "beforeMs": 22.119800000000396,
+      "afterMs": 27.145199999999022,
+      "afterMinusBeforeMs": 5.025399999998626
+    },
+    {
+      "beforeMs": 23.09310000000187,
+      "afterMs": 22.29030000000057,
+      "afterMinusBeforeMs": -0.802800000001298
+    },
+    {
+      "beforeMs": 21.88669999999911,
+      "afterMs": 22.46559999999954,
+      "afterMinusBeforeMs": 0.5789000000004307
+    },
+    {
+      "beforeMs": 22.07170000000042,
+      "afterMs": 26.923099999999977,
+      "afterMinusBeforeMs": 4.851399999999558
+    },
+    {
+      "beforeMs": 21.246600000002218,
+      "afterMs": 22.579799999999523,
+      "afterMinusBeforeMs": 1.333199999997305
+    },
+    {
+      "beforeMs": 23.36819999999716,
+      "afterMs": 22.23830000000089,
+      "afterMinusBeforeMs": -1.1298999999962689
+    },
+    {
+      "beforeMs": 21.75040000000081,
+      "afterMs": 21.074400000001333,
+      "afterMinusBeforeMs": -0.6759999999994761
+    },
+    {
+      "beforeMs": 23.794899999997142,
+      "afterMs": 23.8083000000006,
+      "afterMinusBeforeMs": 0.013400000003457535
+    },
+    {
+      "beforeMs": 26.106799999997747,
+      "afterMs": 22.135299999998097,
+      "afterMinusBeforeMs": -3.9714999999996508
+    },
+    {
+      "beforeMs": 22.431899999999587,
+      "afterMs": 21.579900000000634,
+      "afterMinusBeforeMs": -0.8519999999989523
+    },
+    {
+      "beforeMs": 21.94789999999921,
+      "afterMs": 21.37039999999979,
+      "afterMinusBeforeMs": -0.5774999999994179
+    },
+    {
+      "beforeMs": 27.629800000002433,
+      "afterMs": 24.74029999999766,
+      "afterMinusBeforeMs": -2.889500000004773
+    },
+    {
+      "beforeMs": 40.85499999999956,
+      "afterMs": 29.723900000000867,
+      "afterMinusBeforeMs": -11.131099999998696
+    },
+    {
+      "beforeMs": 35.556400000001304,
+      "afterMs": 38.86939999999959,
+      "afterMinusBeforeMs": 3.312999999998283
+    },
+    {
+      "beforeMs": 29.946900000002643,
+      "afterMs": 29.1163000000015,
+      "afterMinusBeforeMs": -0.8306000000011409
+    },
+    {
+      "beforeMs": 21.49370000000272,
+      "afterMs": 23.231799999997747,
+      "afterMinusBeforeMs": 1.738099999995029
+    },
+    {
+      "beforeMs": 24.669699999998556,
+      "afterMs": 38.65899999999965,
+      "afterMinusBeforeMs": 13.989300000001094
+    },
+    {
+      "beforeMs": 35.870700000003126,
+      "afterMs": 26.33570000000327,
+      "afterMinusBeforeMs": -9.534999999999854
+    },
+    {
+      "beforeMs": 35.73229999999967,
+      "afterMs": 38.27019999999902,
+      "afterMinusBeforeMs": 2.537899999999354
+    },
+    {
+      "beforeMs": 32.27740000000267,
+      "afterMs": 27.47259999999733,
+      "afterMinusBeforeMs": -4.8048000000053435
+    },
+    {
+      "beforeMs": 22.74669999999969,
+      "afterMs": 24.12430000000313,
+      "afterMinusBeforeMs": 1.37760000000344
+    },
+    {
+      "beforeMs": 28.05409999999756,
+      "afterMs": 25.013199999997596,
+      "afterMinusBeforeMs": -3.040899999999965
+    },
+    {
+      "beforeMs": 25.473699999998644,
+      "afterMs": 27.04650000000038,
+      "afterMinusBeforeMs": 1.5728000000017346
+    },
+    {
+      "beforeMs": 30.157600000002276,
+      "afterMs": 25.0637999999999,
+      "afterMinusBeforeMs": -5.093800000002375
+    },
+    {
+      "beforeMs": 23.84899999999834,
+      "afterMs": 26.702499999999418,
+      "afterMinusBeforeMs": 2.853500000001077
+    },
+    {
+      "beforeMs": 24.12960000000021,
+      "afterMs": 24.0808999999972,
+      "afterMinusBeforeMs": -0.048700000003009336
+    },
+    {
+      "beforeMs": 23.58429999999862,
+      "afterMs": 30.838300000003073,
+      "afterMinusBeforeMs": 7.254000000004453
+    },
+    {
+      "beforeMs": 37.834500000000844,
+      "afterMs": 32.5102999999981,
+      "afterMinusBeforeMs": -5.324200000002747
+    },
+    {
+      "beforeMs": 22.215000000000146,
+      "afterMs": 32.436499999999796,
+      "afterMinusBeforeMs": 10.22149999999965
+    },
+    {
+      "beforeMs": 24.21469999999681,
+      "afterMs": 29.46689999999944,
+      "afterMinusBeforeMs": 5.252200000002631
+    },
+    {
+      "beforeMs": 32.73389999999927,
+      "afterMs": 35.46570000000065,
+      "afterMinusBeforeMs": 2.7318000000013853
+    },
+    {
+      "beforeMs": 33.12709999999788,
+      "afterMs": 32.004500000002736,
+      "afterMinusBeforeMs": -1.1225999999951455
+    },
+    {
+      "beforeMs": 29.861699999997654,
+      "afterMs": 24.98540000000139,
+      "afterMinusBeforeMs": -4.876299999996263
+    },
+    {
+      "beforeMs": 28.14799999999741,
+      "afterMs": 24.419599999997445,
+      "afterMinusBeforeMs": -3.728399999999965
+    },
+    {
+      "beforeMs": 21.709899999998015,
+      "afterMs": 23.231799999997747,
+      "afterMinusBeforeMs": 1.5218999999997322
+    },
+    {
+      "beforeMs": 23.517400000000634,
+      "afterMs": 23.21689999999944,
+      "afterMinusBeforeMs": -0.30050000000119326
+    },
+    {
+      "beforeMs": 23.50220000000263,
+      "afterMs": 26.45969999999943,
+      "afterMinusBeforeMs": 2.9574999999967986
+    },
+    {
+      "beforeMs": 23.451600000000326,
+      "afterMs": 23.76220000000103,
+      "afterMinusBeforeMs": 0.3106000000007043
+    },
+    {
+      "beforeMs": 23.610899999999674,
+      "afterMs": 30.91769999999815,
+      "afterMinusBeforeMs": 7.306799999998475
+    },
+    {
+      "beforeMs": 22.664099999998143,
+      "afterMs": 23.386099999999715,
+      "afterMinusBeforeMs": 0.7220000000015716
+    },
+    {
+      "beforeMs": 23.56840000000011,
+      "afterMs": 23.243600000001607,
+      "afterMinusBeforeMs": -0.32479999999850406
+    }
+  ]
+}
