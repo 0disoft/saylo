@@ -1,6 +1,6 @@
 # @0disoft/saylo-svelte
 
-Svelte 5에서 Saylo의 불변 스냅샷을 `$i18n`으로 구독한다. ESM JavaScript와 TypeScript 선언 파일을 제공한다. 2026-10-09 `0.1.0-alpha.2`(dist-tag `alpha`)를 npm 공개 registry에 게시했다.
+Svelte 5에서 Saylo의 불변 스냅샷을 `$i18n`으로 구독한다. ESM JavaScript와 TypeScript 선언 파일을 제공한다. 마지막으로 게시를 확인한 버전은 2026-10-09의 `0.1.0-alpha.3`(dist-tag `alpha`)이고, Svelte는 `0.1.0-alpha.2`부터 포함한다. 아래 두 selector API는 아직 이 게시본에 없고 저장소 checkout의 로컬 구현이다.
 
 ## 직접 구독
 
@@ -30,6 +30,43 @@ export const { setSayloContext, getI18n } = createSayloSvelte<AppSchema>();
 ```
 
 부모 컴포넌트의 초기화 중 `setSayloContext(instance)`를 호출한다. 자식 컴포넌트는 같은 factory의 `const i18n = getI18n()`으로 받아 `{$i18n.t('cart:items', { count: 3 })}`을 렌더링한다. 부모의 instance는 마운트 동안 안정적으로 유지한다. 다른 factory의 context를 읽으면 명확한 오류를 던진다.
+
+## 선택자 구독 (selectSvelteStore·getI18nSelector)
+
+`selectSvelteStore`는 store에서 필요한 값만 골라 내는 `Readable`을 만든다. `createSayloSvelte<S>()`는 같은 selector를 context로 전달한다.
+
+```ts
+import { selectSvelteStore } from '@0disoft/saylo-svelte';
+
+const title = selectSvelteStore(i18n, snapshot => snapshot.t('cart:title'));
+```
+
+```ts
+export const { setSayloContext, getI18n, getI18nSelector } = createSayloSvelte<AppSchema>();
+
+// 자식 컴포넌트 초기화 중
+const title = getI18nSelector(snapshot => snapshot.t('cart:title'));
+```
+
+계약은 다음과 같다.
+
+- 시그니처는 `selectSvelteStore<S, T>(source: SayloSvelteStore<S>, selector: (snapshot: SayloSvelteSnapshot<S>) => T): Readable<T>`다.
+- `createSayloSvelte<S>()`는 `getI18nSelector<T>(selector): Readable<T>`를 제공하고, 같은 factory context에서 초기화 중에 호출한다.
+- 결과는 `Object.is`로 비교하고, 값 상자 `{ value }`로 Svelte `derived` 알림을 이어 준다. 같은 객체 참조와 `NaN`은 알림을 생략하고 `+0`·`-0`은 다른 값으로 알림을 전달한다.
+- source와 공유 context의 기존 core 단일 구독과 최종 해제를 유지하고, SSR render가 끝난 뒤 core 구독은 0이다.
+- 첫 구독과 재구독은 동기 최신값을 전달하고, snapshot-bound `t`와 `setLocale`/`loadNamespace`를 유지한다.
+- 기존 `createSvelteStore`·`getI18n`은 그대로 남아 있다.
+
+제약은 다음과 같다. selector는 순수 계산으로 둔다. selector가 props를 캡처해도 prop만 바뀌면 source 알림이 없으므로 자동으로 다시 선택하지 않는다. selector가 매번 새 객체·새 배열을 반환하면 `Object.is`가 다르므로 매 snapshot마다 알림이 발생한다. 동적 컴포넌트 인자는 기존 `$i18n`와 Svelte `$derived`로 조합한다.
+
+```svelte
+<script lang="ts">
+  let { name }: { name: string } = $props();
+  const i18n = getI18n();
+  const greeting = $derived($i18n.t('demo:greeting', { name }));
+</script>
+<p>{greeting}</p>
+```
 
 ## 스냅샷과 소유권
 

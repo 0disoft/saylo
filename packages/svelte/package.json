@@ -17,7 +17,7 @@
   "files": ["dist/index.js", "dist/index.d.ts", "LICENSE", "NOTICE"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test test/store.test.mjs test/components.test.mjs",
+    "test": "node --test test/store.test.mjs test/selectors.test.mjs test/components.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": { "@0disoft/saylo-core": "0.1.0-alpha.3" },

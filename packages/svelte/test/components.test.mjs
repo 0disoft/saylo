@@ -31,6 +31,29 @@ test('SSR isolates request and nested contexts, releases subscriptions and rejec
   assert.throws(() => render(Parent, { props: { instance, bindings: primary, childBindings: secondary } }).body, /same createSayloSvelte factory/);
 });
 
+test('SSR selectors isolate request and nested contexts and leave no source subscriptions', async t => {
+  const ko = createStore({ baseLocale: 'ko', locale: 'ko', catalogs });
+  const en = createStore({ baseLocale: 'ko', locale: 'en', catalogs });
+  t.after(() => { ko.dispose(); en.dispose(); });
+  let active = 0;
+  const track = store => ({ ...store, subscribe(listener) {
+    active++;
+    const off = store.subscribe(listener);
+    return () => { active--; off(); };
+  } });
+  const first = track(ko), second = track(en);
+  const html = render(Parent, { props: { instance: first, other: second, selected: true } }).body;
+  assert.match(html, /<h1>한국어<\/h1>/);
+  assert.match(html, /<h1>English<\/h1>/);
+  assert.equal(active, 0);
+  assert.match(render(Parent, { props: { instance: second, selected: true } }).body, /<h1>English<\/h1>/);
+  const koHtml = render(Parent, { props: { instance: first, selected: true } }).body;
+  assert.match(koHtml, /<h1>한국어<\/h1>/);
+  assert.equal(active, 0);
+  await writeFile(new URL('selector-hydration.html', output), koHtml);
+  assert.throws(() => render(Parent, { props: { instance: first, selected: true, childBindings: secondary } }).body, /same createSayloSvelte factory/);
+});
+
 test('compiled Svelte client preserves DOM state and releases subscriptions', async () => {
   const instance = createStore({ baseLocale: 'ko', locale: 'ko', catalogs });
   try { await writeFile(new URL('hydration.html', output), render(Parent, { props: { instance } }).body); }

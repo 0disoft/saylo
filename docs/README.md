@@ -49,6 +49,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 38. [41-json-entry-visitor-trial.md](41-json-entry-visitor-trial.md) — JSON 임시 entry 배열 제거 실험의 cold·incremental 비교와 원복
 39. [42-complete-translations.md](42-complete-translations.md) — Vite 운영 빌드의 선택적 번역 키·namespace 완역 검사
 40. [43-react-selectors.md](43-react-selectors.md) — React 선택자 미세구독의 계약·로컬 검증과 현행 게시 상태
+41. [44-svelte-selectors.md](44-svelte-selectors.md) — Svelte 선택자 구독의 계약·로컬 검증과 현행 게시 상태
 
 ## 상태 표기 규칙
 

@@ -123,7 +123,7 @@ try {
     await writeFile(path.join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022',
       module: 'NodeNext', moduleResolution: 'NodeNext', lib: ['ES2022', 'DOM'], strict: true,
       allowJs: true, checkJs: true, noEmit: true, jsx: 'react-jsx', types: ['node', 'vite/client', '@0disoft/saylo-vite/virtual'] },
-      include: [`src/**/*.${language}`, ...(hasSvelte ? ['src/consumer-svelte.js'] : []), 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
+      include: [`src/**/*.${language}`, ...(hasSvelte ? ['src/consumer-svelte*.js'] : []), 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
     console.log(`[pack] ${language}: installing tarballs and declared peer/tool major ranges outside the workspace`);
     await npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', '--workspaces=false'], app);
     for (const name of names) {
@@ -141,6 +141,13 @@ try {
       assert.equal(await readFile(path.join(installed, 'NOTICE'), 'utf8'), notice);
     }
     if (hasSvelte) await cp(path.join(repository, 'packages/svelte/test/consumer-js.js'), path.join(app, 'src/consumer-svelte.js'));
+    const hasSvelteSelectors = hasSvelte && (await readFile(path.join(app, 'node_modules/@0disoft/saylo-svelte/dist/index.d.ts'), 'utf8'))
+      .includes('selectSvelteStore');
+    if (!fromRegistry && hasSvelte) assert.ok(hasSvelteSelectors, 'Local Svelte package is missing selector declarations.');
+    if (hasSvelteSelectors) {
+      await cp(path.join(repository, 'packages/svelte/test/selector-consumer-js.js'), path.join(app, 'src/consumer-svelte-selectors.js'));
+      if (language === 'ts') await cp(path.join(repository, 'packages/svelte/test/selector-consumer.ts'), path.join(app, 'readme-svelte-selectors.ts'));
+    }
     if (language === 'ts') {
       // Check the actual shipped examples against the independently installed packages.
       const doc = id => packageDocs.get(`@0disoft/saylo-${id}`).readme;

@@ -1,5 +1,5 @@
 import { getContext, setContext } from 'svelte';
-import { readable } from 'svelte/store';
+import { derived, readable } from 'svelte/store';
 import type { Readable } from 'svelte/store';
 import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
 
@@ -43,24 +43,50 @@ export function createSvelteStore<S extends Schema>(instance: SayloInstance<S>):
   }));
 }
 
+/** Pure selection; only Object.is changes invalidate or notify downstream subscribers. */
+export function selectSvelteStore<S extends Schema, T>(source: SayloSvelteStore<S>,
+  selector: (snapshot: SayloSvelteSnapshot<S>) => T): Readable<T> {
+  let previous: { value: T } | undefined;
+  const selected = derived<SayloSvelteStore<S>, { value: T }>(source, (snapshot, set) => {
+    const value = selector(snapshot);
+    if (!previous || !Object.is(previous.value, value)) {
+      // A box preserves Object.is semantics even for signed zero and stable object references.
+      previous = { value };
+      set(previous);
+    }
+  });
+  const store: Readable<T> = {
+    subscribe(run, invalidate) {
+      return selected.subscribe(box => run(box.value), () => invalidate?.());
+    },
+  };
+  return Object.freeze(store);
+}
+
 export interface SayloSvelteBindings<S extends Schema> {
   /** Call during parent component initialization; keep the instance stable. */
   readonly setSayloContext: (instance: SayloInstance<S>) => SayloSvelteStore<S>;
   /** Call during child component initialization, then use $i18n in the template. */
   readonly getI18n: () => SayloSvelteStore<S>;
+  /** Call during child initialization; the selection shares the context's upstream store. */
+  readonly getI18nSelector: <T>(selector: (snapshot: SayloSvelteSnapshot<S>) => T) => Readable<T>;
 }
 
 /** Create once at module scope. Each mounted provider owns its context, including SSR requests. */
 export function createSayloSvelte<S extends Schema = Schema>(): SayloSvelteBindings<S> {
   const key = Symbol('Saylo');
+  function getI18n(): SayloSvelteStore<S> {
+    const store = getContext<SayloSvelteStore<S> | undefined>(key);
+    if (!store) throw new Error('getI18n requires setSayloContext from the same createSayloSvelte factory in a parent component.');
+    return store;
+  }
   return Object.freeze({
     setSayloContext(instance: SayloInstance<S>) {
       return setContext(key, createSvelteStore(instance));
     },
-    getI18n() {
-      const store = getContext<SayloSvelteStore<S> | undefined>(key);
-      if (!store) throw new Error('getI18n requires setSayloContext from the same createSayloSvelte factory in a parent component.');
-      return store;
+    getI18n,
+    getI18nSelector<T>(selector: (snapshot: SayloSvelteSnapshot<S>) => T) {
+      return selectSvelteStore(getI18n(), selector);
     },
   });
 }

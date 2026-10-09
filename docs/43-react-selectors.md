@@ -8,8 +8,9 @@
 - Svelte 어댑터: npm `0.1.0-alpha.2`부터 포함한다.
 - Vite `requireCompleteTranslations`(완역 검사): npm `0.1.0-alpha.3`에 게시했다.
 - React `useI18nSelector`(selector 미세구독): 저장소 checkout의 로컬 구현이고 아직 게시본에는 없다.
+- Svelte `selectSvelteStore`·`getI18nSelector`(selector 미세구독): 저장소 checkout의 로컬 구현이고 아직 게시본에는 없다. 계약은 [44-svelte-selectors.md](44-svelte-selectors.md)를 따른다.
 
-남은 후속은 core·Svelte의 selector 미세구독, Vue 어댑터, unused message 제거, 대규모 성능 목표, 비교 실험이다.
+남은 후속은 core의 selector 미세구독, Vue 어댑터, unused message 제거, 대규모 성능 목표, 비교 실험이다.
 
 ## React 선택자
 
