@@ -1,6 +1,24 @@
 import i18next from 'i18next';
 import { createAstFormat } from './ast-format.mjs';
-import { freezeCatalogs, createBaseSchema, validateTranslation, InvalidArgumentError, UnknownMessageError } from '@0disoft/saylo-core/runtime';
+import { freezeCatalogs, createBaseSchema, validateTranslation, InvalidArgumentError, UnknownMessageError, NamespaceNotLoadedError } from '@0disoft/saylo-core/runtime';
+
+function readScope(input, baseLocale) {
+  const result = {};
+  if (input.availableLocales !== undefined) {
+    if (!Array.isArray(input.availableLocales)) throw new RangeError('Declared locales must be an array.');
+    result.availableLocales = Object.freeze(Intl.getCanonicalLocales(input.availableLocales).sort());
+    if (!result.availableLocales.includes(baseLocale) || result.availableLocales.length !== input.availableLocales.length)
+      throw new RangeError('Declared locales must be unique and include the base locale.');
+  }
+  for (const key of ['availableNamespaces', 'loadedNamespaces']) if (input[key] !== undefined) {
+    const list = input[key];
+    if (!Array.isArray(list) || new Set(list).size !== list.length || list.some(value =>
+      typeof value !== 'string' || !value || value === '.' || value === '..' || /[:/\\\x00-\x1f]/.test(value)))
+      throw new RangeError('Namespace lists must contain unique valid names.');
+    result[key] = Object.freeze([...list].sort());
+  }
+  return Object.freeze(result);
+}
 
 // Experiment only. Receives parsed AST catalogs; no build-time parser in this module.
 function argumentsFor(key, schema, args) {
@@ -26,26 +44,28 @@ function argumentsFor(key, schema, args) {
 
 export async function createCatalogLayer(baseLocale, initialCatalogs, initialLocale, options = {}) {
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
-  let declaredLocales;
-  if (options.availableLocales !== undefined) {
-    if (!Array.isArray(options.availableLocales)) throw new RangeError('Declared locales must be an array.');
-    declaredLocales = Object.freeze(Intl.getCanonicalLocales(options.availableLocales).sort());
-    if (!declaredLocales.includes(baseLocale) || declaredLocales.length !== options.availableLocales.length)
-      throw new RangeError('Declared locales must be unique and include the base locale.');
-  }
+  let scope = readScope(options, baseLocale);
   let current;
   const resourceCache = new WeakMap();
   const stats = { resourceDictionaries: 0, instances: 0 };
-  async function replace(input, locale = current?.locale ?? initialLocale) {
+  async function replace(input, locale = current?.locale ?? initialLocale, nextScope) {
+    const candidateScope = nextScope === undefined ? scope : readScope({ ...scope, ...nextScope }, baseLocale);
+    const declaredLocales = candidateScope.availableLocales;
     const catalogs = freezeCatalogs(input);
     const bases = new Map(catalogs.filter(c => c.locale === baseLocale).map(c => [c.namespace, c]));
-    if (!bases.size) throw new Error('A base catalog is required.');
+    const loadedNamespaces = candidateScope.loadedNamespaces ?? Object.freeze([...bases.keys()].sort());
+    const availableNamespaces = candidateScope.availableNamespaces ?? Object.freeze([...bases.keys()].sort());
+    if (!bases.size && !(declaredLocales && candidateScope.availableNamespaces && loadedNamespaces.length === 0))
+      throw new Error('A base catalog is required.');
+    if (loadedNamespaces.some(namespace => !availableNamespaces.includes(namespace) || !bases.has(namespace)))
+      throw new Error('Every loaded namespace must be available and have a base catalog.');
     const schemas = new Map([...bases].map(([namespace, catalog]) => [namespace, createBaseSchema(catalog)]));
     const pairs = new Map();
     const resources = Object.create(null);
     for (const catalog of catalogs) {
       if (declaredLocales && !declaredLocales.includes(catalog.locale))
         throw new Error('Loaded catalog locale is outside the declared manifest scope.');
+      if (!loadedNamespaces.includes(catalog.namespace)) throw new Error('Catalog namespace is outside the loaded scope.');
       const pair = JSON.stringify([catalog.locale, catalog.namespace]);
       if (pairs.has(pair)) throw new Error('Duplicate catalog pair.');
       if (catalog.locale !== baseLocale) {
@@ -75,8 +95,10 @@ export async function createCatalogLayer(baseLocale, initialCatalogs, initialLoc
       if (typeof key !== 'string') throw new UnknownMessageError(String(key));
       const parts = key.split(':');
       const [namespace, id] = parts;
+      if (parts.length !== 2 || !id || !availableNamespaces.includes(namespace)) throw new UnknownMessageError(key);
+      if (!loadedNamespaces.includes(namespace)) throw new NamespaceNotLoadedError(namespace, key);
       const base = bases.get(namespace);
-      if (parts.length !== 2 || !base || !Object.hasOwn(base.messages, id)) throw new UnknownMessageError(key);
+      if (!base || !Object.hasOwn(base.messages, id)) throw new UnknownMessageError(key);
       const values = argumentsFor(key, schemas.get(namespace).keys[id], args);
       const target = pairs.get(JSON.stringify([selected, namespace]));
       const source = target && Object.hasOwn(target.messages, id) ? target : base;
@@ -84,8 +106,8 @@ export async function createCatalogLayer(baseLocale, initialCatalogs, initialLoc
       // from reserved i18next options such as lng, ns, defaultValue and count.
       return engine.t(id, { lng: source.locale, ns: namespace, values });
     };
-    const snapshot = Object.freeze({ locale: selected, timeZone, availableLocales,
-      availableNamespaces: Object.freeze([...bases.keys()].sort()), t });
+    const snapshot = Object.freeze({ locale: selected, baseLocale, timeZone, availableLocales, availableNamespaces, loadedNamespaces, t });
+    scope = candidateScope;
     current = snapshot;
     return snapshot;
   }

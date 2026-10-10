@@ -11,7 +11,8 @@ export async function createHydrationLayer(json, options = {}) {
   }
   const catalogs = boot.catalogOutcomes.filter(outcome => outcome.status === 'present').map(outcome => outcome.catalog);
   const layer = await createCatalogLayer(boot.manifest.baseLocale, catalogs, boot.locale,
-    { timeZone: boot.timeZone, availableLocales: boot.manifest.availableLocales });
+    { timeZone: boot.timeZone, availableLocales: boot.manifest.availableLocales,
+      availableNamespaces: boot.manifest.availableNamespaces, loadedNamespaces: boot.loadedNamespaces });
   const serverSnapshot = layer.getSnapshot();
   let current = serverSnapshot, hydrating = true, disposed = false;
   const listeners = new Set();
@@ -27,7 +28,9 @@ export async function createHydrationLayer(json, options = {}) {
     getServerSnapshot: () => serverSnapshot,
     subscribe(listener) { alive(); listeners.add(listener); return () => listeners.delete(listener); },
     async replace(catalogs, locale) {
-      alive(); await layer.replace(catalogs, locale); alive();
+      alive(); await layer.replace(catalogs, locale, {
+        loadedNamespaces: [...new Set(catalogs.filter(catalog => catalog.locale === boot.manifest.baseLocale).map(catalog => catalog.namespace))],
+      }); alive();
       if (!hydrating) publish();
     },
     finishHydration() {
