@@ -1,0 +1,5718 @@
+{
+  "scenario": "10k-20-locales",
+  "samples": [
+    {
+      "token": "10k-20-locales:11",
+      "warmup": true,
+      "saveToListAckMs": 176.82130000000052,
+      "selectToTranslationAckMs": 247.28579999999965,
+      "saveToTranslationAckMs": 429.35379999999986,
+      "selectToCommitMs": 244.19999999925494,
+      "saveToBroadcastMs": 156.36059999999998,
+      "fileWriteMs": 10.733799999999974,
+      "serverStages": {
+        "drainWaitMs": [
+          4.479599999999664
+        ],
+        "translationPreparationMs": 10.046699999999873,
+        "validationMs": 0.06190000000060536,
+        "registryReplaceMs": 0.22879999999986467,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 4.479599999999664,
+        "candidateIntervals": [
+          [
+            36.81089999999949,
+            156.22050000000036
+          ]
+        ],
+        "readAndCandidateMs": 119.40960000000086,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 7425.4209,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 38.4349000000002,
+              "status": "ok",
+              "endMs": 40.15859999999975
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 40.29600000000028,
+              "status": "ok",
+              "endMs": 41.60530000000017
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 41.6241,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 155.4394999999995
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 1.7236999999995533,
+            "fileReadMs": 1.3092999999998938,
+            "catalogParseMs": 113.8153999999995,
+            "candidateOtherMs": 2.561200000001918
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              7425.7051,
+              7614.768
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              7462.2318,
+              7581.6414
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              7463.8936,
+              7465.7111
+            ]
+          ],
+          "fileReadMs": [
+            [
+              7465.7313,
+              7467.0389
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              7467.0767,
+              7580.8875
+            ]
+          ],
+          "baseStatMs": [
+            [
+              7581.129,
+              7581.4293
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              7462.2318,
+              7463.8936
+            ],
+            [
+              7465.7111,
+              7465.7313
+            ],
+            [
+              7467.0389,
+              7467.0767
+            ],
+            [
+              7580.8875,
+              7581.6414
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 189.0628999999999,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 129.5529000000006,
+            "maxTimerLatenessMs": 109.68740000000071,
+            "lateTicks": 6
+          },
+          "readAndCandidateMs": {
+            "wallMs": 119.40960000000086,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 109.68740000000071,
+            "maxTimerLatenessMs": 109.68740000000071,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 1.8175000000001091,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.3075999999991836,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 113.8108000000002,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 109.27620000000024,
+            "maxTimerLatenessMs": 109.68740000000071,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.3002999999998792,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.16970000000037544,
+            "maxTimerLatenessMs": 109.68740000000071,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 2.4737000000013722,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.41120000000046275,
+            "maxTimerLatenessMs": 109.68740000000071,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:12",
+      "warmup": true,
+      "saveToListAckMs": 91.29990000000089,
+      "selectToTranslationAckMs": 144.33159999999953,
+      "saveToTranslationAckMs": 238.8154000000004,
+      "selectToCommitMs": 141.80000000074506,
+      "saveToBroadcastMs": 79.67630000000008,
+      "fileWriteMs": 12.74829999999929,
+      "serverStages": {
+        "drainWaitMs": [
+          8.15689999999995
+        ],
+        "translationPreparationMs": 8.64049999999952,
+        "validationMs": 0.018799999999828287,
+        "registryReplaceMs": 0.07160000000021682,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 8.15689999999995,
+        "candidateIntervals": [
+          [
+            30.59569999999985,
+            83.70370000000003
+          ]
+        ],
+        "readAndCandidateMs": 53.108000000000175,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 8095.5787,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 30.76010000000042,
+              "status": "ok",
+              "endMs": 31.235599999999977
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 31.28729999999996,
+              "status": "ok",
+              "endMs": 32.28259999999955
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 32.3134,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 83.3715000000002
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.47549999999955617,
+            "fileReadMs": 0.9952999999995882,
+            "catalogParseMs": 51.058100000000195,
+            "candidateOtherMs": 0.5791000000008353
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              8095.6604,
+              8199.9125
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              8126.1744,
+              8179.2824
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              8126.3563,
+              8126.8232
+            ]
+          ],
+          "fileReadMs": [
+            [
+              8126.886,
+              8127.8808
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              8127.9032,
+              8178.9963
+            ]
+          ],
+          "baseStatMs": [
+            [
+              8179.0693,
+              8179.2503
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              8126.1744,
+              8126.3563
+            ],
+            [
+              8126.8232,
+              8126.886
+            ],
+            [
+              8127.8808,
+              8127.9032
+            ],
+            [
+              8178.9963,
+              8179.2824
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 104.25210000000061,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 54.92410000000018,
+            "maxTimerLatenessMs": 42.72949999999946,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 53.108000000000175,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 42.994699999999284,
+            "maxTimerLatenessMs": 42.72949999999946,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.4668999999994412,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.08329999999932625,
+            "maxTimerLatenessMs": 1.233299999999872,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 0.9947999999994863,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 51.09310000000005,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 42.55459999999948,
+            "maxTimerLatenessMs": 42.72949999999946,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.18099999999958527,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.10189999999965949,
+            "maxTimerLatenessMs": 42.72949999999946,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5532000000011976,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.35680000000047585,
+            "maxTimerLatenessMs": 42.72949999999946,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:13",
+      "warmup": true,
+      "saveToListAckMs": 106.02710000000116,
+      "selectToTranslationAckMs": 216.749600000001,
+      "saveToTranslationAckMs": 326.5451000000012,
+      "selectToCommitMs": 213.5,
+      "saveToBroadcastMs": 90.29020000000128,
+      "fileWriteMs": 16.394099999999526,
+      "serverStages": {
+        "drainWaitMs": [
+          5.077199999999721
+        ],
+        "translationPreparationMs": 12.962600000000748,
+        "validationMs": 0.032199999999647844,
+        "registryReplaceMs": 0.13260000000082073,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 5.077199999999721,
+        "candidateIntervals": [
+          [
+            32.28440000000046,
+            93.46769999999924
+          ]
+        ],
+        "readAndCandidateMs": 61.18329999999878,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 8590.7832,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 32.48420000000078,
+              "status": "ok",
+              "endMs": 33.032499999999345
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 33.05260000000089,
+              "status": "ok",
+              "endMs": 34.1229000000003
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 34.13310000000092,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 92.44080000000031
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.5482999999985623,
+            "fileReadMs": 1.0702999999994063,
+            "catalogParseMs": 58.307699999999386,
+            "candidateOtherMs": 1.257000000001426
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              8590.8548,
+              8713.6193
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              8623.0676,
+              8684.2509
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              8623.2815,
+              8623.8337
+            ]
+          ],
+          "fileReadMs": [
+            [
+              8623.8372,
+              8624.9102
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              8624.9311,
+              8683.2363
+            ]
+          ],
+          "baseStatMs": [
+            [
+              8683.3331,
+              8684.1919
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              8623.0676,
+              8623.2815
+            ],
+            [
+              8623.8337,
+              8623.8372
+            ],
+            [
+              8624.9102,
+              8624.9311
+            ],
+            [
+              8683.2363,
+              8684.2509
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 122.76450000000114,
+            "gcEvents": 1,
+            "gcOverlapMs": 0.5357999987900257,
+            "timerDelayOverlapMs": 68.14510000000337,
+            "maxTimerLatenessMs": 50.43109999999979,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 61.18329999999878,
+            "gcEvents": 1,
+            "gcOverlapMs": 0.5357999987900257,
+            "timerDelayOverlapMs": 50.43109999999979,
+            "maxTimerLatenessMs": 50.43109999999979,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.5522000000000844,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.0730000000003201,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 58.305200000000696,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 50.220400000000154,
+            "maxTimerLatenessMs": 50.43109999999979,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.8587999999999738,
+            "gcEvents": 1,
+            "gcOverlapMs": 0.5357999987900257,
+            "timerDelayOverlapMs": 0.11390000000028522,
+            "maxTimerLatenessMs": 50.43109999999979,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 1.2528999999976804,
+            "gcEvents": 1,
+            "gcOverlapMs": 0.5357999987900257,
+            "timerDelayOverlapMs": 0.2106999999996333,
+            "maxTimerLatenessMs": 50.43109999999979,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:14",
+      "warmup": true,
+      "saveToListAckMs": 122.01230000000032,
+      "selectToTranslationAckMs": 222.23040000000037,
+      "saveToTranslationAckMs": 346.95730000000003,
+      "selectToCommitMs": 219.60000000149012,
+      "saveToBroadcastMs": 109.48660000000018,
+      "fileWriteMs": 10.243599999999788,
+      "serverStages": {
+        "drainWaitMs": [
+          14.57680000000073
+        ],
+        "translationPreparationMs": 7.548899999999776,
+        "validationMs": 0.019800000000032014,
+        "registryReplaceMs": 0.08040000000073633,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 14.57680000000073,
+        "candidateIntervals": [
+          [
+            33.00920000000042,
+            112.04160000000047
+          ]
+        ],
+        "readAndCandidateMs": 79.03240000000005,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 9167.3601,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 33.23019999999997,
+              "status": "ok",
+              "endMs": 33.80709999999999
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 33.818199999999706,
+              "status": "ok",
+              "endMs": 34.89710000000014
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 34.907100000000355,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 111.59280000000035
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.5769000000000233,
+            "fileReadMs": 1.0789000000004307,
+            "catalogParseMs": 76.6857,
+            "candidateOtherMs": 0.6908999999996013
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              9167.4021,
+              9299.8992
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              9200.3693,
+              9279.4017
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              9200.5931,
+              9201.1751
+            ]
+          ],
+          "fileReadMs": [
+            [
+              9201.1807,
+              9202.2616
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              9202.2826,
+              9278.9675
+            ]
+          ],
+          "baseStatMs": [
+            [
+              9279.0546,
+              9279.3133
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              9200.3693,
+              9200.5931
+            ],
+            [
+              9201.1751,
+              9201.1807
+            ],
+            [
+              9202.2616,
+              9202.2826
+            ],
+            [
+              9278.9675,
+              9279.4017
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 132.4971000000005,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 78.8806999999997,
+            "maxTimerLatenessMs": 68.51569999999992,
+            "lateTicks": 5
+          },
+          "readAndCandidateMs": {
+            "wallMs": 79.03240000000005,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 68.83419999999933,
+            "maxTimerLatenessMs": 68.51569999999992,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.5820000000003347,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.09469999999964784,
+            "maxTimerLatenessMs": 4.789600000000064,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 1.0808999999990192,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 76.6849000000002,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 68.27770000000055,
+            "maxTimerLatenessMs": 68.51569999999992,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.25870000000031723,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.15090000000054715,
+            "maxTimerLatenessMs": 68.51569999999992,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.6846000000005006,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.4617999999991298,
+            "maxTimerLatenessMs": 68.51569999999992,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:15",
+      "warmup": true,
+      "saveToListAckMs": 138.7494000000006,
+      "selectToTranslationAckMs": 141.73289999999906,
+      "saveToTranslationAckMs": 283.6733000000004,
+      "selectToCommitMs": 139.10000000149012,
+      "saveToBroadcastMs": 126.38429999999971,
+      "fileWriteMs": 12.299299999998766,
+      "serverStages": {
+        "drainWaitMs": [
+          1.1147000000000844
+        ],
+        "translationPreparationMs": 6.8884000000016385,
+        "validationMs": 0.027700000000550062,
+        "registryReplaceMs": 0.08669999999983702,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 1.1147000000000844,
+        "candidateIntervals": [
+          [
+            25.544200000000274,
+            131.59670000000006
+          ]
+        ],
+        "readAndCandidateMs": 106.05249999999978,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 9752.5744,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 25.740200000000186,
+              "status": "ok",
+              "endMs": 26.364300000001094
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 26.373199999999997,
+              "status": "ok",
+              "endMs": 27.56000000000131
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 27.573200000000725,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 122.38609999999971
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.624100000000908,
+            "fileReadMs": 1.1868000000013126,
+            "catalogParseMs": 94.81289999999899,
+            "candidateOtherMs": 9.428699999998571
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              9752.6078,
+              9903.8121
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              9778.1186,
+              9884.1711
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              9778.3182,
+              9778.9448
+            ]
+          ],
+          "fileReadMs": [
+            [
+              9778.9499,
+              9780.1408
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              9780.1682,
+              9874.9716
+            ]
+          ],
+          "baseStatMs": [
+            [
+              9875.0307,
+              9884.1152
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              9778.1186,
+              9778.3182
+            ],
+            [
+              9778.9448,
+              9778.9499
+            ],
+            [
+              9780.1408,
+              9780.1682
+            ],
+            [
+              9874.9716,
+              9884.1711
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 151.20429999999942,
+            "gcEvents": 1,
+            "gcOverlapMs": 8.72240000218153,
+            "timerDelayOverlapMs": 101.70429999999942,
+            "maxTimerLatenessMs": 88.0034999999989,
+            "lateTicks": 5
+          },
+          "readAndCandidateMs": {
+            "wallMs": 106.05249999999978,
+            "gcEvents": 1,
+            "gcOverlapMs": 8.72240000218153,
+            "timerDelayOverlapMs": 88.0034999999989,
+            "maxTimerLatenessMs": 88.0034999999989,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.6265999999995984,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.1908999999996013,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 94.80340000000069,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 87.82380000000012,
+            "maxTimerLatenessMs": 88.0034999999989,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 9.084500000000844,
+            "gcEvents": 1,
+            "gcOverlapMs": 8.72240000218153,
+            "timerDelayOverlapMs": 0.120600000000195,
+            "maxTimerLatenessMs": 88.0034999999989,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 9.43159999999989,
+            "gcEvents": 1,
+            "gcOverlapMs": 8.72240000218153,
+            "timerDelayOverlapMs": 0.17969999999877473,
+            "maxTimerLatenessMs": 88.0034999999989,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241399
+    },
+    {
+      "token": "10k-20-locales:16",
+      "warmup": false,
+      "saveToListAckMs": 82.65400000000045,
+      "selectToTranslationAckMs": 153.8063000000002,
+      "saveToTranslationAckMs": 238.73350000000028,
+      "selectToCommitMs": 151.69999999925494,
+      "saveToBroadcastMs": 72.04199999999946,
+      "fileWriteMs": 9.906100000000151,
+      "serverStages": {
+        "drainWaitMs": [
+          0.772899999999936
+        ],
+        "translationPreparationMs": 7.8245999999999185,
+        "validationMs": 0.026500000001760782,
+        "registryReplaceMs": 0.07010000000082073,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 0.772899999999936,
+        "candidateIntervals": [
+          [
+            19.3104000000003,
+            73.94779999999992
+          ]
+        ],
+        "readAndCandidateMs": 54.637399999999616,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 10264.7497,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 19.39639999999963,
+              "status": "ok",
+              "endMs": 19.836100000000442
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 19.843300000000454,
+              "status": "ok",
+              "endMs": 20.92749999999978
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 20.93789999999899,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 73.67759999999907
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.439700000000812,
+            "fileReadMs": 1.0841999999993277,
+            "catalogParseMs": 52.739700000000084,
+            "candidateOtherMs": 0.37379999999939173
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              10264.7921,
+              10357.5007
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              10284.0601,
+              10338.6975
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              10284.1483,
+              10284.5913
+            ]
+          ],
+          "fileReadMs": [
+            [
+              10284.5945,
+              10285.6822
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              10285.7027,
+              10338.4405
+            ]
+          ],
+          "baseStatMs": [
+            [
+              10338.5166,
+              10338.6809
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              10284.0601,
+              10284.1483
+            ],
+            [
+              10284.5913,
+              10284.5945
+            ],
+            [
+              10285.6822,
+              10285.7027
+            ],
+            [
+              10338.4405,
+              10338.6975
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 92.70859999999993,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 52.48919999999998,
+            "maxTimerLatenessMs": 45.13720000000103,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 54.637399999999616,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 45.13720000000103,
+            "maxTimerLatenessMs": 45.13720000000103,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.4429999999993015,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.0877000000000407,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 52.73780000000079,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 44.95480000000134,
+            "maxTimerLatenessMs": 45.13720000000103,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.16429999999854772,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.10629999999946449,
+            "maxTimerLatenessMs": 45.13720000000103,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.36889999999948486,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.1823999999996886,
+            "maxTimerLatenessMs": 45.13720000000103,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:17",
+      "warmup": false,
+      "saveToListAckMs": 87.93429999999898,
+      "selectToTranslationAckMs": 147.15630000000056,
+      "saveToTranslationAckMs": 237.39749999999913,
+      "selectToCommitMs": 144.5,
+      "saveToBroadcastMs": 77.56919999999991,
+      "fileWriteMs": 12.62250000000131,
+      "serverStages": {
+        "drainWaitMs": [
+          5.3126999999985856
+        ],
+        "translationPreparationMs": 6.383899999998903,
+        "validationMs": 0.02299999999922875,
+        "registryReplaceMs": 0.07159999999930733,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 5.3126999999985856,
+        "candidateIntervals": [
+          [
+            30.401199999998425,
+            83.73339999999916
+          ]
+        ],
+        "readAndCandidateMs": 53.33220000000074,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 10743.4055,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 30.550999999999476,
+              "status": "ok",
+              "endMs": 30.99459999999999
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 31.003199999999197,
+              "status": "ok",
+              "endMs": 32.01549999999952
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 32.02549999999974,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 83.39059999999881
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.44360000000051514,
+            "fileReadMs": 1.012300000000323,
+            "catalogParseMs": 51.365099999999074,
+            "candidateOtherMs": 0.5112000000008265
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              10743.452,
+              10844.1484
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              10773.8067,
+              10827.1389
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              10773.9595,
+              10774.4065
+            ]
+          ],
+          "fileReadMs": [
+            [
+              10774.4104,
+              10775.4251
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              10775.4478,
+              10826.8096
+            ]
+          ],
+          "baseStatMs": [
+            [
+              10826.8882,
+              10827.1055
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              10773.8067,
+              10773.9595
+            ],
+            [
+              10774.4065,
+              10774.4104
+            ],
+            [
+              10775.4251,
+              10775.4478
+            ],
+            [
+              10826.8096,
+              10827.1389
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 100.69640000000072,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 55.079099999999016,
+            "maxTimerLatenessMs": 47.949399999999514,
+            "lateTicks": 2
+          },
+          "readAndCandidateMs": {
+            "wallMs": 53.33220000000074,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 47.949399999999514,
+            "maxTimerLatenessMs": 47.949399999999514,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.4469999999982974,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.0146999999997206,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 51.361800000000585,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 47.74229999999989,
+            "maxTimerLatenessMs": 47.949399999999514,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.2173000000002503,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.12850000000071304,
+            "maxTimerLatenessMs": 47.949399999999514,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5087000000021362,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.20709999999962747,
+            "maxTimerLatenessMs": 47.949399999999514,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:18",
+      "warmup": false,
+      "saveToListAckMs": 112.99539999999979,
+      "selectToTranslationAckMs": 165.15309999999954,
+      "saveToTranslationAckMs": 281.79509999999937,
+      "selectToCommitMs": 161.80000000074506,
+      "saveToBroadcastMs": 99.55979999999909,
+      "fileWriteMs": 7.977699999999459,
+      "serverStages": {
+        "drainWaitMs": [
+          15.814800000000105
+        ],
+        "translationPreparationMs": 10.456900000001042,
+        "validationMs": 0.026100000000951695,
+        "registryReplaceMs": 0.10270000000127766,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 15.814800000000105,
+        "candidateIntervals": [
+          [
+            33.340799999999945,
+            96.92489999999998
+          ]
+        ],
+        "readAndCandidateMs": 63.584100000000035,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 11224.205,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 33.53219999999965,
+              "status": "ok",
+              "endMs": 34.09900000000016
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 34.10829999999987,
+              "status": "ok",
+              "endMs": 34.92870000000039
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 34.936499999999796,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 96.50849999999991
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.5668000000005122,
+            "fileReadMs": 0.820400000000518,
+            "catalogParseMs": 61.572000000000116,
+            "candidateOtherMs": 0.6248999999988882
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              11224.2321,
+              11345.4154
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              11257.5458,
+              11321.1299
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              11257.7399,
+              11258.3111
+            ]
+          ],
+          "fileReadMs": [
+            [
+              11258.3151,
+              11259.1368
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              11259.1564,
+              11320.7256
+            ]
+          ],
+          "baseStatMs": [
+            [
+              11320.8163,
+              11321.106
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              11257.5458,
+              11257.7399
+            ],
+            [
+              11258.3111,
+              11258.3151
+            ],
+            [
+              11259.1368,
+              11259.1564
+            ],
+            [
+              11320.7256,
+              11321.1299
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 121.1833000000006,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 63.23039999999855,
+            "maxTimerLatenessMs": 53.17699999999968,
+            "lateTicks": 5
+          },
+          "readAndCandidateMs": {
+            "wallMs": 63.584100000000035,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 53.461199999999735,
+            "maxTimerLatenessMs": 53.17699999999968,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.5712000000003172,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.0900999999994383,
+            "maxTimerLatenessMs": 5.637899999999718,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 0.8217000000004191,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 61.56919999999991,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 52.89339999999902,
+            "maxTimerLatenessMs": 53.17699999999968,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.2896999999993568,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.19290000000000873,
+            "maxTimerLatenessMs": 53.17699999999968,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.6219999999993888,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.47770000000127766,
+            "maxTimerLatenessMs": 53.17699999999968,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:19",
+      "warmup": false,
+      "saveToListAckMs": 265.8715999999986,
+      "selectToTranslationAckMs": 135.03840000000127,
+      "saveToTranslationAckMs": 403.3912,
+      "selectToCommitMs": 132.30000000074506,
+      "saveToBroadcastMs": 255.6952999999994,
+      "fileWriteMs": 10.769200000000637,
+      "serverStages": {
+        "drainWaitMs": [
+          12.216100000001461
+        ],
+        "translationPreparationMs": 7.206600000001345,
+        "validationMs": 0.026399999998830026,
+        "registryReplaceMs": 0.07359999999971478,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 12.216100000001461,
+        "candidateIntervals": [
+          [
+            32.28009999999995,
+            259.15339999999924
+          ]
+        ],
+        "readAndCandidateMs": 226.8732999999993,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 11738.7347,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 32.47659999999996,
+              "status": "ok",
+              "endMs": 32.95879999999852
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 32.96809999999823,
+              "status": "ok",
+              "endMs": 34.053899999998976
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 34.07519999999931,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 247.0100999999995
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.48219999999855645,
+            "fileReadMs": 1.085800000000745,
+            "catalogParseMs": 212.9349000000002,
+            "candidateOtherMs": 12.37039999999979
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              11738.7738,
+              12015.562
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              11771.0148,
+              11997.8881
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              11771.2141,
+              11771.7003
+            ]
+          ],
+          "fileReadMs": [
+            [
+              11771.7048,
+              11772.7942
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              11772.8684,
+              11985.7638
+            ]
+          ],
+          "baseStatMs": [
+            [
+              11985.8178,
+              11997.8573
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              11771.0148,
+              11771.2141
+            ],
+            [
+              11771.7003,
+              11771.7048
+            ],
+            [
+              11772.7942,
+              11772.8684
+            ],
+            [
+              11985.7638,
+              11997.8881
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 276.78819999999905,
+            "gcEvents": 1,
+            "gcOverlapMs": 11.481199998408556,
+            "timerDelayOverlapMs": 217.50759999999718,
+            "maxTimerLatenessMs": 204.63609999999971,
+            "lateTicks": 5
+          },
+          "readAndCandidateMs": {
+            "wallMs": 226.8732999999993,
+            "gcEvents": 1,
+            "gcOverlapMs": 11.481199998408556,
+            "timerDelayOverlapMs": 206.78209999999854,
+            "maxTimerLatenessMs": 204.63609999999971,
+            "lateTicks": 3
+          },
+          "pathCheckMs": {
+            "wallMs": 0.48620000000119035,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.07710000000042783,
+            "maxTimerLatenessMs": 1.8658999999988737,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 1.0894000000007509,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 212.89540000000125,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 204.47119999999995,
+            "maxTimerLatenessMs": 204.63609999999971,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 12.039499999998952,
+            "gcEvents": 1,
+            "gcOverlapMs": 11.481199998408556,
+            "timerDelayOverlapMs": 1.9804999999996653,
+            "maxTimerLatenessMs": 204.63609999999971,
+            "lateTicks": 2
+          },
+          "candidateOtherMs": {
+            "wallMs": 12.402299999996103,
+            "gcEvents": 1,
+            "gcOverlapMs": 11.481199998408556,
+            "timerDelayOverlapMs": 2.233799999998155,
+            "maxTimerLatenessMs": 204.63609999999971,
+            "lateTicks": 3
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:20",
+      "warmup": false,
+      "saveToListAckMs": 84.5583000000006,
+      "selectToTranslationAckMs": 276.9457999999995,
+      "saveToTranslationAckMs": 363.8803000000007,
+      "selectToCommitMs": 158.5,
+      "saveToBroadcastMs": 73.86729999999989,
+      "fileWriteMs": 10.38299999999981,
+      "serverStages": {
+        "drainWaitMs": [
+          6.341600000001563
+        ],
+        "translationPreparationMs": 6.104699999999866,
+        "validationMs": 0.014600000000427826,
+        "registryReplaceMs": 0.0687000000016269,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 6.341600000001563,
+        "candidateIntervals": [
+          [
+            22.85150000000067,
+            78.0594000000001
+          ]
+        ],
+        "readAndCandidateMs": 55.20789999999943,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 12373.0769,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 23.01419999999962,
+              "status": "ok",
+              "endMs": 23.696799999999712
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 23.70759999999973,
+              "status": "ok",
+              "endMs": 24.95809999999983
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 24.97149999999965,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 77.72730000000047
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.6826000000000931,
+            "fileReadMs": 1.2505000000001019,
+            "catalogParseMs": 52.75580000000082,
+            "candidateOtherMs": 0.5189999999984138
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              12373.1096,
+              12468.263
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              12395.9284,
+              12451.1363
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              12396.0958,
+              12396.7816
+            ]
+          ],
+          "fileReadMs": [
+            [
+              12396.7866,
+              12398.0424
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              12398.0673,
+              12450.8126
+            ]
+          ],
+          "baseStatMs": [
+            [
+              12450.8713,
+              12451.1115
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              12395.9284,
+              12396.0958
+            ],
+            [
+              12396.7816,
+              12396.7866
+            ],
+            [
+              12398.0424,
+              12398.0673
+            ],
+            [
+              12450.8126,
+              12451.1363
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 95.15340000000106,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 55.52930000000015,
+            "maxTimerLatenessMs": 44.80359999999928,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 55.20789999999943,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 45.054699999998775,
+            "maxTimerLatenessMs": 44.80359999999928,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.6858000000011089,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.08370000000104483,
+            "maxTimerLatenessMs": 3.2348999999994703,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 1.2558000000008178,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 52.74529999999868,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 44.6309999999994,
+            "maxTimerLatenessMs": 44.80359999999928,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.24020000000018626,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.11389999999846623,
+            "maxTimerLatenessMs": 44.80359999999928,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5209999999988213,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.33999999999832653,
+            "maxTimerLatenessMs": 44.80359999999928,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:21",
+      "warmup": false,
+      "saveToListAckMs": 92.98760000000038,
+      "selectToTranslationAckMs": 285.10579999999936,
+      "saveToTranslationAckMs": 380.7502000000004,
+      "selectToCommitMs": 282.5999999977648,
+      "saveToBroadcastMs": 80.6193000000003,
+      "fileWriteMs": 8.691899999999805,
+      "serverStages": {
+        "drainWaitMs": [
+          0.6281999999991967
+        ],
+        "translationPreparationMs": 6.90650000000096,
+        "validationMs": 0.07349999999860302,
+        "registryReplaceMs": 0.12319999999999709,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 0.6281999999991967,
+        "candidateIntervals": [
+          [
+            17.534099999998944,
+            82.11999999999898
+          ]
+        ],
+        "readAndCandidateMs": 64.58590000000004,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 12959.4608,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 17.6312999999991,
+              "status": "ok",
+              "endMs": 18.04069999999956
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 18.048299999998562,
+              "status": "ok",
+              "endMs": 19.16189999999915
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 19.172599999999875,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 81.8192999999992
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.40940000000045984,
+            "fileReadMs": 1.113600000000588,
+            "catalogParseMs": 62.64669999999933,
+            "candidateOtherMs": 0.4161999999996624
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              12959.4826,
+              13061.3912
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              12976.9949,
+              13041.5808
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              12977.0939,
+              12977.5069
+            ]
+          ],
+          "fileReadMs": [
+            [
+              12977.5106,
+              12978.6287
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              12978.641,
+              13041.2894
+            ]
+          ],
+          "baseStatMs": [
+            [
+              13041.3487,
+              13041.5566
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              12976.9949,
+              12977.0939
+            ],
+            [
+              12977.5069,
+              12977.5106
+            ],
+            [
+              12978.6287,
+              12978.641
+            ],
+            [
+              13041.2894,
+              13041.5808
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 101.90860000000066,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 64.45659999999953,
+            "maxTimerLatenessMs": 53.47939999999835,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 64.58590000000004,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 53.47939999999835,
+            "maxTimerLatenessMs": 53.47939999999835,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.41300000000046566,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.1180999999996857,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 62.64840000000004,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 53.31009999999878,
+            "maxTimerLatenessMs": 53.47939999999835,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.20789999999942665,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.10999999999876309,
+            "maxTimerLatenessMs": 53.47939999999835,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.40639999999984866,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.16929999999956635,
+            "maxTimerLatenessMs": 53.47939999999835,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:22",
+      "warmup": false,
+      "saveToListAckMs": 83.94839999999931,
+      "selectToTranslationAckMs": 124.41640000000007,
+      "saveToTranslationAckMs": 210.59469999999965,
+      "selectToCommitMs": 122.19999999925494,
+      "saveToBroadcastMs": 73.64539999999943,
+      "fileWriteMs": 6.858299999999872,
+      "serverStages": {
+        "drainWaitMs": [
+          0.47730000000046857
+        ],
+        "translationPreparationMs": 6.4747000000006665,
+        "validationMs": 0.014999999999417923,
+        "registryReplaceMs": 0.06700000000091677,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 0.47730000000046857,
+        "candidateIntervals": [
+          [
+            15.425600000000486,
+            73.91970000000038
+          ]
+        ],
+        "readAndCandidateMs": 58.49409999999989,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 13563.6636,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 15.481200000000172,
+              "status": "ok",
+              "endMs": 15.872199999999793
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 15.878099999999904,
+              "status": "ok",
+              "endMs": 16.680599999999686
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 16.686999999999898,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 66.17100000000028
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.39099999999962165,
+            "fileReadMs": 0.8024999999997817,
+            "catalogParseMs": 49.48400000000038,
+            "candidateOtherMs": 7.816600000000108
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              13563.6797,
+              13654.5902
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              13579.0892,
+              13637.5833
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              13579.1462,
+              13579.5403
+            ]
+          ],
+          "fileReadMs": [
+            [
+              13579.5428,
+              13580.3476
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              13580.356,
+              13629.8432
+            ]
+          ],
+          "baseStatMs": [
+            [
+              13629.9007,
+              13637.5435
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              13579.0892,
+              13579.1462
+            ],
+            [
+              13579.5403,
+              13579.5428
+            ],
+            [
+              13580.3476,
+              13580.356
+            ],
+            [
+              13629.8432,
+              13637.5833
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 90.91049999999996,
+            "gcEvents": 1,
+            "gcOverlapMs": 7.018899999558926,
+            "timerDelayOverlapMs": 44.610499999998865,
+            "maxTimerLatenessMs": 40.03349999999955,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 58.49409999999989,
+            "gcEvents": 1,
+            "gcOverlapMs": 7.018899999558926,
+            "timerDelayOverlapMs": 40.03349999999955,
+            "maxTimerLatenessMs": 40.03349999999955,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.3941000000013446,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 0.8047999999998865,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 49.487199999999575,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 39.86739999999918,
+            "maxTimerLatenessMs": 40.03349999999955,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 7.642799999999625,
+            "gcEvents": 1,
+            "gcOverlapMs": 7.018899999558926,
+            "timerDelayOverlapMs": 0.10859999999956926,
+            "maxTimerLatenessMs": 40.03349999999955,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 7.807999999999083,
+            "gcEvents": 1,
+            "gcOverlapMs": 7.018899999558926,
+            "timerDelayOverlapMs": 0.16610000000036962,
+            "maxTimerLatenessMs": 40.03349999999955,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:23",
+      "warmup": false,
+      "saveToListAckMs": 80.15300000000025,
+      "selectToTranslationAckMs": 135.1273000000001,
+      "saveToTranslationAckMs": 217.77219999999943,
+      "selectToCommitMs": 132.60000000149012,
+      "saveToBroadcastMs": 69.3742999999995,
+      "fileWriteMs": 8.046599999999671,
+      "serverStages": {
+        "drainWaitMs": [
+          0.48250000000007276
+        ],
+        "translationPreparationMs": 7.020000000000437,
+        "validationMs": 0.02320000000145228,
+        "registryReplaceMs": 0.06279999999969732,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 0.48250000000007276,
+        "candidateIntervals": [
+          [
+            15.854300000000876,
+            70.22780000000057
+          ]
+        ],
+        "readAndCandidateMs": 54.373499999999694,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 14005.1623,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 15.915899999999965,
+              "status": "ok",
+              "endMs": 16.3140999999996
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 16.32220000000052,
+              "status": "ok",
+              "endMs": 17.439000000000306
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 17.450699999999415,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 69.78379999999925
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.3981999999996333,
+            "fileReadMs": 1.1167999999997846,
+            "catalogParseMs": 52.33309999999983,
+            "candidateOtherMs": 0.5254000000004453
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              14005.1901,
+              14093.5727
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              14021.0166,
+              14075.3901
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              14021.0799,
+              14021.4824
+            ]
+          ],
+          "fileReadMs": [
+            [
+              14021.4863,
+              14022.6088
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              14022.6206,
+              14074.9567
+            ]
+          ],
+          "baseStatMs": [
+            [
+              14075.0676,
+              14075.3132
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              14021.0166,
+              14021.0799
+            ],
+            [
+              14021.4824,
+              14021.4863
+            ],
+            [
+              14022.6088,
+              14022.6206
+            ],
+            [
+              14074.9567,
+              14075.3901
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 88.38260000000082,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 58.30919999999787,
+            "maxTimerLatenessMs": 51.57549999999901,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 54.373499999999694,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 51.57549999999901,
+            "maxTimerLatenessMs": 51.57549999999901,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.4025000000001455,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.1224999999994907,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 52.33610000000044,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 51.35239999999976,
+            "maxTimerLatenessMs": 51.57549999999901,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.245600000000195,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.11219999999957508,
+            "maxTimerLatenessMs": 51.57549999999901,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5123999999996158,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.22309999999924912,
+            "maxTimerLatenessMs": 51.57549999999901,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:24",
+      "warmup": false,
+      "saveToListAckMs": 102.49369999999908,
+      "selectToTranslationAckMs": 126.75979999999981,
+      "saveToTranslationAckMs": 231.4352999999992,
+      "selectToCommitMs": 124.5,
+      "saveToBroadcastMs": 92.4346999999998,
+      "fileWriteMs": 8.902600000001257,
+      "serverStages": {
+        "drainWaitMs": [
+          6.7247000000006665
+        ],
+        "translationPreparationMs": 6.4483000000000175,
+        "validationMs": 0.026399999998830026,
+        "registryReplaceMs": 0.06350000000020373,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 6.7247000000006665,
+        "candidateIntervals": [
+          [
+            23.42950000000019,
+            94.76759999999922
+          ]
+        ],
+        "readAndCandidateMs": 71.33809999999903,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 14455.368,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 23.539999999999054,
+              "status": "ok",
+              "endMs": 24.12249999999949
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 24.135800000000017,
+              "status": "ok",
+              "endMs": 25.11579999999958
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 25.123999999999796,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 94.37309999999889
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.5825000000004366,
+            "fileReadMs": 0.9799999999995634,
+            "catalogParseMs": 69.24909999999909,
+            "candidateOtherMs": 0.5264999999999418
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              14455.3838,
+              14566.8703
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              14478.7975,
+              14550.1356
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              14478.9106,
+              14479.5014
+            ]
+          ],
+          "fileReadMs": [
+            [
+              14479.5057,
+              14480.4882
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              14480.4992,
+              14549.7525
+            ]
+          ],
+          "baseStatMs": [
+            [
+              14549.8289,
+              14550.1145
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              14478.7975,
+              14478.9106
+            ],
+            [
+              14479.5014,
+              14479.5057
+            ],
+            [
+              14480.4882,
+              14480.4992
+            ],
+            [
+              14549.7525,
+              14550.1356
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 111.48650000000089,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 72.69760000000315,
+            "maxTimerLatenessMs": 60.972900000000664,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 71.33809999999903,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 61.16539999999986,
+            "maxTimerLatenessMs": 60.972900000000664,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.5907999999999447,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.0794000000005326,
+            "maxTimerLatenessMs": 4.332000000000335,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 0.9825000000000728,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 69.25330000000031,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 60.76050000000032,
+            "maxTimerLatenessMs": 60.972900000000664,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.2855999999992491,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.136000000000422,
+            "maxTimerLatenessMs": 60.972900000000664,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5114999999987049,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.32549999999901047,
+            "maxTimerLatenessMs": 60.972900000000664,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:25",
+      "warmup": false,
+      "saveToListAckMs": 99.08329999999842,
+      "selectToTranslationAckMs": 148.55349999999999,
+      "saveToTranslationAckMs": 250.1216999999997,
+      "selectToCommitMs": 146.30000000074506,
+      "saveToBroadcastMs": 88.37329999999929,
+      "fileWriteMs": 7.637700000001132,
+      "serverStages": {
+        "drainWaitMs": [
+          19.77769999999873
+        ],
+        "translationPreparationMs": 6.260299999999916,
+        "validationMs": 0.01330000000052678,
+        "registryReplaceMs": 0.06899999999950523,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 19.77769999999873,
+        "candidateIntervals": [
+          [
+            34.09299999999894,
+            89.65209999999934
+          ]
+        ],
+        "readAndCandidateMs": 55.5591000000004,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 15181.7044,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 34.30040000000008,
+              "status": "ok",
+              "endMs": 34.90809999999874
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 34.91769999999997,
+              "status": "ok",
+              "endMs": 35.96140000000014
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 35.97239999999874,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 89.33920000000035
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.6076999999986583,
+            "fileReadMs": 1.0437000000001717,
+            "catalogParseMs": 53.366800000001604,
+            "candidateOtherMs": 0.5408999999999651
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              15181.7227,
+              15288.5406
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              15215.7974,
+              15271.3565
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              15216.0096,
+              15216.6192
+            ]
+          ],
+          "fileReadMs": [
+            [
+              15216.6241,
+              15217.6717
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              15217.6846,
+              15271.0517
+            ]
+          ],
+          "baseStatMs": [
+            [
+              15271.1017,
+              15271.3334
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              15215.7974,
+              15216.0096
+            ],
+            [
+              15216.6192,
+              15216.6241
+            ],
+            [
+              15217.6717,
+              15217.6846
+            ],
+            [
+              15271.0517,
+              15271.3565
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 106.81790000000001,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 67.71280000000115,
+            "maxTimerLatenessMs": 45.0617000000002,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 55.5591000000004,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 45.40450000000055,
+            "maxTimerLatenessMs": 45.0617000000002,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.609599999999773,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.13060000000041327,
+            "maxTimerLatenessMs": 15.249799999999595,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 1.0475999999998749,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 53.36709999999948,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 44.90910000000076,
+            "maxTimerLatenessMs": 45.0617000000002,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.23170000000027358,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.10260000000016589,
+            "maxTimerLatenessMs": 45.0617000000002,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5348000000012689,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.3647999999993772,
+            "maxTimerLatenessMs": 45.0617000000002,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:26",
+      "warmup": false,
+      "saveToListAckMs": 97.8726999999999,
+      "selectToTranslationAckMs": 142.98480000000018,
+      "saveToTranslationAckMs": 243.86599999999999,
+      "selectToCommitMs": 140,
+      "saveToBroadcastMs": 83.83159999999953,
+      "fileWriteMs": 8.029500000000553,
+      "serverStages": {
+        "drainWaitMs": [
+          0.057800000000497676,
+          0.9846999999990658
+        ],
+        "translationPreparationMs": 9.159900000000562,
+        "validationMs": 0.032199999999647844,
+        "registryReplaceMs": 0.09380000000055588,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 2,
+        "queueToDrainMs": 0.057800000000497676,
+        "candidateIntervals": [
+          [
+            13.57850000000144,
+            70.63990000000013
+          ],
+          [
+            14.89680000000044,
+            82.55739999999969
+          ]
+        ],
+        "readAndCandidateMs": 68.97889999999825,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 15647.4152,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 13.636599999999817,
+              "status": "ok",
+              "endMs": 14.09190000000126
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 14.09649999999965,
+              "status": "ok",
+              "endMs": 14.949599999999919
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 14.956100000001243,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 70.54960000000028
+            },
+            {
+              "metric": "pathCheckMs",
+              "startMs": 70.70970000000125,
+              "status": "ok",
+              "endMs": 81.07819999999992
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 81.08849999999984,
+              "status": "ok",
+              "endMs": 82.09840000000077
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 82.10510000000068,
+              "sourceLength": 387783,
+              "hasPrevious": true,
+              "status": "ok",
+              "endMs": 82.36000000000058
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 10.82380000000012,
+            "fileReadMs": 1.8630000000011933,
+            "catalogParseMs": 55.848399999998946,
+            "candidateOtherMs": 0.4436999999979889
+          },
+          "calls": {
+            "pathCheckMs": 2,
+            "fileReadMs": 2,
+            "catalogParseMs": 2
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              15647.4586,
+              15753.7726
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              15660.9937,
+              15718.0551
+            ],
+            [
+              15662.312,
+              15729.9726
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              15661.0536,
+              15661.5104
+            ],
+            [
+              15718.1277,
+              15728.5007
+            ]
+          ],
+          "fileReadMs": [
+            [
+              15661.5128,
+              15662.368
+            ],
+            [
+              15728.509,
+              15729.5172
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              15662.3772,
+              15717.9754
+            ],
+            [
+              15729.5263,
+              15729.7781
+            ]
+          ],
+          "baseStatMs": [
+            [
+              15729.8232,
+              15729.956
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              15660.9937,
+              15661.0536
+            ],
+            [
+              15661.5104,
+              15661.5128
+            ],
+            [
+              15662.368,
+              15662.3772
+            ],
+            [
+              15717.9754,
+              15718.1277
+            ],
+            [
+              15728.5007,
+              15728.509
+            ],
+            [
+              15729.5172,
+              15729.5263
+            ],
+            [
+              15729.7781,
+              15729.9726
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 106.3140000000003,
+            "gcEvents": 1,
+            "gcOverlapMs": 9.847699999809265,
+            "timerDelayOverlapMs": 58.50220000000081,
+            "maxTimerLatenessMs": 52.782900000000154,
+            "lateTicks": 5
+          },
+          "readAndCandidateMs": {
+            "wallMs": 68.97889999999825,
+            "gcEvents": 1,
+            "gcOverlapMs": 9.847699999809265,
+            "timerDelayOverlapMs": 52.952000000001135,
+            "maxTimerLatenessMs": 52.782900000000154,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 10.829800000001342,
+            "gcEvents": 1,
+            "gcOverlapMs": 9.847699999809265,
+            "timerDelayOverlapMs": 0.2819000000017695,
+            "maxTimerLatenessMs": 52.782900000000154,
+            "lateTicks": 2
+          },
+          "fileReadMs": {
+            "wallMs": 1.8634000000001834,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 55.849999999998545,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 52.517799999999625,
+            "maxTimerLatenessMs": 52.782900000000154,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.13279999999940628,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.4356999999981781,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.15229999999974098,
+            "maxTimerLatenessMs": 52.782900000000154,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:27",
+      "warmup": false,
+      "saveToListAckMs": 91.64160000000084,
+      "selectToTranslationAckMs": 158.15459999999985,
+      "saveToTranslationAckMs": 256.8107999999993,
+      "selectToCommitMs": 155.69999999925494,
+      "saveToBroadcastMs": 80.04700000000048,
+      "fileWriteMs": 9.683399999999892,
+      "serverStages": {
+        "drainWaitMs": [
+          7.38760000000002
+        ],
+        "translationPreparationMs": 7.038100000001577,
+        "validationMs": 0.02659999999923457,
+        "registryReplaceMs": 0.060499999999592546,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 7.38760000000002,
+        "candidateIntervals": [
+          [
+            25.884299999999712,
+            82.57890000000043
+          ]
+        ],
+        "readAndCandidateMs": 56.69460000000072,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 16117.2744,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 26.104999999999563,
+              "status": "ok",
+              "endMs": 26.680899999999383
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 26.688599999999497,
+              "status": "ok",
+              "endMs": 27.735899999999674
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 27.745499999999083,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 82.30429999999978
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.5758999999998196,
+            "fileReadMs": 1.0473000000001775,
+            "catalogParseMs": 54.5588000000007,
+            "candidateOtherMs": 0.5126000000000204
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              16117.2932,
+              16218.7183
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              16143.1587,
+              16199.8533
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              16143.383,
+              16143.9609
+            ]
+          ],
+          "fileReadMs": [
+            [
+              16143.9644,
+              16145.0149
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              16145.0279,
+              16199.5881
+            ]
+          ],
+          "baseStatMs": [
+            [
+              16199.6455,
+              16199.8334
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              16143.1587,
+              16143.383
+            ],
+            [
+              16143.9609,
+              16143.9644
+            ],
+            [
+              16145.0149,
+              16145.0279
+            ],
+            [
+              16199.5881,
+              16199.8533
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 101.42510000000038,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 61.2538999999997,
+            "maxTimerLatenessMs": 53.89969999999994,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 56.69460000000072,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 53.89969999999994,
+            "maxTimerLatenessMs": 53.89969999999994,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.577900000000227,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.0504999999993743,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 54.560200000001714,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 53.72860000000037,
+            "maxTimerLatenessMs": 53.89969999999994,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.1878999999989901,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.11369999999988067,
+            "maxTimerLatenessMs": 53.89969999999994,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5059999999994034,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.17109999999956926,
+            "maxTimerLatenessMs": 53.89969999999994,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:28",
+      "warmup": false,
+      "saveToListAckMs": 105.61750000000029,
+      "selectToTranslationAckMs": 148.7414000000026,
+      "saveToTranslationAckMs": 257.0695000000014,
+      "selectToCommitMs": 146.30000000074506,
+      "saveToBroadcastMs": 94.41020000000208,
+      "fileWriteMs": 10.048999999999069,
+      "serverStages": {
+        "drainWaitMs": [
+          5.455399999998917
+        ],
+        "translationPreparationMs": 10.51810000000114,
+        "validationMs": 0.03869999999733409,
+        "registryReplaceMs": 0.09070000000065193,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 5.455399999998917,
+        "candidateIntervals": [
+          [
+            21.363400000002002,
+            93.77570000000196
+          ]
+        ],
+        "readAndCandidateMs": 72.41229999999996,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 16605.152,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 21.507300000001123,
+              "status": "ok",
+              "endMs": 22.168000000001484
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 22.178200000002107,
+              "status": "ok",
+              "endMs": 23.09360000000015
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 23.103000000002794,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 93.42540000000008
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.6607000000003609,
+            "fileReadMs": 0.9153999999980442,
+            "catalogParseMs": 70.32239999999729,
+            "candidateOtherMs": 0.5138000000042666
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              16605.1759,
+              16721.0011
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              16626.5154,
+              16698.9277
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              16626.6622,
+              16627.3273
+            ]
+          ],
+          "fileReadMs": [
+            [
+              16627.3323,
+              16628.2505
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              16628.2642,
+              16698.5899
+            ]
+          ],
+          "baseStatMs": [
+            [
+              16698.6566,
+              16698.9016
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              16626.5154,
+              16626.6622
+            ],
+            [
+              16627.3273,
+              16627.3323
+            ],
+            [
+              16628.2505,
+              16628.2642
+            ],
+            [
+              16698.5899,
+              16698.9277
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 115.82520000000295,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 66.29950000000463,
+            "maxTimerLatenessMs": 62.01020000000062,
+            "lateTicks": 5
+          },
+          "readAndCandidateMs": {
+            "wallMs": 72.41229999999996,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 62.269899999999325,
+            "maxTimerLatenessMs": 62.01020000000062,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.6651000000019849,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.11290000000008149,
+            "maxTimerLatenessMs": 1.9314999999987776,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 0.9182000000000698,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 70.3256999999976,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 61.80939999999828,
+            "maxTimerLatenessMs": 62.01020000000062,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.24500000000261934,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.1341000000029453,
+            "maxTimerLatenessMs": 62.01020000000062,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5033000000003085,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.34760000000096625,
+            "maxTimerLatenessMs": 62.01020000000062,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:29",
+      "warmup": false,
+      "saveToListAckMs": 104.93660000000091,
+      "selectToTranslationAckMs": 168.14140000000043,
+      "saveToTranslationAckMs": 279.5339000000022,
+      "selectToCommitMs": 165.60000000149012,
+      "saveToBroadcastMs": 92.09210000000166,
+      "fileWriteMs": 8.313999999998487,
+      "serverStages": {
+        "drainWaitMs": [
+          15.473000000001775
+        ],
+        "translationPreparationMs": 7.220600000000559,
+        "validationMs": 0.013500000000931323,
+        "registryReplaceMs": 0.05940000000191503,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 15.473000000001775,
+        "candidateIntervals": [
+          [
+            31.052800000001298,
+            93.08820000000196
+          ]
+        ],
+        "readAndCandidateMs": 62.035400000000664,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 17117.3229,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 31.191800000000512,
+              "status": "ok",
+              "endMs": 31.778300000001764
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 31.78859999999986,
+              "status": "ok",
+              "endMs": 32.82680000000255
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 32.837100000000646,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 92.79040000000168
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.5865000000012515,
+            "fileReadMs": 1.0382000000026892,
+            "catalogParseMs": 59.953300000001036,
+            "candidateOtherMs": 0.4573999999956868
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              17117.3386,
+              17230.694
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              17148.3757,
+              17210.4111
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              17148.5184,
+              17149.1086
+            ]
+          ],
+          "fileReadMs": [
+            [
+              17149.114,
+              17150.156
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              17150.1674,
+              17210.1234
+            ]
+          ],
+          "baseStatMs": [
+            [
+              17210.1733,
+              17210.3931
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              17148.3757,
+              17148.5184
+            ],
+            [
+              17149.1086,
+              17149.114
+            ],
+            [
+              17150.156,
+              17150.1674
+            ],
+            [
+              17210.1234,
+              17210.4111
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 113.35540000000037,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 69.8077000000012,
+            "maxTimerLatenessMs": 51.65010000000257,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 62.035400000000664,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 51.89280000000144,
+            "maxTimerLatenessMs": 51.65010000000257,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.5901999999987311,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.09999999999854481,
+            "maxTimerLatenessMs": 12.638199999997596,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 1.0419999999976426,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 59.95600000000195,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 51.449100000001636,
+            "maxTimerLatenessMs": 51.65010000000257,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.2198000000025786,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.15110000000277068,
+            "maxTimerLatenessMs": 51.65010000000257,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.44720000000233995,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.3437000000012631,
+            "maxTimerLatenessMs": 51.65010000000257,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:30",
+      "warmup": false,
+      "saveToListAckMs": 115.88240000000224,
+      "selectToTranslationAckMs": 153.90869999999995,
+      "saveToTranslationAckMs": 275.64840000000186,
+      "selectToCommitMs": 146.90000000223517,
+      "saveToBroadcastMs": 100.6257000000005,
+      "fileWriteMs": 11.209899999998015,
+      "serverStages": {
+        "drainWaitMs": [
+          2.067799999997078
+        ],
+        "translationPreparationMs": 9.465199999998731,
+        "validationMs": 0.022199999999429565,
+        "registryReplaceMs": 0.0650000000023283,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 2.067799999997078,
+        "candidateIntervals": [
+          [
+            23.32969999999841,
+            102.24910000000091
+          ]
+        ],
+        "readAndCandidateMs": 78.9194000000025,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 17630.4879,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 23.444400000000314,
+              "status": "ok",
+              "endMs": 23.925200000001496
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 23.93249999999898,
+              "status": "ok",
+              "endMs": 24.949100000001636
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 24.95669999999882,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 90.06560000000172
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.4808000000011816,
+            "fileReadMs": 1.0166000000026543,
+            "catalogParseMs": 65.1089000000029,
+            "candidateOtherMs": 12.313099999995757
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              17630.5027,
+              17757.7186
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              17653.8176,
+              17732.737
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              17653.9347,
+              17654.4185
+            ]
+          ],
+          "fileReadMs": [
+            [
+              17654.422,
+              17655.4413
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              17655.4515,
+              17720.5632
+            ]
+          ],
+          "baseStatMs": [
+            [
+              17720.6139,
+              17732.6874
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              17653.8176,
+              17653.9347
+            ],
+            [
+              17654.4185,
+              17654.422
+            ],
+            [
+              17655.4413,
+              17655.4515
+            ],
+            [
+              17720.5632,
+              17732.737
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 127.21589999999924,
+            "gcEvents": 1,
+            "gcOverlapMs": 11.76799999922514,
+            "timerDelayOverlapMs": 79.22250000000349,
+            "maxTimerLatenessMs": 58.905399999999645,
+            "lateTicks": 5
+          },
+          "readAndCandidateMs": {
+            "wallMs": 78.9194000000025,
+            "gcEvents": 1,
+            "gcOverlapMs": 11.76799999922514,
+            "timerDelayOverlapMs": 60.88420000000042,
+            "maxTimerLatenessMs": 58.905399999999645,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.4837999999981548,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.0192999999999302,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 65.11170000000129,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 58.71240000000034,
+            "maxTimerLatenessMs": 58.905399999999645,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 12.073499999998603,
+            "gcEvents": 1,
+            "gcOverlapMs": 11.76799999922514,
+            "timerDelayOverlapMs": 2.0714999999981956,
+            "maxTimerLatenessMs": 58.905399999999645,
+            "lateTicks": 2
+          },
+          "candidateOtherMs": {
+            "wallMs": 12.30460000000312,
+            "gcEvents": 1,
+            "gcOverlapMs": 11.76799999922514,
+            "timerDelayOverlapMs": 2.1718000000000757,
+            "maxTimerLatenessMs": 58.905399999999645,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:31",
+      "warmup": false,
+      "saveToListAckMs": 105.04209999999875,
+      "selectToTranslationAckMs": 226.19320000000153,
+      "saveToTranslationAckMs": 333.28570000000036,
+      "selectToCommitMs": 222.5,
+      "saveToBroadcastMs": 91.08559999999852,
+      "fileWriteMs": 4.89089999999851,
+      "serverStages": {
+        "drainWaitMs": [
+          0.35120000000097207,
+          0.8220999999975902
+        ],
+        "translationPreparationMs": 6.2479999999995925,
+        "validationMs": 0.013699999999516876,
+        "registryReplaceMs": 0.06149999999979627,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 2,
+        "queueToDrainMs": 0.35120000000097207,
+        "candidateIntervals": [
+          [
+            17.83480000000054,
+            87.17239999999947
+          ],
+          [
+            20.84469999999783,
+            89.62509999999747
+          ]
+        ],
+        "readAndCandidateMs": 71.79029999999693,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 18250.4039,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 17.92829999999958,
+              "status": "ok",
+              "endMs": 20.232599999999366
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 20.243800000000192,
+              "status": "ok",
+              "endMs": 21.678399999997055
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 21.690199999997276,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 87.12909999999829
+            },
+            {
+              "metric": "pathCheckMs",
+              "startMs": 87.23119999999835,
+              "status": "ok",
+              "endMs": 87.77620000000024
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 87.78210000000036,
+              "status": "ok",
+              "endMs": 89.28319999999803
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 89.29060000000027,
+              "sourceLength": 387783,
+              "hasPrevious": true,
+              "status": "ok",
+              "endMs": 89.41969999999856
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 2.8493000000016764,
+            "fileReadMs": 2.93569999999454,
+            "catalogParseMs": 65.5679999999993,
+            "candidateOtherMs": 0.43730000000141445
+          },
+          "calls": {
+            "pathCheckMs": 2,
+            "fileReadMs": 2,
+            "catalogParseMs": 2
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              18250.4201,
+              18360.4823
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              18268.2387,
+              18337.5763
+            ],
+            [
+              18271.2486,
+              18340.029
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              18268.3341,
+              18270.6442
+            ],
+            [
+              18337.6381,
+              18338.1846
+            ]
+          ],
+          "fileReadMs": [
+            [
+              18270.6515,
+              18272.0879
+            ],
+            [
+              18338.1874,
+              18339.6905
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              18272.1012,
+              18337.5423
+            ],
+            [
+              18339.7006,
+              18339.8259
+            ]
+          ],
+          "baseStatMs": [
+            [
+              18339.8612,
+              18340.0095
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              18268.2387,
+              18268.3341
+            ],
+            [
+              18270.6442,
+              18270.6515
+            ],
+            [
+              18272.0879,
+              18272.1012
+            ],
+            [
+              18337.5423,
+              18337.6381
+            ],
+            [
+              18338.1846,
+              18338.1874
+            ],
+            [
+              18339.6905,
+              18339.7006
+            ],
+            [
+              18339.8259,
+              18340.029
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 110.0622000000003,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 73.18399999999747,
+            "maxTimerLatenessMs": 59.51979999999821,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 71.79029999999693,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 59.51979999999821,
+            "maxTimerLatenessMs": 59.51979999999821,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 2.856599999999162,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.09869999999864376,
+            "maxTimerLatenessMs": 59.51979999999821,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 2.9395000000004075,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 65.5663999999997,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 59.325300000000425,
+            "maxTimerLatenessMs": 59.51979999999821,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.14830000000074506,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.42779999999766005,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.09579999999914435,
+            "maxTimerLatenessMs": 59.51979999999821,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:32",
+      "warmup": false,
+      "saveToListAckMs": 101.41430000000037,
+      "selectToTranslationAckMs": 138.46240000000034,
+      "saveToTranslationAckMs": 242.41129999999976,
+      "selectToCommitMs": 135.80000000074506,
+      "saveToBroadcastMs": 87.21340000000055,
+      "fileWriteMs": 5.731100000000879,
+      "serverStages": {
+        "drainWaitMs": [
+          7.5416000000004715
+        ],
+        "translationPreparationMs": 6.316300000002229,
+        "validationMs": 0.013700000003154855,
+        "registryReplaceMs": 0.06220000000030268,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 7.5416000000004715,
+        "candidateIntervals": [
+          [
+            23.387000000002445,
+            86.52790000000095
+          ]
+        ],
+        "readAndCandidateMs": 63.14089999999851,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 18802.5699,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 23.523700000001554,
+              "status": "ok",
+              "endMs": 24.153300000001764
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 24.162599999999657,
+              "status": "ok",
+              "endMs": 25.318500000001222
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 25.33110000000306,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 86.28729999999996
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.6296000000002095,
+            "fileReadMs": 1.1559000000015658,
+            "catalogParseMs": 60.9561999999969,
+            "candidateOtherMs": 0.399199999999837
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              18802.5884,
+              18909.9156
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              18825.9569,
+              18889.0978
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              18826.0959,
+              18826.7299
+            ]
+          ],
+          "fileReadMs": [
+            [
+              18826.7341,
+              18827.8951
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              18827.909,
+              18888.866
+            ]
+          ],
+          "baseStatMs": [
+            [
+              18888.9161,
+              18889.0816
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              18825.9569,
+              18826.0959
+            ],
+            [
+              18826.7299,
+              18826.7341
+            ],
+            [
+              18827.8951,
+              18827.909
+            ],
+            [
+              18888.866,
+              18889.0978
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 107.32719999999972,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 70.84530000000086,
+            "maxTimerLatenessMs": 53.113499999999476,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 63.14089999999851,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 53.113499999999476,
+            "maxTimerLatenessMs": 53.113499999999476,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.6339999999981956,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.1610000000000582,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 60.957000000002154,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 52.95820000000094,
+            "maxTimerLatenessMs": 53.113499999999476,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.16550000000279397,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.10520000000178698,
+            "maxTimerLatenessMs": 53.113499999999476,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.38889999999810243,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.15529999999853317,
+            "maxTimerLatenessMs": 53.113499999999476,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:33",
+      "warmup": false,
+      "saveToListAckMs": 91.64249999999811,
+      "selectToTranslationAckMs": 136.4429999999993,
+      "saveToTranslationAckMs": 231.0599000000002,
+      "selectToCommitMs": 133.80000000074506,
+      "saveToBroadcastMs": 80.53089999999793,
+      "fileWriteMs": 9.575199999999313,
+      "serverStages": {
+        "drainWaitMs": [
+          4.674899999998161
+        ],
+        "translationPreparationMs": 6.377199999998993,
+        "validationMs": 0.023000000001047738,
+        "registryReplaceMs": 0.09059999999954016,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 4.674899999998161,
+        "candidateIntervals": [
+          [
+            20.763499999997293,
+            83.5763999999981
+          ]
+        ],
+        "readAndCandidateMs": 62.81290000000081,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 19278.9383,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 20.90259999999762,
+              "status": "ok",
+              "endMs": 21.5054999999993
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 21.513199999997596,
+              "status": "ok",
+              "endMs": 22.52469999999812
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 22.534599999999045,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 83.30019999999786
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.6029000000016822,
+            "fileReadMs": 1.0115000000005239,
+            "catalogParseMs": 60.76559999999881,
+            "candidateOtherMs": 0.43289999999979045
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              19278.9582,
+              19380.3133
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              19299.7018,
+              19362.5147
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              19299.8439,
+              19300.4497
+            ]
+          ],
+          "fileReadMs": [
+            [
+              19300.4532,
+              19301.4688
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              19301.4803,
+              19362.2482
+            ]
+          ],
+          "baseStatMs": [
+            [
+              19362.3034,
+              19362.4938
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              19299.7018,
+              19299.8439
+            ],
+            [
+              19300.4497,
+              19300.4532
+            ],
+            [
+              19301.4688,
+              19301.4803
+            ],
+            [
+              19362.2482,
+              19362.5147
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 101.35510000000068,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 62.121500000004744,
+            "maxTimerLatenessMs": 52.48029999999926,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 62.81290000000081,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 52.71180000000095,
+            "maxTimerLatenessMs": 52.48029999999926,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.6058000000011816,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.08940000000075088,
+            "maxTimerLatenessMs": 1.7440000000024156,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 1.0155999999988126,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 60.767900000002555,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 52.313500000000204,
+            "maxTimerLatenessMs": 52.48029999999926,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.19039999999949941,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.11160000000018044,
+            "maxTimerLatenessMs": 52.48029999999926,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.4235999999982596,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.3088999999999942,
+            "maxTimerLatenessMs": 52.48029999999926,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:34",
+      "warmup": false,
+      "saveToListAckMs": 92.28290000000197,
+      "selectToTranslationAckMs": 155.3322999999982,
+      "saveToTranslationAckMs": 250.14719999999943,
+      "selectToCommitMs": 152.89999999850988,
+      "saveToBroadcastMs": 81.36380000000281,
+      "fileWriteMs": 7.024199999999837,
+      "serverStages": {
+        "drainWaitMs": [
+          0.8397000000004482
+        ],
+        "translationPreparationMs": 6.831299999998009,
+        "validationMs": 0.016700000000128057,
+        "registryReplaceMs": 0.0665999999982887,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 0.8397000000004482,
+        "candidateIntervals": [
+          [
+            16.491900000000896,
+            81.44120000000112
+          ]
+        ],
+        "readAndCandidateMs": 64.94930000000022,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 19753.4979,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 16.572900000002846,
+              "status": "ok",
+              "endMs": 16.964700000000448
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 16.970400000001973,
+              "status": "ok",
+              "endMs": 17.667300000000978
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 17.674000000002707,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 70.08840000000055
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.39179999999760184,
+            "fileReadMs": 0.6968999999990046,
+            "catalogParseMs": 52.41439999999784,
+            "candidateOtherMs": 11.446200000005774
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              19753.5136,
+              19852.9811
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              19769.9898,
+              19834.9391
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              19770.0732,
+              19770.4667
+            ]
+          ],
+          "fileReadMs": [
+            [
+              19770.4696,
+              19771.1683
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              19771.1771,
+              19823.5949
+            ]
+          ],
+          "baseStatMs": [
+            [
+              19823.6436,
+              19834.9018
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              19769.9898,
+              19770.0732
+            ],
+            [
+              19770.4667,
+              19770.4696
+            ],
+            [
+              19771.1683,
+              19771.1771
+            ],
+            [
+              19823.5949,
+              19834.9391
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 99.46750000000247,
+            "gcEvents": 1,
+            "gcOverlapMs": 10.61200000345707,
+            "timerDelayOverlapMs": 56.241399999998976,
+            "maxTimerLatenessMs": 51.50849999999991,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 64.94930000000022,
+            "gcEvents": 1,
+            "gcOverlapMs": 10.61200000345707,
+            "timerDelayOverlapMs": 52.597499999999854,
+            "maxTimerLatenessMs": 51.50849999999991,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.39350000000194996,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 0.6987000000008265,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 52.41779999999926,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 51.35559999999896,
+            "maxTimerLatenessMs": 51.50849999999991,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 11.258200000000215,
+            "gcEvents": 1,
+            "gcOverlapMs": 10.61200000345707,
+            "timerDelayOverlapMs": 1.193200000001525,
+            "maxTimerLatenessMs": 51.50849999999991,
+            "lateTicks": 2
+          },
+          "candidateOtherMs": {
+            "wallMs": 11.439299999998184,
+            "gcEvents": 1,
+            "gcOverlapMs": 10.61200000345707,
+            "timerDelayOverlapMs": 1.2419000000008964,
+            "maxTimerLatenessMs": 51.50849999999991,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:35",
+      "warmup": false,
+      "saveToListAckMs": 99.60959999999977,
+      "selectToTranslationAckMs": 137.3335999999981,
+      "saveToTranslationAckMs": 239.25069999999687,
+      "selectToCommitMs": 135.09999999776483,
+      "saveToBroadcastMs": 89.91879999999946,
+      "fileWriteMs": 8.885800000000017,
+      "serverStages": {
+        "drainWaitMs": [
+          14.382299999997485
+        ],
+        "translationPreparationMs": 6.290799999998853,
+        "validationMs": 0.014400000000023283,
+        "registryReplaceMs": 0.0937000000012631,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 14.382299999997485,
+        "candidateIntervals": [
+          [
+            30.91070000000036,
+            92.37410000000091
+          ]
+        ],
+        "readAndCandidateMs": 61.46340000000055,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 20232.9066,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 31.04660000000149,
+              "status": "ok",
+              "endMs": 31.57010000000082
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 31.57760000000053,
+              "status": "ok",
+              "endMs": 32.6675000000032
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 32.67870000000039,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 92.07060000000274
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.5234999999993306,
+            "fileReadMs": 1.0899000000026717,
+            "catalogParseMs": 59.39190000000235,
+            "candidateOtherMs": 0.4580999999961932
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              20232.9277,
+              20341.541
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              20263.8173,
+              20325.2807
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              20263.9552,
+              20264.4828
+            ]
+          ],
+          "fileReadMs": [
+            [
+              20264.4855,
+              20265.5804
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              20265.5921,
+              20324.987
+            ]
+          ],
+          "baseStatMs": [
+            [
+              20325.0376,
+              20325.2561
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              20263.8173,
+              20263.9552
+            ],
+            [
+              20264.4828,
+              20264.4855
+            ],
+            [
+              20265.5804,
+              20265.5921
+            ],
+            [
+              20324.987,
+              20325.2807
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 108.61330000000089,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 71.31629999999495,
+            "maxTimerLatenessMs": 51.38419999999678,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 61.46340000000055,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 51.38419999999678,
+            "maxTimerLatenessMs": 51.38419999999678,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.5276000000012573,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.0949000000000524,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 59.394899999999325,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 51.226699999999255,
+            "maxTimerLatenessMs": 51.38419999999678,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.21849999999903957,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.10689999999885913,
+            "maxTimerLatenessMs": 51.38419999999678,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.4459999999999127,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.15749999999752617,
+            "maxTimerLatenessMs": 51.38419999999678,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:36",
+      "warmup": false,
+      "saveToListAckMs": 87.37419999999838,
+      "selectToTranslationAckMs": 145.15270000000237,
+      "saveToTranslationAckMs": 235.04869999999937,
+      "selectToCommitMs": 142.69999999925494,
+      "saveToBroadcastMs": 76.704899999997,
+      "fileWriteMs": 8.798200000001088,
+      "serverStages": {
+        "drainWaitMs": [
+          0.4879000000000815
+        ],
+        "translationPreparationMs": 7.9297999999980675,
+        "validationMs": 0.017100000000937143,
+        "registryReplaceMs": 0.06739999999990687,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 0.4879000000000815,
+        "candidateIntervals": [
+          [
+            15.850399999999354,
+            77.45369999999821
+          ]
+        ],
+        "readAndCandidateMs": 61.60329999999885,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 20697.1647,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 15.909700000000157,
+              "status": "ok",
+              "endMs": 16.3279999999977
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 16.334499999997206,
+              "status": "ok",
+              "endMs": 17.187599999997474
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 17.1945999999989,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 77.16159999999945
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.41829999999754364,
+            "fileReadMs": 0.8531000000002678,
+            "catalogParseMs": 59.96700000000055,
+            "candidateOtherMs": 0.36490000000048894
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              20697.1873,
+              20793.4654
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              20713.0151,
+              20774.6184
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              20713.0761,
+              20713.4973
+            ]
+          ],
+          "fileReadMs": [
+            [
+              20713.5007,
+              20714.3557
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              20714.3642,
+              20774.3351
+            ]
+          ],
+          "baseStatMs": [
+            [
+              20774.3864,
+              20774.595
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              20713.0151,
+              20713.0761
+            ],
+            [
+              20713.4973,
+              20713.5007
+            ],
+            [
+              20714.3557,
+              20714.3642
+            ],
+            [
+              20774.3351,
+              20774.6184
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 96.27809999999954,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 59.4419999999991,
+            "maxTimerLatenessMs": 50.183899999999994,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 61.60329999999885,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 50.46889999999985,
+            "maxTimerLatenessMs": 50.183899999999994,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.42120000000068103,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 0.8549999999995634,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.2849999999998545,
+            "maxTimerLatenessMs": 0.2849999999998545,
+            "lateTicks": 1
+          },
+          "catalogParseMs": {
+            "wallMs": 59.970900000000256,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 50.02769999999873,
+            "maxTimerLatenessMs": 50.183899999999994,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.20860000000175205,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.10490000000208966,
+            "maxTimerLatenessMs": 50.183899999999994,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.3561999999983527,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.1562000000012631,
+            "maxTimerLatenessMs": 50.183899999999994,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:37",
+      "warmup": false,
+      "saveToListAckMs": 91.54579999999987,
+      "selectToTranslationAckMs": 129.8244999999988,
+      "saveToTranslationAckMs": 223.70539999999892,
+      "selectToCommitMs": 127.19999999925494,
+      "saveToBroadcastMs": 81.41749999999956,
+      "fileWriteMs": 5.923099999999977,
+      "serverStages": {
+        "drainWaitMs": [
+          0.176499999997759,
+          64.5698999999986
+        ],
+        "translationPreparationMs": 6.503799999998591,
+        "validationMs": 0.01420000000143773,
+        "registryReplaceMs": 0.06610000000000582,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 2,
+        "queueToDrainMs": 0.176499999997759,
+        "candidateIntervals": [
+          [
+            13.066899999997986,
+            66.24229999999807
+          ],
+          [
+            78.59799999999814,
+            80.72190000000046
+          ]
+        ],
+        "readAndCandidateMs": 55.299300000002404,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 21164.0011,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 13.129099999998289,
+              "status": "ok",
+              "endMs": 14.088799999997718
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 14.093699999997625,
+              "status": "ok",
+              "endMs": 14.9474999999984
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 14.954299999997602,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 66.15359999999782
+            },
+            {
+              "metric": "pathCheckMs",
+              "startMs": 78.78749999999854,
+              "status": "ok",
+              "endMs": 79.38719999999739
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 79.39630000000034,
+              "status": "ok",
+              "endMs": 80.40459999999803
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 80.41169999999693,
+              "sourceLength": 387783,
+              "hasPrevious": true,
+              "status": "ok",
+              "endMs": 80.54769999999917
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 1.559399999998277,
+            "fileReadMs": 1.8620999999984633,
+            "catalogParseMs": 51.33530000000246,
+            "candidateOtherMs": 0.5425000000032014
+          },
+          "calls": {
+            "pathCheckMs": 2,
+            "fileReadMs": 2,
+            "catalogParseMs": 2
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              21164.0175,
+              21261.6325
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              21177.068,
+              21230.2434
+            ],
+            [
+              21242.5991,
+              21244.723
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              21177.1317,
+              21178.0936
+            ],
+            [
+              21242.7928,
+              21243.3953
+            ]
+          ],
+          "fileReadMs": [
+            [
+              21178.0958,
+              21178.9521
+            ],
+            [
+              21243.3994,
+              21244.4091
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              21178.961,
+              21230.1642
+            ],
+            [
+              21244.4186,
+              21244.5517
+            ]
+          ],
+          "baseStatMs": [
+            [
+              21244.5866,
+              21244.7044
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              21177.068,
+              21177.1317
+            ],
+            [
+              21178.0936,
+              21178.0958
+            ],
+            [
+              21178.9521,
+              21178.961
+            ],
+            [
+              21230.1642,
+              21230.2434
+            ],
+            [
+              21242.5991,
+              21242.7928
+            ],
+            [
+              21243.3953,
+              21243.3994
+            ],
+            [
+              21244.4091,
+              21244.4186
+            ],
+            [
+              21244.5517,
+              21244.723
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 97.61499999999796,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 55.92920000000231,
+            "maxTimerLatenessMs": 48.29769999999917,
+            "lateTicks": 3
+          },
+          "readAndCandidateMs": {
+            "wallMs": 55.299300000002404,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 48.576600000000326,
+            "maxTimerLatenessMs": 48.29769999999917,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 1.5643999999992957,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.1136000000005879,
+            "maxTimerLatenessMs": 2.63300000000163,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 1.8660000000018044,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 51.33629999999903,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 48.1900999999998,
+            "maxTimerLatenessMs": 48.29769999999917,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.11779999999998836,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.5326000000022759,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.27289999999993597,
+            "maxTimerLatenessMs": 48.29769999999917,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:38",
+      "warmup": false,
+      "saveToListAckMs": 101.72680000000037,
+      "selectToTranslationAckMs": 135.6209000000017,
+      "saveToTranslationAckMs": 239.34170000000086,
+      "selectToCommitMs": 133.5,
+      "saveToBroadcastMs": 91.58729999999923,
+      "fileWriteMs": 5.226699999999255,
+      "serverStages": {
+        "drainWaitMs": [
+          11.631399999998393
+        ],
+        "translationPreparationMs": 7.851800000000367,
+        "validationMs": 0.018499999998311978,
+        "registryReplaceMs": 0.06649999999717693,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 11.631399999998393,
+        "candidateIntervals": [
+          [
+            26.948899999999412,
+            88.83510000000024
+          ]
+        ],
+        "readAndCandidateMs": 61.88620000000083,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 21603.8695,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 27.088199999998324,
+              "status": "ok",
+              "endMs": 27.60979999999836
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 27.618500000000495,
+              "status": "ok",
+              "endMs": 28.64010000000053
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 28.64839999999822,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 78.94640000000072
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.5216000000000349,
+            "fileReadMs": 1.021600000000035,
+            "catalogParseMs": 50.2980000000025,
+            "candidateOtherMs": 10.044999999998254
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              21603.8851,
+              21710.9394
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              21630.8184,
+              21692.7046
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              21630.9604,
+              21631.486
+            ]
+          ],
+          "fileReadMs": [
+            [
+              21631.4898,
+              21632.5139
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              21632.5251,
+              21682.8247
+            ]
+          ],
+          "baseStatMs": [
+            [
+              21682.8734,
+              21692.6682
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              21630.8184,
+              21630.9604
+            ],
+            [
+              21631.486,
+              21631.4898
+            ],
+            [
+              21632.5139,
+              21632.5251
+            ],
+            [
+              21682.8247,
+              21692.7046
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 107.05429999999978,
+            "gcEvents": 1,
+            "gcOverlapMs": 9.307199999690056,
+            "timerDelayOverlapMs": 61.08929999999964,
+            "maxTimerLatenessMs": 42.1974999999984,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 61.88620000000083,
+            "gcEvents": 1,
+            "gcOverlapMs": 9.307199999690056,
+            "timerDelayOverlapMs": 42.1974999999984,
+            "maxTimerLatenessMs": 42.1974999999984,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.5256000000008498,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.0241000000023632,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 50.2996000000021,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 42.04060000000027,
+            "maxTimerLatenessMs": 42.1974999999984,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 9.794799999999668,
+            "gcEvents": 1,
+            "gcOverlapMs": 9.307199999690056,
+            "timerDelayOverlapMs": 0.10819999999876018,
+            "maxTimerLatenessMs": 42.1974999999984,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 10.036899999995512,
+            "gcEvents": 1,
+            "gcOverlapMs": 9.307199999690056,
+            "timerDelayOverlapMs": 0.15689999999813153,
+            "maxTimerLatenessMs": 42.1974999999984,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:39",
+      "warmup": false,
+      "saveToListAckMs": 113.94650000000183,
+      "selectToTranslationAckMs": 148.57080000000133,
+      "saveToTranslationAckMs": 265.2755000000034,
+      "selectToCommitMs": 145.89999999850988,
+      "saveToBroadcastMs": 102.33900000000358,
+      "fileWriteMs": 11.04649999999674,
+      "serverStages": {
+        "drainWaitMs": [
+          13.297999999998865
+        ],
+        "translationPreparationMs": 9.335799999997107,
+        "validationMs": 0.03210000000035507,
+        "registryReplaceMs": 0.14760000000023865,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 13.297999999998865,
+        "candidateIntervals": [
+          [
+            34.447299999999814,
+            103.80580000000191
+          ]
+        ],
+        "readAndCandidateMs": 69.3585000000021,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 22061.6305,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 34.564000000002125,
+              "status": "ok",
+              "endMs": 35.03529999999955
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 35.04270000000179,
+              "status": "ok",
+              "endMs": 35.81239999999889
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 35.818600000002334,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 103.50979999999981
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.4712999999974272,
+            "fileReadMs": 0.7696999999971013,
+            "catalogParseMs": 67.69119999999748,
+            "candidateOtherMs": 0.4263000000100874
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              22061.6477,
+              22186.7453
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              22096.0778,
+              22165.4363
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              22096.1963,
+              22096.6713
+            ]
+          ],
+          "fileReadMs": [
+            [
+              22096.6746,
+              22097.446
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              22097.455,
+              22165.1527
+            ]
+          ],
+          "baseStatMs": [
+            [
+              22165.2172,
+              22165.4152
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              22096.0778,
+              22096.1963
+            ],
+            [
+              22096.6713,
+              22096.6746
+            ],
+            [
+              22097.446,
+              22097.455
+            ],
+            [
+              22165.1527,
+              22165.4363
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 125.09759999999733,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 67.29289999999673,
+            "maxTimerLatenessMs": 59.0695999999989,
+            "lateTicks": 6
+          },
+          "readAndCandidateMs": {
+            "wallMs": 69.3585000000021,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 59.264500000001135,
+            "maxTimerLatenessMs": 59.0695999999989,
+            "lateTicks": 2
+          },
+          "pathCheckMs": {
+            "wallMs": 0.4750000000021828,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.07640000000174041,
+            "maxTimerLatenessMs": 3.3461999999999534,
+            "lateTicks": 1
+          },
+          "fileReadMs": {
+            "wallMs": 0.7714000000014494,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 67.69769999999698,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 58.87899999999718,
+            "maxTimerLatenessMs": 59.0695999999989,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.19800000000032014,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.1261000000013155,
+            "maxTimerLatenessMs": 59.0695999999989,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.4144000000014785,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.3091000000022177,
+            "maxTimerLatenessMs": 59.0695999999989,
+            "lateTicks": 2
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:40",
+      "warmup": false,
+      "saveToListAckMs": 92.37809999999808,
+      "selectToTranslationAckMs": 161.3065999999999,
+      "saveToTranslationAckMs": 256.97379999999976,
+      "selectToCommitMs": 158.40000000223517,
+      "saveToBroadcastMs": 82.24879999999757,
+      "fileWriteMs": 10.110500000002503,
+      "serverStages": {
+        "drainWaitMs": [
+          6.492799999999988
+        ],
+        "translationPreparationMs": 6.3373999999967054,
+        "validationMs": 0.016400000000430737,
+        "registryReplaceMs": 0.056000000000494765,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 6.492799999999988,
+        "candidateIntervals": [
+          [
+            23.289499999998952,
+            85.92829999999958
+          ]
+        ],
+        "readAndCandidateMs": 62.63880000000063,
+        "boundaryVersion": 2,
+        "fileStages": {
+          "startedAt": 22558.9414,
+          "operations": [
+            {
+              "metric": "pathCheckMs",
+              "startMs": 23.43500000000131,
+              "status": "ok",
+              "endMs": 23.920600000001286
+            },
+            {
+              "metric": "fileReadMs",
+              "startMs": 23.93029999999999,
+              "status": "ok",
+              "endMs": 24.933100000002014
+            },
+            {
+              "metric": "catalogParseMs",
+              "startMs": 24.941100000000006,
+              "sourceLength": 387783,
+              "hasPrevious": false,
+              "status": "ok",
+              "endMs": 85.63420000000042
+            }
+          ],
+          "timings": {
+            "pathCheckMs": 0.4855999999999767,
+            "fileReadMs": 1.0028000000020256,
+            "catalogParseMs": 60.69310000000041,
+            "candidateOtherMs": 0.457299999998213
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        },
+        "runtimeWindows": {
+          "sample": [
+            [
+              22558.965,
+              22661.612
+            ]
+          ],
+          "readAndCandidateMs": [
+            [
+              22582.2309,
+              22644.8697
+            ]
+          ],
+          "pathCheckMs": [
+            [
+              22582.3786,
+              22582.8693
+            ]
+          ],
+          "fileReadMs": [
+            [
+              22582.8734,
+              22583.8788
+            ]
+          ],
+          "catalogParseMs": [
+            [
+              22583.8895,
+              22644.5855
+            ]
+          ],
+          "baseStatMs": [
+            [
+              22644.6356,
+              22644.8499
+            ]
+          ],
+          "candidateOtherMs": [
+            [
+              22582.2309,
+              22582.3786
+            ],
+            [
+              22582.8693,
+              22582.8734
+            ],
+            [
+              22583.8788,
+              22583.8895
+            ],
+            [
+              22644.5855,
+              22644.8697
+            ]
+          ]
+        },
+        "runtime": {
+          "sample": {
+            "wallMs": 102.64700000000084,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 65.79170000000158,
+            "maxTimerLatenessMs": 52.549699999999575,
+            "lateTicks": 4
+          },
+          "readAndCandidateMs": {
+            "wallMs": 62.63880000000063,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 52.549699999999575,
+            "maxTimerLatenessMs": 52.549699999999575,
+            "lateTicks": 1
+          },
+          "pathCheckMs": {
+            "wallMs": 0.49069999999846914,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "fileReadMs": {
+            "wallMs": 1.0053999999981897,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0,
+            "maxTimerLatenessMs": 0,
+            "lateTicks": 0
+          },
+          "catalogParseMs": {
+            "wallMs": 60.69599999999991,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 52.39380000000165,
+            "maxTimerLatenessMs": 52.549699999999575,
+            "lateTicks": 1
+          },
+          "baseStatMs": {
+            "wallMs": 0.2142999999996391,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.10579999999754364,
+            "maxTimerLatenessMs": 52.549699999999575,
+            "lateTicks": 1
+          },
+          "candidateOtherMs": {
+            "wallMs": 0.4467000000040571,
+            "gcEvents": 0,
+            "gcOverlapMs": 0,
+            "timerDelayOverlapMs": 0.1558999999979278,
+            "maxTimerLatenessMs": 52.549699999999575,
+            "lateTicks": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    }
+  ]
+}
