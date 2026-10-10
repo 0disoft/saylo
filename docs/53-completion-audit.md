@@ -140,3 +140,9 @@
 - fresh Vite SSR 복구 5/5 `true`, 얇은 계층 브라우저 스모크 8개 PASS는 프로토타입 범위 기록이다. 현행 `npm run check` PASS(모든 build·workspace test·소비자 typecheck·React typecheck·scripts, Vite 테스트 94개)와 `parser-probe` 1 PASS를 기록에 함께 남긴다.
 - 본체 source API·의존성·버전은 그대로이고 로컬 커밋만 했으며 push·publish는 없다. 원시 결과는 `9743a38`에 함께 커밋됐다.
 - 상세는 [59-json-leaf-edits.md](59-json-leaf-edits.md)를 따른다.
+
+## 후속 기록 (`32e120c`)
+
+새 경로의 카탈로그 추가는 40ms 안정화 대기 없이 다음 이벤트 루프 턴에 읽도록 했다. 기존 파일 교체·삭제와 ENOENT 안정화, 60ms 꼬리 metadata 재확인은 유지한다. 두 최초 파싱 최적화 실험은 이득이 없어 원복했다. 일반 조건 단일 run의 목록 p95는 small 91.62ms·large 189.30ms이며, large는 250ms 이내 24/25·최대 402.11ms여서 안정 달성을 주장하지 않는다. 전체 `npm run check`(Vite 95개 포함)와 이후 테스트만 추가한 plugin 43개가 통과했다. 원격 반영은 없고 전체 얇은 계층 비교·성능 안정성·미게시 변경 릴리스 결정은 남아 있다. 원시 자료·실험·교차 측정은 [60](60-next-turn-additions.md)을 따른다.
+
+동일 두 소스만 치환한 ABBA 후속 비교는 목록 p50 214.09→150.97ms, 250ms 이내 31/50→40/50이지만 pooled p95 417.47→642.02ms로 목표 미달이다. after 두 run도 각각 642.02·463.31ms다. control·파일 쓰기 시간도 달라져 인과를 확정하지 않으며 대기창 제거의 성능 채택은 잠정 상태로 둔다. 상세 파일 계측은 after의 1회 읽기 가정을 만족하지 못해 종료했고 해당 시도에 after·pooled 결과는 없다. 정상 조건 ABBA와 복구 5개·프로토타입 브라우저 8개는 완료했다. 근거와 재현은 60을 따른다.
