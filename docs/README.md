@@ -84,6 +84,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 66. [69-thin-layer-typegen.md](69-thin-layer-typegen.md) — 실제 Vite dev typegen worker와 strict·checkJs 소비자 9단계, any-return 대조 선언으로 오류 검사 확인
 
+67. [70-thin-layer-lazy-production-browser.md](70-thin-layer-lazy-production-browser.md) — 실제 Vite production build 두 개의 static HTTP·headless Chromium lazy 부분 로딩 12단계와 parser marker 부재 관측
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |

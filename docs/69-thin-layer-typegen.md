@@ -60,3 +60,7 @@ node benchmarks/thin-layer/typegen-probe.mjs --out benchmarks/results/thin-layer
 ## 상태
 
 typegen 코드와 원시 결과는 로컬 커밋 `26e9df0`에 있고 미푸시다. 제품 package·버전은 바뀌지 않았고 게시·배포는 없다.
+
+## 후속: lazy production browser (`225a0fa`)
+
+실제 Vite HTML production build 두 개의 lazy 부분 로딩 12단계 기록은 [70-thin-layer-lazy-production-browser.md](70-thin-layer-lazy-production-browser.md)에 있다.
