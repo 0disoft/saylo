@@ -12,6 +12,7 @@
     "test:lazy": "node --test lazy-contract.test.mjs catalog-scope.test.mjs",
     "probe:lazy-production": "node lazy-production-probe.mjs",
     "probe:lazy-browser": "node lazy-browser-probe.mjs",
+    "probe:typegen": "node typegen-probe.mjs",
     "browser": "node browser-smoke.mjs"
   },
   "dependencies": {
