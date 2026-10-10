@@ -74,6 +74,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 61. [64-thin-layer-timezone-adapter.md](64-thin-layer-timezone-adapter.md) — i18nFormat 직접 구현 어댑터의 시간대 고정, Node 336·브라우저 8단계 결과와 production parser 경계 위험
 
+62. [65-thin-layer-ast-production.md](65-thin-layer-ast-production.md) — benchmark 전용 AST runtime helper로 layer-ast production build의 parser emission 제거 검증
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |

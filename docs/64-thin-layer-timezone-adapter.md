@@ -55,3 +55,7 @@ node benchmarks/thin-layer/production-probe.mjs --out benchmarks/results/thin-la
 ## 남은 목표
 
 SSR 렌더·hydration, 브라우저 3 시간대 매트릭스, lazy·전체 계약·성능 비교와 릴리스 전달 결정이 아직 남아 있다. 실제 production build는 돌렸지만 layer가 parser marker를 실어 parser-free gate는 미충족이고, large catalog·성능·메모리는 측정하지 않았다. 판정은 Node·브라우저 기능 범위의 시간대 개선이고 전체 목표 완료가 아니다. 제품 소스·버전 변경과 push·publish는 없다.
+
+## 후속 (`d04c841`)
+
+위 production 기록은 `905f208` 시점 값이고 그대로 유효한 과거 기록이다. 그때 남긴 parser-free gate는 [65](65-thin-layer-ast-production.md)에서 benchmark 전용 helper로 닫았다. 현재 source는 그쪽을 따른다.
