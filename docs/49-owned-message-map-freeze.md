@@ -2,6 +2,8 @@
 
 이미 깊게 동결된 메시지를 담은 최종 맵의 재순회를 생략하도록 로컬 적용했다. 두 번의 편집 파서 교차 비교에서 p50·p95와 쌍별 차이 중앙값이 모두 낮게 관측됐다. 신규 파싱은 지표가 엇갈려 일관된 개선을 주장하지 않는다. 실제 watcher·화면 반영은 아직 재측정하지 않았다.
 
+후속 실제 갱신 측정과 한계는 [50-owned-message-map-live-measurements.md](50-owned-message-map-live-measurements.md)에 기록했다.
+
 ## 변경과 신뢰 범위
 
 `catalog.ts`가 성공한 메시지 맵을 내부 `freezeOwnedMessageMap`으로 동결하고 깊은 동결 신뢰 WeakSet에 등록한다. 최종 카탈로그 자체는 기존 일반 `freeze`로 마무리한다. 맵에 대해 다시 `Object.values` 배열을 만들고 메시지마다 신뢰 여부를 검사하는 순회를 제거했다. `Object.freeze`가 맵을 동결하는 비용은 남으며 heap·총 할당량은 측정하지 않았다.
