@@ -1,0 +1,841 @@
+{
+  "format": "saylo-thin-layer-lazy-production-browser-v1",
+  "observedAt": "2026-10-10T20:17:13.278Z",
+  "node": "v24.18.0",
+  "packages": {
+    "i18next": "26.4.3",
+    "intl-messageformat": "12.1.3",
+    "vite": "8.3.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "codeHashes": {
+    "benchmarks/thin-layer/lazy-production-browser-probe.mjs": "cef4a56e54def5fbb2fc75ce975b89f19f2d544a6135c2524e36a54bb1a84567",
+    "benchmarks/thin-layer/lazy-browser-app.jsx": "623a8acd6c2ce7bb489c2ca1f62af12d2bf206f62d4698bca20caee40e01aa81",
+    "benchmarks/thin-layer/chrome-protocol.mjs": "cef4dec905674fd9d671616fe71dd16900e104c4e1fc5240e9e8ea949cdd4a40",
+    "benchmarks/thin-layer/lazy-layer.mjs": "bc8218a4ebddd574ab27be7a53ebb049a18fb220c69796375944a09f11fb499b",
+    "benchmarks/thin-layer/lazy-source-cache.mjs": "41c49136867f1a99289ac50dfe31c9e36ec60f4fef75bfbed0ffa37103c06aa1",
+    "benchmarks/thin-layer/catalog-layer.mjs": "2a0a4e4eb9ce733c4556df53d90f3e163bf6adac9525dd7ec3ba7f547b38745b",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/ast-runtime.mjs": "91680c21959435f71a9364c858560cdec3bb859c8438032ede476e17f628653e",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/i18n.js": "b9817d53c0e29c8e1ad7a8d4a64ede77adb6222a913664bb45c49aa79463db92",
+    "packages/core/dist/boot.js": "6a7dfdd9b2e452b8595c3caa093c49774a87b26034f7c25bad7f653ccbdde4f2",
+    "packages/vite/dist/static-catalog-source.js": "441e1dbc220ecfeb0cf3f4e912ddcdf6c8fe62101b650d805318059cd1f0a073",
+    "packages/vite/dist/lazy-connection.js": "902d3ce4f25d6a1055aff5f7b5db5858620c2a9f5004d7c6ac236733bce827bd",
+    "packages/vite/dist/client.js": "7b5016eb414d03ce82ba2edfb275f357e068d5ade6e83533bae930da06217a68",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "scope": "Two actual unminified Vite HTML production builds, static HTTP asset server and independent Chromium profiles. Public virtual:saylo/lazy static source and React subscription UI. Six pairs, empty boot, HTTP requests plus browser Resource Timing entries prove 0 -> 2 -> 3 -> 5 catalog chunks with ru/help never fetched. Six functional steps each; input/DOM/focus/caret/dialog/counter/old snapshot, English fallback plural/date at configured UTC on emulated Seoul browser, no-op refresh and unknown namespace errors. Parser marker absent from all emitted chunks; no module graph native parser audit. No server-side rendering, physical reconnect, changed dev session, pending request races, broad timezone matrix, latency/memory or production size generalization.",
+  "observations": [
+    {
+      "variant": "core",
+      "hostTimeZone": "Asia/Seoul",
+      "steps": [
+        {
+          "id": "cold",
+          "ready": true,
+          "boots": 1,
+          "locale": "ru",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "hostTimeZone": "Asia/Seoul",
+          "requestedPairs": [],
+          "catalogResourcePairs": []
+        },
+        {
+          "id": "load-demo",
+          "ready": true,
+          "boots": 1,
+          "locale": "ru",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "ru Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo"
+          ]
+        },
+        {
+          "id": "select-ja",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "ja Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 3,
+          "manifestRevision": 0,
+          "retainedText": "ru Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo"
+          ]
+        },
+        {
+          "id": "load-help",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "ja Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 0,
+          "retainedText": "ru Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ]
+        },
+        {
+          "id": "no-op-refresh",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "ja Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 0,
+          "retainedText": "ru Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "sameSnapshot": true,
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ]
+        },
+        {
+          "id": "unknown-namespace",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "ja Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 0,
+          "retainedText": "ru Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "namespaceError": "RangeError",
+          "keyError": "UnknownMessageError",
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ]
+        }
+      ],
+      "requests": [
+        {
+          "url": "/",
+          "status": 200
+        },
+        {
+          "url": "/assets/index-CW0r4R53.js",
+          "status": 200
+        },
+        {
+          "url": "/favicon.ico",
+          "status": 404
+        },
+        {
+          "url": "/assets/demo-CSPevUri.js",
+          "status": 200
+        },
+        {
+          "url": "/assets/demo-CshfVdj4.js",
+          "status": 200
+        },
+        {
+          "url": "/assets/demo-D1WiCi1-.js",
+          "status": 200
+        },
+        {
+          "url": "/assets/help-CZAGEzpP.js",
+          "status": 200
+        },
+        {
+          "url": "/assets/help-BnlljK6T.js",
+          "status": 200
+        }
+      ],
+      "pairChunks": [
+        {
+          "pair": "en/demo",
+          "fileName": "assets/demo-CSPevUri.js"
+        },
+        {
+          "pair": "ru/demo",
+          "fileName": "assets/demo-CshfVdj4.js"
+        },
+        {
+          "pair": "ja/demo",
+          "fileName": "assets/demo-D1WiCi1-.js"
+        },
+        {
+          "pair": "ru/help",
+          "fileName": "assets/help-B9YO2uDA.js"
+        },
+        {
+          "pair": "ja/help",
+          "fileName": "assets/help-BnlljK6T.js"
+        },
+        {
+          "pair": "en/help",
+          "fileName": "assets/help-CZAGEzpP.js"
+        }
+      ],
+      "parserImplementationMarker": false,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+      "chunks": [
+        {
+          "fileName": "assets/index-CW0r4R53.js",
+          "isEntry": true,
+          "bytes": 658563,
+          "gzipBytes": 132228,
+          "sha256": "61c3604693916071d6f65bc0c0c66f3a8fdaf526d1d885caffa8ef729f0c4e4e",
+          "moduleIds": [
+            "\u0000rolldown/runtime.js",
+            "\u0000vite/modulepreload-polyfill.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/cjs/react.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/scheduler/cjs/scheduler.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/scheduler/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/cjs/react-dom.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/cjs/react-dom-client.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/client.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/types.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/dev-sync.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+            "\u0000saylo:intl-ast",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-errors.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/snapshot-signature.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/freeze.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/lazy-connection.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-outcome.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-source.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/static-catalog-source.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/client.js",
+            "\u0000vite/preload-helper.js",
+            "\u0000virtual:saylo/lazy",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/cjs/react-jsx-runtime.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/jsx-runtime.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.lazy-production-browser-JP5Rk8/core/app.jsx",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.lazy-production-browser-JP5Rk8/core/index.html"
+          ]
+        },
+        {
+          "fileName": "assets/demo-CSPevUri.js",
+          "isEntry": false,
+          "bytes": 4612,
+          "gzipBytes": 1011,
+          "sha256": "cdb27de04ab5cc3d0492c93445113fac515910a2d20cbd86842fc1f8ed4399f9",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/en/demo"
+          ]
+        },
+        {
+          "fileName": "assets/demo-CshfVdj4.js",
+          "isEntry": false,
+          "bytes": 1167,
+          "gzipBytes": 518,
+          "sha256": "967aa30d4cdc725fcfb8fb14ed6294a8bf255865be225be836e19610996083ed",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ru/demo"
+          ]
+        },
+        {
+          "fileName": "assets/demo-D1WiCi1-.js",
+          "isEntry": false,
+          "bytes": 1167,
+          "gzipBytes": 519,
+          "sha256": "78167b2081ad0e79d3d9ebf4ac8502007a5cbf05ea2eb0d5391146433ad639cc",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ja/demo"
+          ]
+        },
+        {
+          "fileName": "assets/help-B9YO2uDA.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 524,
+          "sha256": "1e119b03cbc025d29c4cfad2f41e58635711803aab5f95ef725e5d6be644a06c",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ru/help"
+          ]
+        },
+        {
+          "fileName": "assets/help-BnlljK6T.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 524,
+          "sha256": "c0c6ca7720dedeb25d3855a1d309e3693086b2336ecbc024c67eaaf97c19f26f",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ja/help"
+          ]
+        },
+        {
+          "fileName": "assets/help-CZAGEzpP.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 523,
+          "sha256": "ca06d8f2d94255366d058f63a3e7a28673ca08433c892ffe663e01fa4057cac5",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/en/help"
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "layer",
+      "hostTimeZone": "Asia/Seoul",
+      "steps": [
+        {
+          "id": "cold",
+          "ready": true,
+          "boots": 1,
+          "locale": "ru",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "hostTimeZone": "Asia/Seoul",
+          "requestedPairs": [],
+          "catalogResourcePairs": []
+        },
+        {
+          "id": "load-demo",
+          "ready": true,
+          "boots": 1,
+          "locale": "ru",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "ru Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo"
+          ]
+        },
+        {
+          "id": "select-ja",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "ja Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 3,
+          "manifestRevision": 0,
+          "retainedText": "ru Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo"
+          ]
+        },
+        {
+          "id": "load-help",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "ja Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 0,
+          "retainedText": "ru Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ]
+        },
+        {
+          "id": "no-op-refresh",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "ja Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 0,
+          "retainedText": "ru Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "sameSnapshot": true,
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ]
+        },
+        {
+          "id": "unknown-namespace",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "ja Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 0,
+          "retainedText": "ru Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "coldError": "NamespaceNotLoadedError",
+          "timeZone": "UTC",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30",
+          "hostTimeZone": "Asia/Seoul",
+          "namespaceError": "RangeError",
+          "keyError": "UnknownMessageError",
+          "requestedPairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ],
+          "catalogResourcePairs": [
+            "en/demo",
+            "ru/demo",
+            "ja/demo",
+            "en/help",
+            "ja/help"
+          ]
+        }
+      ],
+      "requests": [
+        {
+          "url": "/",
+          "status": 200
+        },
+        {
+          "url": "/assets/index-DU5ammXZ.js",
+          "status": 200
+        },
+        {
+          "url": "/favicon.ico",
+          "status": 404
+        },
+        {
+          "url": "/assets/demo-DAdSMkaS.js",
+          "status": 200
+        },
+        {
+          "url": "/assets/demo-bLMIwdsL.js",
+          "status": 200
+        },
+        {
+          "url": "/assets/demo-jyikDaDQ.js",
+          "status": 200
+        },
+        {
+          "url": "/assets/help-DYpdFaXQ.js",
+          "status": 200
+        },
+        {
+          "url": "/assets/help-BkaxtmYT.js",
+          "status": 200
+        }
+      ],
+      "pairChunks": [
+        {
+          "pair": "en/demo",
+          "fileName": "assets/demo-DAdSMkaS.js"
+        },
+        {
+          "pair": "ru/demo",
+          "fileName": "assets/demo-bLMIwdsL.js"
+        },
+        {
+          "pair": "ja/demo",
+          "fileName": "assets/demo-jyikDaDQ.js"
+        },
+        {
+          "pair": "ja/help",
+          "fileName": "assets/help-BkaxtmYT.js"
+        },
+        {
+          "pair": "en/help",
+          "fileName": "assets/help-DYpdFaXQ.js"
+        },
+        {
+          "pair": "ru/help",
+          "fileName": "assets/help-jTQgxFSw.js"
+        }
+      ],
+      "parserImplementationMarker": false,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+      "chunks": [
+        {
+          "fileName": "assets/index-DU5ammXZ.js",
+          "isEntry": true,
+          "bytes": 756169,
+          "gzipBytes": 156131,
+          "sha256": "0dc8c3444d7bcdf9be4d4c0c86bce8fa7f196eb29480a79d74325d07b1ddfb82",
+          "moduleIds": [
+            "\u0000rolldown/runtime.js",
+            "\u0000vite/modulepreload-polyfill.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/cjs/react.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/scheduler/cjs/scheduler.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/scheduler/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/cjs/react-dom.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/cjs/react-dom-client.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/client.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/types.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/dev-sync.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+            "\u0000saylo:intl-ast",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-errors.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/snapshot-signature.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/freeze.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/lazy-connection.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-outcome.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-source.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/static-catalog-source.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/client.js",
+            "\u0000vite/preload-helper.js",
+            "\u0000virtual:saylo/lazy",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/fast-memoize/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+            "\u0000thin-layer:intl-ast",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ast-format.mjs",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/catalog-layer.mjs",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/lazy-source-cache.mjs",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/lazy-layer.mjs",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/cjs/react-jsx-runtime.production.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/jsx-runtime.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.lazy-production-browser-JP5Rk8/layer/app.jsx",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.lazy-production-browser-JP5Rk8/layer/index.html"
+          ]
+        },
+        {
+          "fileName": "assets/demo-DAdSMkaS.js",
+          "isEntry": false,
+          "bytes": 4612,
+          "gzipBytes": 1010,
+          "sha256": "554b9b596d6fef14771c2b75d55984207092f23abe76d9fbdf885683a385f735",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/en/demo"
+          ]
+        },
+        {
+          "fileName": "assets/demo-bLMIwdsL.js",
+          "isEntry": false,
+          "bytes": 1167,
+          "gzipBytes": 518,
+          "sha256": "0de39289ba49e7e09a1de8cea3bcfb8518579201947df190751ec6cafed4ca30",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ru/demo"
+          ]
+        },
+        {
+          "fileName": "assets/demo-jyikDaDQ.js",
+          "isEntry": false,
+          "bytes": 1167,
+          "gzipBytes": 518,
+          "sha256": "4c791dbe499dae42f9a6bbacf07d45efd2c99fd3bd4149f8420a11a6dcb72112",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ja/demo"
+          ]
+        },
+        {
+          "fileName": "assets/help-BkaxtmYT.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 524,
+          "sha256": "7ca41b9074085408e297c47c228102f59834af5c3eec421f7a96f711c8cbbcfd",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ja/help"
+          ]
+        },
+        {
+          "fileName": "assets/help-DYpdFaXQ.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 522,
+          "sha256": "1f0691fcc84b15a23dafbffe2d20af41007eac93fc21777e4b0f3ac25008c045",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/en/help"
+          ]
+        },
+        {
+          "fileName": "assets/help-jTQgxFSw.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 523,
+          "sha256": "84baf76c696de1bf053b736acb0581e95b630c638ddcd4189087ab7832d953e8",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ru/help"
+          ]
+        }
+      ]
+    }
+  ]
+}
