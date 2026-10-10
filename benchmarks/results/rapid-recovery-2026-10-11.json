@@ -1,0 +1,46 @@
+{
+  "schema": "saylo-rapid-recovery-probe-v1",
+  "observedAt": "2026-10-10T16:13:36.937Z",
+  "node": "v24.18.0",
+  "scope": "Three sequential fresh Vite SSR fixtures, real watcher, invalid JSON followed by valid write after diagnostic. No browser/i18next/UI. Catalog read 250ms after valid write; not a latency or cross-platform reliability claim. Bundled watcher contains a 50ms change-event throttle, but this probe does not disable it or prove causation.",
+  "codeHashes": {
+    "benchmarks/thin-layer/rapid-recovery.mjs": "bf0ea853fc103c94fae3f9e7c049c8fb46415538f7272d4afa4df9dcb21ef6bf",
+    "packages/vite/dist/index.js": "8931fec68efcbf979adbf7030917fdce1a1994cb369913a740137d9fbb96710e",
+    "packages/vite/dist/live-registry.js": "dc66d7a75d69ce9bde8ea4f26f39d075eb8aad8aedde8e8d3bb9656a71d12d03",
+    "node_modules/vite/dist/node/chunks/node.js": "21d5c6b4fb1013b98b1436e9e2a3bb416c8932343ad42ec293bbf760f51a0131",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "observations": [
+    {
+      "recoveryGapMs": 0,
+      "validWriteAfterDiagnosticMs": 0.3225999999999658,
+      "changeEvents": [
+        14.203099999999722
+      ],
+      "source": "Initial",
+      "recovered": false,
+      "revision": 0
+    },
+    {
+      "recoveryGapMs": 60,
+      "validWriteAfterDiagnosticMs": 86.17389999999978,
+      "changeEvents": [
+        10.981600000000071,
+        109.18010000000004
+      ],
+      "source": "Recovered",
+      "recovered": true,
+      "revision": 1
+    },
+    {
+      "recoveryGapMs": 0,
+      "validWriteAfterDiagnosticMs": 0.04709999999977299,
+      "changeEvents": [
+        3.640400000000227
+      ],
+      "source": "Initial",
+      "recovered": false,
+      "revision": 0
+    }
+  ]
+}
