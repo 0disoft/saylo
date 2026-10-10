@@ -6,12 +6,14 @@ const policies = {
     tests: ['packages/core/test/catalog.test.mjs'] },
   'plain-contracts': { sources: ['packages/core/src/schema.ts'], tests: ['packages/core/test/catalog.test.mjs'] },
   'fast-edits': { sources: ['packages/vite/src/live-registry.ts'], tests: ['packages/vite/test/plugin.test.mjs'] },
+  'fast-additions': { sources: ['packages/vite/src/index.ts', 'packages/vite/src/live-registry.ts'],
+    tests: ['packages/vite/test/plugin.test.mjs'] },
 };
 
 /** Only selected sources are replaced in copied snapshots. Reject other changes. */
 export function comparisonSources(experiment, changed, checkoutChanges) {
   const policy = policies[experiment];
-  assert.ok(policy, 'Experiment must be ast-seal, owned-map, plain-contracts or fast-edits.');
+  assert.ok(policy, 'Experiment must be ast-seal, owned-map, plain-contracts, fast-edits or fast-additions.');
   const allowed = [...policy.sources, ...policy.tests];
   assert.ok(policy.sources.every(file => changed.includes(file)), 'Missing experiment source changes.');
   assert.ok(changed.every(file => allowed.includes(file)), 'Unexpected product changes in comparison revisions.');

@@ -1,0 +1,25 @@
+diff --git a/packages/core/src/catalog.ts b/packages/core/src/catalog.ts
+index 78d80cf..caf6297 100644
+--- a/packages/core/src/catalog.ts
++++ b/packages/core/src/catalog.ts
+@@ -42,10 +42,9 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
+         before.position.column === position.column ? before : freeze({ ...before, position });
+       continue;
+     }
+-    const details = { ...context, id: entry.id };
+     try {
+       const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
+-      const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
++      const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...context, id: entry.id, argument, code: 'ARGUMENT_CONFLICT',
+         position: positionAt(messageOffset(entry, offset, source)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
+       messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });
+     } catch (error) {
+@@ -53,7 +52,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
+       else {
+         const offset = error instanceof Error && 'location' in error
+           ? (error.location as { start?: { offset?: number } })?.start?.offset ?? 0 : 0;
+-        diagnostics.push({ ...details, code: 'INVALID_ICU', position: positionAt(messageOffset(entry, offset, source)),
++        diagnostics.push({ ...context, id: entry.id, code: 'INVALID_ICU', position: positionAt(messageOffset(entry, offset, source)),
+           message: `Invalid ICU message: ${error instanceof Error ? error.message : String(error)}` });
+       }
+     }

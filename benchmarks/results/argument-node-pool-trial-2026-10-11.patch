@@ -1,0 +1,98 @@
+diff --git a/packages/core/src/diagnostics.ts b/packages/core/src/diagnostics.ts
+index 86c177c..82b2a0b 100644
+--- a/packages/core/src/diagnostics.ts
++++ b/packages/core/src/diagnostics.ts
+@@ -34,6 +34,8 @@ export function freezeMessageAst(ast: MessageFormatElement[]): DeepReadonly<Mess
+     return value as DeepReadonly<T>;
+   }
+   for (const element of ast) {
++    // The simple parser's pool can share already deeply frozen argument nodes.
++    if (frozen.has(element)) continue;
+     if (element.type === TYPE.literal || element.type === TYPE.argument) {
+       if (element.location && !frozen.has(element.location)) {
+         seal(element.location.start);
+diff --git a/packages/core/src/simple-message.ts b/packages/core/src/simple-message.ts
+index e0c742d..77d5f7f 100644
+--- a/packages/core/src/simple-message.ts
++++ b/packages/core/src/simple-message.ts
+@@ -1,5 +1,5 @@
+ import { TYPE } from '@formatjs/icu-messageformat-parser/no-parser.js';
+-import type { Location, LocationDetails, MessageFormatElement } from '@formatjs/icu-messageformat-parser';
++import type { ArgumentElement, Location, LocationDetails, MessageFormatElement } from '@formatjs/icu-messageformat-parser';
+ import { freeze } from './diagnostics.js';
+ 
+ // Strict end of input: `$` alone would also accept a trailing newline.
+@@ -8,12 +8,14 @@ const identifier = /^[A-Za-z_][A-Za-z0-9_]*(?![\s\S])/;
+ interface SimplePositionPool {
+   position(offset: number, line: number, column: number): LocationDetails;
+   location(start: LocationDetails, end: LocationDetails): Location;
++  argument(name: string, location: Location): ArgumentElement;
+ }
+ 
+ /** One catalog parse owns this pool; only immutable relative positions escape. */
+ export function createSimplePositionPool(): SimplePositionPool {
+   const positions = new Map<number | string, LocationDetails>();
+   const locations = new Map<LocationDetails, Map<LocationDetails, Location>>();
++  const argumentsByLocation = new Map<Location, Map<string, ArgumentElement>>();
+   return { position(offset, line, column) {
+     // Common single-line positions need no tuple string. Other positions must
+     // retain all three coordinates, including Unicode columns and line breaks.
+@@ -33,6 +35,15 @@ export function createSimplePositionPool(): SimplePositionPool {
+       ends.set(end, location);
+     }
+     return location;
++  }, argument(name, location) {
++    let names = argumentsByLocation.get(location);
++    if (!names) { names = new Map(); argumentsByLocation.set(location, names); }
++    let element = names.get(name);
++    if (!element) {
++      element = freeze({ type: TYPE.argument, value: name, location });
++      names.set(name, element);
++    }
++    return element;
+   } };
+ }
+ 
+@@ -65,7 +76,8 @@ export function parseSimpleMessage(source: string,
+       const start = position();
+       column += end + 1 - offset; // Recognized argument spans are entirely ASCII.
+       offset = end + 1;
+-      elements.push({ type: TYPE.argument, value: name, location: location(start, position()) });
++      const argumentLocation = location(start, position());
++      elements.push(pool?.argument(name, argumentLocation) ?? { type: TYPE.argument, value: name, location: argumentLocation });
+       literalOffset = offset;
+       literalStart = position();
+     } else if (code === 10) {
+diff --git a/packages/core/test/simple-message.test.mjs b/packages/core/test/simple-message.test.mjs
+index fe64b07..b3892ed 100644
+--- a/packages/core/test/simple-message.test.mjs
++++ b/packages/core/test/simple-message.test.mjs
+@@ -36,7 +36,7 @@ test('simple messages keep argument contracts and formatter results', () => {
+ });
+ 
+ test('catalog-relative positions share exact tuples without merging Unicode columns or source positions', () => {
+-  const messages = { first: 'x{name}', second: 'y{name}', unicode: '😀{name}', bmp: 'ab{name}',
++  const messages = { first: 'x{name}', second: 'y{name}', differentName: 'x{last}', repeated: 'x{name}{name}', unicode: '😀{name}', bmp: 'ab{name}',
+     multiline: 'a\n{name}', crlf: '\r\n{name}', twoLines: '\n\n{name}', lone: '\ud800{name}' };
+   const config = { locale: 'en', namespace: 'bench' };
+   const source = JSON.stringify(messages);
+@@ -44,6 +44,10 @@ test('catalog-relative positions share exact tuples without merging Unicode colu
+   const argumentStart = id => catalog.messages[id].ast[1].location.start;
+   assert.equal(argumentStart('first'), argumentStart('second'));
+   assert.equal(catalog.messages.first.ast[1].location, catalog.messages.second.ast[1].location);
++  assert.equal(catalog.messages.first.ast[1], catalog.messages.second.ast[1]);
++  assert.notEqual(catalog.messages.first.ast[1], catalog.messages.differentName.ast[1]);
++  assert.equal(catalog.messages.first.ast[1], catalog.messages.repeated.ast[1]);
++  assert.notEqual(catalog.messages.repeated.ast[1], catalog.messages.repeated.ast[2]);
+   assert.equal(catalog.messages.first.ast[0].location, catalog.messages.second.ast[0].location);
+   assert.equal(catalog.messages.first.ast[0].location.end, argumentStart('first'));
+   assert.equal(argumentStart('first'), argumentStart('lone'));
+@@ -61,6 +65,8 @@ test('catalog-relative positions share exact tuples without merging Unicode colu
+   for (const [id, text] of Object.entries(messages))
+     assert.deepEqual(catalog.messages[id].ast, parse(text, options('en')));
+   assert.throws(() => { argumentStart('first').column = 0; }, TypeError);
++  assert.throws(() => { catalog.messages.first.ast[1].value = 'changed'; }, TypeError);
++  assert.equal(catalog.messages.second.ast[1].value, 'name');
+   const independent = parseCatalog(source, config);
+   assert.notEqual(argumentStart('first'), independent.messages.first.ast[1].location.start);
+   const next = parseCatalog(JSON.stringify({ ...messages, first: 'z{name}' }), config, catalog);

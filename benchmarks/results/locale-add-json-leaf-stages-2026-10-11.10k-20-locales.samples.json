@@ -1,0 +1,461 @@
+{
+  "scenario": "10k-20-locales",
+  "samples": [
+    {
+      "token": "10k-20-locales:11",
+      "warmup": true,
+      "saveToListAckMs": 208.16570000000047,
+      "selectToTranslationAckMs": 282.77669999999944,
+      "saveToTranslationAckMs": 495.85599999999977,
+      "selectToCommitMs": 279,
+      "saveToBroadcastMs": 187.01410000000033,
+      "fileWriteMs": 12.486799999999675,
+      "serverStages": {
+        "readAndCandidateMs": 103.77300000000014,
+        "translationPreparationMs": 10.769100000000435,
+        "validationMs": 0.0716999999995096,
+        "registryReplaceMs": 0.22330000000056316,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 49.991399999999885,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.6186999999999898,
+            "fileReadMs": 1.3567000000002736,
+            "catalogParseMs": 99.48090000000047,
+            "candidateOtherMs": 2.3166999999994005
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:12",
+      "warmup": true,
+      "saveToListAckMs": 165.27299999999923,
+      "selectToTranslationAckMs": 174.55829999999878,
+      "saveToTranslationAckMs": 342.91659999999865,
+      "selectToCommitMs": 171.30000000074506,
+      "saveToBroadcastMs": 149.375,
+      "fileWriteMs": 13.494800000000396,
+      "serverStages": {
+        "readAndCandidateMs": 79.94650000000001,
+        "translationPreparationMs": 8.21440000000075,
+        "validationMs": 0.028500000000349246,
+        "registryReplaceMs": 0.08240000000114378,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 50.12249999999949,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.5182000000004336,
+            "fileReadMs": 1.6315000000013242,
+            "catalogParseMs": 77.26550000000134,
+            "candidateOtherMs": 0.5312999999969179
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:13",
+      "warmup": false,
+      "saveToListAckMs": 155.6149000000005,
+      "selectToTranslationAckMs": 197.5023000000001,
+      "saveToTranslationAckMs": 356.3118000000013,
+      "selectToCommitMs": 193.5,
+      "saveToBroadcastMs": 139.30119999999988,
+      "fileWriteMs": 30.624399999998786,
+      "serverStages": {
+        "readAndCandidateMs": 68.39079999999922,
+        "translationPreparationMs": 12.257499999999709,
+        "validationMs": 0.03629999999975553,
+        "registryReplaceMs": 0.14969999999993888,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 48.96440000000075,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.574399999999514,
+            "fileReadMs": 1.1296000000002095,
+            "catalogParseMs": 65.3672000000006,
+            "candidateOtherMs": 1.3195999999988999
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:14",
+      "warmup": false,
+      "saveToListAckMs": 175.4928,
+      "selectToTranslationAckMs": 235.51369999999952,
+      "saveToTranslationAckMs": 414.04719999999907,
+      "selectToCommitMs": 232.60000000149012,
+      "saveToBroadcastMs": 162.20619999999872,
+      "fileWriteMs": 15.769600000001446,
+      "serverStages": {
+        "readAndCandidateMs": 95.11700000000019,
+        "translationPreparationMs": 8.220600000000559,
+        "validationMs": 0.028199999998832936,
+        "registryReplaceMs": 0.0834999999988213,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 48.72320000000036,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.6106999999992695,
+            "fileReadMs": 1.130300000000716,
+            "catalogParseMs": 92.83170000000064,
+            "candidateOtherMs": 0.5442999999995664
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:15",
+      "warmup": false,
+      "saveToListAckMs": 164.57859999999891,
+      "selectToTranslationAckMs": 143.8791000000001,
+      "saveToTranslationAckMs": 311.0203999999994,
+      "selectToCommitMs": 141.19999999925494,
+      "saveToBroadcastMs": 150.6967999999997,
+      "fileWriteMs": 13.439400000001115,
+      "serverStages": {
+        "readAndCandidateMs": 79.73379999999997,
+        "translationPreparationMs": 7.354000000001179,
+        "validationMs": 0.03929999999854772,
+        "registryReplaceMs": 0.10740000000077998,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 54.04809999999998,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.6121000000002823,
+            "fileReadMs": 1.0295999999998457,
+            "catalogParseMs": 67.2515000000003,
+            "candidateOtherMs": 10.84059999999954
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241400
+    },
+    {
+      "token": "10k-20-locales:16",
+      "warmup": false,
+      "saveToListAckMs": 131.4319000000014,
+      "selectToTranslationAckMs": 143.92569999999978,
+      "saveToTranslationAckMs": 278.40830000000096,
+      "selectToCommitMs": 141,
+      "saveToBroadcastMs": 118.32440000000133,
+      "fileWriteMs": 9.181799999998475,
+      "serverStages": {
+        "readAndCandidateMs": 50.496799999998984,
+        "translationPreparationMs": 7.014500000001135,
+        "validationMs": 0.01659999999901629,
+        "registryReplaceMs": 0.08489999999983411,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 53.26310000000012,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.6490000000012515,
+            "fileReadMs": 1.1415000000015425,
+            "catalogParseMs": 48.135299999999916,
+            "candidateOtherMs": 0.5709999999962747
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:17",
+      "warmup": false,
+      "saveToListAckMs": 123.32079999999951,
+      "selectToTranslationAckMs": 124.84989999999925,
+      "saveToTranslationAckMs": 250.17809999999918,
+      "selectToCommitMs": 122.59999999776483,
+      "saveToBroadcastMs": 111.41579999999885,
+      "fileWriteMs": 9.00250000000051,
+      "serverStages": {
+        "readAndCandidateMs": 51.49510000000009,
+        "translationPreparationMs": 6.115400000000591,
+        "validationMs": 0.01089999999931024,
+        "registryReplaceMs": 0.06589999999960128,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 42.94579999999951,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.5064999999995052,
+            "fileReadMs": 0.893500000000131,
+            "catalogParseMs": 49.653299999999945,
+            "candidateOtherMs": 0.4418000000005122
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:18",
+      "warmup": false,
+      "saveToListAckMs": 126.5659999999989,
+      "selectToTranslationAckMs": 133.90920000000006,
+      "saveToTranslationAckMs": 262.67049999999836,
+      "selectToCommitMs": 131.20000000298023,
+      "saveToBroadcastMs": 115.78989999999976,
+      "fileWriteMs": 5.870100000000093,
+      "serverStages": {
+        "readAndCandidateMs": 50.51960000000145,
+        "translationPreparationMs": 6.303599999999278,
+        "validationMs": 0.01389999999992142,
+        "registryReplaceMs": 0.06890000000021246,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 50.1283999999996,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.6647000000011758,
+            "fileReadMs": 1.0725000000002183,
+            "catalogParseMs": 48.19999999999891,
+            "candidateOtherMs": 0.5824000000011438
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:19",
+      "warmup": false,
+      "saveToListAckMs": 175.25440000000162,
+      "selectToTranslationAckMs": 207.0630000000001,
+      "saveToTranslationAckMs": 385.82780000000093,
+      "selectToCommitMs": 203.89999999850988,
+      "saveToBroadcastMs": 159.79780000000028,
+      "fileWriteMs": 8.501399999999194,
+      "serverStages": {
+        "readAndCandidateMs": 83.78880000000026,
+        "translationPreparationMs": 15.647499999999127,
+        "validationMs": 0.03479999999944994,
+        "registryReplaceMs": 0.118399999999383,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 53.27629999999954,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.47400000000016007,
+            "fileReadMs": 0.9624999999996362,
+            "catalogParseMs": 67.08339999999953,
+            "candidateOtherMs": 15.26890000000094
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241401
+    },
+    {
+      "token": "10k-20-locales:20",
+      "warmup": false,
+      "saveToListAckMs": 398.1977999999999,
+      "selectToTranslationAckMs": 274.10969999999907,
+      "saveToTranslationAckMs": 675.4988999999987,
+      "selectToCommitMs": 183,
+      "saveToBroadcastMs": 383.10080000000016,
+      "fileWriteMs": 10.735800000000381,
+      "serverStages": {
+        "readAndCandidateMs": 307.02479999999923,
+        "translationPreparationMs": 10.084800000000541,
+        "validationMs": 0.03809999999975844,
+        "registryReplaceMs": 0.11050000000068394,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 53.97190000000046,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.8400000000001455,
+            "fileReadMs": 3.231100000000879,
+            "catalogParseMs": 302.2957999999999,
+            "candidateOtherMs": 0.6578999999983353
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241402
+    },
+    {
+      "token": "10k-20-locales:21",
+      "warmup": false,
+      "saveToListAckMs": 159.3152000000009,
+      "selectToTranslationAckMs": 310.6306000000004,
+      "saveToTranslationAckMs": 472.4366000000009,
+      "selectToCommitMs": 307.80000000074506,
+      "saveToBroadcastMs": 144.83560000000034,
+      "fileWriteMs": 10.215299999999843,
+      "serverStages": {
+        "readAndCandidateMs": 79.22999999999956,
+        "translationPreparationMs": 6.852300000000469,
+        "validationMs": 0.033400000000256114,
+        "registryReplaceMs": 0.08359999999993306,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 49.94250000000102,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.5547999999998865,
+            "fileReadMs": 1.1545999999998457,
+            "catalogParseMs": 76.98189999999886,
+            "candidateOtherMs": 0.5387000000009721
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241402
+    },
+    {
+      "token": "10k-20-locales:22",
+      "warmup": false,
+      "saveToListAckMs": 129.26779999999962,
+      "selectToTranslationAckMs": 132.31820000000153,
+      "saveToTranslationAckMs": 263.6226000000006,
+      "selectToCommitMs": 130,
+      "saveToBroadcastMs": 118.4323000000004,
+      "fileWriteMs": 5.895700000000943,
+      "serverStages": {
+        "readAndCandidateMs": 61.401700000000346,
+        "translationPreparationMs": 6.9033999999992375,
+        "validationMs": 0.028899999999339343,
+        "registryReplaceMs": 0.07729999999901338,
+        "catalogDeltaMs": 0,
+        "fileEvents": 2,
+        "drains": 1,
+        "queueToDrainMs": 43.7554999999993,
+        "fileStages": {
+          "timings": {
+            "pathCheckMs": 0.5341000000007625,
+            "fileReadMs": 0.95640000000094,
+            "catalogParseMs": 51.67029999999977,
+            "candidateOtherMs": 8.240899999998874
+          },
+          "calls": {
+            "pathCheckMs": 1,
+            "fileReadMs": 1,
+            "catalogParseMs": 1
+          }
+        }
+      },
+      "addedCatalogBytes": 387783,
+      "preSelectionCatalogReplies": 0,
+      "fullReplies": 1,
+      "catalogReplyEncoding": "saylo-catalog-v1",
+      "catalogReplyBytes": 1241402
+    }
+  ]
+}

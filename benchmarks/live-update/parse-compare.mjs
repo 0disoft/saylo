@@ -53,7 +53,7 @@ try {
     assert.deepEqual(previous[0], previous[1]);
     if (index >= warmup) samples.push({ beforeMs: durations[0], afterMs: durations[1], afterMinusBeforeMs: durations[1] - durations[0] });
   }
-  const hashes = Object.fromEntries(await Promise.all(['catalog.js', 'json.js', 'simple-message.js', 'schema.js', 'diagnostics.js'].map(async name =>
+  const hashes = Object.fromEntries(await Promise.all(['catalog.js', 'catalog-json.js', 'json.js', 'simple-message.js', 'schema.js', 'diagnostics.js'].map(async name =>
     [name, createHash('sha256').update(await readFile(path.join(repository, 'packages/core/dist', name))).digest('hex')])));
   const differences = samples.map(sample => sample.afterMinusBeforeMs).sort((a, b) => a - b);
   const result = { schema: 'saylo-parser-comparison-v1', measuredAt: new Date().toISOString(), baselineRevision,

@@ -1,0 +1,140 @@
+{
+  "schema": "saylo-parser-comparison-v1",
+  "measuredAt": "2026-10-10T17:38:40.497Z",
+  "baselineRevision": "692706415a65b1868e0cce3ae93c204b4cfab2a8",
+  "currentCodeHashes": {
+    "catalog.js": "f7a9ba919b53de4492d9fc179e50896bc22bf89fdf6b7fd4eb1aa6f432460fc1",
+    "catalog-json.js": "9012d701a52247f2ae514e6fda87837a2518d4978f483a2b5afefa0cf306e069",
+    "json.js": "acc8f2e94f9f2e398a27a439ea4893d15f6bffdd39ae453952f4461ea3083588",
+    "simple-message.js": "aa5231b36f00feba708a2a54bca261dfbe28c89dbd34631e7f7adddbf83fbf43",
+    "schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
+    "diagnostics.js": "7f2a2a35d54244cc9b4804b988e171ffd89865e5e3d2dfca701f054630d6f22a"
+  },
+  "node": "v24.18.0",
+  "mode": "cold",
+  "messages": 10000,
+  "warmup": 5,
+  "measuredPairs": 20,
+  "scope": "Same-process alternating cold parser calls with no previous catalog; fresh ICU AST/argument objects for 10k plain/ASCII argument messages; excludes JSON.stringify, equality checks, disk, watcher, translation validation and browser.",
+  "before": {
+    "count": 20,
+    "p50Ms": 77.55180000000018,
+    "p95Ms": 117.49319999999989,
+    "minMs": 49.295100000001185,
+    "maxMs": 139.07779999999912
+  },
+  "after": {
+    "count": 20,
+    "p50Ms": 88.26400000000103,
+    "p95Ms": 133.6309000000001,
+    "minMs": 71.9291000000012,
+    "maxMs": 238.47209999999905
+  },
+  "pairedDifference": {
+    "medianMs": 7.205200000000332,
+    "p95Ms": 40.64649999999892,
+    "improvedPairs": 4
+  },
+  "samples": [
+    {
+      "beforeMs": 77.55180000000018,
+      "afterMs": 106.3735999999999,
+      "afterMinusBeforeMs": 28.821799999999712
+    },
+    {
+      "beforeMs": 86.3774999999996,
+      "afterMs": 78.63789999999972,
+      "afterMinusBeforeMs": -7.739599999999882
+    },
+    {
+      "beforeMs": 82.72869999999966,
+      "afterMs": 104.16329999999925,
+      "afterMinusBeforeMs": 21.43459999999959
+    },
+    {
+      "beforeMs": 117.49319999999989,
+      "afterMs": 133.6309000000001,
+      "afterMinusBeforeMs": 16.137700000000223
+    },
+    {
+      "beforeMs": 65.63339999999971,
+      "afterMs": 89.61320000000069,
+      "afterMinusBeforeMs": 23.979800000000978
+    },
+    {
+      "beforeMs": 86.03880000000026,
+      "afterMs": 126.68529999999919,
+      "afterMinusBeforeMs": 40.64649999999892
+    },
+    {
+      "beforeMs": 61.60519999999997,
+      "afterMs": 94.45280000000002,
+      "afterMinusBeforeMs": 32.84760000000006
+    },
+    {
+      "beforeMs": 79.88940000000002,
+      "afterMs": 80.35679999999957,
+      "afterMinusBeforeMs": 0.46739999999954307
+    },
+    {
+      "beforeMs": 139.07779999999912,
+      "afterMs": 238.47209999999905,
+      "afterMinusBeforeMs": 99.39429999999993
+    },
+    {
+      "beforeMs": 77.54939999999988,
+      "afterMs": 75.6934999999994,
+      "afterMinusBeforeMs": -1.8559000000004744
+    },
+    {
+      "beforeMs": 49.295100000001185,
+      "afterMs": 88.8658000000014,
+      "afterMinusBeforeMs": 39.570700000000215
+    },
+    {
+      "beforeMs": 89.07420000000093,
+      "afterMs": 79.1318999999985,
+      "afterMinusBeforeMs": -9.942300000002433
+    },
+    {
+      "beforeMs": 71.84590000000026,
+      "afterMs": 77.78169999999955,
+      "afterMinusBeforeMs": 5.93579999999929
+    },
+    {
+      "beforeMs": 78.39300000000003,
+      "afterMs": 83.71239999999852,
+      "afterMinusBeforeMs": 5.319399999998495
+    },
+    {
+      "beforeMs": 86.82809999999881,
+      "afterMs": 89.47890000000007,
+      "afterMinusBeforeMs": 2.6508000000012544
+    },
+    {
+      "beforeMs": 73.11310000000049,
+      "afterMs": 71.9291000000012,
+      "afterMinusBeforeMs": -1.183999999999287
+    },
+    {
+      "beforeMs": 66.89949999999953,
+      "afterMs": 99.00350000000071,
+      "afterMinusBeforeMs": 32.10400000000118
+    },
+    {
+      "beforeMs": 82.20919999999933,
+      "afterMs": 88.26400000000103,
+      "afterMinusBeforeMs": 6.0548000000017055
+    },
+    {
+      "beforeMs": 62.555599999999686,
+      "afterMs": 75.27660000000105,
+      "afterMinusBeforeMs": 12.721000000001368
+    },
+    {
+      "beforeMs": 71.12800000000061,
+      "afterMs": 78.33320000000094,
+      "afterMinusBeforeMs": 7.205200000000332
+    }
+  ]
+}
