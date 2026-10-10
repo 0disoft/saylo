@@ -83,19 +83,19 @@
 
 1. 완료: `169e72b`의 편집·로케일 종단 간 경로를 54에서 비교했다.
 2. [75](75-early-disk-rechecks.md)의 최신 small·large 편집 교차 비교와 로케일 목록 측정이 목표를 통과했다. 이전 small tail과 10ms 단독 trial은 역사값으로 보존하고, 다른 OS·워크로드의 안정성은 확인되지 않은 범위로 남긴다.
-3. 49의 맵 동결 최적화 채택 여부를 tail 원인 규명 결과와 함께 확정한다.
+3. 완료: owned message map 동결 최적화를 유지로 확정했다. parser 소유 깊은 불변 children만 신뢰하고 외부 shallow map은 일반 freeze하며, 49의 parser incremental 교차 비교 이득을 유지한다. cold 일관성 이득은 주장하지 않고 최신 E2E를 49 단독 효과로 귀속하지 않는다([76](76-runtime-decision.md)).
 4. selector 게시 여부를 결정하고, 게시하면 `check`·`release:pack`·`verify:registry:*`·SvelteKit 검증을 해당 버전으로 수행한다.
-5. i18next·Wuchale 확장점 위 얇은 계층 비교 실험으로 제품 형태(독립 런타임 정당화)를 판정한다.
+5. 완료: 제품 형태를 현행 독립 런타임 유지로 결정했다. FormatJS parser·`intl-messageformat` 재사용을 이어가고 i18next prototype은 미채택한다([76](76-runtime-decision.md)).
 6. 현행 상태 문서(`06` 로드맵, `README.md`, `07` 대장)를 최신 커밋·수치에 맞춰 갱신한다.
 
 ## 6. 잔여 후보의 필수성 평가
 
 | 후보 | 필수 여부 | 근거 |
 | --- | --- | --- |
-| 얇은 i18n 레이어 계약 비교 | 필수 | `07` 제품 형태가 독립 런타임 정당화를 이 실험에 걸어 두었다. 56의 Node 초기 검증은 완료했으나 전체 계층 비교는 남아 있다. 릴리스 차단은 아니다 |
+| 얇은 i18n 레이어 계약 비교 | 완료 | 56의 36개 관측과 64~75의 문서 범위별 검증을 근거로 제품 형태를 현행 독립 런타임 유지로 결정했다([76](76-runtime-decision.md)). 전체 API 동등성 판정은 아니다 |
 | 메모리 overhead 측정 | 비필수 | 성능 목표는 wall-clock p95이고 메모리 수치 목표는 명시되지 않았다. 16의 compact 전송 도입 뒤 남긴 진단 |
 | test·pack·release 재검증 | 조건부 필수 | `09`의 릴리스 게이트다. selector를 게시할 때만 해당 버전으로 다시 돌린다 |
-| 파서 소유 맵 최적화 확정 | 필수 | 51·52가 tail 악화를 남긴 잠정 상태라 채택·원복을 닫아야 한다 |
+| 파서 소유 맵 최적화 확정 | 완료 | 49의 parser incremental 이득을 근거로 유지를 확정했다. cold 일관성 이득은 주장하지 않고 최신 E2E를 49 단독 효과로 귀속하지 않는다([76](76-runtime-decision.md)) |
 
 ## 7. 비목표·미래 제안 (필수 작업과 분리)
 
@@ -106,7 +106,7 @@
 
 ## 8. 완료 판정
 
-기능 범위(1~18)는 소스·테스트 구현 근거가 존재한다. 성능 범위는 로케일 목록이 54 조건에서 통과했고(후속 현행 single run은 미달, 58), 편집 반영은 미달이다. 전체 인수·제품 형태 비교와 미게시 변경 전달도 남아 있으므로 장기 목표의 완료를 주장하지 않는다.
+기능 범위(1~18)는 소스·테스트 구현 근거가 존재한다. 최신 로컬 warmed 대표 조건에서 편집·로케일 목록 p95 목표를 통과했다([75](75-early-disk-rechecks.md)). 제품 형태는 독립 런타임 유지로 결정했다([76](76-runtime-decision.md)). 새 버전의 릴리스 인수·미게시 변경 전달은 남아 있으므로 장기 목표의 완료를 주장하지 않는다.
 
 ### 후속 진행
 
@@ -115,6 +115,8 @@
 2026-10-11(KST), `ed2bc8c` 이후 패치 생성 할당 최적화를 포함한 소스에서 `npm run check`가 통과했다(테스트 206개·다섯 패키지 소비자 타입 검사·React 예제 타입 검사). 이미 빌드한 dist로 `npm exec -- node scripts/pack-smoke.mjs`를 실행해 다섯 tarball의 독립 JS·TS 소비, React·Svelte selector SSR, Vite 8.3.4 production·SSR 실행을 확인했다. 릴리스 승인 기록은 저장하거나 바꾸지 않았다. 최신 large 편집 단일 run p95는 161.53ms로 여전히 100ms 목표를 넘었다. 원시 자료와 측정 한계는 54의 후속 절을 따른다.
 
 2026-10-11(KST), `2aa5f7d` 기준 편집 large 비교를 다시 기록했다. after pooled p95는 107.49ms이고 100ms 이내 표본은 before 0/50·after 44/50이다. ABBA run p95는 after 107.49·101.75ms, before 140.26·134.60ms이고 queueToDrain pooled는 46.25→2.67ms다. control RTT p95도 5.26→3.33ms로 함께 낮아졌고 순차 독립 실행이라 인과로 보지 않는다. 1~18 기능의 상태는 위 표 그대로이고, 로케일 large 목표는 54의 통과 기록을 유지하며 편집 100ms 목표는 여전히 미달이다. 상세는 [55-next-turn-edits.md](55-next-turn-edits.md)를 따른다.
+
+2026-10-11(KST), 제품 형태를 현행 독립 런타임 유지로 결정하고 런타임 결정 문서를 추가했다([76](76-runtime-decision.md)). 이에 따라 5절의 3·5번과 6절의 필수 후보 두 항목을 완료로 표시한다. owned message map 동결은 49의 parser incremental 이득을 근거로 유지하고, i18next prototype은 비교용 private 실험으로 두고 제품에 채택하지 않는다. 이 결정은 실무 architecture 결정이며 전체 API 동등성 증명이나 독립 런타임만 가능하다는 판정이 아니다. 게시·원격 상태는 바뀌지 않았고 selector 로컬 구현은 alpha.3 이후 미게시 상태를 유지한다.
 
 ## 근거 문서
 

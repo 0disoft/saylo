@@ -14,14 +14,14 @@
 
 ## 제품 형태
 
-목표는 독립 라이브러리다. 다만 독립 런타임이 꼭 필요한지는 아직 입증되지 않았다.
+제품 형태를 결정했다. 현행 Saylo 독립 런타임을 유지하고 FormatJS parser·`intl-messageformat` 재사용을 이어간다. i18next 확장점 위 prototype은 제품으로 채택하지 않는다([76](76-runtime-decision.md)).
 
-- i18next·Wuchale 같은 기존 도구의 공개 확장점 위에 얇은 검증·갱신·typegen 계층을 얹는 비교 실험을 먼저 둔다.
-- 그 실험으로 필수 계약을 충족하는지 확인하고, 남는 차별점이 독립 런타임을 정당화하는지 판단한다.
-- 비교 실험 결과로 제품 형태를 결정한다. 현재 설계의 목표는 독립 라이브러리다.
-- 초기 계약 프로브는 2026-10-11 실시했다. 공개 i18next·Wuchale 확장점 위 Node 실험이고 36개 관측을 기록했다([56](56-thin-layer-contract-probe.md)). 그 범위에서는 기존 formatter 위에서도 계약 일부가 충족됐다.
-- 브라우저 기능 프로브도 2026-10-11 실시했다. 실제 Vite 8·React 19·headless Chrome에서 eager 연결로 편집·오류 복구·로케일 추가·선택·삭제 8개 시나리오와 입력·상태 보존을 확인했다([57](57-thin-layer-browser-probe.md)).
-- 두 프로브만으로 전체 계약 충족이나 독립 런타임 필요성은 판정하지 않는다. lifecycle loader·UI·disposal, typegen, 성능·메모리, 번들, SSR·hydration, 시간대, lazy·재연결·세션은 범위 밖이다.
+- 이 결정은 실무 architecture 결정이며, 독립 런타임만 가능하다는 필요성 정리나 전체 API 동등성 증명이 아니다.
+- prototype 비교 실험은 private이고 제품 package·공개 API·게시본에 넣지 않는다.
+- 초기 계약 프로브는 2026-10-11 실시했다. 공개 i18next·Wuchale 확장점 위 Node 실험으로 36개 관측을 기록했고, 기존 formatter 위에서도 계약 일부는 충족됐다([56](56-thin-layer-contract-probe.md)).
+- 브라우저 기능 프로브도 2026-10-11 실시했다. 실제 Vite 8·React 19·headless Chrome eager 연결에서 편집·오류 복구·로케일 추가·선택·삭제 8개 시나리오와 입력·상태 보존을 확인했다([57](57-thin-layer-browser-probe.md)).
+- 얇은 계층은 시간대를 공개 `i18nFormat` 직접 구현으로 고정해야 했고([64](64-thin-layer-timezone-adapter.md)), parser-free 경로는 private AST rewrite glue가 필요했다([65](65-thin-layer-ast-production.md)). prototype은 lazy source cache·coordinator·hydration barrier·errors·schema·parser·typegen·transport를 자체로 요구한다([67](67-thin-layer-lazy-contracts.md)~[72](72-thin-layer-sync-construction.md)).
+- 재검토 조건은 같은 base argument·old immutable snapshot·source fallback·timezone·atomic lazy·SSR·typegen을 coordinator 중복 없이 제공하면서 같은 scale 비용·가벼운 production 증거가 있을 때다([76](76-runtime-decision.md)).
 
 ## 초기 설계 결정 (검증 전, 바뀔 수 있음)
 
@@ -60,20 +60,20 @@
 | 항목 | 상태 |
 | --- | --- |
 | 라이선스 | Apache-2.0 확정. 배포 tarball에 `LICENSE`·`NOTICE`를 함께 싣는다 |
-| npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-svelte`·`saylo-typegen`·`saylo-vite` 다섯 이름으로 2026-10-09 `0.1.0-alpha.2`(dist-tag `alpha`) 게시 완료. 기존 core·react·typegen·vite의 `alpha.1` 승인 integrity는 [manifest](../releases/0.1.0-alpha.1.json)에 보존한다 |
-| 성능 목표 달성 | 미달. 반영 p95 ≤ 100ms와 로케일 추가 p95 ≤ 250ms 모두 안정적 달성을 주장하지 않는다. 2026-10-07 새 로케일 목록 표시 p95는 small 226.86ms·large 3437.01ms였고 첫 번역 commit은 64.70ms·843.70ms였다. paint는 미측정. 실제 데모 초기 JS gzip 합은 parser 제거 전후 vanilla 19,656→12,796 B·React 92,241→85,139 B였고 영어 지연 청크가 유지됐다. 조건·원본/gzip·단일 run 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [12-locale-add-measurements.md](12-locale-add-measurements.md)를 따른다 |
+| npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-svelte`·`saylo-typegen`·`saylo-vite` 다섯 이름으로 `0.1.0-alpha.3` 게시. 2026-10-11 registry 조회에서 다섯 패키지의 `alpha`가 alpha.3, `latest`가 `0.0.0-stage`임을 확인했다. alpha.1·alpha.2의 승인 integrity는 기존 `releases` manifest에 보존한다 |
+| 성능 목표 달성 | [75](75-early-disk-rechecks.md)의 로컬 warmed 대표 조건 통과. 편집 p95는 small 49.57ms·large 80.25ms, 로케일 목록은 77.46ms·177.83ms다. 다른 환경으로 일반화하지 않으며 첫 번역·cold startup·paint는 별도다. 이전 측정은 [검증 이력](06-validation-history.md)과 [10](10-performance-measurements.md)·[12](12-locale-add-measurements.md)에 보존한다 |
 | 지원 버전 범위 | Node 24.x, Vite 8, React 19, Svelte 5, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
 | build-time parser 런타임 제거 | Vite plugin에 구현하고 alpha.2로 게시했다(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. alpha.1에는 없으며 alpha.2 게시본에서 외부 소비와 parser 제거를 검증했다([릴리스](../releases/0.1.0-alpha.2.md)) |
-| requireCompleteTranslations(완역 검사) | Vite의 운영 빌드 전용 옵션으로 로컬 구현. 기본 `false`, 누락 키·namespace를 모아 빌드 실패. 로케일 폴더와 initialLocale 전체를 검사하고 개발 fallback은 유지한다. 기존 alpha.2 게시본에는 없다([42](42-complete-translations.md)) |
+| requireCompleteTranslations(완역 검사) | alpha.3에 게시한 Vite 운영 빌드 전용 옵션. 기본 `false`, 누락 키·namespace를 모아 빌드 실패. 로케일 폴더와 initialLocale 전체를 검사하고 개발 fallback은 유지한다([42](42-complete-translations.md), [릴리스](../releases/0.1.0-alpha.3.md)) |
 | unused message 제거 최적화 | 후속. 동적 t 키 tradeoff 검증 필요 |
-| selector 미세구독 최적화 | 후속 |
+| selector 미세구독 최적화 | React·Svelte selector를 로컬 구현했고([43](43-react-selectors.md), [44](44-svelte-selectors.md)) alpha.3 게시본에는 없다. 게시 여부는 릴리스 단계에서 정하고, 게시하면 해당 버전으로 `check`·`release:pack`·`verify:registry:*`·SvelteKit 검증을 다시 돌린다([53](53-completion-audit.md)) |
 | Svelte 어댑터 | Svelte 5 readable·typed context·SSR·hydration과 데모 구현 완료. alpha.2 게시·외부 소비·SvelteKit 브라우저 검증 완료([38](38-svelte-adapter.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
 | SvelteKit 예제 | SvelteKit 3 요청별 SSR·boot·hydration·페이지 이동·layout 종료와 재진입을 구현. 예제는 로컬 `file:` 의존성을 유지하며, 별도 registry 검증 명령으로 alpha.2 게시본의 Node 운영 빌드·실제 브라우저 검증도 완료했다([39](39-sveltekit-example.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
 | Vue 어댑터 | 후속 |
 | secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트와 2026-10-07 실제 브라우저 검증을 통과했다. schema-breaking 편집이라 입력·dialog 상태 보존은 일반 보장이 아니다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
 | JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
-| message delta 비용 | request-scoped message delta·immutable catalog signature 재사용·LF 위치 색인 최적화를 로컬 구현했다. 2026-10-07 최종 서버 파일 계측 설정에서 small p95 72.66ms·large 165.94ms였고 각각 측정 50회 모두 patch였다. 파서 key 디코딩 trial은 되돌렸다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. JSON token/임시 entry·메시지 맵 할당, 브라우저 patch 복사·검증 순회, 로케일 추가 시 cold 파싱·추가 선택 비용 최적화와 비교 실험이 남아 있다. compact 전체 전송은 아래 후속 기록을 따른다. 조건·되돌린 실험·부하 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [11-parser-measurements.md](11-parser-measurements.md)를 따른다 |
-| 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 초기 계약 프로브는 2026-10-11 실시해 36개 관측을 남겼고([56](56-thin-layer-contract-probe.md)), 브라우저 기능 스모크도 8개 시나리오를 확인했지만([57](57-thin-layer-browser-probe.md)), 전체 계층 평가와 필요성 판정은 아직 완료하지 않았다 |
+| message delta 비용 | request-scoped delta·불변 signature·LF 위치 색인과 후속 검증 재사용을 구현했다. 최신 small·large 편집 교차 비교가 로컬 100ms 목표를 통과했다([75](75-early-disk-rechecks.md)). 이전 2026-10-07의 small 72.66ms·large 165.94ms 계측은 [10](10-performance-measurements.md)·[11](11-parser-measurements.md)의 역사값이다. compact 전체 전송과 첫 언어 선택 비용은 편집 수치와 구분한다 |
+| 런타임 형태 | 현행 독립 런타임 유지 결정: FormatJS parser·`intl-messageformat` 재사용을 이어가며 i18next prototype은 미채택한다([76](76-runtime-decision.md)). 계약 프로브 36개 관측([56](56-thin-layer-contract-probe.md))과 private prototype 검증([64](64-thin-layer-timezone-adapter.md)~[74](74-immutable-validation-reuse.md))을 근거로 한다. 전체 API 동등성이나 독립 런타임만 가능하다는 판정은 아니다 |
 
 대규모 로케일 추가의 서버 구간 계측([14](14-locale-add-server-measurements.md))에서 cold 파싱을 다음 대상으로 확인했다. 이후 일반 텍스트·ASCII 단순 인자용 경로를 로컬 구현했다. 같은 프로세스 cold 비교 20쌍 중 18쌍이 빨랐지만 parser p95는 개선되지 않았다. 당시 대규모 목록 표시 p95는 514.47ms로 관측했으며 250ms 목표는 미달이다. 조건·원시 결과·부하 한계는 [15-simple-message-parser.md](15-simple-message-parser.md)를 따른다.
 
@@ -83,7 +83,7 @@ full catalog 선택 경로에는 compact 개발 전송을 로컬 구현했다. �
 
 cold 내부 계측에서는 인자 스키마·메시지·최종 카탈로그 동결 구간을 우선 후보로 확인했다([17](17-cold-parser-measurements.md)). 이후 호출 내 동일 인자 스키마 공유와 성공한 불변 계약 쌍의 검증 재사용을 로컬 구현했다. cold 교차 비교는 20쌍 중 17쌍과 중앙값에서 개선됐지만 p95는 증가했다. GC를 tail 지연의 유일한 원인으로 단정하지 않는다. 다음 후보는 메시지·AST 동결 경로이며 불변성·ICU·오류 위치 계약을 유지한다. 조건과 원시 결과는 [18-shared-argument-schemas.md](18-shared-argument-schemas.md)를 따른다.
 
-Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 2026-10-07 Paraglide 2.25.4와 같은 fixture의 small 문구 수정·로케일 추가를 각각 10회 측정했다. Paraglide 문구 편집은 Fast Refresh로 입력과 상태를 유지했고, 로케일 추가·기본 setter 선택은 document reload로 최초 상태를 잃었다. Saylo는 두 흐름에서 상태 보존을 확인했다. large는 Paraglide 초기 compile의 하위 SDK timeout으로 비교를 완료하지 못했다. 조건·원시 결과·한계는 [13-paraglide-comparison.md](13-paraglide-comparison.md)를 따른다. i18next/Wuchale 얇은 계층 초기 계약 프로브는 2026-10-11 실시했고 전체 계층 평가는 아직 완료하지 않았다([56](56-thin-layer-contract-probe.md)). 이 측정과 그 프로브 어느 쪽도 독립 런타임 필요성을 확정하지 않는다.
+Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 2026-10-07 Paraglide 2.25.4와 같은 fixture의 small 문구 수정·로케일 추가를 각각 10회 측정했다. Paraglide 문구 편집은 Fast Refresh로 입력과 상태를 유지했고, 로케일 추가·기본 setter 선택은 document reload로 최초 상태를 잃었다. Saylo는 두 흐름에서 상태 보존을 확인했다. large는 Paraglide 초기 compile의 하위 SDK timeout으로 비교를 완료하지 못했다. 조건·원시 결과·한계는 [13-paraglide-comparison.md](13-paraglide-comparison.md)를 따른다. i18next/Wuchale 얇은 계층 초기 계약 프로브는 2026-10-11 실시했고, 이후 문서 범위별 검증을 거쳐 제품 형태를 현행 독립 런타임 유지로 결정했다([56](56-thin-layer-contract-probe.md), [76](76-runtime-decision.md)).
 
 파서 소유 literal·argument AST에는 알려진 구조의 위치·노드를 직접 동결하는 경로를 선택했다. 복잡한 ICU와 외부 입력의 일반 동결은 유지한다. cold 교차 비교 p50·p95는 낮게 관측됐지만 incremental 중앙값에서는 개선을 확인하지 못했다. 일반 동결을 for...in으로 바꾼 실험은 느려져 되돌렸다. 다음은 로케일 추가 종단 간 재측정이며 조건·한계는 [19](19-ast-freeze-measurements.md)에 있다.
 

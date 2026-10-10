@@ -95,6 +95,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 71. [74-immutable-validation-reuse.md](74-immutable-validation-reuse.md) — deep-frozen identity pair 검증 재사용, 격리 비용·CPU 표본과 편집 small 미달 기록
 72. [75-early-disk-rechecks.md](75-early-disk-rechecks.md) — 10ms 이른 재확인 단독 미채택과 30ms 보완 채택, enqueue origin 분해·small·large ABBA
 
+73. [76-runtime-decision.md](76-runtime-decision.md) — 런타임 형태 결정: 독립 런타임 유지, FormatJS parser·IMF 재사용 지속, i18next prototype 미채택
+
 
 ## 상태 표기 규칙
 
