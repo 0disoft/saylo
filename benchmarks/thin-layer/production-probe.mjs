@@ -11,13 +11,31 @@ import { thinLayerAstRuntime } from './ast-runtime.mjs';
 
 const directory = fileURLToPath(new URL('.', import.meta.url));
 const repository = fileURLToPath(new URL('../..', import.meta.url));
-const { values } = parseArgs({ options: { out: { type: 'string', default: 'benchmarks/results/thin-layer-production-current.json' } } });
+const { values } = parseArgs({ options: { out: { type: 'string', default: 'benchmarks/results/thin-layer-production-current.json' },
+  vectors: { type: 'boolean', default: false } } });
 const root = await mkdtemp(path.join(directory, '.production-probe-'));
 const observations = [];
+const at = Date.parse('2026-01-01T00:30:00.000Z');
+const dateSkeleton = new Intl.DateTimeFormat('en', { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' }).format(at);
+const vectors = [
+  ['decimal', '{n, number}', { n: 1234.5 }, new Intl.NumberFormat('en').format(1234.5)],
+  ['currency', '{n, number, ::currency/USD}', { n: 1234.5 }, new Intl.NumberFormat('en', { style: 'currency', currency: 'USD' }).format(1234.5)],
+  ['percent', '{n, number, percent}', { n: 0.375 }, new Intl.NumberFormat('en', { style: 'percent' }).format(0.375)],
+  ['datefull', '{at, date, full}', { at }, new Intl.DateTimeFormat('en', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }).format(at)],
+  ['dateskeleton', '{at, date, ::yyyyMMdd}', { at }, dateSkeleton],
+  ['timedefault', '{at, time}', { at }, new Intl.DateTimeFormat('en', { timeZone: 'UTC', hour: 'numeric', minute: 'numeric', second: 'numeric' }).format(at)],
+  ['ordinal', '{n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}', { n: 22 }, '22nd'],
+  ['selection', '{who, select, a {Alpha} other {Other}}', { who: 'a' }, 'Alpha'],
+  ['nested', '{n, plural, one {{at, date, ::yyyyMMdd}} other {{who, select, a {{at, time, ::HHmm}} other {{n, number}}}}}', { n: 2, who: 'a', at }, '00:30'],
+  ['nested', '{n, plural, one {{at, date, ::yyyyMMdd}} other {{who, select, a {{at, time, ::HHmm}} other {{n, number}}}}}', { n: 1, who: 'a', at }, dateSkeleton],
+  ['tag', '<b>Hello {name}</b>', { name: 'Ada' }, '<b>Hello Ada</b>'],
+  ['reserved', '{lng} / {ns} / {count}', { lng: 'customer', ns: 'order', count: 'string' }, 'customer / order / string'],
+];
 try {
   for (const locale of ['en', 'ru']) await mkdir(path.join(root, 'locales', locale), { recursive: true });
   await writeFile(path.join(root, 'locales/en/demo.json'), JSON.stringify({
     greeting: 'Hello {name}', when: '{at, date} / {at, time, ::HHmm}', rows: '{count, plural, one {one row} other {# rows}}',
+    ...(values.vectors ? Object.fromEntries(vectors.map(([id, message]) => [id, message])) : {}),
   }));
   await writeFile(path.join(root, 'locales/ru/demo.json'), JSON.stringify({ greeting: 'Hi {name}' }));
   for (const variant of ['core', 'layer', 'layer-ast', 'layer-ast-mixed']) {
@@ -51,6 +69,12 @@ try {
     assert.equal(snapshot.t('demo:when', { at: Date.parse('2026-01-01T00:30:00.000Z') }), '1/1/2026 / 00:30');
     assert.throws(() => snapshot.t('demo:absent'), { name: 'UnknownMessageError' });
     assert.throws(() => snapshot.t('demo:greeting'), { name: 'InvalidArgumentError' });
+    const vectorResults = [];
+    if (values.vectors) for (const [id, , args, expected] of vectors) {
+      const actual = snapshot.t(`demo:${id}`, args);
+      assert.equal(actual, expected, `${variant}/${id}`);
+      vectorResults.push({ id, args, expected, actual });
+    }
     const parserModules = moduleIds.filter(id => /icu-messageformat-parser[\\/]index\.js(?:\?|$)/.test(id));
     const noParserModules = moduleIds.filter(id => /icu-messageformat-parser[\\/]no-parser\.js(?:\?|$)/.test(id));
     // The parser entry also exports AST types. Graph presence alone cannot
@@ -68,7 +92,7 @@ try {
       bundleSHA256: createHash('sha256').update(code).digest('hex'),
       execution: { timeZone: snapshot.timeZone, translatedText: 'Hi Ada', fallbackPlural: '0 rows',
         fallbackDate: '1/1/2026 / 00:30', unknownKeyRejected: true, missingArgumentRejected: true,
-        ...(mixed ? { externalText } : {}) } });
+        ...(mixed ? { externalText } : {}), ...(values.vectors ? { vectorResults } : {}) } });
   }
   const files = ['benchmarks/thin-layer/production-probe.mjs', 'benchmarks/thin-layer/ast-format.mjs',
     'benchmarks/thin-layer/ast-runtime.mjs',
@@ -78,6 +102,7 @@ try {
     createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
   await writeFile(path.resolve(repository, values.out), JSON.stringify({ format: 'saylo-thin-layer-production-v2',
     observedAt: new Date().toISOString(), node: process.version, codeHashes,
+    fixture: values.vectors ? 'expanded-format-vectors' : 'three-message-eager',
     scope: 'Real Vite production build of the same small eager AST fixture, executed as self-contained ESM in Node. Unminified and gzip sizes are fixture observations only. Build graph entries are reported separately from the emitted parser error marker, since entry modules also export AST types. No browser/lazy/SSR hydration/large-catalog performance or memory proof.',
     observations }, null, 2) + '\n');
   for (const row of observations) console.log(`${row.variant}: parser marker ${row.parserImplementationPresent}, parser entries ${row.parserModules.length}, no-parser entries ${row.noParserModules.length}, ${row.unminifiedBytes} unminified bytes, ${row.gzipBytes} gzip bytes; execution PASS`);
