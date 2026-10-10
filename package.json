@@ -34,7 +34,9 @@
     "release:check": "node scripts/release-check.mjs",
     "release:pack": "npm run build && node scripts/pack-smoke.mjs --save-release",
     "release:publish": "node scripts/release-publish.mjs",
-    "release:oidc": "node scripts/verify-oidc.mjs"
+    "release:oidc": "node scripts/verify-oidc.mjs",
+    "verify:registry:alpha4": "node scripts/pack-smoke.mjs --registry --registry-version 0.1.0-alpha.4",
+    "verify:registry:sveltekit:alpha4": "node scripts/pack-sveltekit.mjs --registry-version 0.1.0-alpha.4"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "7",
