@@ -29,6 +29,67 @@ test('strict JSON rejects malformed, comments, trailing commas and non-string va
   rejectsCode(() => parseCatalog({ x: 'ok' }, options), 'INVALID_JSON');
 });
 
+test('single string edits match full parsing across escapes, length and source positions', () => {
+  const source = String.raw`{
+  "__proto__": "prototype",
+  "1": "numeric first",
+  "title": "Hello {name}",
+  "ti\u006d\u0065": "After {name}",
+  "😀": "tail"
+}`;
+  let previous = parseCatalog(source, options);
+  let current = source;
+  for (const text of ['Hi {name}', '', '한글😀 {name}', 'quote " / backslash \\ / LF\n {name}', 'Hello {name}', '{n, plural, one {one} other {#}}']) {
+    current = current.replace(JSON.stringify(previous.messages.title.source), JSON.stringify(text));
+    const next = parseCatalog(current, options, previous);
+    assert.deepEqual(next, parseCatalog(current, options));
+    assert.equal(next.messages.__proto__, previous.messages.__proto__);
+    assert.equal(next.messages.time.ast, previous.messages.time.ast);
+    assert.ok(Object.isFrozen(next.messages));
+    previous = next;
+  }
+  assert.equal(parseCatalog(current, options, previous), previous, 'Identical owned source reuses the complete catalog');
+});
+
+test('string token shortcuts retain full-parser diagnostics and structural fallbacks', () => {
+  const source = '{"x":"value","tail":"tail"}';
+  const previous = parseCatalog(source, options);
+  const cases = [
+    '{"x":"value","x":"duplicate"}', '{"x":"new","tail":null}',
+    '{"x":"new","tail":"tail","extra":"added"}', '{"tail":"tail"}',
+    '{"renamed":"value","tail":"tail"}', '{"x":"quote"oops","tail":"tail"}',
+    '{"x":"bad\\q","tail":"tail"}', '{"x":"bad\nline","tail":"tail"}',
+    '{"x":"{unexpected, number} {unexpected}","tail":"tail"}',
+    '{"x":"{n, plural, one {bad}}","tail":"tail"}',
+    '{"x":"value","tail":"tail",}', undefined, null, {},
+  ];
+  const outcome = (input, baseline) => {
+    try { return parseCatalog(input, options, baseline); }
+    catch (error) { assert.ok(error instanceof CatalogError); return { diagnostics: error.diagnostics }; }
+  };
+  for (const input of cases) assert.deepEqual(outcome(input, previous), outcome(input));
+  assert.equal(previous.messages.x.source, 'value');
+  assert.deepEqual(parseCatalog('{"x":"repaired","tail":"tail"}', options, previous),
+    parseCatalog('{"x":"repaired","tail":"tail"}', options));
+});
+
+test('JSON provenance is scoped to successful parses and catalog context', () => {
+  const source = '{"x":"value"}';
+  const previous = parseCatalog(source, options);
+  for (const changed of [{ ...options, locale: 'en' }, { ...options, namespace: 'other' }, { ...options, sourceName: 'other.json' }])
+    assert.deepEqual(parseCatalog(source, changed, previous), parseCatalog(source, changed));
+  for (const input of [undefined, null, 1, {}, []]) rejectsCode(() => parseCatalog(input, options, previous), 'INVALID_JSON');
+  for (const changed of [{ ...options, locale: '' }, { ...options, namespace: '..' }])
+    assert.throws(() => parseCatalog(source, changed, previous), CatalogError);
+  const untrusted = { get locale() { throw new Error('Untrusted previous catalog was inspected.'); } };
+  assert.deepEqual(parseCatalog(source, options, untrusted), parseCatalog(source, options));
+  const transported = freeze(JSON.parse(JSON.stringify(previous)));
+  assert.notEqual(parseCatalog(source, options, transported), transported);
+  const extra = parseCatalog(source, { ...options, marker: 'old' });
+  assert.equal(parseCatalog(source, { ...options, marker: 'new' }, extra).marker, 'new');
+  assert.equal(parseCatalog(source, options, extra).marker, undefined);
+});
+
 test('duplicate decoded JSON IDs are rejected before overwritten values disappear', () => {
   rejectsCode(() => parseCatalog('{"title":"A","title":"B"}', options), 'DUPLICATE_ID');
   const source = '{\n  "title": "A",\n  "ti\\u0074le": "B"\n}';

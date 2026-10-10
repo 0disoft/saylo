@@ -73,7 +73,7 @@ async function browserExecutable() {
 }
 const executable = await browserExecutable();
 // Include the actual loaded modules, so uncommitted optimization trials are identifiable.
-const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json.js',
+const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/catalog-json.js', 'packages/core/dist/json.js',
   'packages/core/dist/simple-message.js',
   'packages/core/dist/diagnostics.js', 'packages/core/dist/schema.js', 'packages/typegen/dist/catalog-files.js',
   'packages/vite/dist/live-registry.js', 'packages/vite/dist/disk-rechecks.js', 'packages/vite/dist/translation-quarantine.js', 'packages/vite/dist/catalog-registry.js', 'packages/vite/dist/catalog-patch.js',

@@ -26,7 +26,7 @@ try {
   const { parseCatalog } = await import('@0disoft/saylo-core');
   probe.assertTransformed();
   const codeHashes = {};
-  for (const file of ['packages/core/dist/catalog.js', 'packages/core/dist/json.js', 'packages/core/dist/diagnostics.js',
+  for (const file of ['packages/core/dist/catalog.js', 'packages/core/dist/catalog-json.js', 'packages/core/dist/json.js', 'packages/core/dist/diagnostics.js',
     'packages/core/dist/schema.js', 'packages/core/dist/simple-message.js', 'benchmarks/live-update/gc-profile.mjs',
     'benchmarks/live-update/parser-stages.mjs', 'benchmarks/live-update/parser-probe.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json'])
     codeHashes[file] = createHash('sha256').update(await readFile(file)).digest('hex');
@@ -57,7 +57,9 @@ try {
         assert.equal(next.messages.message1.arguments, next.messages.message2.arguments);
         assert.equal(stages.calls.reusedMessageFreezeMs, 0);
       } else assert.equal(next.messages.message1, previous.messages.message1);
-      for (const metric of parserMetrics) assert.equal(stages.calls[metric], 1);
+      for (const metric of parserMetrics.filter(metric => !['strictJsonMs', 'tokenScanMs'].includes(metric))) assert.equal(stages.calls[metric], 1);
+      assert.equal(stages.calls.strictJsonMs, detailed ? 1 : 0);
+      assert.equal(stages.calls.tokenScanMs, detailed ? 1 : 0);
       samples.push({ warmup: i < warmup, startTimeMs, endTimeMs, totalMs: endTimeMs - startTimeMs,
         heapBeforeBytes, heapAfterBytes, heapDeltaBytes: heapAfterBytes - heapBeforeBytes, ...stages,
         ...(detailed ? {
@@ -94,5 +96,5 @@ try {
     workingTreeStatus: execFileSync('git', ['status', '--short'], { encoding: 'utf8' }).trim(),
     node: process.version, environment: { platform: platform(), arch: arch(), cpu: cpus()[0]?.model },
     mode, settings: { warmup, samples: count, detailed, forcedGc: false }, codeHashes,
-    scope: 'Synchronous parser-only benchmark. Cold: no previous catalog; full literal/simple interpolation parsing each call. Incremental: same-length single probe edit, immutable prior catalog. Input stringify, heapUsed readings, assertions, disk, watcher, translation validation and browser excluded. json includes strictJson and tokenScan; messageLoop includes AST, arguments and message freeze; arguments includes argument freeze. Cold messageFreeze includes position lookup/allocation, AST freeze, record freeze (including recursive position freeze), and residual record creation/assignment/probe overhead. Position is evaluated before AST freeze, matching product evaluation order; the older v2 detailed probe evaluated AST freeze first. Record construction is outside the record-freeze timer. Residuals are calculated per sample before summarizing. Nested p95s must not be added. Clock/counter instrumentation overhead included; GC observed asynchronously and matched by timestamp.', results }, null, 2)}\n`);
+    scope: 'Synchronous parser-only benchmark. Cold: no previous catalog; full literal/simple interpolation parsing each call. Incremental: same-length single probe edit, immutable parser-owned prior catalog; JSON leaf shortcut replaces full strictJson/tokenScan, whose counters are zero. jsonMs includes diff scan, replacement-token validation and entry reuse on that path. Input stringify, heapUsed readings, assertions, disk, watcher, translation validation and browser excluded. Full-path json includes strictJson and tokenScan; messageLoop includes AST, arguments and message freeze; arguments includes argument freeze. Cold messageFreeze includes position lookup/allocation, AST freeze, record freeze (including recursive position freeze), and residual record creation/assignment/probe overhead. Position is evaluated before AST freeze, matching product evaluation order; the older v2 detailed probe evaluated AST freeze first. Record construction is outside the record-freeze timer. Residuals are calculated per sample before summarizing. Nested p95s must not be added. Clock/counter instrumentation overhead included; GC observed asynchronously and matched by timestamp.', results }, null, 2)}\n`);
 } finally { gc.dispose(); probe.dispose(); }

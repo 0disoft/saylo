@@ -1,6 +1,7 @@
 import { parse } from '@formatjs/icu-messageformat-parser';
 import { CatalogError, freeze, freezeMessageAst, freezeOwnedMessageMap, createPositionLocator, isDeepFrozen } from './diagnostics.js';
-import { messageOffset, readJson } from './json.js';
+import { messageOffset } from './json.js';
+import { hasSameCatalogSource, readCatalogJson, rememberCatalogJson } from './catalog-json.js';
 import { inferArguments } from './schema.js';
 import { createSimplePositionPool, parseSimpleMessage } from './simple-message.js';
 import type { CatalogDiagnostic, CatalogOptions, MessageSchema, ParsedCatalog, ParsedMessage } from './types.js';
@@ -17,7 +18,8 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
   } catch {
     throw new CatalogError([{ ...context, code: 'INVALID_LOCALE', message: 'Locale must be a valid BCP 47 language tag.' }]);
   }
-  const entries = readJson(source, context);
+  if (hasSameCatalogSource(source, context, previous)) return previous!;
+  const entries = readCatalogJson(source, context, previous);
   const positionAt = createPositionLocator(source);
   const diagnostics: CatalogDiagnostic[] = [];
   const messages: Record<string, ParsedMessage> = Object.create(null);
@@ -57,5 +59,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
     }
   }
   if (diagnostics.length) throw new CatalogError(diagnostics);
-  return freeze({ ...context, messages: freezeOwnedMessageMap(messages) });
+  const catalog = freeze({ ...context, messages: freezeOwnedMessageMap(messages) });
+  rememberCatalogJson(catalog, source, entries);
+  return catalog;
 }

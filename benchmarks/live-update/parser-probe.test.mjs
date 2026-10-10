@@ -20,7 +20,7 @@ function outcome(parse, source) {
 }
 
 test('parser probes preserve results, diagnostics, freeze and incremental identity without changing dist', async () => {
-  const files = ['catalog.js', 'json.js', 'schema.js', 'diagnostics.js', 'simple-message.js'];
+  const files = ['catalog.js', 'catalog-json.js', 'json.js', 'schema.js', 'diagnostics.js', 'simple-message.js'];
   const hashes = async () => Promise.all(files.map(async file => createHash('sha256').update(await readFile(new URL(`../../packages/core/dist/${file}`, import.meta.url))).digest('hex')));
   const before = await hashes();
   const expected = JSON.parse(JSON.stringify(fixtures.map(source => outcome(parseCatalog, source))));

@@ -36,7 +36,7 @@ for (let index = 0; index < warmup; index++) {
 }
 const unchanged = previous?.messages.message1;
 const codeHashes = {};
-for (const file of ['packages/core/dist/catalog.js', 'packages/core/dist/json.js', 'packages/core/dist/simple-message.js',
+for (const file of ['packages/core/dist/catalog.js', 'packages/core/dist/catalog-json.js', 'packages/core/dist/json.js', 'packages/core/dist/simple-message.js',
   'packages/core/dist/schema.js', 'packages/core/dist/diagnostics.js', 'benchmarks/live-update/parser-cpu.mjs',
   'benchmarks/live-update/parser-cpu-summary.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json']) {
   codeHashes[file] = createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex');
