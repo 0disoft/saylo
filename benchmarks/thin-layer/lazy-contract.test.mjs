@@ -154,6 +154,17 @@ const cases = [
       await assert.rejects(instance.refresh(), { code: 'BASE_LOCALE_CHANGED' }); assert.equal(instance.getSnapshot(), accepted);
     } finally { instance.dispose(); }
   }],
+  ['catalog pair identity is independent of JSON object property order', async (make, f) => {
+    const instance = await make(); const load = f.source.loadCatalog;
+    f.source.loadCatalog = async (...args) => {
+      const result = await load(...args);
+      return { ...result, key: { namespace: result.key.namespace, locale: result.key.locale } };
+    };
+    try {
+      await instance.setLocale('ru');
+      assert.equal(instance.getSnapshot().locale, 'ru'); assert.equal(instance.t('demo:greeting', { name: 'Ada' }), 'ru Ada');
+    } finally { instance.dispose(); }
+  }],
 ];
 
 for (const [backend, factory] of Object.entries(factories)) for (const [id, run] of cases) test(`${backend}: ${id}`, { timeout: 5000 }, async () => {

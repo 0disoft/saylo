@@ -1,0 +1,302 @@
+{
+  "format": "saylo-thin-layer-lazy-production-v1",
+  "observedAt": "2026-10-10T19:47:36.989Z",
+  "node": "v24.18.0",
+  "codeHashes": {
+    "benchmarks/thin-layer/lazy-production-probe.mjs": "608f94da02f842356eff84e85f71321243d06c2823235068b09bd71d83f0f041",
+    "benchmarks/thin-layer/lazy-layer.mjs": "bc8218a4ebddd574ab27be7a53ebb049a18fb220c69796375944a09f11fb499b",
+    "benchmarks/thin-layer/lazy-source-cache.mjs": "41c49136867f1a99289ac50dfe31c9e36ec60f4fef75bfbed0ffa37103c06aa1",
+    "benchmarks/thin-layer/catalog-layer.mjs": "2a0a4e4eb9ce733c4556df53d90f3e163bf6adac9525dd7ec3ba7f547b38745b",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/ast-runtime.mjs": "91680c21959435f71a9364c858560cdec3bb859c8438032ede476e17f628653e",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/i18n.js": "b9817d53c0e29c8e1ad7a8d4a64ede77adb6222a913664bb45c49aa79463db92",
+    "packages/core/dist/boot.js": "6a7dfdd9b2e452b8595c3caa093c49774a87b26034f7c25bad7f653ccbdde4f2",
+    "packages/vite/dist/static-catalog-source.js": "441e1dbc220ecfeb0cf3f4e912ddcdf6c8fe62101b650d805318059cd1f0a073",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "scope": "Two real Vite production builds using the same six-pair fixture and public static CatalogSource. Empty boot and on-demand catalog chunks execute in Node ESM. Cold/demo/locale/help cache counts prove partial loading, not all catalogs fetched initially. No browser lazy transport, dev reconnect, typegen, large-catalog latency or memory proof. Chunk bytes are small-fixture observations only.",
+  "observations": [
+    {
+      "variant": "core",
+      "steps": [
+        {
+          "id": "cold",
+          "cachedCatalogs": 0,
+          "loadedNamespaces": []
+        },
+        {
+          "id": "load-demo",
+          "cachedCatalogs": 2,
+          "text": "ru Ada",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30"
+        },
+        {
+          "id": "select-ja",
+          "cachedCatalogs": 3,
+          "text": "ja Ada",
+          "retainedText": "ru Ada"
+        },
+        {
+          "id": "load-help",
+          "cachedCatalogs": 5,
+          "text": "ja-help Ada",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ]
+        }
+      ],
+      "parserImplementationMarker": false,
+      "chunks": [
+        {
+          "fileName": "saylo-thin-layer-contract-probe.js",
+          "isEntry": true,
+          "bytes": 74829,
+          "gzipBytes": 20305,
+          "sha256": "b7c16d76b27cb77fc27de8522b22dd2f6f94e5056a96359a6ed679cf35e5cd36",
+          "moduleIds": [
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+            "\u0000saylo:intl-ast",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-errors.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/snapshot-signature.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/freeze.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-outcome.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-source.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/static-catalog-source.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/client.js",
+            "\u0000virtual:saylo/lazy",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.lazy-production-CWwEit/core.mjs"
+          ]
+        },
+        {
+          "fileName": "demo-CG_-_aq8.js",
+          "isEntry": false,
+          "bytes": 4612,
+          "gzipBytes": 1010,
+          "sha256": "53792eadb459e98b6aa06d476b3a80b15081872143838b1d0d6fb13da1b69444",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/en/demo"
+          ]
+        },
+        {
+          "fileName": "demo-DdoZKWrV.js",
+          "isEntry": false,
+          "bytes": 1167,
+          "gzipBytes": 518,
+          "sha256": "a81a40c4bc73630e9c7e6ea28e213330d7aac8e901206b192b4dcc375e504901",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ru/demo"
+          ]
+        },
+        {
+          "fileName": "demo-RP6YMJ21.js",
+          "isEntry": false,
+          "bytes": 1167,
+          "gzipBytes": 519,
+          "sha256": "ac315baf858da8052c5c1d10ebfe604fabf8997f2da0cddbc43f08cd6433d65d",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ja/demo"
+          ]
+        },
+        {
+          "fileName": "help-COyKwLFj.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 524,
+          "sha256": "3842684bf324af9a63f20c82c5cccc7aab3d678e8f39259c48363d5846b5b59b",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ru/help"
+          ]
+        },
+        {
+          "fileName": "help-Dc7v9oPu.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 522,
+          "sha256": "b4f38bfabbbbc6fe1326569d8d5227f9685e7f47553747b92cf290b061222f5e",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/en/help"
+          ]
+        },
+        {
+          "fileName": "help-o5Qn1V5T.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 525,
+          "sha256": "f7fa9a22c5a3a277e9146a26e47bcf11db079489d98f62d17f21ab46202fd24a",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ja/help"
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "layer",
+      "steps": [
+        {
+          "id": "cold",
+          "cachedCatalogs": 0,
+          "loadedNamespaces": []
+        },
+        {
+          "id": "load-demo",
+          "cachedCatalogs": 2,
+          "text": "ru Ada",
+          "fallbackPlural": "21 rows",
+          "fallbackDate": "1/1/2026 / 00:30"
+        },
+        {
+          "id": "select-ja",
+          "cachedCatalogs": 3,
+          "text": "ja Ada",
+          "retainedText": "ru Ada"
+        },
+        {
+          "id": "load-help",
+          "cachedCatalogs": 5,
+          "text": "ja-help Ada",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ]
+        }
+      ],
+      "parserImplementationMarker": false,
+      "chunks": [
+        {
+          "fileName": "saylo-thin-layer-contract-probe.js",
+          "isEntry": true,
+          "bytes": 172439,
+          "gzipBytes": 43994,
+          "sha256": "5cd182282ec18fd3fc6159ae868e4c02dcd75dd67ddb948a5ffef973988b0ff4",
+          "moduleIds": [
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+            "\u0000saylo:intl-ast",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-errors.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/snapshot-signature.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/fast-memoize/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+            "\u0000thin-layer:intl-ast",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ast-format.mjs",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/catalog-layer.mjs",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/lazy-source-cache.mjs",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/lazy-layer.mjs",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/index.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/freeze.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-outcome.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-source.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/static-catalog-source.js",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/client.js",
+            "\u0000virtual:saylo/lazy",
+            "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.lazy-production-CWwEit/layer.mjs"
+          ]
+        },
+        {
+          "fileName": "demo-CzBFDpaj.js",
+          "isEntry": false,
+          "bytes": 1167,
+          "gzipBytes": 517,
+          "sha256": "a20e4af652ce770436e9c417f463dc83d859b9072dcf83f691a33bbfbd07594b",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ru/demo"
+          ]
+        },
+        {
+          "fileName": "demo-OgjvBVmp.js",
+          "isEntry": false,
+          "bytes": 1167,
+          "gzipBytes": 518,
+          "sha256": "e8f3a236c24835524106bced0d24ea167abae1585fe4c132d6b90c7802696ced",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ja/demo"
+          ]
+        },
+        {
+          "fileName": "demo-bnbt7sQc.js",
+          "isEntry": false,
+          "bytes": 4612,
+          "gzipBytes": 1009,
+          "sha256": "4805ff6e178c42797dd2e24009aa854657a881f701fcb7f521992365a786681a",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/en/demo"
+          ]
+        },
+        {
+          "fileName": "help-Bu6nkgdf.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 522,
+          "sha256": "19d7b040ee4c16295e45ccbd1e895d1332b9462451123fe313225474d2c5007d",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/en/help"
+          ]
+        },
+        {
+          "fileName": "help-DMrfivT4.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 524,
+          "sha256": "b61e587b5f951ae0d2787723f46ea434743a1cd4055d95bcceb1cfc78a14ccab",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ja/help"
+          ]
+        },
+        {
+          "fileName": "help-deoBDjIS.js",
+          "isEntry": false,
+          "bytes": 1174,
+          "gzipBytes": 523,
+          "sha256": "e2663eeeb7dbac367677063644cf1b7a937e2d2d54ab048e8acadb9dc4cf8382",
+          "moduleIds": [
+            "\u0000virtual:saylo/catalog/ru/help"
+          ]
+        }
+      ]
+    }
+  ]
+}

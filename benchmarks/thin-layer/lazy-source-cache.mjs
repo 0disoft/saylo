@@ -7,7 +7,7 @@ export function metadata(manifest, key) {
   if (!index) { index = new Map(manifest.catalogs.map(meta => [pairId(meta.key), meta])); indexes.set(manifest, index); }
   return index.get(pairId(key)) ?? { key, status: 'missing', catalogVersion: 0 };
 }
-export const stamp = (sessionId, meta) => JSON.stringify([sessionId, meta.key, meta.status, meta.catalogVersion,
+export const stamp = (sessionId, meta) => JSON.stringify([sessionId, meta.key.locale, meta.key.namespace, meta.status, meta.catalogVersion,
   meta.status === 'present' ? meta.namespaceSchemaFingerprint : null]);
 
 export function assertTransition(before, after) {
