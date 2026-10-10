@@ -1,0 +1,304 @@
+npm notice run check
+npm notice run npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json && node --test scripts/test/verify-oidc.test.mjs scripts/test/registry-release.test.mjs
+npm notice run build
+npm notice run npm run build --workspaces
+npm notice run @0disoft/saylo-core@0.1.0-alpha.3 build
+npm notice run tsc -p tsconfig.json
+npm notice run @0disoft/saylo-react@0.1.0-alpha.3 build
+npm notice run @0disoft/saylo-svelte@0.1.0-alpha.3 build
+npm notice run @0disoft/saylo-typegen@0.1.0-alpha.3 build
+npm notice run @0disoft/saylo-vite@0.1.0-alpha.3 build
+npm notice run tsc -p tsconfig.json && node -e "require('node:fs').copyFileSync('src/virtual.d.ts', 'dist/virtual.d.ts')"
+npm notice run @0disoft/saylo-core@0.1.0-alpha.3 test
+npm notice run node --test test/catalog.test.mjs test/simple-message.test.mjs test/translator.test.mjs test/store.test.mjs test/loading.test.mjs test/boot.test.mjs test/snapshot-signature.test.mjs
+✔ HTML-safe boot JSON restores immutable schemas, pair stamps, fallback and fixed date formatting (112.9255ms)
+✔ boot decode rejects omissions, duplicates, wrong stamps, schema content and version (23.7344ms)
+✔ request instances stay isolated and serialized scopes track committed state rather than pending intent (31.1004ms)
+✔ SSR request preparation pins the ready scope, retries changed pair stamps, and bounds waiting (21.9732ms)
+✔ JS package entry parses flat literal IDs, empty text, apostrophes and tags (13.5549ms)
+✔ strict JSON rejects malformed, comments, trailing commas and non-string values (3.3548ms)
+✔ single string edits match full parsing across escapes, length and source positions (10.147ms)
+✔ string token shortcuts retain full-parser diagnostics and structural fallbacks (5.6022ms)
+✔ JSON provenance is scoped to successful parses and catalog context (3.3214ms)
+✔ duplicate decoded JSON IDs are rejected before overwritten values disappear (1.0209ms)
+✔ prototype-like IDs and argument names are literal own keys (4.3368ms)
+✔ plain and escaped key tokens preserve decoded IDs and exact source positions (1.4062ms)
+✔ position indexing preserves UTF-16 columns at LF, CRLF, trailing LF and escaped newline boundaries (1.3196ms)
+✔ JSON field boundaries preserve escaped text and reject overwritten non-strings at their token (1.6702ms)
+✔ invalid locale, namespace and IDs produce structured errors (3.6954ms)
+✔ ICU syntax errors are attributed to message and JSON source position (1.9325ms)
+✔ base argument types use intersection; names from all branches are required (2.346ms)
+✔ conflicting uses fail atomically, including across nested branches (1.7961ms)
+✔ offset, exact branches, selectordinal, nested forms and locale categories are supported (1.5246ms)
+✔ translation can omit keys or arguments without weakening the base contract (0.9841ms)
+✔ translation rejects new keys, new arguments and narrower argument types (2.1253ms)
+✔ validation reuse follows immutable argument contracts, never stale keys or mutable schemas (2.3668ms)
+✔ each parse shares exact immutable argument contracts without sharing message AST or positions (2.0199ms)
+✔ a cached successful contract never hides later ICU conflicts or their source locations (1.2472ms)
+✔ plain argument shortcuts share the canonical ICU contract without hiding conflicts (2.8281ms)
+✔ shared validation contracts still check every ID, changed base types and failing diagnostics (4.593ms)
+✔ fingerprint depends on namespace and argument contract, not text or key order (4.0398ms)
+✔ compact schema fingerprints match native SHA-256 for Unicode and scale independently of catalog size (49.447ms)
+✔ parsed AST, schemas and diagnostics are deeply immutable (3.8342ms)
+✔ schema reuse follows deep immutability and mutable inputs never keep a stale schema (1.1178ms)
+✔ deep freeze visits children of an externally shallow-frozen object (0.3442ms)
+✔ parser-owned AST freezing covers simple locations, FormatJS literals and nested skeletons (5.0334ms)
+✔ incremental parsing reuses unchanged ICU but refreshes source positions and validates changed entries (2.3266ms)
+✔ final catalog maps stay deeply immutable across new, reused and untrusted previous messages (2.6394ms)
+✔ new pair versions with identical text keep the snapshot; schema and text changes still publish (107.1245ms)
+✔ lazy scope publishes atomically, retains old translators, and reuses loaded pairs (20.4694ms)
+✔ superseded locale rejects only that intent and does not wait for its obsolete slow load (6.7707ms)
+✔ failed lookup leaves the exact UI snapshot intact and a retry can reuse successful pairs (6.67ms)
+✔ load exceptions and timeout are failures rather than missing catalogs (21.4405ms)
+✔ a changed pair version discards the slow response while an unrelated namespace revision does not (4.7415ms)
+✔ refresh invalidates pending session loads and old session results cannot overwrite the new snapshot (3.6833ms)
+✔ deleted secondary tombstone prevents late resurrection and falls back to base (3.4181ms)
+✔ manifest additions are available to the generic loader and removals retire loaded namespaces (6.3679ms)
+✔ removing the current locale selects base and empty loaded scope can be repopulated (4.0223ms)
+✔ incompatible translations do not publish a mixed schema candidate (4.8857ms)
+✔ initial scope must explicitly contain every outcome and matching schema metadata (4.1204ms)
+✔ dispose rejects pending callers, aborts owned loads, and cleans up every listener once (4.8721ms)
+✔ subscriber failures retain the commit and reentrant selections leave completed intents resolved (3.9165ms)
+✔ persistent stale results stop after three attempts without changing the UI (3.7995ms)
+✔ manifest revisions, known pair versions and deletion tombstones cannot move backwards (2.6898ms)
+✔ a retired source session is rejected rather than rolling back the UI (2.3325ms)
+✔ simple AST matches FormatJS exactly, including Unicode columns, lines and top-level tag/pound literals (30.3668ms)
+✔ simple messages keep argument contracts and formatter results (66.6642ms)
+✔ catalog-relative positions share exact tuples without merging Unicode columns or source positions (4.765ms)
+✔ a failed simple parse after a shared position preserves fallback ICU diagnostics (1.4919ms)
+✔ quotes, whitespace/Unicode/numeric argument names and complex ICU delegate to FormatJS (10.5543ms)
+✔ malformed suffixes fall back atomically and keep FormatJS error offsets mapped to escaped JSON (3.3159ms)
+✔ generated combinations preserve FormatJS AST at literal/argument boundaries (11.4772ms)
+✔ fragment composition preserves exact signatures for empty scopes and escaped literal IDs/text (7.1418ms)
+✔ trusted immutable catalogs reuse key enumeration, mutable and shallow-frozen catalogs do not (0.8265ms)
+✔ equivalent replacement and positions stay no-op while text, keys and scope still change identity (3.3545ms)
+✔ disposal releases all adapter resources once, including after a cleanup failure (72.2797ms)
+✔ snapshots are stable, immutable and keep their own translator after replacement (13.0428ms)
+✔ equivalent catalogs and inactive edits do not force a new UI snapshot (2.8152ms)
+✔ locale and namespace lists change atomically; removal selects base fallback (4.3806ms)
+✔ invalid candidates leave last good snapshot and subscriber count intact (5.0823ms)
+✔ reentrant updates wait until all subscribers finish the current snapshot (2.2061ms)
+✔ subscriber exceptions do not prevent notification or undo the commit (2.5385ms)
+✔ subscriptions have independent idempotent cleanup; dispose freezes current state (2.387ms)
+✔ catalog text replacement retains native Intl caches across snapshots (4.1316ms)
+✔ t returns text, interpolated zero and literal tags; empty translation is not fallback (71.8132ms)
+✔ plural, exact branch, offset, ordinal, select and nested text use ICU semantics (7.3575ms)
+✔ fallback formats with base locale; missing target namespace also falls back (3.9419ms)
+✔ base required arguments remain required when translation omits them (1.7882ms)
+✔ JS rejects wrong types, invalid Date, nonfinite numbers and non-object args (2.3184ms)
+✔ date/time defaults, named styles and skeletons all receive the resolved timezone (8.8281ms)
+✔ unknown keys, malformed addresses and unloaded namespaces have distinct errors (1.1681ms)
+✔ prototype-like message and argument names remain literal and own properties (0.9561ms)
+✔ factory validates translations, duplicate namespaces and locale consistency (2.9799ms)
+✔ translator is snapshot-bound; caller arrays and another translator cannot change it (1.3302ms)
+✔ repeated messages and different text reuse native Intl formatters (1.2352ms)
+ℹ tests 81
+ℹ suites 0
+ℹ pass 81
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 537.4008
+npm notice run @0disoft/saylo-react@0.1.0-alpha.3 test
+npm notice run node --test test/react.test.mjs test/hydration.test.mjs test/selector.test.mjs
+✔ SSR requests render isolated locales and subsequent requests see the current source (61.4124ms)
+✔ hydration uses boot-bound t, buffers multiple newer catalogs, and preserves DOM/input/state at release (374.2754ms)
+✔ hydration adapters have independent barriers and clean up without disposing the shared instance (5.353ms)
+✔ selector hydration reads fixed server data even after the client barrier has released (39.6232ms)
+✔ lazy locale and namespace intents commit together without remounting React state (374.8017ms)
+✔ StrictMode preserves DOM, component state, focus and snapshot-bound t across catalog updates (34.2743ms)
+✔ equivalent and inactive edits skip renders; locale switch uses the updated catalog (11.0389ms)
+✔ provider instance replacement releases old subscription while preserving component state (14.4458ms)
+✔ independent factories and nested providers read their own nearest store (17.1708ms)
+✔ hook outside its matching provider reports a clear error (12.0795ms)
+✔ selectors skip unrelated active edits and preserve state while reacting to text and locale changes (369.8167ms)
+✔ object selections are cached for repeated reads and new selectors use current props and instances (19.8239ms)
+✔ Object.is compares selected NaN and signed zero values (9.161ms)
+✔ selectors require the matching provider and surface selection failures (13.3164ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3454.5562
+npm notice run @0disoft/saylo-svelte@0.1.0-alpha.3 test
+npm notice run node --test test/store.test.mjs test/selectors.test.mjs test/components.test.mjs
+✔ SSR isolates request and nested contexts, releases subscriptions and rejects mismatched factories (80.1884ms)
+✔ SSR selectors isolate request and nested contexts and leave no source subscriptions (14.7744ms)
+✔ compiled Svelte client preserves DOM state and releases subscriptions (3674.9688ms)
+✔ selected stores skip unrelated edits and share the source until the final consumer leaves (81.806ms)
+✔ Object.is suppresses stable objects, functions, undefined and NaN but distinguishes signed zero (6.588ms)
+✔ resubscription and synchronous SSR reads refresh dormant selections without keeping resources (5.605ms)
+✔ selected stores compose with Svelte derived without mixed revisions or stalled unchanged branches (6.3084ms)
+✔ initial selector failures release subscriptions and later SSR reads can recover (4.4867ms)
+✔ a failed new selector leaves a healthy shared source subscribed without retaining its own listener (3.7733ms)
+✔ live selector errors retain the last value, report once and recover without stalling other derived stores (7.2316ms)
+✔ default reporting and a throwing reporter preserve the Svelte notification queue (4.45ms)
+✔ synchronous initial value, shared subscription, immutable snapshots and bound t (80.8716ms)
+✔ caller disposal releases adapter resources and consumer cleanup remains idempotent (2.7115ms)
+✔ lazy instance methods return the original async result and publish only committed state (4.0137ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6797.4615
+npm notice run @0disoft/saylo-typegen@0.1.0-alpha.3 test
+npm notice run node --experimental-test-module-mocks --test test/typegen.test.mjs test/replace.test.mjs test/generator-race.test.mjs
+(node:28468) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a superseded successful write is tracked before restoring the latest requested schema (94.5646ms)
+✔ Windows transient replacement failures retry the same rename with bounded delays (4.4993ms)
+✔ new generation or stop during a retry wait cancels before replacing the target (2.3295ms)
+✔ permanent, non-Windows and exhausted failures keep the original error (2.3913ms)
+✔ emission is stable across text/order edits and preserves base argument contracts (3.6362ms)
+✔ atomic writer skips unchanged content and obsolete work, then cleans temporary files (20.9599ms)
+✔ background worker coalesces burst generations to the latest schema and skips text-only edits (80.5886ms)
+✔ worker failures retain the previous declaration and allow retry (131.7125ms)
+✔ CLI validates fresh disk catalogs before changing output (409.7627ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 904.2587
+npm notice run @0disoft/saylo-vite@0.1.0-alpha.3 test
+npm notice run node --test test/plugin.test.mjs test/client.test.mjs test/lazy.test.mjs test/patch.test.mjs test/wire.test.mjs test/production.test.mjs test/server.test.mjs
+✔ transport freezing shares core trust and acceptance does not revisit the catalog tree (35.5266ms)
+✔ transport freezing traverses externally shallow-frozen catalogs and nested ICU data (7.7002ms)
+✔ connect registers before request, dedupes revisions, and accepts a new session (46.0229ms)
+✔ disconnect ignores late packets and reconnect requests the current snapshot (4.745ms)
+✔ failed initial request releases binding so connect can be retried (3.8611ms)
+✔ store disposal releases its bridge without closing another store binding (5.1947ms)
+✔ single store binding and idempotent stop/dispose remove all listeners (3.3811ms)
+✔ malformed envelope, wrong base and invalid registry retain last good store (5.8262ms)
+✔ subscriber failure reports committed update without replaying it (3.2507ms)
+✔ without Vite hot context connectDev is a production no-op (1.7326ms)
+✔ initial handshake coalesces broadcasts and refuses replies behind the observed revision (3.2918ms)
+✔ revision gap requests one snapshot and late replies never roll back a newer update (3.3216ms)
+✔ disconnect invalidates pending requests and reconnect uses the current locale and namespaces (4.432ms)
+✔ multiple stores on one hot context reject each other's replies and late diagnostics (4.5833ms)
+✔ snapshot scope mismatch and invalid request identities retain the last good state (2.4925ms)
+✔ stale replies have a retry bound and a later update can recover (3.3273ms)
+✔ unanswered snapshots retry with a new generation and stop cancels the timer (107.7698ms)
+✔ a first socket connection after exhausted buffered requests starts a fresh handshake (2.722ms)
+✔ lazy connection fetches only the selected scope and newly requested namespaces (96.7372ms)
+✔ loaded edits refresh the UI while inactive and unloaded edits transfer no AST (18.9941ms)
+✔ new namespace is loaded through the generic lookup and deletion leaves a versioned tombstone (9.8909ms)
+✔ a stale delayed catalog cannot replace the updated pair and unrelated changes do not resend it (10.4688ms)
+✔ disconnect invalidates reply identity and a new session resumes the existing locale intent (7.6027ms)
+✔ manifest gaps use the snapshot handshake before loading newer catalog stamps (4.2781ms)
+✔ shared source survives one instance disposal and releases listeners after the final binding (4.3292ms)
+✔ source timeout and module disposal reject pending loads and release listeners (105.3598ms)
+✔ static chunk source consumes the same catalog contract and loads only desired pairs (6.2027ms)
+✔ loaded edits negotiate sparse deltas and reuse immutable unchanged messages (7.4108ms)
+✔ a broken delta retries once with a new full request and ignores the superseded reply (5.5945ms)
+✔ a repeatedly malformed patch cannot loop full recovery or mutate the current UI (2.8337ms)
+✔ shared instances can receive same-baseline patches in reverse order (4.4176ms)
+✔ reconnecting with a patch pending uses the new session and retains the last good UI until a full reply (3.2451ms)
+✔ base and translation schema deltas publish together after both current pairs arrive (6.0766ms)
+✔ a malformed compact full reply rejects without changing the accepted UI and a later request recovers (2.0772ms)
+✔ wire deltas carry additions, removals and positions while preserving literal prototype-like IDs (12.3455ms)
+✔ source-only reformatting advances pair versions and produces exact positions without retransmitting AST (1.9403ms)
+✔ uniform source movement is encoded once and reconstructs exact positions for unchanged AST (2.4953ms)
+✔ older baselines, new sessions, dense edits and deleted/recreated pairs fall back to full outcomes (5.2293ms)
+✔ mixed source movement remains individual and inherited messages never enter a patch (1.5801ms)
+✔ catalog request validators reject malformed known stamps but accept legacy full requests (0.8191ms)
+✔ completeness enabled for builds still permits partial live translations and fallback (125.3171ms)
+✔ startup type readiness precedes serving and live publish precedes background typegen (117.581ms)
+✔ failed live type generation retries an identical save without republishing catalogs (228.3676ms)
+✔ generated declaration and owned temporary paths are narrowly excluded from watch/HMR (8.0329ms)
+✔ only production builds include the catalog client in SSR bundles (0.6553ms)
+✔ failed initial type readiness aborts startup and retains catalog source (14.6744ms)
+✔ scan canonicalizes locale directories and parses ICU (13.4359ms)
+✔ duplicate canonical locale directories fail (12.8013ms)
+✔ startup validates fresh disk data and translation schema (15.3762ms)
+✔ changed file sends snapshot, suppresses default HMR, and dedupes identical saves (33.8631ms)
+✔ bad JSON retains last good registry and recovery clears diagnostic (33.2402ms)
+✔ a suppressed disk correction after a guarded JSON error still recovers (97.7263ms)
+✔ a suppressed second valid save replaces the first without another watcher event (116.6376ms)
+✔ unchanged disk checks do not republish and closing cancels pending rereads (354.0107ms)
+✔ live file reads reuse unchanged message AST without retaining edited text (33.434ms)
+✔ server catalog requests negotiate a delta only with an available client baseline (28.9285ms)
+✔ base schema change publishes immediately with incompatible translation quarantined (46.2306ms)
+✔ quarantine keeps compatible messages and restores raw translations after base recovery (79.9244ms)
+✔ invalid secondary edits retain last good messages without blocking other files (60.2882ms)
+✔ deleted translation cannot be resurrected by an invalid replacement (91.4869ms)
+✔ lazy pair metadata and payload converge after quarantine and restoration (47.5554ms)
+✔ concurrent saves coalesce to final value and close removes only plugin listeners (13.9852ms)
+✔ read-backed edits coalesce on the next turn while disk events keep their settling window (14.9171ms)
+✔ a new locale file is read on the next turn without the replacement quiet window (13.8442ms)
+✔ a partially written new locale recovers without a second watcher event (111.453ms)
+✔ disk event bursts retain the 200ms drain bound (17.0238ms)
+✔ a missing read-backed update waits for disk settling before publishing an atomic replacement (15.886ms)
+✔ a missing in-flight read keeps disk settling even when a newer reader is already queued (16.5341ms)
+✔ new locale and paired namespace files join the same valid batch (61.3025ms)
+✔ translation namespace removal falls back and current locale removal selects base (141.1364ms)
+✔ baseline namespace removal retires secondary files and restoration rejoins them (139.1745ms)
+✔ deleting all base files retains last good state and recovers when restored (106.5033ms)
+✔ atomic unlink/add save reads final file without publishing removal (62.029ms)
+✔ translation arriving before new baseline is retried without resaving translation (311.1265ms)
+✔ invalid new file is diagnosed and ignored files do not create live events (79.8496ms)
+✔ save during an async read discards superseded content before publishing (49.4728ms)
+✔ a newer guarded batch waiting behind an old read does not trigger a redundant disk drain (24.0652ms)
+▶ superseded successful parsing is reused only after checking the newest reader
+  ✔ identical (28.8503ms)
+  ✔ changed (54.3011ms)
+  ✔ invalid (261.8855ms)
+✔ superseded successful parsing is reused only after checking the newest reader (347.4746ms)
+✔ closing during an async read cancels publication and pending listeners (391.0009ms)
+✔ virtual serialization escapes HTML delimiters (94.1068ms)
+✔ snapshot handshake echoes request scope and targets only the requesting client (68.9942ms)
+✔ malformed snapshot requests get a targeted diagnostic without a registry reply (31.9271ms)
+✔ lazy virtual boot includes only its base/target scope and catalog requests are targeted (52.9239ms)
+✔ lazy-only clients receive metadata broadcasts and stable scoped versions after deletion (91.3799ms)
+✔ real builds report all incomplete namespaces/keys before generation, and pass after repair (506.9323ms)
+✔ build completeness covers empty directories and absent initial locales using actual folder names (129.3149ms)
+✔ strict builds retain ordinary schema errors and reject non-boolean configuration (28.5712ms)
+✔ static imports dedupe across consumers, cache immutable outcomes, and honor pre-abort (2.9786ms)
+✔ missing pairs keep manifest tombstones without importing (0.9497ms)
+✔ failed or mismatched chunk loads leave the cache untouched and can be retried (1.871ms)
+[ast-runtime] fixture unminified JS: 169215 -> 118138 bytes
+✔ real production build emits scoped AST chunks, executes lazy imports, and rejects fresh invalid disk (556.4083ms)
+✔ Vite SSR dev requests see current catalogs without invalidating the server module, then release the source (562.6206ms)
+✔ Vite production SSR bundle prepares independent requests using static catalog imports (125.9138ms)
+✔ compact catalogs round-trip exact messages, ICU AST locations, schemas and prototype-like names (86.0843ms)
+✔ full payload cache shares schemas while envelope stamps stay current and sparse patches remain unchanged (2.1995ms)
+✔ compact decoder rejects malformed encodings, duplicate IDs, positions, tuples and schema references (2.3788ms)
+✔ simple interpolation catalogs use less than half the expanded JSON bytes without losing locations (10.9112ms)
+ℹ tests 100
+ℹ suites 0
+ℹ pass 100
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4216.1386
+npm notice run @0disoft/saylo-core@0.1.0-alpha.3 typecheck:consumers
+npm notice run tsc -p test/tsconfig.json
+npm notice run @0disoft/saylo-react@0.1.0-alpha.3 typecheck:consumers
+npm notice run @0disoft/saylo-svelte@0.1.0-alpha.3 typecheck:consumers
+npm notice run @0disoft/saylo-typegen@0.1.0-alpha.3 typecheck:consumers
+npm notice run node test/generate-fixture.mjs && tsc -p test/tsconfig.json
+npm notice run @0disoft/saylo-vite@0.1.0-alpha.3 typecheck:consumers
+[saylo:typegen] unchanged: examples/react/generated.d.ts
+✔ historical registry verification follows approved bytes after alpha moves (11.5977ms)
+✔ registry release selectors reject traversal and unpublished versions (2.6199ms)
+✔ rejects local or wrong-repository runs before requesting credentials (4.5294ms)
+✔ exchanges package-scoped tokens without exposing them in output (1.5268ms)
+✔ redacts backend, transport and malformed-token failures (1.348ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 173.0274

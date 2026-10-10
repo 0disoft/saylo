@@ -1,0 +1,12 @@
+[bench] 10k-20-locales: 20 files, 7755280 catalog bytes; starting Vite
+file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/live-update/server-file-profile.mjs:44
+    throw new Error(`Expected exactly one catalog path check, read and parse per sample. ${JSON.stringify(sample)}`);
+          ^
+
+Error: Expected exactly one catalog path check, read and parse per sample. {"startedAt":13923.0837,"operations":[{"metric":"pathCheckMs","startMs":31.7458000000006,"status":"ok","endMs":32.735500000000684},{"metric":"fileReadMs","startMs":32.742200000000594,"status":"ok","endMs":34.4325000000008},{"metric":"catalogParseMs","startMs":34.447400000000926,"sourceLength":387783,"hasPrevious":false,"status":"ok","endMs":151.08380000000034},{"metric":"pathCheckMs","startMs":151.27760000000126,"status":"ok","endMs":152.29070000000138},{"metric":"fileReadMs","startMs":152.29730000000018,"status":"ok","endMs":154.1151000000009},{"metric":"catalogParseMs","startMs":154.13880000000063,"sourceLength":387783,"hasPrevious":false,"status":"ok","endMs":284.5110000000004}],"timings":{"pathCheckMs":2.0084999999999127,"fileReadMs":3.5164000000004307,"catalogParseMs":247.04879999999866},"calls":{"pathCheckMs":2,"fileReadMs":2,"catalogParseMs":2}} Server stages: {"readAndCandidateMs":268.60699999999997,"translationPreparationMs":20.879800000000614,"validationMs":0.041800000000876025,"registryReplaceMs":0.12409999999908905,"catalogDeltaMs":0,"fileEvents":2,"drains":2,"queueToDrainMs":1.3118999999987864}
+    at finishFileSample (file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/live-update/server-file-profile.mjs:44:11)
+    at Object.finish (file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/live-update/profile.mjs:62:26)
+    at handle (file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/live-update/locale-channel.mjs:77:42)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.18.0

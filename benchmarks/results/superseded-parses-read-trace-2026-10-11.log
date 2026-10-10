@@ -1,0 +1,12 @@
+[bench] 10k-20-locales: 20 files, 7755280 catalog bytes; starting Vite
+file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/live-update/server-file-profile.mjs:44
+    throw new Error(`Expected exactly one catalog path check, read and parse per sample. ${JSON.stringify(sample)}`);
+          ^
+
+Error: Expected exactly one catalog path check, read and parse per sample. {"startedAt":10720.6739,"operations":[{"metric":"pathCheckMs","startMs":54.785100000000966,"status":"ok","endMs":56.0557000000008},{"metric":"fileReadMs","startMs":56.075699999999415,"status":"ok","endMs":59.66769999999997},{"metric":"catalogParseMs","startMs":59.70730000000003,"sourceLength":387783,"hasPrevious":false,"status":"ok","endMs":199.41519999999946},{"metric":"pathCheckMs","startMs":199.67720000000008,"status":"ok","endMs":200.34079999999994},{"metric":"fileReadMs","startMs":200.34799999999996,"status":"ok","endMs":201.78709999999955},{"metric":"catalogParseMs","startMs":201.79910000000018,"sourceLength":387783,"hasPrevious":true,"status":"ok","endMs":202.1926000000003}],"timings":{"pathCheckMs":1.9460999999992055,"fileReadMs":5.049800000000687,"catalogParseMs":140.11229999999887},"calls":{"pathCheckMs":2,"fileReadMs":2,"catalogParseMs":2}} Server stages: {"readAndCandidateMs":145.09370000000126,"translationPreparationMs":12.005299999998897,"validationMs":0.040899999999965075,"registryReplaceMs":0.11419999999998254,"catalogDeltaMs":0,"fileEvents":2,"drains":2,"queueToDrainMs":3.4979000000002998}
+    at finishFileSample (file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/live-update/server-file-profile.mjs:44:11)
+    at Object.finish (file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/live-update/profile.mjs:62:26)
+    at handle (file:///C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/live-update/locale-channel.mjs:77:42)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.18.0

@@ -1,0 +1,284 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-10T18:01:08.290Z",
+  "gitRevision": "c19ca34232ea4ecf4a5b65d63612d53491a31903",
+  "settings": {
+    "samples": 25,
+    "warmup": 5,
+    "calibrations": 10,
+    "timeoutMs": 30000
+  },
+  "mode": "locale-add",
+  "instrumentation": {
+    "cpuProfile": false,
+    "browserStages": false,
+    "serverFileStages": false,
+    "replyStages": false,
+    "clientStages": false
+  },
+  "workingTreeStatus": "M benchmarks/live-update/profile.mjs\n M benchmarks/live-update/server-file-profile.mjs\n?? benchmarks/results/new-additions-read-trace-2026-10-11.log\n?? benchmarks/results/new-additions-read-trace-metadata-2026-10-11.json\n?? benchmarks/results/superseded-parse-check-2026-10-11.log\n?? benchmarks/results/superseded-parses-read-trace-2026-10-11.log",
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "f7a9ba919b53de4492d9fc179e50896bc22bf89fdf6b7fd4eb1aa6f432460fc1",
+    "packages/core/dist/catalog-json.js": "9012d701a52247f2ae514e6fda87837a2518d4978f483a2b5afefa0cf306e069",
+    "packages/core/dist/json.js": "acc8f2e94f9f2e398a27a439ea4893d15f6bffdd39ae453952f4461ea3083588",
+    "packages/core/dist/simple-message.js": "a3b1be697431fcbc00dce1e1f425ac8ace9bfe5a3e55e5ca94ccd48c6ad0453f",
+    "packages/core/dist/diagnostics.js": "9e8764951f360e4044877e205d6833edcc17b82091e29178a36d36a6d69ccba0",
+    "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "packages/vite/dist/live-registry.js": "2d958de43a56c66ea7b7415f63f441145a71b405b0d3b71ed18edecccdd019cd",
+    "packages/vite/dist/disk-rechecks.js": "46f6e037f073aa0b8fc875349a5e8fe0a20ab8b2ec5fc16c2932feac3808a472",
+    "packages/vite/dist/translation-quarantine.js": "e64ed9e9567f2793c36a7269ab393dedcbf8e1fc915ddaae405fc4d3cf6fd1f2",
+    "packages/vite/dist/catalog-registry.js": "8693803507167a3b5521bafe7f0ece58e082bd9debd7076ad83170a6bc3a9715",
+    "packages/vite/dist/catalog-patch.js": "911c60fe58690eaff6d3330242b517965249061f7a01049782bf227e480e31cb",
+    "benchmarks/live-update/profile.mjs": "5f3ffc272c41a817034640733c6f0b8e36dd7bd0f2bca0247b83f4ea44096f44",
+    "benchmarks/live-update/channel.mjs": "fa68ecd900df18d3092da67eb0955d1b3a491f021ec3fbebbb4b982c5b234c14",
+    "benchmarks/live-update/run.mjs": "fced0b9f9e15bed7899f604931ad42ce882010a0231cb182488194a6cfac2edf",
+    "benchmarks/live-update/app.jsx": "3c7395e2ae61bd777b4a261495de6c32d00b8dfa0378dd3b6bc41a53d0365293",
+    "benchmarks/live-update/fixture.mjs": "1b547cc3705e8397948568cde4245e178379bc2753edf2657af365928ca8a915",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0",
+    "benchmarks/live-update/browser-profile.mjs": "af272015f890d5dc7a92f4256dcc260b53158874a396f08a35f3c4b953c7e0b1",
+    "benchmarks/live-update/browser-probe.mjs": "2391744a81676ae90e224d818caa9dfc1e6de083d88805daad08f275c36ab615",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/runtime.js": "2d197337d026357b240584ba2d0cf6b7acc90c2288408fdf282dfed7e90354c8",
+    "packages/core/dist/catalog-freeze.js": "a3a707cbaf4012ee5c2d959c70b7d472b337707af43131afd89e146f57518005",
+    "packages/core/dist/snapshot-signature.js": "1ef671cd30f6b8c694693b8cce921e569d10d523596664713317f936e289f348",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f",
+    "packages/vite/dist/catalog-source.js": "840b8f2fe7fd345116ba2f536ab2a9a2e358206dae33fd88bd375aad3fdb8f3d",
+    "packages/vite/dist/catalog-wire.js": "f87cf497f8edcbd1c859be708dd255a4938d0082ac40038343ba5d84d93d1b6a",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "packages/vite/dist/freeze.js": "09a7a2f8783c323b6e1542ee71c31ecd1bd9975e1ee51b01e5ff2a68e15d5d34",
+    "benchmarks/live-update/server-file-profile.mjs": "5772432c792079f5ee839095d0c2ff271782edd5fe17b14d8e3678c17ac91dae",
+    "benchmarks/live-update/runtime-profile.mjs": "fb8efd1d680cd01a35fcbae8bbeede3244123a22e40815812adddc4cc78e1ba8",
+    "benchmarks/live-update/reply-profile.mjs": "c52ca5618408240f8802b853812211a3753ffca2798df600c51638f286b165ad",
+    "benchmarks/live-update/reply-receipt.mjs": "066103fa22236b8eaee92db6eb57ea10e5feb9dc1ad28deec20bd99ce911a9ff",
+    "benchmarks/live-update/client-profile.mjs": "0b4bf764985dcda09a7bbe08b363137b9b58f3d6638c6db549385246dcc7dc87",
+    "benchmarks/live-update/client-probe.mjs": "ebf5a1e7e93419ae7828c3cf0edd331c04cc5f735159d977060e2acfeb1c29a0",
+    "benchmarks/live-update/locale-channel.mjs": "8e10384d958be92275cfeb3782fb323a37e2310ed15ff631d8dc095dc0cac520",
+    "benchmarks/live-update/locale-app.jsx": "7f38e43c7ebab3863de6c0cae132e6f274afc44ea68e8e783a034fcbeb1c6faa"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26300",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node: file write resolved -> list/translation ack received; selection-ready request received -> translation ack. Browser: before setLocale -> translation commit. Never subtract clocks across processes.",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Fresh en-GB directory and catalog per round; directory creation excluded from file-save latency. List option commit then automated locale selection; target never loaded before list ack. Reset to en and await locale removal before next round. React development, no paint timing.",
+  "results": [
+    {
+      "id": "1k-3-locales",
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "namespaces": 1,
+      "initialCatalogFiles": 3,
+      "initialCatalogBytes": 110292,
+      "addedLocale": "en-GB",
+      "addedFilesPerRound": 1,
+      "addedMessages": 1000,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 375.1725,
+      "browserBootMs": 1614.0274000000002,
+      "summary": {
+        "saveToListAckMs": {
+          "count": 25,
+          "p50Ms": 93.54220000000078,
+          "p95Ms": 279.47189999999955,
+          "minMs": 34.34860000000026,
+          "maxMs": 352.0491999999995
+        },
+        "selectToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 33.652500000000146,
+          "p95Ms": 95.33389999999963,
+          "minMs": 19.40650000000005,
+          "maxMs": 120.87820000000102
+        },
+        "saveToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 125.6882999999998,
+          "p95Ms": 403.46590000000015,
+          "minMs": 63.45349999999962,
+          "maxMs": 450.6710000000003
+        },
+        "selectToCommitMs": {
+          "count": 25,
+          "p50Ms": 30.100000001490116,
+          "p95Ms": 58.5,
+          "minMs": 16.5,
+          "maxMs": 91.79999999701977
+        },
+        "saveToBroadcastMs": {
+          "count": 25,
+          "p50Ms": 87.45620000000054,
+          "p95Ms": 273.27070000000003,
+          "minMs": 29.598899999999958,
+          "maxMs": 330.47119999999995
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 9.883699999999408,
+          "p95Ms": 105.11769999999979,
+          "minMs": 5.203700000000026,
+          "maxMs": 116.57500000000073
+        }
+      },
+      "wire": {
+        "preSelectionCatalogReplies": 0,
+        "fullReplies": 25,
+        "catalogReplyEncodings": [
+          "saylo-catalog-v1"
+        ],
+        "catalogReplyBytes": {
+          "count": 25,
+          "p50Bytes": 119640,
+          "p95Bytes": 119640,
+          "minBytes": 119639,
+          "maxBytes": 119640
+        },
+        "addedCatalogBytes": {
+          "count": 25,
+          "p50Bytes": 36781,
+          "p95Bytes": 36781,
+          "minBytes": 36781,
+          "maxBytes": 36781
+        }
+      },
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 7.837400000000343,
+        "p95Ms": 12.46810000000005,
+        "minMs": 3.4060999999996966,
+        "maxMs": 12.46810000000005
+      },
+      "controlRoundTripsMs": [
+        4.164999999999964,
+        10.078700000000026,
+        7.226400000000012,
+        10.201900000000023,
+        12.46810000000005,
+        10.971000000000004,
+        7.837400000000343,
+        11.819500000000062,
+        5.086099999999988,
+        3.4060999999996966
+      ],
+      "samplesFile": "superseded-parses-locale-add-2026-10-11.1k-3-locales.samples.json"
+    },
+    {
+      "id": "10k-20-locales",
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "namespaces": 1,
+      "initialCatalogFiles": 20,
+      "initialCatalogBytes": 7755280,
+      "addedLocale": "en-GB",
+      "addedFilesPerRound": 1,
+      "addedMessages": 10000,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 4283.8017999999975,
+      "browserBootMs": 4921.600899999998,
+      "summary": {
+        "saveToListAckMs": {
+          "count": 25,
+          "p50Ms": 126.09369999999763,
+          "p95Ms": 247.2543000000005,
+          "minMs": 83.58849999999802,
+          "maxMs": 271.9418000000005
+        },
+        "selectToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 183.01390000000538,
+          "p95Ms": 315.1432000000059,
+          "minMs": 139.86180000000604,
+          "maxMs": 323.20090000000346
+        },
+        "saveToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 308.23859999999695,
+          "p95Ms": 458.9864000000016,
+          "minMs": 234.43860000000132,
+          "maxMs": 565.3503000000055
+        },
+        "selectToCommitMs": {
+          "count": 25,
+          "p50Ms": 180,
+          "p95Ms": 311.70000000298023,
+          "minMs": 136.89999999850988,
+          "maxMs": 320.4000000022352
+        },
+        "saveToBroadcastMs": {
+          "count": 25,
+          "p50Ms": 112.10229999999865,
+          "p95Ms": 230.70630000000529,
+          "minMs": 71.43510000000242,
+          "maxMs": 257.8084999999992
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 10.218300000000454,
+          "p95Ms": 14.224300000001676,
+          "minMs": 6.956300000005285,
+          "maxMs": 14.780800000000454
+        }
+      },
+      "wire": {
+        "preSelectionCatalogReplies": 0,
+        "fullReplies": 25,
+        "catalogReplyEncodings": [
+          "saylo-catalog-v1"
+        ],
+        "catalogReplyBytes": {
+          "count": 25,
+          "p50Bytes": 1241399,
+          "p95Bytes": 1241399,
+          "minBytes": 1241398,
+          "maxBytes": 1241399
+        },
+        "addedCatalogBytes": {
+          "count": 25,
+          "p50Bytes": 387783,
+          "p95Bytes": 387783,
+          "minBytes": 387783,
+          "maxBytes": 387783
+        }
+      },
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 2.963499999998021,
+        "p95Ms": 3.709499999997206,
+        "minMs": 2.899699999994482,
+        "maxMs": 3.709499999997206
+      },
+      "controlRoundTripsMs": [
+        2.899699999994482,
+        2.9004000000059023,
+        3.386399999995774,
+        3.103399999999965,
+        3.202499999999418,
+        3.5406000000002678,
+        2.9500999999945634,
+        2.963499999998021,
+        3.709499999997206,
+        2.949899999999616
+      ],
+      "samplesFile": "superseded-parses-locale-add-2026-10-11.10k-20-locales.samples.json"
+    }
+  ]
+}

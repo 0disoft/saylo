@@ -7,26 +7,32 @@ const observedMetrics = fileMetrics.slice(0, -1);
 let enabled = false;
 let current;
 
-export function measureFileSync(metric, work) {
+export function measureFileSync(metric, work, details) {
   const sample = current;
   if (!sample) return work();
   const startedAt = performance.now();
+  const operation = { metric, startMs: startedAt - sample.startedAt, ...details, status: 'ok' };
+  sample.operations.push(operation);
   const window = startRuntimeWindow(metric);
   try { return work(); }
-  finally { sample.timings[metric] += performance.now() - startedAt; sample.calls[metric]++; endRuntimeWindow(window); }
+  catch (error) { operation.status = 'error'; operation.codes = error.diagnostics?.map(d => d.code); throw error; }
+  finally { operation.endMs = performance.now() - sample.startedAt; sample.timings[metric] += performance.now() - startedAt; sample.calls[metric]++; endRuntimeWindow(window); }
 }
 
 export async function measureFileAsync(metric, work) {
   const sample = current;
   if (!sample) return work();
   const startedAt = performance.now();
+  const operation = { metric, startMs: startedAt - sample.startedAt, status: 'ok' };
+  sample.operations.push(operation);
   const window = startRuntimeWindow(metric);
   try { return await work(); }
-  finally { sample.timings[metric] += performance.now() - startedAt; sample.calls[metric]++; endRuntimeWindow(window); }
+  catch (error) { operation.status = 'error'; operation.code = error.code; throw error; }
+  finally { operation.endMs = performance.now() - sample.startedAt; sample.timings[metric] += performance.now() - startedAt; sample.calls[metric]++; endRuntimeWindow(window); }
 }
 
 export function beginFileSample() {
-  if (enabled) current = { timings: Object.fromEntries(observedMetrics.map(metric => [metric, 0])),
+  if (enabled) current = { startedAt: performance.now(), operations: [], timings: Object.fromEntries(observedMetrics.map(metric => [metric, 0])),
     calls: Object.fromEntries(observedMetrics.map(metric => [metric, 0])) };
 }
 
@@ -35,7 +41,7 @@ export function finishFileSample(candidateMs) {
   const sample = current;
   current = undefined;
   if (!sample || observedMetrics.some(metric => sample.calls[metric] !== 1))
-    throw new Error('Expected exactly one catalog path check, read and parse per sample.');
+    throw new Error(`Expected exactly one catalog path check, read and parse per sample. ${JSON.stringify(sample)}`);
   const accountedMs = observedMetrics.reduce((total, metric) => total + sample.timings[metric], 0);
   const residual = candidateMs - accountedMs;
   if (!Number.isFinite(residual) || residual < 0) throw new Error('File timings exceed their candidate window.');
@@ -63,7 +69,7 @@ export function registerFileProbe(active) {
     }
     const parse = /const catalog = (parseCatalog\([^\n]+\));/g;
     if ([...code.matchAll(parse)].length !== 1) throw new Error('Missing or ambiguous catalog parse probe boundary.');
-    code = code.replace(parse, (_, expression) => `const catalog = measureFileSync('catalogParseMs', () => ${expression});`);
+    code = code.replace(parse, (_, expression) => `const catalog = measureFileSync('catalogParseMs', () => ${expression}, { sourceLength: source.length, hasPrevious: previous !== undefined });`);
     transformed = true;
     return { ...loaded, source: `import { measureFileSync, measureFileAsync } from '${import.meta.url}';\n${code}` };
   } });

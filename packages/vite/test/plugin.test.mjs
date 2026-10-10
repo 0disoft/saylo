@@ -675,7 +675,8 @@ test('a newer guarded batch waiting behind an old read does not trigger a redund
 
 test('superseded successful parsing is reused only after checking the newest reader', async t => {
   for (const [name, text] of [['identical', '{"hello":"Pending {name}"}'],
-    ['changed', '{"hello":"Newest {name}"}'], ['invalid', '{']]) await t.test(name, async t => {
+    ['changed', '{"hello":"Newest {name}"}'], ['invalid', '{'],
+    ['schema', '{"hello":"Pending {unknown}"}']]) await t.test(name, async t => {
     const { root, plugin, server, request, events } = await setup(t);
     const file = path.join(root, 'en', 'demo.json');
     let registry, parsed, release, started;
@@ -692,7 +693,7 @@ test('superseded successful parsing is reused only after checking the newest rea
     let latestReads = 0;
     const latest = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => { latestReads++; return text; } });
     t.mock.timers.tick(0);
-    release('{"hello":"Pending {name}"}');
+    release(name === 'schema' ? text : '{"hello":"Pending {name}"}');
     await Promise.all([old, latest]);
     assert.equal(latestReads, 1);
     assert.ok(parsed);
@@ -700,9 +701,10 @@ test('superseded successful parsing is reused only after checking the newest rea
     const accepted = request()[0].data.catalogs.find(c => c.locale === 'en');
     if (name === 'identical') assert.equal(accepted, parsed);
     else assert.notEqual(accepted, parsed);
-    assert.equal(accepted.messages.hello.source, name === 'invalid' ? 'en {name}' : name === 'changed' ? 'Newest {name}' : 'Pending {name}');
-    assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, name === 'invalid' ? 0 : 1);
-    assert.equal(Boolean(request()[1].data.message), name === 'invalid');
+    const rejected = name === 'invalid' || name === 'schema';
+    assert.equal(accepted.messages.hello.source, rejected ? 'en {name}' : name === 'changed' ? 'Newest {name}' : 'Pending {name}');
+    assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, rejected ? 0 : 1);
+    assert.equal(Boolean(request()[1].data.message), rejected);
   });
 });
 

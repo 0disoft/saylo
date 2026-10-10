@@ -58,7 +58,9 @@ export function createStageProbe() {
     finish() {
       if (!current || !Number.isFinite(current.queueToDrainMs) || !current.drains) throw new Error('Missing server stage sample.');
       const { firstEventAt, candidateStartedAt, candidateWindow, runtimeWindow, ...result } = current;
-      const fileStages = finishFileSample(current.readAndCandidateMs);
+      let fileStages;
+      try { fileStages = finishFileSample(current.readAndCandidateMs); }
+      catch (error) { error.message += ` Server stages: ${JSON.stringify(result)}`; throw error; }
       if (fileStages) result.fileStages = fileStages;
       const runtimeWindows = finishRuntimeSample(runtimeWindow);
       if (runtimeWindows) result.runtimeWindows = runtimeWindows;

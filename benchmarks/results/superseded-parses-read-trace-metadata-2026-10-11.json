@@ -1,0 +1,19 @@
+{
+  "schema": "saylo-read-trace-failure-v1",
+  "recordedAt": "2026-10-10T18:01:10.717Z",
+  "gitRevision": "c19ca34232ea4ecf4a5b65d63612d53491a31903",
+  "node": "v24.18.0",
+  "exitCode": 1,
+  "log": "superseded-parses-read-trace-2026-10-11.log",
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "f7a9ba919b53de4492d9fc179e50896bc22bf89fdf6b7fd4eb1aa6f432460fc1",
+    "packages/core/dist/catalog-json.js": "9012d701a52247f2ae514e6fda87837a2518d4978f483a2b5afefa0cf306e069",
+    "packages/vite/dist/live-registry.js": "2d958de43a56c66ea7b7415f63f441145a71b405b0d3b71ed18edecccdd019cd",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "benchmarks/live-update/server-file-profile.mjs": "5772432c792079f5ee839095d0c2ff271782edd5fe17b14d8e3678c17ac91dae",
+    "benchmarks/live-update/profile.mjs": "5f3ffc272c41a817034640733c6f0b8e36dd7bd0f2bca0247b83f4ea44096f44",
+    "benchmarks/live-update/run.mjs": "fced0b9f9e15bed7899f604931ad42ce882010a0231cb182488194a6cfac2edf",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "scope": "Diagnostic fresh 10k locale-add trace. Single-read assumption rejected two successful full-length reads/parses. First hasPrevious false; second true and parser boundary elapsed 0.3935ms. Still two disk reads. No aggregate p95 exists for this failed instrumented attempt."
+}
