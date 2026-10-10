@@ -70,6 +70,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 59. [62-multi-read-measurements.md](62-multi-read-measurements.md) — 다중 읽기 batch 소유권·interval union 계측과 상세 조건 25회 재측정
 
+60. [63-thin-layer-timezone.md](63-thin-layer-timezone.md) — 얇은 계층 시간대 프로브의 호스트 시간대 누출과 named style 우회 gap 기록
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |
