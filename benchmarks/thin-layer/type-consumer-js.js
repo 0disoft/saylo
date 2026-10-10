@@ -1,5 +1,5 @@
 import { createI18n } from '@0disoft/saylo-core/runtime';
-import { createLazyLayer } from '../lazy-layer.mjs';
+import { createLazyLayer, createLazyLayerSync } from '../lazy-layer.mjs';
 /** @type {import('@0disoft/saylo-vite/client').DevCatalogSource} */
 const source = /** @type {never} */ (undefined);
 const options = { catalogSource: source, locale: 'ja', initialNamespaces: [], initialCatalogs: [] };
@@ -7,7 +7,9 @@ const options = { catalogSource: source, locale: 'ja', initialNamespaces: [], in
 const layer = await createLazyLayer(options);
 /** @type {import('@0disoft/saylo-core/runtime').I18n<import('./generated.js').AppSchema>} */
 const core = createI18n(options);
-for (const instance of [core, layer]) {
+/** @type {import('../lazy-layer.mjs').LazyLayer<import('./generated.js').AppSchema>} */
+const sync = createLazyLayerSync(options);
+for (const instance of [core, layer, sync]) {
   instance.t('demo:plain');
   instance.t('demo:greeting', { name: 'Ada' });
   instance.t('demo:rows', { count: 2 });

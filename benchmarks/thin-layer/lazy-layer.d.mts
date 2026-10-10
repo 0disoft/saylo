@@ -13,3 +13,6 @@ export type CreateLazyLayerOptions = CreateI18nOptions | (
 
 /** Async initialization is an intentional difference from synchronous createI18n. */
 export function createLazyLayer<S extends Schema = Schema>(options: CreateLazyLayerOptions): Promise<LazyLayer<S>>;
+
+/** Ready boot translation before returning; loads and transitions remain async. */
+export function createLazyLayerSync<S extends Schema = Schema>(options: CreateLazyLayerOptions): LazyLayer<S>;

@@ -9,7 +9,11 @@ export async function connectChromeProtocol(profile, child) {
   while (Date.now() < deadline) {
     if (child.exitCode !== null) throw new Error('Owned Chrome exited before its protocol became available');
     try { lines = (await readFile(path.join(profile, 'DevToolsActivePort'), 'utf8')).trim().split(/\r?\n/); break; }
-    catch (error) { if (error.code !== 'ENOENT') throw error; await delay(50); }
+    catch (error) {
+      // Chromium briefly owns the file exclusively while writing on Windows.
+      if (error.code !== 'ENOENT' && error.code !== 'EBUSY') throw error;
+      await delay(50);
+    }
   }
   if (!lines || !/^\d+$/.test(lines[0]) || !lines[1]?.startsWith('/devtools/browser/'))
     throw new Error('Owned Chrome did not expose a valid protocol endpoint');

@@ -4,11 +4,11 @@ import { setImmediate as tick } from 'node:timers/promises';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { createI18n, serializeBootSnapshot } from '../../packages/core/dist/runtime.js';
-import { createLazyLayer } from './lazy-layer.mjs';
+import { createLazyLayer, createLazyLayerSync } from './lazy-layer.mjs';
 import { createLazyFixture } from './lazy-fixture.mjs';
 
 const observations = [];
-const factories = { core: options => createI18n(options), layer: createLazyLayer };
+const factories = { core: options => createI18n(options), layer: createLazyLayer, 'layer-sync': createLazyLayerSync };
 const cases = [
   ['empty scope, pair deduplication and old bound namespace errors', async (make, f) => {
     const instance = await make({ initialNamespaces: [], initialCatalogs: [], locale: 'ru' });
@@ -176,7 +176,7 @@ for (const [backend, factory] of Object.entries(factories)) for (const [id, run]
     version: call.version, aborted: call.signal.aborted })) });
 });
 after(async () => {
-  assert.equal(observations.length, cases.length * 2, 'Only a complete passing run may save evidence');
+  assert.equal(observations.length, cases.length * Object.keys(factories).length, 'Only a complete passing run may save evidence');
   const files = ['benchmarks/thin-layer/lazy-layer.mjs', 'benchmarks/thin-layer/lazy-source-cache.mjs',
     'benchmarks/thin-layer/lazy-fixture.mjs', 'benchmarks/thin-layer/lazy-contract.test.mjs',
     'benchmarks/thin-layer/catalog-layer.mjs', 'benchmarks/thin-layer/ast-format.mjs', 'benchmarks/thin-layer/package-lock.json',
@@ -185,7 +185,7 @@ after(async () => {
   const root = new URL('../../', import.meta.url);
   const codeHashes = Object.fromEntries(await Promise.all(files.map(async file => [file,
     createHash('sha256').update(await readFile(new URL(file, root))).digest('hex')])));
-  await writeFile(new URL('../results/thin-layer-lazy-contracts-2026-10-11.json', import.meta.url), JSON.stringify({
+  await writeFile(new URL(process.env.SAYLO_LAZY_CONTRACT_OUT ?? 'benchmarks/results/thin-layer-lazy-contracts-current.json', root), JSON.stringify({
     format: 'saylo-thin-layer-lazy-contracts-v1', observedAt: new Date().toISOString(), node: process.version, codeHashes,
     scope: 'Identical Node public CatalogSource scenarios for Saylo core and an independently implemented i18next lazy coordinator/cache. Both retain Saylo public boot/schema validation. No browser/Vite lazy transport/session-reconnect integration/typegen or performance comparison proof.',
     observations }, null, 2) + '\n');

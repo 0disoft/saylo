@@ -42,13 +42,18 @@ function argumentsFor(key, schema, args) {
   return values;
 }
 
-export async function createCatalogLayer(baseLocale, initialCatalogs, initialLocale, options = {}) {
+export async function createCatalogLayer(...args) {
+  const layer = createCatalogLayerSync(...args);
+  return { ...layer, replace: async (...values) => layer.replace(...values) };
+}
+
+export function createCatalogLayerSync(baseLocale, initialCatalogs, initialLocale, options = {}) {
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   let scope = readScope(options, baseLocale);
   let current;
   const resourceCache = new WeakMap();
   const stats = { resourceDictionaries: 0, instances: 0 };
-  async function replace(input, locale = current?.locale ?? initialLocale, nextScope) {
+  function replace(input, locale = current?.locale ?? initialLocale, nextScope) {
     const candidateScope = nextScope === undefined ? scope : readScope({ ...scope, ...nextScope }, baseLocale);
     const declaredLocales = candidateScope.availableLocales;
     const catalogs = freezeCatalogs(input);
@@ -89,8 +94,16 @@ export async function createCatalogLayer(baseLocale, initialCatalogs, initialLoc
     const selected = availableLocales.includes(locale) ? locale : baseLocale;
     const engine = i18next.createInstance().use(createAstFormat(timeZone));
     stats.instances++;
-    await engine.init({ resources, lng: selected, fallbackLng: baseLocale, initAsync: false,
-      ns: [...bases.keys()], keySeparator: false, nsSeparator: false, interpolation: { escapeValue: false } });
+    let completed = false, initializationError;
+    const initializing = engine.init({ resources, lng: selected, fallbackLng: baseLocale, initAsync: false,
+      ns: [...bases.keys()], keySeparator: false, nsSeparator: false, interpolation: { escapeValue: false } }, error => {
+      completed = true; initializationError = error;
+    });
+    // This resource-only engine must finish in the same call. No backend or
+    // detector is installed; reject a future incompatible initialization path.
+    initializing.catch(() => {});
+    if (!completed || !engine.isInitialized) throw new Error('The resource engine did not initialize synchronously.');
+    if (initializationError) throw initializationError;
     const t = (key, args) => {
       if (typeof key !== 'string') throw new UnknownMessageError(String(key));
       const parts = key.split(':');
@@ -111,6 +124,6 @@ export async function createCatalogLayer(baseLocale, initialCatalogs, initialLoc
     current = snapshot;
     return snapshot;
   }
-  await replace(initialCatalogs, initialLocale);
+  replace(initialCatalogs, initialLocale);
   return { getSnapshot: () => current, replace, getProbeStats: () => Object.freeze({ ...stats }) };
 }

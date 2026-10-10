@@ -1,6 +1,6 @@
 import { createBootSnapshot, decodeBootSnapshot, validateCatalogManifest, CatalogLoadError,
   I18nDisposedError, SupersededRequestError } from '@0disoft/saylo-core/runtime';
-import { createCatalogLayer } from './catalog-layer.mjs';
+import { createCatalogLayerSync } from './catalog-layer.mjs';
 import { assertTransition, createSourceCache, stamp } from './lazy-source-cache.mjs';
 
 const canonical = value => { const locale = Intl.getCanonicalLocales(value)[0]; if (!locale) throw new RangeError('Locale must not be empty.'); return locale; };
@@ -18,6 +18,10 @@ const signature = boot => JSON.stringify([boot.manifest.sessionId, boot.manifest
 // scope, pair cache and publication. Reuses public Saylo boot/schema validation,
 // not createI18n or its loader/coordinator implementation.
 export async function createLazyLayer(options) {
+  return createLazyLayerSync(options);
+}
+
+export function createLazyLayerSync(options) {
   const source = options.catalogSource;
   const timeoutMs = options.requestTimeoutMs ?? 5000;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('Invalid timeout.');
@@ -30,7 +34,7 @@ export async function createLazyLayer(options) {
     throw new CatalogLoadError('INVALID_BOOT', 'Configured timezone differs from boot.');
   let manifest = initial.manifest, committedBoot = initial;
   const baseLocale = manifest.baseLocale, timeZone = initial.timeZone;
-  const layer = await createCatalogLayer(baseLocale, catalogs(initial), initial.locale, { timeZone, ...scope(initial) });
+  const layer = createCatalogLayerSync(baseLocale, catalogs(initial), initial.locale, { timeZone, ...scope(initial) });
   const project = (snapshot, revision) => Object.freeze({ ...snapshot, stateRevision: revision });
   let current = project(layer.getSnapshot(), initial.stateRevision), currentSignature = signature(initial);
   const serverSnapshot = current;

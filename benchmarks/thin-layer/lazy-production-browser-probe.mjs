@@ -16,7 +16,7 @@ import { connectChromeProtocol } from './chrome-protocol.mjs';
 
 const directory = fileURLToPath(new URL('.', import.meta.url));
 const repository = fileURLToPath(new URL('../..', import.meta.url));
-const { values } = parseArgs({ options: { out: { type: 'string', default: 'benchmarks/results/thin-layer-lazy-production-browser-current.json' } } });
+const { values } = parseArgs({ options: { out: { type: 'string', default: 'benchmarks/results/thin-layer-lazy-production-browser-current.json' }, sync: { type: 'boolean', default: false } } });
 const root = await mkdtemp(path.join(directory, '.lazy-production-browser-'));
 const observations = [], exec = promisify(execFile);
 let server, child, cdp, interrupted;
@@ -88,9 +88,10 @@ try {
       await writeFile(path.join(fixture, 'locales', locale, 'help.json'), JSON.stringify({ title: `${locale}-help {name}` }));
     }
     const factory = variant === 'core' ? "import { createI18n as create } from '@0disoft/saylo-core/runtime';"
-      : `import { createLazyLayer as create } from ${JSON.stringify(path.join(directory, 'lazy-layer.mjs').replaceAll('\\', '/'))};`;
+      : `import { ${values.sync ? 'createLazyLayerSync' : 'createLazyLayer'} as create } from ${JSON.stringify(path.join(directory, 'lazy-layer.mjs').replaceAll('\\', '/'))};`;
     const app = (await readFile(new URL('lazy-browser-app.jsx', import.meta.url), 'utf8'))
-      .replace("import { create } from '__FACTORY__';", factory) + sampleExtension;
+      .replace("import { create } from '__FACTORY__';", factory)
+      .replace('const instance = await create(', values.sync ? 'const instance = create(' : 'const instance = await create(') + sampleExtension;
     await writeFile(path.join(fixture, 'app.jsx'), app);
     await writeFile(path.join(fixture, 'index.html'), '<div id="root"></div><script type="module" src="/app.jsx"></script>');
     assert.equal(path.dirname(path.resolve(outDir)), path.resolve(fixture));
@@ -166,7 +167,7 @@ try {
     assert.equal(requests.some(request => request.url.includes('@vite') || request.url.endsWith('.json')), false);
     assert.ok(requests.every(request => request.status === 200 || request.url === '/favicon.ico'), 'Unexpected failed asset request');
     observations.push({ variant, hostTimeZone: 'Asia/Seoul', steps, requests, pairChunks, parserImplementationMarker: false,
-      userAgent: await evaluate('navigator.userAgent'),
+      userAgent: await evaluate('navigator.userAgent'), constructionWithoutAwait: values.sync,
       chunks: chunks.map(chunk => ({ fileName: chunk.fileName, isEntry: chunk.isEntry, bytes: Buffer.byteLength(chunk.code),
         gzipBytes: gzipSync(chunk.code).length, sha256: createHash('sha256').update(chunk.code).digest('hex'), moduleIds: chunk.moduleIds })) });
     await closeBrowser(); await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve())); server = undefined;
@@ -185,7 +186,7 @@ try {
   for (const name of ['vite', 'react', 'react-dom'])
     packages[name] = JSON.parse(await readFile(path.join(repository, 'node_modules', name, 'package.json'))).version;
   await writeFile(path.resolve(repository, values.out), JSON.stringify({ format: 'saylo-thin-layer-lazy-production-browser-v1',
-    observedAt: new Date().toISOString(), node: process.version, packages, codeHashes,
+    observedAt: new Date().toISOString(), node: process.version, packages, codeHashes, layerFactory: values.sync ? 'createLazyLayerSync' : 'createLazyLayer',
     scope: 'Two actual unminified Vite HTML production builds, static HTTP asset server and independent Chromium profiles. Public virtual:saylo/lazy static source and React subscription UI. Six pairs, empty boot, HTTP requests plus browser Resource Timing entries prove 0 -> 2 -> 3 -> 5 catalog chunks with ru/help never fetched. Six functional steps each; input/DOM/focus/caret/dialog/counter/old snapshot, English fallback plural/date at configured UTC on emulated Seoul browser, no-op refresh and unknown namespace errors. Parser marker absent from all emitted chunks; no module graph native parser audit. No server-side rendering, physical reconnect, changed dev session, pending request races, broad timezone matrix, latency/memory or production size generalization.',
     observations }, null, 2) + '\n');
 } finally {

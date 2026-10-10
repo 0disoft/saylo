@@ -9,7 +9,7 @@
     "probe:production": "node production-probe.mjs",
     "test:hydration": "node --test hydration-layer.test.mjs",
     "probe:ssr-production": "node ssr-production-probe.mjs",
-    "test:lazy": "node --test lazy-contract.test.mjs catalog-scope.test.mjs",
+    "test:lazy": "node --test lazy-contract.test.mjs catalog-scope.test.mjs lazy-sync.test.mjs",
     "probe:lazy-production": "node lazy-production-probe.mjs",
     "probe:lazy-production-browser": "node lazy-production-browser-probe.mjs",
     "probe:lazy-browser": "node lazy-browser-probe.mjs",

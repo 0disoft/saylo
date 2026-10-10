@@ -4,7 +4,7 @@ import { connectDev } from '@0disoft/saylo-vite/client';
 import type { DevCatalogSource } from '@0disoft/saylo-vite/client';
 import type { SayloInstance as ReactInstance } from '@0disoft/saylo-react';
 import type { SayloInstance as SvelteInstance } from '@0disoft/saylo-svelte';
-import { createLazyLayer } from '../lazy-layer.mjs';
+import { createLazyLayer, createLazyLayerSync } from '../lazy-layer.mjs';
 import type { LazyLayer } from '../lazy-layer.mjs';
 import type { AppSchema } from './generated.js';
 
@@ -13,6 +13,13 @@ const options = { catalogSource: source, locale: 'ja', initialNamespaces: [], in
 const pending: Promise<LazyLayer<AppSchema>> = createLazyLayer<AppSchema>(options);
 const layer = await pending;
 const core = createI18n<AppSchema>(options);
+const sync: LazyLayer<AppSchema> = createLazyLayerSync<AppSchema>(options);
+sync.t('demo:rows', { count: 2 });
+connectDev(sync, { catalogSource: source });
+// @ts-expect-error sync construction is not a Promise
+const syncPromise: Promise<LazyLayer<AppSchema>> = createLazyLayerSync<AppSchema>(options);
+// @ts-expect-error the sync translator retains generated argument types
+sync.t('demo:rows');
 const structural: I18n<AppSchema> = layer;
 const react: ReactInstance<AppSchema> = layer;
 const svelte: SvelteInstance<AppSchema> = layer;

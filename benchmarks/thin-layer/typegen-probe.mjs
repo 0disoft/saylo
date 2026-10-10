@@ -11,11 +11,12 @@ import { createServer } from 'vite';
 import saylo from '@0disoft/saylo-vite';
 import { createI18n, createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
 import { renderTypes } from '@0disoft/saylo-typegen';
-import { createLazyLayer } from './lazy-layer.mjs';
+import { createLazyLayer, createLazyLayerSync } from './lazy-layer.mjs';
 
 const directory = fileURLToPath(new URL('.', import.meta.url));
 const repository = fileURLToPath(new URL('../..', import.meta.url));
-const { values } = parseArgs({ options: { out: { type: 'string', default: 'benchmarks/results/thin-layer-typegen-current.json' } } });
+const { values } = parseArgs({ options: { out: { type: 'string', default: 'benchmarks/results/thin-layer-typegen-current.json' }, sync: { type: 'boolean', default: false } } });
+const createLayer = values.sync ? createLazyLayerSync : createLazyLayer;
 const root = await mkdtemp(path.join(directory, '.typegen-probe-'));
 const exec = promisify(execFile), observations = [], diagnostics = [], instances = [], bootRestorations = [];
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -107,13 +108,13 @@ try {
   ({ catalogSource: source } = await vite.ssrLoadModule('virtual:saylo/server'));
   await until(async () => vite.watcher.getWatched(), watched => Object.values(watched).some(names => names.includes('demo.json')), 'watcher initial scan');
   const options = { catalogSource: source, locale: 'ja', initialNamespaces: [], initialCatalogs: [], timeZone: 'UTC' };
-  instances.push(createI18n(options), await createLazyLayer(options));
+  instances.push(createI18n(options), await createLayer(options));
   for (const instance of instances) { await instance.loadNamespace('demo'); await instance.loadNamespace('help'); }
   const initial = await check('startup');
   // Control: an any-returning declaration must fail the consumer. Otherwise
   // green expected-error tests could hide a missing or overly broad facade.
   await writeFile(path.join(root, 'loose.mjs'), 'export const createLazyLayer=()=>{};');
-  await writeFile(path.join(root, 'loose.d.mts'), "export function createLazyLayer<S>(options:unknown):Promise<any>; export type LazyLayer<S>=any;");
+  await writeFile(path.join(root, 'loose.d.mts'), "export function createLazyLayer<S>(options:unknown):Promise<any>; export function createLazyLayerSync<S>(options:unknown):any; export type LazyLayer<S>=any;");
   await writeFile(path.join(root, 'loose.ts'), tsTemplate.replaceAll('../lazy-layer.mjs', './loose.mjs'));
   const anyControl = await compiler(['loose.ts'], false);
   const retained = instances.map(instance => instance.getSnapshot());
@@ -160,7 +161,7 @@ try {
   assert.ok(retainedLate.every(snapshot => snapshot.t('late:status', { state: 'ready' }) === 'Late ready'));
   for (const [index, instance] of instances.entries()) {
     const boot = instance.getBootSnapshot();
-    const restored = index ? await createLazyLayer({ catalogSource: source, initialSnapshot: JSON.stringify(boot) })
+    const restored = index ? await createLayer({ catalogSource: source, initialSnapshot: JSON.stringify(boot) })
       : createI18n({ catalogSource: source, initialSnapshot: boot });
     try {
       // Boot is a JSON contract; decoding need not preserve dictionary prototypes.
@@ -179,7 +180,7 @@ try {
   const codeHashes = Object.fromEntries(await Promise.all(files.map(async file => [file, hash(await readFile(path.join(repository, file)))])));
   await writeFile(path.resolve(repository, values.out), JSON.stringify({ format: 'saylo-thin-layer-typegen-v1', observedAt: new Date().toISOString(),
     node: process.version, typescript: JSON.parse(await readFile(path.join(repository, 'node_modules/typescript/package.json'))).version,
-    codeHashes, anyControl, diagnostics, observations, bootRestorations,
+    codeHashes, layerFactory: values.sync ? 'createLazyLayerSync' : 'createLazyLayer', anyControl, diagnostics, observations, bootRestorations,
     scope: 'Private handwritten .d.mts facade reuses public Saylo schema/options/I18n types; actual TypeScript and checkJs consumers with generated base schema. React/Svelte/bridge compatibility is compile-time only. Real Vite dev typegen worker and public SSR catalog source with explicit runtime refresh for core and prototype. Nine lifecycle phases. No browser editor type service, automatic browser type refresh, standalone native i18next typegen, implementation checkJs, race/performance/memory/full equivalence claim.' }, null, 2) + '\n');
 } finally {
   for (const instance of instances) instance.dispose();
