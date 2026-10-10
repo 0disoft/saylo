@@ -82,6 +82,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 65. [68-thin-layer-lazy-browser.md](68-thin-layer-lazy-browser.md) — 실제 Chromium/Vite dev에서 core·layer 두 fixture의 compact·patch wire 12단계와 실제 소켓 종료 뒤 Vite 기본 reload 상태 초기화
 
+66. [69-thin-layer-typegen.md](69-thin-layer-typegen.md) — 실제 Vite dev typegen worker와 strict·checkJs 소비자 9단계, any-return 대조 선언으로 오류 검사 확인
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |

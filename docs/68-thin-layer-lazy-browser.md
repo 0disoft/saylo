@@ -89,3 +89,7 @@ node benchmarks/thin-layer/lazy-browser-probe.mjs --out benchmarks/results/thin-
 ## 상태
 
 probe·app·raw·package script는 로컬 커밋 `51f1393`에 있고 미푸시다. 제품 package의 API·의존성·버전은 바뀌지 않았고 게시·배포는 없다.
+
+## 후속: typegen 소비자 계약 (`26e9df0`)
+
+여기까지가 브라우저 lazy wire다. benchmark 전용 수기 `.d.mts` façade와 실제 TypeScript·checkJs 소비자, 실제 Vite 개발 서버 typegen worker·watch 갱신을 확인한 기록은 [69](69-thin-layer-typegen.md)에 있다. 위 12단계와 판정은 그대로 유효하다.
