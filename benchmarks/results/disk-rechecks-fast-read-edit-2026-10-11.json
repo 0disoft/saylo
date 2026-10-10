@@ -1,0 +1,209 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-10T16:28:49.327Z",
+  "gitRevision": "d9b85b491cad1eb6f9e56bce8e55f28711e62991",
+  "settings": {
+    "samples": 25,
+    "warmup": 5,
+    "calibrations": 10,
+    "timeoutMs": 30000
+  },
+  "mode": "edit",
+  "instrumentation": {
+    "cpuProfile": false,
+    "browserStages": false,
+    "serverFileStages": false,
+    "replyStages": false,
+    "clientStages": false
+  },
+  "workingTreeStatus": "M docs/53-completion-audit.md\n M docs/57-thin-layer-browser-probe.md\n M docs/README.md\n M packages/vite/src/live-registry.ts\n?? benchmarks/results/rapid-recovery-fast-read-2026-10-11.json\n?? benchmarks/results/thin-layer-browser-fast-read-2026-10-11.json\n?? docs/58-trailing-disk-rechecks.md",
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "eac4c686d9c15a49b5301ee466568acf19b0fbee0c1e5987aae6dfc0d572b7d9",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/simple-message.js": "a3b1be697431fcbc00dce1e1f425ac8ace9bfe5a3e55e5ca94ccd48c6ad0453f",
+    "packages/core/dist/diagnostics.js": "9e8764951f360e4044877e205d6833edcc17b82091e29178a36d36a6d69ccba0",
+    "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "packages/vite/dist/live-registry.js": "9d129cfd0c6b7826f4b8b189a7a5b6bfb52ec3db104d0488d3c5b698b1a4137e",
+    "packages/vite/dist/disk-rechecks.js": "46f6e037f073aa0b8fc875349a5e8fe0a20ab8b2ec5fc16c2932feac3808a472",
+    "packages/vite/dist/translation-quarantine.js": "e64ed9e9567f2793c36a7269ab393dedcbf8e1fc915ddaae405fc4d3cf6fd1f2",
+    "packages/vite/dist/catalog-registry.js": "8693803507167a3b5521bafe7f0ece58e082bd9debd7076ad83170a6bc3a9715",
+    "packages/vite/dist/catalog-patch.js": "911c60fe58690eaff6d3330242b517965249061f7a01049782bf227e480e31cb",
+    "benchmarks/live-update/profile.mjs": "e40faebb92379faf6f9c90b599de0571b96973e7bfc187c4da0e7d6d3f706d25",
+    "benchmarks/live-update/channel.mjs": "fa68ecd900df18d3092da67eb0955d1b3a491f021ec3fbebbb4b982c5b234c14",
+    "benchmarks/live-update/run.mjs": "d0b1d188ca67549f9fa0460c241f22611150446f0657a839bc02c8eccc9e153e",
+    "benchmarks/live-update/app.jsx": "3c7395e2ae61bd777b4a261495de6c32d00b8dfa0378dd3b6bc41a53d0365293",
+    "benchmarks/live-update/fixture.mjs": "1b547cc3705e8397948568cde4245e178379bc2753edf2657af365928ca8a915",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0",
+    "benchmarks/live-update/browser-profile.mjs": "af272015f890d5dc7a92f4256dcc260b53158874a396f08a35f3c4b953c7e0b1",
+    "benchmarks/live-update/browser-probe.mjs": "2391744a81676ae90e224d818caa9dfc1e6de083d88805daad08f275c36ab615",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/runtime.js": "2d197337d026357b240584ba2d0cf6b7acc90c2288408fdf282dfed7e90354c8",
+    "packages/core/dist/catalog-freeze.js": "a3a707cbaf4012ee5c2d959c70b7d472b337707af43131afd89e146f57518005",
+    "packages/core/dist/snapshot-signature.js": "1ef671cd30f6b8c694693b8cce921e569d10d523596664713317f936e289f348",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f",
+    "packages/vite/dist/catalog-source.js": "840b8f2fe7fd345116ba2f536ab2a9a2e358206dae33fd88bd375aad3fdb8f3d",
+    "packages/vite/dist/catalog-wire.js": "f87cf497f8edcbd1c859be708dd255a4938d0082ac40038343ba5d84d93d1b6a",
+    "packages/vite/dist/index.js": "8931fec68efcbf979adbf7030917fdce1a1994cb369913a740137d9fbb96710e",
+    "packages/vite/dist/freeze.js": "09a7a2f8783c323b6e1542ee71c31ecd1bd9975e1ee51b01e5ff2a68e15d5d34",
+    "benchmarks/live-update/server-file-profile.mjs": "ca2d3367550c0dfbeff3a341d76c1db9edef8bce0c69ad15e33858b056fedfc4",
+    "benchmarks/live-update/runtime-profile.mjs": "fb8efd1d680cd01a35fcbae8bbeede3244123a22e40815812adddc4cc78e1ba8",
+    "benchmarks/live-update/reply-profile.mjs": "c52ca5618408240f8802b853812211a3753ffca2798df600c51638f286b165ad",
+    "benchmarks/live-update/reply-receipt.mjs": "066103fa22236b8eaee92db6eb57ea10e5feb9dc1ad28deec20bd99ce911a9ff",
+    "benchmarks/live-update/client-profile.mjs": "0b4bf764985dcda09a7bbe08b363137b9b58f3d6638c6db549385246dcc7dc87",
+    "benchmarks/live-update/client-probe.mjs": "ebf5a1e7e93419ae7828c3cf0edd331c04cc5f735159d977060e2acfeb1c29a0"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26300",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+  "results": [
+    {
+      "id": "10k-20-locales",
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "namespaces": 1,
+      "catalogFiles": 20,
+      "catalogBytes": 7755280,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 2332.9724,
+      "wire": {
+        "patchReplies": 25,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 935,
+          "p95Bytes": 935,
+          "minBytes": 931,
+          "maxBytes": 935
+        }
+      },
+      "browserBootMs": 4339.7708,
+      "summary": {
+        "saveToAckMs": {
+          "count": 25,
+          "p50Ms": 96.82259999999951,
+          "p95Ms": 133.6333999999988,
+          "minMs": 73.80580000000009,
+          "maxMs": 237.44270000000142
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 25,
+          "p50Ms": 53.95010000000002,
+          "p95Ms": 75.26239999999962,
+          "minMs": 36.862600000000384,
+          "maxMs": 127.99090000000069
+        },
+        "receiveToCommitMs": {
+          "count": 25,
+          "p50Ms": 30.300000000745058,
+          "p95Ms": 39.19999999925494,
+          "minMs": 21.899999998509884,
+          "maxMs": 41.19999999925494
+        },
+        "commitToAckDispatchMs": {
+          "count": 25,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 7.674700000001394,
+          "p95Ms": 10.337499999999636,
+          "minMs": 5.7973000000001775,
+          "maxMs": 73.11700000000019
+        }
+      },
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 4.539600000000064,
+        "p95Ms": 6.993199999999888,
+        "minMs": 3.608299999999872,
+        "maxMs": 6.993199999999888
+      },
+      "serverStages": {
+        "scope": "Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.",
+        "queueToDrainMs": {
+          "count": 25,
+          "p50Ms": 2.643099999999322,
+          "p95Ms": 4.318199999999706,
+          "minMs": 0.40710000000035507,
+          "maxMs": 134.42809999999918
+        },
+        "readAndCandidateMs": {
+          "count": 25,
+          "p50Ms": 36.89149999999972,
+          "p95Ms": 53.82760000000053,
+          "minMs": 23.77139999999963,
+          "maxMs": 98.49159999999938
+        },
+        "translationPreparationMs": {
+          "count": 25,
+          "p50Ms": 10.349500000000262,
+          "p95Ms": 12.683499999999185,
+          "minMs": 7.178699999998571,
+          "maxMs": 23.712900000000445
+        },
+        "validationMs": {
+          "count": 25,
+          "p50Ms": 0.02049999999871943,
+          "p95Ms": 0.04100000000107684,
+          "minMs": 0.012499999998908606,
+          "maxMs": 0.07209999999940919
+        },
+        "registryReplaceMs": {
+          "count": 25,
+          "p50Ms": 6.365900000000693,
+          "p95Ms": 9.66229999999996,
+          "minMs": 5.303099999999176,
+          "maxMs": 10.40860000000066
+        },
+        "catalogDeltaMs": {
+          "count": 25,
+          "p50Ms": 8.653000000000247,
+          "p95Ms": 13.229400000000169,
+          "minMs": 6.691399999999703,
+          "maxMs": 13.513100000000122
+        },
+        "maxFileEvents": 2,
+        "maxDrains": 3
+      },
+      "controlRoundTripsMs": [
+        5.518100000000231,
+        3.897299999999632,
+        6.993199999999888,
+        5.040799999999763,
+        3.9149999999999636,
+        4.059600000000501,
+        4.539600000000064,
+        5.420500000000175,
+        3.608299999999872,
+        5.158400000000256
+      ],
+      "samplesFile": "disk-rechecks-fast-read-edit-2026-10-11.10k-20-locales.samples.json"
+    }
+  ]
+}

@@ -29,7 +29,9 @@ export class LiveRegistry {
   private generation = 0;
   private stopped = false;
   private running = Promise.resolve();
-  private rechecks = new DiskRechecks(file => { void this.enqueue(file); });
+  // A verified metadata change needs an immediate read, not the add/unlink
+  // quiet window. ENOENT during this read still takes the atomic-save retry.
+  private rechecks = new DiskRechecks(file => { void this.enqueue(file, () => readFile(file, 'utf8')); });
 
   constructor(
     private root: string,
