@@ -10,7 +10,8 @@ export async function createHydrationLayer(json, options = {}) {
     if (configured !== boot.timeZone) throw new CatalogLoadError('INVALID_BOOT', 'Configured timezone differs from boot.');
   }
   const catalogs = boot.catalogOutcomes.filter(outcome => outcome.status === 'present').map(outcome => outcome.catalog);
-  const layer = await createCatalogLayer(boot.manifest.baseLocale, catalogs, boot.locale, { timeZone: boot.timeZone });
+  const layer = await createCatalogLayer(boot.manifest.baseLocale, catalogs, boot.locale,
+    { timeZone: boot.timeZone, availableLocales: boot.manifest.availableLocales });
   const serverSnapshot = layer.getSnapshot();
   let current = serverSnapshot, hydrating = true, disposed = false;
   const listeners = new Set();

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCatalog } from '../../packages/core/dist/index.js';
+import { parseCatalog, createBootSnapshot, serializeBootSnapshot } from '../../packages/core/dist/index.js';
 import { createHydrationLayer } from './hydration-layer.mjs';
 import { createSsrFixture } from './ssr-fixture.mjs';
 
@@ -68,4 +68,22 @@ test('disposal removes listeners and rejects updates/subscriptions without emitt
   assert.equal(notifications, 0);
   assert.throws(() => adapter.subscribe(() => {}), { name: 'I18nDisposedError' });
   await assert.rejects(adapter.replace(fixture.updates[2]), { name: 'I18nDisposedError' });
+});
+
+test('explicit missing target pairs preserve the selected boot locale and manifest availability', async () => {
+  const fixture = createSsrFixture();
+  const input = structuredClone(fixture.boot);
+  input.manifest.catalogs = input.manifest.catalogs.map(meta => meta.key.locale === 'ru'
+    ? { key: meta.key, status: 'missing', catalogVersion: 1 } : meta);
+  input.catalogOutcomes = input.catalogOutcomes.map(outcome => outcome.key.locale === 'ru'
+    ? { sessionId: outcome.sessionId, key: outcome.key, status: 'missing', catalogVersion: 1 } : outcome);
+  const adapter = await createHydrationLayer(serializeBootSnapshot(createBootSnapshot(input)));
+  const retained = adapter.getServerSnapshot();
+  assert.equal(retained.locale, 'ru'); assert.deepEqual(retained.availableLocales, ['en', 'ru']);
+  assert.ok(retained.t('demo:greeting', { name: 'Ada' }).startsWith('Server Ada'));
+  await adapter.replace(fixture.updates[1]); adapter.finishHydration();
+  assert.equal(adapter.getSnapshot().locale, 'ru');
+  assert.equal(adapter.getSnapshot().t('demo:greeting', { name: 'Ada' }), 'Latest Ada');
+  assert.ok(retained.t('demo:greeting', { name: 'Ada' }).startsWith('Server Ada'));
+  adapter.dispose();
 });

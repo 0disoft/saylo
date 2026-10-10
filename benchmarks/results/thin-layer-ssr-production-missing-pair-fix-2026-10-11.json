@@ -1,0 +1,265 @@
+{
+  "format": "saylo-thin-layer-ssr-production-v2",
+  "observedAt": "2026-10-10T19:20:46.732Z",
+  "node": "v24.18.0",
+  "codeHashes": {
+    "benchmarks/thin-layer/ssr-production-probe.mjs": "d9d9f89332a9d0265606b96ca24e12bf2f80e93200f9c56d67201b916160091a",
+    "benchmarks/thin-layer/ssr-production-client.mjs": "120cda4b67b2b5f9f790566a2155f40a2cefb2bbf790f754106729a9ff877486",
+    "benchmarks/thin-layer/ssr-view.mjs": "3a79d7a666d5e9bee43112fedeb77d9e8e09725838f56c7acc584eff0edc38b2",
+    "benchmarks/thin-layer/ssr-fixture.mjs": "4280bc98d1ec7ef8562f850d98088220db4197d666687a80248067d7c2518ea1",
+    "benchmarks/thin-layer/hydration-layer.mjs": "a32d03308987b3087751f53ea9d83d6fe1974fa093f45c47f988db3fb498b311",
+    "benchmarks/thin-layer/chrome-protocol.mjs": "cef4dec905674fd9d671616fe71dd16900e104c4e1fc5240e9e8ea949cdd4a40",
+    "benchmarks/thin-layer/ast-runtime.mjs": "91680c21959435f71a9364c858560cdec3bb859c8438032ede476e17f628653e",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/catalog-layer.mjs": "8acf336a91634c2f0b3f079ae59a9530f3cca453f089ab9e4680aca8e2c32479",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/boot.js": "6a7dfdd9b2e452b8595c3caa093c49774a87b26034f7c25bad7f653ccbdde4f2",
+    "packages/core/dist/formatters.js": "37925d7ac2976d7ed54df233a03cee48f970f4c94dec13e7e73ddf5cafa61a3e",
+    "packages/vite/dist/ast-formatter.js": "d47a8c37fb07949a1b40e6ac15729e1cf83137a7ae8549d594be969f10bc562c",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "productionClient": {
+    "bytes": 719262,
+    "gzipBytes": 146366,
+    "sha256": "d6cc294161f498d8fd59a061a5ddcb37dfb7e795d8d7c87a54c59122dbe402ef",
+    "parserImplementationMarker": false,
+    "moduleIds": [
+      "\u0000rolldown/runtime.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/cjs/react.production.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/index.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/scheduler/cjs/scheduler.production.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/scheduler/index.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/cjs/react-dom.production.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/index.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/cjs/react-dom-client.production.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/client.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+      "\u0000saylo:intl-ast",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-errors.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/snapshot-signature.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/fast-memoize/index.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+      "\u0000thin-layer:intl-ast",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ast-format.mjs",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/catalog-layer.mjs",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/hydration-layer.mjs",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ssr-view.mjs",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ssr-production-client.mjs"
+    ]
+  },
+  "browserHostMatrix": true,
+  "scope": "Concurrent Node React SSR requests with isolated locale/timezone, then actual Chromium hydration of one Vite-built production client. Reuses Saylo boot validation and adds a prototype hydration barrier. With host-matrix: CDP emulates three browser host timezones and verifies actual Intl timezone across nine pages; no OS timezone changes. Otherwise: three configured zones in one browser host. No lazy/session/reconnect/large-scale performance or memory proof. Bundle includes React/DOM and bootstrap validation; not comparable to small translator-only fixture size.",
+  "observations": [
+    {
+      "caseId": 0,
+      "locale": "ru",
+      "timeZone": "UTC",
+      "missingTarget": false,
+      "hostTimeZone": "UTC",
+      "when": "1/1/2026 / 00:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Сервер Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 1,
+      "locale": "en",
+      "timeZone": "Asia/Seoul",
+      "missingTarget": false,
+      "hostTimeZone": "UTC",
+      "when": "1/1/2026 / 09:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Server Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 2,
+      "locale": "ru",
+      "timeZone": "America/Los_Angeles",
+      "missingTarget": false,
+      "hostTimeZone": "UTC",
+      "when": "12/31/2025 / 16:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Сервер Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 3,
+      "locale": "ru",
+      "timeZone": "UTC",
+      "missingTarget": true,
+      "hostTimeZone": "UTC",
+      "when": "1/1/2026 / 00:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Server Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 4,
+      "locale": "ru",
+      "timeZone": "UTC",
+      "missingTarget": false,
+      "hostTimeZone": "Asia/Seoul",
+      "when": "1/1/2026 / 00:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Сервер Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 5,
+      "locale": "en",
+      "timeZone": "Asia/Seoul",
+      "missingTarget": false,
+      "hostTimeZone": "Asia/Seoul",
+      "when": "1/1/2026 / 09:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Server Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 6,
+      "locale": "ru",
+      "timeZone": "America/Los_Angeles",
+      "missingTarget": false,
+      "hostTimeZone": "Asia/Seoul",
+      "when": "12/31/2025 / 16:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Сервер Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 7,
+      "locale": "ru",
+      "timeZone": "UTC",
+      "missingTarget": true,
+      "hostTimeZone": "Asia/Seoul",
+      "when": "1/1/2026 / 00:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Server Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 8,
+      "locale": "ru",
+      "timeZone": "UTC",
+      "missingTarget": false,
+      "hostTimeZone": "America/Los_Angeles",
+      "when": "1/1/2026 / 00:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Сервер Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 9,
+      "locale": "en",
+      "timeZone": "Asia/Seoul",
+      "missingTarget": false,
+      "hostTimeZone": "America/Los_Angeles",
+      "when": "1/1/2026 / 09:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Server Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 10,
+      "locale": "ru",
+      "timeZone": "America/Los_Angeles",
+      "missingTarget": false,
+      "hostTimeZone": "America/Los_Angeles",
+      "when": "12/31/2025 / 16:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Сервер Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 11,
+      "locale": "ru",
+      "timeZone": "UTC",
+      "missingTarget": true,
+      "hostTimeZone": "America/Los_Angeles",
+      "when": "1/1/2026 / 00:30",
+      "fallbackPlural": "21 rows",
+      "initial": "Server Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    }
+  ]
+}

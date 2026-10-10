@@ -50,6 +50,7 @@ try {
   assert(container.querySelector('#rows').textContent === '21 rows', 'Fallback source locale changed');
   assert(globalThis.__thinInjected === undefined, 'Unsafe serialized content executed');
   const observation = { caseId, locale: adapter.getSnapshot().locale, timeZone: adapter.getSnapshot().timeZone,
+    missingTarget: expected.missingTarget,
     hostTimeZone: new Intl.DateTimeFormat('en').resolvedOptions().timeZone, when: container.querySelector('#when').textContent,
     fallbackPlural: container.querySelector('#rows').textContent,
     initial: boot.t('demo:greeting', { name: 'Ada' }), final: title.textContent, preserved, notifications,

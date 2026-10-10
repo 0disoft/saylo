@@ -21,10 +21,11 @@ import { connectChromeProtocol } from './chrome-protocol.mjs';
 const directory = fileURLToPath(new URL('.', import.meta.url));
 const repository = fileURLToPath(new URL('../..', import.meta.url));
 const { values } = parseArgs({ options: { out: { type: 'string', default: 'benchmarks/results/thin-layer-ssr-production-current.json' },
-  'host-matrix': { type: 'boolean', default: false } } });
+  'host-matrix': { type: 'boolean', default: false }, 'missing-target': { type: 'boolean', default: false } } });
 const root = await mkdtemp(path.join(directory, '.ssr-production-'));
 const exec = promisify(execFile);
 const configured = [{ locale: 'ru', timeZone: 'UTC' }, { locale: 'en', timeZone: 'Asia/Seoul' }, { locale: 'ru', timeZone: 'America/Los_Angeles' }];
+if (values['missing-target']) configured.push({ locale: 'ru', timeZone: 'UTC', missingTarget: true });
 const cases = values['host-matrix'] ? ['UTC', 'Asia/Seoul', 'America/Los_Angeles']
   .flatMap(hostTimeZone => configured.map(config => ({ ...config, hostTimeZone }))) : configured;
 const observations = [];
@@ -39,10 +40,11 @@ process.once('SIGINT', interrupted); process.once('SIGTERM', interrupted);
 try {
   const rendered = await Promise.all(cases.map(async (config, caseId) => {
     const fixture = createSsrFixture({ ...config, sessionId: `ssr-${caseId}` });
-    const layer = await createCatalogLayer('en', fixture.catalogs, config.locale, { timeZone: config.timeZone });
+    const layer = await createCatalogLayer('en', fixture.catalogs, config.locale,
+      { timeZone: config.timeZone, availableLocales: fixture.boot.manifest.availableLocales });
     const snapshot = layer.getSnapshot();
     const adapter = { subscribe: () => () => {}, getSnapshot: () => snapshot, getServerSnapshot: () => snapshot };
-    const expected = { initial: snapshot.t('demo:greeting', { name: 'Ada' }), hostTimeZone: config.hostTimeZone,
+    const expected = { initial: snapshot.t('demo:greeting', { name: 'Ada' }), hostTimeZone: config.hostTimeZone, missingTarget: !!config.missingTarget,
       when: snapshot.t('demo:when', { at: Date.parse('2026-01-01T00:30:00.000Z') }), timeZone: config.timeZone };
     const html = renderToString(h(SsrProbe, { adapter }));
     assert.ok(html.includes('&lt;/script&gt;')); assert.ok(!fixture.wire.includes('<'));
@@ -84,12 +86,13 @@ try {
         assert.equal(data.caseId, observations.length);
         const page = rendered[data.caseId];
         assert.equal(data.locale, page.config.locale); assert.equal(data.timeZone, page.config.timeZone);
+        assert.equal(data.missingTarget, !!page.config.missingTarget);
         if (page.config.hostTimeZone) assert.equal(data.hostTimeZone, page.config.hostTimeZone);
         assert.equal(data.when, page.expected.when); assert.equal(data.initial, page.expected.initial);
         assert.equal(data.fallbackPlural, '21 rows');
         assert.equal(data.final, 'Post Ada'); assert.equal(data.preserved, true); assert.equal(data.notifications, 2);
         assert.deepEqual(data.recoverableErrors, []); assert.equal(data.injectionAbsent, true);
-        observations.push(data); console.log(`[SSR production] host=${data.hostTimeZone}; ${data.locale}/${data.timeZone}: PASS`);
+        observations.push(data); console.log(`[SSR production] host=${data.hostTimeZone}; ${data.locale}/${data.timeZone}; missing=${data.missingTarget}: PASS`);
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ next: !values['host-matrix'] && observations.length < cases.length ? `/case/${observations.length}` : null }));
         pageResolve?.(); pageResolve = undefined;

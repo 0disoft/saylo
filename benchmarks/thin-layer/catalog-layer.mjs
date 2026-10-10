@@ -26,6 +26,13 @@ function argumentsFor(key, schema, args) {
 
 export async function createCatalogLayer(baseLocale, initialCatalogs, initialLocale, options = {}) {
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
+  let declaredLocales;
+  if (options.availableLocales !== undefined) {
+    if (!Array.isArray(options.availableLocales)) throw new RangeError('Declared locales must be an array.');
+    declaredLocales = Object.freeze(Intl.getCanonicalLocales(options.availableLocales).sort());
+    if (!declaredLocales.includes(baseLocale) || declaredLocales.length !== options.availableLocales.length)
+      throw new RangeError('Declared locales must be unique and include the base locale.');
+  }
   let current;
   const resourceCache = new WeakMap();
   const stats = { resourceDictionaries: 0, instances: 0 };
@@ -37,6 +44,8 @@ export async function createCatalogLayer(baseLocale, initialCatalogs, initialLoc
     const pairs = new Map();
     const resources = Object.create(null);
     for (const catalog of catalogs) {
+      if (declaredLocales && !declaredLocales.includes(catalog.locale))
+        throw new Error('Loaded catalog locale is outside the declared manifest scope.');
       const pair = JSON.stringify([catalog.locale, catalog.namespace]);
       if (pairs.has(pair)) throw new Error('Duplicate catalog pair.');
       if (catalog.locale !== baseLocale) {
@@ -56,7 +65,7 @@ export async function createCatalogLayer(baseLocale, initialCatalogs, initialLoc
       }
       language[catalog.namespace] = namespace;
     }
-    const availableLocales = Object.freeze(Object.keys(resources).sort());
+    const availableLocales = declaredLocales ?? Object.freeze(Object.keys(resources).sort());
     const selected = availableLocales.includes(locale) ? locale : baseLocale;
     const engine = i18next.createInstance().use(createAstFormat(timeZone));
     stats.instances++;
