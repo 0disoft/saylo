@@ -1,9 +1,9 @@
 {
   "format": "saylo-thin-layer-ssr-production-v2",
-  "observedAt": "2026-10-10T19:20:46.732Z",
+  "observedAt": "2026-10-10T19:22:23.859Z",
   "node": "v24.18.0",
   "codeHashes": {
-    "benchmarks/thin-layer/ssr-production-probe.mjs": "d9d9f89332a9d0265606b96ca24e12bf2f80e93200f9c56d67201b916160091a",
+    "benchmarks/thin-layer/ssr-production-probe.mjs": "6bf362c50eb3d117bdd8f0bd613a0e482adcad0335346d66b7a8bdc04c2a1287",
     "benchmarks/thin-layer/ssr-production-client.mjs": "120cda4b67b2b5f9f790566a2155f40a2cefb2bbf790f754106729a9ff877486",
     "benchmarks/thin-layer/ssr-view.mjs": "3a79d7a666d5e9bee43112fedeb77d9e8e09725838f56c7acc584eff0edc38b2",
     "benchmarks/thin-layer/ssr-fixture.mjs": "4280bc98d1ec7ef8562f850d98088220db4197d666687a80248067d7c2518ea1",
@@ -67,7 +67,9 @@
     ]
   },
   "browserHostMatrix": true,
-  "scope": "Concurrent Node React SSR requests with isolated locale/timezone, then actual Chromium hydration of one Vite-built production client. Reuses Saylo boot validation and adds a prototype hydration barrier. With host-matrix: CDP emulates three browser host timezones and verifies actual Intl timezone across nine pages; no OS timezone changes. Otherwise: three configured zones in one browser host. No lazy/session/reconnect/large-scale performance or memory proof. Bundle includes React/DOM and bootstrap validation; not comparable to small translator-only fixture size.",
+  "caseCount": 12,
+  "missingTargetCases": 3,
+  "scope": "Concurrent Node React SSR requests with isolated locale/timezone, then actual Chromium hydration of one Vite-built production client. Reuses Saylo boot validation and adds a prototype hydration barrier. With host-matrix: CDP emulates three browser host timezones and verifies actual Intl timezone on every page; no OS timezone changes. Otherwise: configured zones in one browser host. Optional missing-target cases verify manifest availability and base-message fallback before translations arrive. No lazy/session/reconnect/large-scale performance or memory proof. Bundle includes React/DOM and bootstrap validation; not comparable to small translator-only fixture size.",
   "observations": [
     {
       "caseId": 0,

@@ -144,7 +144,8 @@ try {
     productionClient: { bytes: Buffer.byteLength(code), gzipBytes: gzipSync(code).length,
       sha256: createHash('sha256').update(code).digest('hex'), parserImplementationMarker: false, moduleIds: chunks[0].moduleIds },
     browserHostMatrix: values['host-matrix'],
-    scope: 'Concurrent Node React SSR requests with isolated locale/timezone, then actual Chromium hydration of one Vite-built production client. Reuses Saylo boot validation and adds a prototype hydration barrier. With host-matrix: CDP emulates three browser host timezones and verifies actual Intl timezone across nine pages; no OS timezone changes. Otherwise: three configured zones in one browser host. No lazy/session/reconnect/large-scale performance or memory proof. Bundle includes React/DOM and bootstrap validation; not comparable to small translator-only fixture size.',
+    caseCount: cases.length, missingTargetCases: cases.filter(config => config.missingTarget).length,
+    scope: 'Concurrent Node React SSR requests with isolated locale/timezone, then actual Chromium hydration of one Vite-built production client. Reuses Saylo boot validation and adds a prototype hydration barrier. With host-matrix: CDP emulates three browser host timezones and verifies actual Intl timezone on every page; no OS timezone changes. Otherwise: configured zones in one browser host. Optional missing-target cases verify manifest availability and base-message fallback before translations arrive. No lazy/session/reconnect/large-scale performance or memory proof. Bundle includes React/DOM and bootstrap validation; not comparable to small translator-only fixture size.',
     observations }, null, 2) + '\n');
 } finally {
   clearTimeout(timer);
