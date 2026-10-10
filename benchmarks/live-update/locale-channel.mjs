@@ -10,7 +10,7 @@ export const localeMetrics = ['saveToListAckMs', 'selectToTranslationAckMs', 'sa
   'selectToCommitMs', 'saveToBroadcastMs', 'fileWriteMs'];
 export const addedLocale = 'en-GB';
 
-export function createLocaleChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, browserStages, replyStages, clientStages }) {
+export function createLocaleChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, browserStages, replyStages, clientStages, runtimeProbe }) {
   const directory = path.join(path.dirname(path.dirname(target.file)), addedLocale);
   const file = path.join(directory, 'bench.json');
   const results = [], roundTrips = [], clients = new Map();
@@ -63,7 +63,7 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
       const source = JSON.stringify(messages);
       await mkdir(directory); // A fresh directory every round; creation time is outside file-save latency.
       current.catalogBytes = Buffer.byteLength(source);
-      stageProbe?.begin();
+      runtimeProbe?.start(); stageProbe?.begin();
       current.writeStartedAt = performance.now();
       await writeFile(file, source);
       current.saveFinishedAt = performance.now(); reply(res);

@@ -3,6 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { LiveRegistry } from '../../packages/vite/dist/live-registry.js';
 import { CatalogRegistry } from '../../packages/vite/dist/catalog-registry.js';
 import { beginFileSample, finishFileSample } from './server-file-profile.mjs';
+import { beginRuntimeSample, startRuntimeWindow, endRuntimeWindow, finishRuntimeSample } from './runtime-profile.mjs';
 
 // Benchmark-only wrappers: the library ships no clocks or profiling API.
 export function createStageProbe() {
@@ -21,6 +22,7 @@ export function createStageProbe() {
   wrap(LiveRegistry.prototype, 'drain', function (original, args) {
     if (current && this.queued.size) {
       current.candidateStartedAt = performance.now();
+      current.candidateWindow = startRuntimeWindow('readAndCandidateMs');
       current.queueToDrainMs = current.candidateStartedAt - current.firstEventAt;
       current.drains++;
     }
@@ -31,6 +33,7 @@ export function createStageProbe() {
     const start = performance.now();
     if (sample?.candidateStartedAt !== undefined) {
       sample.readAndCandidateMs += start - sample.candidateStartedAt;
+      endRuntimeWindow(sample.candidateWindow, start);
       sample.candidateStartedAt = undefined;
     }
     try { return original.apply(this, args); }
@@ -51,12 +54,14 @@ export function createStageProbe() {
     });
   }
   return {
-    begin() { beginFileSample(); current = { readAndCandidateMs: 0, translationPreparationMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 }; },
+    begin() { beginFileSample(); current = { runtimeWindow: beginRuntimeSample(), readAndCandidateMs: 0, translationPreparationMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 }; },
     finish() {
       if (!current || !Number.isFinite(current.queueToDrainMs) || !current.drains) throw new Error('Missing server stage sample.');
-      const { firstEventAt, candidateStartedAt, ...result } = current;
+      const { firstEventAt, candidateStartedAt, candidateWindow, runtimeWindow, ...result } = current;
       const fileStages = finishFileSample(current.readAndCandidateMs);
       if (fileStages) result.fileStages = fileStages;
+      const runtimeWindows = finishRuntimeSample(runtimeWindow);
+      if (runtimeWindows) result.runtimeWindows = runtimeWindows;
       current = undefined;
       return result;
     },

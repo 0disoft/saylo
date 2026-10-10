@@ -18,6 +18,7 @@ import { registerFileProbe, fileMetrics } from './server-file-profile.mjs';
 import { registerReplyProbe, replyReceiptPlugin } from './reply-profile.mjs';
 import { replyServerMetrics, replyBrowserMetrics, replyObservedMetrics } from './reply-receipt.mjs';
 import { clientStagePlugins, clientMetrics } from './client-profile.mjs';
+import { registerRuntimeProbe } from './runtime-profile.mjs';
 
 const exec = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -30,6 +31,7 @@ const { values } = parseArgs({ options: { samples: { type: 'string', default: '5
   'no-typegen': { type: 'boolean', default: false }, 'cpu-profile': { type: 'boolean', default: false },
   'browser-stages': { type: 'boolean', default: false },
   'server-file-stages': { type: 'boolean', default: false },
+  'runtime-stages': { type: 'boolean', default: false },
   'reply-stages': { type: 'boolean', default: false },
   'client-stages': { type: 'boolean', default: false },
   'timeout-ms': { type: 'string', default: '30000' } } });
@@ -50,6 +52,8 @@ if (values['client-stages'] && !values['reply-stages'])
 if (values.mode === 'locale-add' && values['cpu-profile'])
   throw new Error('Locale addition does not support --cpu-profile.');
 const fileProbe = registerFileProbe(values['server-file-stages']);
+if (values['runtime-stages'] && !values['server-file-stages']) throw new Error('--runtime-stages requires --server-file-stages.');
+const runtimeProbe = registerRuntimeProbe(values['runtime-stages']);
 const replyProbe = registerReplyProbe(values['reply-stages']);
 // Node hooks must be registered before the server dependency graph is loaded.
 const { default: saylo } = await import('@0disoft/saylo-vite');
@@ -80,6 +84,7 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json
   'packages/core/dist/catalog-freeze.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
   'packages/vite/dist/catalog-source.js', 'packages/vite/dist/catalog-wire.js', 'packages/vite/dist/index.js', 'packages/vite/dist/freeze.js'];
 measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
+measuredFiles.push('benchmarks/live-update/runtime-profile.mjs');
 measuredFiles.push('benchmarks/live-update/reply-profile.mjs', 'benchmarks/live-update/reply-receipt.mjs');
 measuredFiles.push('benchmarks/live-update/client-profile.mjs', 'benchmarks/live-update/client-probe.mjs');
 if (values.mode === 'locale-add') measuredFiles.push('benchmarks/live-update/locale-channel.mjs', 'benchmarks/live-update/locale-app.jsx');
@@ -111,7 +116,7 @@ async function runScenario(scenario) {
     const fixture = await createFixture(appRoot, scenario, values.mode === 'locale-add' ? 'locale-app.jsx' : 'app.jsx');
     if (cancelled) throw new Error('Benchmark interrupted.');
     const channelFactory = values.mode === 'locale-add' ? createLocaleChannel : createChannel;
-    channel = channelFactory({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe,
+    channel = channelFactory({ scenario, target: fixture.target, ...settings, stageProbe, cpuProbe, runtimeProbe,
       browserStages: values['browser-stages'], replyStages: values['reply-stages'], clientStages: values['client-stages'] });
     const browserProbe = browserStagePlugin(values['browser-stages'], values.mode);
     const clientProbe = clientStagePlugins(values['client-stages']);
@@ -138,6 +143,7 @@ async function runScenario(scenario) {
     child.once('error', error => channel.fail(error));
     child.once('exit', code => channel.fail(new Error(`Benchmark browser exited early (${code}).`)));
     const collected = await channel.completion;
+    const runtimeStages = values['runtime-stages'] ? await runtimeProbe.finish(collected.results) : undefined;
     browserProbe.assertTransformed();
     clientProbe.assertTransformed();
     const measured = collected.results.filter(sample => !sample.warmup);
@@ -168,6 +174,7 @@ async function runScenario(scenario) {
       initialCatalogBytes: fixture.catalogBytes, addedLocale, addedFilesPerRound: 1, addedMessages: scenario.messagesPerLocale,
       typegenEnabled: !values['no-typegen'], declarationRewritten: false, browser, serverStartupMs, browserBootMs: readyAt - launchedAt,
       summary: Object.fromEntries(localeMetrics.map(metric => [metric, summarize(measured.map(sample => sample[metric]))])),
+      ...(runtimeStages ? { runtimeStages } : {}),
       ...(serverStages ? { serverStages, profiledPhase: 'catalog-addition-before-list-ack' } : {}),
       ...(serverFileStages ? { serverFileStages } : {}),
       ...(values['client-stages'] ? { clientStages: {
@@ -208,6 +215,7 @@ async function runScenario(scenario) {
         maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),
         catalogReplyBytes: { p50Bytes: replySizes.p50Ms, p95Bytes: replySizes.p95Ms, minBytes: replySizes.minMs, maxBytes: replySizes.maxMs } },
       browserBootMs: readyAt - launchedAt, summary, controlRoundTrip: summarize(collected.roundTrips),
+      ...(runtimeStages ? { runtimeStages } : {}),
       ...(serverFileStages ? { serverFileStages } : {}),
       ...(values['browser-stages'] ? { browserStages: {
         scope: 'Synchronous benchmark-only client transforms; Saylo dependency prebundling disabled. Snapshot includes translator and signature; do not add nested stages or compare directly with uninstrumented runs.',
@@ -222,6 +230,7 @@ async function runScenario(scenario) {
     await stopBrowser(child);
     await vite?.close();
     stageProbe?.dispose(); cpuProbe.dispose();
+    runtimeProbe.stop?.();
     process.removeListener('SIGINT', interrupted); process.removeListener('SIGTERM', interrupted);
     const resolved = path.resolve(root);
     if (path.dirname(resolved) !== path.resolve(directory) || !path.basename(resolved).startsWith('.live-update-'))
@@ -239,7 +248,7 @@ for (const scenario of selected) {
 }
 const output = { schema: 'saylo-live-update-benchmark-v1', measuredAt: new Date().toISOString(),
   gitRevision: (await exec('git', ['rev-parse', 'HEAD'], { cwd: repository })).stdout.trim(), settings, mode: values.mode,
-  instrumentation: { cpuProfile: values['cpu-profile'], browserStages: values['browser-stages'], serverFileStages: values['server-file-stages'], replyStages: values['reply-stages'], clientStages: values['client-stages'] },
+  instrumentation: { cpuProfile: values['cpu-profile'], browserStages: values['browser-stages'], serverFileStages: values['server-file-stages'], replyStages: values['reply-stages'], clientStages: values['client-stages'], ...(values['runtime-stages'] ? { runtimeStages: true } : {}) },
   workingTreeStatus: (await exec('git', ['status', '--short'], { cwd: repository })).stdout.trim(),
   codeHashes,
   environment: { platform: process.platform, architecture: process.arch, osRelease: os.release(), node: process.version,
@@ -263,3 +272,4 @@ await writeFile(out, `${JSON.stringify(output, null, 2)}\n`);
 console.log(`[bench] result: ${out}`);
 fileProbe.dispose();
 replyProbe.dispose();
+runtimeProbe.dispose();

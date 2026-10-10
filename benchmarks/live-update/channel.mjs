@@ -2,7 +2,7 @@ import { writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import { browserMetrics } from './browser-profile.mjs';
 
-export function createChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, cpuProbe, browserStages }) {
+export function createChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, cpuProbe, browserStages, runtimeProbe }) {
   const results = [];
   const roundTrips = [];
   let current;
@@ -62,7 +62,7 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
       target.messages.probe = current.expected;
       const text = JSON.stringify(target.messages); // Content preparation excluded from save/commit measurement.
       if (results.length === warmup) await cpuProbe.start();
-      stageProbe.begin();
+      runtimeProbe?.start(); stageProbe.begin();
       current.writeStartedAt = performance.now();
       await writeFile(target.file, text);
       current.saveFinishedAt = performance.now();

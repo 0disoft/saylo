@@ -1,5 +1,6 @@
 import { registerHooks } from 'node:module';
 import { performance } from 'node:perf_hooks';
+import { startRuntimeWindow, endRuntimeWindow } from './runtime-profile.mjs';
 
 export const fileMetrics = ['pathCheckMs', 'fileReadMs', 'catalogParseMs', 'candidateOtherMs'];
 const observedMetrics = fileMetrics.slice(0, -1);
@@ -10,16 +11,18 @@ export function measureFileSync(metric, work) {
   const sample = current;
   if (!sample) return work();
   const startedAt = performance.now();
+  const window = startRuntimeWindow(metric);
   try { return work(); }
-  finally { sample.timings[metric] += performance.now() - startedAt; sample.calls[metric]++; }
+  finally { sample.timings[metric] += performance.now() - startedAt; sample.calls[metric]++; endRuntimeWindow(window); }
 }
 
 export async function measureFileAsync(metric, work) {
   const sample = current;
   if (!sample) return work();
   const startedAt = performance.now();
+  const window = startRuntimeWindow(metric);
   try { return await work(); }
-  finally { sample.timings[metric] += performance.now() - startedAt; sample.calls[metric]++; }
+  finally { sample.timings[metric] += performance.now() - startedAt; sample.calls[metric]++; endRuntimeWindow(window); }
 }
 
 export function beginFileSample() {
