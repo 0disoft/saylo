@@ -1,0 +1,211 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-10T21:00:24.967Z",
+  "gitRevision": "ad7b55e563cf3c4b1cd98e438100b9690ef58e07",
+  "settings": {
+    "samples": 25,
+    "warmup": 5,
+    "calibrations": 10,
+    "timeoutMs": 30000
+  },
+  "mode": "edit",
+  "instrumentation": {
+    "cpuProfile": false,
+    "browserStages": false,
+    "serverFileStages": false,
+    "replyStages": false,
+    "clientStages": false
+  },
+  "workingTreeStatus": "M docs/53-completion-audit.md\n M docs/72-thin-layer-sync-construction.md\n M docs/README.md\n M packages/core/src/schema.ts\n M packages/core/test/catalog.test.mjs\n?? benchmarks/results/thin-layer-lazy-contracts-current.json\n?? benchmarks/results/thin-layer-runtime-cost-validation-cache-2026-10-11.json\n?? benchmarks/results/validation-cache-edit-large-2026-10-11.10k-20-locales.samples.json\n?? benchmarks/results/validation-cache-edit-large-2026-10-11.json\n?? docs/73-thin-layer-runtime-cost.md",
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "f7a9ba919b53de4492d9fc179e50896bc22bf89fdf6b7fd4eb1aa6f432460fc1",
+    "packages/core/dist/catalog-json.js": "9012d701a52247f2ae514e6fda87837a2518d4978f483a2b5afefa0cf306e069",
+    "packages/core/dist/json.js": "acc8f2e94f9f2e398a27a439ea4893d15f6bffdd39ae453952f4461ea3083588",
+    "packages/core/dist/simple-message.js": "a3b1be697431fcbc00dce1e1f425ac8ace9bfe5a3e55e5ca94ccd48c6ad0453f",
+    "packages/core/dist/diagnostics.js": "9e8764951f360e4044877e205d6833edcc17b82091e29178a36d36a6d69ccba0",
+    "packages/core/dist/schema.js": "de4f973ee5a3f604befa5cffdb175ea440d2a088038caeb25c34ec24446ac0de",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "packages/vite/dist/live-registry.js": "2d958de43a56c66ea7b7415f63f441145a71b405b0d3b71ed18edecccdd019cd",
+    "packages/vite/dist/disk-rechecks.js": "46f6e037f073aa0b8fc875349a5e8fe0a20ab8b2ec5fc16c2932feac3808a472",
+    "packages/vite/dist/translation-quarantine.js": "e64ed9e9567f2793c36a7269ab393dedcbf8e1fc915ddaae405fc4d3cf6fd1f2",
+    "packages/vite/dist/catalog-registry.js": "8693803507167a3b5521bafe7f0ece58e082bd9debd7076ad83170a6bc3a9715",
+    "packages/vite/dist/catalog-patch.js": "911c60fe58690eaff6d3330242b517965249061f7a01049782bf227e480e31cb",
+    "benchmarks/live-update/profile.mjs": "a777788b6d0e40dd9744b7060c18fd29a7bd251a830fc6e447dbc2377a8b648d",
+    "benchmarks/live-update/channel.mjs": "fa68ecd900df18d3092da67eb0955d1b3a491f021ec3fbebbb4b982c5b234c14",
+    "benchmarks/live-update/run.mjs": "f34b137a3132cd741f3e5171d8b6140e5d5a46ffd71d548ee0e9f4dfd2ac49da",
+    "benchmarks/live-update/app.jsx": "3c7395e2ae61bd777b4a261495de6c32d00b8dfa0378dd3b6bc41a53d0365293",
+    "benchmarks/live-update/fixture.mjs": "1b547cc3705e8397948568cde4245e178379bc2753edf2657af365928ca8a915",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0",
+    "benchmarks/live-update/browser-profile.mjs": "af272015f890d5dc7a92f4256dcc260b53158874a396f08a35f3c4b953c7e0b1",
+    "benchmarks/live-update/browser-probe.mjs": "2391744a81676ae90e224d818caa9dfc1e6de083d88805daad08f275c36ab615",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/runtime.js": "2d197337d026357b240584ba2d0cf6b7acc90c2288408fdf282dfed7e90354c8",
+    "packages/core/dist/catalog-freeze.js": "a3a707cbaf4012ee5c2d959c70b7d472b337707af43131afd89e146f57518005",
+    "packages/core/dist/snapshot-signature.js": "1ef671cd30f6b8c694693b8cce921e569d10d523596664713317f936e289f348",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f",
+    "packages/vite/dist/catalog-source.js": "840b8f2fe7fd345116ba2f536ab2a9a2e358206dae33fd88bd375aad3fdb8f3d",
+    "packages/vite/dist/catalog-wire.js": "f87cf497f8edcbd1c859be708dd255a4938d0082ac40038343ba5d84d93d1b6a",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "packages/vite/dist/freeze.js": "09a7a2f8783c323b6e1542ee71c31ecd1bd9975e1ee51b01e5ff2a68e15d5d34",
+    "benchmarks/live-update/server-file-profile.mjs": "f8a607c54436154f495783dcf387e871662241280ba683736484211e46942a82",
+    "benchmarks/live-update/runtime-profile.mjs": "fb8efd1d680cd01a35fcbae8bbeede3244123a22e40815812adddc4cc78e1ba8",
+    "benchmarks/live-update/reply-profile.mjs": "c52ca5618408240f8802b853812211a3753ffca2798df600c51638f286b165ad",
+    "benchmarks/live-update/reply-receipt.mjs": "066103fa22236b8eaee92db6eb57ea10e5feb9dc1ad28deec20bd99ce911a9ff",
+    "benchmarks/live-update/client-profile.mjs": "0b4bf764985dcda09a7bbe08b363137b9b58f3d6638c6db549385246dcc7dc87",
+    "benchmarks/live-update/client-probe.mjs": "ebf5a1e7e93419ae7828c3cf0edd331c04cc5f735159d977060e2acfeb1c29a0"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26300",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+  "results": [
+    {
+      "id": "10k-20-locales",
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "namespaces": 1,
+      "catalogFiles": 20,
+      "catalogBytes": 7755280,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 1894.4021000000002,
+      "wire": {
+        "patchReplies": 25,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 936,
+          "p95Bytes": 936,
+          "minBytes": 932,
+          "maxBytes": 936
+        }
+      },
+      "browserBootMs": 3035.0761999999995,
+      "summary": {
+        "saveToAckMs": {
+          "count": 25,
+          "p50Ms": 49.77390000000014,
+          "p95Ms": 61.91219999999976,
+          "minMs": 46.86529999999948,
+          "maxMs": 66.16269999999986
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 25,
+          "p50Ms": 19.190599999999904,
+          "p95Ms": 23.53939999999966,
+          "minMs": 17.846799999999348,
+          "maxMs": 31.729299999999967
+        },
+        "receiveToCommitMs": {
+          "count": 25,
+          "p50Ms": 21.69999999552965,
+          "p95Ms": 25.799999997019768,
+          "minMs": 19.799999997019768,
+          "maxMs": 27
+        },
+        "commitToAckDispatchMs": {
+          "count": 25,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 5.24369999999999,
+          "p95Ms": 9.452299999999923,
+          "minMs": 4.635599999999613,
+          "maxMs": 45.46429999999964
+        }
+      },
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 3.749499999999898,
+        "p95Ms": 6.931300000000192,
+        "minMs": 3.4403000000002066,
+        "maxMs": 6.931300000000192
+      },
+      "serverStages": {
+        "boundaryVersion": 2,
+        "scope": "Benchmark-only method wrappers. queueToDrain is the first batch wait, with all waits in drainWaitMs. Candidate duration is the interval union of every batch from drain to its own prepareTranslations or settlement for superseded/error batches, including serialized wait. v1 overwrote starts on later drains; candidate and queue metrics are not directly comparable. Preparation/validation/registry/delta retain their prior boundaries; do not add nested p95s.",
+        "queueToDrainMs": {
+          "count": 25,
+          "p50Ms": 1.767800000000534,
+          "p95Ms": 2.4822000000003754,
+          "minMs": 0.2713999999996304,
+          "maxMs": 5.08600000000024
+        },
+        "readAndCandidateMs": {
+          "count": 25,
+          "p50Ms": 7.956899999999223,
+          "p95Ms": 10.930199999999786,
+          "minMs": 6.920400000000882,
+          "maxMs": 19.369900000000598
+        },
+        "translationPreparationMs": {
+          "count": 25,
+          "p50Ms": 6.293800000000374,
+          "p95Ms": 8.865999999999985,
+          "minMs": 5.984199999999873,
+          "maxMs": 10.209399999999732
+        },
+        "validationMs": {
+          "count": 25,
+          "p50Ms": 0.010599999999612919,
+          "p95Ms": 0.02699999999913416,
+          "minMs": 0.0078000000003157766,
+          "maxMs": 0.03780000000006112
+        },
+        "registryReplaceMs": {
+          "count": 25,
+          "p50Ms": 5.1153000000003885,
+          "p95Ms": 6.371099999999387,
+          "minMs": 4.901499999999942,
+          "maxMs": 6.6875
+        },
+        "catalogDeltaMs": {
+          "count": 25,
+          "p50Ms": 5.91190000000006,
+          "p95Ms": 7.074200000000019,
+          "minMs": 5.33219999999983,
+          "maxMs": 7.541500000000269
+        },
+        "maxFileEvents": 2,
+        "maxDrains": 2
+      },
+      "controlRoundTripsMs": [
+        6.931300000000192,
+        3.4403000000002066,
+        3.858799999999974,
+        3.904099999999744,
+        3.5781999999999243,
+        3.749499999999898,
+        4.595800000000054,
+        3.7908000000006723,
+        3.652299999999741,
+        3.5807999999997264
+      ],
+      "samplesFile": "validation-cache-edit-large-repeat-2026-10-11.10k-20-locales.samples.json"
+    }
+  ]
+}
