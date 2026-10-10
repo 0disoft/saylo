@@ -1,0 +1,707 @@
+{
+  "format": "saylo-thin-layer-lazy-contracts-v1",
+  "observedAt": "2026-10-10T20:59:07.364Z",
+  "node": "v24.18.0",
+  "codeHashes": {
+    "benchmarks/thin-layer/lazy-layer.mjs": "42d8b8e036ca611eab0c8999ff4cfb17fb6ee694125a77a457c19e831c4dfec6",
+    "benchmarks/thin-layer/lazy-source-cache.mjs": "41c49136867f1a99289ac50dfe31c9e36ec60f4fef75bfbed0ffa37103c06aa1",
+    "benchmarks/thin-layer/lazy-fixture.mjs": "b8e5f7cbc9b327d8d1c369b9511cd22631adcc24060457230c0f311cd962725c",
+    "benchmarks/thin-layer/lazy-contract.test.mjs": "5af09cb65f2a2f18abca2cca35eea82ccbc298f28001709e68ab384a0a0af5f0",
+    "benchmarks/thin-layer/catalog-layer.mjs": "d8f5f3df286d1ce2a2b847f5a376f2c707cbe89af104f6c3cd7a5e5498d42c59",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/i18n.js": "b9817d53c0e29c8e1ad7a8d4a64ede77adb6222a913664bb45c49aa79463db92",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/boot.js": "6a7dfdd9b2e452b8595c3caa093c49774a87b26034f7c25bad7f653ccbdde4f2",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/schema.js": "de4f973ee5a3f604befa5cffdb175ea440d2a088038caeb25c34ec24446ac0de",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "scope": "Identical Node public CatalogSource scenarios for Saylo core and an independently implemented i18next lazy coordinator/cache. Both retain Saylo public boot/schema validation. No browser/Vite lazy transport/session-reconnect integration/typegen or performance comparison proof.",
+  "observations": [
+    {
+      "backend": "core",
+      "id": "empty scope, pair deduplication and old bound namespace errors",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "newer locale wins while an older source ignores cancellation",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ja\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "manifest version change aborts an old flight and commits only its newer payload",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "invalid translated schema retains last-good and a newer version recovers",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 3,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "locale/namespace removal and namespace addition publish current metadata atomically",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"help\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"help\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"en\",\"extra\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "explicit missing pair preserves the selected locale until a translation arrives",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 3,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "stale registry and retired session are rejected without losing the committed snapshot",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        },
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-second",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "timeout aborts a source that ignores its signal and prevents late publication",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "disposal aborts loads and attempts every cleanup despite listener failures",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "independent duplicate subscriptions and post-commit subscriber failures",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "an unloaded pair update changes boot metadata without publishing or rebuilding an engine",
+      "pass": true,
+      "sourceLoads": []
+    },
+    {
+      "backend": "core",
+      "id": "unchanged-manifest stale responses have a bounded retry count",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "regressed pair versions and a changed base locale cannot replace a committed snapshot",
+      "pass": true,
+      "sourceLoads": []
+    },
+    {
+      "backend": "core",
+      "id": "catalog pair identity is independent of JSON object property order",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "empty scope, pair deduplication and old bound namespace errors",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "newer locale wins while an older source ignores cancellation",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ja\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "manifest version change aborts an old flight and commits only its newer payload",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "invalid translated schema retains last-good and a newer version recovers",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 3,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "locale/namespace removal and namespace addition publish current metadata atomically",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"help\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"help\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"en\",\"extra\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "explicit missing pair preserves the selected locale until a translation arrives",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 3,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "stale registry and retired session are rejected without losing the committed snapshot",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        },
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-second",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "timeout aborts a source that ignores its signal and prevents late publication",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "disposal aborts loads and attempts every cleanup despite listener failures",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "independent duplicate subscriptions and post-commit subscriber failures",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "an unloaded pair update changes boot metadata without publishing or rebuilding an engine",
+      "pass": true,
+      "sourceLoads": []
+    },
+    {
+      "backend": "layer",
+      "id": "unchanged-manifest stale responses have a bounded retry count",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "regressed pair versions and a changed base locale cannot replace a committed snapshot",
+      "pass": true,
+      "sourceLoads": []
+    },
+    {
+      "backend": "layer",
+      "id": "catalog pair identity is independent of JSON object property order",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "empty scope, pair deduplication and old bound namespace errors",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "newer locale wins while an older source ignores cancellation",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ja\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "manifest version change aborts an old flight and commits only its newer payload",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "invalid translated schema retains last-good and a newer version recovers",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 3,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "locale/namespace removal and namespace addition publish current metadata atomically",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"help\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"help\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"en\",\"extra\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "explicit missing pair preserves the selected locale until a translation arrives",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 3,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "stale registry and retired session are rejected without losing the committed snapshot",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        },
+        {
+          "id": "[\"en\",\"demo\"]",
+          "sessionId": "lazy-second",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "timeout aborts a source that ignores its signal and prevents late publication",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "disposal aborts loads and attempts every cleanup despite listener failures",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": true
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "independent duplicate subscriptions and post-commit subscriber failures",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 2,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "an unloaded pair update changes boot metadata without publishing or rebuilding an engine",
+      "pass": true,
+      "sourceLoads": []
+    },
+    {
+      "backend": "layer-sync",
+      "id": "unchanged-manifest stale responses have a bounded retry count",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer-sync",
+      "id": "regressed pair versions and a changed base locale cannot replace a committed snapshot",
+      "pass": true,
+      "sourceLoads": []
+    },
+    {
+      "backend": "layer-sync",
+      "id": "catalog pair identity is independent of JSON object property order",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    }
+  ]
+}

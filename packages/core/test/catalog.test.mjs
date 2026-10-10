@@ -341,6 +341,33 @@ test('shared validation contracts still check every ID, changed base types and f
   rejectsCode(() => validateTranslation(changed, translation), 'UNKNOWN_ARGUMENT');
 });
 
+test('complete validation reuse requires both trusted immutable identities and only successful results', () => {
+  const base = createBaseSchema(catalog({ x: '{n, number}' }));
+  const translated = catalog({ x: '{n}' }, 'en');
+  const entries = Object.entries;
+  let scans = 0;
+  Object.entries = value => { if (value === translated.messages) scans++; return entries(value); };
+  try {
+    validateTranslation(base, translated);
+    validateTranslation(base, translated);
+    assert.equal(scans, 1, 'The same immutable pair needs one complete scan.');
+    const shallowBase = Object.freeze({ ...base, keys: { ...base.keys } });
+    validateTranslation(shallowBase, translated);
+    delete shallowBase.keys.x;
+    rejectsCode(() => validateTranslation(shallowBase, translated), 'UNKNOWN_MESSAGE');
+    const shallowTranslation = Object.freeze({ ...translated, messages: { ...translated.messages } });
+    validateTranslation(base, shallowTranslation);
+    shallowTranslation.messages.extra = translated.messages.x;
+    rejectsCode(() => validateTranslation(base, shallowTranslation), 'UNKNOWN_MESSAGE');
+  } finally { Object.entries = entries; }
+  const added = freeze({ ...translated, messages: { ...translated.messages, extra: translated.messages.x } });
+  for (let attempt = 0; attempt < 2; attempt++) rejectsCode(() => validateTranslation(base, added), 'UNKNOWN_MESSAGE');
+  const removedBaseKey = createBaseSchema(catalog({ other: '{n, number}' }));
+  rejectsCode(() => validateTranslation(removedBaseKey, translated), 'UNKNOWN_MESSAGE');
+  const differentNamespace = freeze({ ...translated, namespace: 'other' });
+  rejectsCode(() => validateTranslation(base, differentNamespace), 'NAMESPACE_MISMATCH');
+});
+
 test('fingerprint depends on namespace and argument contract, not text or key order', () => {
   const first = createBaseSchema(catalog({ title: 'Cart', x: '{n, number}' }));
   const edited = createBaseSchema(catalog({ x: 'Total {n, number}', title: 'Edited' }));

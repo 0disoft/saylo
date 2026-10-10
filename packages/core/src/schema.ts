@@ -101,9 +101,15 @@ export function createBaseSchema(catalog: ParsedCatalog): CatalogSchema {
 }
 
 const validatedArguments = new WeakMap<MessageSchema, WeakSet<MessageSchema>>();
+const validatedCatalogs = new WeakMap<CatalogSchema, WeakSet<ParsedCatalog>>();
 
 /** Missing keys/arguments are allowed; supplied translations cannot narrow the base. */
 export function validateTranslation(base: CatalogSchema, translation: ParsedCatalog): void {
+  // Only library-recognized deep-frozen inputs can reuse a complete result.
+  // Key/schema changes get new identities; weak references do not retain snapshots.
+  const cacheableCatalog = isDeepFrozen(base) && isDeepFrozen(translation);
+  const acceptedCatalogs = cacheableCatalog ? validatedCatalogs.get(base) : undefined;
+  if (acceptedCatalogs?.has(translation)) return;
   const context = { locale: translation.locale, namespace: translation.namespace, sourceName: translation.sourceName };
   if (base.namespace !== translation.namespace) {
     throw new CatalogError([{ ...context, code: 'NAMESPACE_MISMATCH', message: `Expected namespace ${JSON.stringify(base.namespace)}.` }]);
@@ -135,4 +141,9 @@ export function validateTranslation(base: CatalogSchema, translation: ParsedCata
     }
   }
   if (diagnostics.length) throw new CatalogError(diagnostics);
+  if (cacheableCatalog) {
+    const accepted = acceptedCatalogs ?? new WeakSet<ParsedCatalog>();
+    accepted.add(translation);
+    if (!acceptedCatalogs) validatedCatalogs.set(base, accepted);
+  }
 }

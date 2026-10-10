@@ -1,0 +1,1924 @@
+{
+  "format": "saylo-thin-layer-runtime-cost-v1",
+  "observedAt": "2026-10-10T20:59:06.599Z",
+  "node": "v24.18.0",
+  "codeHashes": {
+    "benchmarks/thin-layer/runtime-cost-probe.mjs": "035f207c3f7d1995311b2c2c73e68dc46e86a4cdef3b5adf97ad07eac32cb8cd",
+    "benchmarks/thin-layer/lazy-layer.mjs": "42d8b8e036ca611eab0c8999ff4cfb17fb6ee694125a77a457c19e831c4dfec6",
+    "benchmarks/thin-layer/lazy-source-cache.mjs": "41c49136867f1a99289ac50dfe31c9e36ec60f4fef75bfbed0ffa37103c06aa1",
+    "benchmarks/thin-layer/catalog-layer.mjs": "d8f5f3df286d1ce2a2b847f5a376f2c707cbe89af104f6c3cd7a5e5498d42c59",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/i18n.js": "b9817d53c0e29c8e1ad7a8d4a64ede77adb6222a913664bb45c49aa79463db92",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/formatters.js": "37925d7ac2976d7ed54df233a03cee48f970f4c94dec13e7e73ddf5cafa61a3e",
+    "packages/core/dist/schema.js": "de4f973ee5a3f604befa5cffdb175ea440d2a088038caeb25c34ec24446ac0de",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "observations": [
+    {
+      "block": 0,
+      "variant": "core",
+      "keys": 1000,
+      "targetKeys": 998,
+      "iterations": 30,
+      "constructors": [
+        1.8024999999999807,
+        1.9128000000000043,
+        1.5786999999999978
+      ],
+      "updates": [
+        {
+          "version": 1,
+          "retainedPhase": false,
+          "milliseconds": 4.3682999999999765
+        },
+        {
+          "version": 2,
+          "retainedPhase": false,
+          "milliseconds": 1.81310000000002
+        },
+        {
+          "version": 3,
+          "retainedPhase": false,
+          "milliseconds": 1.582400000000007
+        },
+        {
+          "version": 4,
+          "retainedPhase": false,
+          "milliseconds": 1.553799999999967
+        },
+        {
+          "version": 5,
+          "retainedPhase": false,
+          "milliseconds": 1.5226000000000113
+        },
+        {
+          "version": 6,
+          "retainedPhase": false,
+          "milliseconds": 1.511700000000019
+        },
+        {
+          "version": 7,
+          "retainedPhase": false,
+          "milliseconds": 1.5690999999999917
+        },
+        {
+          "version": 8,
+          "retainedPhase": false,
+          "milliseconds": 1.5475999999999885
+        },
+        {
+          "version": 9,
+          "retainedPhase": false,
+          "milliseconds": 1.6692999999999643
+        },
+        {
+          "version": 10,
+          "retainedPhase": false,
+          "milliseconds": 2.2648999999999546
+        },
+        {
+          "version": 11,
+          "retainedPhase": false,
+          "milliseconds": 1.70150000000001
+        },
+        {
+          "version": 12,
+          "retainedPhase": false,
+          "milliseconds": 1.5594000000000392
+        },
+        {
+          "version": 13,
+          "retainedPhase": false,
+          "milliseconds": 1.3322999999999752
+        },
+        {
+          "version": 14,
+          "retainedPhase": false,
+          "milliseconds": 1.3082999999999743
+        },
+        {
+          "version": 15,
+          "retainedPhase": false,
+          "milliseconds": 1.8407000000000266
+        },
+        {
+          "version": 16,
+          "retainedPhase": false,
+          "milliseconds": 1.487700000000018
+        },
+        {
+          "version": 17,
+          "retainedPhase": false,
+          "milliseconds": 1.3267000000000166
+        },
+        {
+          "version": 18,
+          "retainedPhase": false,
+          "milliseconds": 1.2796000000000163
+        },
+        {
+          "version": 19,
+          "retainedPhase": false,
+          "milliseconds": 1.3258000000000152
+        },
+        {
+          "version": 20,
+          "retainedPhase": false,
+          "milliseconds": 1.5144000000000233
+        },
+        {
+          "version": 21,
+          "retainedPhase": false,
+          "milliseconds": 1.358600000000024
+        },
+        {
+          "version": 22,
+          "retainedPhase": false,
+          "milliseconds": 1.3291999999999575
+        },
+        {
+          "version": 23,
+          "retainedPhase": false,
+          "milliseconds": 1.4370999999999867
+        },
+        {
+          "version": 24,
+          "retainedPhase": false,
+          "milliseconds": 1.7294999999999732
+        },
+        {
+          "version": 25,
+          "retainedPhase": false,
+          "milliseconds": 1.324700000000007
+        },
+        {
+          "version": 26,
+          "retainedPhase": false,
+          "milliseconds": 1.329400000000021
+        },
+        {
+          "version": 27,
+          "retainedPhase": false,
+          "milliseconds": 1.4395000000000095
+        },
+        {
+          "version": 28,
+          "retainedPhase": false,
+          "milliseconds": 1.265100000000018
+        },
+        {
+          "version": 29,
+          "retainedPhase": false,
+          "milliseconds": 2.398899999999969
+        },
+        {
+          "version": 30,
+          "retainedPhase": false,
+          "milliseconds": 1.2875999999999976
+        },
+        {
+          "version": 31,
+          "retainedPhase": true,
+          "milliseconds": 1.8611999999999966
+        },
+        {
+          "version": 32,
+          "retainedPhase": true,
+          "milliseconds": 1.4091999999999985
+        },
+        {
+          "version": 33,
+          "retainedPhase": true,
+          "milliseconds": 1.283399999999972
+        },
+        {
+          "version": 34,
+          "retainedPhase": true,
+          "milliseconds": 1.2335999999999672
+        },
+        {
+          "version": 35,
+          "retainedPhase": true,
+          "milliseconds": 1.3635999999999626
+        },
+        {
+          "version": 36,
+          "retainedPhase": true,
+          "milliseconds": 1.8630999999999744
+        },
+        {
+          "version": 37,
+          "retainedPhase": true,
+          "milliseconds": 1.7280000000000086
+        },
+        {
+          "version": 38,
+          "retainedPhase": true,
+          "milliseconds": 1.435799999999972
+        }
+      ],
+      "hotReads": {
+        "calls": 1500,
+        "milliseconds": 19.427599999999984
+      },
+      "sourceLoads": 38,
+      "heapBytes": {
+        "before": 8492256,
+        "live": 8587728,
+        "steady": 8974464,
+        "withRetained": 9621744,
+        "released": 9105272,
+        "disposed": 8933664
+      },
+      "heapDeltas": {
+        "live": 95472,
+        "steady": 482208,
+        "retained": 516472,
+        "additionalPhase": 647280,
+        "released": 613016,
+        "disposed": 441408
+      },
+      "retainedSnapshotsVerified": 8
+    },
+    {
+      "block": 1,
+      "variant": "layer",
+      "keys": 1000,
+      "targetKeys": 998,
+      "iterations": 30,
+      "constructors": [
+        4.539699999999982,
+        4.7117000000000075,
+        4.940800000000024
+      ],
+      "updates": [
+        {
+          "version": 1,
+          "retainedPhase": false,
+          "milliseconds": 6.75139999999999
+        },
+        {
+          "version": 2,
+          "retainedPhase": false,
+          "milliseconds": 4.361900000000048
+        },
+        {
+          "version": 3,
+          "retainedPhase": false,
+          "milliseconds": 3.818899999999985
+        },
+        {
+          "version": 4,
+          "retainedPhase": false,
+          "milliseconds": 4.550400000000025
+        },
+        {
+          "version": 5,
+          "retainedPhase": false,
+          "milliseconds": 4.084699999999998
+        },
+        {
+          "version": 6,
+          "retainedPhase": false,
+          "milliseconds": 3.6358999999999924
+        },
+        {
+          "version": 7,
+          "retainedPhase": false,
+          "milliseconds": 3.9721000000000117
+        },
+        {
+          "version": 8,
+          "retainedPhase": false,
+          "milliseconds": 3.6025000000000205
+        },
+        {
+          "version": 9,
+          "retainedPhase": false,
+          "milliseconds": 3.6385999999999967
+        },
+        {
+          "version": 10,
+          "retainedPhase": false,
+          "milliseconds": 3.6300999999999704
+        },
+        {
+          "version": 11,
+          "retainedPhase": false,
+          "milliseconds": 5.1533000000000015
+        },
+        {
+          "version": 12,
+          "retainedPhase": false,
+          "milliseconds": 3.9995999999999867
+        },
+        {
+          "version": 13,
+          "retainedPhase": false,
+          "milliseconds": 3.432700000000011
+        },
+        {
+          "version": 14,
+          "retainedPhase": false,
+          "milliseconds": 4.632799999999975
+        },
+        {
+          "version": 15,
+          "retainedPhase": false,
+          "milliseconds": 3.0681999999999903
+        },
+        {
+          "version": 16,
+          "retainedPhase": false,
+          "milliseconds": 3.513999999999953
+        },
+        {
+          "version": 17,
+          "retainedPhase": false,
+          "milliseconds": 3.6736000000000217
+        },
+        {
+          "version": 18,
+          "retainedPhase": false,
+          "milliseconds": 3.393199999999979
+        },
+        {
+          "version": 19,
+          "retainedPhase": false,
+          "milliseconds": 3.4139999999999873
+        },
+        {
+          "version": 20,
+          "retainedPhase": false,
+          "milliseconds": 5.172400000000039
+        },
+        {
+          "version": 21,
+          "retainedPhase": false,
+          "milliseconds": 3.2805999999999926
+        },
+        {
+          "version": 22,
+          "retainedPhase": false,
+          "milliseconds": 3.523200000000031
+        },
+        {
+          "version": 23,
+          "retainedPhase": false,
+          "milliseconds": 3.27170000000001
+        },
+        {
+          "version": 24,
+          "retainedPhase": false,
+          "milliseconds": 3.427599999999984
+        },
+        {
+          "version": 25,
+          "retainedPhase": false,
+          "milliseconds": 3.1813999999999965
+        },
+        {
+          "version": 26,
+          "retainedPhase": false,
+          "milliseconds": 3.0832000000000335
+        },
+        {
+          "version": 27,
+          "retainedPhase": false,
+          "milliseconds": 4.860900000000015
+        },
+        {
+          "version": 28,
+          "retainedPhase": false,
+          "milliseconds": 3.242999999999995
+        },
+        {
+          "version": 29,
+          "retainedPhase": false,
+          "milliseconds": 3.303099999999972
+        },
+        {
+          "version": 30,
+          "retainedPhase": false,
+          "milliseconds": 3.0558000000000334
+        },
+        {
+          "version": 31,
+          "retainedPhase": true,
+          "milliseconds": 3.774599999999964
+        },
+        {
+          "version": 32,
+          "retainedPhase": true,
+          "milliseconds": 3.209799999999973
+        },
+        {
+          "version": 33,
+          "retainedPhase": true,
+          "milliseconds": 3.4148999999999887
+        },
+        {
+          "version": 34,
+          "retainedPhase": true,
+          "milliseconds": 2.9990000000000236
+        },
+        {
+          "version": 35,
+          "retainedPhase": true,
+          "milliseconds": 3.133799999999951
+        },
+        {
+          "version": 36,
+          "retainedPhase": true,
+          "milliseconds": 2.974800000000016
+        },
+        {
+          "version": 37,
+          "retainedPhase": true,
+          "milliseconds": 3.7841000000000236
+        },
+        {
+          "version": 38,
+          "retainedPhase": true,
+          "milliseconds": 4.0049000000000206
+        }
+      ],
+      "hotReads": {
+        "calls": 1500,
+        "milliseconds": 39.55169999999998
+      },
+      "sourceLoads": 38,
+      "stats": {
+        "resourceDictionaries": 40,
+        "instances": 39
+      },
+      "heapBytes": {
+        "before": 8817400,
+        "live": 8881640,
+        "steady": 9610304,
+        "withRetained": 10783056,
+        "released": 9774216,
+        "disposed": 9749200
+      },
+      "heapDeltas": {
+        "live": 64240,
+        "steady": 792904,
+        "retained": 1008840,
+        "additionalPhase": 1172752,
+        "released": 956816,
+        "disposed": 931800
+      },
+      "retainedSnapshotsVerified": 8
+    },
+    {
+      "block": 2,
+      "variant": "layer",
+      "keys": 1000,
+      "targetKeys": 998,
+      "iterations": 30,
+      "constructors": [
+        4.435299999999984,
+        4.579499999999996,
+        4.078300000000013
+      ],
+      "updates": [
+        {
+          "version": 1,
+          "retainedPhase": false,
+          "milliseconds": 6.485900000000015
+        },
+        {
+          "version": 2,
+          "retainedPhase": false,
+          "milliseconds": 4.19259999999997
+        },
+        {
+          "version": 3,
+          "retainedPhase": false,
+          "milliseconds": 3.5072999999999865
+        },
+        {
+          "version": 4,
+          "retainedPhase": false,
+          "milliseconds": 3.8774999999999977
+        },
+        {
+          "version": 5,
+          "retainedPhase": false,
+          "milliseconds": 3.351500000000044
+        },
+        {
+          "version": 6,
+          "retainedPhase": false,
+          "milliseconds": 3.1750999999999863
+        },
+        {
+          "version": 7,
+          "retainedPhase": false,
+          "milliseconds": 4.91900000000004
+        },
+        {
+          "version": 8,
+          "retainedPhase": false,
+          "milliseconds": 2.9519000000000233
+        },
+        {
+          "version": 9,
+          "retainedPhase": false,
+          "milliseconds": 3.822499999999991
+        },
+        {
+          "version": 10,
+          "retainedPhase": false,
+          "milliseconds": 3.57650000000001
+        },
+        {
+          "version": 11,
+          "retainedPhase": false,
+          "milliseconds": 3.262200000000007
+        },
+        {
+          "version": 12,
+          "retainedPhase": false,
+          "milliseconds": 3.282100000000014
+        },
+        {
+          "version": 13,
+          "retainedPhase": false,
+          "milliseconds": 3.418800000000033
+        },
+        {
+          "version": 14,
+          "retainedPhase": false,
+          "milliseconds": 4.4565000000000055
+        },
+        {
+          "version": 15,
+          "retainedPhase": false,
+          "milliseconds": 2.783299999999997
+        },
+        {
+          "version": 16,
+          "retainedPhase": false,
+          "milliseconds": 3.622599999999977
+        },
+        {
+          "version": 17,
+          "retainedPhase": false,
+          "milliseconds": 3.131800000000055
+        },
+        {
+          "version": 18,
+          "retainedPhase": false,
+          "milliseconds": 3.240600000000029
+        },
+        {
+          "version": 19,
+          "retainedPhase": false,
+          "milliseconds": 3.050100000000043
+        },
+        {
+          "version": 20,
+          "retainedPhase": false,
+          "milliseconds": 3.0208999999999833
+        },
+        {
+          "version": 21,
+          "retainedPhase": false,
+          "milliseconds": 3.615000000000009
+        },
+        {
+          "version": 22,
+          "retainedPhase": false,
+          "milliseconds": 3.126899999999978
+        },
+        {
+          "version": 23,
+          "retainedPhase": false,
+          "milliseconds": 2.987799999999993
+        },
+        {
+          "version": 24,
+          "retainedPhase": false,
+          "milliseconds": 3.2983999999999583
+        },
+        {
+          "version": 25,
+          "retainedPhase": false,
+          "milliseconds": 3.178100000000029
+        },
+        {
+          "version": 26,
+          "retainedPhase": false,
+          "milliseconds": 2.947499999999991
+        },
+        {
+          "version": 27,
+          "retainedPhase": false,
+          "milliseconds": 5.8665000000000305
+        },
+        {
+          "version": 28,
+          "retainedPhase": false,
+          "milliseconds": 3.10329999999999
+        },
+        {
+          "version": 29,
+          "retainedPhase": false,
+          "milliseconds": 2.9793999999999983
+        },
+        {
+          "version": 30,
+          "retainedPhase": false,
+          "milliseconds": 2.8260999999999967
+        },
+        {
+          "version": 31,
+          "retainedPhase": true,
+          "milliseconds": 3.6041999999999916
+        },
+        {
+          "version": 32,
+          "retainedPhase": true,
+          "milliseconds": 3.4979000000000156
+        },
+        {
+          "version": 33,
+          "retainedPhase": true,
+          "milliseconds": 3.142599999999959
+        },
+        {
+          "version": 34,
+          "retainedPhase": true,
+          "milliseconds": 3.207300000000032
+        },
+        {
+          "version": 35,
+          "retainedPhase": true,
+          "milliseconds": 3.3285999999999945
+        },
+        {
+          "version": 36,
+          "retainedPhase": true,
+          "milliseconds": 3.190999999999974
+        },
+        {
+          "version": 37,
+          "retainedPhase": true,
+          "milliseconds": 3.393700000000024
+        },
+        {
+          "version": 38,
+          "retainedPhase": true,
+          "milliseconds": 4.147199999999998
+        }
+      ],
+      "hotReads": {
+        "calls": 1500,
+        "milliseconds": 39.1112
+      },
+      "sourceLoads": 38,
+      "stats": {
+        "resourceDictionaries": 40,
+        "instances": 39
+      },
+      "heapBytes": {
+        "before": 8840728,
+        "live": 8913264,
+        "steady": 9644840,
+        "withRetained": 10817464,
+        "released": 9808624,
+        "disposed": 9751000
+      },
+      "heapDeltas": {
+        "live": 72536,
+        "steady": 804112,
+        "retained": 1008840,
+        "additionalPhase": 1172624,
+        "released": 967896,
+        "disposed": 910272
+      },
+      "retainedSnapshotsVerified": 8
+    },
+    {
+      "block": 3,
+      "variant": "core",
+      "keys": 1000,
+      "targetKeys": 998,
+      "iterations": 30,
+      "constructors": [
+        1.8680999999999983,
+        1.7489999999999668,
+        1.504000000000019
+      ],
+      "updates": [
+        {
+          "version": 1,
+          "retainedPhase": false,
+          "milliseconds": 4.156700000000001
+        },
+        {
+          "version": 2,
+          "retainedPhase": false,
+          "milliseconds": 1.9705999999999904
+        },
+        {
+          "version": 3,
+          "retainedPhase": false,
+          "milliseconds": 1.7461000000000126
+        },
+        {
+          "version": 4,
+          "retainedPhase": false,
+          "milliseconds": 1.5534000000000106
+        },
+        {
+          "version": 5,
+          "retainedPhase": false,
+          "milliseconds": 1.6622000000000412
+        },
+        {
+          "version": 6,
+          "retainedPhase": false,
+          "milliseconds": 1.5860000000000127
+        },
+        {
+          "version": 7,
+          "retainedPhase": false,
+          "milliseconds": 1.4507000000000403
+        },
+        {
+          "version": 8,
+          "retainedPhase": false,
+          "milliseconds": 1.4703000000000088
+        },
+        {
+          "version": 9,
+          "retainedPhase": false,
+          "milliseconds": 1.646599999999978
+        },
+        {
+          "version": 10,
+          "retainedPhase": false,
+          "milliseconds": 2.169999999999959
+        },
+        {
+          "version": 11,
+          "retainedPhase": false,
+          "milliseconds": 1.460300000000018
+        },
+        {
+          "version": 12,
+          "retainedPhase": false,
+          "milliseconds": 1.34639999999996
+        },
+        {
+          "version": 13,
+          "retainedPhase": false,
+          "milliseconds": 1.2585000000000264
+        },
+        {
+          "version": 14,
+          "retainedPhase": false,
+          "milliseconds": 1.268100000000004
+        },
+        {
+          "version": 15,
+          "retainedPhase": false,
+          "milliseconds": 1.8965000000000032
+        },
+        {
+          "version": 16,
+          "retainedPhase": false,
+          "milliseconds": 1.3729999999999905
+        },
+        {
+          "version": 17,
+          "retainedPhase": false,
+          "milliseconds": 1.2855000000000132
+        },
+        {
+          "version": 18,
+          "retainedPhase": false,
+          "milliseconds": 1.3000999999999863
+        },
+        {
+          "version": 19,
+          "retainedPhase": false,
+          "milliseconds": 1.2626000000000204
+        },
+        {
+          "version": 20,
+          "retainedPhase": false,
+          "milliseconds": 1.3157999999999674
+        },
+        {
+          "version": 21,
+          "retainedPhase": false,
+          "milliseconds": 1.7783000000000015
+        },
+        {
+          "version": 22,
+          "retainedPhase": false,
+          "milliseconds": 1.5330999999999904
+        },
+        {
+          "version": 23,
+          "retainedPhase": false,
+          "milliseconds": 2.406499999999994
+        },
+        {
+          "version": 24,
+          "retainedPhase": false,
+          "milliseconds": 2.5545000000000186
+        },
+        {
+          "version": 25,
+          "retainedPhase": false,
+          "milliseconds": 1.614500000000021
+        },
+        {
+          "version": 26,
+          "retainedPhase": false,
+          "milliseconds": 1.6727999999999952
+        },
+        {
+          "version": 27,
+          "retainedPhase": false,
+          "milliseconds": 1.4411999999999807
+        },
+        {
+          "version": 28,
+          "retainedPhase": false,
+          "milliseconds": 1.3238000000000056
+        },
+        {
+          "version": 29,
+          "retainedPhase": false,
+          "milliseconds": 2.122000000000014
+        },
+        {
+          "version": 30,
+          "retainedPhase": false,
+          "milliseconds": 1.4559000000000424
+        },
+        {
+          "version": 31,
+          "retainedPhase": true,
+          "milliseconds": 2.2083000000000084
+        },
+        {
+          "version": 32,
+          "retainedPhase": true,
+          "milliseconds": 1.4268000000000143
+        },
+        {
+          "version": 33,
+          "retainedPhase": true,
+          "milliseconds": 1.4758999999999673
+        },
+        {
+          "version": 34,
+          "retainedPhase": true,
+          "milliseconds": 1.3602000000000203
+        },
+        {
+          "version": 35,
+          "retainedPhase": true,
+          "milliseconds": 1.462099999999964
+        },
+        {
+          "version": 36,
+          "retainedPhase": true,
+          "milliseconds": 1.3017000000000394
+        },
+        {
+          "version": 37,
+          "retainedPhase": true,
+          "milliseconds": 1.577699999999993
+        },
+        {
+          "version": 38,
+          "retainedPhase": true,
+          "milliseconds": 1.4116999999999962
+        }
+      ],
+      "hotReads": {
+        "calls": 1500,
+        "milliseconds": 19.4803
+      },
+      "sourceLoads": 38,
+      "heapBytes": {
+        "before": 8492256,
+        "live": 8587728,
+        "steady": 8974464,
+        "withRetained": 9621744,
+        "released": 9071328,
+        "disposed": 8933600
+      },
+      "heapDeltas": {
+        "live": 95472,
+        "steady": 482208,
+        "retained": 550416,
+        "additionalPhase": 647280,
+        "released": 579072,
+        "disposed": 441344
+      },
+      "retainedSnapshotsVerified": 8
+    },
+    {
+      "block": 0,
+      "variant": "core",
+      "keys": 10000,
+      "targetKeys": 9998,
+      "iterations": 30,
+      "constructors": [
+        2.1393000000000484,
+        2.4604000000000497,
+        2.633000000000038
+      ],
+      "updates": [
+        {
+          "version": 1,
+          "retainedPhase": false,
+          "milliseconds": 26.57370000000003
+        },
+        {
+          "version": 2,
+          "retainedPhase": false,
+          "milliseconds": 20.73040000000003
+        },
+        {
+          "version": 3,
+          "retainedPhase": false,
+          "milliseconds": 18.089699999999993
+        },
+        {
+          "version": 4,
+          "retainedPhase": false,
+          "milliseconds": 17.899400000000014
+        },
+        {
+          "version": 5,
+          "retainedPhase": false,
+          "milliseconds": 21.949699999999893
+        },
+        {
+          "version": 6,
+          "retainedPhase": false,
+          "milliseconds": 19.4384
+        },
+        {
+          "version": 7,
+          "retainedPhase": false,
+          "milliseconds": 20.955799999999954
+        },
+        {
+          "version": 8,
+          "retainedPhase": false,
+          "milliseconds": 22.311000000000035
+        },
+        {
+          "version": 9,
+          "retainedPhase": false,
+          "milliseconds": 15.505899999999997
+        },
+        {
+          "version": 10,
+          "retainedPhase": false,
+          "milliseconds": 22.401299999999992
+        },
+        {
+          "version": 11,
+          "retainedPhase": false,
+          "milliseconds": 23.49030000000016
+        },
+        {
+          "version": 12,
+          "retainedPhase": false,
+          "milliseconds": 25.592599999999948
+        },
+        {
+          "version": 13,
+          "retainedPhase": false,
+          "milliseconds": 22.836000000000013
+        },
+        {
+          "version": 14,
+          "retainedPhase": false,
+          "milliseconds": 17.421100000000024
+        },
+        {
+          "version": 15,
+          "retainedPhase": false,
+          "milliseconds": 18.695699999999988
+        },
+        {
+          "version": 16,
+          "retainedPhase": false,
+          "milliseconds": 13.091300000000047
+        },
+        {
+          "version": 17,
+          "retainedPhase": false,
+          "milliseconds": 14.003300000000081
+        },
+        {
+          "version": 18,
+          "retainedPhase": false,
+          "milliseconds": 21.44290000000001
+        },
+        {
+          "version": 19,
+          "retainedPhase": false,
+          "milliseconds": 13.971199999999953
+        },
+        {
+          "version": 20,
+          "retainedPhase": false,
+          "milliseconds": 14.143100000000004
+        },
+        {
+          "version": 21,
+          "retainedPhase": false,
+          "milliseconds": 12.205099999999902
+        },
+        {
+          "version": 22,
+          "retainedPhase": false,
+          "milliseconds": 12.396199999999908
+        },
+        {
+          "version": 23,
+          "retainedPhase": false,
+          "milliseconds": 23.838700000000017
+        },
+        {
+          "version": 24,
+          "retainedPhase": false,
+          "milliseconds": 14.552500000000009
+        },
+        {
+          "version": 25,
+          "retainedPhase": false,
+          "milliseconds": 19.323399999999992
+        },
+        {
+          "version": 26,
+          "retainedPhase": false,
+          "milliseconds": 15.562999999999874
+        },
+        {
+          "version": 27,
+          "retainedPhase": false,
+          "milliseconds": 13.383199999999988
+        },
+        {
+          "version": 28,
+          "retainedPhase": false,
+          "milliseconds": 13.7192
+        },
+        {
+          "version": 29,
+          "retainedPhase": false,
+          "milliseconds": 13.413800000000037
+        },
+        {
+          "version": 30,
+          "retainedPhase": false,
+          "milliseconds": 13.628600000000006
+        },
+        {
+          "version": 31,
+          "retainedPhase": true,
+          "milliseconds": 18.215200000000095
+        },
+        {
+          "version": 32,
+          "retainedPhase": true,
+          "milliseconds": 13.186599999999999
+        },
+        {
+          "version": 33,
+          "retainedPhase": true,
+          "milliseconds": 12.469900000000052
+        },
+        {
+          "version": 34,
+          "retainedPhase": true,
+          "milliseconds": 12.317000000000007
+        },
+        {
+          "version": 35,
+          "retainedPhase": true,
+          "milliseconds": 11.641600000000153
+        },
+        {
+          "version": 36,
+          "retainedPhase": true,
+          "milliseconds": 11.92820000000006
+        },
+        {
+          "version": 37,
+          "retainedPhase": true,
+          "milliseconds": 12.11909999999989
+        },
+        {
+          "version": 38,
+          "retainedPhase": true,
+          "milliseconds": 12.021299999999883
+        }
+      ],
+      "hotReads": {
+        "calls": 1500,
+        "milliseconds": 34.68900000000008
+      },
+      "sourceLoads": 38,
+      "heapBytes": {
+        "before": 23342936,
+        "live": 23996400,
+        "steady": 25537232,
+        "withRetained": 31097792,
+        "released": 26746232,
+        "disposed": 24055640
+      },
+      "heapDeltas": {
+        "live": 653464,
+        "steady": 2194296,
+        "retained": 4351560,
+        "additionalPhase": 5560560,
+        "released": 3403296,
+        "disposed": 712704
+      },
+      "retainedSnapshotsVerified": 8
+    },
+    {
+      "block": 1,
+      "variant": "layer",
+      "keys": 10000,
+      "targetKeys": 9998,
+      "iterations": 30,
+      "constructors": [
+        21.119699999999966,
+        22.690399999999954,
+        21.35310000000004
+      ],
+      "updates": [
+        {
+          "version": 1,
+          "retainedPhase": false,
+          "milliseconds": 34.43310000000008
+        },
+        {
+          "version": 2,
+          "retainedPhase": false,
+          "milliseconds": 24.02550000000008
+        },
+        {
+          "version": 3,
+          "retainedPhase": false,
+          "milliseconds": 24.559200000000033
+        },
+        {
+          "version": 4,
+          "retainedPhase": false,
+          "milliseconds": 24.390300000000025
+        },
+        {
+          "version": 5,
+          "retainedPhase": false,
+          "milliseconds": 30.249900000000025
+        },
+        {
+          "version": 6,
+          "retainedPhase": false,
+          "milliseconds": 21.565900000000056
+        },
+        {
+          "version": 7,
+          "retainedPhase": false,
+          "milliseconds": 22.742300000000114
+        },
+        {
+          "version": 8,
+          "retainedPhase": false,
+          "milliseconds": 23.625999999999976
+        },
+        {
+          "version": 9,
+          "retainedPhase": false,
+          "milliseconds": 23.00850000000014
+        },
+        {
+          "version": 10,
+          "retainedPhase": false,
+          "milliseconds": 22.699100000000044
+        },
+        {
+          "version": 11,
+          "retainedPhase": false,
+          "milliseconds": 23.987800000000107
+        },
+        {
+          "version": 12,
+          "retainedPhase": false,
+          "milliseconds": 22.153400000000147
+        },
+        {
+          "version": 13,
+          "retainedPhase": false,
+          "milliseconds": 26.130300000000034
+        },
+        {
+          "version": 14,
+          "retainedPhase": false,
+          "milliseconds": 26.599500000000035
+        },
+        {
+          "version": 15,
+          "retainedPhase": false,
+          "milliseconds": 22.309099999999944
+        },
+        {
+          "version": 16,
+          "retainedPhase": false,
+          "milliseconds": 34.25330000000008
+        },
+        {
+          "version": 17,
+          "retainedPhase": false,
+          "milliseconds": 22.396999999999935
+        },
+        {
+          "version": 18,
+          "retainedPhase": false,
+          "milliseconds": 20.944400000000087
+        },
+        {
+          "version": 19,
+          "retainedPhase": false,
+          "milliseconds": 25.91879999999992
+        },
+        {
+          "version": 20,
+          "retainedPhase": false,
+          "milliseconds": 24.06179999999995
+        },
+        {
+          "version": 21,
+          "retainedPhase": false,
+          "milliseconds": 27.724300000000085
+        },
+        {
+          "version": 22,
+          "retainedPhase": false,
+          "milliseconds": 23.69659999999999
+        },
+        {
+          "version": 23,
+          "retainedPhase": false,
+          "milliseconds": 21.71419999999989
+        },
+        {
+          "version": 24,
+          "retainedPhase": false,
+          "milliseconds": 21.539600000000064
+        },
+        {
+          "version": 25,
+          "retainedPhase": false,
+          "milliseconds": 23.90300000000002
+        },
+        {
+          "version": 26,
+          "retainedPhase": false,
+          "milliseconds": 25.649400000000014
+        },
+        {
+          "version": 27,
+          "retainedPhase": false,
+          "milliseconds": 22.18859999999995
+        },
+        {
+          "version": 28,
+          "retainedPhase": false,
+          "milliseconds": 22.332200000000057
+        },
+        {
+          "version": 29,
+          "retainedPhase": false,
+          "milliseconds": 21.982799999999997
+        },
+        {
+          "version": 30,
+          "retainedPhase": false,
+          "milliseconds": 22.596700000000055
+        },
+        {
+          "version": 31,
+          "retainedPhase": true,
+          "milliseconds": 29.766000000000076
+        },
+        {
+          "version": 32,
+          "retainedPhase": true,
+          "milliseconds": 22.76800000000003
+        },
+        {
+          "version": 33,
+          "retainedPhase": true,
+          "milliseconds": 21.5637999999999
+        },
+        {
+          "version": 34,
+          "retainedPhase": true,
+          "milliseconds": 22.948300000000017
+        },
+        {
+          "version": 35,
+          "retainedPhase": true,
+          "milliseconds": 26.759000000000015
+        },
+        {
+          "version": 36,
+          "retainedPhase": true,
+          "milliseconds": 27.22310000000016
+        },
+        {
+          "version": 37,
+          "retainedPhase": true,
+          "milliseconds": 21.3420000000001
+        },
+        {
+          "version": 38,
+          "retainedPhase": true,
+          "milliseconds": 23.6550000000002
+        }
+      ],
+      "hotReads": {
+        "calls": 1500,
+        "milliseconds": 40.43640000000005
+      },
+      "sourceLoads": 38,
+      "stats": {
+        "resourceDictionaries": 40,
+        "instances": 39
+      },
+      "heapBytes": {
+        "before": 24360304,
+        "live": 24424424,
+        "steady": 25851608,
+        "withRetained": 34703112,
+        "released": 27007488,
+        "disposed": 25637344
+      },
+      "heapDeltas": {
+        "live": 64120,
+        "steady": 1491304,
+        "retained": 7695624,
+        "additionalPhase": 8851504,
+        "released": 2647184,
+        "disposed": 1277040
+      },
+      "retainedSnapshotsVerified": 8
+    },
+    {
+      "block": 2,
+      "variant": "layer",
+      "keys": 10000,
+      "targetKeys": 9998,
+      "iterations": 30,
+      "constructors": [
+        26.136400000000094,
+        19.99739999999997,
+        25.424499999999966
+      ],
+      "updates": [
+        {
+          "version": 1,
+          "retainedPhase": false,
+          "milliseconds": 34.73650000000009
+        },
+        {
+          "version": 2,
+          "retainedPhase": false,
+          "milliseconds": 23.443899999999985
+        },
+        {
+          "version": 3,
+          "retainedPhase": false,
+          "milliseconds": 23.22739999999999
+        },
+        {
+          "version": 4,
+          "retainedPhase": false,
+          "milliseconds": 26.63869999999997
+        },
+        {
+          "version": 5,
+          "retainedPhase": false,
+          "milliseconds": 34.24350000000004
+        },
+        {
+          "version": 6,
+          "retainedPhase": false,
+          "milliseconds": 22.44439999999986
+        },
+        {
+          "version": 7,
+          "retainedPhase": false,
+          "milliseconds": 22.436899999999923
+        },
+        {
+          "version": 8,
+          "retainedPhase": false,
+          "milliseconds": 29.08770000000004
+        },
+        {
+          "version": 9,
+          "retainedPhase": false,
+          "milliseconds": 29.930599999999913
+        },
+        {
+          "version": 10,
+          "retainedPhase": false,
+          "milliseconds": 24.224399999999832
+        },
+        {
+          "version": 11,
+          "retainedPhase": false,
+          "milliseconds": 21.870300000000043
+        },
+        {
+          "version": 12,
+          "retainedPhase": false,
+          "milliseconds": 20.198100000000068
+        },
+        {
+          "version": 13,
+          "retainedPhase": false,
+          "milliseconds": 24.340400000000045
+        },
+        {
+          "version": 14,
+          "retainedPhase": false,
+          "milliseconds": 22.714899999999943
+        },
+        {
+          "version": 15,
+          "retainedPhase": false,
+          "milliseconds": 22.97160000000008
+        },
+        {
+          "version": 16,
+          "retainedPhase": false,
+          "milliseconds": 22.432900000000018
+        },
+        {
+          "version": 17,
+          "retainedPhase": false,
+          "milliseconds": 22.752700000000004
+        },
+        {
+          "version": 18,
+          "retainedPhase": false,
+          "milliseconds": 22.882900000000063
+        },
+        {
+          "version": 19,
+          "retainedPhase": false,
+          "milliseconds": 22.559200000000146
+        },
+        {
+          "version": 20,
+          "retainedPhase": false,
+          "milliseconds": 24.749900000000025
+        },
+        {
+          "version": 21,
+          "retainedPhase": false,
+          "milliseconds": 27.736499999999978
+        },
+        {
+          "version": 22,
+          "retainedPhase": false,
+          "milliseconds": 23.706899999999905
+        },
+        {
+          "version": 23,
+          "retainedPhase": false,
+          "milliseconds": 21.878200000000106
+        },
+        {
+          "version": 24,
+          "retainedPhase": false,
+          "milliseconds": 21.62090000000012
+        },
+        {
+          "version": 25,
+          "retainedPhase": false,
+          "milliseconds": 21.80899999999997
+        },
+        {
+          "version": 26,
+          "retainedPhase": false,
+          "milliseconds": 29.295700000000124
+        },
+        {
+          "version": 27,
+          "retainedPhase": false,
+          "milliseconds": 27.193199999999933
+        },
+        {
+          "version": 28,
+          "retainedPhase": false,
+          "milliseconds": 21.063499999999976
+        },
+        {
+          "version": 29,
+          "retainedPhase": false,
+          "milliseconds": 24.648299999999836
+        },
+        {
+          "version": 30,
+          "retainedPhase": false,
+          "milliseconds": 21.122900000000072
+        },
+        {
+          "version": 31,
+          "retainedPhase": true,
+          "milliseconds": 26.643100000000004
+        },
+        {
+          "version": 32,
+          "retainedPhase": true,
+          "milliseconds": 24.584500000000162
+        },
+        {
+          "version": 33,
+          "retainedPhase": true,
+          "milliseconds": 24.14149999999995
+        },
+        {
+          "version": 34,
+          "retainedPhase": true,
+          "milliseconds": 23.810300000000097
+        },
+        {
+          "version": 35,
+          "retainedPhase": true,
+          "milliseconds": 32.64780000000019
+        },
+        {
+          "version": 36,
+          "retainedPhase": true,
+          "milliseconds": 28.63169999999991
+        },
+        {
+          "version": 37,
+          "retainedPhase": true,
+          "milliseconds": 21.771299999999883
+        },
+        {
+          "version": 38,
+          "retainedPhase": true,
+          "milliseconds": 20.82970000000023
+        }
+      ],
+      "hotReads": {
+        "calls": 1500,
+        "milliseconds": 37.24110000000019
+      },
+      "sourceLoads": 38,
+      "stats": {
+        "resourceDictionaries": 40,
+        "instances": 39
+      },
+      "heapBytes": {
+        "before": 24359568,
+        "live": 24423344,
+        "steady": 25875928,
+        "withRetained": 34727640,
+        "released": 27011216,
+        "disposed": 25661616
+      },
+      "heapDeltas": {
+        "live": 63776,
+        "steady": 1516360,
+        "retained": 7716424,
+        "additionalPhase": 8851712,
+        "released": 2651648,
+        "disposed": 1302048
+      },
+      "retainedSnapshotsVerified": 8
+    },
+    {
+      "block": 3,
+      "variant": "core",
+      "keys": 10000,
+      "targetKeys": 9998,
+      "iterations": 30,
+      "constructors": [
+        2.050200000000018,
+        2.4454000000000633,
+        2.0545999999999367
+      ],
+      "updates": [
+        {
+          "version": 1,
+          "retainedPhase": false,
+          "milliseconds": 19.03539999999998
+        },
+        {
+          "version": 2,
+          "retainedPhase": false,
+          "milliseconds": 15.359000000000037
+        },
+        {
+          "version": 3,
+          "retainedPhase": false,
+          "milliseconds": 16.28480000000002
+        },
+        {
+          "version": 4,
+          "retainedPhase": false,
+          "milliseconds": 13.65039999999999
+        },
+        {
+          "version": 5,
+          "retainedPhase": false,
+          "milliseconds": 15.256299999999896
+        },
+        {
+          "version": 6,
+          "retainedPhase": false,
+          "milliseconds": 14.665199999999913
+        },
+        {
+          "version": 7,
+          "retainedPhase": false,
+          "milliseconds": 13.324299999999994
+        },
+        {
+          "version": 8,
+          "retainedPhase": false,
+          "milliseconds": 14.09960000000001
+        },
+        {
+          "version": 9,
+          "retainedPhase": false,
+          "milliseconds": 14.845500000000015
+        },
+        {
+          "version": 10,
+          "retainedPhase": false,
+          "milliseconds": 13.054599999999937
+        },
+        {
+          "version": 11,
+          "retainedPhase": false,
+          "milliseconds": 12.579300000000103
+        },
+        {
+          "version": 12,
+          "retainedPhase": false,
+          "milliseconds": 12.836700000000064
+        },
+        {
+          "version": 13,
+          "retainedPhase": false,
+          "milliseconds": 12.813200000000052
+        },
+        {
+          "version": 14,
+          "retainedPhase": false,
+          "milliseconds": 12.770099999999957
+        },
+        {
+          "version": 15,
+          "retainedPhase": false,
+          "milliseconds": 12.594800000000077
+        },
+        {
+          "version": 16,
+          "retainedPhase": false,
+          "milliseconds": 15.140900000000101
+        },
+        {
+          "version": 17,
+          "retainedPhase": false,
+          "milliseconds": 14.479900000000043
+        },
+        {
+          "version": 18,
+          "retainedPhase": false,
+          "milliseconds": 19.638500000000022
+        },
+        {
+          "version": 19,
+          "retainedPhase": false,
+          "milliseconds": 14.361200000000053
+        },
+        {
+          "version": 20,
+          "retainedPhase": false,
+          "milliseconds": 13.61180000000013
+        },
+        {
+          "version": 21,
+          "retainedPhase": false,
+          "milliseconds": 16.293299999999817
+        },
+        {
+          "version": 22,
+          "retainedPhase": false,
+          "milliseconds": 13.837300000000141
+        },
+        {
+          "version": 23,
+          "retainedPhase": false,
+          "milliseconds": 20.127399999999852
+        },
+        {
+          "version": 24,
+          "retainedPhase": false,
+          "milliseconds": 12.36629999999991
+        },
+        {
+          "version": 25,
+          "retainedPhase": false,
+          "milliseconds": 12.804499999999962
+        },
+        {
+          "version": 26,
+          "retainedPhase": false,
+          "milliseconds": 13.0471
+        },
+        {
+          "version": 27,
+          "retainedPhase": false,
+          "milliseconds": 14.55679999999984
+        },
+        {
+          "version": 28,
+          "retainedPhase": false,
+          "milliseconds": 11.674400000000105
+        },
+        {
+          "version": 29,
+          "retainedPhase": false,
+          "milliseconds": 12.998899999999821
+        },
+        {
+          "version": 30,
+          "retainedPhase": false,
+          "milliseconds": 12.373299999999972
+        },
+        {
+          "version": 31,
+          "retainedPhase": true,
+          "milliseconds": 13.789399999999887
+        },
+        {
+          "version": 32,
+          "retainedPhase": true,
+          "milliseconds": 12.65300000000002
+        },
+        {
+          "version": 33,
+          "retainedPhase": true,
+          "milliseconds": 12.193099999999959
+        },
+        {
+          "version": 34,
+          "retainedPhase": true,
+          "milliseconds": 13.034400000000005
+        },
+        {
+          "version": 35,
+          "retainedPhase": true,
+          "milliseconds": 12.22829999999999
+        },
+        {
+          "version": 36,
+          "retainedPhase": true,
+          "milliseconds": 11.779899999999998
+        },
+        {
+          "version": 37,
+          "retainedPhase": true,
+          "milliseconds": 12.047000000000025
+        },
+        {
+          "version": 38,
+          "retainedPhase": true,
+          "milliseconds": 11.713899999999967
+        }
+      ],
+      "hotReads": {
+        "calls": 1500,
+        "milliseconds": 22.502500000000055
+      },
+      "sourceLoads": 38,
+      "heapBytes": {
+        "before": 23342864,
+        "live": 23996328,
+        "steady": 25537160,
+        "withRetained": 31097144,
+        "released": 26523472,
+        "disposed": 24055528
+      },
+      "heapDeltas": {
+        "live": 653464,
+        "steady": 2194296,
+        "retained": 4573672,
+        "additionalPhase": 5559984,
+        "released": 3180608,
+        "disposed": 712664
+      },
+      "retainedSnapshotsVerified": 8
+    }
+  ],
+  "summaries": [
+    {
+      "keys": 1000,
+      "variant": "core",
+      "commits": 60,
+      "commitP50Ms": 1.5144000000000233,
+      "commitP95Ms": 2.406499999999994,
+      "steadyHeapDeltas": [
+        482208,
+        482208
+      ],
+      "retainedHeapDeltas": [
+        516472,
+        550416
+      ],
+      "hotReadMilliseconds": [
+        19.427599999999984,
+        19.4803
+      ]
+    },
+    {
+      "keys": 1000,
+      "variant": "layer",
+      "commits": 60,
+      "commitP50Ms": 3.427599999999984,
+      "commitP95Ms": 5.172400000000039,
+      "steadyHeapDeltas": [
+        792904,
+        804112
+      ],
+      "retainedHeapDeltas": [
+        1008840,
+        1008840
+      ],
+      "hotReadMilliseconds": [
+        39.55169999999998,
+        39.1112
+      ]
+    },
+    {
+      "keys": 10000,
+      "variant": "core",
+      "commits": 60,
+      "commitP50Ms": 14.552500000000009,
+      "commitP95Ms": 23.49030000000016,
+      "steadyHeapDeltas": [
+        2194296,
+        2194296
+      ],
+      "retainedHeapDeltas": [
+        4351560,
+        4573672
+      ],
+      "hotReadMilliseconds": [
+        34.68900000000008,
+        22.502500000000055
+      ]
+    },
+    {
+      "keys": 10000,
+      "variant": "layer",
+      "commits": 60,
+      "commitP50Ms": 23.22739999999999,
+      "commitP95Ms": 34.24350000000004,
+      "steadyHeapDeltas": [
+        1491304,
+        1516360
+      ],
+      "retainedHeapDeltas": [
+        7695624,
+        7716424
+      ],
+      "hotReadMilliseconds": [
+        40.43640000000005,
+        37.24110000000019
+      ]
+    }
+  ],
+  "scope": "Isolated Node runtime costs with independent --expose-gc child processes in sequential ABBA order. One namespace, two prepared immutable catalogs, 1k/10k baseline keys, base schema cache warmed equally before constructors. Same-width single-message update preparation/parse/copy/freeze, I/O, Vite wire decode, React/DOM and modules are excluded from timing. Refresh plus three asserted translations is timed; task/microtasks drain before each forced-GC heap observation. Not peak/RSS/browser memory or end-to-end 100ms/250ms goals. Eight intentional old snapshots are verified; retained delta compares their held vs released heaps at the same final source version. Server snapshot remains part of each live instance. Other source input graphs continue evolving, so heap differences are not exact library-only bytes. No causal, leak, broad-scale or production-size claim."
+}
