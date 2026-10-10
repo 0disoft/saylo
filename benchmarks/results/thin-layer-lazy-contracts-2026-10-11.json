@@ -1,12 +1,12 @@
 {
   "format": "saylo-thin-layer-lazy-contracts-v1",
-  "observedAt": "2026-10-10T19:37:11.654Z",
+  "observedAt": "2026-10-10T19:44:05.261Z",
   "node": "v24.18.0",
   "codeHashes": {
     "benchmarks/thin-layer/lazy-layer.mjs": "bc8218a4ebddd574ab27be7a53ebb049a18fb220c69796375944a09f11fb499b",
     "benchmarks/thin-layer/lazy-source-cache.mjs": "460957d0c15882520120c865379af1d47270352211e5910418438a045a9a6fab",
     "benchmarks/thin-layer/lazy-fixture.mjs": "b8e5f7cbc9b327d8d1c369b9511cd22631adcc24060457230c0f311cd962725c",
-    "benchmarks/thin-layer/lazy-contract.test.mjs": "c426bac0a766d6ca97fdd67f7b2fd210e66bbb6dd85db54b39957ff63bbb0554",
+    "benchmarks/thin-layer/lazy-contract.test.mjs": "a4fb1a0899af6d4474f872158bf49da2f0d9aab819f9314fdcf0f300f876df4c",
     "benchmarks/thin-layer/catalog-layer.mjs": "2a0a4e4eb9ce733c4556df53d90f3e163bf6adac9525dd7ec3ba7f547b38745b",
     "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
     "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
@@ -204,6 +204,37 @@
       "sourceLoads": []
     },
     {
+      "backend": "core",
+      "id": "unchanged-manifest stale responses have a bounded retry count",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "core",
+      "id": "regressed pair versions and a changed base locale cannot replace a committed snapshot",
+      "pass": true,
+      "sourceLoads": []
+    },
+    {
       "backend": "layer",
       "id": "empty scope, pair deduplication and old bound namespace errors",
       "pass": true,
@@ -384,6 +415,37 @@
     {
       "backend": "layer",
       "id": "an unloaded pair update changes boot metadata without publishing or rebuilding an engine",
+      "pass": true,
+      "sourceLoads": []
+    },
+    {
+      "backend": "layer",
+      "id": "unchanged-manifest stale responses have a bounded retry count",
+      "pass": true,
+      "sourceLoads": [
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        },
+        {
+          "id": "[\"ru\",\"demo\"]",
+          "sessionId": "lazy-first",
+          "version": 1,
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "backend": "layer",
+      "id": "regressed pair versions and a changed base locale cannot replace a committed snapshot",
       "pass": true,
       "sourceLoads": []
     }

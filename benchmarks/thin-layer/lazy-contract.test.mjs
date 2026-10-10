@@ -130,6 +130,30 @@ const cases = [
       assert.equal(restored.t('demo:greeting', { name: 'Ada' }), 'en Ada'); restored.dispose();
     } finally { instance.dispose(); }
   }],
+  ['unchanged-manifest stale responses have a bounded retry count', async (make, f) => {
+    const instance = await make();
+    const load = f.source.loadCatalog;
+    f.source.loadCatalog = async (...args) => {
+      const outcome = await load(...args);
+      return { status: 'failed', code: 'STALE_CATALOG', message: 'Controlled stale source response', key: outcome.key };
+    };
+    try {
+      const accepted = instance.getSnapshot();
+      await assert.rejects(instance.setLocale('ru'), { code: 'STALE_CATALOG' });
+      assert.equal(f.calls.length, 3); assert.equal(instance.getSnapshot(), accepted);
+    } finally { instance.dispose(); }
+  }],
+  ['regressed pair versions and a changed base locale cannot replace a committed snapshot', async (make, f) => {
+    const instance = await make(); const original = f.manifest();
+    try {
+      const accepted = instance.getSnapshot();
+      f.override({ ...original, registryRevision: 1, catalogs: original.catalogs.map(meta => meta.key.locale === 'ru'
+        && meta.key.namespace === 'demo' ? { ...meta, catalogVersion: 0 } : meta) });
+      await assert.rejects(instance.refresh(), { code: 'STALE_MANIFEST' }); assert.equal(instance.getSnapshot(), accepted);
+      f.override({ ...original, baseLocale: 'ru', registryRevision: 1 });
+      await assert.rejects(instance.refresh(), { code: 'BASE_LOCALE_CHANGED' }); assert.equal(instance.getSnapshot(), accepted);
+    } finally { instance.dispose(); }
+  }],
 ];
 
 for (const [backend, factory] of Object.entries(factories)) for (const [id, run] of cases) test(`${backend}: ${id}`, { timeout: 5000 }, async () => {
