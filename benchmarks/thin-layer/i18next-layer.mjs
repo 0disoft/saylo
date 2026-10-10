@@ -31,8 +31,19 @@ function argumentsFor(key, schema, args) {
 
 export async function createLayer(baseLocale, initialSources, initialLocale) {
   let current;
+  let accepted = new Map();
+  const resourceCache = new WeakMap();
+  const stats = { parsedCatalogs: 0, resourceDictionaries: 0, instances: 0 };
   async function replace(sources, locale = current?.locale ?? initialLocale) {
-    const catalogs = sources.map(({ source, ...options }) => parseCatalog(source, options));
+    const candidate = new Map();
+    const catalogs = sources.map(({ source, ...options }) => {
+      const key = JSON.stringify([options.locale, options.namespace, options.sourceName ?? '<catalog>']);
+      const previous = accepted.get(key);
+      let catalog = previous?.catalog;
+      if (!previous || previous.source !== source) { stats.parsedCatalogs++; catalog = parseCatalog(source, options, catalog); }
+      candidate.set(key, { source, catalog });
+      return catalog;
+    });
     const bases = new Map(catalogs.filter(c => c.locale === baseLocale).map(c => [c.namespace, c]));
     if (!bases.size) throw new Error('A base catalog is required.');
     const schemas = new Map([...bases].map(([namespace, catalog]) => [namespace, createBaseSchema(catalog)]));
@@ -48,12 +59,20 @@ export async function createLayer(baseLocale, initialSources, initialLocale) {
       }
       pairs.set(pair, catalog);
       const language = resources[catalog.locale] ??= Object.create(null);
-      const namespace = language[catalog.namespace] = Object.create(null);
-      for (const [id, message] of Object.entries(catalog.messages)) namespace[id] = message.ast;
+      let namespace = resourceCache.get(catalog);
+      if (!namespace) {
+        namespace = Object.create(null);
+        for (const [id, message] of Object.entries(catalog.messages)) namespace[id] = message.ast;
+        Object.freeze(namespace);
+        resourceCache.set(catalog, namespace);
+        stats.resourceDictionaries++;
+      }
+      language[catalog.namespace] = namespace;
     }
     const availableLocales = Object.freeze(Object.keys(resources).sort());
     const selected = availableLocales.includes(locale) ? locale : baseLocale;
     const engine = i18next.createInstance().use(new ValuesICU());
+    stats.instances++;
     await engine.init({ resources, lng: selected, fallbackLng: baseLocale, initAsync: false,
       ns: [...bases.keys()], keySeparator: false, nsSeparator: false, interpolation: { escapeValue: false },
       i18nFormat: { parseErrorHandler: error => { throw error; } } });
@@ -73,8 +92,9 @@ export async function createLayer(baseLocale, initialSources, initialLocale) {
     const snapshot = Object.freeze({ locale: selected, availableLocales,
       availableNamespaces: Object.freeze([...bases.keys()].sort()), t });
     current = snapshot;
+    accepted = candidate;
     return snapshot;
   }
   await replace(initialSources, initialLocale);
-  return { getSnapshot: () => current, replace };
+  return { getSnapshot: () => current, replace, getProbeStats: () => Object.freeze({ ...stats }) };
 }

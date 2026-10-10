@@ -48,7 +48,13 @@ const cases = [
 ];
 for (const [index, [id, args]] of cases.entries()) record(`layer_matches_saylo_${index}_${id}`,
   capture(() => reference.t(`demo:${id}`, args)), capture(() => snapshot.t(`demo:${id}`, args)));
+const initialStats = layer.getProbeStats();
 await layer.replace(sources({ ...translated, greeting: 'Updated {name}' }));
+const updateStats = layer.getProbeStats();
+record('layer_incremental_preparation_reuses_unchanged_base', { parsedCatalogs: 1, resourceDictionaries: 1 }, {
+  parsedCatalogs: updateStats.parsedCatalogs - initialStats.parsedCatalogs,
+  resourceDictionaries: updateStats.resourceDictionaries - initialStats.resourceDictionaries,
+});
 record('layer_keeps_old_snapshot_bound_text', { value: 'Hi Ada' }, capture(() => snapshot.t('demo:greeting', { name: 'Ada' })));
 record('layer_commits_new_text', { value: 'Updated Ada' }, capture(() => layer.getSnapshot().t('demo:greeting', { name: 'Ada' })));
 const accepted = layer.getSnapshot();
@@ -106,7 +112,7 @@ const result = { schema: 'saylo-thin-layer-contract-probe-v1', observedAt: new D
   environment: { node: process.version }, packages, codeHashes,
   scope: 'Node contract probe only: public i18next/ICU/Wuchale extension APIs and an isolated i18next AST-resource prototype reusing Saylo parser/schema. Native observations describe tested API behavior, not library defects. No Vite/browser, typegen, lazy session protocol, performance, memory, production bundle or timezone proof.',
   prototypeCosts: ['Saylo parser/schema retained', 'new i18next and ICU instances per committed snapshot',
-    'all supplied catalogs reparsed', 'separate argument validation and source-locale fallback routing',
+    'incremental parsed catalog and AST resource reuse; revision instances still rebuilt', 'separate argument validation and source-locale fallback routing',
     'public error classes reused; no UI subscription/loader/disposal API implemented'], observations };
 await writeFile(new URL('../results/thin-layer-contracts-2026-10-11.json', import.meta.url), JSON.stringify(result, null, 2) + '\n');
 console.log(JSON.stringify({ packages, observations: observations.length, result: 'benchmarks/results/thin-layer-contracts-2026-10-11.json' }));

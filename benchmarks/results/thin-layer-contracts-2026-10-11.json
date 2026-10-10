@@ -1,6 +1,6 @@
 {
   "schema": "saylo-thin-layer-contract-probe-v1",
-  "observedAt": "2026-10-10T15:27:23.078Z",
+  "observedAt": "2026-10-10T15:33:54.300Z",
   "environment": {
     "node": "v24.18.0"
   },
@@ -11,8 +11,8 @@
     "wuchale": "0.26.7"
   },
   "codeHashes": {
-    "benchmarks/thin-layer/probe.mjs": "998fa72e36b04381eb5e6eb9b2b5d6f95290d15be7deeacf04cf2aead988aa86",
-    "benchmarks/thin-layer/i18next-layer.mjs": "46e26ffc0e89369d74a37e52a79d180d7440574cbcad53f51346d3069ddf2ff4",
+    "benchmarks/thin-layer/probe.mjs": "0efb53f859357da512189a030a8f60255bdbddf097498b5b15272487fb7c459e",
+    "benchmarks/thin-layer/i18next-layer.mjs": "61786773b2da2428a039188794c10e03f9fa3591bc6009849fd0d32519a6bfcf",
     "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
     "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
     "packages/core/dist/catalog.js": "eac4c686d9c15a49b5301ee466568acf19b0fbee0c1e5987aae6dfc0d572b7d9",
@@ -22,7 +22,7 @@
   "prototypeCosts": [
     "Saylo parser/schema retained",
     "new i18next and ICU instances per committed snapshot",
-    "all supplied catalogs reparsed",
+    "incremental parsed catalog and AST resource reuse; revision instances still rebuilt",
     "separate argument validation and source-locale fallback routing",
     "public error classes reused; no UI subscription/loader/disposal API implemented"
   ],
@@ -139,6 +139,13 @@
       "id": "layer_matches_saylo_11_absent",
       "actual": {
         "error": "UnknownMessageError"
+      }
+    },
+    {
+      "id": "layer_incremental_preparation_reuses_unchanged_base",
+      "actual": {
+        "parsedCatalogs": 1,
+        "resourceDictionaries": 1
       }
     },
     {
