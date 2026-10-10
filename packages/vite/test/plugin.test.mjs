@@ -425,6 +425,35 @@ test('read-backed edits coalesce on the next turn while disk events keep their s
   assert.equal(request()[0].data.revision, 3);
 });
 
+test('a new locale file is read on the next turn without the replacement quiet window', async t => {
+  const { root, plugin, server, events, request } = await setup(t);
+  const file = path.join(root, 'ja', 'demo.json');
+  await mkdir(path.dirname(file));
+  await writeFile(file, '{"hello":"こんにちは {name}"}');
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });
+  server.watcher.emit('add', file);
+  const created = plugin.hotUpdate({ type: 'create', file, modules: [], server });
+  assert.equal(events.length, 0);
+  t.mock.timers.tick(0);
+  await created;
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'ja').messages.hello.source, 'こんにちは {name}');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+});
+
+test('a partially written new locale recovers without a second watcher event', async t => {
+  const { root, disk, events, request } = await setup(t);
+  await disk('create', 'ja', 'demo', '{');
+  assert.equal(request()[0].data.revision, 0);
+  assert.ok(request()[1].data.message);
+  await writeFile(path.join(root, 'ja', 'demo.json'), '{"hello":"Recovered {name}"}');
+  const deadline = Date.now() + 2000;
+  while (request()[0].data.revision === 0 && Date.now() < deadline)
+    await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'ja').messages.hello.source, 'Recovered {name}');
+  assert.equal(request()[1].data.message, '');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+});
+
 test('disk event bursts retain the 200ms drain bound', async t => {
   const { root, plugin, server, request } = await setup(t);
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });

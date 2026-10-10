@@ -113,6 +113,14 @@ export class LiveRegistry {
       diagnostics: [...this.errors.values()].flatMap(d => d.diagnostics) };
   }
 
+  enqueueAdded(file: string): Promise<void> {
+    const resolved = path.resolve(file);
+    // A new path has no accepted state to temporarily remove. Read it on the
+    // next turn; known-path replacements and pending unlinks still settle.
+    return this.enqueue(resolved, this.desired.has(resolved) || this.accepted.has(resolved)
+      ? undefined : () => readFile(resolved, 'utf8'));
+  }
+
   enqueue(file: string, read?: Read): Promise<void> {
     if (this.stopped || !this.owns(file)) return Promise.resolve();
     const resolved = path.resolve(file);

@@ -78,10 +78,11 @@ export default function saylo(options: SayloViteOptions): Plugin {
       result: encodeCatalogResult(registry.loadDelta(data.locale, data.namespace, data.known)) } });
   };
   const onFile = (file: string) => { void live?.enqueue(file); };
+  const onAdd = (file: string) => { void live?.enqueueAdded(file); };
   function detachLive() {
     removeServerSource?.(); removeServerSource = undefined;
     live?.stop();
-    server?.watcher.off('add', onFile);
+    server?.watcher.off('add', onAdd);
     server?.watcher.off('unlink', onFile);
     server?.ws.off(REQUEST_EVENT, request);
     server?.ws.off(MANIFEST_REQUEST_EVENT, requestManifest);
@@ -223,7 +224,7 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
         }
       });
       server.watcher.add(root);
-      server.watcher.on('add', onFile);
+      server.watcher.on('add', onAdd);
       server.watcher.on('unlink', onFile);
       server.ws.on(REQUEST_EVENT, request);
       server.ws.on(MANIFEST_REQUEST_EVENT, requestManifest);
@@ -236,7 +237,8 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
       if (!live?.owns(file)) return;
       if (this.environment && this.environment.name !== 'client') return [];
       if (context.modules.length) context.server.config.logger.warn(`[saylo] Managed catalog is directly imported: ${file}. Use virtual:saylo.`);
-      await live.enqueue(file, context.type === 'update' ? context.read : undefined);
+      if (context.type === 'create') await live.enqueueAdded(file);
+      else await live.enqueue(file, context.type === 'update' ? context.read : undefined);
       return [];
     },
     closeBundle: cleanup,
