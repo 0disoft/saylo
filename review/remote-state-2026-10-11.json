@@ -1,0 +1,68 @@
+{
+  "schema": "saylo-remote-state-v1",
+  "observedAt": "2026-10-10T21:30:20.484Z",
+  "packages": [
+    {
+      "name": "@0disoft/saylo-core",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.3"
+      },
+      "alpha3PublishedAt": "2026-10-09T13:19:40.132Z",
+      "alpha4Exists": false
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.3"
+      },
+      "alpha3PublishedAt": "2026-10-09T13:20:45.563Z",
+      "alpha4Exists": false
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.3"
+      },
+      "alpha3PublishedAt": "2026-10-09T13:19:42.802Z",
+      "alpha4Exists": false
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.3"
+      },
+      "alpha3PublishedAt": "2026-10-09T13:20:28.435Z",
+      "alpha4Exists": false
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.3"
+      },
+      "alpha3PublishedAt": "2026-10-09T13:22:45.136Z",
+      "alpha4Exists": false
+    }
+  ],
+  "repository": {
+    "defaultBranchRef": {
+      "name": "main"
+    },
+    "isPrivate": true,
+    "nameWithOwner": "0disoft/saylo"
+  },
+  "latestRun": [
+    {
+      "conclusion": "success",
+      "headSha": "534a912dc90d039fe22533d903e60a3dce106327",
+      "status": "completed",
+      "workflowName": "Validate and publish npm release"
+    }
+  ],
+  "localPublished": false,
+  "scope": "Read-only current registry and GitHub observations. Successful remote run refers to its recorded old head, not local source validation or authorization to publish new bytes."
+}
