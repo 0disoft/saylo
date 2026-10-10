@@ -3,6 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { LiveRegistry } from '../../packages/vite/dist/live-registry.js';
 import { CatalogRegistry } from '../../packages/vite/dist/catalog-registry.js';
+import { DiskRechecks } from '../../packages/vite/dist/disk-rechecks.js';
 import { beginFileSample, finishFileSample } from './server-file-profile.mjs';
 import { beginRuntimeSample, startRuntimeWindow, endRuntimeWindow, finishRuntimeSample, union } from './runtime-profile.mjs';
 
@@ -10,6 +11,7 @@ import { beginRuntimeSample, startRuntimeWindow, endRuntimeWindow, finishRuntime
 export function createStageProbe() {
   let current;
   const context = new AsyncLocalStorage();
+  const enqueueOrigin = new AsyncLocalStorage();
   const finishCandidate = batch => {
     if (!batch || batch.end !== undefined) return;
     batch.end = performance.now();
@@ -22,10 +24,16 @@ export function createStageProbe() {
     prototype[name] = instrumented;
     restores.push(() => { if (prototype[name] === instrumented) prototype[name] = original; });
   }
+  wrap(DiskRechecks.prototype, 'verify', function (original, args) {
+    return enqueueOrigin.run('disk-recheck', () => original.apply(this, args));
+  });
   wrap(LiveRegistry.prototype, 'enqueue', function (original, args) {
     if (current && this.owns(args[0])) {
       const now = performance.now();
       current.firstEventAt ??= now; current.queuedAt ??= now; current.fileEvents++;
+      // An external call need not be an OS watcher event (tests inject readers).
+      current.enqueueEvents.push({ offsetMs: now - current.startedAt,
+        origin: enqueueOrigin.getStore() ?? 'external-enqueue', hasReader: typeof args[1] === 'function' });
     }
     return original.apply(this, args);
   });
@@ -68,7 +76,7 @@ export function createStageProbe() {
   return {
     begin() {
       if (current) throw new Error('Overlapping server stage samples.');
-      current = { startedAt: beginFileSample(), batches: [], drainWaitMs: [], runtimeWindow: beginRuntimeSample(),
+      current = { startedAt: beginFileSample(), batches: [], drainWaitMs: [], enqueueEvents: [], runtimeWindow: beginRuntimeSample(),
         translationPreparationMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 };
     },
     finish() {

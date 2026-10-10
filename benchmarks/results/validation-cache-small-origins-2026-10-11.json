@@ -1,0 +1,963 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-10T21:08:38.190Z",
+  "gitRevision": "557be1d578cffef825e00e1c3a28ca54b5ca3fdc",
+  "settings": {
+    "samples": 25,
+    "warmup": 5,
+    "calibrations": 10,
+    "timeoutMs": 30000
+  },
+  "mode": "edit",
+  "instrumentation": {
+    "cpuProfile": false,
+    "browserStages": false,
+    "serverFileStages": true,
+    "replyStages": false,
+    "clientStages": false,
+    "runtimeStages": true
+  },
+  "workingTreeStatus": "M benchmarks/live-update/profile.mjs\n?? benchmarks/live-update/enqueue-origin.test.mjs\n?? benchmarks/results/validation-cache-small-tail-2026-10-11.1k-3-locales.samples.json\n?? benchmarks/results/validation-cache-small-tail-2026-10-11.json",
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "f7a9ba919b53de4492d9fc179e50896bc22bf89fdf6b7fd4eb1aa6f432460fc1",
+    "packages/core/dist/catalog-json.js": "9012d701a52247f2ae514e6fda87837a2518d4978f483a2b5afefa0cf306e069",
+    "packages/core/dist/json.js": "acc8f2e94f9f2e398a27a439ea4893d15f6bffdd39ae453952f4461ea3083588",
+    "packages/core/dist/simple-message.js": "a3b1be697431fcbc00dce1e1f425ac8ace9bfe5a3e55e5ca94ccd48c6ad0453f",
+    "packages/core/dist/diagnostics.js": "9e8764951f360e4044877e205d6833edcc17b82091e29178a36d36a6d69ccba0",
+    "packages/core/dist/schema.js": "de4f973ee5a3f604befa5cffdb175ea440d2a088038caeb25c34ec24446ac0de",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "packages/vite/dist/live-registry.js": "2d958de43a56c66ea7b7415f63f441145a71b405b0d3b71ed18edecccdd019cd",
+    "packages/vite/dist/disk-rechecks.js": "46f6e037f073aa0b8fc875349a5e8fe0a20ab8b2ec5fc16c2932feac3808a472",
+    "packages/vite/dist/translation-quarantine.js": "e64ed9e9567f2793c36a7269ab393dedcbf8e1fc915ddaae405fc4d3cf6fd1f2",
+    "packages/vite/dist/catalog-registry.js": "8693803507167a3b5521bafe7f0ece58e082bd9debd7076ad83170a6bc3a9715",
+    "packages/vite/dist/catalog-patch.js": "911c60fe58690eaff6d3330242b517965249061f7a01049782bf227e480e31cb",
+    "benchmarks/live-update/profile.mjs": "665c81e79e8f7432984b51ab2e3996b67bd7a2fe7d456c29e12f80e2d86945ed",
+    "benchmarks/live-update/channel.mjs": "fa68ecd900df18d3092da67eb0955d1b3a491f021ec3fbebbb4b982c5b234c14",
+    "benchmarks/live-update/run.mjs": "f34b137a3132cd741f3e5171d8b6140e5d5a46ffd71d548ee0e9f4dfd2ac49da",
+    "benchmarks/live-update/app.jsx": "3c7395e2ae61bd777b4a261495de6c32d00b8dfa0378dd3b6bc41a53d0365293",
+    "benchmarks/live-update/fixture.mjs": "1b547cc3705e8397948568cde4245e178379bc2753edf2657af365928ca8a915",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0",
+    "benchmarks/live-update/browser-profile.mjs": "af272015f890d5dc7a92f4256dcc260b53158874a396f08a35f3c4b953c7e0b1",
+    "benchmarks/live-update/browser-probe.mjs": "2391744a81676ae90e224d818caa9dfc1e6de083d88805daad08f275c36ab615",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/runtime.js": "2d197337d026357b240584ba2d0cf6b7acc90c2288408fdf282dfed7e90354c8",
+    "packages/core/dist/catalog-freeze.js": "a3a707cbaf4012ee5c2d959c70b7d472b337707af43131afd89e146f57518005",
+    "packages/core/dist/snapshot-signature.js": "1ef671cd30f6b8c694693b8cce921e569d10d523596664713317f936e289f348",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f",
+    "packages/vite/dist/catalog-source.js": "840b8f2fe7fd345116ba2f536ab2a9a2e358206dae33fd88bd375aad3fdb8f3d",
+    "packages/vite/dist/catalog-wire.js": "f87cf497f8edcbd1c859be708dd255a4938d0082ac40038343ba5d84d93d1b6a",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "packages/vite/dist/freeze.js": "09a7a2f8783c323b6e1542ee71c31ecd1bd9975e1ee51b01e5ff2a68e15d5d34",
+    "benchmarks/live-update/server-file-profile.mjs": "f8a607c54436154f495783dcf387e871662241280ba683736484211e46942a82",
+    "benchmarks/live-update/runtime-profile.mjs": "fb8efd1d680cd01a35fcbae8bbeede3244123a22e40815812adddc4cc78e1ba8",
+    "benchmarks/live-update/reply-profile.mjs": "c52ca5618408240f8802b853812211a3753ffca2798df600c51638f286b165ad",
+    "benchmarks/live-update/reply-receipt.mjs": "066103fa22236b8eaee92db6eb57ea10e5feb9dc1ad28deec20bd99ce911a9ff",
+    "benchmarks/live-update/client-profile.mjs": "0b4bf764985dcda09a7bbe08b363137b9b58f3d6638c6db549385246dcc7dc87",
+    "benchmarks/live-update/client-probe.mjs": "ebf5a1e7e93419ae7828c3cf0edd331c04cc5f735159d977060e2acfeb1c29a0"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26300",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+  "results": [
+    {
+      "id": "1k-3-locales",
+      "messagesPerLocale": 1000,
+      "localeCount": 3,
+      "namespaces": 1,
+      "catalogFiles": 3,
+      "catalogBytes": 110292,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 325.35959999999994,
+      "wire": {
+        "patchReplies": 25,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 927,
+          "p95Bytes": 927,
+          "minBytes": 923,
+          "maxBytes": 927
+        }
+      },
+      "browserBootMs": 1169.5927000000001,
+      "summary": {
+        "saveToAckMs": {
+          "count": 25,
+          "p50Ms": 64.98450000000003,
+          "p95Ms": 80.34569999999985,
+          "minMs": 9.04300000000012,
+          "maxMs": 83.83629999999994
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 25,
+          "p50Ms": 58.50239999999985,
+          "p95Ms": 74.34580000000005,
+          "minMs": 3.2975000000001273,
+          "maxMs": 74.7487000000001
+        },
+        "receiveToCommitMs": {
+          "count": 25,
+          "p50Ms": 2.7999999970197678,
+          "p95Ms": 4.399999998509884,
+          "minMs": 2.399999998509884,
+          "maxMs": 6
+        },
+        "commitToAckDispatchMs": {
+          "count": 25,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 4.296600000000126,
+          "p95Ms": 5.209699999999884,
+          "minMs": 3.097200000000157,
+          "maxMs": 5.861499999999978
+        }
+      },
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 2.2824000000000524,
+        "p95Ms": 5.298000000000002,
+        "minMs": 1.8462999999999283,
+        "maxMs": 5.298000000000002
+      },
+      "runtimeStages": {
+        "scope": "Node diagnostic only. sample covers stage begin before write to stage finish after ack receipt; locale ends at list ack, excludes selection/reset/removal. Timestamp intersections, not causal attribution or CPU time. candidateOther contains baseStat. GC and late-timer intervals can overlap; never subtract/add them or nested stage quantiles. Timer lateness includes synchronous JS, GC, I/O callback work and OS scheduling. Asynchronous GC delivery flushed after final ack; not a stop-the-world trace.",
+        "tickMs": 10,
+        "gc": [
+          {
+            "startMs": 3132.8175,
+            "endMs": 3135.0273999992014,
+            "kind": 1,
+            "flags": 0
+          }
+        ],
+        "ticks": [
+          {
+            "expectedMs": 2019.084,
+            "observedMs": 2020.6668
+          },
+          {
+            "expectedMs": 2030.6721,
+            "observedMs": 2031.0455
+          },
+          {
+            "expectedMs": 2041.0487,
+            "observedMs": 2045.0054
+          },
+          {
+            "expectedMs": 2055.0126,
+            "observedMs": 2056.3792
+          },
+          {
+            "expectedMs": 2066.3811,
+            "observedMs": 2079.5155
+          },
+          {
+            "expectedMs": 2089.5221,
+            "observedMs": 2094.9194
+          },
+          {
+            "expectedMs": 2104.9265,
+            "observedMs": 2110.3181
+          },
+          {
+            "expectedMs": 2120.32,
+            "observedMs": 2124.6493
+          },
+          {
+            "expectedMs": 2134.652,
+            "observedMs": 2135.8047
+          },
+          {
+            "expectedMs": 2145.8117,
+            "observedMs": 2149.6608
+          },
+          {
+            "expectedMs": 2159.6636,
+            "observedMs": 2159.0475
+          },
+          {
+            "expectedMs": 2169.0489,
+            "observedMs": 2180.5295
+          },
+          {
+            "expectedMs": 2190.5497,
+            "observedMs": 2195.8342
+          },
+          {
+            "expectedMs": 2205.8379,
+            "observedMs": 2211.2914
+          },
+          {
+            "expectedMs": 2221.2964,
+            "observedMs": 2228.0778
+          },
+          {
+            "expectedMs": 2238.0802,
+            "observedMs": 2241.1707
+          },
+          {
+            "expectedMs": 2251.1721,
+            "observedMs": 2252.7433
+          },
+          {
+            "expectedMs": 2262.7451,
+            "observedMs": 2264.6134
+          },
+          {
+            "expectedMs": 2274.6146,
+            "observedMs": 2274.0034
+          },
+          {
+            "expectedMs": 2284.0049,
+            "observedMs": 2287.2008
+          },
+          {
+            "expectedMs": 2297.2039,
+            "observedMs": 2302.636
+          },
+          {
+            "expectedMs": 2312.6407,
+            "observedMs": 2318.6154
+          },
+          {
+            "expectedMs": 2328.6197,
+            "observedMs": 2334.3742
+          },
+          {
+            "expectedMs": 2344.3761,
+            "observedMs": 2349.1998
+          },
+          {
+            "expectedMs": 2359.2011,
+            "observedMs": 2359.3329
+          },
+          {
+            "expectedMs": 2369.3346,
+            "observedMs": 2370.0929
+          },
+          {
+            "expectedMs": 2380.0964,
+            "observedMs": 2380.4187
+          },
+          {
+            "expectedMs": 2390.4201,
+            "observedMs": 2399.0717
+          },
+          {
+            "expectedMs": 2409.0774,
+            "observedMs": 2414.2977
+          },
+          {
+            "expectedMs": 2424.3012,
+            "observedMs": 2430.3236
+          },
+          {
+            "expectedMs": 2440.3271,
+            "observedMs": 2445.8287
+          },
+          {
+            "expectedMs": 2455.8312,
+            "observedMs": 2457.5632
+          },
+          {
+            "expectedMs": 2467.5675,
+            "observedMs": 2467.0451
+          },
+          {
+            "expectedMs": 2477.0471,
+            "observedMs": 2477.6133
+          },
+          {
+            "expectedMs": 2487.6148,
+            "observedMs": 2487.7195
+          },
+          {
+            "expectedMs": 2497.7237,
+            "observedMs": 2497.4941
+          },
+          {
+            "expectedMs": 2507.496,
+            "observedMs": 2514.5905
+          },
+          {
+            "expectedMs": 2524.597,
+            "observedMs": 2530.0311
+          },
+          {
+            "expectedMs": 2540.0343,
+            "observedMs": 2545.8653
+          },
+          {
+            "expectedMs": 2555.8696,
+            "observedMs": 2562.1571
+          },
+          {
+            "expectedMs": 2572.1624,
+            "observedMs": 2574.3043
+          },
+          {
+            "expectedMs": 2584.3066,
+            "observedMs": 2584.2416
+          },
+          {
+            "expectedMs": 2594.2434,
+            "observedMs": 2596.2092
+          },
+          {
+            "expectedMs": 2606.211,
+            "observedMs": 2611.1163
+          },
+          {
+            "expectedMs": 2621.1203,
+            "observedMs": 2626.372
+          },
+          {
+            "expectedMs": 2636.3765,
+            "observedMs": 2641.7209
+          },
+          {
+            "expectedMs": 2651.7274,
+            "observedMs": 2657.1877
+          },
+          {
+            "expectedMs": 2667.1921,
+            "observedMs": 2675.991
+          },
+          {
+            "expectedMs": 2685.9926,
+            "observedMs": 2687.3227
+          },
+          {
+            "expectedMs": 2697.3239,
+            "observedMs": 2697.3893
+          },
+          {
+            "expectedMs": 2707.3905,
+            "observedMs": 2708.7086
+          },
+          {
+            "expectedMs": 2718.7107,
+            "observedMs": 2719.2712
+          },
+          {
+            "expectedMs": 2729.2731,
+            "observedMs": 2735.2327
+          },
+          {
+            "expectedMs": 2745.2364,
+            "observedMs": 2750.6772
+          },
+          {
+            "expectedMs": 2760.6811,
+            "observedMs": 2766.2565
+          },
+          {
+            "expectedMs": 2776.2588,
+            "observedMs": 2782.6102
+          },
+          {
+            "expectedMs": 2792.6127,
+            "observedMs": 2797.1233
+          },
+          {
+            "expectedMs": 2807.1254,
+            "observedMs": 2811.6159
+          },
+          {
+            "expectedMs": 2821.6197,
+            "observedMs": 2823.0932
+          },
+          {
+            "expectedMs": 2833.0942,
+            "observedMs": 2833.9374
+          },
+          {
+            "expectedMs": 2843.939,
+            "observedMs": 2845.0333
+          },
+          {
+            "expectedMs": 2855.0344,
+            "observedMs": 2858.3212
+          },
+          {
+            "expectedMs": 2868.3249,
+            "observedMs": 2874.3194
+          },
+          {
+            "expectedMs": 2884.3253,
+            "observedMs": 2889.7364
+          },
+          {
+            "expectedMs": 2899.7398,
+            "observedMs": 2911.8583
+          },
+          {
+            "expectedMs": 2921.8601,
+            "observedMs": 2921.4661
+          },
+          {
+            "expectedMs": 2931.4673,
+            "observedMs": 2932.1273
+          },
+          {
+            "expectedMs": 2942.129,
+            "observedMs": 2943.5705
+          },
+          {
+            "expectedMs": 2953.5729,
+            "observedMs": 2957.2931
+          },
+          {
+            "expectedMs": 2967.2968,
+            "observedMs": 2972.4286
+          },
+          {
+            "expectedMs": 2982.4321,
+            "observedMs": 2988.0608
+          },
+          {
+            "expectedMs": 2998.0641,
+            "observedMs": 3004.6532
+          },
+          {
+            "expectedMs": 3014.6562,
+            "observedMs": 3015.403
+          },
+          {
+            "expectedMs": 3025.4047,
+            "observedMs": 3025.1685
+          },
+          {
+            "expectedMs": 3035.1699,
+            "observedMs": 3035.0028
+          },
+          {
+            "expectedMs": 3045.0044,
+            "observedMs": 3050.1336
+          },
+          {
+            "expectedMs": 3060.1368,
+            "observedMs": 3066.1197
+          },
+          {
+            "expectedMs": 3076.1237,
+            "observedMs": 3081.2592
+          },
+          {
+            "expectedMs": 3091.2627,
+            "observedMs": 3097.2372
+          },
+          {
+            "expectedMs": 3107.2392,
+            "observedMs": 3112.2668
+          },
+          {
+            "expectedMs": 3122.2688,
+            "observedMs": 3122.3249
+          },
+          {
+            "expectedMs": 3132.3259,
+            "observedMs": 3136.2813
+          },
+          {
+            "expectedMs": 3146.2824,
+            "observedMs": 3147.5387
+          },
+          {
+            "expectedMs": 3157.5405,
+            "observedMs": 3160.6884
+          },
+          {
+            "expectedMs": 3170.6901,
+            "observedMs": 3176.5148
+          },
+          {
+            "expectedMs": 3186.5165,
+            "observedMs": 3193.2631
+          },
+          {
+            "expectedMs": 3203.2686,
+            "observedMs": 3208.8971
+          },
+          {
+            "expectedMs": 3218.9007,
+            "observedMs": 3218.3836
+          },
+          {
+            "expectedMs": 3228.3857,
+            "observedMs": 3229.0264
+          },
+          {
+            "expectedMs": 3239.028,
+            "observedMs": 3238.9961
+          },
+          {
+            "expectedMs": 3248.9972,
+            "observedMs": 3249.7152
+          },
+          {
+            "expectedMs": 3259.7166,
+            "observedMs": 3265.2215
+          },
+          {
+            "expectedMs": 3275.2242,
+            "observedMs": 3280.922
+          },
+          {
+            "expectedMs": 3290.9257,
+            "observedMs": 3296.6729
+          },
+          {
+            "expectedMs": 3306.6757,
+            "observedMs": 3312.145
+          },
+          {
+            "expectedMs": 3322.148,
+            "observedMs": 3327.556
+          },
+          {
+            "expectedMs": 3337.5582,
+            "observedMs": 3337.1101
+          },
+          {
+            "expectedMs": 3347.1121,
+            "observedMs": 3347.0306
+          },
+          {
+            "expectedMs": 3357.0319,
+            "observedMs": 3357.2939
+          },
+          {
+            "expectedMs": 3367.2954,
+            "observedMs": 3367.9148
+          },
+          {
+            "expectedMs": 3377.9185,
+            "observedMs": 3383.7414
+          },
+          {
+            "expectedMs": 3393.7447,
+            "observedMs": 3400.2148
+          },
+          {
+            "expectedMs": 3410.2187,
+            "observedMs": 3415.2963
+          },
+          {
+            "expectedMs": 3425.2987,
+            "observedMs": 3431.3448
+          },
+          {
+            "expectedMs": 3441.3461,
+            "observedMs": 3442.2507
+          },
+          {
+            "expectedMs": 3452.2519,
+            "observedMs": 3452.3358
+          },
+          {
+            "expectedMs": 3462.3373,
+            "observedMs": 3463.9888
+          },
+          {
+            "expectedMs": 3473.9902,
+            "observedMs": 3474.1081
+          },
+          {
+            "expectedMs": 3484.1098,
+            "observedMs": 3485.3945
+          },
+          {
+            "expectedMs": 3495.3984,
+            "observedMs": 3499.5933
+          },
+          {
+            "expectedMs": 3509.5992,
+            "observedMs": 3514.9495
+          },
+          {
+            "expectedMs": 3524.9561,
+            "observedMs": 3530.7918
+          },
+          {
+            "expectedMs": 3540.7932,
+            "observedMs": 3541.0727
+          },
+          {
+            "expectedMs": 3551.0742,
+            "observedMs": 3551.7717
+          },
+          {
+            "expectedMs": 3561.7727,
+            "observedMs": 3561.0799
+          },
+          {
+            "expectedMs": 3571.0818,
+            "observedMs": 3571.2665
+          },
+          {
+            "expectedMs": 3581.2693,
+            "observedMs": 3587.2345
+          },
+          {
+            "expectedMs": 3597.2374,
+            "observedMs": 3602.8881
+          },
+          {
+            "expectedMs": 3612.8912,
+            "observedMs": 3618.2622
+          },
+          {
+            "expectedMs": 3628.2663,
+            "observedMs": 3634.1019
+          },
+          {
+            "expectedMs": 3644.1044,
+            "observedMs": 3646.8041
+          },
+          {
+            "expectedMs": 3656.8062,
+            "observedMs": 3664.4098
+          }
+        ],
+        "stages": {
+          "sample": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 69.41280000000006,
+              "p95Ms": 84.69390000000021,
+              "minMs": 13.504399999999805,
+              "maxMs": 88.07229999999981
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 2.2098999992012978
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 16.78349999999955,
+              "p95Ms": 28.055900000000292,
+              "minMs": 0,
+              "maxMs": 29.760599999999613
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 5.747200000000248,
+              "p95Ms": 8.798899999999776,
+              "minMs": 0,
+              "maxMs": 12.11850000000004
+            }
+          },
+          "readAndCandidateMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 2.587199999999939,
+              "p95Ms": 4.397600000000239,
+              "minMs": 2.025600000000395,
+              "maxMs": 5.17659999999978
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0.24729999999999563,
+              "p95Ms": 0.6600000000003092,
+              "minMs": 0,
+              "maxMs": 0.6974999999997635
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 0.6600000000003092,
+              "p95Ms": 8.798899999999776,
+              "minMs": 0,
+              "maxMs": 12.11850000000004
+            }
+          },
+          "pathCheckMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.5777000000002772,
+              "p95Ms": 1.9744000000000597,
+              "minMs": 0.374000000000251,
+              "maxMs": 3.0371000000000095
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0.08239999999977954,
+              "p95Ms": 0.18150000000014188,
+              "minMs": 0,
+              "maxMs": 0.6600000000003092
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 0.5662000000002081,
+              "p95Ms": 8.798899999999776,
+              "minMs": 0,
+              "maxMs": 12.11850000000004
+            }
+          },
+          "fileReadMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.7251999999998588,
+              "p95Ms": 1.1614999999997053,
+              "minMs": 0.5754000000001724,
+              "maxMs": 1.1906000000003587
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            }
+          },
+          "catalogParseMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.8733999999999469,
+              "p95Ms": 1.2352000000000771,
+              "minMs": 0.7140000000003965,
+              "maxMs": 1.2929000000003725
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0.6336999999998625
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0.6974999999997635
+            }
+          },
+          "baseStatMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.15560000000004948,
+              "p95Ms": 0.21520000000009532,
+              "minMs": 0.11770000000024083,
+              "maxMs": 0.23169999999981883
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0.049099999999725696
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0.6974999999997635
+            }
+          },
+          "candidateOtherMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.3346000000001368,
+              "p95Ms": 0.5516999999999825,
+              "minMs": 0.23540000000002692,
+              "maxMs": 0.5567999999998392
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0.06379999999990105,
+              "p95Ms": 0.2539999999999054,
+              "minMs": 0,
+              "maxMs": 0.31060000000024957
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 0.5662000000002081,
+              "p95Ms": 8.798899999999776,
+              "minMs": 0,
+              "maxMs": 12.11850000000004
+            }
+          }
+        }
+      },
+      "serverFileStages": {
+        "boundaryVersion": 2,
+        "scope": "Benchmark-only in-memory Node module transform. Multiple completed reads and failed attempts are retained. Each file stage is the union of its operation intervals; all operations must fit the candidate union. candidateOther is the candidate interval union minus the union of all file operations. Unfinished/missing operations fail. Do not add nested quantiles or treat wall times as CPU times.",
+        "pathCheckMs": {
+          "count": 25,
+          "p50Ms": 0.5720999999998639,
+          "p95Ms": 1.9728000000000065,
+          "minMs": 0.37170000000014625,
+          "maxMs": 3.054200000000037
+        },
+        "fileReadMs": {
+          "count": 25,
+          "p50Ms": 0.7121999999999389,
+          "p95Ms": 1.1585999999997512,
+          "minMs": 0.5739000000003216,
+          "maxMs": 1.1873000000000502
+        },
+        "catalogParseMs": {
+          "count": 25,
+          "p50Ms": 0.8845000000001164,
+          "p95Ms": 1.2408000000000357,
+          "minMs": 0.7152000000000953,
+          "maxMs": 1.3053999999997359
+        },
+        "candidateOtherMs": {
+          "count": 25,
+          "p50Ms": 0.3348999999998341,
+          "p95Ms": 0.5490000000004329,
+          "minMs": 0.23660000000018044,
+          "maxMs": 0.5497999999997774
+        },
+        "maxCalls": {
+          "pathCheckMs": 1,
+          "fileReadMs": 1,
+          "catalogParseMs": 1
+        }
+      },
+      "serverStages": {
+        "boundaryVersion": 2,
+        "scope": "Benchmark-only method wrappers. queueToDrain is the first batch wait, with all waits in drainWaitMs. Candidate duration is the interval union of every batch from drain to its own prepareTranslations or settlement for superseded/error batches, including serialized wait. v1 overwrote starts on later drains; candidate and queue metrics are not directly comparable. Preparation/validation/registry/delta retain their prior boundaries; do not add nested p95s.",
+        "queueToDrainMs": {
+          "count": 25,
+          "p50Ms": 5.26909999999998,
+          "p95Ms": 15.804899999999634,
+          "minMs": 0.12049999999999272,
+          "maxMs": 18.171899999999823
+        },
+        "readAndCandidateMs": {
+          "count": 25,
+          "p50Ms": 2.587199999999939,
+          "p95Ms": 4.397600000000239,
+          "minMs": 2.025600000000395,
+          "maxMs": 5.17659999999978
+        },
+        "translationPreparationMs": {
+          "count": 25,
+          "p50Ms": 0.6026999999999134,
+          "p95Ms": 0.9212999999999738,
+          "minMs": 0.5518000000001848,
+          "maxMs": 0.9403000000002066
+        },
+        "validationMs": {
+          "count": 25,
+          "p50Ms": 0.003899999999703141,
+          "p95Ms": 0.007499999999708962,
+          "minMs": 0.0030999999999039574,
+          "maxMs": 0.011899999999968713
+        },
+        "registryReplaceMs": {
+          "count": 25,
+          "p50Ms": 0.3668999999999869,
+          "p95Ms": 0.5317000000000007,
+          "minMs": 0.32249999999976353,
+          "maxMs": 0.604200000000219
+        },
+        "catalogDeltaMs": {
+          "count": 25,
+          "p50Ms": 0.5668000000000575,
+          "p95Ms": 0.8119999999998981,
+          "minMs": 0.4663999999997941,
+          "maxMs": 0.9689000000003034
+        },
+        "maxFileEvents": 1,
+        "maxDrains": 1
+      },
+      "controlRoundTripsMs": [
+        2.2824000000000524,
+        4.336500000000115,
+        2.550700000000006,
+        3.2100000000000364,
+        2.001899999999978,
+        2.6182000000001153,
+        5.298000000000002,
+        1.8462999999999283,
+        2.019900000000007,
+        2.085700000000088
+      ],
+      "samplesFile": "validation-cache-small-origins-2026-10-11.1k-3-locales.samples.json"
+    }
+  ]
+}
