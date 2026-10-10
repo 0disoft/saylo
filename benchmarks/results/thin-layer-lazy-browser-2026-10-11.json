@@ -1,0 +1,1117 @@
+{
+  "format": "saylo-thin-layer-lazy-browser-v1",
+  "observedAt": "2026-10-10T19:57:26.055Z",
+  "node": "v24.18.0",
+  "packages": {
+    "i18next": "26.4.3",
+    "intl-messageformat": "12.1.3",
+    "vite": "8.3.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "codeHashes": {
+    "benchmarks/thin-layer/lazy-browser-probe.mjs": "9a0fe8fb7cfd7a033ba0c2f89a23e36b99d7fd186ed3a735aa410c5b9dc6289b",
+    "benchmarks/thin-layer/lazy-browser-app.jsx": "623a8acd6c2ce7bb489c2ca1f62af12d2bf206f62d4698bca20caee40e01aa81",
+    "benchmarks/thin-layer/chrome-protocol.mjs": "cef4dec905674fd9d671616fe71dd16900e104c4e1fc5240e9e8ea949cdd4a40",
+    "benchmarks/thin-layer/lazy-layer.mjs": "bc8218a4ebddd574ab27be7a53ebb049a18fb220c69796375944a09f11fb499b",
+    "benchmarks/thin-layer/lazy-source-cache.mjs": "41c49136867f1a99289ac50dfe31c9e36ec60f4fef75bfbed0ffa37103c06aa1",
+    "benchmarks/thin-layer/catalog-layer.mjs": "2a0a4e4eb9ce733c4556df53d90f3e163bf6adac9525dd7ec3ba7f547b38745b",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/i18n.js": "b9817d53c0e29c8e1ad7a8d4a64ede77adb6222a913664bb45c49aa79463db92",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/boot.js": "6a7dfdd9b2e452b8595c3caa093c49774a87b26034f7c25bad7f653ccbdde4f2",
+    "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
+    "packages/core/dist/runtime.js": "2d197337d026357b240584ba2d0cf6b7acc90c2288408fdf282dfed7e90354c8",
+    "packages/vite/dist/catalog-source.js": "840b8f2fe7fd345116ba2f536ab2a9a2e358206dae33fd88bd375aad3fdb8f3d",
+    "packages/vite/dist/catalog-wire.js": "f87cf497f8edcbd1c859be708dd255a4938d0082ac40038343ba5d84d93d1b6a",
+    "packages/vite/dist/lazy-connection.js": "902d3ce4f25d6a1055aff5f7b5db5858620c2a9f5004d7c6ac236733bce827bd",
+    "packages/vite/dist/dev-sync.js": "7b07406b0b45863ce8aab79f0cf4ea03979e941893cea295d79baf25075ed7bc",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "node_modules/vite/dist/client/client.mjs": "e34ce742dc7035bd7776221ecc01c6b43d714030d10698f38236f98476ac2042",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "scope": "Functional Chromium/Vite dev probe with six catalog pairs, public virtual:saylo/lazy source and connectDev bridge. Two independent fixtures: core and prototype. Real compact and patch frames, partial requests, invalid JSON last-good, unselected pair edit and same-session bridge catch-up. Input/DOM/focus/caret/dialog/React counter retained until an actual socket termination; default Vite then reloads and resets both UIs. No transparent physical reconnect, restarted-server session change, pending reply race, typegen, production browser lazy or performance claim.",
+  "observations": [
+    {
+      "variant": "core",
+      "steps": [
+        {
+          "id": "cold",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 0
+        },
+        {
+          "id": "load-demo",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "fr Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 2
+        },
+        {
+          "id": "select-ja",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "ja Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 3,
+          "manifestRevision": 0,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 3
+        },
+        {
+          "id": "load-help",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "ja Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 0,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 5
+        },
+        {
+          "id": "live-edit",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Updated Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 1,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 6
+        },
+        {
+          "id": "invalid-json-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Updated Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 1,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 6
+        },
+        {
+          "id": "recover-json",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Recovered Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 7
+        },
+        {
+          "id": "unselected-pair-edit",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Recovered Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 3,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 7
+        },
+        {
+          "id": "select-fr-fresh-help",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "fr Ada",
+          "help": "Fresh-help Ada",
+          "cachedCatalogs": 6,
+          "manifestRevision": 3,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 8
+        },
+        {
+          "id": "detached-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "fr Ada",
+          "help": "Fresh-help Ada",
+          "cachedCatalogs": 6,
+          "manifestRevision": 3,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 8
+        },
+        {
+          "id": "rebind-catch-up",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Rebound Ada",
+          "help": "Fresh-help Ada",
+          "cachedCatalogs": 6,
+          "manifestRevision": 4,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 9
+        },
+        {
+          "id": "physical-socket-loss-vite-reload",
+          "ready": true,
+          "boots": 2,
+          "locale": "fr",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": false,
+          "inputValue": "initial draft",
+          "counter": "7",
+          "dialogOpen": false
+        }
+      ],
+      "requests": [
+        {
+          "locale": "en",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "40848893-3567327304-1482573278-1783320200:1"
+        },
+        {
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "40848893-3567327304-1482573278-1783320200:2"
+        },
+        {
+          "locale": "ja",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "40848893-3567327304-1482573278-1783320200:3"
+        },
+        {
+          "locale": "en",
+          "namespace": "help",
+          "generation": 1,
+          "requestId": "40848893-3567327304-1482573278-1783320200:4"
+        },
+        {
+          "locale": "ja",
+          "namespace": "help",
+          "generation": 1,
+          "requestId": "40848893-3567327304-1482573278-1783320200:5"
+        },
+        {
+          "locale": "ja",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "40848893-3567327304-1482573278-1783320200:6",
+          "known": {
+            "sessionId": "1f29ba9f-a621-4dbf-bd0f-d5e1a4b6eb27",
+            "catalogVersion": 1
+          }
+        },
+        {
+          "locale": "ja",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "40848893-3567327304-1482573278-1783320200:7",
+          "known": {
+            "sessionId": "1f29ba9f-a621-4dbf-bd0f-d5e1a4b6eb27",
+            "catalogVersion": 2
+          }
+        },
+        {
+          "locale": "fr",
+          "namespace": "help",
+          "generation": 1,
+          "requestId": "40848893-3567327304-1482573278-1783320200:8"
+        },
+        {
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 2,
+          "requestId": "40848893-3567327304-1482573278-1783320200:9",
+          "known": {
+            "sessionId": "1f29ba9f-a621-4dbf-bd0f-d5e1a4b6eb27",
+            "catalogVersion": 1
+          }
+        }
+      ],
+      "frames": [
+        {
+          "event": "saylo:manifest",
+          "kind": "snapshot",
+          "revision": 0,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "2437422278-2072205044-1032573533-3218484128:1",
+            "generation": 1
+          }
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "2437422278-2072205044-1032573533-3218484128:1",
+            "generation": 1
+          },
+          "diagnostic": ""
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "en",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "40848893-3567327304-1482573278-1783320200:1"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "40848893-3567327304-1482573278-1783320200:2"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "40848893-3567327304-1482573278-1783320200:3"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "en",
+            "namespace": "help",
+            "generation": 1,
+            "requestId": "40848893-3567327304-1482573278-1783320200:4"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "ja",
+            "namespace": "help",
+            "generation": 1,
+            "requestId": "40848893-3567327304-1482573278-1783320200:5"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "update",
+          "revision": 1
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "40848893-3567327304-1482573278-1783320200:6",
+            "known": {
+              "sessionId": "1f29ba9f-a621-4dbf-bd0f-d5e1a4b6eb27",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch"
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "diagnostic": "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "update",
+          "revision": 2
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "diagnostic": ""
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "40848893-3567327304-1482573278-1783320200:7",
+            "known": {
+              "sessionId": "1f29ba9f-a621-4dbf-bd0f-d5e1a4b6eb27",
+              "catalogVersion": 2
+            }
+          },
+          "status": "patch"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "update",
+          "revision": 3
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "fr",
+            "namespace": "help",
+            "generation": 1,
+            "requestId": "40848893-3567327304-1482573278-1783320200:8"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "update",
+          "revision": 4
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "snapshot",
+          "revision": 4,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "3346284440-4230402976-1549732619-2801854779:1",
+            "generation": 1
+          }
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "3346284440-4230402976-1549732619-2801854779:1",
+            "generation": 1
+          },
+          "diagnostic": ""
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 2,
+            "requestId": "40848893-3567327304-1482573278-1783320200:9",
+            "known": {
+              "sessionId": "1f29ba9f-a621-4dbf-bd0f-d5e1a4b6eb27",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "snapshot",
+          "revision": 4,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "628580508-2894235132-1929310423-2376847921:1",
+            "generation": 1
+          }
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "628580508-2894235132-1929310423-2376847921:1",
+            "generation": 1
+          },
+          "diagnostic": ""
+        }
+      ],
+      "manifestHandshakesBeforeSocketLoss": 2,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "variant": "layer",
+      "steps": [
+        {
+          "id": "cold",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 0
+        },
+        {
+          "id": "load-demo",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "fr Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 2
+        },
+        {
+          "id": "select-ja",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "ja Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 3,
+          "manifestRevision": 0,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 3
+        },
+        {
+          "id": "load-help",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "ja Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 0,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 5
+        },
+        {
+          "id": "live-edit",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Updated Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 1,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 6
+        },
+        {
+          "id": "invalid-json-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Updated Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 1,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 6
+        },
+        {
+          "id": "recover-json",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Recovered Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 7
+        },
+        {
+          "id": "unselected-pair-edit",
+          "ready": true,
+          "boots": 1,
+          "locale": "ja",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Recovered Ada",
+          "help": "ja-help Ada",
+          "cachedCatalogs": 5,
+          "manifestRevision": 3,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 7
+        },
+        {
+          "id": "select-fr-fresh-help",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "fr Ada",
+          "help": "Fresh-help Ada",
+          "cachedCatalogs": 6,
+          "manifestRevision": 3,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 8
+        },
+        {
+          "id": "detached-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "fr Ada",
+          "help": "Fresh-help Ada",
+          "cachedCatalogs": 6,
+          "manifestRevision": 3,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 8
+        },
+        {
+          "id": "rebind-catch-up",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo",
+            "help"
+          ],
+          "text": "Rebound Ada",
+          "help": "Fresh-help Ada",
+          "cachedCatalogs": 6,
+          "manifestRevision": 4,
+          "retainedText": "fr Ada",
+          "diagnostics": [
+            "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "requestCount": 9
+        },
+        {
+          "id": "physical-socket-loss-vite-reload",
+          "ready": true,
+          "boots": 2,
+          "locale": "fr",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": false,
+          "inputValue": "initial draft",
+          "counter": "7",
+          "dialogOpen": false
+        }
+      ],
+      "requests": [
+        {
+          "locale": "en",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2411931405-1494260299-3379945545-123081592:1"
+        },
+        {
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2411931405-1494260299-3379945545-123081592:2"
+        },
+        {
+          "locale": "ja",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2411931405-1494260299-3379945545-123081592:3"
+        },
+        {
+          "locale": "en",
+          "namespace": "help",
+          "generation": 1,
+          "requestId": "2411931405-1494260299-3379945545-123081592:4"
+        },
+        {
+          "locale": "ja",
+          "namespace": "help",
+          "generation": 1,
+          "requestId": "2411931405-1494260299-3379945545-123081592:5"
+        },
+        {
+          "locale": "ja",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2411931405-1494260299-3379945545-123081592:6",
+          "known": {
+            "sessionId": "4f254d58-5dfc-4f9a-9489-557ec32035ce",
+            "catalogVersion": 1
+          }
+        },
+        {
+          "locale": "ja",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2411931405-1494260299-3379945545-123081592:7",
+          "known": {
+            "sessionId": "4f254d58-5dfc-4f9a-9489-557ec32035ce",
+            "catalogVersion": 2
+          }
+        },
+        {
+          "locale": "fr",
+          "namespace": "help",
+          "generation": 1,
+          "requestId": "2411931405-1494260299-3379945545-123081592:8"
+        },
+        {
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 2,
+          "requestId": "2411931405-1494260299-3379945545-123081592:9",
+          "known": {
+            "sessionId": "4f254d58-5dfc-4f9a-9489-557ec32035ce",
+            "catalogVersion": 1
+          }
+        }
+      ],
+      "frames": [
+        {
+          "event": "saylo:manifest",
+          "kind": "snapshot",
+          "revision": 0,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "2275462673-2805144091-3382598052-2950310005:1",
+            "generation": 1
+          }
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "2275462673-2805144091-3382598052-2950310005:1",
+            "generation": 1
+          },
+          "diagnostic": ""
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "en",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2411931405-1494260299-3379945545-123081592:1"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2411931405-1494260299-3379945545-123081592:2"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2411931405-1494260299-3379945545-123081592:3"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "en",
+            "namespace": "help",
+            "generation": 1,
+            "requestId": "2411931405-1494260299-3379945545-123081592:4"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "ja",
+            "namespace": "help",
+            "generation": 1,
+            "requestId": "2411931405-1494260299-3379945545-123081592:5"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "update",
+          "revision": 1
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2411931405-1494260299-3379945545-123081592:6",
+            "known": {
+              "sessionId": "4f254d58-5dfc-4f9a-9489-557ec32035ce",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch"
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "diagnostic": "ja/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "update",
+          "revision": 2
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "diagnostic": ""
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2411931405-1494260299-3379945545-123081592:7",
+            "known": {
+              "sessionId": "4f254d58-5dfc-4f9a-9489-557ec32035ce",
+              "catalogVersion": 2
+            }
+          },
+          "status": "patch"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "update",
+          "revision": 3
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "fr",
+            "namespace": "help",
+            "generation": 1,
+            "requestId": "2411931405-1494260299-3379945545-123081592:8"
+          },
+          "status": "compact"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "update",
+          "revision": 4
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "snapshot",
+          "revision": 4,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "3855373224-3393400808-2158240069-550048403:1",
+            "generation": 1
+          }
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "3855373224-3393400808-2158240069-550048403:1",
+            "generation": 1
+          },
+          "diagnostic": ""
+        },
+        {
+          "event": "saylo:catalog",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 2,
+            "requestId": "2411931405-1494260299-3379945545-123081592:9",
+            "known": {
+              "sessionId": "4f254d58-5dfc-4f9a-9489-557ec32035ce",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch"
+        },
+        {
+          "event": "saylo:manifest",
+          "kind": "snapshot",
+          "revision": 4,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "1821245538-1143175119-3710545050-3160465394:1",
+            "generation": 1
+          }
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "1821245538-1143175119-3710545050-3160465394:1",
+            "generation": 1
+          },
+          "diagnostic": ""
+        }
+      ],
+      "manifestHandshakesBeforeSocketLoss": 2,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    }
+  ]
+}
