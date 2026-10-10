@@ -48,3 +48,7 @@ benchmark workspace script `probe:runtime-cost`는 같은 probe를 기본 `out`(
 ## 상태
 
 코드·원시 결과는 로컬 커밋 `6979c84`에 있고 미푸시다. 제품 package·공개 API·버전은 바뀌지 않았고 이 측정은 아키텍처 교체나 성능 채택을 결정하지 않는다. 이 문서는 `6979c84` 시점의 역사 baseline이고, 그 뒤 제품 source 변경에 따른 재측정은 다음 문서에서 다룬다.
+
+## 후속: 불변 검증 재사용 (`5586bf2`)
+
+이 baseline 뒤 재측정과 검증 재사용 변경은 [74](74-immutable-validation-reuse.md)에 있다. 74가 재는 `packages/core/dist/schema.js` hash는 이 문서의 baseline과 다르다.

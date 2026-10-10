@@ -33,8 +33,8 @@
 | 16 | Svelte 어댑터·selector (44) | 어댑터 alpha.2 게시, selector 로컬 | svelte `index.ts` selectSvelteStore·getI18nSelector; `selectors.test` | 게시 시 릴리스 검증 |
 | 17 | SvelteKit 예제 SSR·hydration 검증 (39) | 게시 | `examples/sveltekit`, `scripts/pack-sveltekit.mjs` | 없음 |
 | 18 | 릴리스 패키지 소비 검증 (09) | 게시 | `scripts/pack-smoke.mjs`, `verify:registry:alpha3` | selector 포함 재검증 필요 |
-| 19 | 편집 반영 p95 ≤ 100ms (06) | 미달 | `docs/45`·`51`·`52` | tail 원인 분리·최적화 |
-| 20 | 로케일 목록 표시 p95 ≤ 250ms (06) | 54 조건 통과·후속 현행 미달(58) | `docs/54` after 두 run p95 193.56·184.78ms; 후속 `8f25416` single run 322.35ms(58) | 다른 조건의 안정 달성은 미확인 |
+| 19 | 편집 반영 p95 ≤ 100ms (06) | large 통과·small 미달 | `docs/74`: large `validation-cache-edit-large`·`-repeat` p95 70.35·61.91ms(50표본 중 49), small `validation-cache-edit-small` p95 108.61ms(23/25) | small tail 조사·안정 달성 미확인 |
+| 20 | 로케일 목록 표시 p95 ≤ 250ms (06) | 최신 스모크 통과, 다른 조건 미확인 | `docs/74`: small 목록 p95 84.29ms(25/25), large 목록 p95 137.09·159.75ms·50표본 pooled 159.75ms(49/50) | 첫 locale 선택 translation p95 267.80·262.38ms와 다른 조건은 별도 |
 
 ## 2. 로드맵 1~13 직접 확인
 
@@ -82,7 +82,7 @@
 ## 5. 남은 필수 작업 (순차)
 
 1. 완료: `169e72b`의 편집·로케일 종단 간 경로를 54에서 비교했다.
-2. 편집 large 100ms 목표 미달 원인을 줄인다. 로케일 large 250ms 목표는 54의 두 after run에서 통과했으나, 후속 `8f25416` single run은 편집·로케일 모두 미달이다(58).
+2. [74](74-immutable-validation-reuse.md)의 large 편집·로케일 목록은 최신 두 run에서 목표를 통과했다. small 편집 p95 108.61ms의 tail을 조사하고, 다른 조건의 안정 달성을 확인한다. 이전 58의 미달 결과는 역사값으로 보존한다.
 3. 49의 맵 동결 최적화 채택 여부를 tail 원인 규명 결과와 함께 확정한다.
 4. selector 게시 여부를 결정하고, 게시하면 `check`·`release:pack`·`verify:registry:*`·SvelteKit 검증을 해당 버전으로 수행한다.
 5. i18next·Wuchale 확장점 위 얇은 계층 비교 실험으로 제품 형태(독립 런타임 정당화)를 판정한다.
@@ -176,3 +176,5 @@
 2026-10-11(KST), benchmark 전용 lazy layer에 동기 생성 경로 `createCatalogLayerSync`·`createLazyLayerSync`를 넣고 생성자 계약을 확인했다(`15605cd`). 기존 async factory는 Promise·rejection을 유지하는 wrapper로 남고, resource-only 엔진은 같은 호출에서 `completed`·`isInitialized`를 만족할 때만 publish하며 아니면 던져서 옛 snapshot을 지킨다. unit 64개(14 시나리오 × core·async·sync 42 + sync 생성자 8 + scope·hydration·timezone 14)가 통과했고, typegen `--sync` 9 phase와 실제 production browser 2 build × 6단계(합계 12)도 같은 방식으로 통과했다. 이 증거는 생성자 계약이고 오류 코드 동일성 같은 전체 API equivalence, 성능·bench 비교, native·standalone typegen은 아니다. 제품 package·공개 API·버전·원격은 그대로이고 코드·원시 자료는 로컬 커밋 `15605cd`(미푸시)이다. 상세는 [72](72-thin-layer-sync-construction.md)를 따른다.
 
 2026-10-11(KST), benchmark 전용 동기 layer와 제품 core를 같은 fixture에서 격리 측정해 런타임 비용과 snapshot 보유 heap을 기록했다(`6979c84`). `--expose-gc` 자식 8개를 key 1k·10k × core·layer·layer·core 순서로 돌려 commit p50/p95는 core 1k 1.48/2.25ms·10k 13.01/16.46ms, layer 1k 4.18/6.20ms·10k 30.43/40.50ms다. live steady heap delta는 10k에서 layer 1.50MB가 core 2.18MB보다 낮고 1k에서는 layer 0.75~0.76MB가 core 0.43~0.45MB보다 높으며, 옛 snapshot 8개 보유 delta는 layer가 더 크다(1k 1.02~1.04 대 0.55MB, 10k 7.72 대 4.59~4.71MB). 이것은 라이브러리 격리 비용이고 종단 간 100ms·250ms 목표나 브라우저·RSS 메모리 판정이 아니다. 제품 package·공개 API·버전·원격은 그대로이고 코드·원시 자료는 로컬 커밋 `6979c84`(미푸시)이다. 상세는 [73](73-thin-layer-runtime-cost.md)를 따른다.
+
+2026-10-11(KST), core `validateTranslation`이 깊게 동결된 schema·catalog 성공 identity pair를 다시 검사하지 않도록 고쳤다(`5586bf2`). `validatedCatalogs` WeakMap<schema, WeakSet<catalog>>로 전체 검증을 통과한 pair만 기억하고 변경 identity·mutable·shallow frozen·실패 결과는 재검사하며 기존 인자 캐시는 그대로 둔다. core 82·Vite 101·typegen 9에 prototype 64를 더한 256 tests PASS와 core build·소비자 typecheck PASS를 확인했다. 격리 런타임 비용 재측정은 10k core p95 16.46→23.49ms(높음)·layer 40.50→34.24ms(낮음)인데 baseline과 after가 다른 시간대라 원인이나 전면 향상을 주장하지 않는다. CPU 표본(`ad7b55e`)은 full-worker 단일 1kHz 프로파일로 core `validateTranslation` self 270/1454·layer 522/2205이고 setup·parse·copy·GC를 포함한다. default prebundle에 typegen on인 large 편집은 각 25표본 p95 70.35·61.91ms·pool 66.16ms(100ms 이내 49/50)지만 small 편집은 p95 108.61ms(23/25)로 미달이다. locale-add 목록은 small 84.29ms(25/25)·large 137.09·159.75ms(50표본 pooled 159.75ms, 49/50)이고 첫 locale 선택 translation은 별도로 267.80·262.38ms다. 제품 API·버전·의존성은 그대로이고 소스 변경은 로컬 커밋 `5586bf2`(미푸시)이다. 상세는 [74](74-immutable-validation-reuse.md)를 따른다.
