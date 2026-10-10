@@ -67,3 +67,7 @@ node benchmarks/thin-layer/lazy-session-browser-probe.mjs --out benchmarks/resul
 ## 상태
 
 probe·raw·package script(`probe:lazy-session-browser`)는 로컬 커밋 `3a4251c`에 있고 기존 앱 템플릿을 재사용했다. 미푸시이며 제품 package의 API·의존성·버전은 바뀌지 않았다.
+
+## 후속: 동기 생성 계약 (`15605cd`)
+
+같은 계약을 동기 생성 경로로 다시 돌린 기록은 [72](72-thin-layer-sync-construction.md)에 있다. 이 문서의 reply 보류·locale supersede·세션 교체 관측과 판정은 그대로 유효하다.

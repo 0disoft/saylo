@@ -88,6 +88,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 68. [71-thin-layer-lazy-session-browser.md](71-thin-layer-lazy-session-browser.md) — 실제 Vite 개발 서버 두 fixture에서 product reply 보류·순서 변경, locale supersede, 세션 교체 뒤 늦은 응답 무시 12단계×2
 
+69. [72-thin-layer-sync-construction.md](72-thin-layer-sync-construction.md) — 동기 생성자 계약, unit 64개와 typegen·production browser --sync 재확인
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |
