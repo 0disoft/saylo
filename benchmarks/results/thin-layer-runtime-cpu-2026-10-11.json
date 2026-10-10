@@ -1,0 +1,4440 @@
+{
+  "format": "saylo-thin-layer-runtime-cpu-v1",
+  "observedAt": "2026-10-10T20:57:36.918Z",
+  "node": "v24.18.0",
+  "codeHashes": {
+    "benchmarks/thin-layer/runtime-cpu-probe.mjs": "fcece60a236e8c5fc25d1cfab130cea09ce87be53e604970eb954a92b7166079",
+    "benchmarks/thin-layer/runtime-cost-probe.mjs": "035f207c3f7d1995311b2c2c73e68dc46e86a4cdef3b5adf97ad07eac32cb8cd",
+    "benchmarks/thin-layer/catalog-layer.mjs": "d8f5f3df286d1ce2a2b847f5a376f2c707cbe89af104f6c3cd7a5e5498d42c59",
+    "benchmarks/thin-layer/lazy-layer.mjs": "42d8b8e036ca611eab0c8999ff4cfb17fb6ee694125a77a457c19e831c4dfec6",
+    "benchmarks/thin-layer/lazy-source-cache.mjs": "41c49136867f1a99289ac50dfe31c9e36ec60f4fef75bfbed0ffa37103c06aa1",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0",
+    "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
+    "packages/core/dist/boot.js": "6a7dfdd9b2e452b8595c3caa093c49774a87b26034f7c25bad7f653ccbdde4f2",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f"
+  },
+  "observations": [
+    {
+      "variant": "core",
+      "keys": 10000,
+      "commitsVerified": 58,
+      "retainedSnapshotsVerified": 8,
+      "profileFile": "thin-layer-runtime-cpu-2026-10-11.core.cpuprofile",
+      "profileSha256": "d80a6050b26c581d2215866237aa95e717cb8bed82cc91c4b5d0774eb77d55f4",
+      "cpu": {
+        "samples": 1454,
+        "negativeTimeDeltas": 0,
+        "frames": [
+          {
+            "function": "validateTranslation",
+            "file": "packages/core/dist/schema.js",
+            "line": 116,
+            "column": 36,
+            "selfSamples": 270,
+            "inclusiveSamples": 274,
+            "selfPercent": 18.56946354883081
+          },
+          {
+            "function": "freeze",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 5,
+            "column": 23,
+            "selfSamples": 261,
+            "inclusiveSamples": 261,
+            "selfPercent": 17.950481430536453
+          },
+          {
+            "function": "update",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 41,
+            "column": 11,
+            "selfSamples": 253,
+            "inclusiveSamples": 467,
+            "selfPercent": 17.400275103163686
+          },
+          {
+            "function": "catalogSignature",
+            "file": "packages/core/dist/snapshot-signature.js",
+            "line": 3,
+            "column": 26,
+            "selfSamples": 164,
+            "inclusiveSamples": 176,
+            "selfPercent": 11.279229711141678
+          },
+          {
+            "function": "(garbage collector)",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 126,
+            "inclusiveSamples": 126,
+            "selfPercent": 8.665749656121045
+          },
+          {
+            "function": "seal",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 27,
+            "column": 18,
+            "selfSamples": 37,
+            "inclusiveSamples": 37,
+            "selfPercent": 2.544704264099037
+          },
+          {
+            "function": "compileForInternalLoader",
+            "file": "node:internal/bootstrap/realm",
+            "line": 383,
+            "column": 27,
+            "selfSamples": 27,
+            "inclusiveSamples": 41,
+            "selfPercent": 1.8569463548830811
+          },
+          {
+            "function": "fixture",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 20,
+            "column": 17,
+            "selfSamples": 18,
+            "inclusiveSamples": 204,
+            "selfPercent": 1.2379642365887207
+          },
+          {
+            "function": "publish",
+            "file": "packages/core/dist/i18n.js",
+            "line": 111,
+            "column": 21,
+            "selfSamples": 18,
+            "inclusiveSamples": 18,
+            "selfPercent": 1.2379642365887207
+          },
+          {
+            "function": "parseCatalog",
+            "file": "packages/core/dist/catalog.js",
+            "line": 8,
+            "column": 29,
+            "selfSamples": 17,
+            "inclusiveSamples": 161,
+            "selfPercent": 1.169188445667125
+          },
+          {
+            "function": "readJson",
+            "file": "packages/core/dist/json.js",
+            "line": 3,
+            "column": 25,
+            "selfSamples": 17,
+            "inclusiveSamples": 19,
+            "selfPercent": 1.169188445667125
+          },
+          {
+            "function": "createBoundTranslator",
+            "file": "packages/core/dist/translator.js",
+            "line": 47,
+            "column": 38,
+            "selfSamples": 14,
+            "inclusiveSamples": 288,
+            "selfPercent": 0.9628610729023384
+          },
+          {
+            "function": "compileSourceTextModule",
+            "file": "node:internal/modules/esm/utils",
+            "line": 316,
+            "column": 33,
+            "selfSamples": 13,
+            "inclusiveSamples": 13,
+            "selfPercent": 0.8940852819807428
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/snapshot-signature.js",
+            "line": 9,
+            "column": 50,
+            "selfSamples": 12,
+            "inclusiveSamples": 12,
+            "selfPercent": 0.8253094910591472
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 65,
+            "column": 19,
+            "selfSamples": 11,
+            "inclusiveSamples": 11,
+            "selfPercent": 0.7565337001375516
+          },
+          {
+            "function": "createBaseSchema",
+            "file": "packages/core/dist/schema.js",
+            "line": 97,
+            "column": 33,
+            "selfSamples": 10,
+            "inclusiveSamples": 31,
+            "selfPercent": 0.687757909215956
+          },
+          {
+            "function": "formatToParts",
+            "file": "node_modules/intl-messageformat/index.js",
+            "line": 54,
+            "column": 23,
+            "selfSamples": 10,
+            "inclusiveSamples": 18,
+            "selfPercent": 0.687757909215956
+          },
+          {
+            "function": "parseSimpleMessage",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 36,
+            "column": 35,
+            "selfSamples": 10,
+            "inclusiveSamples": 17,
+            "selfPercent": 0.687757909215956
+          },
+          {
+            "function": "createI18n",
+            "file": "packages/core/dist/i18n.js",
+            "line": 7,
+            "column": 27,
+            "selfSamples": 7,
+            "inclusiveSamples": 53,
+            "selfPercent": 0.4814305364511692
+          },
+          {
+            "function": "freezeMessageAst",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 25,
+            "column": 33,
+            "selfSamples": 7,
+            "inclusiveSamples": 44,
+            "selfPercent": 0.4814305364511692
+          },
+          {
+            "function": "compileFunction",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 7,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.4814305364511692
+          },
+          {
+            "function": "internalModuleStat",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 7,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.4814305364511692
+          },
+          {
+            "function": "process",
+            "file": "node_modules/@noble/hashes/sha2.js",
+            "line": 72,
+            "column": 12,
+            "selfSamples": 7,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.4814305364511692
+          },
+          {
+            "function": "createLoadedSignature",
+            "file": "packages/core/dist/snapshot-signature.js",
+            "line": 15,
+            "column": 38,
+            "selfSamples": 6,
+            "inclusiveSamples": 182,
+            "selfPercent": 0.4126547455295736
+          },
+          {
+            "function": "inferArguments",
+            "file": "packages/core/dist/schema.js",
+            "line": 19,
+            "column": 31,
+            "selfSamples": 6,
+            "inclusiveSamples": 10,
+            "selfPercent": 0.4126547455295736
+          },
+          {
+            "function": "IntlMessageFormat.resolveLocale",
+            "file": "node_modules/intl-messageformat/index.js",
+            "line": 255,
+            "column": 24,
+            "selfSamples": 6,
+            "inclusiveSamples": 6,
+            "selfPercent": 0.4126547455295736
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/schema.js",
+            "line": 105,
+            "column": 52,
+            "selfSamples": 4,
+            "inclusiveSamples": 8,
+            "selfPercent": 0.2751031636863824
+          },
+          {
+            "function": "(program)",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 4,
+            "inclusiveSamples": 4,
+            "selfPercent": 0.2751031636863824
+          },
+          {
+            "function": "read",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 4,
+            "inclusiveSamples": 4,
+            "selfPercent": 0.2751031636863824
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/schema.js",
+            "line": 106,
+            "column": 42,
+            "selfSamples": 4,
+            "inclusiveSamples": 4,
+            "selfPercent": 0.2751031636863824
+          },
+          {
+            "function": "isDeepFrozen",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 4,
+            "column": 29,
+            "selfSamples": 4,
+            "inclusiveSamples": 4,
+            "selfPercent": 0.2751031636863824
+          },
+          {
+            "function": "worker",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 61,
+            "column": 22,
+            "selfSamples": 3,
+            "inclusiveSamples": 766,
+            "selfPercent": 0.2063273727647868
+          },
+          {
+            "function": "resolveSync",
+            "file": "node:internal/modules/esm/loader",
+            "line": 737,
+            "column": 14,
+            "selfSamples": 3,
+            "inclusiveSamples": 29,
+            "selfPercent": 0.2063273727647868
+          },
+          {
+            "function": "readCatalogJson",
+            "file": "packages/core/dist/catalog-json.js",
+            "line": 34,
+            "column": 32,
+            "selfSamples": 3,
+            "inclusiveSamples": 22,
+            "selfPercent": 0.2063273727647868
+          },
+          {
+            "function": "get",
+            "file": "packages/core/dist/formatters.js",
+            "line": 8,
+            "column": 8,
+            "selfSamples": 3,
+            "inclusiveSamples": 11,
+            "selfPercent": 0.2063273727647868
+          },
+          {
+            "function": "plainArgument",
+            "file": "packages/core/dist/schema.js",
+            "line": 8,
+            "column": 23,
+            "selfSamples": 3,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.2063273727647868
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/formatters.js",
+            "line": 40,
+            "column": 12,
+            "selfSamples": 2,
+            "inclusiveSamples": 28,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "moduleResolve",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 831,
+            "column": 23,
+            "selfSamples": 2,
+            "inclusiveSamples": 21,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "finalizeResolution",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 225,
+            "column": 28,
+            "selfSamples": 2,
+            "inclusiveSamples": 10,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "update",
+            "file": "node_modules/@noble/hashes/_md.js",
+            "line": 80,
+            "column": 11,
+            "selfSamples": 2,
+            "inclusiveSamples": 9,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "realpathSync",
+            "file": "node:fs",
+            "line": 2711,
+            "column": 22,
+            "selfSamples": 2,
+            "inclusiveSamples": 6,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "URL",
+            "file": "node:internal/url",
+            "line": 824,
+            "column": 14,
+            "selfSamples": 2,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/i18n.js",
+            "line": 143,
+            "column": 92,
+            "selfSamples": 2,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "intlKey",
+            "file": "packages/core/dist/formatters.js",
+            "line": 22,
+            "column": 17,
+            "selfSamples": 2,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "readPackageJSON",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "open",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "lstat",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "get",
+            "file": "node:internal/modules/package_json_reader",
+            "line": 79,
+            "column": 10,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "RegExp: \"(?:[^\"\\\\]|\\\\[\\s\\S])*\"",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "location",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 19,
+            "column": 20,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "rememberCatalogJson",
+            "file": "packages/core/dist/catalog-json.js",
+            "line": 18,
+            "column": 36,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "position",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 9,
+            "column": 22,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/formatters.js",
+            "line": 36,
+            "column": 57,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "gc",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "canonicalLocale",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 7,
+            "column": 32,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.1375515818431912
+          },
+          {
+            "function": "translate",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 117,
+            "column": 23,
+            "selfSamples": 1,
+            "inclusiveSamples": 30,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/intl-messageformat/index.js",
+            "line": 218,
+            "column": 18,
+            "selfSamples": 1,
+            "inclusiveSamples": 19,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "readManifest",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 21,
+            "column": 29,
+            "selfSamples": 1,
+            "inclusiveSamples": 16,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "createWritableStdioStream",
+            "file": "node:internal/bootstrap/switches/is_main_thread",
+            "line": 50,
+            "column": 35,
+            "selfSamples": 1,
+            "inclusiveSamples": 12,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "hashC",
+            "file": "node_modules/@noble/hashes/utils.js",
+            "line": 629,
+            "column": 19,
+            "selfSamples": 1,
+            "inclusiveSamples": 10,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "packageResolve",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 762,
+            "column": 24,
+            "selfSamples": 1,
+            "inclusiveSamples": 9,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:stream",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "syncManifest",
+            "file": "packages/core/dist/i18n.js",
+            "line": 85,
+            "column": 26,
+            "selfSamples": 1,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "getFileProtocolModuleFormat",
+            "file": "node:internal/modules/esm/get_format",
+            "line": 164,
+            "column": 37,
+            "selfSamples": 1,
+            "inclusiveSamples": 4,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "literal",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 45,
+            "column": 21,
+            "selfSamples": 1,
+            "inclusiveSamples": 4,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "getPackageScopeConfig",
+            "file": "node:internal/modules/package_json_reader",
+            "line": 192,
+            "column": 31,
+            "selfSamples": 1,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "location",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 43,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "resolvePackageTargetString",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 376,
+            "column": 36,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "parse",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 2166,
+            "column": 15,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/catalog-loader.js",
+            "line": 66,
+            "column": 17,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "getCLIOptionsFromBinding",
+            "file": "node:internal/options",
+            "line": 32,
+            "column": 34,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "createContext",
+            "file": "node:vm",
+            "line": 225,
+            "column": 23,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/readable",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "Socket",
+            "file": "node:net",
+            "line": 365,
+            "column": 16,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:dgram",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/fs/recursive_watch",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "createSupportedAlgorithms",
+            "file": "node:internal/crypto/util",
+            "line": 458,
+            "column": 35,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "URL",
+            "file": "node:internal/url",
+            "line": 807,
+            "column": 3,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "createIdentifierPrefixRegex",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1414,
+            "column": 37,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/@noble/hashes/sha2.js",
+            "line": 417,
+            "column": 52,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "checkOptionLikeValue",
+            "file": "node:internal/util/parse_args/parse_args",
+            "line": 73,
+            "column": 30,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "position",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 42,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "parseLiteral",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1588,
+            "column": 14,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "keyId",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 17,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "enabledHooksExist",
+            "file": "node:internal/async_hooks",
+            "line": 482,
+            "column": 27,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "clearTimeout",
+            "file": "node:timers",
+            "line": 136,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "invalidate",
+            "file": "packages/core/dist/catalog-loader.js",
+            "line": 17,
+            "column": 15,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "validateArguments",
+            "file": "packages/core/dist/translator.js",
+            "line": 19,
+            "column": 27,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "initAsyncResource",
+            "file": "node:internal/timers",
+            "line": 164,
+            "column": 27,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "strictEqual",
+            "file": "node:assert",
+            "line": 386,
+            "column": 52,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "getNumberFormat",
+            "file": "packages/core/dist/formatters.js",
+            "line": 32,
+            "column": 26,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/formatters.js",
+            "line": 23,
+            "column": 73,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "processTicksAndRejections",
+            "file": "node:internal/process/task_queues",
+            "line": 72,
+            "column": 35,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(idle)",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.0687757909215956
+          },
+          {
+            "function": "(root)",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 0,
+            "inclusiveSamples": 1454,
+            "selfPercent": 0
+          },
+          {
+            "function": "createLoadedSnapshot",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 111,
+            "column": 37,
+            "selfSamples": 0,
+            "inclusiveSamples": 470,
+            "selfPercent": 0
+          },
+          {
+            "function": "reconcile",
+            "file": "packages/core/dist/i18n.js",
+            "line": 138,
+            "column": 29,
+            "selfSamples": 0,
+            "inclusiveSamples": 458,
+            "selfPercent": 0
+          },
+          {
+            "function": "evaluate",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 0,
+            "inclusiveSamples": 273,
+            "selfPercent": 0
+          },
+          {
+            "function": "run",
+            "file": "node:internal/modules/esm/module_job",
+            "line": 428,
+            "column": 12,
+            "selfSamples": 0,
+            "inclusiveSamples": 268,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 265,
+            "selfPercent": 0
+          },
+          {
+            "function": "freezeCatalogs",
+            "file": "packages/core/dist/catalog-freeze.js",
+            "line": 3,
+            "column": 31,
+            "selfSamples": 0,
+            "inclusiveSamples": 208,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/main/run_main_module",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 91,
+            "selfPercent": 0
+          },
+          {
+            "function": "executeUserEntryPoint",
+            "file": "node:internal/modules/run_main",
+            "line": 140,
+            "column": 31,
+            "selfSamples": 0,
+            "inclusiveSamples": 90,
+            "selfPercent": 0
+          },
+          {
+            "function": "getOrCreateModuleJob",
+            "file": "node:internal/modules/esm/loader",
+            "line": 596,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 88,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/modules/esm/loader",
+            "line": 628,
+            "column": 34,
+            "selfSamples": 0,
+            "inclusiveSamples": 88,
+            "selfPercent": 0
+          },
+          {
+            "function": "tracePromise",
+            "file": "node:diagnostics_channel",
+            "line": 360,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 88,
+            "selfPercent": 0
+          },
+          {
+            "function": "import",
+            "file": "node:internal/modules/esm/loader",
+            "line": 627,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 88,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/modules/run_main",
+            "line": 159,
+            "column": 32,
+            "selfSamples": 0,
+            "inclusiveSamples": 88,
+            "selfPercent": 0
+          },
+          {
+            "function": "asyncRunEntryPointWithESMLoader",
+            "file": "node:internal/modules/run_main",
+            "line": 89,
+            "column": 47,
+            "selfSamples": 0,
+            "inclusiveSamples": 88,
+            "selfPercent": 0
+          },
+          {
+            "function": "runEntryPointWithESMLoader",
+            "file": "node:internal/modules/run_main",
+            "line": 122,
+            "column": 36,
+            "selfSamples": 0,
+            "inclusiveSamples": 88,
+            "selfPercent": 0
+          },
+          {
+            "function": "#getOrCreateModuleJobAfterResolve",
+            "file": "node:internal/modules/esm/loader",
+            "line": 522,
+            "column": 36,
+            "selfSamples": 0,
+            "inclusiveSamples": 87,
+            "selfPercent": 0
+          },
+          {
+            "function": "afterResolve",
+            "file": "node:internal/modules/esm/loader",
+            "line": 606,
+            "column": 26,
+            "selfSamples": 0,
+            "inclusiveSamples": 87,
+            "selfPercent": 0
+          },
+          {
+            "function": "syncLink",
+            "file": "node:internal/modules/esm/module_job",
+            "line": 147,
+            "column": 11,
+            "selfSamples": 0,
+            "inclusiveSamples": 86,
+            "selfPercent": 0
+          },
+          {
+            "function": "link",
+            "file": "node:internal/modules/esm/module_job",
+            "line": 249,
+            "column": 7,
+            "selfSamples": 0,
+            "inclusiveSamples": 86,
+            "selfPercent": 0
+          },
+          {
+            "function": "ModuleJob",
+            "file": "node:internal/modules/esm/module_job",
+            "line": 218,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 86,
+            "selfPercent": 0
+          },
+          {
+            "function": "loadAndTranslate",
+            "file": "node:internal/modules/esm/loader",
+            "line": 492,
+            "column": 19,
+            "selfSamples": 0,
+            "inclusiveSamples": 59,
+            "selfPercent": 0
+          },
+          {
+            "function": "#translate",
+            "file": "node:internal/modules/esm/loader",
+            "line": 425,
+            "column": 13,
+            "selfSamples": 0,
+            "inclusiveSamples": 53,
+            "selfPercent": 0
+          },
+          {
+            "function": "afterLoad",
+            "file": "node:internal/modules/esm/loader",
+            "line": 495,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 53,
+            "selfPercent": 0
+          },
+          {
+            "function": "builtinStrategy",
+            "file": "node:internal/modules/esm/translators",
+            "line": 470,
+            "column": 52,
+            "selfSamples": 0,
+            "inclusiveSamples": 40,
+            "selfPercent": 0
+          },
+          {
+            "function": "requireBuiltin",
+            "file": "node:internal/bootstrap/realm",
+            "line": 420,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 39,
+            "selfPercent": 0
+          },
+          {
+            "function": "compileForPublicLoader",
+            "file": "node:internal/bootstrap/realm",
+            "line": 331,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 35,
+            "selfPercent": 0
+          },
+          {
+            "function": "loadBuiltinModule",
+            "file": "node:internal/modules/helpers",
+            "line": 118,
+            "column": 27,
+            "selfSamples": 0,
+            "inclusiveSamples": 35,
+            "selfPercent": 0
+          },
+          {
+            "function": "render",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 51,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 31,
+            "selfPercent": 0
+          },
+          {
+            "function": "#resolve",
+            "file": "node:internal/modules/esm/loader",
+            "line": 675,
+            "column": 11,
+            "selfSamples": 0,
+            "inclusiveSamples": 29,
+            "selfPercent": 0
+          },
+          {
+            "function": "t",
+            "file": "packages/core/dist/i18n.js",
+            "line": 190,
+            "column": 13,
+            "selfSamples": 0,
+            "inclusiveSamples": 29,
+            "selfPercent": 0
+          },
+          {
+            "function": "translate",
+            "file": "packages/core/dist/translator.js",
+            "line": 79,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 29,
+            "selfPercent": 0
+          },
+          {
+            "function": "defaultResolve",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 947,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 26,
+            "selfPercent": 0
+          },
+          {
+            "function": "#cachedDefaultResolve",
+            "file": "node:internal/modules/esm/loader",
+            "line": 693,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 26,
+            "selfPercent": 0
+          },
+          {
+            "function": "#resolveAndMaybeBlockOnLoaderThread",
+            "file": "node:internal/modules/esm/loader",
+            "line": 716,
+            "column": 38,
+            "selfSamples": 0,
+            "inclusiveSamples": 26,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/intl-messageformat/index.js",
+            "line": 229,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 18,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:assert/strict",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 14,
+            "selfPercent": 0
+          },
+          {
+            "function": "moduleStrategy",
+            "file": "node:internal/modules/esm/translators",
+            "line": 81,
+            "column": 50,
+            "selfSamples": 0,
+            "inclusiveSamples": 13,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:assert",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 13,
+            "selfPercent": 0
+          },
+          {
+            "function": "getStderr",
+            "file": "node:internal/bootstrap/switches/is_main_thread",
+            "line": 173,
+            "column": 19,
+            "selfSamples": 0,
+            "inclusiveSamples": 12,
+            "selfPercent": 0
+          },
+          {
+            "function": "refresh",
+            "file": "node:internal/util/colors",
+            "line": 26,
+            "column": 10,
+            "selfSamples": 0,
+            "inclusiveSamples": 12,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/util/colors",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 12,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/assert/assertion_error",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 12,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:crypto",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 9,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:net",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 8,
+            "selfPercent": 0
+          },
+          {
+            "function": "call",
+            "file": "packages/core/dist/i18n.js",
+            "line": 179,
+            "column": 18,
+            "selfSamples": 0,
+            "inclusiveSamples": 7,
+            "selfPercent": 0
+          },
+          {
+            "function": "refresh",
+            "file": "packages/core/dist/i18n.js",
+            "line": 236,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 7,
+            "selfPercent": 0
+          },
+          {
+            "function": "readFileSync",
+            "file": "node:fs",
+            "line": 434,
+            "column": 22,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "getSourceSync",
+            "file": "node:internal/modules/esm/load",
+            "line": 32,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "defaultLoadSync",
+            "file": "node:internal/modules/esm/load",
+            "line": 136,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "#loadAndMaybeBlockOnLoaderThread",
+            "file": "node:internal/modules/esm/loader",
+            "line": 796,
+            "column": 35,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "#loadSync",
+            "file": "node:internal/modules/esm/loader",
+            "line": 814,
+            "column": 12,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "load",
+            "file": "node:internal/modules/esm/loader",
+            "line": 778,
+            "column": 7,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "IntlMessageFormat",
+            "file": "node_modules/intl-messageformat/index.js",
+            "line": 212,
+            "column": 13,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/formatters.js",
+            "line": 43,
+            "column": 45,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/compose",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "getOwn",
+            "file": "node:internal/bootstrap/realm",
+            "line": 202,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "syncExports",
+            "file": "node:internal/bootstrap/realm",
+            "line": 371,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/bootstrap/realm",
+            "line": 357,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "getESMFacade",
+            "file": "node:internal/bootstrap/realm",
+            "line": 347,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:fs/promises",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/duplex",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/pipeline",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "get TextDecoder",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/fs/promises",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "readSync",
+            "file": "node:fs",
+            "line": 696,
+            "column": 18,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "tryReadSync",
+            "file": "node:fs",
+            "line": 413,
+            "column": 21,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "getPackageJSONURL",
+            "file": "node:internal/modules/package_json_reader",
+            "line": 267,
+            "column": 27,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "defaultGetFormatWithoutErrors",
+            "file": "node:internal/modules/esm/get_format",
+            "line": 244,
+            "column": 39,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "getDateTimeFormat",
+            "file": "packages/core/dist/formatters.js",
+            "line": 33,
+            "column": 28,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:worker_threads",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/util/trace_sigint",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/argon2",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:perf_hooks",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "getPluralRules",
+            "file": "packages/core/dist/formatters.js",
+            "line": 38,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/i18n.js",
+            "line": 79,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "getInternalGlobal",
+            "file": "node:internal/util",
+            "line": 724,
+            "column": 27,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "SideEffectFreeRegExpPrototypeExec",
+            "file": "node:internal/util",
+            "line": 733,
+            "column": 43,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "splitRoot",
+            "file": "node:fs",
+            "line": 2663,
+            "column": 33,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "toRealPath",
+            "file": "node:internal/modules/helpers",
+            "line": 62,
+            "column": 20,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/modules/cjs/loader",
+            "line": 726,
+            "column": 28,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "resolveMainPath",
+            "file": "node:internal/modules/run_main",
+            "line": 29,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/child_process",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:child_process",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/util",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/keys",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "read",
+            "file": "node:internal/modules/package_json_reader",
+            "line": 122,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "resolvePackageTarget",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 481,
+            "column": 30,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "packageExportsResolve",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 588,
+            "column": 31,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "openSync",
+            "file": "node:fs",
+            "line": 560,
+            "column": 18,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "getOptionValue",
+            "file": "node:internal/options",
+            "line": 150,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "runInNewContext",
+            "file": "node:vm",
+            "line": 304,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/operators",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/assert/utils",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/worker",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/readline/interface",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "lazyWebCrypto",
+            "file": "node:crypto",
+            "line": 132,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "get",
+            "file": "node:crypto",
+            "line": 361,
+            "column": 8,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "parse",
+            "file": "node:internal/url",
+            "line": 854,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "createHasher",
+            "file": "node_modules/@noble/hashes/utils.js",
+            "line": 625,
+            "column": 29,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/@noble/hashes/sha2.js",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/util/parse_args/parse_args",
+            "line": 374,
+            "column": 33,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "parseArgs",
+            "file": "node:internal/util/parse_args/parse_args",
+            "line": 303,
+            "column": 19,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "parseMessage",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1491,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "tryParsePluralOrSelectOptions",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1906,
+            "column": 31,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "parseArgumentOptions",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1721,
+            "column": 22,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "parseArgument",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1674,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "parse",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1469,
+            "column": 7,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/i18n.js",
+            "line": 34,
+            "column": 38,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 35,
+            "column": 41,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "queueMicrotask",
+            "file": "node:internal/process/task_queues",
+            "line": 160,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "schedule",
+            "file": "packages/core/dist/i18n.js",
+            "line": 75,
+            "column": 22,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "finish",
+            "file": "packages/core/dist/catalog-loader.js",
+            "line": 47,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "Timeout",
+            "file": "node:internal/timers",
+            "line": 179,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "setTimeout",
+            "file": "node:timers",
+            "line": 115,
+            "column": 20,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "load",
+            "file": "packages/core/dist/catalog-loader.js",
+            "line": 33,
+            "column": 9,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "heap",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 56,
+            "column": 20,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          }
+        ]
+      }
+    },
+    {
+      "variant": "layer",
+      "keys": 10000,
+      "commitsVerified": 58,
+      "retainedSnapshotsVerified": 8,
+      "profileFile": "thin-layer-runtime-cpu-2026-10-11.layer.cpuprofile",
+      "profileSha256": "a7096b26ee645eb7f2c899715a2fa1b84678d4b55d6522f50206cd3cb4999c8d",
+      "cpu": {
+        "samples": 2205,
+        "negativeTimeDeltas": 0,
+        "frames": [
+          {
+            "function": "validateTranslation",
+            "file": "packages/core/dist/schema.js",
+            "line": 116,
+            "column": 36,
+            "selfSamples": 522,
+            "inclusiveSamples": 529,
+            "selfPercent": 23.6734693877551
+          },
+          {
+            "function": "replace",
+            "file": "benchmarks/thin-layer/catalog-layer.mjs",
+            "line": 56,
+            "column": 19,
+            "selfSamples": 306,
+            "inclusiveSamples": 648,
+            "selfPercent": 13.877551020408163
+          },
+          {
+            "function": "freeze",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 5,
+            "column": 23,
+            "selfSamples": 272,
+            "inclusiveSamples": 272,
+            "selfPercent": 12.335600907029479
+          },
+          {
+            "function": "update",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 41,
+            "column": 11,
+            "selfSamples": 242,
+            "inclusiveSamples": 460,
+            "selfPercent": 10.975056689342404
+          },
+          {
+            "function": "catalogSignature",
+            "file": "packages/core/dist/snapshot-signature.js",
+            "line": 3,
+            "column": 26,
+            "selfSamples": 168,
+            "inclusiveSamples": 185,
+            "selfPercent": 7.619047619047619
+          },
+          {
+            "function": "(garbage collector)",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 159,
+            "inclusiveSamples": 159,
+            "selfPercent": 7.210884353741497
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 424,
+            "column": 21,
+            "selfSamples": 74,
+            "inclusiveSamples": 74,
+            "selfPercent": 3.3560090702947845
+          },
+          {
+            "function": "seal",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 27,
+            "column": 18,
+            "selfSamples": 42,
+            "inclusiveSamples": 42,
+            "selfPercent": 1.9047619047619047
+          },
+          {
+            "function": "compileForInternalLoader",
+            "file": "node:internal/bootstrap/realm",
+            "line": 383,
+            "column": 27,
+            "selfSamples": 26,
+            "inclusiveSamples": 39,
+            "selfPercent": 1.1791383219954648
+          },
+          {
+            "function": "fixture",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 20,
+            "column": 17,
+            "selfSamples": 18,
+            "inclusiveSamples": 209,
+            "selfPercent": 0.8163265306122449
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/snapshot-signature.js",
+            "line": 9,
+            "column": 50,
+            "selfSamples": 17,
+            "inclusiveSamples": 17,
+            "selfPercent": 0.7709750566893424
+          },
+          {
+            "function": "createBoundTranslator",
+            "file": "packages/core/dist/translator.js",
+            "line": 47,
+            "column": 38,
+            "selfSamples": 16,
+            "inclusiveSamples": 288,
+            "selfPercent": 0.7256235827664399
+          },
+          {
+            "function": "parseCatalog",
+            "file": "packages/core/dist/catalog.js",
+            "line": 8,
+            "column": 29,
+            "selfSamples": 16,
+            "inclusiveSamples": 168,
+            "selfPercent": 0.7256235827664399
+          },
+          {
+            "function": "readJson",
+            "file": "packages/core/dist/json.js",
+            "line": 3,
+            "column": 25,
+            "selfSamples": 16,
+            "inclusiveSamples": 20,
+            "selfPercent": 0.7256235827664399
+          },
+          {
+            "function": "formatToParts",
+            "file": "benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+            "line": 54,
+            "column": 23,
+            "selfSamples": 14,
+            "inclusiveSamples": 35,
+            "selfPercent": 0.6349206349206349
+          },
+          {
+            "function": "createBootSnapshot",
+            "file": "packages/core/dist/boot.js",
+            "line": 6,
+            "column": 35,
+            "selfSamples": 13,
+            "inclusiveSamples": 494,
+            "selfPercent": 0.5895691609977324
+          },
+          {
+            "function": "createLazyLayerSync",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 24,
+            "column": 36,
+            "selfSamples": 13,
+            "inclusiveSamples": 148,
+            "selfPercent": 0.5895691609977324
+          },
+          {
+            "function": "compileSourceTextModule",
+            "file": "node:internal/modules/esm/utils",
+            "line": 316,
+            "column": 33,
+            "selfSamples": 13,
+            "inclusiveSamples": 13,
+            "selfPercent": 0.5895691609977324
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 31,
+            "column": 51,
+            "selfSamples": 13,
+            "inclusiveSamples": 13,
+            "selfPercent": 0.5895691609977324
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 65,
+            "column": 19,
+            "selfSamples": 10,
+            "inclusiveSamples": 10,
+            "selfPercent": 0.45351473922902497
+          },
+          {
+            "function": "freezeMessageAst",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 25,
+            "column": 33,
+            "selfSamples": 9,
+            "inclusiveSamples": 51,
+            "selfPercent": 0.40816326530612246
+          },
+          {
+            "function": "createBaseSchema",
+            "file": "packages/core/dist/schema.js",
+            "line": 97,
+            "column": 33,
+            "selfSamples": 9,
+            "inclusiveSamples": 29,
+            "selfPercent": 0.40816326530612246
+          },
+          {
+            "function": "reconcile",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 98,
+            "column": 27,
+            "selfSamples": 7,
+            "inclusiveSamples": 1042,
+            "selfPercent": 0.31746031746031744
+          },
+          {
+            "function": "createLoadedSignature",
+            "file": "packages/core/dist/snapshot-signature.js",
+            "line": 15,
+            "column": 38,
+            "selfSamples": 7,
+            "inclusiveSamples": 192,
+            "selfPercent": 0.31746031746031744
+          },
+          {
+            "function": "compileFunction",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 7,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.31746031746031744
+          },
+          {
+            "function": "process",
+            "file": "node_modules/@noble/hashes/sha2.js",
+            "line": 72,
+            "column": 12,
+            "selfSamples": 7,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.31746031746031744
+          },
+          {
+            "function": "isDeepFrozen",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 4,
+            "column": 29,
+            "selfSamples": 7,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.31746031746031744
+          },
+          {
+            "function": "worker",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 61,
+            "column": 22,
+            "selfSamples": 6,
+            "inclusiveSamples": 897,
+            "selfPercent": 0.272108843537415
+          },
+          {
+            "function": "createCatalogLayerSync",
+            "file": "benchmarks/thin-layer/catalog-layer.mjs",
+            "line": 50,
+            "column": 39,
+            "selfSamples": 6,
+            "inclusiveSamples": 84,
+            "selfPercent": 0.272108843537415
+          },
+          {
+            "function": "parseSimpleMessage",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 36,
+            "column": 35,
+            "selfSamples": 6,
+            "inclusiveSamples": 13,
+            "selfPercent": 0.272108843537415
+          },
+          {
+            "function": "(program)",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 6,
+            "inclusiveSamples": 6,
+            "selfPercent": 0.272108843537415
+          },
+          {
+            "function": "inferArguments",
+            "file": "packages/core/dist/schema.js",
+            "line": 19,
+            "column": 31,
+            "selfSamples": 5,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.22675736961451248
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/schema.js",
+            "line": 105,
+            "column": 52,
+            "selfSamples": 5,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.22675736961451248
+          },
+          {
+            "function": "internalModuleStat",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 5,
+            "inclusiveSamples": 5,
+            "selfPercent": 0.22675736961451248
+          },
+          {
+            "function": "IntlMessageFormat.resolveLocale",
+            "file": "benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+            "line": 255,
+            "column": 24,
+            "selfSamples": 5,
+            "inclusiveSamples": 5,
+            "selfPercent": 0.22675736961451248
+          },
+          {
+            "function": "canonicalLocale",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 7,
+            "column": 32,
+            "selfSamples": 5,
+            "inclusiveSamples": 5,
+            "selfPercent": 0.22675736961451248
+          },
+          {
+            "function": "translate",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 538,
+            "column": 12,
+            "selfSamples": 4,
+            "inclusiveSamples": 62,
+            "selfPercent": 0.18140589569160998
+          },
+          {
+            "function": "#getOrCreateModuleJobAfterResolve",
+            "file": "node:internal/modules/esm/loader",
+            "line": 522,
+            "column": 36,
+            "selfSamples": 3,
+            "inclusiveSamples": 82,
+            "selfPercent": 0.1360544217687075
+          },
+          {
+            "function": "syncManifest",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 54,
+            "column": 24,
+            "selfSamples": 3,
+            "inclusiveSamples": 9,
+            "selfPercent": 0.1360544217687075
+          },
+          {
+            "function": "literal",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 45,
+            "column": 21,
+            "selfSamples": 3,
+            "inclusiveSamples": 6,
+            "selfPercent": 0.1360544217687075
+          },
+          {
+            "function": "fstat",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 3,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.1360544217687075
+          },
+          {
+            "function": "RegExp: \"(?:[^\"\\\\]|\\\\[\\s\\S])*\"",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 3,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.1360544217687075
+          },
+          {
+            "function": "rememberCatalogJson",
+            "file": "packages/core/dist/catalog-json.js",
+            "line": 18,
+            "column": 36,
+            "selfSamples": 3,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.1360544217687075
+          },
+          {
+            "function": "argumentsFor",
+            "file": "benchmarks/thin-layer/catalog-layer.mjs",
+            "line": 24,
+            "column": 22,
+            "selfSamples": 3,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.1360544217687075
+          },
+          {
+            "function": "t",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 2112,
+            "column": 4,
+            "selfSamples": 2,
+            "inclusiveSamples": 64,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+            "line": 229,
+            "column": 25,
+            "selfSamples": 2,
+            "inclusiveSamples": 37,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "get",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 5,
+            "column": 6,
+            "selfSamples": 2,
+            "inclusiveSamples": 25,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "update",
+            "file": "node_modules/@noble/hashes/_md.js",
+            "line": 80,
+            "column": 11,
+            "selfSamples": 2,
+            "inclusiveSamples": 9,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "defaultLoadSync",
+            "file": "node:internal/modules/esm/load",
+            "line": 136,
+            "column": 25,
+            "selfSamples": 2,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "IntlMessageFormat",
+            "file": "benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+            "line": 212,
+            "column": 13,
+            "selfSamples": 2,
+            "inclusiveSamples": 7,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "getResource",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 327,
+            "column": 14,
+            "selfSamples": 2,
+            "inclusiveSamples": 4,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "mergeLiteral",
+            "file": "benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+            "line": 42,
+            "column": 22,
+            "selfSamples": 2,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "lstat",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "read",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "get",
+            "file": "node:internal/modules/package_json_reader",
+            "line": 79,
+            "column": 10,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "resolve",
+            "file": "node:path",
+            "line": 190,
+            "column": 10,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/schema.js",
+            "line": 106,
+            "column": 42,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "toResolveHierarchy",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1011,
+            "column": 21,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "publish",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 80,
+            "column": 19,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "intlKey",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 18,
+            "column": 17,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 15,
+            "column": 28,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "gc",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 2,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.09070294784580499
+          },
+          {
+            "function": "load",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1903,
+            "column": 18,
+            "selfSamples": 1,
+            "inclusiveSamples": 78,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "t",
+            "file": "benchmarks/thin-layer/catalog-layer.mjs",
+            "line": 107,
+            "column": 15,
+            "selfSamples": 1,
+            "inclusiveSamples": 68,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "t",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 121,
+            "column": 8,
+            "selfSamples": 1,
+            "inclusiveSamples": 67,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "extendTranslation",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 740,
+            "column": 20,
+            "selfSamples": 1,
+            "inclusiveSamples": 48,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "parse",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 38,
+            "column": 10,
+            "selfSamples": 1,
+            "inclusiveSamples": 47,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "requireBuiltin",
+            "file": "node:internal/bootstrap/realm",
+            "line": 420,
+            "column": 24,
+            "selfSamples": 1,
+            "inclusiveSamples": 38,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "resolveSync",
+            "file": "node:internal/modules/esm/loader",
+            "line": 737,
+            "column": 14,
+            "selfSamples": 1,
+            "inclusiveSamples": 21,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "readCatalogJson",
+            "file": "packages/core/dist/catalog-json.js",
+            "line": 34,
+            "column": 32,
+            "selfSamples": 1,
+            "inclusiveSamples": 21,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/util/colors",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 12,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "finalizeResolution",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 225,
+            "column": 28,
+            "selfSamples": 1,
+            "inclusiveSamples": 11,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:net",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 9,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "resolve",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 798,
+            "column": 10,
+            "selfSamples": 1,
+            "inclusiveSamples": 9,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "realpathSync",
+            "file": "node:fs",
+            "line": 2711,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 8,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 809,
+            "column": 18,
+            "selfSamples": 1,
+            "inclusiveSamples": 8,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 40,
+            "column": 9,
+            "selfSamples": 1,
+            "inclusiveSamples": 8,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "getPackageJSONURL",
+            "file": "node:internal/modules/package_json_reader",
+            "line": 267,
+            "column": 27,
+            "selfSamples": 1,
+            "inclusiveSamples": 5,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 820,
+            "column": 26,
+            "selfSamples": 1,
+            "inclusiveSamples": 5,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "SideEffectFreeRegExpPrototypeExec",
+            "file": "node:internal/util",
+            "line": 733,
+            "column": 43,
+            "selfSamples": 1,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/keys",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "signature",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 13,
+            "column": 19,
+            "selfSamples": 1,
+            "inclusiveSamples": 3,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "resolvePackageTarget",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 481,
+            "column": 30,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "location",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 43,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "parseArgument",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1674,
+            "column": 15,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "createAstFormat",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 24,
+            "column": 32,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "init",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1150,
+            "column": 7,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 2051,
+            "column": 29,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "get signal",
+            "file": "node:internal/abort_controller",
+            "line": 556,
+            "column": 13,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "looksLikeObjectPath",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 144,
+            "column": 29,
+            "selfSamples": 1,
+            "inclusiveSamples": 2,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "patchProcessObject",
+            "file": "node:internal/process/pre_execution",
+            "line": 261,
+            "column": 28,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "createContext",
+            "file": "node:vm",
+            "line": 225,
+            "column": 23,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "ReadableState",
+            "file": "node:internal/streams/readable",
+            "line": 264,
+            "column": 23,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/util",
+            "line": 129,
+            "column": 33,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/x509",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "get hasSearch",
+            "file": "node:internal/url",
+            "line": 210,
+            "column": 16,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "get hash",
+            "file": "node:internal/url",
+            "line": 1142,
+            "column": 11,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "getFileProtocolModuleFormat",
+            "file": "node:internal/modules/esm/get_format",
+            "line": 164,
+            "column": 37,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/fs/utils",
+            "line": 699,
+            "column": 38,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "URL",
+            "file": "node:internal/url",
+            "line": 824,
+            "column": 14,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "createIdentifierPrefixRegex",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1414,
+            "column": 37,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/@noble/hashes/utils.js",
+            "line": 278,
+            "column": 38,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/@noble/hashes/sha2.js",
+            "line": 431,
+            "column": 56,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "parseArgs",
+            "file": "node:internal/util/parse_args/parse_args",
+            "line": 303,
+            "column": 19,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "hasSameCatalogSource",
+            "file": "packages/core/dist/catalog-json.js",
+            "line": 8,
+            "column": 37,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "RegExp: \\s*:\\s*",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "position",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 42,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "parseArgumentOptions",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1721,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "plainArgument",
+            "file": "packages/core/dist/schema.js",
+            "line": 8,
+            "column": 23,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "RegExp: ^[A-Za-z_][A-Za-z0-9_]*(?![\\s\\S])",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "freezeOwnedMessageMap",
+            "file": "packages/core/dist/diagnostics.js",
+            "line": 19,
+            "column": 38,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "encodeUtf8String",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 35,
+            "column": 41,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "BoundedCache",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 4,
+            "column": 14,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 10,
+            "column": 99,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/lazy-source-cache.mjs",
+            "line": 33,
+            "column": 37,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "done",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 2025,
+            "column": 18,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "RegExp: [\\-\\[\\]\\/\\{\\}\\(\\)\\*\\+\\?\\.\\\\\\^\\$\\|]",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "on",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 256,
+            "column": 5,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 33,
+            "column": 80,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1769,
+            "column": 16,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+            "line": 44,
+            "column": 22,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 28,
+            "column": 81,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "assertNamespace",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 13,
+            "column": 32,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "create",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 236,
+            "column": 9,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "initEventTarget",
+            "file": "node:internal/event_target",
+            "line": 553,
+            "column": 25,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "pushAsyncContext",
+            "file": "node:internal/async_hooks",
+            "line": 547,
+            "column": 26,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "memoryUsage",
+            "file": "node:internal/process/per_thread",
+            "line": 216,
+            "column": 23,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "getPath",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 75,
+            "column": 17,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 147,
+            "column": 38,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "getLastOfPath",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 25,
+            "column": 23,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "value",
+            "file": "node:internal/console/constructor",
+            "line": 285,
+            "column": 20,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(idle)",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 1,
+            "inclusiveSamples": 1,
+            "selfPercent": 0.045351473922902494
+          },
+          {
+            "function": "(root)",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 0,
+            "inclusiveSamples": 2205,
+            "selfPercent": 0
+          },
+          {
+            "function": "createLoadedSnapshot",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 111,
+            "column": 37,
+            "selfSamples": 0,
+            "inclusiveSamples": 480,
+            "selfPercent": 0
+          },
+          {
+            "function": "evaluate",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 0,
+            "inclusiveSamples": 359,
+            "selfPercent": 0
+          },
+          {
+            "function": "run",
+            "file": "node:internal/modules/esm/module_job",
+            "line": 428,
+            "column": 12,
+            "selfSamples": 0,
+            "inclusiveSamples": 354,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 351,
+            "selfPercent": 0
+          },
+          {
+            "function": "freezeCatalogs",
+            "file": "packages/core/dist/catalog-freeze.js",
+            "line": 3,
+            "column": 31,
+            "selfSamples": 0,
+            "inclusiveSamples": 213,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/main/run_main_module",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 87,
+            "selfPercent": 0
+          },
+          {
+            "function": "executeUserEntryPoint",
+            "file": "node:internal/modules/run_main",
+            "line": 140,
+            "column": 31,
+            "selfSamples": 0,
+            "inclusiveSamples": 86,
+            "selfPercent": 0
+          },
+          {
+            "function": "getOrCreateModuleJob",
+            "file": "node:internal/modules/esm/loader",
+            "line": 596,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 83,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/modules/esm/loader",
+            "line": 628,
+            "column": 34,
+            "selfSamples": 0,
+            "inclusiveSamples": 83,
+            "selfPercent": 0
+          },
+          {
+            "function": "tracePromise",
+            "file": "node:diagnostics_channel",
+            "line": 360,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 83,
+            "selfPercent": 0
+          },
+          {
+            "function": "import",
+            "file": "node:internal/modules/esm/loader",
+            "line": 627,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 83,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/modules/run_main",
+            "line": 159,
+            "column": 32,
+            "selfSamples": 0,
+            "inclusiveSamples": 83,
+            "selfPercent": 0
+          },
+          {
+            "function": "asyncRunEntryPointWithESMLoader",
+            "file": "node:internal/modules/run_main",
+            "line": 89,
+            "column": 47,
+            "selfSamples": 0,
+            "inclusiveSamples": 83,
+            "selfPercent": 0
+          },
+          {
+            "function": "runEntryPointWithESMLoader",
+            "file": "node:internal/modules/run_main",
+            "line": 122,
+            "column": 36,
+            "selfSamples": 0,
+            "inclusiveSamples": 83,
+            "selfPercent": 0
+          },
+          {
+            "function": "afterResolve",
+            "file": "node:internal/modules/esm/loader",
+            "line": 606,
+            "column": 26,
+            "selfSamples": 0,
+            "inclusiveSamples": 82,
+            "selfPercent": 0
+          },
+          {
+            "function": "syncLink",
+            "file": "node:internal/modules/esm/module_job",
+            "line": 147,
+            "column": 11,
+            "selfSamples": 0,
+            "inclusiveSamples": 81,
+            "selfPercent": 0
+          },
+          {
+            "function": "link",
+            "file": "node:internal/modules/esm/module_job",
+            "line": 249,
+            "column": 7,
+            "selfSamples": 0,
+            "inclusiveSamples": 81,
+            "selfPercent": 0
+          },
+          {
+            "function": "ModuleJob",
+            "file": "node:internal/modules/esm/module_job",
+            "line": 218,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 81,
+            "selfPercent": 0
+          },
+          {
+            "function": "init",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1795,
+            "column": 7,
+            "selfSamples": 0,
+            "inclusiveSamples": 81,
+            "selfPercent": 0
+          },
+          {
+            "function": "setLng",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 2040,
+            "column": 20,
+            "selfSamples": 0,
+            "inclusiveSamples": 77,
+            "selfPercent": 0
+          },
+          {
+            "function": "changeLanguage",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 2015,
+            "column": 17,
+            "selfSamples": 0,
+            "inclusiveSamples": 77,
+            "selfPercent": 0
+          },
+          {
+            "function": "hasLanguageSomeTranslations",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 421,
+            "column": 30,
+            "selfSamples": 0,
+            "inclusiveSamples": 74,
+            "selfPercent": 0
+          },
+          {
+            "function": "render",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 51,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 69,
+            "selfPercent": 0
+          },
+          {
+            "function": "loadAndTranslate",
+            "file": "node:internal/modules/esm/loader",
+            "line": 492,
+            "column": 19,
+            "selfSamples": 0,
+            "inclusiveSamples": 58,
+            "selfPercent": 0
+          },
+          {
+            "function": "#translate",
+            "file": "node:internal/modules/esm/loader",
+            "line": 425,
+            "column": 13,
+            "selfSamples": 0,
+            "inclusiveSamples": 51,
+            "selfPercent": 0
+          },
+          {
+            "function": "afterLoad",
+            "file": "node:internal/modules/esm/loader",
+            "line": 495,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 51,
+            "selfPercent": 0
+          },
+          {
+            "function": "builtinStrategy",
+            "file": "node:internal/modules/esm/translators",
+            "line": 470,
+            "column": 52,
+            "selfSamples": 0,
+            "inclusiveSamples": 38,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+            "line": 218,
+            "column": 18,
+            "selfSamples": 0,
+            "inclusiveSamples": 37,
+            "selfPercent": 0
+          },
+          {
+            "function": "compileForPublicLoader",
+            "file": "node:internal/bootstrap/realm",
+            "line": 331,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 33,
+            "selfPercent": 0
+          },
+          {
+            "function": "loadBuiltinModule",
+            "file": "node:internal/modules/helpers",
+            "line": 118,
+            "column": 27,
+            "selfSamples": 0,
+            "inclusiveSamples": 33,
+            "selfPercent": 0
+          },
+          {
+            "function": "#resolve",
+            "file": "node:internal/modules/esm/loader",
+            "line": 675,
+            "column": 11,
+            "selfSamples": 0,
+            "inclusiveSamples": 21,
+            "selfPercent": 0
+          },
+          {
+            "function": "defaultResolve",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 947,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 20,
+            "selfPercent": 0
+          },
+          {
+            "function": "#cachedDefaultResolve",
+            "file": "node:internal/modules/esm/loader",
+            "line": 693,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 20,
+            "selfPercent": 0
+          },
+          {
+            "function": "#resolveAndMaybeBlockOnLoaderThread",
+            "file": "node:internal/modules/esm/loader",
+            "line": 716,
+            "column": 38,
+            "selfSamples": 0,
+            "inclusiveSamples": 20,
+            "selfPercent": 0
+          },
+          {
+            "function": "moduleResolve",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 831,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 19,
+            "selfPercent": 0
+          },
+          {
+            "function": "readManifest",
+            "file": "packages/core/dist/loading-registry.js",
+            "line": 21,
+            "column": 29,
+            "selfSamples": 0,
+            "inclusiveSamples": 18,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:assert/strict",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 14,
+            "selfPercent": 0
+          },
+          {
+            "function": "getDateTimeFormat",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 29,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 14,
+            "selfPercent": 0
+          },
+          {
+            "function": "moduleStrategy",
+            "file": "node:internal/modules/esm/translators",
+            "line": 81,
+            "column": 50,
+            "selfSamples": 0,
+            "inclusiveSamples": 13,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/assert/assertion_error",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 13,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:assert",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 13,
+            "selfPercent": 0
+          },
+          {
+            "function": "createWritableStdioStream",
+            "file": "node:internal/bootstrap/switches/is_main_thread",
+            "line": 50,
+            "column": 35,
+            "selfSamples": 0,
+            "inclusiveSamples": 11,
+            "selfPercent": 0
+          },
+          {
+            "function": "getStderr",
+            "file": "node:internal/bootstrap/switches/is_main_thread",
+            "line": 173,
+            "column": 19,
+            "selfSamples": 0,
+            "inclusiveSamples": 11,
+            "selfPercent": 0
+          },
+          {
+            "function": "refresh",
+            "file": "node:internal/util/colors",
+            "line": 26,
+            "column": 10,
+            "selfSamples": 0,
+            "inclusiveSamples": 11,
+            "selfPercent": 0
+          },
+          {
+            "function": "hashC",
+            "file": "node_modules/@noble/hashes/utils.js",
+            "line": 629,
+            "column": 19,
+            "selfSamples": 0,
+            "inclusiveSamples": 9,
+            "selfPercent": 0
+          },
+          {
+            "function": "packageResolve",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 762,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 8,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:crypto",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 7,
+            "selfPercent": 0
+          },
+          {
+            "function": "#loadAndMaybeBlockOnLoaderThread",
+            "file": "node:internal/modules/esm/loader",
+            "line": 796,
+            "column": 35,
+            "selfSamples": 0,
+            "inclusiveSamples": 7,
+            "selfPercent": 0
+          },
+          {
+            "function": "#loadSync",
+            "file": "node:internal/modules/esm/loader",
+            "line": 814,
+            "column": 12,
+            "selfSamples": 0,
+            "inclusiveSamples": 7,
+            "selfPercent": 0
+          },
+          {
+            "function": "load",
+            "file": "node:internal/modules/esm/loader",
+            "line": 778,
+            "column": 7,
+            "selfSamples": 0,
+            "inclusiveSamples": 7,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:stream",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 6,
+            "selfPercent": 0
+          },
+          {
+            "function": "getOwn",
+            "file": "node:internal/bootstrap/realm",
+            "line": 202,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "syncExports",
+            "file": "node:internal/bootstrap/realm",
+            "line": 371,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/bootstrap/realm",
+            "line": 357,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "getESMFacade",
+            "file": "node:internal/bootstrap/realm",
+            "line": 347,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:fs/promises",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "readFileSync",
+            "file": "node:fs",
+            "line": 434,
+            "column": 22,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "getSourceSync",
+            "file": "node:internal/modules/esm/load",
+            "line": 32,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "call",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 119,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "refresh",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 141,
+            "column": 12,
+            "selfSamples": 0,
+            "inclusiveSamples": 5,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/pipeline",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/compose",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "get TextDecoder",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/fs/promises",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/argon2",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 4,
+            "selfPercent": 0
+          },
+          {
+            "function": "splitRoot",
+            "file": "node:fs",
+            "line": 2663,
+            "column": 33,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "toRealPath",
+            "file": "node:internal/modules/helpers",
+            "line": 62,
+            "column": 20,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/modules/cjs/loader",
+            "line": 726,
+            "column": 28,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "resolveMainPath",
+            "file": "node:internal/modules/run_main",
+            "line": 29,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/duplex",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:worker_threads",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/util/trace_sigint",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:perf_hooks",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "tryStatSync",
+            "file": "node:fs",
+            "line": 390,
+            "column": 21,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "getPluralRules",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 33,
+            "column": 21,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "heap",
+            "file": "benchmarks/thin-layer/runtime-cost-probe.mjs",
+            "line": 56,
+            "column": 20,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "hasResourceBundle",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 411,
+            "column": 20,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "<computed>",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1893,
+            "column": 22,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "hasLoadedNamespace",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 2121,
+            "column": 21,
+            "selfSamples": 0,
+            "inclusiveSamples": 3,
+            "selfPercent": 0
+          },
+          {
+            "function": "getInternalGlobal",
+            "file": "node:internal/util",
+            "line": 724,
+            "column": 27,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:child_process",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/readline/interface",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "readSync",
+            "file": "node:fs",
+            "line": 696,
+            "column": 18,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "tryReadSync",
+            "file": "node:fs",
+            "line": 413,
+            "column": 21,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "packageExportsResolve",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 588,
+            "column": 31,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "parseMessage",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1491,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "parse",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1469,
+            "column": 7,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "parse",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 2166,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "Interpolator",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1144,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/lazy-source-cache.mjs",
+            "line": 49,
+            "column": 30,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "extractFromKey",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 514,
+            "column": 17,
+            "selfSamples": 0,
+            "inclusiveSamples": 2,
+            "selfPercent": 0
+          },
+          {
+            "function": "prepareExecution",
+            "file": "node:internal/process/pre_execution",
+            "line": 105,
+            "column": 26,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "prepareMainThreadExecution",
+            "file": "node:internal/process/pre_execution",
+            "line": 45,
+            "column": 36,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "runInNewContext",
+            "file": "node:vm",
+            "line": 304,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/operators",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/streams/readable",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "Duplex",
+            "file": "node:internal/streams/duplex",
+            "line": 64,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "Socket",
+            "file": "node:net",
+            "line": 365,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/child_process",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/worker",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/repl/history",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/util",
+            "line": 349,
+            "column": 10,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/util",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node:internal/crypto/cipher",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "lazyWebCrypto",
+            "file": "node:crypto",
+            "line": 132,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "get",
+            "file": "node:crypto",
+            "line": 361,
+            "column": 8,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "get pathname",
+            "file": "node:internal/url",
+            "line": 1101,
+            "column": 15,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "read",
+            "file": "node:internal/modules/package_json_reader",
+            "line": 122,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "defaultGetFormatWithoutErrors",
+            "file": "node:internal/modules/esm/get_format",
+            "line": 244,
+            "column": 39,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "pathToFileURL",
+            "file": "node:internal/url",
+            "line": 1651,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "wrappedFn",
+            "file": "node:internal/errors",
+            "line": 537,
+            "column": 21,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "set",
+            "file": "node:internal/modules/esm/module_map",
+            "line": 99,
+            "column": 6,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "resolvePackageTargetString",
+            "file": "node:internal/modules/esm/resolve",
+            "line": 376,
+            "column": 36,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "getPackageScopeConfig",
+            "file": "node:internal/modules/package_json_reader",
+            "line": 192,
+            "column": 31,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/@formatjs/icu-messageformat-parser/index.js",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/@noble/hashes/utils.js",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "createHasher",
+            "file": "node_modules/@noble/hashes/utils.js",
+            "line": 625,
+            "column": 29,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "node_modules/@noble/hashes/sha2.js",
+            "line": 1,
+            "column": 1,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "encode",
+            "file": "node:internal/encoding",
+            "line": 355,
+            "column": 9,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "utf8ToBytes",
+            "file": "node_modules/@noble/hashes/utils.js",
+            "line": 488,
+            "column": 28,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "setLngProps",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 2019,
+            "column": 25,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "catalogs",
+            "file": "benchmarks/thin-layer/lazy-layer.mjs",
+            "line": 10,
+            "column": 18,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "createSourceCache",
+            "file": "benchmarks/thin-layer/lazy-source-cache.mjs",
+            "line": 32,
+            "column": 34,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "location",
+            "file": "packages/core/dist/simple-message.js",
+            "line": 19,
+            "column": 20,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "loadResources",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1923,
+            "column": 16,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "regexEscape",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 107,
+            "column": 21,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/lazy-source-cache.mjs",
+            "line": 49,
+            "column": 126,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "bindMemberFunctions",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1767,
+            "column": 29,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "I18n",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1776,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "createInstance",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 2194,
+            "column": 24,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "getNumberFormat",
+            "file": "benchmarks/thin-layer/ast-format.mjs",
+            "line": 28,
+            "column": 22,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "PluralResolver",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 1074,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "EventTarget",
+            "file": "node:internal/event_target",
+            "line": 566,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "AbortSignal",
+            "file": "node:internal/abort_controller",
+            "line": 231,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "emitBeforeScript",
+            "file": "node:internal/async_hooks",
+            "line": 517,
+            "column": 26,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "processImmediate",
+            "file": "node:internal/timers",
+            "line": 456,
+            "column": 28,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "getResource",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 882,
+            "column": 14,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "(anonymous)",
+            "file": "benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+            "line": 827,
+            "column": 23,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "log",
+            "file": "node:internal/console/constructor",
+            "line": 412,
+            "column": 6,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          },
+          {
+            "function": "consoleCall",
+            "file": "",
+            "line": 0,
+            "column": 0,
+            "selfSamples": 0,
+            "inclusiveSamples": 1,
+            "selfPercent": 0
+          }
+        ]
+      }
+    }
+  ],
+  "scope": "Diagnostic full-worker CPU sampling at 1ms, one run per variant in core/layer order. Includes imports, fixture parsing, constructor warm-up, same-width catalog copy/freeze, refresh, asserted translations, retained snapshots, explicit GC and idle. Samples are not limited to refresh; async ancestry and inlined/native frames can be absent. Self percentages use all samples; inclusive rows overlap. Counts and timeDeltas are not exact function CPU time or allocations. Profiled worker timings are deliberately omitted and are not an unprofiled performance or end-to-end latency comparison. Prepared two-locale/one-namespace/10k fixture only."
+}
