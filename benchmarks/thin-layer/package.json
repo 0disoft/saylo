@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "probe": "node probe.mjs",
+    "probe:timezone": "node timezone-probe.mjs",
     "browser": "node browser-smoke.mjs"
   },
   "dependencies": {
