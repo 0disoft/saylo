@@ -5,11 +5,18 @@ import { access, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promise
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 import { createServer } from 'vite';
 import saylo from '@0disoft/saylo-vite';
 
 const directory = fileURLToPath(new URL('.', import.meta.url));
 const repository = fileURLToPath(new URL('../..', import.meta.url));
+const { values } = parseArgs({ options: {
+  'gap-ms': { type: 'string', default: '150' },
+  out: { type: 'string', default: 'benchmarks/results/thin-layer-browser-current.json' },
+} });
+const gapMs = Number(values['gap-ms']);
+if (!Number.isSafeInteger(gapMs) || gapMs < 0) throw new Error('--gap-ms must be a nonnegative integer.');
 const root = await mkdtemp(path.join(directory, '.browser-smoke-'));
 const exec = promisify(execFile);
 const commands = [
@@ -44,8 +51,7 @@ const plugin = { name: 'thin-layer-smoke-channel', configureServer(server) {
           assert.equal(ready, false, 'Unexpected page reload'); ready = data; arm('command'); break;
         case '/command':
           assert.ok(ready && !active, 'Premature/overlapping command');
-          // Functional scenarios only. Space writes; rapid failure/recovery needs a separate probe.
-          if (index) await new Promise(yes => setTimeout(yes, 150));
+          if (index && gapMs) await new Promise(yes => setTimeout(yes, gapMs));
           active = commands[index];
           if (!active) { response = { kind: 'done' }; finished = true; clearTimeout(timer); resolve(); }
           else { response = { kind: 'step', ...active }; arm(active.id); }
@@ -108,7 +114,7 @@ try {
   const files = ['benchmarks/thin-layer/catalog-layer.mjs', 'benchmarks/thin-layer/browser-app.jsx',
     'benchmarks/thin-layer/browser-smoke.mjs', 'benchmarks/thin-layer/package-lock.json',
     'packages/core/dist/runtime.js', 'packages/core/dist/schema.js', 'packages/core/dist/catalog-freeze.js',
-    'packages/vite/dist/index.js', 'packages/vite/dist/live-registry.js', 'package-lock.json'];
+    'packages/vite/dist/index.js', 'packages/vite/dist/live-registry.js', 'packages/vite/dist/disk-rechecks.js', 'package-lock.json'];
   const codeHashes = Object.fromEntries(await Promise.all(files.map(async file =>
     [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
   const packages = {};
@@ -116,10 +122,10 @@ try {
     packages[name] = JSON.parse(await readFile(new URL(`node_modules/${name}/package.json`, import.meta.url), 'utf8')).version;
   packages.vite = JSON.parse(await readFile(path.join(repository, 'node_modules/vite/package.json'), 'utf8')).version;
   const result = { schema: 'saylo-thin-layer-browser-smoke-v1', observedAt: new Date().toISOString(),
-    node: process.version, browser: ready, packages, codeHashes,
-    scope: 'Functional probe only: i18next AST layer plus Saylo eager Vite parser/validation/transport and test-only React subscription bridge. Scenarios separated by 150ms. An initial run without spacing timed out on JSON recovery; rapid failure/recovery remains unverified. Browser profile excluded from the watcher. No lazy/reconnect/session protocol, production build, SSR/hydration, timezone, memory or performance comparison. Input value, DOM identity, focus, open dialog, state counter and old snapshot checked after every command. Count 0 distinguishes English fallback plural from French selected-locale formatting.', observations, traces };
-  await writeFile(new URL('../results/thin-layer-browser-2026-10-11.json', import.meta.url), JSON.stringify(result, null, 2) + '\n');
-  console.log(JSON.stringify({ observations: observations.length, result: 'benchmarks/results/thin-layer-browser-2026-10-11.json' }));
+    node: process.version, browser: ready, packages, codeHashes, scenarioGapMs: gapMs,
+    scope: 'Functional probe only: i18next AST layer plus Saylo eager Vite parser/validation/transport and test-only React subscription bridge. Scenario spacing is explicit in scenarioGapMs. Browser profile excluded from the watcher. No lazy/reconnect/session protocol, production build, SSR/hydration, timezone, memory or performance comparison. Input value, DOM identity, focus, open dialog, state counter and old snapshot checked after every command. Count 0 distinguishes English fallback plural from French selected-locale formatting. Historical failure/recovery limitation is recorded in docs/57.', observations, traces };
+  await writeFile(path.resolve(repository, values.out), JSON.stringify(result, null, 2) + '\n');
+  console.log(JSON.stringify({ observations: observations.length, result: values.out }));
 } finally {
   clearTimeout(timer);
   if (child?.pid && child.exitCode === null && child.signalCode === null) {

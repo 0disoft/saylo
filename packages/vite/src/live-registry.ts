@@ -1,4 +1,4 @@
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { CatalogError, createBaseSchema, validateTranslation } from '@0disoft/saylo-core';
 import type { CatalogSchema, ParsedCatalog } from '@0disoft/saylo-core';
@@ -6,6 +6,7 @@ import { catalogLocation, readCatalogFile } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import type { LiveDiagnostic } from './types.js';
 import { quarantineTranslation } from './translation-quarantine.js';
+import { DiskRechecks, diskStamp } from './disk-rechecks.js';
 
 type Read = () => string | Promise<string>;
 const QUIET_MS = 40;
@@ -28,6 +29,7 @@ export class LiveRegistry {
   private generation = 0;
   private stopped = false;
   private running = Promise.resolve();
+  private rechecks = new DiskRechecks(file => { void this.enqueue(file); });
 
   constructor(
     private root: string,
@@ -111,7 +113,9 @@ export class LiveRegistry {
 
   enqueue(file: string, read?: Read): Promise<void> {
     if (this.stopped || !this.owns(file)) return Promise.resolve();
-    this.queued.set(path.resolve(file), read);
+    const resolved = path.resolve(file);
+    this.rechecks.reset(resolved);
+    this.queued.set(resolved, read);
     this.generation++;
     this.schedule();
     return new Promise(resolve => this.waiters.push(resolve));
@@ -130,6 +134,8 @@ export class LiveRegistry {
 
   private drain() {
     const batch = this.queued;
+    const checks = new Map([...batch.keys()].map(file => [file, this.rechecks.token(file)]));
+    const stamps = new Map<string, string>();
     const waiters = this.waiters;
     const generation = this.generation;
     this.queued = new Map();
@@ -146,7 +152,12 @@ export class LiveRegistry {
         const location = catalogLocation(this.root, file)!;
         try {
           // Read the final filesystem state, rather than trusting an earlier unlink/add label.
-          const changed = await readCatalogFile(this.root, file, location.locale, location.namespace, read, candidate.get(file)?.catalog);
+          const changed = await readCatalogFile(this.root, file, location.locale, location.namespace, async () => {
+            // Capture before reading: a suppressed write during the read must
+            // not be mistaken for the version represented by the old text.
+            stamps.set(file, await diskStamp(file));
+            return read ? read() : readFile(file, 'utf8');
+          }, candidate.get(file)?.catalog);
           candidate.set(file, changed);
           errors.delete(file);
         } catch (error) {
@@ -162,7 +173,7 @@ export class LiveRegistry {
       // A save arrived while reading: discard this attempt and re-read the affected paths.
       if (generation !== this.generation || settleMissing) {
         if (settleMissing) this.settleDisk = true;
-        for (const file of batch.keys()) if (!this.queued.has(file)) this.queued.set(file, undefined);
+        for (const file of batch.keys()) if (!this.queued.has(file)) this.requeue(file);
         this.schedule();
         return;
       }
@@ -190,7 +201,7 @@ export class LiveRegistry {
         const { active } = prepared;
         this.validate(active);
         if (generation !== this.generation || this.stopped) {
-          if (!this.stopped) { for (const file of batch.keys()) if (!this.queued.has(file)) this.queued.set(file, undefined); this.schedule(); }
+          if (!this.stopped) { for (const file of batch.keys()) if (!this.queued.has(file)) this.requeue(file); this.schedule(); }
           return;
         }
         const changed = active.length !== this.accepted.size || active.some(f => {
@@ -209,14 +220,22 @@ export class LiveRegistry {
       } catch (error) {
         if (this.stopped) return;
         if (generation !== this.generation) {
-          for (const file of batch.keys()) if (!this.queued.has(file)) this.queued.set(file, undefined);
+          for (const file of batch.keys()) if (!this.queued.has(file)) this.requeue(file);
           this.schedule();
           return;
         }
         this.errors.set('<registry>', this.failure(error));
         this.publish([...this.accepted.values()], false, this.diagnostic());
       }
-    }).finally(() => { for (const resolve of waiters) resolve(); });
+    }).finally(() => {
+      for (const [file, check] of checks) this.rechecks.finish(file, check, stamps.get(file));
+      for (const resolve of waiters) resolve();
+    });
+  }
+
+  private requeue(file: string) {
+    this.rechecks.reset(file);
+    this.queued.set(file, undefined);
   }
 
   private failure(error: unknown): LiveDiagnostic {
@@ -225,6 +244,7 @@ export class LiveRegistry {
 
   stop() {
     this.stopped = true;
+    this.rechecks.stop();
     clearTimeout(this.timer);
     this.queued.clear();
     for (const resolve of this.waiters) resolve();

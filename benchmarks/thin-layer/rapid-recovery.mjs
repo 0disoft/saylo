@@ -4,14 +4,26 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
+import { parseArgs } from 'node:util';
 import { createServer } from 'vite';
 import saylo from '@0disoft/saylo-vite';
 
 const repository = fileURLToPath(new URL('../..', import.meta.url));
 const parent = path.join(repository, 'benchmarks');
+const { values } = parseArgs({ options: {
+  out: { type: 'string', default: 'benchmarks/results/rapid-recovery-current.json' },
+  'assert-recovered': { type: 'boolean', default: false },
+} });
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const observations = [];
-for (const recoveryGapMs of [0, 60, 0]) {
+const cases = [
+  { id: 'json-0-a', recoveryGapMs: 0, first: '{', diagnostic: true },
+  { id: 'json-60', recoveryGapMs: 60, first: '{', diagnostic: true },
+  { id: 'json-0-b', recoveryGapMs: 0, first: '{', diagnostic: true },
+  { id: 'schema-0', recoveryGapMs: 0, first: '{"greeting":"{unexpected}"}', diagnostic: true },
+  { id: 'valid-0', recoveryGapMs: 0, first: '{"greeting":"First"}', diagnostic: false },
+];
+for (const { id, recoveryGapMs, first, diagnostic } of cases) {
   const root = await mkdtemp(path.join(parent, '.rapid-probe-'));
   let server, timeout;
   try {
@@ -31,7 +43,8 @@ for (const recoveryGapMs of [0, 60, 0]) {
     let diagnosticAt;
     const original = server.ws.send.bind(server.ws);
     server.ws.send = (...args) => {
-      if (args[0]?.event === 'saylo:eager-diagnostic' && args[0].data.message) {
+      if (diagnosticAt === undefined && ((diagnostic && args[0]?.event === 'saylo:eager-diagnostic' && args[0].data.message) ||
+          (!diagnostic && args[0]?.event === 'saylo:manifest' && args[0].data.kind === 'update'))) {
         diagnosticAt = performance.now(); resolveDiagnostic();
       }
       return original(...args);
@@ -39,9 +52,9 @@ for (const recoveryGapMs of [0, 60, 0]) {
     server.watcher.on('change', changed => { if (path.resolve(changed) === file) events.push(performance.now()); });
     await delay(150); // Let the initial watcher settle; no browser or adapter involved.
     const startedAt = performance.now();
-    await writeFile(file, '{');
+    await writeFile(file, first);
     await Promise.race([received, new Promise((_, reject) => {
-      timeout = setTimeout(() => reject(new Error('No invalid JSON diagnostic.')), 2000);
+      timeout = setTimeout(() => reject(new Error(`No first ${diagnostic ? 'diagnostic' : 'publication'}: ${id}`)), 2000);
     })]);
     clearTimeout(timeout);
     if (recoveryGapMs) await delay(recoveryGapMs);
@@ -51,7 +64,8 @@ for (const recoveryGapMs of [0, 60, 0]) {
     const result = await catalogSource.loadCatalog('fr', 'demo');
     assert.equal(result.status, 'present');
     const source = result.catalog.messages.greeting.source;
-    const observation = { recoveryGapMs, validWriteAfterDiagnosticMs: validWriteStartedAt - diagnosticAt,
+    const observation = { id, recoveryGapMs, firstReceipt: diagnostic ? 'diagnostic' : 'manifest',
+      validWriteAfterFirstReceiptMs: validWriteStartedAt - diagnosticAt,
       changeEvents: events.map(time => time - startedAt), source,
       recovered: source === 'Recovered', revision: catalogSource.readManifest().registryRevision };
     observations.push(observation); console.log(JSON.stringify(observation));
@@ -64,10 +78,12 @@ for (const recoveryGapMs of [0, 60, 0]) {
   }
 }
 const files = ['benchmarks/thin-layer/rapid-recovery.mjs', 'packages/vite/dist/index.js',
-  'packages/vite/dist/live-registry.js', 'node_modules/vite/dist/node/chunks/node.js', 'package-lock.json'];
+  'packages/vite/dist/live-registry.js', 'packages/vite/dist/disk-rechecks.js',
+  'node_modules/vite/dist/node/chunks/node.js', 'package-lock.json'];
 const codeHashes = Object.fromEntries(await Promise.all(files.map(async file =>
   [file, createHash('sha256').update(await readFile(path.join(repository, file))).digest('hex')])));
 const result = { schema: 'saylo-rapid-recovery-probe-v1', observedAt: new Date().toISOString(), node: process.version,
-  scope: 'Three sequential fresh Vite SSR fixtures, real watcher, invalid JSON followed by valid write after diagnostic. No browser/i18next/UI. Catalog read 250ms after valid write; not a latency or cross-platform reliability claim. Bundled watcher contains a 50ms change-event throttle, but this probe does not disable it or prove causation.',
+  scope: 'Five sequential fresh Vite SSR fixtures, real watcher. JSON error (0/60/0ms gap), schema error and valid first publication (0ms gap) followed by valid write. No browser/i18next/UI. Catalog read 250ms after valid write; not a latency or cross-platform reliability claim. Bundled watcher throttle retained. Historical failure evidence remains in rapid-recovery-2026-10-11.json.',
   codeHashes, observations };
-await writeFile(new URL('../results/rapid-recovery-2026-10-11.json', import.meta.url), JSON.stringify(result, null, 2) + '\n');
+await writeFile(path.resolve(repository, values.out), JSON.stringify(result, null, 2) + '\n');
+if (values['assert-recovered']) assert.ok(observations.every(item => item.recovered), 'Every final valid write must be recovered.');

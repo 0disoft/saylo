@@ -210,6 +210,54 @@ test('bad JSON retains last good registry and recovery clears diagnostic', async
   assert.equal(events.at(-1).data.message, '');
 });
 
+test('a suppressed disk correction after a guarded JSON error still recovers', async t => {
+  const { root, change, events, request } = await setup(t);
+  const file = path.join(root, 'en', 'demo.json');
+  await writeFile(file, '{');
+  await change('en', '{');
+  assert.equal(request()[0].data.revision, 0);
+  await writeFile(file, '{"hello":"Recovered {name}"}');
+  // No subsequent watcher event or hotUpdate: exercise the trailing disk check.
+  const deadline = Date.now() + 2000;
+  while (request()[0].data.revision === 0 && Date.now() < deadline)
+    await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'en').messages.hello.source, 'Recovered {name}');
+  assert.equal(request()[1].data.message, '');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+});
+
+test('a suppressed second valid save replaces the first without another watcher event', async t => {
+  const { root, change, request, events } = await setup(t);
+  const file = path.join(root, 'en', 'demo.json');
+  await writeFile(file, '{"hello":"First {name}"}');
+  await change('en', '{"hello":"First {name}"}');
+  const first = request()[0].data.catalogs.find(c => c.locale === 'en');
+  assert.equal(first.messages.hello.source, 'First {name}');
+  await writeFile(file, '{"hello":"Final {name}"}');
+  const deadline = Date.now() + 2000;
+  while (request()[0].data.revision === 1 && Date.now() < deadline)
+    await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'en').messages.hello.source, 'Final {name}');
+  assert.equal(first.messages.hello.source, 'First {name}');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 2);
+});
+
+test('unchanged disk checks do not republish and closing cancels pending rereads', async t => {
+  const { root, change, plugin, request, events } = await setup(t);
+  const file = path.join(root, 'en', 'demo.json');
+  await writeFile(file, '{"hello":"Stable {name}"}');
+  await change('en', '{"hello":"Stable {name}"}');
+  await new Promise(resolve => setTimeout(resolve, 150));
+  assert.equal(request()[0].data.revision, 1);
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+  await change('en', '{');
+  const published = events.length;
+  plugin.closeBundle();
+  await writeFile(file, '{"hello":"Closed {name}"}');
+  await new Promise(resolve => setTimeout(resolve, 150));
+  assert.equal(events.length, published);
+});
+
 test('live file reads reuse unchanged message AST without retaining edited text', async t => {
   const { change, request } = await setup(t);
   await change('ko', '{"hello":"First {name}","keep":"{n, plural, other {#}}"}');
