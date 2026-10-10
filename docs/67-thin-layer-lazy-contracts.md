@@ -58,3 +58,7 @@
 - 여전히 Saylo Vite compiler와 공개 static CatalogSource를 쓴다. browser lazy dev wire protocol·session reconnect·typegen·성능을 증명하지 않는다.
 - 제품 package·공개 API·버전은 그대로다. unit 28은 common boot helper 검증을 공유하고, loader는 core `createI18n` wrapper가 아니라 검증된 state를 독자적으로 조정한다.
 - `abbacf8` 이후 source로 다시 만든 [canonical 원시 결과](../benchmarks/results/thin-layer-lazy-production-canonical-2026-10-11.json)가 최신이다. 같은 2 build·7 chunk·cache count이고 chunk별 hash도 이 파일에 있다. 재현은 `node benchmarks/thin-layer/lazy-production-probe.mjs --out benchmarks/results/thin-layer-lazy-production-canonical-2026-10-11.json`이고, `597880e` 시점 raw는 [historical](../benchmarks/results/thin-layer-lazy-production-2026-10-11.json)로 남긴다.
+
+## 후속: 브라우저 lazy wire (`51f1393`)
+
+여기까지가 Node 계약과 production static 부분 로딩이다. 실제 Chromium·Vite 개발 서버에서 공개 `createDevCatalogSource`와 `connectDev`로 catalog 6 pair를 요청하고 compact·patch frame·부분 요청·detach/rebind·실제 소켓 종료 뒤 Vite reload를 확인한 기록은 [68](68-thin-layer-lazy-browser.md)에 있다. 위 14 시나리오와 production chunk 기록·판정은 그대로 유효하다.

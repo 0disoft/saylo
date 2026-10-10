@@ -80,6 +80,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 64. [67-thin-layer-lazy-contracts.md](67-thin-layer-lazy-contracts.md) — 독립 i18next lazy coordinator의 14 시나리오 교차 검증과 production 부분 로딩
 
+65. [68-thin-layer-lazy-browser.md](68-thin-layer-lazy-browser.md) — 실제 Chromium/Vite dev에서 core·layer 두 fixture의 compact·patch wire 12단계와 실제 소켓 종료 뒤 Vite 기본 reload 상태 초기화
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |
