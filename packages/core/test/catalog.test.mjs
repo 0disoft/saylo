@@ -235,6 +235,21 @@ test('a cached successful contract never hides later ICU conflicts or their sour
   });
 });
 
+test('plain argument shortcuts share the canonical ICU contract without hiding conflicts', () => {
+  const parsed = catalog({ plain: 'Hello {name} {name}', escaped: "Hello '{' {name}",
+    literal: 'text', quoted: "'{'", prototype: '{__proto__}', repeatedPrototype: 'Hi {__proto__}',
+    multiple: '{name} {other}', other: '{other}', numeric: '{name, number}' });
+  assert.equal(parsed.messages.plain.arguments, parsed.messages.escaped.arguments);
+  assert.equal(parsed.messages.literal.arguments, parsed.messages.quoted.arguments);
+  assert.equal(parsed.messages.prototype.arguments, parsed.messages.repeatedPrototype.arguments);
+  assert.notEqual(parsed.messages.multiple.arguments, parsed.messages.plain.arguments);
+  assert.notEqual(parsed.messages.numeric.arguments, parsed.messages.plain.arguments);
+  assert.deepEqual(Object.keys(parsed.messages.multiple.arguments), ['name', 'other']);
+  assert.throws(() => parsed.messages.prototype.arguments.__proto__.acceptedTypes.push('date'), TypeError);
+  assert.throws(() => catalog({ good: '{name}', bad: '{name, number} {name, select, other {x}}' }), error =>
+    error.diagnostics.some(d => d.id === 'bad' && d.code === 'ARGUMENT_CONFLICT'));
+});
+
 test('shared validation contracts still check every ID, changed base types and failing diagnostics', () => {
   const base = createBaseSchema(catalog({ a: '{n, number}', b: '{n, select, other {text}}', date: '{n, date}' }));
   const translation = catalog({ a: '{n}', b: 'Text {n}' }, 'en');

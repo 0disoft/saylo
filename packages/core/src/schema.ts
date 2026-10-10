@@ -5,11 +5,44 @@ import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import { CatalogError, freeze, isDeepFrozen } from './diagnostics.js';
 import type { ArgumentType, CatalogDiagnostic, CatalogSchema, MessageSchema, ParsedCatalog } from './types.js';
 
+// The canonical cache is owned by one parse. Its shortcut dies with that cache;
+// signatures and shared schema identity stay identical to the general ICU path.
+const plainContracts = new WeakMap<Map<string, MessageSchema>, Map<string | undefined, MessageSchema>>();
+
+function plainArgument(ast: readonly MessageFormatElement[]): string | undefined | false {
+  let name: string | undefined;
+  for (const element of ast) {
+    if (element.type === TYPE.literal) continue;
+    if (element.type !== TYPE.argument || (name !== undefined && name !== element.value)) return false;
+    name = element.value;
+  }
+  return name;
+}
+
 export function inferArguments(
   ast: readonly MessageFormatElement[],
   conflict: (argument: string, offset: number) => CatalogDiagnostic,
   cache: Map<string, MessageSchema>,
 ): MessageSchema {
+  const name = plainArgument(ast);
+  if (name !== false) {
+    let plain = plainContracts.get(cache);
+    const reused = plain?.get(name);
+    if (reused) return reused;
+    // Literal-only and repeated uses of one plain argument cannot conflict.
+    // Keep the existing encounter/type signature for cross-path sharing.
+    const signature = name === undefined ? '[]' : JSON.stringify([[name, ['string', 'number']]]);
+    let schema = cache.get(signature);
+    if (!schema) {
+      const record: Record<string, { required: true; acceptedTypes: ArgumentType[] }> = Object.create(null);
+      if (name !== undefined) record[name] = { required: true, acceptedTypes: ['string', 'number'] };
+      schema = freeze(record);
+      cache.set(signature, schema);
+    }
+    if (!plain) { plain = new Map(); plainContracts.set(cache, plain); }
+    plain.set(name, schema);
+    return schema;
+  }
   const types = new Map<string, ArgumentType[]>();
   const diagnostics: CatalogDiagnostic[] = [];
   function use(name: string, accepted: ArgumentType[], offset: number) {
