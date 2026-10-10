@@ -49,7 +49,7 @@ catalogParse는 각 mode의 50/50 표본에서 읽기·후보 하위 네 구간 
 - 브라우저 하네스가 입력 노드·입력값·React state와 실제 번역 DOM을 확인했다. `.d.ts`의 mtime·size는 그대로였다. 측정 편집은 patch 50·full 0·upsert 1·position 갱신 0이며, 로케일 추가는 선택 전 응답 0·선택 후 compact full 50이다. en 복귀·파일 삭제·목록 제거도 완료했다.
 - 임시 benchmark 디렉터리와 전용 Chrome/Edge 프로세스가 남지 않았다. 제품 입력이 같아 build·제품 테스트·pack·release는 반복하지 않았다.
 
-다음은 변경 전 `49fe1eb`와 변경 후 `8046a31`을 같은 하네스·의존성으로 교차 실행해 종단 간 결과를 대조하는 것이다. 기존 `locale-compare.mjs`는 diagnostics 한 파일만 다른 과거 seal 실험에 한정돼 있으므로 이번 두 소스 변경에 맞는 좁은 비교 범위를 추가해야 한다. 이번 측정만으로 최적화를 되돌리거나 새로운 브라우저 병목을 확정하지 않는다.
+변경 전 `49fe1eb`와 변경 후 `8046a31`의 종단 간 대조는 [51](51-owned-message-map-comparison.md)에 기록했다. `locale-compare.mjs`에 두 소스 변경에 맞는 `owned-map` 비교 범위를 추가해 편집·로케일 추가를 같은 하네스·의존성으로 교차 실행했고, 두 mode 모두 pooled p95가 커져 목표를 달성하지 못했다. 이번 측정만으로 최적화를 되돌리거나 새로운 브라우저 병목을 확정하지 않는다.
 
 원본: [편집 결과](../benchmarks/results/owned-map-2026-10-10-edit-server-files.json), [편집 raw](../benchmarks/results/owned-map-2026-10-10-edit-server-files.10k-20-locales.samples.json), [로케일 결과](../benchmarks/results/owned-map-2026-10-10-locale-add-server-files.json), [로케일 raw](../benchmarks/results/owned-map-2026-10-10-locale-add-server-files.10k-20-locales.samples.json).
 
