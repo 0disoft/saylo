@@ -68,6 +68,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 57. [60-next-turn-additions.md](60-next-turn-additions.md) — 다음 턴 신규 로케일 파일 즉시 읽기, 서버 파일 구간·파서 trial 원복·최신 단일 run 기록
 58. [61-superseded-parse-reuse.md](61-superseded-parse-reuse.md) — superseded 성공 파싱 재사용, 직전 60 single-read 단정 실패 재현과 성능 안정성 미달 기록
 
+59. [62-multi-read-measurements.md](62-multi-read-measurements.md) — 다중 읽기 batch 소유권·interval union 계측과 상세 조건 25회 재측정
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |

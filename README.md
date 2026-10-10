@@ -29,6 +29,8 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - `32e120c`에서 새 카탈로그 경로의 40ms 대기창을 제거했고 기존 파일 교체·삭제 안정화는 유지한다. 단일 large 목록 run은 p95 189.30ms였으나, 두 소스만 바꾼 ABBA 비교의 pooled p95는 417.47→642.02ms로 목표 미달이다. 중앙값은 214.09→150.97ms, 250ms 이내는 31/50→40/50으로 개선됐지만 긴 지연의 원인은 미확정이라 성능 채택은 잠정 상태다. 조건·복구 검증·원복한 파서 실험은 [60](docs/60-next-turn-additions.md)에 있다.
 - `c19ca34`에서 새 카탈로그 경로의 superseded 성공 파싱을 파일별 map으로 넘겨 최신 읽기에서 재사용하도록 했다. 직전 [60](docs/60-next-turn-additions.md)의 single-read 단정은 read 2·parse 2로 실제 실패했고, 정상 벤치는 large p95 247.25ms만 250ms 목표에 들어오고 small p95 279.47ms는 미달이라 성능 안정성 목표는 미달이다. 상세·실패 trace는 [61](docs/61-superseded-parse-reuse.md)에 있다.
 
+- `a0e47d5`에서 benchmark 계측만 고쳐 각 drain의 running callback과 `prepareTranslations`를 자기 batch에 묶고 겹치는 대기창을 union으로 셌다. v1 candidate·queue와는 직접 비교하지 않는다. 상세 계측 조건 단일 run은 목록 p95 115.88ms·250ms 이내 24/25이고 두 번 읽은 run은 measured 3/25다. 제품 소스 `c19ca34`와 출고 package·dist는 그대로이고 push·publish는 없다. 상세는 [62](docs/62-multi-read-measurements.md)에 있다.
+
 ## 로컬 실행
 
 Node.js와 npm으로 저장소 루트에서 실행한다. 지원 버전은 Node 24.x이고 검증 환경은 Node.js 24.18.0, TypeScript 7.0.2다.

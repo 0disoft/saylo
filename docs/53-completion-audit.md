@@ -148,3 +148,5 @@
 동일 두 소스만 치환한 ABBA 후속 비교는 목록 p50 214.09→150.97ms, 250ms 이내 31/50→40/50이지만 pooled p95 417.47→642.02ms로 목표 미달이다. after 두 run도 각각 642.02·463.31ms다. control·파일 쓰기 시간도 달라져 인과를 확정하지 않으며 대기창 제거의 성능 채택은 잠정 상태로 둔다. 상세 파일 계측은 after의 1회 읽기 가정을 만족하지 못해 종료했고 해당 시도에 after·pooled 결과는 없다. 정상 조건 ABBA와 복구 5개·프로토타입 브라우저 8개는 완료했다. 근거와 재현은 60을 따른다.
 
 2026-10-11(KST), 새 카탈로그 경로의 single-read 단정이 실제로 실패한 기록을 추가했고(`c19ca34`), 중복 cold parse는 superseded 성공 파싱을 파일별로 넘겨 최신 읽기에서 재사용하도록 고쳤다. 제품 `c19ca34` 루트 `npm run check` 223개와 이후 tests-only schema 케이스 plugin 48개가 통과했지만, 정상 벤치는 large만 250ms 목표에 들어오고 small은 미달이라 성능 안정성 목표는 미달이다. 상세와 실패 trace는 [61-superseded-parse-reuse.md](61-superseded-parse-reuse.md)를 따른다.
+
+2026-10-11(KST), `a0e47d5`에서 benchmark 계측만 고쳐 각 drain의 callback과 `prepareTranslations`를 `AsyncLocalStorage`로 자기 batch에 묶고 겹치는 대기창을 union으로 계산했다. 제품 소스 `c19ca34`와 출고 package·dist·clock에는 손대지 않았다. 상세 계측 조건 단일 run은 목록 p95 115.88ms·250ms 이내 24/25이고 [61](61-superseded-parse-reuse.md)의 일반 조건 기록은 역사값으로 보존한다. 성능 안정성 목표와 나머지 후보는 여전히 미완이다. 상세는 [62](62-multi-read-measurements.md)를 따른다.

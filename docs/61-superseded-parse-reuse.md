@@ -79,3 +79,7 @@ node benchmarks/live-update/run.mjs --scenario 10k-20-locales --mode locale-add 
 ## 남은 목표
 
 다음 명시 목표는 성능 안정성이다. stage 다중 읽기 지원과 정확한 계측, owned map·fast additions의 잠정 선택 판정, thin-layer 전체 계약·lazy·SSR·production·timezone·perf 평가, 릴리스 전달 결정이 남아 있다. 장기 목표는 완료가 아니다.
+
+## 후속 (`a0e47d5`)
+
+위 실패 명령은 harness `df094ba`·`e456` 시점의 기록이고, v2에서는 같은 직렬 superseded 읽기 2회가 publication 1·parent 창 2·operation 2/2/2로 성공 집계됐다. 수정은 benchmark 전용이며 제품 소스 `c19ca34`와 출고 package·dist·clock은 바뀌지 않았다. 상세는 [62-multi-read-measurements.md](62-multi-read-measurements.md)를 따른다.
