@@ -163,3 +163,15 @@ CI artifact의 manifest를 [releases/0.1.0-alpha.2.json](../releases/0.1.0-alpha
 CI artifact의 manifest를 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)에 기록했다. 다섯 공개 버전의 `alpha` tag·metadata·다운로드한 tarball SHA-512가 일치하고 `latest`는 placeholder `0.0.0-stage`를 유지한다. 게시 직후 공개 metadata는 `alpha.2`를 가리키고 `alpha.3` 버전 endpoint는 404였으나, 재게시 없이 조회·다운로드 가능해졌다. 원인은 확정하지 않는다.
 
 `npm run verify:registry:alpha3`는 승인 integrity와 실제 tarball 외부 설치, README 예제, JS/checkJs·TS, typegen CLI, core runtime·React/Svelte SSR, public subpath, Vite lazy build와 parser 제거, 새 완역 fixture(기본 fallback·키/namespace 누락 진단·기존 타입 유지·수정 후 빌드)의 JS/TS 소비를 exit 0으로 통과했다. `npm run verify:registry:sveltekit:alpha3`는 같은 승인 registry 파일로 SvelteKit 앱을 설치해 타입 진단 0 errors·0 warnings, client/SSR 빌드, 요청별 ko/en SSR·boot와 canonical/base fallback, dev 연결 수명(listener 정리·idempotent stop·late connection 취소), Node 운영 HTTP, HeadlessChrome 154의 hydration·ko/en/ko 전환·공통 layout 입력/모달 유지·종료/재진입을 통과했다. 임시 앱·서버·브라우저는 finally에서 정리했다. 기존 `alpha.1`·`alpha.2` 검증은 이번에 반복하지 않았다. 새 성능 측정과 `examples/npm` lock 변경은 없다.
+
+## 2026-10-11 현재 소스 로컬 검증
+
+게시 승인·원격 상태와 별개로, 현행 소스 `0f7840f`(제품 `eb66af8`)에 대해 로컬에서 다음을 exit 0으로 확인했다. 근거는 [review/local-readiness-2026-10-11.json](../review/local-readiness-2026-10-11.json)(입력 해시 86개, 기록 `38ee9be`)와 [로컬 릴리스 준비 상태](77-local-release-readiness.md)다.
+
+- `npm run check`: 다섯 패키지 build·단위 테스트, JS/TS 소비 5종, React 예제, OIDC·registry 단위 검사.
+- `npm exec -- node scripts/pack-smoke.mjs`: 다섯 tarball 독립 install, CLI·typegen·README 예제, Node 번역·인자 거부·React SSR, React·Svelte selector SSR, Vite production lazy, 완역 거부·복구, 개발 의존성 제거 후 SSR(관측 Vite 8.3.4).
+- `npm exec -- node scripts/pack-sveltekit.mjs`: 독립 5-tarball install, svelte-check 0 error·0 warning, Vite 8.3.4 production Node·client build, ko/en 동시 SSR과 boot 일치·canonical fallback, listener 정리·runtime 취소, 운영 HTTP, Chromium 154 hydration·ko→en→ko 전환·공통 layout 상태 유지·종료·재진입.
+
+이 pack은 미게시 후속 코드를 `0.1.0-alpha.3` metadata로 묶은 로컬 proof이고 게시된 `alpha.3` artifact가 아니다. selector 공개 API는 현행 소스에 구현돼 있고 로컬 pack으로 검증했지만 게시본에는 없다. 임시 tarball·앱·브라우저·서버는 pack 스크립트가 정리했고, 승인 파일 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)과 `.release/`는 갱신하지 않았다.
+
+원격 검증(릴리스 `version`·CI 승인, `verify_oidc` 토큰 교환, `verify:registry:alpha3` registry 대조)은 이번 로컬 check와 별개다. 현행 head에 대한 외부 CI·OIDC 검증을 실행한 것이 아니다.

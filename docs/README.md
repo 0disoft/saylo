@@ -98,6 +98,10 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 73. [76-runtime-decision.md](76-runtime-decision.md) — 런타임 형태 결정: 독립 런타임 유지, FormatJS parser·IMF 재사용 지속, i18next prototype 미채택
 
 
+74. [77-local-release-readiness.md](77-local-release-readiness.md) — 최신 소스의 전체 check·독립 tarball·SvelteKit browser 검증과 미게시 상태
+
+검증과 로드맵의 기존 상세 이력은 [06-validation-history.md](06-validation-history.md)에 보존한다.
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |

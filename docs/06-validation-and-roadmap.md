@@ -4,7 +4,7 @@
 
 ## 성능 목표
 
-아래 수치는 목표다. 로컬 벤치마크로 일부를 측정했고, 결과와 한계는 [상세 성능 기록](10-performance-measurements.md)에 남겼다. request-scoped patch 적용 뒤 small은 재실행에서 p95 목표 안에 들어왔지만 같은 코드의 첫 run은 넘었고, large는 어느 run에서도 p95 목표를 넘었다. 어느 시나리오도 안정적 달성을 주장하지 않는다.
+아래 수치는 목표다. 로컬 벤치마크로 일부를 측정했고, 결과와 한계는 [상세 성능 기록](10-performance-measurements.md)에 남겼다. 2026-10-11 [75](75-early-disk-rechecks.md)의 격리 스냅샷 ABBA(warmed, normal prebundle, typegen on)에서 수정 반영 p95는 small(1k×3) 49.57ms·large(10k×20) 80.25ms로 둘 다 100ms 목표 안이고, 로케일 목록 단발 p95는 small 77.46ms·large 177.83ms로 250ms 목표 안이다. 편집은 두 after run의 표본을 합친 값이고 로케일 목록은 조건별 단일 run이다. large는 run별 편차가 커서 안정 달성이나 다른 OS·워크로드에서의 달성은 주장하지 않는다. 이전 request-scoped patch의 첫 run·재실행 기록은 [검증 이력](06-validation-history.md)에 남긴다.
 
 | 항목 | 목표 | 조건 |
 | --- | --- | --- |
@@ -26,6 +26,16 @@
 - CI에서 광범위한 매트릭스로 비용을 부풀리지 않는다. 필요한 조합만 돌린다.
 
 이전 측정과 검증 기록은 [검증 이력](06-validation-history.md)에 보존한다.
+
+## 현재 소스 검증 (2026-10-11)
+
+현행 소스 `0f7840f`(제품 `eb66af8`) 로컬 검증 결과를 `38ee9be`에 기록했다. 근거는 [review/local-readiness-2026-10-11.json](../review/local-readiness-2026-10-11.json)(입력 해시 86개)와 [77](77-local-release-readiness.md)이다.
+
+- `npm run check` exit 0: 다섯 패키지 build·단위 테스트, JS/TS 소비 5종, React 예제, OIDC·registry 단위 검사.
+- `npm exec -- node scripts/pack-smoke.mjs` exit 0: 다섯 tarball 독립 install, CLI·typegen·README 예제, Node 번역·인자 거부·React SSR, React·Svelte selector SSR, Vite production lazy, 완역 거부·복구, 개발 의존성 제거 후 SSR(관측 Vite 8.3.4).
+- `npm exec -- node scripts/pack-sveltekit.mjs` exit 0: 독립 5-tarball install, svelte-check 0 error·0 warning, Vite 8.3.4 production Node·client build, ko/en 동시 SSR과 boot 일치·canonical fallback, listener 정리·runtime 취소, 운영 HTTP, Chromium 154 hydration·ko→en→ko 전환·공통 layout 상태 유지·종료·재진입.
+
+이 pack은 미게시 후속 코드를 `0.1.0-alpha.3` metadata로 묶은 로컬 proof이고 게시된 `alpha.3` artifact가 아니다. selector 공개 API는 현행 소스에 구현돼 있고 로컬 pack으로 검증했지만 게시본에는 없다. 원격 CI·OIDC·registry 대조는 이번 검증 범위가 아니다.
 
 ## 인수 사례
 

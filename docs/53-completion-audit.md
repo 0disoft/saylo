@@ -86,7 +86,7 @@
 3. 완료: owned message map 동결 최적화를 유지로 확정했다. parser 소유 깊은 불변 children만 신뢰하고 외부 shallow map은 일반 freeze하며, 49의 parser incremental 교차 비교 이득을 유지한다. cold 일관성 이득은 주장하지 않고 최신 E2E를 49 단독 효과로 귀속하지 않는다([76](76-runtime-decision.md)).
 4. selector 게시 여부를 결정하고, 게시하면 `check`·`release:pack`·`verify:registry:*`·SvelteKit 검증을 해당 버전으로 수행한다.
 5. 완료: 제품 형태를 현행 독립 런타임 유지로 결정했다. FormatJS parser·`intl-messageformat` 재사용을 이어가고 i18next prototype은 미채택한다([76](76-runtime-decision.md)).
-6. 현행 상태 문서(`06` 로드맵, `README.md`, `07` 대장)를 최신 커밋·수치에 맞춰 갱신한다.
+6. 완료: `06` 로드맵·`README.md`·`07` 대장을 최신 근거로 갱신하고 과거 검증 기록을 `06-validation-history.md`로 분리했다([77](77-local-release-readiness.md)).
 
 ## 6. 잔여 후보의 필수성 평가
 
@@ -182,3 +182,5 @@
 2026-10-11(KST), core `validateTranslation`이 깊게 동결된 schema·catalog 성공 identity pair를 다시 검사하지 않도록 고쳤다(`5586bf2`). `validatedCatalogs` WeakMap<schema, WeakSet<catalog>>로 전체 검증을 통과한 pair만 기억하고 변경 identity·mutable·shallow frozen·실패 결과는 재검사하며 기존 인자 캐시는 그대로 둔다. core 82·Vite 101·typegen 9에 prototype 64를 더한 256 tests PASS와 core build·소비자 typecheck PASS를 확인했다. 격리 런타임 비용 재측정은 10k core p95 16.46→23.49ms(높음)·layer 40.50→34.24ms(낮음)인데 baseline과 after가 다른 시간대라 원인이나 전면 향상을 주장하지 않는다. CPU 표본(`ad7b55e`)은 full-worker 단일 1kHz 프로파일로 core `validateTranslation` self 270/1454·layer 522/2205이고 setup·parse·copy·GC를 포함한다. default prebundle에 typegen on인 large 편집은 각 25표본 p95 70.35·61.91ms·pool 66.16ms(100ms 이내 49/50)지만 small 편집은 p95 108.61ms(23/25)로 미달이다. locale-add 목록은 small 84.29ms(25/25)·large 137.09·159.75ms(50표본 pooled 159.75ms, 49/50)이고 첫 locale 선택 translation은 별도로 267.80·262.38ms다. 제품 API·버전·의존성은 그대로이고 소스 변경은 로컬 커밋 `5586bf2`(미푸시)이다. 상세는 [74](74-immutable-validation-reuse.md)를 따른다.
 
 2026-10-11(KST), Vite watcher가 짧은 창의 두 번째 저장을 놓치는 문제를 꼬리 재확인 앞에서 잡으려고 10ms 이른 확인을 넣었지만(`08b1d7c`) 같은 하네스 ABBA에서 small pooled p95 83.81→86.23ms로 이득 증거가 없어 채택하지 않았다. 30ms 중간 확인을 더한 3단계(`eb66af8`)에서는 ABBA pooled가 small p50 19.43→17.61ms·p95 82.05→49.57ms, large p95 85.60→80.25ms이고 두 크기 모두 p95 목표 안이며 large 50표본 중 49개가 100ms 이내(최대 101.93ms)다. 계측(`c184fcb`)은 꼬리 재확인과 외부 enqueue를 origin으로 분리해 25건 중 disk-recheck 13건이 64.98~83.84ms임을 기록했고, 단발 로케일 목록은 small p95 77.46ms·large 177.83ms다. 실제 watcher SSR rapid-recovery 5개는 모두 `recovered: true`다. 공개 API·의존성·버전은 그대로이고 제품 커밋 `eb66af8`은 미푸시이며 comparison 원시 자료는 `05b1fe6`, 로케일 원시 자료는 `a763e80`에 있다. 상세는 [75](75-early-disk-rechecks.md)를 따른다.
+
+2026-10-11(KST), 최신 제품 소스의 전체 `npm run check`, 다섯 tarball 독립 JS/TS 소비·React/Svelte selector SSR, SvelteKit 실제 Chromium hydration·언어 전환·공통 layout·종료/재진입을 exit 0으로 확인했다. 근거는 [77](77-local-release-readiness.md)과 입력 해시 86개를 담은 [로컬 검증 기록](../review/local-readiness-2026-10-11.json)이다. source package metadata는 alpha.3이며 pack에는 미게시 코드가 들어 있어 승인된 registry alpha.3 artifact와 구분한다. 새 버전 승격·원격 CI·OIDC·게시·registry 인수는 남아 있다.
