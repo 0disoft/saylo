@@ -1,0 +1,1715 @@
+{
+  "schema": "saylo-live-update-benchmark-v1",
+  "measuredAt": "2026-10-10T10:01:09.666Z",
+  "gitRevision": "6403fab4e37a4c474eb435ea187a847440fd9300",
+  "settings": {
+    "samples": 25,
+    "warmup": 5,
+    "calibrations": 10,
+    "timeoutMs": 30000
+  },
+  "mode": "edit",
+  "instrumentation": {
+    "cpuProfile": false,
+    "browserStages": false,
+    "serverFileStages": true,
+    "replyStages": false,
+    "clientStages": false,
+    "runtimeStages": true
+  },
+  "workingTreeStatus": "",
+  "codeHashes": {
+    "packages/core/dist/catalog.js": "eac4c686d9c15a49b5301ee466568acf19b0fbee0c1e5987aae6dfc0d572b7d9",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/simple-message.js": "a3b1be697431fcbc00dce1e1f425ac8ace9bfe5a3e55e5ca94ccd48c6ad0453f",
+    "packages/core/dist/diagnostics.js": "9e8764951f360e4044877e205d6833edcc17b82091e29178a36d36a6d69ccba0",
+    "packages/core/dist/schema.js": "155be26cf1422c0c02095b83b97bcf6696d42a08c9d495b3bacd644504ee210c",
+    "packages/typegen/dist/catalog-files.js": "4c4783260ab9a8fb579c26cc70b8d25e9723b9d2e668b5d051672464f23faa8d",
+    "packages/vite/dist/live-registry.js": "14888b1631eeeae08acd16ae2930de9febcc85a3e752e2ef3f8520ffd467c654",
+    "packages/vite/dist/translation-quarantine.js": "e64ed9e9567f2793c36a7269ab393dedcbf8e1fc915ddaae405fc4d3cf6fd1f2",
+    "packages/vite/dist/catalog-registry.js": "8cf8ff87809c152fe8599a260ec7f7b7145bb74518d4499cfd99ccd965ce925e",
+    "packages/vite/dist/catalog-patch.js": "7a39eec7384e7eaebaefa4ace0de05653287a1e86897d20adae6ce79e087e50b",
+    "benchmarks/live-update/profile.mjs": "e40faebb92379faf6f9c90b599de0571b96973e7bfc187c4da0e7d6d3f706d25",
+    "benchmarks/live-update/channel.mjs": "fa68ecd900df18d3092da67eb0955d1b3a491f021ec3fbebbb4b982c5b234c14",
+    "benchmarks/live-update/run.mjs": "59282586887761d81ae2fb2c37e13e0c4bc0ec07c982d7f9b40b534e0f6b2673",
+    "benchmarks/live-update/app.jsx": "3c7395e2ae61bd777b4a261495de6c32d00b8dfa0378dd3b6bc41a53d0365293",
+    "benchmarks/live-update/fixture.mjs": "1b547cc3705e8397948568cde4245e178379bc2753edf2657af365928ca8a915",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0",
+    "benchmarks/live-update/browser-profile.mjs": "af272015f890d5dc7a92f4256dcc260b53158874a396f08a35f3c4b953c7e0b1",
+    "benchmarks/live-update/browser-probe.mjs": "2391744a81676ae90e224d818caa9dfc1e6de083d88805daad08f275c36ab615",
+    "packages/core/dist/loading-registry.js": "8ea25c91dcbb6a79059bbfb135030203fd1c2bee73b33e14aa80220641acb02f",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/core/dist/runtime.js": "2d197337d026357b240584ba2d0cf6b7acc90c2288408fdf282dfed7e90354c8",
+    "packages/core/dist/catalog-freeze.js": "a3a707cbaf4012ee5c2d959c70b7d472b337707af43131afd89e146f57518005",
+    "packages/core/dist/snapshot-signature.js": "1ef671cd30f6b8c694693b8cce921e569d10d523596664713317f936e289f348",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f",
+    "packages/vite/dist/catalog-source.js": "840b8f2fe7fd345116ba2f536ab2a9a2e358206dae33fd88bd375aad3fdb8f3d",
+    "packages/vite/dist/catalog-wire.js": "f87cf497f8edcbd1c859be708dd255a4938d0082ac40038343ba5d84d93d1b6a",
+    "packages/vite/dist/index.js": "8931fec68efcbf979adbf7030917fdce1a1994cb369913a740137d9fbb96710e",
+    "packages/vite/dist/freeze.js": "09a7a2f8783c323b6e1542ee71c31ecd1bd9975e1ee51b01e5ff2a68e15d5d34",
+    "benchmarks/live-update/server-file-profile.mjs": "ca2d3367550c0dfbeff3a341d76c1db9edef8bce0c69ad15e33858b056fedfc4",
+    "benchmarks/live-update/runtime-profile.mjs": "fb8efd1d680cd01a35fcbae8bbeede3244123a22e40815812adddc4cc78e1ba8",
+    "benchmarks/live-update/reply-profile.mjs": "c52ca5618408240f8802b853812211a3753ffca2798df600c51638f286b165ad",
+    "benchmarks/live-update/reply-receipt.mjs": "066103fa22236b8eaee92db6eb57ea10e5feb9dc1ad28deec20bd99ce911a9ff",
+    "benchmarks/live-update/client-profile.mjs": "0b4bf764985dcda09a7bbe08b363137b9b58f3d6638c6db549385246dcc7dc87",
+    "benchmarks/live-update/client-probe.mjs": "ebf5a1e7e93419ae7828c3cf0edd331c04cc5f735159d977060e2acfeb1c29a0"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "osRelease": "10.0.26300",
+    "node": "v24.18.0",
+    "cpu": "AMD Ryzen 5 7430U with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryGiB": 31.343265533447266,
+    "vite": "8.3.2"
+  },
+  "clock": "Node performance.now: writeFile resolved -> DOM-commit ack body received; browser-relative stages reported separately",
+  "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s.",
+  "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+  "results": [
+    {
+      "id": "10k-20-locales",
+      "messagesPerLocale": 10000,
+      "localeCount": 20,
+      "namespaces": 1,
+      "catalogFiles": 20,
+      "catalogBytes": 7755280,
+      "renderedMessages": 2,
+      "editedLocale": "en",
+      "editedNamespace": "bench",
+      "changedKeysPerSave": 1,
+      "typegenEnabled": true,
+      "declarationRewritten": false,
+      "browser": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+        "react": "19.3.0"
+      },
+      "serverStartupMs": 3241.6481,
+      "wire": {
+        "patchReplies": 25,
+        "fullReplies": 0,
+        "maxChangedMessages": 1,
+        "maxPositionUpdates": 0,
+        "catalogReplyBytes": {
+          "p50Bytes": 934,
+          "p95Bytes": 934,
+          "minBytes": 930,
+          "maxBytes": 934
+        }
+      },
+      "browserBootMs": 4465.036999999999,
+      "summary": {
+        "saveToAckMs": {
+          "count": 25,
+          "p50Ms": 148.39279999999962,
+          "p95Ms": 168.4992999999995,
+          "minMs": 121.69789999999921,
+          "maxMs": 174.40809999999874
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 25,
+          "p50Ms": 96.92209999999977,
+          "p95Ms": 105.2474000000002,
+          "minMs": 76.53539999999884,
+          "maxMs": 120.77669999999853
+        },
+        "receiveToCommitMs": {
+          "count": 25,
+          "p50Ms": 30.299999999813735,
+          "p95Ms": 35.1999999997206,
+          "minMs": 24.299999999813735,
+          "maxMs": 36
+        },
+        "commitToAckDispatchMs": {
+          "count": 25,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000009313226,
+          "minMs": 0,
+          "maxMs": 0.10000000009313226
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 8.097999999999956,
+          "p95Ms": 12.314799999998286,
+          "minMs": 6.095600000000559,
+          "maxMs": 15.178099999999176
+        }
+      },
+      "controlRoundTrip": {
+        "count": 10,
+        "p50Ms": 3.8197000000000116,
+        "p95Ms": 7.77139999999963,
+        "minMs": 3.3255000000008295,
+        "maxMs": 7.77139999999963
+      },
+      "runtimeStages": {
+        "scope": "Node diagnostic only. sample covers stage begin before write to stage finish after ack receipt; locale ends at list ack, excludes selection/reset/removal. Timestamp intersections, not causal attribution or CPU time. candidateOther contains baseStat. GC and late-timer intervals can overlap; never subtract/add them or nested stage quantiles. Timer lateness includes synchronous JS, GC, I/O callback work and OS scheduling. Asynchronous GC delivery flushed after final ack; not a stop-the-world trace.",
+        "tickMs": 10,
+        "gc": [
+          {
+            "startMs": 9616.5852,
+            "endMs": 9627.241900000166,
+            "kind": 1,
+            "flags": 0
+          },
+          {
+            "startMs": 10374.0436,
+            "endMs": 10387.143500000264,
+            "kind": 1,
+            "flags": 0
+          },
+          {
+            "startMs": 11067.1039,
+            "endMs": 11075.356300000114,
+            "kind": 1,
+            "flags": 0
+          },
+          {
+            "startMs": 11664.6302,
+            "endMs": 11665.32450000009,
+            "kind": 8,
+            "flags": 0
+          },
+          {
+            "startMs": 11758.4987,
+            "endMs": 11818.984700000034,
+            "kind": 4,
+            "flags": 64
+          },
+          {
+            "startMs": 12618.2089,
+            "endMs": 12624.809400000175,
+            "kind": 1,
+            "flags": 0
+          },
+          {
+            "startMs": 13473.4741,
+            "endMs": 13484.673000000192,
+            "kind": 1,
+            "flags": 0
+          },
+          {
+            "startMs": 14125.2546,
+            "endMs": 14132.061899999986,
+            "kind": 1,
+            "flags": 0
+          },
+          {
+            "startMs": 14132.7915,
+            "endMs": 14133.551900000028,
+            "kind": 8,
+            "flags": 0
+          }
+        ],
+        "ticks": [
+          {
+            "expectedMs": 8803.2606,
+            "observedMs": 8809.1151
+          },
+          {
+            "expectedMs": 8819.1216,
+            "observedMs": 8820.7428
+          },
+          {
+            "expectedMs": 8830.7491,
+            "observedMs": 8837.0281
+          },
+          {
+            "expectedMs": 8847.0366,
+            "observedMs": 8852.8144
+          },
+          {
+            "expectedMs": 8862.8222,
+            "observedMs": 8970.1569
+          },
+          {
+            "expectedMs": 8980.1603,
+            "observedMs": 8994.7099
+          },
+          {
+            "expectedMs": 9004.7129,
+            "observedMs": 9021.1466
+          },
+          {
+            "expectedMs": 9031.1516,
+            "observedMs": 9038.9369
+          },
+          {
+            "expectedMs": 9048.944,
+            "observedMs": 9054.0587
+          },
+          {
+            "expectedMs": 9064.078,
+            "observedMs": 9069.528
+          },
+          {
+            "expectedMs": 9079.5348,
+            "observedMs": 9084.2946
+          },
+          {
+            "expectedMs": 9094.3005,
+            "observedMs": 9100.4213
+          },
+          {
+            "expectedMs": 9110.4273,
+            "observedMs": 9116.8976
+          },
+          {
+            "expectedMs": 9126.9016,
+            "observedMs": 9126.9278
+          },
+          {
+            "expectedMs": 9136.93,
+            "observedMs": 9146.9027
+          },
+          {
+            "expectedMs": 9156.906,
+            "observedMs": 9163.5704
+          },
+          {
+            "expectedMs": 9173.5751,
+            "observedMs": 9180.3949
+          },
+          {
+            "expectedMs": 9190.3984,
+            "observedMs": 9222.0206
+          },
+          {
+            "expectedMs": 9232.0224,
+            "observedMs": 9247.5352
+          },
+          {
+            "expectedMs": 9257.538,
+            "observedMs": 9269.6894
+          },
+          {
+            "expectedMs": 9279.692,
+            "observedMs": 9289.9583
+          },
+          {
+            "expectedMs": 9299.9617,
+            "observedMs": 9304.9131
+          },
+          {
+            "expectedMs": 9314.9177,
+            "observedMs": 9319.3496
+          },
+          {
+            "expectedMs": 9329.3518,
+            "observedMs": 9336.2208
+          },
+          {
+            "expectedMs": 9346.224,
+            "observedMs": 9351.8641
+          },
+          {
+            "expectedMs": 9361.868,
+            "observedMs": 9365.6724
+          },
+          {
+            "expectedMs": 9375.676,
+            "observedMs": 9375.9803
+          },
+          {
+            "expectedMs": 9385.9834,
+            "observedMs": 9398.5761
+          },
+          {
+            "expectedMs": 9408.5811,
+            "observedMs": 9413.9209
+          },
+          {
+            "expectedMs": 9423.9249,
+            "observedMs": 9430.0706
+          },
+          {
+            "expectedMs": 9440.074,
+            "observedMs": 9464.6089
+          },
+          {
+            "expectedMs": 9474.6119,
+            "observedMs": 9482.2863
+          },
+          {
+            "expectedMs": 9492.2888,
+            "observedMs": 9501.0442
+          },
+          {
+            "expectedMs": 9511.0468,
+            "observedMs": 9522.8018
+          },
+          {
+            "expectedMs": 9532.8052,
+            "observedMs": 9538.0265
+          },
+          {
+            "expectedMs": 9548.0309,
+            "observedMs": 9551.1977
+          },
+          {
+            "expectedMs": 9561.2004,
+            "observedMs": 9562.0741
+          },
+          {
+            "expectedMs": 9572.0775,
+            "observedMs": 9571.7373
+          },
+          {
+            "expectedMs": 9581.7403,
+            "observedMs": 9584.3492
+          },
+          {
+            "expectedMs": 9594.3527,
+            "observedMs": 9599.5721
+          },
+          {
+            "expectedMs": 9609.5766,
+            "observedMs": 9616.2168
+          },
+          {
+            "expectedMs": 9626.2206,
+            "observedMs": 9629.4181
+          },
+          {
+            "expectedMs": 9639.4197,
+            "observedMs": 9669.7125
+          },
+          {
+            "expectedMs": 9679.7155,
+            "observedMs": 9688.958
+          },
+          {
+            "expectedMs": 9698.9612,
+            "observedMs": 9711.5344
+          },
+          {
+            "expectedMs": 9721.5366,
+            "observedMs": 9725.759
+          },
+          {
+            "expectedMs": 9735.7618,
+            "observedMs": 9740.7046
+          },
+          {
+            "expectedMs": 9750.708,
+            "observedMs": 9758.3057
+          },
+          {
+            "expectedMs": 9768.3096,
+            "observedMs": 9767.6798
+          },
+          {
+            "expectedMs": 9777.6823,
+            "observedMs": 9787.065
+          },
+          {
+            "expectedMs": 9797.0689,
+            "observedMs": 9801.9974
+          },
+          {
+            "expectedMs": 9812.0002,
+            "observedMs": 9817.6745
+          },
+          {
+            "expectedMs": 9827.6769,
+            "observedMs": 9850.7846
+          },
+          {
+            "expectedMs": 9860.7871,
+            "observedMs": 9869.366
+          },
+          {
+            "expectedMs": 9879.3681,
+            "observedMs": 9888.3681
+          },
+          {
+            "expectedMs": 9898.3698,
+            "observedMs": 9909.5159
+          },
+          {
+            "expectedMs": 9919.5192,
+            "observedMs": 9923.7079
+          },
+          {
+            "expectedMs": 9933.7101,
+            "observedMs": 9936.7006
+          },
+          {
+            "expectedMs": 9946.7033,
+            "observedMs": 9956.4742
+          },
+          {
+            "expectedMs": 9966.4777,
+            "observedMs": 9972.0984
+          },
+          {
+            "expectedMs": 9982.1021,
+            "observedMs": 9987.4217
+          },
+          {
+            "expectedMs": 9997.4243,
+            "observedMs": 10028.1816
+          },
+          {
+            "expectedMs": 10038.1843,
+            "observedMs": 10045.1507
+          },
+          {
+            "expectedMs": 10055.1531,
+            "observedMs": 10063.6037
+          },
+          {
+            "expectedMs": 10073.6062,
+            "observedMs": 10080.8763
+          },
+          {
+            "expectedMs": 10090.8798,
+            "observedMs": 10096.2475
+          },
+          {
+            "expectedMs": 10106.2526,
+            "observedMs": 10106.5927
+          },
+          {
+            "expectedMs": 10116.595,
+            "observedMs": 10118.1336
+          },
+          {
+            "expectedMs": 10128.1365,
+            "observedMs": 10129.2619
+          },
+          {
+            "expectedMs": 10139.2651,
+            "observedMs": 10142.4697
+          },
+          {
+            "expectedMs": 10152.4731,
+            "observedMs": 10157.801
+          },
+          {
+            "expectedMs": 10167.8043,
+            "observedMs": 10173.982
+          },
+          {
+            "expectedMs": 10183.9864,
+            "observedMs": 10212.1875
+          },
+          {
+            "expectedMs": 10222.1899,
+            "observedMs": 10229.8443
+          },
+          {
+            "expectedMs": 10239.846,
+            "observedMs": 10244.9218
+          },
+          {
+            "expectedMs": 10254.9239,
+            "observedMs": 10268.3354
+          },
+          {
+            "expectedMs": 10278.3399,
+            "observedMs": 10282.6293
+          },
+          {
+            "expectedMs": 10292.6314,
+            "observedMs": 10294.8541
+          },
+          {
+            "expectedMs": 10304.8559,
+            "observedMs": 10313.9313
+          },
+          {
+            "expectedMs": 10323.9531,
+            "observedMs": 10328.9039
+          },
+          {
+            "expectedMs": 10338.91,
+            "observedMs": 10344.9321
+          },
+          {
+            "expectedMs": 10354.9345,
+            "observedMs": 10373.9923
+          },
+          {
+            "expectedMs": 10383.9941,
+            "observedMs": 10387.5659
+          },
+          {
+            "expectedMs": 10397.572,
+            "observedMs": 10404.0589
+          },
+          {
+            "expectedMs": 10414.0607,
+            "observedMs": 10422.6878
+          },
+          {
+            "expectedMs": 10432.6894,
+            "observedMs": 10438.142
+          },
+          {
+            "expectedMs": 10448.1464,
+            "observedMs": 10453.3964
+          },
+          {
+            "expectedMs": 10463.4,
+            "observedMs": 10469.8073
+          },
+          {
+            "expectedMs": 10479.8109,
+            "observedMs": 10479.5846
+          },
+          {
+            "expectedMs": 10489.5866,
+            "observedMs": 10500.8921
+          },
+          {
+            "expectedMs": 10510.9012,
+            "observedMs": 10516.6511
+          },
+          {
+            "expectedMs": 10526.6553,
+            "observedMs": 10549.5912
+          },
+          {
+            "expectedMs": 10559.5933,
+            "observedMs": 10563.9561
+          },
+          {
+            "expectedMs": 10573.9592,
+            "observedMs": 10580.7043
+          },
+          {
+            "expectedMs": 10590.707,
+            "observedMs": 10593.9864
+          },
+          {
+            "expectedMs": 10603.9892,
+            "observedMs": 10609.515
+          },
+          {
+            "expectedMs": 10619.522,
+            "observedMs": 10626.8573
+          },
+          {
+            "expectedMs": 10636.8598,
+            "observedMs": 10636.8153
+          },
+          {
+            "expectedMs": 10646.8179,
+            "observedMs": 10656.71
+          },
+          {
+            "expectedMs": 10666.7138,
+            "observedMs": 10672.2736
+          },
+          {
+            "expectedMs": 10682.2778,
+            "observedMs": 10697.112
+          },
+          {
+            "expectedMs": 10707.1142,
+            "observedMs": 10714.164
+          },
+          {
+            "expectedMs": 10724.1665,
+            "observedMs": 10728.8211
+          },
+          {
+            "expectedMs": 10738.8235,
+            "observedMs": 10750.884
+          },
+          {
+            "expectedMs": 10760.8884,
+            "observedMs": 10760.6694
+          },
+          {
+            "expectedMs": 10770.673,
+            "observedMs": 10774.0356
+          },
+          {
+            "expectedMs": 10784.0386,
+            "observedMs": 10784.0161
+          },
+          {
+            "expectedMs": 10794.019,
+            "observedMs": 10797.8522
+          },
+          {
+            "expectedMs": 10807.8554,
+            "observedMs": 10813.3463
+          },
+          {
+            "expectedMs": 10823.3506,
+            "observedMs": 10829.0658
+          },
+          {
+            "expectedMs": 10839.0683,
+            "observedMs": 10857.8966
+          },
+          {
+            "expectedMs": 10867.8981,
+            "observedMs": 10874.7448
+          },
+          {
+            "expectedMs": 10884.7475,
+            "observedMs": 10893.4266
+          },
+          {
+            "expectedMs": 10903.4288,
+            "observedMs": 10907.3683
+          },
+          {
+            "expectedMs": 10917.3718,
+            "observedMs": 10923.1767
+          },
+          {
+            "expectedMs": 10933.1813,
+            "observedMs": 10937.8355
+          },
+          {
+            "expectedMs": 10947.8383,
+            "observedMs": 10947.8864
+          },
+          {
+            "expectedMs": 10957.8894,
+            "observedMs": 10969.6144
+          },
+          {
+            "expectedMs": 10979.6176,
+            "observedMs": 10988.6261
+          },
+          {
+            "expectedMs": 10998.6304,
+            "observedMs": 11021.0241
+          },
+          {
+            "expectedMs": 11031.0252,
+            "observedMs": 11044.3144
+          },
+          {
+            "expectedMs": 11054.3162,
+            "observedMs": 11067.0504
+          },
+          {
+            "expectedMs": 11077.0539,
+            "observedMs": 11087.3724
+          },
+          {
+            "expectedMs": 11097.3761,
+            "observedMs": 11101.5966
+          },
+          {
+            "expectedMs": 11111.5988,
+            "observedMs": 11112.9544
+          },
+          {
+            "expectedMs": 11122.9574,
+            "observedMs": 11123.8748
+          },
+          {
+            "expectedMs": 11133.8771,
+            "observedMs": 11135.225
+          },
+          {
+            "expectedMs": 11145.2283,
+            "observedMs": 11150.9558
+          },
+          {
+            "expectedMs": 11160.9602,
+            "observedMs": 11166.5601
+          },
+          {
+            "expectedMs": 11176.5631,
+            "observedMs": 11202.3228
+          },
+          {
+            "expectedMs": 11212.3248,
+            "observedMs": 11220.7681
+          },
+          {
+            "expectedMs": 11230.7705,
+            "observedMs": 11237.3698
+          },
+          {
+            "expectedMs": 11247.3735,
+            "observedMs": 11262.4767
+          },
+          {
+            "expectedMs": 11272.4803,
+            "observedMs": 11272.8425
+          },
+          {
+            "expectedMs": 11282.8451,
+            "observedMs": 11284.2509
+          },
+          {
+            "expectedMs": 11294.2537,
+            "observedMs": 11294.1297
+          },
+          {
+            "expectedMs": 11304.1327,
+            "observedMs": 11310.0361
+          },
+          {
+            "expectedMs": 11320.0396,
+            "observedMs": 11326.5754
+          },
+          {
+            "expectedMs": 11336.5785,
+            "observedMs": 11352.5949
+          },
+          {
+            "expectedMs": 11362.5977,
+            "observedMs": 11368.5018
+          },
+          {
+            "expectedMs": 11378.5073,
+            "observedMs": 11382.8231
+          },
+          {
+            "expectedMs": 11392.8271,
+            "observedMs": 11398.4213
+          },
+          {
+            "expectedMs": 11408.4241,
+            "observedMs": 11414.2387
+          },
+          {
+            "expectedMs": 11424.2419,
+            "observedMs": 11431.1098
+          },
+          {
+            "expectedMs": 11441.112,
+            "observedMs": 11441.1016
+          },
+          {
+            "expectedMs": 11451.1036,
+            "observedMs": 11462.6101
+          },
+          {
+            "expectedMs": 11472.6131,
+            "observedMs": 11484.1485
+          },
+          {
+            "expectedMs": 11494.1517,
+            "observedMs": 11509.328
+          },
+          {
+            "expectedMs": 11519.3312,
+            "observedMs": 11525.1903
+          },
+          {
+            "expectedMs": 11535.1923,
+            "observedMs": 11541.5337
+          },
+          {
+            "expectedMs": 11551.5359,
+            "observedMs": 11562.274
+          },
+          {
+            "expectedMs": 11572.2782,
+            "observedMs": 11571.775
+          },
+          {
+            "expectedMs": 11581.7774,
+            "observedMs": 11582.7189
+          },
+          {
+            "expectedMs": 11592.7213,
+            "observedMs": 11596.3984
+          },
+          {
+            "expectedMs": 11606.4021,
+            "observedMs": 11611.601
+          },
+          {
+            "expectedMs": 11621.6047,
+            "observedMs": 11631.2021
+          },
+          {
+            "expectedMs": 11641.206,
+            "observedMs": 11664.5581
+          },
+          {
+            "expectedMs": 11674.5602,
+            "observedMs": 11691.8182
+          },
+          {
+            "expectedMs": 11701.82,
+            "observedMs": 11716.1259
+          },
+          {
+            "expectedMs": 11726.1281,
+            "observedMs": 11726.237
+          },
+          {
+            "expectedMs": 11736.2406,
+            "observedMs": 11735.5978
+          },
+          {
+            "expectedMs": 11745.6022,
+            "observedMs": 11745.687
+          },
+          {
+            "expectedMs": 11755.6915,
+            "observedMs": 11755.9819
+          },
+          {
+            "expectedMs": 11765.9841,
+            "observedMs": 11819.591
+          },
+          {
+            "expectedMs": 11829.5956,
+            "observedMs": 11832.014
+          },
+          {
+            "expectedMs": 11842.0182,
+            "observedMs": 11843.3817
+          },
+          {
+            "expectedMs": 11853.3841,
+            "observedMs": 11863.4921
+          },
+          {
+            "expectedMs": 11873.4975,
+            "observedMs": 11879.1233
+          },
+          {
+            "expectedMs": 11889.1279,
+            "observedMs": 11918.7372
+          },
+          {
+            "expectedMs": 11928.7394,
+            "observedMs": 11938.1174
+          },
+          {
+            "expectedMs": 11948.1198,
+            "observedMs": 11957.9797
+          },
+          {
+            "expectedMs": 11967.9821,
+            "observedMs": 11977.1186
+          },
+          {
+            "expectedMs": 11987.1253,
+            "observedMs": 11992.9865
+          },
+          {
+            "expectedMs": 12002.9908,
+            "observedMs": 12009.6525
+          },
+          {
+            "expectedMs": 12019.6562,
+            "observedMs": 12021.7673
+          },
+          {
+            "expectedMs": 12031.7705,
+            "observedMs": 12038.7622
+          },
+          {
+            "expectedMs": 12048.7664,
+            "observedMs": 12051.0482
+          },
+          {
+            "expectedMs": 12061.0525,
+            "observedMs": 12066.9262
+          },
+          {
+            "expectedMs": 12076.9293,
+            "observedMs": 12100.1898
+          },
+          {
+            "expectedMs": 12110.1921,
+            "observedMs": 12117.9284
+          },
+          {
+            "expectedMs": 12127.9312,
+            "observedMs": 12136.9743
+          },
+          {
+            "expectedMs": 12146.9778,
+            "observedMs": 12148.5489
+          },
+          {
+            "expectedMs": 12158.5532,
+            "observedMs": 12166.5818
+          },
+          {
+            "expectedMs": 12176.5868,
+            "observedMs": 12181.9208
+          },
+          {
+            "expectedMs": 12191.9254,
+            "observedMs": 12192.3971
+          },
+          {
+            "expectedMs": 12202.3994,
+            "observedMs": 12213.0049
+          },
+          {
+            "expectedMs": 12223.0094,
+            "observedMs": 12228.3505
+          },
+          {
+            "expectedMs": 12238.3548,
+            "observedMs": 12263.2808
+          },
+          {
+            "expectedMs": 12273.2829,
+            "observedMs": 12278.4643
+          },
+          {
+            "expectedMs": 12288.4673,
+            "observedMs": 12294.1148
+          },
+          {
+            "expectedMs": 12304.1178,
+            "observedMs": 12313.2982
+          },
+          {
+            "expectedMs": 12323.3013,
+            "observedMs": 12326.8299
+          },
+          {
+            "expectedMs": 12336.8324,
+            "observedMs": 12339.5459
+          },
+          {
+            "expectedMs": 12349.5496,
+            "observedMs": 12349.9636
+          },
+          {
+            "expectedMs": 12359.9665,
+            "observedMs": 12369.0311
+          },
+          {
+            "expectedMs": 12379.036,
+            "observedMs": 12384.3827
+          },
+          {
+            "expectedMs": 12394.3876,
+            "observedMs": 12427.8265
+          },
+          {
+            "expectedMs": 12437.8297,
+            "observedMs": 12444.8203
+          },
+          {
+            "expectedMs": 12454.8233,
+            "observedMs": 12462.325
+          },
+          {
+            "expectedMs": 12472.3274,
+            "observedMs": 12481.8751
+          },
+          {
+            "expectedMs": 12491.8799,
+            "observedMs": 12498.5557
+          },
+          {
+            "expectedMs": 12508.5591,
+            "observedMs": 12510.6307
+          },
+          {
+            "expectedMs": 12520.6344,
+            "observedMs": 12521.2859
+          },
+          {
+            "expectedMs": 12531.2897,
+            "observedMs": 12545.8304
+          },
+          {
+            "expectedMs": 12555.8358,
+            "observedMs": 12564.9566
+          },
+          {
+            "expectedMs": 12574.96,
+            "observedMs": 12599.1053
+          },
+          {
+            "expectedMs": 12609.1073,
+            "observedMs": 12617.8745
+          },
+          {
+            "expectedMs": 12627.8768,
+            "observedMs": 12643.6728
+          },
+          {
+            "expectedMs": 12653.6747,
+            "observedMs": 12666.6746
+          },
+          {
+            "expectedMs": 12676.6783,
+            "observedMs": 12679.4761
+          },
+          {
+            "expectedMs": 12689.4784,
+            "observedMs": 12692.0308
+          },
+          {
+            "expectedMs": 12702.0343,
+            "observedMs": 12702.6866
+          },
+          {
+            "expectedMs": 12712.6897,
+            "observedMs": 12727.114
+          },
+          {
+            "expectedMs": 12737.1181,
+            "observedMs": 12743.384
+          },
+          {
+            "expectedMs": 12753.387,
+            "observedMs": 12772.945
+          },
+          {
+            "expectedMs": 12782.9473,
+            "observedMs": 12787.964
+          },
+          {
+            "expectedMs": 12797.9662,
+            "observedMs": 12805.9641
+          },
+          {
+            "expectedMs": 12815.9672,
+            "observedMs": 12827.3646
+          },
+          {
+            "expectedMs": 12837.3694,
+            "observedMs": 12841.9317
+          },
+          {
+            "expectedMs": 12851.9341,
+            "observedMs": 12853.493
+          },
+          {
+            "expectedMs": 12863.4957,
+            "observedMs": 12863.2268
+          },
+          {
+            "expectedMs": 12873.2291,
+            "observedMs": 12874.3377
+          },
+          {
+            "expectedMs": 12884.3424,
+            "observedMs": 12889.2369
+          },
+          {
+            "expectedMs": 12899.2417,
+            "observedMs": 12905.7832
+          },
+          {
+            "expectedMs": 12915.786,
+            "observedMs": 12939.8222
+          },
+          {
+            "expectedMs": 12949.8255,
+            "observedMs": 12957.6381
+          },
+          {
+            "expectedMs": 12967.6404,
+            "observedMs": 12973.9514
+          },
+          {
+            "expectedMs": 12983.9543,
+            "observedMs": 12998.3738
+          },
+          {
+            "expectedMs": 13008.3781,
+            "observedMs": 13009.1755
+          },
+          {
+            "expectedMs": 13019.1773,
+            "observedMs": 13019.2989
+          },
+          {
+            "expectedMs": 13029.3017,
+            "observedMs": 13029.8426
+          },
+          {
+            "expectedMs": 13039.8462,
+            "observedMs": 13045.0847
+          },
+          {
+            "expectedMs": 13055.0887,
+            "observedMs": 13061.0189
+          },
+          {
+            "expectedMs": 13071.0234,
+            "observedMs": 13076.7029
+          },
+          {
+            "expectedMs": 13086.7051,
+            "observedMs": 13108.3624
+          },
+          {
+            "expectedMs": 13118.3644,
+            "observedMs": 13127.449
+          },
+          {
+            "expectedMs": 13137.4528,
+            "observedMs": 13144.3671
+          },
+          {
+            "expectedMs": 13154.3694,
+            "observedMs": 13155.7451
+          },
+          {
+            "expectedMs": 13165.7485,
+            "observedMs": 13171.4925
+          },
+          {
+            "expectedMs": 13181.497,
+            "observedMs": 13188.8886
+          },
+          {
+            "expectedMs": 13198.8917,
+            "observedMs": 13201.312
+          },
+          {
+            "expectedMs": 13211.314,
+            "observedMs": 13218.1873
+          },
+          {
+            "expectedMs": 13228.1909,
+            "observedMs": 13233.402
+          },
+          {
+            "expectedMs": 13243.4052,
+            "observedMs": 13249.313
+          },
+          {
+            "expectedMs": 13259.3149,
+            "observedMs": 13283.6294
+          },
+          {
+            "expectedMs": 13293.6315,
+            "observedMs": 13319.6598
+          },
+          {
+            "expectedMs": 13329.662,
+            "observedMs": 13338.6751
+          },
+          {
+            "expectedMs": 13348.6773,
+            "observedMs": 13359.7857
+          },
+          {
+            "expectedMs": 13369.7884,
+            "observedMs": 13373.1046
+          },
+          {
+            "expectedMs": 13383.1067,
+            "observedMs": 13389.9197
+          },
+          {
+            "expectedMs": 13399.9224,
+            "observedMs": 13401.5636
+          },
+          {
+            "expectedMs": 13411.5661,
+            "observedMs": 13421.2604
+          },
+          {
+            "expectedMs": 13431.2641,
+            "observedMs": 13437.1488
+          },
+          {
+            "expectedMs": 13447.1521,
+            "observedMs": 13473.4361
+          },
+          {
+            "expectedMs": 13483.4384,
+            "observedMs": 13505.0669
+          },
+          {
+            "expectedMs": 13515.0686,
+            "observedMs": 13524.1363
+          },
+          {
+            "expectedMs": 13534.1394,
+            "observedMs": 13545.9068
+          },
+          {
+            "expectedMs": 13555.911,
+            "observedMs": 13557.8939
+          },
+          {
+            "expectedMs": 13567.8964,
+            "observedMs": 13569.531
+          },
+          {
+            "expectedMs": 13579.5348,
+            "observedMs": 13579.8778
+          },
+          {
+            "expectedMs": 13589.8808,
+            "observedMs": 13593.6014
+          },
+          {
+            "expectedMs": 13603.6062,
+            "observedMs": 13609.2176
+          },
+          {
+            "expectedMs": 13619.221,
+            "observedMs": 13625.1912
+          },
+          {
+            "expectedMs": 13635.1938,
+            "observedMs": 13657.5415
+          },
+          {
+            "expectedMs": 13667.5429,
+            "observedMs": 13672.6446
+          },
+          {
+            "expectedMs": 13682.6467,
+            "observedMs": 13690.4843
+          },
+          {
+            "expectedMs": 13700.4866,
+            "observedMs": 13703.0341
+          },
+          {
+            "expectedMs": 13713.0378,
+            "observedMs": 13719.2745
+          },
+          {
+            "expectedMs": 13729.2769,
+            "observedMs": 13729.1892
+          },
+          {
+            "expectedMs": 13739.1913,
+            "observedMs": 13739.2515
+          },
+          {
+            "expectedMs": 13749.2545,
+            "observedMs": 13750.7623
+          },
+          {
+            "expectedMs": 13760.7661,
+            "observedMs": 13766.1634
+          },
+          {
+            "expectedMs": 13776.1668,
+            "observedMs": 13781.7143
+          },
+          {
+            "expectedMs": 13791.7161,
+            "observedMs": 13806.2154
+          },
+          {
+            "expectedMs": 13816.218,
+            "observedMs": 13819.7791
+          },
+          {
+            "expectedMs": 13829.7813,
+            "observedMs": 13833.9682
+          },
+          {
+            "expectedMs": 13843.9699,
+            "observedMs": 13844.0491
+          },
+          {
+            "expectedMs": 13854.0526,
+            "observedMs": 13859.854
+          },
+          {
+            "expectedMs": 13869.8571,
+            "observedMs": 13872.314
+          },
+          {
+            "expectedMs": 13882.3171,
+            "observedMs": 13882.1569
+          },
+          {
+            "expectedMs": 13892.1595,
+            "observedMs": 13906.245
+          },
+          {
+            "expectedMs": 13916.2486,
+            "observedMs": 13922.3878
+          },
+          {
+            "expectedMs": 13932.3919,
+            "observedMs": 13938.239
+          },
+          {
+            "expectedMs": 13948.2411,
+            "observedMs": 13961.725
+          },
+          {
+            "expectedMs": 13971.7277,
+            "observedMs": 13979.1318
+          },
+          {
+            "expectedMs": 13989.1342,
+            "observedMs": 13991.2893
+          },
+          {
+            "expectedMs": 14001.2912,
+            "observedMs": 14001.1184
+          },
+          {
+            "expectedMs": 14011.1218,
+            "observedMs": 14016.6403
+          },
+          {
+            "expectedMs": 14026.6441,
+            "observedMs": 14028.6846
+          },
+          {
+            "expectedMs": 14038.6866,
+            "observedMs": 14048.9846
+          },
+          {
+            "expectedMs": 14058.99,
+            "observedMs": 14064.9598
+          },
+          {
+            "expectedMs": 14074.9642,
+            "observedMs": 14080.7199
+          },
+          {
+            "expectedMs": 14090.7223,
+            "observedMs": 14100.9072
+          },
+          {
+            "expectedMs": 14110.909,
+            "observedMs": 14113.3488
+          },
+          {
+            "expectedMs": 14123.3501,
+            "observedMs": 14125.2043
+          },
+          {
+            "expectedMs": 14135.2063,
+            "observedMs": 14134.648
+          },
+          {
+            "expectedMs": 14144.6499,
+            "observedMs": 14144.7444
+          },
+          {
+            "expectedMs": 14154.7494,
+            "observedMs": 14154.8384
+          },
+          {
+            "expectedMs": 14164.8435,
+            "observedMs": 14164.6134
+          }
+        ],
+        "stages": {
+          "sample": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 156.46919999999955,
+              "p95Ms": 175.46429999999964,
+              "minMs": 129.8799999999992,
+              "maxMs": 184.35349999999926
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 11.198900000192225,
+              "minMs": 0,
+              "maxMs": 13.099900000263005
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 67.6473999999962,
+              "p95Ms": 88.80470000000241,
+              "minMs": 37.10639999999876,
+              "maxMs": 94.33050000000185
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 22.9359000000004,
+              "p95Ms": 30.757299999999304,
+              "minMs": 10.297999999998865,
+              "maxMs": 33.438899999999194
+            }
+          },
+          "readAndCandidateMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 33.599200000000565,
+              "p95Ms": 43.47010000000046,
+              "minMs": 20.463999999999942,
+              "maxMs": 48.07560000000012
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 11.198900000192225,
+              "minMs": 0,
+              "maxMs": 13.099900000263005
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 22.9359000000004,
+              "p95Ms": 30.98439999999937,
+              "minMs": 10.363999999999578,
+              "maxMs": 33.438899999999194
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 22.9359000000004,
+              "p95Ms": 30.757299999999304,
+              "minMs": 10.184900000000198,
+              "maxMs": 33.438899999999194
+            }
+          },
+          "pathCheckMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.566899999999805,
+              "p95Ms": 0.9716000000007625,
+              "minMs": 0.43870000000060827,
+              "maxMs": 1.2186000000001513
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0.0787000000000262,
+              "p95Ms": 0.10640000000057626,
+              "minMs": 0,
+              "maxMs": 0.14539999999942665
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 5.599900000001071,
+              "p95Ms": 6.54149999999936,
+              "minMs": 0,
+              "maxMs": 9.12079999999878
+            }
+          },
+          "fileReadMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.9742000000005646,
+              "p95Ms": 1.4323000000003958,
+              "minMs": 0.7381999999997788,
+              "maxMs": 1.4747000000006665
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            }
+          },
+          "catalogParseMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 30.545200000000477,
+              "p95Ms": 38.94310000000041,
+              "minMs": 18.90889999999854,
+              "maxMs": 41.13409999999931
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 0,
+              "minMs": 0,
+              "maxMs": 0
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 22.647100000000137,
+              "p95Ms": 30.533799999999246,
+              "minMs": 10.025499999999738,
+              "maxMs": 33.192699999999604
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 22.9359000000004,
+              "p95Ms": 30.757299999999304,
+              "minMs": 10.184900000000198,
+              "maxMs": 33.438899999999194
+            }
+          },
+          "baseStatMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.21939999999995052,
+              "p95Ms": 11.555599999999686,
+              "minMs": 0.17369999999937136,
+              "maxMs": 13.799399999999878
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 11.198900000192225,
+              "minMs": 0,
+              "maxMs": 13.099900000263005
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0.13659999999981665,
+              "p95Ms": 1.5533000000014,
+              "minMs": 0.10080000000016298,
+              "maxMs": 3.694999999999709
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 22.9359000000004,
+              "p95Ms": 30.757299999999304,
+              "minMs": 10.184900000000198,
+              "maxMs": 33.438899999999194
+            }
+          },
+          "candidateOtherMs": {
+            "wallMs": {
+              "count": 25,
+              "p50Ms": 0.4830999999994674,
+              "p95Ms": 12.278299999999945,
+              "minMs": 0.3782000000010157,
+              "maxMs": 14.064100000003236
+            },
+            "gcOverlapMs": {
+              "count": 25,
+              "p50Ms": 0,
+              "p95Ms": 11.198900000192225,
+              "minMs": 0,
+              "maxMs": 13.099900000263005
+            },
+            "timerDelayOverlapMs": {
+              "count": 25,
+              "p50Ms": 0.33069999999861466,
+              "p95Ms": 2.137300000002142,
+              "minMs": 0.200699999999415,
+              "maxMs": 3.9011000000009517
+            },
+            "maxTimerLatenessMs": {
+              "count": 25,
+              "p50Ms": 22.9359000000004,
+              "p95Ms": 30.757299999999304,
+              "minMs": 10.184900000000198,
+              "maxMs": 33.438899999999194
+            }
+          }
+        }
+      },
+      "serverFileStages": {
+        "scope": "Benchmark-only in-memory Node module transform. Path check and UTF-8 read are async wall times; parse is synchronous parseCatalog call including argument construction. candidateOther is a per-sample residual inside readAndCandidate. These stages are included in readAndCandidate; do not add their p95s or treat wall times as CPU times.",
+        "pathCheckMs": {
+          "count": 25,
+          "p50Ms": 0.563399999999092,
+          "p95Ms": 0.967000000000553,
+          "minMs": 0.4351999999998952,
+          "maxMs": 1.2145000000000437
+        },
+        "fileReadMs": {
+          "count": 25,
+          "p50Ms": 0.9702999999990425,
+          "p95Ms": 1.4282000000002881,
+          "minMs": 0.7351999999991676,
+          "maxMs": 1.469200000001365
+        },
+        "catalogParseMs": {
+          "count": 25,
+          "p50Ms": 30.531699999999546,
+          "p95Ms": 38.9343000000008,
+          "minMs": 18.903599999999642,
+          "maxMs": 41.12670000000071
+        },
+        "candidateOtherMs": {
+          "count": 25,
+          "p50Ms": 0.505300000000716,
+          "p95Ms": 12.299800000000687,
+          "minMs": 0.39610000000175205,
+          "maxMs": 14.08809999999903
+        },
+        "maxCalls": {
+          "pathCheckMs": 1,
+          "fileReadMs": 1,
+          "catalogParseMs": 1
+        }
+      },
+      "serverStages": {
+        "scope": "Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.",
+        "queueToDrainMs": {
+          "count": 25,
+          "p50Ms": 48.01190000000133,
+          "p95Ms": 54.80789999999979,
+          "minMs": 40.39459999999963,
+          "maxMs": 55.278299999999945
+        },
+        "readAndCandidateMs": {
+          "count": 25,
+          "p50Ms": 33.60580000000118,
+          "p95Ms": 43.47429999999986,
+          "minMs": 20.470100000000457,
+          "maxMs": 48.07849999999962
+        },
+        "translationPreparationMs": {
+          "count": 25,
+          "p50Ms": 10.043299999999363,
+          "p95Ms": 14.860499999998865,
+          "minMs": 6.815899999999601,
+          "maxMs": 20.0645999999997
+        },
+        "validationMs": {
+          "count": 25,
+          "p50Ms": 0.02139999999963038,
+          "p95Ms": 0.022799999998824205,
+          "minMs": 0.015000000001236913,
+          "maxMs": 0.02289999999993597
+        },
+        "registryReplaceMs": {
+          "count": 25,
+          "p50Ms": 6.403200000000652,
+          "p95Ms": 9.852100000000064,
+          "minMs": 5.063299999999799,
+          "maxMs": 15.045000000000073
+        },
+        "catalogDeltaMs": {
+          "count": 25,
+          "p50Ms": 15.531800000000658,
+          "p95Ms": 20.56919999999991,
+          "minMs": 10.537999999998647,
+          "maxMs": 22.588799999999537
+        },
+        "maxFileEvents": 1,
+        "maxDrains": 1
+      },
+      "controlRoundTripsMs": [
+        7.77139999999963,
+        3.5067999999992026,
+        3.5684000000001106,
+        4.748499999999694,
+        3.3255000000008295,
+        3.9852999999984604,
+        3.924699999999575,
+        3.9488000000001193,
+        3.8197000000000116,
+        3.770300000000134
+      ],
+      "samplesFile": "runtime-tail-edit-2026-10-10.10k-20-locales.samples.json"
+    }
+  ]
+}

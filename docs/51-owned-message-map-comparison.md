@@ -82,3 +82,5 @@ run당 measured 25개의 primary 구간 p95다.
 [49](49-owned-message-map-freeze.md)의 최적화 채택은 이번 결과까지 포함해 잠정 상태로 두고, 이 데이터만으로 자동 원복하지 않는다. 다음은 read/candidate의 긴 표본과 GC·스케줄링 영향만 좁게 계측해 tail과 남은 candidate 비용의 원인을 가르는 것이며, 같은 broad benchmark를 반복하지 않는다.
 
 로컬 기록이며 버전 변경·push·publish·deploy는 없다.
+
+read/candidate 잔여 구간과 GC·타이머 지연을 좁게 계측한 후속 진단은 [52-server-runtime-tail.md](52-server-runtime-tail.md)에 있다.

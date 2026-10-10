@@ -57,6 +57,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 46. [49-owned-message-map-freeze.md](49-owned-message-map-freeze.md) — 파서 소유 메시지 맵 재순회 생략과 편집·신규 파싱 교차 비교
 47. [50-owned-message-map-live-measurements.md](50-owned-message-map-live-measurements.md) — 맵 동결 최적화 뒤 실제 편집·로케일 추가 측정과 목표 미달
 48. [51-owned-message-map-comparison.md](51-owned-message-map-comparison.md) — 맵 동결 최적화 전후 종단 간 교차 비교와 목표 미달
+49. [52-server-runtime-tail.md](52-server-runtime-tail.md) — read/candidate 잔여 구간·GC·타이머 지연 진단과 신규 파싱 후보
 
 ## 상태 표기 규칙
 
