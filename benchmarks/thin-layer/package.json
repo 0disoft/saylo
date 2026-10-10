@@ -1,0 +1,17 @@
+{
+  "name": "saylo-thin-layer-contract-probe",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "probe": "node probe.mjs"
+  },
+  "dependencies": {
+    "i18next": "26",
+    "i18next-icu": "2",
+    "intl-messageformat": "12",
+    "wuchale": "0"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}
