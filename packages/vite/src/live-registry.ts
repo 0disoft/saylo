@@ -22,6 +22,9 @@ export class LiveRegistry {
   private validated = new WeakMap<ParsedCatalog, string>();
   private errors = new Map<string, LiveDiagnostic>();
   private queued = new Map<string, Read | undefined>();
+  // A superseded read cannot publish, but its parsed catalog can accelerate
+  // the next read. The new source still passes through the strict parser.
+  private pendingParses = new Map<string, ParsedCatalog>();
   private waiters: (() => void)[] = [];
   private timer: ReturnType<typeof setTimeout> | undefined;
   private firstQueued = 0;
@@ -157,9 +160,12 @@ export class LiveRegistry {
       if (this.stopped) return;
       const candidate = new Map(this.desired);
       const errors = new Map(this.errors);
+      const parsed = new Map<string, ParsedCatalog>();
       let settleMissing = false;
       for (const [file, read] of batch) {
         const location = catalogLocation(this.root, file)!;
+        const previous = this.pendingParses.get(file) ?? candidate.get(file)?.catalog;
+        this.pendingParses.delete(file);
         try {
           // Read the final filesystem state, rather than trusting an earlier unlink/add label.
           const changed = await readCatalogFile(this.root, file, location.locale, location.namespace, async () => {
@@ -167,7 +173,8 @@ export class LiveRegistry {
             // not be mistaken for the version represented by the old text.
             stamps.set(file, await diskStamp(file));
             return read ? read() : readFile(file, 'utf8');
-          }, candidate.get(file)?.catalog);
+          }, previous);
+          parsed.set(file, changed.catalog);
           candidate.set(file, changed);
           errors.delete(file);
         } catch (error) {
@@ -182,6 +189,7 @@ export class LiveRegistry {
       if (this.stopped) return;
       // A save arrived while reading: discard this attempt and re-read the affected paths.
       if (generation !== this.generation || settleMissing) {
+        for (const [file, catalog] of parsed) this.pendingParses.set(file, catalog);
         if (settleMissing) this.settleDisk = true;
         for (const file of batch.keys()) if (!this.queued.has(file) &&
           (settleMissing || this.rechecks.token(file) === checks.get(file))) this.requeue(file);
@@ -261,6 +269,7 @@ export class LiveRegistry {
     this.rechecks.stop();
     clearTimeout(this.timer);
     this.queued.clear();
+    this.pendingParses.clear();
     for (const resolve of this.waiters) resolve();
     this.waiters = [];
   }

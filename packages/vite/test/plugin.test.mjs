@@ -673,6 +673,39 @@ test('a newer guarded batch waiting behind an old read does not trigger a redund
   assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
 });
 
+test('superseded successful parsing is reused only after checking the newest reader', async t => {
+  for (const [name, text] of [['identical', '{"hello":"Pending {name}"}'],
+    ['changed', '{"hello":"Newest {name}"}'], ['invalid', '{']]) await t.test(name, async t => {
+    const { root, plugin, server, request, events } = await setup(t);
+    const file = path.join(root, 'en', 'demo.json');
+    let registry, parsed, release, started;
+    const reading = new Promise(resolve => { started = resolve; });
+    const source = new Promise(resolve => { release = resolve; });
+    const drain = LiveRegistry.prototype.drain;
+    t.mock.method(LiveRegistry.prototype, 'drain', function (...args) { registry = this; return drain.apply(this, args); });
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });
+    const old = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => { started(); return source; } });
+    t.mock.timers.tick(0);
+    await reading;
+    const remember = registry.pendingParses.set.bind(registry.pendingParses);
+    t.mock.method(registry.pendingParses, 'set', (file, catalog) => { parsed = catalog; return remember(file, catalog); });
+    let latestReads = 0;
+    const latest = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => { latestReads++; return text; } });
+    t.mock.timers.tick(0);
+    release('{"hello":"Pending {name}"}');
+    await Promise.all([old, latest]);
+    assert.equal(latestReads, 1);
+    assert.ok(parsed);
+    assert.equal(registry.pendingParses.size, 0);
+    const accepted = request()[0].data.catalogs.find(c => c.locale === 'en');
+    if (name === 'identical') assert.equal(accepted, parsed);
+    else assert.notEqual(accepted, parsed);
+    assert.equal(accepted.messages.hello.source, name === 'invalid' ? 'en {name}' : name === 'changed' ? 'Newest {name}' : 'Pending {name}');
+    assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, name === 'invalid' ? 0 : 1);
+    assert.equal(Boolean(request()[1].data.message), name === 'invalid');
+  });
+});
+
 test('closing during an async read cancels publication and pending listeners', async t => {
   const { root, plugin, server, events } = await setup(t);
   let started;
