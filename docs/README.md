@@ -76,6 +76,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 62. [65-thin-layer-ast-production.md](65-thin-layer-ast-production.md) — benchmark 전용 AST runtime helper로 layer-ast production build의 parser emission 제거 검증
 
+63. [66-thin-layer-ssr-production.md](66-thin-layer-ssr-production.md) — 실제 production client의 host 시간대 매트릭스 12페이지 SSR hydration과 누락 pair bug 수정 검증
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |

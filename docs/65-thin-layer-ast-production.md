@@ -44,3 +44,11 @@
 - 확장 fixture 크기는 core 70477 unminified·16968 gzip, `layer` 203551·49161, `layer-ast` 151501·37056, `layer-ast-mixed` 214908·51716이다. 위 small fixture 값과 섞어 읽지 않는다.
 - [원시 결과](../benchmarks/results/thin-layer-production-ast-vectors-2026-10-11.json). 재현은 `node benchmarks/thin-layer/production-probe.mjs --vectors --out benchmarks/results/thin-layer-production-ast-vectors-2026-10-11.json`이다.
 - 제품 source는 바뀌지 않아 root check 전체는 돌리지 않았다.
+
+## 후속 (`49c21e2`)
+
+이 문서의 production parser 경계는 실제 SSR·hydration까지 이어졌다. [66](66-thin-layer-ssr-production.md)에서 같은 benchmark 전용 formatter로 production client를 hydration했고 parser marker는 여전히 false다. 위 수치와 판정은 그대로 유효하다.
+
+## 후속 (`e208980`)
+
+같은 production client가 실제 Chromium host 시간대 매트릭스까지 확인됐다. [66](66-thin-layer-ssr-production.md)에 최초 9페이지와 누락 pair 수정을 포함한 후속 12페이지 결과가 있다.
