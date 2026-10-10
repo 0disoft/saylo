@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import ICU from 'i18next-icu';
-import { freezeCatalogs, createBaseSchema, validateTranslation, InvalidArgumentError, UnknownMessageError } from '../../packages/core/dist/runtime.js';
+import { freezeCatalogs, createBaseSchema, validateTranslation, InvalidArgumentError, UnknownMessageError } from '@0disoft/saylo-core/runtime';
 
 // Experiment only. Receives parsed AST catalogs; no build-time parser in this module.
 class ValuesICU extends ICU {

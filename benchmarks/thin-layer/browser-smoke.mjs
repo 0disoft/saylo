@@ -88,7 +88,8 @@ try {
     plugins: [saylo({ localesDir: 'locales', baseLocale: 'en', initialLocale: 'fr' }), plugin],
     server: { host: '127.0.0.1', port: 0, strictPort: true, fs: { allow: [repository] },
       watch: { ignored: ['**/profile/**'] } },
-    optimizeDeps: { include: ['react', 'react-dom/client', 'i18next', 'i18next-icu'] } });
+    optimizeDeps: { include: ['react', 'react-dom/client', 'i18next', 'i18next-icu',
+      '@0disoft/saylo-core/runtime', '@0disoft/saylo-vite/client'] } });
   await vite.listen();
   const candidates = process.platform === 'win32' ? [
     path.join(process.env.PROGRAMFILES ?? 'C:/Program Files', 'Google/Chrome/Application/chrome.exe'),
