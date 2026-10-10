@@ -1,0 +1,349 @@
+{
+  "schema": "saylo-edit-comparison-v1",
+  "measuredAt": "2026-10-10T14:48:35.716Z",
+  "revisions": {
+    "before": "4aacb9318554d6be16448ab8ed35aaf5058c2303",
+    "after": "169e72b644825faea57bb34640663b5563a4512c"
+  },
+  "order": [
+    "before",
+    "after",
+    "after",
+    "before"
+  ],
+  "settings": {
+    "samples": 25,
+    "warmup": 5,
+    "calibrations": 10
+  },
+  "scenario": "10k-20-locales",
+  "mode": "edit",
+  "experiment": "plain-contracts",
+  "replacedSources": [
+    "packages/core/src/schema.ts"
+  ],
+  "serverFileStages": false,
+  "comparisonCodeHashes": {
+    "locale-compare.mjs": "1fa092f1cef1225688b8b506b1a2534dd2f900785302a1e25ac40c0a8241ef87",
+    "comparison-policy.mjs": "05f00e6b4299ca00ba77165a20815eae37c9ef5f1ee3bb6061f74b3d78d53c5c"
+  },
+  "scope": "Sequential independent fresh Vite/browser runs, reversed block order (before/after, after/before). Same current harness/dependencies with isolated workspace snapshots; only the explicitly selected experiment sources differ. Pooled quantiles use measured samples, not averages of run p95s. No sample-level pairing, randomization, forced GC or subtraction of GC/control/cross-process clocks; not causal proof.",
+  "runs": [
+    {
+      "index": 1,
+      "variant": "before",
+      "sourceRevision": "4aacb9318554d6be16448ab8ed35aaf5058c2303",
+      "file": "plain-contracts-edit-comparison-2026-10-10.1-before.json",
+      "measuredAt": "2026-10-10T14:47:50.709Z",
+      "summary": {
+        "saveToAckMs": {
+          "count": 25,
+          "p50Ms": 150.3109000000004,
+          "p95Ms": 284.5384000000013,
+          "minMs": 126.84699999999975,
+          "maxMs": 303.53559999999925
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 25,
+          "p50Ms": 104.83950000000004,
+          "p95Ms": 217.84810000000107,
+          "minMs": 77.17339999999967,
+          "maxMs": 247.3747000000003
+        },
+        "receiveToCommitMs": {
+          "count": 25,
+          "p50Ms": 31.399999998509884,
+          "p95Ms": 37.80000000074506,
+          "minMs": 22.800000000745058,
+          "maxMs": 39.19999999925494
+        },
+        "commitToAckDispatchMs": {
+          "count": 25,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 8.827300000000832,
+          "p95Ms": 11.116700000000492,
+          "minMs": 5.786700000000565,
+          "maxMs": 11.22899999999936
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 3.121900000000096,
+        "p95Ms": 4.803299999999581,
+        "minMs": 2.2538000000004104,
+        "maxMs": 4.803299999999581
+      }
+    },
+    {
+      "index": 2,
+      "variant": "after",
+      "sourceRevision": "169e72b644825faea57bb34640663b5563a4512c",
+      "file": "plain-contracts-edit-comparison-2026-10-10.2-after.json",
+      "measuredAt": "2026-10-10T14:48:05.502Z",
+      "summary": {
+        "saveToAckMs": {
+          "count": 25,
+          "p50Ms": 150.4436999999998,
+          "p95Ms": 199.98359999999957,
+          "minMs": 138.3135000000002,
+          "maxMs": 210.6239999999998
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 25,
+          "p50Ms": 97.54109999999855,
+          "p95Ms": 143.04230000000098,
+          "minMs": 90.78909999999996,
+          "maxMs": 150.1844000000001
+        },
+        "receiveToCommitMs": {
+          "count": 25,
+          "p50Ms": 31.800000000745058,
+          "p95Ms": 33.900000002235174,
+          "minMs": 27.900000002235174,
+          "maxMs": 35.399999998509884
+        },
+        "commitToAckDispatchMs": {
+          "count": 25,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 8.905000000000655,
+          "p95Ms": 12.429700000000594,
+          "minMs": 7.460899999998219,
+          "maxMs": 15.735000000000582
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 3.0374999999994543,
+        "p95Ms": 4.72190000000046,
+        "minMs": 2.7186000000001513,
+        "maxMs": 4.72190000000046
+      }
+    },
+    {
+      "index": 3,
+      "variant": "after",
+      "sourceRevision": "169e72b644825faea57bb34640663b5563a4512c",
+      "file": "plain-contracts-edit-comparison-2026-10-10.3-after.json",
+      "measuredAt": "2026-10-10T14:48:20.852Z",
+      "summary": {
+        "saveToAckMs": {
+          "count": 25,
+          "p50Ms": 134.04629999999997,
+          "p95Ms": 153.53849999999875,
+          "minMs": 114.92790000000059,
+          "maxMs": 164.57970000000023
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 25,
+          "p50Ms": 87.8693000000003,
+          "p95Ms": 102.39379999999983,
+          "minMs": 71.23019999999997,
+          "maxMs": 105.15949999999975
+        },
+        "receiveToCommitMs": {
+          "count": 25,
+          "p50Ms": 28.699999999254942,
+          "p95Ms": 33.900000002235174,
+          "minMs": 22.399999998509884,
+          "maxMs": 35.100000001490116
+        },
+        "commitToAckDispatchMs": {
+          "count": 25,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 8.67790000000059,
+          "p95Ms": 10.70299999999952,
+          "minMs": 6.869099999999889,
+          "maxMs": 38.53050000000076
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 3.4711999999999534,
+        "p95Ms": 5.042600000000675,
+        "minMs": 2.8219000000008236,
+        "maxMs": 5.042600000000675
+      }
+    },
+    {
+      "index": 4,
+      "variant": "before",
+      "sourceRevision": "4aacb9318554d6be16448ab8ed35aaf5058c2303",
+      "file": "plain-contracts-edit-comparison-2026-10-10.4-before.json",
+      "measuredAt": "2026-10-10T14:48:35.449Z",
+      "summary": {
+        "saveToAckMs": {
+          "count": 25,
+          "p50Ms": 128.35250000000087,
+          "p95Ms": 153.65639999999985,
+          "minMs": 112.8122999999996,
+          "maxMs": 166.34929999999986
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 25,
+          "p50Ms": 84.78459999999905,
+          "p95Ms": 100.86959999999999,
+          "minMs": 73.60000000000036,
+          "maxMs": 101.47940000000017
+        },
+        "receiveToCommitMs": {
+          "count": 25,
+          "p50Ms": 25.399999998509884,
+          "p95Ms": 30.100000001490116,
+          "minMs": 20.300000000745058,
+          "maxMs": 30.5
+        },
+        "commitToAckDispatchMs": {
+          "count": 25,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.19999999925494194
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 7.873499999999694,
+          "p95Ms": 9.838700000000244,
+          "minMs": 6.185199999999895,
+          "maxMs": 55.80479999999989
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 3.3655000000017026,
+        "p95Ms": 6.1362000000008265,
+        "minMs": 3.226300000000265,
+        "maxMs": 6.1362000000008265
+      }
+    }
+  ],
+  "pooled": {
+    "before": {
+      "samples": 50,
+      "runFiles": [
+        "plain-contracts-edit-comparison-2026-10-10.1-before.json",
+        "plain-contracts-edit-comparison-2026-10-10.4-before.json"
+      ],
+      "withinGoal": {
+        "goalMs": 100,
+        "samples": 0
+      },
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 136.94350000000122,
+          "p95Ms": 259.14819999999963,
+          "minMs": 112.8122999999996,
+          "maxMs": 303.53559999999925
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 91.92759999999907,
+          "p95Ms": 197.17430000000058,
+          "minMs": 73.60000000000036,
+          "maxMs": 247.3747000000003
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 26.699999999254942,
+          "p95Ms": 37.400000002235174,
+          "minMs": 20.300000000745058,
+          "maxMs": 39.19999999925494
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.19999999925494194
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 8.219499999999243,
+          "p95Ms": 11.116700000000492,
+          "minMs": 5.786700000000565,
+          "maxMs": 55.80479999999989
+        }
+      },
+      "control": {
+        "count": 20,
+        "p50Ms": 3.3215999999993073,
+        "p95Ms": 4.803299999999581,
+        "minMs": 2.2538000000004104,
+        "maxMs": 6.1362000000008265
+      }
+    },
+    "after": {
+      "samples": 50,
+      "runFiles": [
+        "plain-contracts-edit-comparison-2026-10-10.2-after.json",
+        "plain-contracts-edit-comparison-2026-10-10.3-after.json"
+      ],
+      "withinGoal": {
+        "goalMs": 100,
+        "samples": 0
+      },
+      "summary": {
+        "saveToAckMs": {
+          "count": 50,
+          "p50Ms": 143.58070000000043,
+          "p95Ms": 197.22409999999945,
+          "minMs": 114.92790000000059,
+          "maxMs": 210.6239999999998
+        },
+        "saveToManifestBroadcastMs": {
+          "count": 50,
+          "p50Ms": 94.67180000000008,
+          "p95Ms": 139.28590000000077,
+          "minMs": 71.23019999999997,
+          "maxMs": 150.1844000000001
+        },
+        "receiveToCommitMs": {
+          "count": 50,
+          "p50Ms": 30,
+          "p95Ms": 33.900000002235174,
+          "minMs": 22.399999998509884,
+          "maxMs": 35.399999998509884
+        },
+        "commitToAckDispatchMs": {
+          "count": 50,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000149011612,
+          "minMs": 0,
+          "maxMs": 0.10000000149011612
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 8.740899999998874,
+          "p95Ms": 12.429700000000594,
+          "minMs": 6.869099999999889,
+          "maxMs": 38.53050000000076
+        }
+      },
+      "control": {
+        "count": 20,
+        "p50Ms": 3.1593999999995503,
+        "p95Ms": 4.72190000000046,
+        "minMs": 2.7186000000001513,
+        "maxMs": 5.042600000000675
+      }
+    }
+  }
+}
