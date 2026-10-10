@@ -398,6 +398,53 @@ test('disk event bursts retain the 200ms drain bound', async t => {
   assert.equal(request()[0].data.revision, 1);
 });
 
+test('a missing read-backed update waits for disk settling before publishing an atomic replacement', async t => {
+  const { root, plugin, server, request, events } = await setup(t);
+  const file = path.join(root, 'en', 'demo.json');
+  await rm(file);
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });
+  const update = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => '{"hello":"Before replacement {name}"}' });
+  t.mock.timers.tick(0);
+  await update;
+  assert.equal(request()[0].data.revision, 0);
+  assert.equal(events.length, 0);
+  await writeFile(file, '{"hello":"Replacement {name}"}');
+  const restored = plugin.hotUpdate({ type: 'create', file, modules: [], server });
+  t.mock.timers.tick(39);
+  assert.equal(events.length, 0);
+  t.mock.timers.tick(1);
+  await restored;
+  const snapshots = events.filter(e => e.event === SNAPSHOT_EVENT);
+  assert.equal(snapshots.length, 1);
+  assert.equal(snapshots[0].data.catalogs.find(c => c.locale === 'en').messages.hello.source, 'Replacement {name}');
+});
+
+test('a missing in-flight read keeps disk settling even when a newer reader is already queued', async t => {
+  const { root, plugin, server, request } = await setup(t);
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });
+  const file = path.join(root, 'en', 'demo.json');
+  let started, fail;
+  const reading = new Promise(resolve => { started = resolve; });
+  const source = new Promise((_resolve, reject) => { fail = reject; });
+  const first = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => { started(); return source; } });
+  t.mock.timers.tick(0);
+  await reading;
+  let reads = 0;
+  const latest = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => {
+    reads++;
+    return '{"hello":"Latest {name}"}';
+  } });
+  fail(Object.assign(new Error('Atomic replacement'), { code: 'ENOENT' }));
+  await first;
+  t.mock.timers.tick(39);
+  assert.equal(reads, 0);
+  assert.equal(request()[0].data.revision, 0);
+  t.mock.timers.tick(1);
+  await latest;
+  assert.equal(reads, 1);
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'en').messages.hello.source, 'Latest {name}');
+});
+
 test('new locale and paired namespace files join the same valid batch', async t => {
   const { disk, request, events } = await setup(t);
   await Promise.all([

@@ -141,6 +141,7 @@ export class LiveRegistry {
       if (this.stopped) return;
       const candidate = new Map(this.desired);
       const errors = new Map(this.errors);
+      let settleMissing = false;
       for (const [file, read] of batch) {
         const location = catalogLocation(this.root, file)!;
         try {
@@ -150,14 +151,17 @@ export class LiveRegistry {
           errors.delete(file);
         } catch (error) {
           if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-            candidate.delete(file);
-            errors.delete(file);
+            // An update reader can race an atomic replacement before its
+            // unlink/add events arrive. Confirm removal only after disk settling.
+            if (read) settleMissing = true;
+            else { candidate.delete(file); errors.delete(file); }
           } else errors.set(file, this.failure(error));
         }
       }
       if (this.stopped) return;
       // A save arrived while reading: discard this attempt and re-read the affected paths.
-      if (generation !== this.generation) {
+      if (generation !== this.generation || settleMissing) {
+        if (settleMissing) this.settleDisk = true;
         for (const file of batch.keys()) if (!this.queued.has(file)) this.queued.set(file, undefined);
         this.schedule();
         return;
