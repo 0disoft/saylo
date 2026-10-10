@@ -1,100 +1,27 @@
-import i18next from 'i18next';
-import ICU from 'i18next-icu';
-import { parseCatalog, createBaseSchema, validateTranslation, InvalidArgumentError, UnknownMessageError } from '../../packages/core/dist/index.js';
+import { parseCatalog } from '../../packages/core/dist/index.js';
+import { createCatalogLayer } from './catalog-layer.mjs';
 
-// Contract experiment only. Reuses Saylo parsing/schema, then delegates text
-// formatting to i18next-icu using AST resources and isolated revision instances.
-class ValuesICU extends ICU {
-  parse(resource, options, ...context) { return super.parse(resource, options.values, ...context); }
-}
-
-function argumentsFor(key, schema, args) {
-  if (args !== undefined && (args === null || typeof args !== 'object' || Array.isArray(args)))
-    throw new InvalidArgumentError(key, undefined, 'Arguments must be an object.');
-  const values = Object.create(null);
-  for (const [name, contract] of Object.entries(schema)) {
-    if (!args || !Object.hasOwn(args, name)) throw new InvalidArgumentError(key, name, 'Required argument is missing.');
-    const value = args[name];
-    if (typeof value === 'string' && contract.acceptedTypes.includes('string')) values[name] = value;
-    else if (typeof value === 'number' && Number.isFinite(value) && contract.acceptedTypes.includes('number')) values[name] = value;
-    else {
-      let timestamp;
-      if (contract.acceptedTypes.includes('date')) {
-        try { timestamp = Date.prototype.getTime.call(value); } catch {}
-      }
-      if (!Number.isFinite(timestamp)) throw new InvalidArgumentError(key, name, 'Argument has the wrong type.');
-      values[name] = timestamp;
-    }
-  }
-  return values;
-}
-
+// Node-only source adapter. Commit the source cache only after the AST layer accepts it.
 export async function createLayer(baseLocale, initialSources, initialLocale) {
-  let current;
   let accepted = new Map();
-  const resourceCache = new WeakMap();
-  const stats = { parsedCatalogs: 0, resourceDictionaries: 0, instances: 0 };
-  async function replace(sources, locale = current?.locale ?? initialLocale) {
+  let parsedCatalogs = 0;
+  let layer;
+  async function replace(sources, locale) {
     const candidate = new Map();
     const catalogs = sources.map(({ source, ...options }) => {
       const key = JSON.stringify([options.locale, options.namespace, options.sourceName ?? '<catalog>']);
       const previous = accepted.get(key);
       let catalog = previous?.catalog;
-      if (!previous || previous.source !== source) { stats.parsedCatalogs++; catalog = parseCatalog(source, options, catalog); }
+      if (!previous || previous.source !== source) { parsedCatalogs++; catalog = parseCatalog(source, options, catalog); }
       candidate.set(key, { source, catalog });
       return catalog;
     });
-    const bases = new Map(catalogs.filter(c => c.locale === baseLocale).map(c => [c.namespace, c]));
-    if (!bases.size) throw new Error('A base catalog is required.');
-    const schemas = new Map([...bases].map(([namespace, catalog]) => [namespace, createBaseSchema(catalog)]));
-    const pairs = new Map();
-    const resources = Object.create(null);
-    for (const catalog of catalogs) {
-      const pair = JSON.stringify([catalog.locale, catalog.namespace]);
-      if (pairs.has(pair)) throw new Error('Duplicate catalog pair.');
-      if (catalog.locale !== baseLocale) {
-        const schema = schemas.get(catalog.namespace);
-        if (!schema) throw new Error('Translation namespace has no baseline.');
-        validateTranslation(schema, catalog);
-      }
-      pairs.set(pair, catalog);
-      const language = resources[catalog.locale] ??= Object.create(null);
-      let namespace = resourceCache.get(catalog);
-      if (!namespace) {
-        namespace = Object.create(null);
-        for (const [id, message] of Object.entries(catalog.messages)) namespace[id] = message.ast;
-        Object.freeze(namespace);
-        resourceCache.set(catalog, namespace);
-        stats.resourceDictionaries++;
-      }
-      language[catalog.namespace] = namespace;
-    }
-    const availableLocales = Object.freeze(Object.keys(resources).sort());
-    const selected = availableLocales.includes(locale) ? locale : baseLocale;
-    const engine = i18next.createInstance().use(new ValuesICU());
-    stats.instances++;
-    await engine.init({ resources, lng: selected, fallbackLng: baseLocale, initAsync: false,
-      ns: [...bases.keys()], keySeparator: false, nsSeparator: false, interpolation: { escapeValue: false },
-      i18nFormat: { parseErrorHandler: error => { throw error; } } });
-    const t = (key, args) => {
-      if (typeof key !== 'string') throw new UnknownMessageError(String(key));
-      const parts = key.split(':');
-      const [namespace, id] = parts;
-      const base = bases.get(namespace);
-      if (parts.length !== 2 || !base || !Object.hasOwn(base.messages, id)) throw new UnknownMessageError(key);
-      const values = argumentsFor(key, schemas.get(namespace).keys[id], args);
-      const target = pairs.get(JSON.stringify([selected, namespace]));
-      const source = target && Object.hasOwn(target.messages, id) ? target : base;
-      // Select the actual fallback source language. Keep ICU values separate
-      // from reserved i18next options such as lng, ns, defaultValue and count.
-      return engine.t(id, { lng: source.locale, ns: namespace, values });
-    };
-    const snapshot = Object.freeze({ locale: selected, availableLocales,
-      availableNamespaces: Object.freeze([...bases.keys()].sort()), t });
-    current = snapshot;
+    const snapshot = layer ? await layer.replace(catalogs, locale) :
+      (layer = await createCatalogLayer(baseLocale, catalogs, locale ?? initialLocale)).getSnapshot();
     accepted = candidate;
     return snapshot;
   }
   await replace(initialSources, initialLocale);
-  return { getSnapshot: () => current, replace, getProbeStats: () => Object.freeze({ ...stats }) };
+  return { getSnapshot: () => layer.getSnapshot(), replace,
+    getProbeStats: () => Object.freeze({ parsedCatalogs, ...layer.getProbeStats() }) };
 }

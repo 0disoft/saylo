@@ -1,6 +1,6 @@
 {
   "schema": "saylo-thin-layer-contract-probe-v1",
-  "observedAt": "2026-10-10T15:33:54.300Z",
+  "observedAt": "2026-10-10T16:02:57.864Z",
   "environment": {
     "node": "v24.18.0"
   },
@@ -11,8 +11,9 @@
     "wuchale": "0.26.7"
   },
   "codeHashes": {
-    "benchmarks/thin-layer/probe.mjs": "0efb53f859357da512189a030a8f60255bdbddf097498b5b15272487fb7c459e",
-    "benchmarks/thin-layer/i18next-layer.mjs": "61786773b2da2428a039188794c10e03f9fa3591bc6009849fd0d32519a6bfcf",
+    "benchmarks/thin-layer/probe.mjs": "58b7985d7a3fc842e155159ac0d0c94c9d94d0dd4c01416393a2bade3725a758",
+    "benchmarks/thin-layer/i18next-layer.mjs": "43996f2b303f5b5224af055245432cb80590214fb78977677191cfdc69907ed5",
+    "benchmarks/thin-layer/catalog-layer.mjs": "03774c0c4faf80d468e3647a78805792a5de4649a867a122740e2abe531842af",
     "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
     "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
     "packages/core/dist/catalog.js": "eac4c686d9c15a49b5301ee466568acf19b0fbee0c1e5987aae6dfc0d572b7d9",

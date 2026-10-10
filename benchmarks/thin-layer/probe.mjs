@@ -102,7 +102,7 @@ for (const name of ['i18next', 'i18next-icu', 'intl-messageformat', 'wuchale']) 
   const metadata = JSON.parse(await readFile(new URL(`node_modules/${name}/package.json`, import.meta.url), 'utf8'));
   packages[name] = metadata.version;
 }
-const files = [new URL('probe.mjs', import.meta.url), new URL('i18next-layer.mjs', import.meta.url),
+const files = [new URL('probe.mjs', import.meta.url), new URL('i18next-layer.mjs', import.meta.url), new URL('catalog-layer.mjs', import.meta.url),
   new URL('package-lock.json', import.meta.url), new URL('../../packages/core/dist/schema.js', import.meta.url),
   new URL('../../packages/core/dist/catalog.js', import.meta.url), new URL('../../packages/core/dist/translator.js', import.meta.url)];
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
