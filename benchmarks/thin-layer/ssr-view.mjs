@@ -8,7 +8,7 @@ export function SsrProbe({ adapter, hydrated }) {
   return h('section', null,
     h('h1', { lang: snapshot.locale }, snapshot.t('demo:greeting', { name: 'Ada' })),
     h('p', { id: 'when' }, snapshot.t('demo:when', { at })),
-    h('p', { id: 'rows' }, snapshot.t('demo:rows', { count: 0 })),
+    h('p', { id: 'rows' }, snapshot.t('demo:rows', { count: 21 })),
     h('input', { 'aria-label': 'draft', defaultValue: '' }),
     h('button', { onClick: () => setCount(value => value + 1) }, String(count)),
     h('dialog', { open: count > 0 }, 'confirmation'));

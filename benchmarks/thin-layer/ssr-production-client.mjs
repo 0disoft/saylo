@@ -44,11 +44,14 @@ try {
   assert(title.textContent === 'Post Ada' && notifications === 2, 'Post-hydration replacement failed');
   assert(boot.t('demo:greeting', { name: 'Ada' }) === expected.initial, 'Old bound translation changed');
   assert(adapter.getSnapshot().timeZone === expected.timeZone, 'Boot timezone changed');
+  if (expected.hostTimeZone) assert(new Intl.DateTimeFormat('en').resolvedOptions().timeZone === expected.hostTimeZone,
+    'Browser host timezone emulation did not apply');
   assert(container.querySelector('#when').textContent === expected.when, 'Client/server date mismatch');
-  assert(container.querySelector('#rows').textContent === '0 rows', 'Fallback source locale changed');
+  assert(container.querySelector('#rows').textContent === '21 rows', 'Fallback source locale changed');
   assert(globalThis.__thinInjected === undefined, 'Unsafe serialized content executed');
   const observation = { caseId, locale: adapter.getSnapshot().locale, timeZone: adapter.getSnapshot().timeZone,
     hostTimeZone: new Intl.DateTimeFormat('en').resolvedOptions().timeZone, when: container.querySelector('#when').textContent,
+    fallbackPlural: container.querySelector('#rows').textContent,
     initial: boot.t('demo:greeting', { name: 'Ada' }), final: title.textContent, preserved, notifications,
     recoverableErrors: errors, injectionAbsent: true, userAgent: navigator.userAgent };
   root.unmount(); root = undefined; adapter.dispose(); adapter = undefined;
