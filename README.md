@@ -27,6 +27,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - `5558185`·`432ca35`에서 core에 이전 성공 파싱의 JSON leaf 범위를 재사용하는 단일 문자열 편집 경로를 넣었고 `1ab93d5`에서 최신 batch가 이미 대기 중이면 이전 읽기의 중복 disk drain 예약을 생략한다. paired 파서 비교는 same-length p95 44.02→12.09ms·variable-length 152.23→83.73ms·cold 92.41→92.58ms다. 종단 간 편집 single run은 large p95 95.25ms(100ms 이내 24/25, 최대 124.11ms)이고 로케일 추가 large는 p95 268.58ms(250ms 이내 23/25)로 목표 미달이다. single run이라 안정 달성을 주장하지 않는다. 조건·원시 결과는 [59](docs/59-json-leaf-edits.md)에 있다.
 
 - `32e120c`에서 새 카탈로그 경로의 40ms 대기창을 제거했고 기존 파일 교체·삭제 안정화는 유지한다. 단일 large 목록 run은 p95 189.30ms였으나, 두 소스만 바꾼 ABBA 비교의 pooled p95는 417.47→642.02ms로 목표 미달이다. 중앙값은 214.09→150.97ms, 250ms 이내는 31/50→40/50으로 개선됐지만 긴 지연의 원인은 미확정이라 성능 채택은 잠정 상태다. 조건·복구 검증·원복한 파서 실험은 [60](docs/60-next-turn-additions.md)에 있다.
+- `c19ca34`에서 새 카탈로그 경로의 superseded 성공 파싱을 파일별 map으로 넘겨 최신 읽기에서 재사용하도록 했다. 직전 [60](docs/60-next-turn-additions.md)의 single-read 단정은 read 2·parse 2로 실제 실패했고, 정상 벤치는 large p95 247.25ms만 250ms 목표에 들어오고 small p95 279.47ms는 미달이라 성능 안정성 목표는 미달이다. 상세·실패 trace는 [61](docs/61-superseded-parse-reuse.md)에 있다.
 
 ## 로컬 실행
 

@@ -66,6 +66,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 55. [58-trailing-disk-rechecks.md](58-trailing-disk-rechecks.md) — 첫 게시 뒤 60ms 꼬리 디스크 재확인으로 watcher throttle 복구, 편집 목표 미달 기록
 56. [59-json-leaf-edits.md](59-json-leaf-edits.md) — JSON leaf 단일 문자열 편집의 파서·브라우저 측정과 로케일 추가 목표 미달 기록
 57. [60-next-turn-additions.md](60-next-turn-additions.md) — 다음 턴 신규 로케일 파일 즉시 읽기, 서버 파일 구간·파서 trial 원복·최신 단일 run 기록
+58. [61-superseded-parse-reuse.md](61-superseded-parse-reuse.md) — superseded 성공 파싱 재사용, 직전 60 single-read 단정 실패 재현과 성능 안정성 미달 기록
 
 ## 상태 표기 규칙
 
