@@ -1,0 +1,13 @@
+{
+  "schema": "saylo-benchmark-attempt-v1",
+  "baseline": "6927064",
+  "current": "32e120c",
+  "mode": "locale-add",
+  "experiment": "fast-additions",
+  "serverFileStages": true,
+  "exitCode": 1,
+  "completedRun": "next-turn-locale-add-compare-2026-10-11.1-before.json",
+  "failure": "Expected exactly one catalog path check, read and parse per sample.",
+  "failedPhase": "2/4 after snapshot",
+  "scope": "Detailed file-stage assumption rejected the after sample. No after result or aggregate comparison exists; call counts were not printed and the reason for the count mismatch is unconfirmed. Completed before run is retained as partial evidence. Retry uses normal instrumentation with a separate output prefix."
+}

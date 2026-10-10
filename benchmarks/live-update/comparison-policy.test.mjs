@@ -12,6 +12,12 @@ test('snapshot policy accepts the exact experiment while rejecting unrelated sou
   const live = 'packages/vite/src/live-registry.ts';
   assert.deepEqual(comparisonSources('fast-edits', [live, 'packages/vite/test/plugin.test.mjs'], []), [live]);
   assert.deepEqual(comparisonSources('fast-edits', [live], [live]), [live]);
+  const index = 'packages/vite/src/index.ts';
+  assert.deepEqual(comparisonSources('fast-additions', [index, live, 'packages/vite/test/plugin.test.mjs'], []), [index, live]);
+  assert.deepEqual(comparisonSources('fast-additions', [index, live], [index, live]), [index, live]);
+  assert.throws(() => comparisonSources('fast-additions', [index], []));
+  assert.throws(() => comparisonSources('fast-additions', [index, live, catalog], []));
+  assert.throws(() => comparisonSources('fast-additions', [index, live], ['packages/vite/src/types.ts']));
   for (const file of ['packages/core/src/index.ts', 'packages/core/package.json', 'packages/vite/src/index.ts']) {
     assert.throws(() => comparisonSources('owned-map', [catalog, diagnostics, file], []));
     assert.throws(() => comparisonSources('owned-map', [catalog, diagnostics], [file]));

@@ -1,0 +1,394 @@
+{
+  "schema": "saylo-locale-add-comparison-v1",
+  "measuredAt": "2026-10-10T17:48:07.512Z",
+  "revisions": {
+    "before": "692706415a65b1868e0cce3ae93c204b4cfab2a8",
+    "after": "32e120ccac4556e013d3b69634e0232405903bf7"
+  },
+  "order": [
+    "before",
+    "after",
+    "after",
+    "before"
+  ],
+  "settings": {
+    "samples": 25,
+    "warmup": 5,
+    "calibrations": 10
+  },
+  "scenario": "10k-20-locales",
+  "mode": "locale-add",
+  "experiment": "fast-additions",
+  "replacedSources": [
+    "packages/vite/src/index.ts",
+    "packages/vite/src/live-registry.ts"
+  ],
+  "serverFileStages": false,
+  "comparisonCodeHashes": {
+    "locale-compare.mjs": "9027d7472beeabef08c8490054f5fa1805274731b6d42c34b71321a773c14893",
+    "comparison-policy.mjs": "afb764abed6241d2849861f334fea4212682ba86d3d5394a2d10780bb48448b1"
+  },
+  "scope": "Sequential independent fresh Vite/browser runs, reversed block order (before/after, after/before). Same current harness/dependencies with isolated workspace snapshots; only the explicitly selected experiment sources differ. Pooled quantiles use measured samples, not averages of run p95s. No sample-level pairing, randomization, forced GC or subtraction of GC/control/cross-process clocks; not causal proof.",
+  "runs": [
+    {
+      "index": 1,
+      "variant": "before",
+      "sourceRevision": "692706415a65b1868e0cce3ae93c204b4cfab2a8",
+      "file": "next-turn-locale-add-comparison-2026-10-11.1-before.json",
+      "measuredAt": "2026-10-10T17:46:11.765Z",
+      "summary": {
+        "saveToListAckMs": {
+          "count": 25,
+          "p50Ms": 278.41999999999825,
+          "p95Ms": 427.5174999999981,
+          "minMs": 206.37479999999778,
+          "maxMs": 1042.446600000003
+        },
+        "selectToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 258.35959999999614,
+          "p95Ms": 395.59779999999955,
+          "minMs": 204.4771000000037,
+          "maxMs": 522.035100000001
+        },
+        "saveToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 547.9039000000012,
+          "p95Ms": 753.1383999999962,
+          "minMs": 413.94890000000305,
+          "maxMs": 1569.5188000000016
+        },
+        "selectToCommitMs": {
+          "count": 25,
+          "p50Ms": 254,
+          "p95Ms": 391.9000000022352,
+          "minMs": 201.10000000149012,
+          "maxMs": 516.2999999970198
+        },
+        "saveToBroadcastMs": {
+          "count": 25,
+          "p50Ms": 253.41199999999662,
+          "p95Ms": 405.52869999999893,
+          "minMs": 188.10669999999664,
+          "maxMs": 1007.618400000003
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 25.452100000002247,
+          "p95Ms": 61.65359999999782,
+          "minMs": 11.215799999998126,
+          "maxMs": 61.688899999997375
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 9.249299999999494,
+        "p95Ms": 28.630600000000413,
+        "minMs": 4.4812999999994645,
+        "maxMs": 28.630600000000413
+      }
+    },
+    {
+      "index": 2,
+      "variant": "after",
+      "sourceRevision": "32e120ccac4556e013d3b69634e0232405903bf7",
+      "file": "next-turn-locale-add-comparison-2026-10-11.2-after.json",
+      "measuredAt": "2026-10-10T17:47:07.901Z",
+      "summary": {
+        "saveToListAckMs": {
+          "count": 25,
+          "p50Ms": 181.66470000000118,
+          "p95Ms": 642.020199999999,
+          "minMs": 133.1316999999981,
+          "maxMs": 2499.833900000005
+        },
+        "selectToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 233.24820000000182,
+          "p95Ms": 682.8329999999987,
+          "minMs": 183.2881999999954,
+          "maxMs": 725.9325000000026
+        },
+        "saveToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 417.7475000000013,
+          "p95Ms": 940.6016999999993,
+          "minMs": 332.9375999999975,
+          "maxMs": 2771.0638000000035
+        },
+        "selectToCommitMs": {
+          "count": 25,
+          "p50Ms": 229.79999999701977,
+          "p95Ms": 679.3000000007451,
+          "minMs": 180.10000000149012,
+          "maxMs": 722.3999999985099
+        },
+        "saveToBroadcastMs": {
+          "count": 25,
+          "p50Ms": 160.51830000000336,
+          "p95Ms": 622.4305999999997,
+          "minMs": 112.57590000000346,
+          "maxMs": 2469.686300000001
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 17.697299999999814,
+          "p95Ms": 137.3711000000003,
+          "minMs": 9.412299999996321,
+          "maxMs": 137.4105999999956
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 21.374100000000908,
+        "p95Ms": 45.83399999999892,
+        "minMs": 3.264100000000326,
+        "maxMs": 45.83399999999892
+      }
+    },
+    {
+      "index": 3,
+      "variant": "after",
+      "sourceRevision": "32e120ccac4556e013d3b69634e0232405903bf7",
+      "file": "next-turn-locale-add-comparison-2026-10-11.3-after.json",
+      "measuredAt": "2026-10-10T17:47:37.070Z",
+      "summary": {
+        "saveToListAckMs": {
+          "count": 25,
+          "p50Ms": 125.22920000000158,
+          "p95Ms": 463.3071999999993,
+          "minMs": 68.16059999999925,
+          "maxMs": 1108.9490000000005
+        },
+        "selectToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 178.71589999999924,
+          "p95Ms": 216.17410000000018,
+          "minMs": 100.59300000000076,
+          "maxMs": 371.28839999999946
+        },
+        "saveToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 307.6188000000002,
+          "p95Ms": 664.7753000000012,
+          "minMs": 187.03080000000045,
+          "maxMs": 1260.3495000000003
+        },
+        "selectToCommitMs": {
+          "count": 25,
+          "p50Ms": 175.5,
+          "p95Ms": 212.80000000074506,
+          "minMs": 98.30000000074506,
+          "maxMs": 368
+        },
+        "saveToBroadcastMs": {
+          "count": 25,
+          "p50Ms": 111.76889999999912,
+          "p95Ms": 442.8284999999996,
+          "minMs": 59.276300000001356,
+          "maxMs": 1101.641300000003
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 11.839899999999034,
+          "p95Ms": 17.27939999999944,
+          "minMs": 4.138199999997596,
+          "maxMs": 18.738499999999476
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 3.080399999999827,
+        "p95Ms": 3.8806000000004133,
+        "minMs": 2.3158000000003085,
+        "maxMs": 3.8806000000004133
+      }
+    },
+    {
+      "index": 4,
+      "variant": "before",
+      "sourceRevision": "692706415a65b1868e0cce3ae93c204b4cfab2a8",
+      "file": "next-turn-locale-add-comparison-2026-10-11.4-before.json",
+      "measuredAt": "2026-10-10T17:48:07.090Z",
+      "summary": {
+        "saveToListAckMs": {
+          "count": 25,
+          "p50Ms": 142.98799999999756,
+          "p95Ms": 241.77419999999984,
+          "minMs": 92.6707000000024,
+          "maxMs": 347.22100000000137
+        },
+        "selectToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 147.96429999999964,
+          "p95Ms": 321.6986999999972,
+          "minMs": 73.28050000000076,
+          "maxMs": 351.48239999999714
+        },
+        "saveToTranslationAckMs": {
+          "count": 25,
+          "p50Ms": 290.7511000000013,
+          "p95Ms": 507.2982000000011,
+          "minMs": 169.78420000000187,
+          "maxMs": 508.35459999999875
+        },
+        "selectToCommitMs": {
+          "count": 25,
+          "p50Ms": 145.09999999776483,
+          "p95Ms": 318.30000000074506,
+          "minMs": 71.59999999776483,
+          "maxMs": 348.79999999701977
+        },
+        "saveToBroadcastMs": {
+          "count": 25,
+          "p50Ms": 129.22189999999682,
+          "p95Ms": 224.09890000000087,
+          "minMs": 86.1143000000011,
+          "maxMs": 332.15380000000005
+        },
+        "fileWriteMs": {
+          "count": 25,
+          "p50Ms": 9.847300000001269,
+          "p95Ms": 23.689399999999296,
+          "minMs": 4.545399999999063,
+          "maxMs": 42.030399999999645
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 3.4724000000005617,
+        "p95Ms": 11.010199999998804,
+        "minMs": 2.775100000000748,
+        "maxMs": 11.010199999998804
+      }
+    }
+  ],
+  "pooled": {
+    "before": {
+      "samples": 50,
+      "runFiles": [
+        "next-turn-locale-add-comparison-2026-10-11.1-before.json",
+        "next-turn-locale-add-comparison-2026-10-11.4-before.json"
+      ],
+      "within250Ms": 31,
+      "withinGoal": {
+        "goalMs": 250,
+        "samples": 31
+      },
+      "summary": {
+        "saveToListAckMs": {
+          "count": 50,
+          "p50Ms": 214.08580000000075,
+          "p95Ms": 417.4737000000023,
+          "minMs": 92.6707000000024,
+          "maxMs": 1042.446600000003
+        },
+        "selectToTranslationAckMs": {
+          "count": 50,
+          "p50Ms": 238.38520000000062,
+          "p95Ms": 369.56209999999555,
+          "minMs": 73.28050000000076,
+          "maxMs": 522.035100000001
+        },
+        "saveToTranslationAckMs": {
+          "count": 50,
+          "p50Ms": 484.78919999999925,
+          "p95Ms": 714.2124999999978,
+          "minMs": 169.78420000000187,
+          "maxMs": 1569.5188000000016
+        },
+        "selectToCommitMs": {
+          "count": 50,
+          "p50Ms": 233.89999999850988,
+          "p95Ms": 366,
+          "minMs": 71.59999999776483,
+          "maxMs": 516.2999999970198
+        },
+        "saveToBroadcastMs": {
+          "count": 50,
+          "p50Ms": 192.14030000000275,
+          "p95Ms": 397.83230000000185,
+          "minMs": 86.1143000000011,
+          "maxMs": 1007.618400000003
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 15.110100000001694,
+          "p95Ms": 54.904499999996915,
+          "minMs": 4.545399999999063,
+          "maxMs": 61.688899999997375
+        }
+      },
+      "control": {
+        "count": 20,
+        "p50Ms": 6.293300000001182,
+        "p95Ms": 17.29190000000017,
+        "minMs": 2.775100000000748,
+        "maxMs": 28.630600000000413
+      }
+    },
+    "after": {
+      "samples": 50,
+      "runFiles": [
+        "next-turn-locale-add-comparison-2026-10-11.2-after.json",
+        "next-turn-locale-add-comparison-2026-10-11.3-after.json"
+      ],
+      "within250Ms": 40,
+      "withinGoal": {
+        "goalMs": 250,
+        "samples": 40
+      },
+      "summary": {
+        "saveToListAckMs": {
+          "count": 50,
+          "p50Ms": 150.96619999999893,
+          "p95Ms": 642.020199999999,
+          "minMs": 68.16059999999925,
+          "maxMs": 2499.833900000005
+        },
+        "selectToTranslationAckMs": {
+          "count": 50,
+          "p50Ms": 204.1858000000011,
+          "p95Ms": 471.7589000000007,
+          "minMs": 100.59300000000076,
+          "maxMs": 725.9325000000026
+        },
+        "saveToTranslationAckMs": {
+          "count": 50,
+          "p50Ms": 371.39100000000326,
+          "p95Ms": 940.6016999999993,
+          "minMs": 187.03080000000045,
+          "maxMs": 2771.0638000000035
+        },
+        "selectToCommitMs": {
+          "count": 50,
+          "p50Ms": 201.80000000074506,
+          "p95Ms": 468.19999999925494,
+          "minMs": 98.30000000074506,
+          "maxMs": 722.3999999985099
+        },
+        "saveToBroadcastMs": {
+          "count": 50,
+          "p50Ms": 135.8869999999988,
+          "p95Ms": 622.4305999999997,
+          "minMs": 59.276300000001356,
+          "maxMs": 2469.686300000001
+        },
+        "fileWriteMs": {
+          "count": 50,
+          "p50Ms": 14.911600000001272,
+          "p95Ms": 104.35089999999764,
+          "minMs": 4.138199999997596,
+          "maxMs": 137.4105999999956
+        }
+      },
+      "control": {
+        "count": 20,
+        "p50Ms": 3.6039999999993597,
+        "p95Ms": 33.27400000000125,
+        "minMs": 2.3158000000003085,
+        "maxMs": 45.83399999999892
+      }
+    }
+  }
+}

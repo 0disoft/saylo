@@ -1,0 +1,77 @@
+{
+  "schema": "saylo-rapid-recovery-probe-v1",
+  "observedAt": "2026-10-10T17:49:16.251Z",
+  "node": "v24.18.0",
+  "scope": "Five sequential fresh Vite SSR fixtures, real watcher. JSON error (0/60/0ms gap), schema error and valid first publication (0ms gap) followed by valid write. No browser/i18next/UI. Catalog read 250ms after valid write; not a latency or cross-platform reliability claim. Bundled watcher throttle retained. Historical failure evidence remains in rapid-recovery-2026-10-11.json.",
+  "codeHashes": {
+    "benchmarks/thin-layer/rapid-recovery.mjs": "a873b7cc0f39cf8c9d4513f19ed72316e697bacd4231728917a9675755f27a6b",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "packages/vite/dist/live-registry.js": "36dc9343b367eb1d2dd4ff4b931f72c62d7143a4919e4e74d2e12b4684ec31cd",
+    "packages/vite/dist/disk-rechecks.js": "46f6e037f073aa0b8fc875349a5e8fe0a20ab8b2ec5fc16c2932feac3808a472",
+    "node_modules/vite/dist/node/chunks/node.js": "21d5c6b4fb1013b98b1436e9e2a3bb416c8932343ad42ec293bbf760f51a0131",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "observations": [
+    {
+      "id": "json-0-a",
+      "recoveryGapMs": 0,
+      "firstReceipt": "diagnostic",
+      "validWriteAfterFirstReceiptMs": 0.3451000000000022,
+      "changeEvents": [
+        6.855299999999943
+      ],
+      "source": "Recovered",
+      "recovered": true,
+      "revision": 1
+    },
+    {
+      "id": "json-60",
+      "recoveryGapMs": 60,
+      "firstReceipt": "diagnostic",
+      "validWriteAfterFirstReceiptMs": 67.78359999999975,
+      "changeEvents": [
+        4.809699999999793,
+        81.55919999999969
+      ],
+      "source": "Recovered",
+      "recovered": true,
+      "revision": 1
+    },
+    {
+      "id": "json-0-b",
+      "recoveryGapMs": 0,
+      "firstReceipt": "diagnostic",
+      "validWriteAfterFirstReceiptMs": 0.05139999999983047,
+      "changeEvents": [
+        10.596999999999753
+      ],
+      "source": "Recovered",
+      "recovered": true,
+      "revision": 1
+    },
+    {
+      "id": "schema-0",
+      "recoveryGapMs": 0,
+      "firstReceipt": "diagnostic",
+      "validWriteAfterFirstReceiptMs": 0.03719999999975698,
+      "changeEvents": [
+        4.179000000000087
+      ],
+      "source": "Recovered",
+      "recovered": true,
+      "revision": 1
+    },
+    {
+      "id": "valid-0",
+      "recoveryGapMs": 0,
+      "firstReceipt": "manifest",
+      "validWriteAfterFirstReceiptMs": 0.06420000000071013,
+      "changeEvents": [
+        4.47400000000016
+      ],
+      "source": "Recovered",
+      "recovered": true,
+      "revision": 2
+    }
+  ]
+}
