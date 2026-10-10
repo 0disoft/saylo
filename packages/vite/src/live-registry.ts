@@ -175,8 +175,9 @@ export class LiveRegistry {
       // A save arrived while reading: discard this attempt and re-read the affected paths.
       if (generation !== this.generation || settleMissing) {
         if (settleMissing) this.settleDisk = true;
-        for (const file of batch.keys()) if (!this.queued.has(file)) this.requeue(file);
-        this.schedule();
+        for (const file of batch.keys()) if (!this.queued.has(file) &&
+          (settleMissing || this.rechecks.token(file) === checks.get(file))) this.requeue(file);
+        if (this.queued.size) this.schedule();
         return;
       }
       this.desired = candidate;
@@ -203,7 +204,10 @@ export class LiveRegistry {
         const { active } = prepared;
         this.validate(active);
         if (generation !== this.generation || this.stopped) {
-          if (!this.stopped) { for (const file of batch.keys()) if (!this.queued.has(file)) this.requeue(file); this.schedule(); }
+          if (!this.stopped) {
+            for (const file of batch.keys()) if (!this.queued.has(file) && this.rechecks.token(file) === checks.get(file)) this.requeue(file);
+            if (this.queued.size) this.schedule();
+          }
           return;
         }
         const changed = active.length !== this.accepted.size || active.some(f => {
@@ -222,8 +226,8 @@ export class LiveRegistry {
       } catch (error) {
         if (this.stopped) return;
         if (generation !== this.generation) {
-          for (const file of batch.keys()) if (!this.queued.has(file)) this.requeue(file);
-          this.schedule();
+          for (const file of batch.keys()) if (!this.queued.has(file) && this.rechecks.token(file) === checks.get(file)) this.requeue(file);
+          if (this.queued.size) this.schedule();
           return;
         }
         this.errors.set('<registry>', this.failure(error));

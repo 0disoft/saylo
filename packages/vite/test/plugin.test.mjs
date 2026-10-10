@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import saylo from '../dist/index.js';
+import { LiveRegistry } from '../dist/live-registry.js';
 import { decodeCatalogResult } from '../dist/catalog-wire.js';
 import { createStore, createI18n } from '@0disoft/saylo-core';
 import { assertInside, scanCatalogs } from '../dist/catalog-files.js';
@@ -616,6 +617,29 @@ test('save during an async read discards superseded content before publishing', 
   const latest = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => '{"hello":"Latest {name}"}' });
   release('{"hello":"Superseded {name}"}');
   await Promise.all([slow, latest]);
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'ko').messages.hello.source, 'Latest {name}');
+  assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
+});
+
+test('a newer guarded batch waiting behind an old read does not trigger a redundant disk drain', async t => {
+  const { root, plugin, server, request, events } = await setup(t);
+  const file = path.join(root, 'ko', 'demo.json');
+  let release, started;
+  const reading = new Promise(resolve => { started = resolve; });
+  const source = new Promise(resolve => { release = resolve; });
+  const original = LiveRegistry.prototype.drain;
+  let drains = 0;
+  t.mock.method(LiveRegistry.prototype, 'drain', function (...args) { drains++; return original.apply(this, args); });
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });
+  const old = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => { started(); return source; } });
+  t.mock.timers.tick(0);
+  await reading;
+  const latest = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => '{"hello":"Latest {name}"}' });
+  t.mock.timers.tick(0); // The newer batch has drained the queue and waits for the old read.
+  release('{"hello":"Superseded {name}"}');
+  await Promise.all([old, latest]);
+  t.mock.timers.tick(40);
+  assert.equal(drains, 2);
   assert.equal(request()[0].data.catalogs.find(c => c.locale === 'ko').messages.hello.source, 'Latest {name}');
   assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
 });
