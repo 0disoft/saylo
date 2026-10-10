@@ -1,0 +1,679 @@
+{
+  "format": "saylo-thin-layer-production-v2",
+  "observedAt": "2026-10-10T21:21:35.900Z",
+  "node": "v24.18.0",
+  "codeHashes": {
+    "benchmarks/thin-layer/production-probe.mjs": "1bd95382569df5191940a8bd827e905294ba36188c654f60ce4df2b2cf0040ac",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/ast-runtime.mjs": "91680c21959435f71a9364c858560cdec3bb859c8438032ede476e17f628653e",
+    "benchmarks/thin-layer/catalog-layer.mjs": "d8f5f3df286d1ce2a2b847f5a376f2c707cbe89af104f6c3cd7a5e5498d42c59",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/formatters.js": "37925d7ac2976d7ed54df233a03cee48f970f4c94dec13e7e73ddf5cafa61a3e",
+    "packages/vite/dist/ast-formatter.js": "d47a8c37fb07949a1b40e6ac15729e1cf83137a7ae8549d594be969f10bc562c",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "fixture": "expanded-format-vectors",
+  "scope": "Real Vite production build of the same small eager AST fixture, executed as self-contained ESM in Node. Unminified and gzip sizes are fixture observations only. Build graph entries are reported separately from the emitted parser error marker, since entry modules also export AST types. No browser/lazy/SSR hydration/large-catalog performance or memory proof.",
+  "observations": [
+    {
+      "variant": "core",
+      "astRuntime": false,
+      "unminifiedBytes": 70930,
+      "gzipBytes": 17054,
+      "moduleIds": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+        "\u0000saylo:intl-ast",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/freeze.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-outcome.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-source.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/static-catalog-source.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/client.js",
+        "\u0000virtual:saylo",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.production-probe-kVvWRu/core.mjs"
+      ],
+      "parserModules": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js"
+      ],
+      "noParserModules": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js"
+      ],
+      "parserImplementationPresent": false,
+      "bundleSHA256": "85832086a0fb14634db6d5346e2352a7057b1124e13e0d0a8fb548d3c644ffbb",
+      "execution": {
+        "timeZone": "UTC",
+        "translatedText": "Hi Ada",
+        "fallbackPlural": "0 rows",
+        "fallbackDate": "1/1/2026 / 00:30",
+        "unknownKeyRejected": true,
+        "missingArgumentRejected": true,
+        "vectorResults": [
+          {
+            "id": "decimal",
+            "args": {
+              "n": 1234.5
+            },
+            "expected": "1,234.5",
+            "actual": "1,234.5"
+          },
+          {
+            "id": "currency",
+            "args": {
+              "n": 1234.5
+            },
+            "expected": "$1,234.50",
+            "actual": "$1,234.50"
+          },
+          {
+            "id": "percent",
+            "args": {
+              "n": 0.375
+            },
+            "expected": "38%",
+            "actual": "38%"
+          },
+          {
+            "id": "datefull",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "Thursday, January 1, 2026",
+            "actual": "Thursday, January 1, 2026"
+          },
+          {
+            "id": "dateskeleton",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "01/01/2026",
+            "actual": "01/01/2026"
+          },
+          {
+            "id": "timedefault",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "12:30:00 AM",
+            "actual": "12:30:00 AM"
+          },
+          {
+            "id": "ordinal",
+            "args": {
+              "n": 22
+            },
+            "expected": "22nd",
+            "actual": "22nd"
+          },
+          {
+            "id": "selection",
+            "args": {
+              "who": "a"
+            },
+            "expected": "Alpha",
+            "actual": "Alpha"
+          },
+          {
+            "id": "nested",
+            "args": {
+              "n": 2,
+              "who": "a",
+              "at": 1767227400000
+            },
+            "expected": "00:30",
+            "actual": "00:30"
+          },
+          {
+            "id": "nested",
+            "args": {
+              "n": 1,
+              "who": "a",
+              "at": 1767227400000
+            },
+            "expected": "01/01/2026",
+            "actual": "01/01/2026"
+          },
+          {
+            "id": "tag",
+            "args": {
+              "name": "Ada"
+            },
+            "expected": "<b>Hello Ada</b>",
+            "actual": "<b>Hello Ada</b>"
+          },
+          {
+            "id": "reserved",
+            "args": {
+              "lng": "customer",
+              "ns": "order",
+              "count": "string"
+            },
+            "expected": "customer / order / string",
+            "actual": "customer / order / string"
+          }
+        ]
+      }
+    },
+    {
+      "variant": "layer",
+      "astRuntime": false,
+      "unminifiedBytes": 206980,
+      "gzipBytes": 49986,
+      "moduleIds": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+        "\u0000saylo:intl-ast",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/freeze.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-outcome.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-source.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/static-catalog-source.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/client.js",
+        "\u0000virtual:saylo",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/fast-memoize/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-skeleton-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ast-format.mjs",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/catalog-layer.mjs",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.production-probe-kVvWRu/layer.mjs"
+      ],
+      "parserModules": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/index.js"
+      ],
+      "noParserModules": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js"
+      ],
+      "parserImplementationPresent": true,
+      "bundleSHA256": "123ba7902e5ef9d3232b496a02ca0774eaa9cbfded29a48569fc93b9c7d5ca6f",
+      "execution": {
+        "timeZone": "UTC",
+        "translatedText": "Hi Ada",
+        "fallbackPlural": "0 rows",
+        "fallbackDate": "1/1/2026 / 00:30",
+        "unknownKeyRejected": true,
+        "missingArgumentRejected": true,
+        "vectorResults": [
+          {
+            "id": "decimal",
+            "args": {
+              "n": 1234.5
+            },
+            "expected": "1,234.5",
+            "actual": "1,234.5"
+          },
+          {
+            "id": "currency",
+            "args": {
+              "n": 1234.5
+            },
+            "expected": "$1,234.50",
+            "actual": "$1,234.50"
+          },
+          {
+            "id": "percent",
+            "args": {
+              "n": 0.375
+            },
+            "expected": "38%",
+            "actual": "38%"
+          },
+          {
+            "id": "datefull",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "Thursday, January 1, 2026",
+            "actual": "Thursday, January 1, 2026"
+          },
+          {
+            "id": "dateskeleton",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "01/01/2026",
+            "actual": "01/01/2026"
+          },
+          {
+            "id": "timedefault",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "12:30:00 AM",
+            "actual": "12:30:00 AM"
+          },
+          {
+            "id": "ordinal",
+            "args": {
+              "n": 22
+            },
+            "expected": "22nd",
+            "actual": "22nd"
+          },
+          {
+            "id": "selection",
+            "args": {
+              "who": "a"
+            },
+            "expected": "Alpha",
+            "actual": "Alpha"
+          },
+          {
+            "id": "nested",
+            "args": {
+              "n": 2,
+              "who": "a",
+              "at": 1767227400000
+            },
+            "expected": "00:30",
+            "actual": "00:30"
+          },
+          {
+            "id": "nested",
+            "args": {
+              "n": 1,
+              "who": "a",
+              "at": 1767227400000
+            },
+            "expected": "01/01/2026",
+            "actual": "01/01/2026"
+          },
+          {
+            "id": "tag",
+            "args": {
+              "name": "Ada"
+            },
+            "expected": "<b>Hello Ada</b>",
+            "actual": "<b>Hello Ada</b>"
+          },
+          {
+            "id": "reserved",
+            "args": {
+              "lng": "customer",
+              "ns": "order",
+              "count": "string"
+            },
+            "expected": "customer / order / string",
+            "actual": "customer / order / string"
+          }
+        ]
+      }
+    },
+    {
+      "variant": "layer-ast",
+      "astRuntime": true,
+      "unminifiedBytes": 154930,
+      "gzipBytes": 37873,
+      "moduleIds": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+        "\u0000saylo:intl-ast",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/freeze.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-outcome.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-source.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/static-catalog-source.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/client.js",
+        "\u0000virtual:saylo",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/fast-memoize/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+        "\u0000thin-layer:intl-ast",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ast-format.mjs",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/catalog-layer.mjs",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.production-probe-kVvWRu/layer-ast.mjs"
+      ],
+      "parserModules": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js"
+      ],
+      "noParserModules": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/no-parser.js"
+      ],
+      "parserImplementationPresent": false,
+      "bundleSHA256": "591d34041a191a66cfdd63b8dd721c8a2bdf9dded446c9de8ef42577bf8186bd",
+      "execution": {
+        "timeZone": "UTC",
+        "translatedText": "Hi Ada",
+        "fallbackPlural": "0 rows",
+        "fallbackDate": "1/1/2026 / 00:30",
+        "unknownKeyRejected": true,
+        "missingArgumentRejected": true,
+        "vectorResults": [
+          {
+            "id": "decimal",
+            "args": {
+              "n": 1234.5
+            },
+            "expected": "1,234.5",
+            "actual": "1,234.5"
+          },
+          {
+            "id": "currency",
+            "args": {
+              "n": 1234.5
+            },
+            "expected": "$1,234.50",
+            "actual": "$1,234.50"
+          },
+          {
+            "id": "percent",
+            "args": {
+              "n": 0.375
+            },
+            "expected": "38%",
+            "actual": "38%"
+          },
+          {
+            "id": "datefull",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "Thursday, January 1, 2026",
+            "actual": "Thursday, January 1, 2026"
+          },
+          {
+            "id": "dateskeleton",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "01/01/2026",
+            "actual": "01/01/2026"
+          },
+          {
+            "id": "timedefault",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "12:30:00 AM",
+            "actual": "12:30:00 AM"
+          },
+          {
+            "id": "ordinal",
+            "args": {
+              "n": 22
+            },
+            "expected": "22nd",
+            "actual": "22nd"
+          },
+          {
+            "id": "selection",
+            "args": {
+              "who": "a"
+            },
+            "expected": "Alpha",
+            "actual": "Alpha"
+          },
+          {
+            "id": "nested",
+            "args": {
+              "n": 2,
+              "who": "a",
+              "at": 1767227400000
+            },
+            "expected": "00:30",
+            "actual": "00:30"
+          },
+          {
+            "id": "nested",
+            "args": {
+              "n": 1,
+              "who": "a",
+              "at": 1767227400000
+            },
+            "expected": "01/01/2026",
+            "actual": "01/01/2026"
+          },
+          {
+            "id": "tag",
+            "args": {
+              "name": "Ada"
+            },
+            "expected": "<b>Hello Ada</b>",
+            "actual": "<b>Hello Ada</b>"
+          },
+          {
+            "id": "reserved",
+            "args": {
+              "lng": "customer",
+              "ns": "order",
+              "count": "string"
+            },
+            "expected": "customer / order / string",
+            "actual": "customer / order / string"
+          }
+        ]
+      }
+    },
+    {
+      "variant": "layer-ast-mixed",
+      "astRuntime": true,
+      "unminifiedBytes": 218337,
+      "gzipBytes": 52538,
+      "moduleIds": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+        "\u0000saylo:intl-ast",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/freeze.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-outcome.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/catalog-source.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/static-catalog-source.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/vite/dist/client.js",
+        "\u0000virtual:saylo",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/fast-memoize/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+        "\u0000thin-layer:intl-ast",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ast-format.mjs",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/catalog-layer.mjs",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-skeleton-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/intl-messageformat/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/.production-probe-kVvWRu/layer-ast-mixed.mjs"
+      ],
+      "parserModules": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/index.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/index.js"
+      ],
+      "noParserModules": [
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+        "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/no-parser.js"
+      ],
+      "parserImplementationPresent": true,
+      "bundleSHA256": "6e1baeb7dfaa927aabe4b750e07c84f6ac89b38cf02c9b3676a06d3f53736fd0",
+      "execution": {
+        "timeZone": "UTC",
+        "translatedText": "Hi Ada",
+        "fallbackPlural": "0 rows",
+        "fallbackDate": "1/1/2026 / 00:30",
+        "unknownKeyRejected": true,
+        "missingArgumentRejected": true,
+        "externalText": "External Ada",
+        "vectorResults": [
+          {
+            "id": "decimal",
+            "args": {
+              "n": 1234.5
+            },
+            "expected": "1,234.5",
+            "actual": "1,234.5"
+          },
+          {
+            "id": "currency",
+            "args": {
+              "n": 1234.5
+            },
+            "expected": "$1,234.50",
+            "actual": "$1,234.50"
+          },
+          {
+            "id": "percent",
+            "args": {
+              "n": 0.375
+            },
+            "expected": "38%",
+            "actual": "38%"
+          },
+          {
+            "id": "datefull",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "Thursday, January 1, 2026",
+            "actual": "Thursday, January 1, 2026"
+          },
+          {
+            "id": "dateskeleton",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "01/01/2026",
+            "actual": "01/01/2026"
+          },
+          {
+            "id": "timedefault",
+            "args": {
+              "at": 1767227400000
+            },
+            "expected": "12:30:00 AM",
+            "actual": "12:30:00 AM"
+          },
+          {
+            "id": "ordinal",
+            "args": {
+              "n": 22
+            },
+            "expected": "22nd",
+            "actual": "22nd"
+          },
+          {
+            "id": "selection",
+            "args": {
+              "who": "a"
+            },
+            "expected": "Alpha",
+            "actual": "Alpha"
+          },
+          {
+            "id": "nested",
+            "args": {
+              "n": 2,
+              "who": "a",
+              "at": 1767227400000
+            },
+            "expected": "00:30",
+            "actual": "00:30"
+          },
+          {
+            "id": "nested",
+            "args": {
+              "n": 1,
+              "who": "a",
+              "at": 1767227400000
+            },
+            "expected": "01/01/2026",
+            "actual": "01/01/2026"
+          },
+          {
+            "id": "tag",
+            "args": {
+              "name": "Ada"
+            },
+            "expected": "<b>Hello Ada</b>",
+            "actual": "<b>Hello Ada</b>"
+          },
+          {
+            "id": "reserved",
+            "args": {
+              "lng": "customer",
+              "ns": "order",
+              "count": "string"
+            },
+            "expected": "customer / order / string",
+            "actual": "customer / order / string"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,251 @@
+{
+  "schema": "saylo-thin-layer-contract-probe-v1",
+  "observedAt": "2026-10-10T21:21:34.201Z",
+  "environment": {
+    "node": "v24.18.0"
+  },
+  "packages": {
+    "i18next": "26.4.3",
+    "i18next-icu": "2.5.0",
+    "intl-messageformat": "12.1.3",
+    "wuchale": "0.26.7"
+  },
+  "codeHashes": {
+    "benchmarks/thin-layer/probe.mjs": "fbeab37449cf0f791014c53cf871f6cb53ef91817f3332915e64567821cdde43",
+    "benchmarks/thin-layer/i18next-layer.mjs": "dc0bf297736f3501c2ebeb84e4edbbcda8c76cc44ad1b2f1fc658c4410d32bc2",
+    "benchmarks/thin-layer/catalog-layer.mjs": "d8f5f3df286d1ce2a2b847f5a376f2c707cbe89af104f6c3cd7a5e5498d42c59",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/schema.js": "de4f973ee5a3f604befa5cffdb175ea440d2a088038caeb25c34ec24446ac0de",
+    "packages/core/dist/catalog.js": "f7a9ba919b53de4492d9fc179e50896bc22bf89fdf6b7fd4eb1aa6f432460fc1",
+    "packages/core/dist/translator.js": "d7c0102bd58b89c38613023e24ff8d42b55e53d50397d2c4cb64c1c849f8ee5f"
+  },
+  "scope": "Node contract probe only: public i18next/ICU/Wuchale extension APIs and an isolated i18next AST-resource prototype with a custom IntlMessageFormat i18nFormat module reusing Saylo parser/schema. Native observations describe tested API behavior, not library defects. No Vite/browser, typegen, lazy session protocol, performance, memory, production bundle or timezone proof.",
+  "prototypeCosts": [
+    "Saylo parser/schema retained",
+    "new i18next and custom i18nFormat instances per committed snapshot",
+    "instance-owned timezone formatting and bounded message/Intl caches implemented separately from i18next-icu",
+    "incremental parsed catalog and AST resource reuse; revision instances still rebuilt",
+    "separate argument validation and source-locale fallback routing",
+    "public error classes reused; no UI subscription/loader/disposal API implemented"
+  ],
+  "observations": [
+    {
+      "id": "i18next_live_resource_update_with_cache_events",
+      "actual": {
+        "value": "Updated Ada"
+      }
+    },
+    {
+      "id": "i18next_fixed_t_observes_new_resources",
+      "actual": {
+        "value": "Updated Ada"
+      }
+    },
+    {
+      "id": "i18next_missing_key_returns_key",
+      "actual": {
+        "value": "absent"
+      }
+    },
+    {
+      "id": "i18next_omitted_base_argument_is_not_required",
+      "actual": {
+        "value": "No argument"
+      }
+    },
+    {
+      "id": "i18next_fallback_icu_uses_selected_locale",
+      "actual": {
+        "value": "one row"
+      }
+    },
+    {
+      "id": "saylo_fallback_icu_uses_base_locale",
+      "actual": {
+        "value": "21 rows"
+      }
+    },
+    {
+      "id": "i18next_numeric_string_is_accepted",
+      "actual": {
+        "value": "2 rows"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_0_greeting",
+      "actual": {
+        "value": "Hi Ada"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_1_omitted",
+      "actual": {
+        "value": "No argument"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_2_omitted",
+      "actual": {
+        "error": "InvalidArgumentError"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_3_rows",
+      "actual": {
+        "value": "21 rows"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_4_rows",
+      "actual": {
+        "error": "InvalidArgumentError"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_5_rows",
+      "actual": {
+        "error": "InvalidArgumentError"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_6_empty",
+      "actual": {
+        "value": ""
+      }
+    },
+    {
+      "id": "layer_matches_saylo_7_literal.dot",
+      "actual": {
+        "value": "literal"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_8___proto__",
+      "actual": {
+        "value": "prototype literal"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_9_constructor",
+      "actual": {
+        "value": "constructor literal"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_10_reserved",
+      "actual": {
+        "value": "customer / order"
+      }
+    },
+    {
+      "id": "layer_matches_saylo_11_absent",
+      "actual": {
+        "error": "UnknownMessageError"
+      }
+    },
+    {
+      "id": "layer_incremental_preparation_reuses_unchanged_base",
+      "actual": {
+        "parsedCatalogs": 1,
+        "resourceDictionaries": 1
+      }
+    },
+    {
+      "id": "layer_keeps_old_snapshot_bound_text",
+      "actual": {
+        "value": "Hi Ada"
+      }
+    },
+    {
+      "id": "layer_commits_new_text",
+      "actual": {
+        "value": "Updated Ada"
+      }
+    },
+    {
+      "id": "layer_rejects_invalid_schema_before_commit",
+      "actual": {
+        "snapshotIdentityRetained": true
+      }
+    },
+    {
+      "id": "layer_rejects_invalid_icu_before_commit",
+      "actual": {
+        "snapshotIdentityRetained": true
+      }
+    },
+    {
+      "id": "layer_replaces_deleted_keys",
+      "actual": {
+        "error": "UnknownMessageError"
+      }
+    },
+    {
+      "id": "layer_old_snapshot_keeps_deleted_key",
+      "actual": {
+        "value": "remove me"
+      }
+    },
+    {
+      "id": "layer_request_instances_are_isolated",
+      "actual": {
+        "value": "Other Ada"
+      }
+    },
+    {
+      "id": "layer_first_request_is_unchanged",
+      "actual": {
+        "value": "Hi Ada"
+      }
+    },
+    {
+      "id": "layer_added_locale_is_selectable",
+      "actual": {
+        "value": "こんにちは Ada"
+      }
+    },
+    {
+      "id": "layer_removed_selected_locale_falls_back",
+      "actual": {
+        "value": "Hello Ada"
+      }
+    },
+    {
+      "id": "wuchale_compiled_positional_interpolation",
+      "actual": {
+        "value": "Hi Ada"
+      }
+    },
+    {
+      "id": "wuchale_named_icu_input_needs_conversion",
+      "actual": {
+        "value": "Hi {name}"
+      }
+    },
+    {
+      "id": "wuchale_missing_positional_argument_is_not_rejected",
+      "actual": {
+        "value": "Hi undefined"
+      }
+    },
+    {
+      "id": "wuchale_runtime_observes_module_replacement",
+      "actual": {
+        "value": "Updated Ada"
+      }
+    },
+    {
+      "id": "wuchale_isolated_module_keeps_snapshot",
+      "actual": {
+        "value": "Updated Ada"
+      }
+    },
+    {
+      "id": "wuchale_isolated_module_is_deeply_immutable",
+      "actual": {
+        "mutationRejected": true
+      }
+    }
+  ]
+}
