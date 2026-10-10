@@ -1,0 +1,1411 @@
+{
+  "format": "saylo-thin-layer-lazy-session-browser-v1",
+  "observedAt": "2026-10-10T20:31:19.692Z",
+  "node": "v24.18.0",
+  "packages": {
+    "i18next": "26.4.3",
+    "intl-messageformat": "12.1.3",
+    "vite": "8.3.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "codeHashes": {
+    "benchmarks/thin-layer/lazy-session-browser-probe.mjs": "2441fc14ed4cb49b2d2f61a6c400c0b5b3a7c773b159665ef2f8c5036f8e104c",
+    "benchmarks/thin-layer/lazy-browser-app.jsx": "623a8acd6c2ce7bb489c2ca1f62af12d2bf206f62d4698bca20caee40e01aa81",
+    "benchmarks/thin-layer/chrome-protocol.mjs": "cef4dec905674fd9d671616fe71dd16900e104c4e1fc5240e9e8ea949cdd4a40",
+    "benchmarks/thin-layer/lazy-layer.mjs": "bc8218a4ebddd574ab27be7a53ebb049a18fb220c69796375944a09f11fb499b",
+    "benchmarks/thin-layer/lazy-source-cache.mjs": "41c49136867f1a99289ac50dfe31c9e36ec60f4fef75bfbed0ffa37103c06aa1",
+    "benchmarks/thin-layer/catalog-layer.mjs": "2a0a4e4eb9ce733c4556df53d90f3e163bf6adac9525dd7ec3ba7f547b38745b",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/i18n.js": "b9817d53c0e29c8e1ad7a8d4a64ede77adb6222a913664bb45c49aa79463db92",
+    "packages/core/dist/catalog-loader.js": "77ba98db0821dd70dab644232d3ddd2bd71d4fc122544693e752f7eeca68297c",
+    "packages/vite/dist/catalog-source.js": "840b8f2fe7fd345116ba2f536ab2a9a2e358206dae33fd88bd375aad3fdb8f3d",
+    "packages/vite/dist/catalog-wire.js": "f87cf497f8edcbd1c859be708dd255a4938d0082ac40038343ba5d84d93d1b6a",
+    "packages/vite/dist/catalog-patch.js": "911c60fe58690eaff6d3330242b517965249061f7a01049782bf227e480e31cb",
+    "packages/vite/dist/lazy-connection.js": "902d3ce4f25d6a1055aff5f7b5db5858620c2a9f5004d7c6ac236733bce827bd",
+    "packages/vite/dist/dev-sync.js": "7b07406b0b45863ce8aab79f0cf4ea03979e941893cea295d79baf25075ed7bc",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "node_modules/vite/dist/client/client.mjs": "e34ce742dc7035bd7776221ecc01c6b43d714030d10698f38236f98476ac2042",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "scope": "Real Chromium and Vite public dev source/bridge, two independent core/prototype fixtures. Actual product v2 patch and v3 full compact reply held and released v3 before v2; actual locale compact response held while older API is superseded. Custom FIFO receipt barrier precedes state assertions. Then actual old server closes and a new Saylo server starts on same port; default Vite reloads the document, new session loads version-one full catalogs and resets UI. Controlled unchanged old reply replay on new socket is ignored. No synthetic manifest/catalog payload. No same-instance transparent new-session adoption, physical reconnect preserving UI, cross-session pending-flight continuation, broad race matrix, performance or memory comparison.",
+  "observations": [
+    {
+      "variant": "core",
+      "steps": [
+        {
+          "id": "cold",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 0,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "load-demo",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "fr Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "patch-held-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "fr Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 1,
+          "manifestRevision": 1,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "newer-full-held-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "fr Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 1,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "newer-full-first",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 2,
+          "settlements": [],
+          "barriers": [
+            "receipt-1"
+          ]
+        },
+        {
+          "id": "older-patch-late-ignored",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 2,
+          "settlements": [],
+          "barriers": [
+            "receipt-1",
+            "receipt-2"
+          ]
+        },
+        {
+          "id": "locale-request-held-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 2,
+          "settlements": [],
+          "barriers": [
+            "receipt-1",
+            "receipt-2"
+          ]
+        },
+        {
+          "id": "newer-locale-wins",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 2,
+          "settlements": [
+            {
+              "id": "older-ja",
+              "status": "rejected",
+              "name": "SupersededRequestError"
+            },
+            {
+              "id": "newer-fr",
+              "status": "fulfilled"
+            }
+          ],
+          "barriers": [
+            "receipt-1",
+            "receipt-2"
+          ]
+        },
+        {
+          "id": "superseded-locale-reply-ignored",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 3,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "bootSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "notifications": 2,
+          "settlements": [
+            {
+              "id": "older-ja",
+              "status": "rejected",
+              "name": "SupersededRequestError"
+            },
+            {
+              "id": "newer-fr",
+              "status": "fulfilled"
+            }
+          ],
+          "barriers": [
+            "receipt-1",
+            "receipt-2",
+            "receipt-3"
+          ]
+        },
+        {
+          "id": "new-session-vite-reload",
+          "ready": true,
+          "boots": 2,
+          "locale": "fr",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": false,
+          "inputValue": "initial draft",
+          "counter": "7",
+          "dialogOpen": false,
+          "sessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "bootSessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "notifications": 0,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "new-session-fresh-catalog",
+          "ready": true,
+          "boots": 2,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Restarted Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": false,
+          "inputValue": "initial draft",
+          "counter": "7",
+          "dialogOpen": false,
+          "sessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "bootSessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "retired-document-reply-replayed",
+          "ready": true,
+          "boots": 2,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Restarted Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": false,
+          "inputValue": "initial draft",
+          "counter": "7",
+          "dialogOpen": false,
+          "sessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "bootSessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": [
+            "receipt-4"
+          ]
+        }
+      ],
+      "frames": [
+        {
+          "event": "saylo:manifest",
+          "serverGeneration": 1,
+          "kind": "snapshot",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "1536425038-641846624-4181966475-3512478733:1",
+            "generation": 1
+          },
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "revision": 0,
+          "held": false,
+          "payloadSha256": "1dec8c7f45f4f4d21951899e003e822b91c1b84017bf5c3d1354edca8f7bf293"
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "1536425038-641846624-4181966475-3512478733:1",
+            "generation": 1
+          },
+          "held": false,
+          "payloadSha256": "846454f1d12ee788e8bcd261486341161e0312f700818f332373c169b1d43daf"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "en",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:1"
+          },
+          "status": "compact",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 1,
+          "held": false,
+          "payloadSha256": "79d5ddf4c407d0f552793a409320a6d43831ad4e48a176f5999ac585986b5183"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:2"
+          },
+          "status": "compact",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 1,
+          "held": false,
+          "payloadSha256": "b7e7657a5327b1b81cbfecb49610a204d5e6ba72fe77dc4b2fa09ee0b706e7cf"
+        },
+        {
+          "event": "saylo:manifest",
+          "serverGeneration": 1,
+          "kind": "update",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "revision": 1,
+          "held": false,
+          "payloadSha256": "6f5b592cb4e8ad822ba84167e72713a0e0810f321a34802efe87f086eeff6ac7"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:3",
+            "known": {
+              "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 2,
+          "held": true,
+          "payloadSha256": "06e51472b22b29abd3f17ead20bdff22afbf4eb9fe93d47638a046ef3a3897e9"
+        },
+        {
+          "event": "saylo:manifest",
+          "serverGeneration": 1,
+          "kind": "update",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "revision": 2,
+          "held": false,
+          "payloadSha256": "03ea43f68832b285eb39114f597bf6f25390088d44567129f34dad83d10c536a"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:4",
+            "known": {
+              "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+              "catalogVersion": 1
+            }
+          },
+          "status": "compact",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 3,
+          "held": true,
+          "payloadSha256": "cf8eceda8fa80d372abfc84fdc924111272fe5b8f3afb54cea219c5869f0f6d8"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:5"
+          },
+          "status": "compact",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 1,
+          "held": true,
+          "payloadSha256": "0f071942e04f0055c7ec3a464a7e6f843762d3da29521e35a15e0d0b08e1db00"
+        },
+        {
+          "event": "saylo:manifest",
+          "serverGeneration": 2,
+          "kind": "snapshot",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "3034931136-3637336018-3070683383-1199815568:1",
+            "generation": 1
+          },
+          "sessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "revision": 0,
+          "held": false,
+          "payloadSha256": "12fe3097a8a4aafc25ec3b8c11bc36e5e3ef269c3683c49e7a3c4580c9fc0890"
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "serverGeneration": 2,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "3034931136-3637336018-3070683383-1199815568:1",
+            "generation": 1
+          },
+          "held": false,
+          "payloadSha256": "48f920eb2a389c80226e08988ffef4124741ea21d3eb31c59dafe8abafd2cc39"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 2,
+          "request": {
+            "locale": "en",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "4164434994-1149914479-1310136826-4097950647:1"
+          },
+          "status": "compact",
+          "sessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "catalogVersion": 1,
+          "held": false,
+          "payloadSha256": "bc82278f5392c9a8da65dfa535f705bce1690996b5d2e182d9a8e0e8517530e6"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 2,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "4164434994-1149914479-1310136826-4097950647:2"
+          },
+          "status": "compact",
+          "sessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "catalogVersion": 1,
+          "held": false,
+          "payloadSha256": "f64df9d874e3d2d24ef66d4f8c6465de2115f254a7f440789c91226ca299efec"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 2,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:3",
+            "known": {
+              "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 2,
+          "held": false,
+          "payloadSha256": "06e51472b22b29abd3f17ead20bdff22afbf4eb9fe93d47638a046ef3a3897e9"
+        }
+      ],
+      "requests": [
+        {
+          "serverGeneration": 1,
+          "locale": "en",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2981523136-3206170779-235610716-1698821742:1"
+        },
+        {
+          "serverGeneration": 1,
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2981523136-3206170779-235610716-1698821742:2"
+        },
+        {
+          "serverGeneration": 1,
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2981523136-3206170779-235610716-1698821742:3",
+          "known": {
+            "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+            "catalogVersion": 1
+          }
+        },
+        {
+          "serverGeneration": 1,
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2981523136-3206170779-235610716-1698821742:4",
+          "known": {
+            "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+            "catalogVersion": 1
+          }
+        },
+        {
+          "serverGeneration": 1,
+          "locale": "ja",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2981523136-3206170779-235610716-1698821742:5"
+        },
+        {
+          "serverGeneration": 2,
+          "locale": "en",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "4164434994-1149914479-1310136826-4097950647:1"
+        },
+        {
+          "serverGeneration": 2,
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "4164434994-1149914479-1310136826-4097950647:2"
+        }
+      ],
+      "deliveries": [
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "kind": "release-on-original-socket",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:4",
+            "known": {
+              "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+              "catalogVersion": 1
+            }
+          },
+          "status": "compact",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 3,
+          "held": true,
+          "payloadSha256": "cf8eceda8fa80d372abfc84fdc924111272fe5b8f3afb54cea219c5869f0f6d8",
+          "unchangedPayload": true
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "kind": "release-on-original-socket",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:3",
+            "known": {
+              "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 2,
+          "held": true,
+          "payloadSha256": "06e51472b22b29abd3f17ead20bdff22afbf4eb9fe93d47638a046ef3a3897e9",
+          "unchangedPayload": true
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "kind": "release-on-original-socket",
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:5"
+          },
+          "status": "compact",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 1,
+          "held": true,
+          "payloadSha256": "0f071942e04f0055c7ec3a464a7e6f843762d3da29521e35a15e0d0b08e1db00",
+          "unchangedPayload": true
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "kind": "controlled-replay-on-new-socket",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2981523136-3206170779-235610716-1698821742:3",
+            "known": {
+              "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch",
+          "sessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+          "catalogVersion": 2,
+          "held": true,
+          "payloadSha256": "06e51472b22b29abd3f17ead20bdff22afbf4eb9fe93d47638a046ef3a3897e9",
+          "newSessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+          "unchangedPayload": true
+        }
+      ],
+      "oldSessionId": "0681bccc-683c-4c80-b544-0ba477e263b0",
+      "newSessionId": "e8363a80-b432-4907-bce5-ac38c3fcc43c",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "variant": "layer",
+      "steps": [
+        {
+          "id": "cold",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 0,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "load-demo",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "fr Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "patch-held-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "fr Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 1,
+          "manifestRevision": 1,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "newer-full-held-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "fr Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 1,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "newer-full-first",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 2,
+          "settlements": [],
+          "barriers": [
+            "receipt-1"
+          ]
+        },
+        {
+          "id": "older-patch-late-ignored",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 2,
+          "settlements": [],
+          "barriers": [
+            "receipt-1",
+            "receipt-2"
+          ]
+        },
+        {
+          "id": "locale-request-held-last-good",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 2,
+          "settlements": [],
+          "barriers": [
+            "receipt-1",
+            "receipt-2"
+          ]
+        },
+        {
+          "id": "newer-locale-wins",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 2,
+          "settlements": [
+            {
+              "id": "older-ja",
+              "status": "rejected",
+              "name": "SupersededRequestError"
+            },
+            {
+              "id": "newer-fr",
+              "status": "fulfilled"
+            }
+          ],
+          "barriers": [
+            "receipt-1",
+            "receipt-2"
+          ]
+        },
+        {
+          "id": "superseded-locale-reply-ignored",
+          "ready": true,
+          "boots": 1,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Current Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 3,
+          "manifestRevision": 2,
+          "retainedText": "fr Ada",
+          "diagnostics": [],
+          "errors": [],
+          "preserved": true,
+          "inputValue": "typed draft",
+          "counter": "8",
+          "dialogOpen": true,
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "bootSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "notifications": 2,
+          "settlements": [
+            {
+              "id": "older-ja",
+              "status": "rejected",
+              "name": "SupersededRequestError"
+            },
+            {
+              "id": "newer-fr",
+              "status": "fulfilled"
+            }
+          ],
+          "barriers": [
+            "receipt-1",
+            "receipt-2",
+            "receipt-3"
+          ]
+        },
+        {
+          "id": "new-session-vite-reload",
+          "ready": true,
+          "boots": 2,
+          "locale": "fr",
+          "loadedNamespaces": [],
+          "text": "unloaded",
+          "help": "unloaded",
+          "cachedCatalogs": 0,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": false,
+          "inputValue": "initial draft",
+          "counter": "7",
+          "dialogOpen": false,
+          "sessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "bootSessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "notifications": 0,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "new-session-fresh-catalog",
+          "ready": true,
+          "boots": 2,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Restarted Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": false,
+          "inputValue": "initial draft",
+          "counter": "7",
+          "dialogOpen": false,
+          "sessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "bootSessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": []
+        },
+        {
+          "id": "retired-document-reply-replayed",
+          "ready": true,
+          "boots": 2,
+          "locale": "fr",
+          "loadedNamespaces": [
+            "demo"
+          ],
+          "text": "Restarted Ada",
+          "help": "unloaded",
+          "cachedCatalogs": 2,
+          "manifestRevision": 0,
+          "diagnostics": [],
+          "errors": [],
+          "preserved": false,
+          "inputValue": "initial draft",
+          "counter": "7",
+          "dialogOpen": false,
+          "sessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "bootSessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "notifications": 1,
+          "settlements": [],
+          "barriers": [
+            "receipt-4"
+          ]
+        }
+      ],
+      "frames": [
+        {
+          "event": "saylo:manifest",
+          "serverGeneration": 1,
+          "kind": "snapshot",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "4025101731-72790211-4100598742-1617902743:1",
+            "generation": 1
+          },
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "revision": 0,
+          "held": false,
+          "payloadSha256": "17e8ae658d8c2d42904cf2d0c57b3b5912b96cc6e5260311d28c7f63827cf566"
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "4025101731-72790211-4100598742-1617902743:1",
+            "generation": 1
+          },
+          "held": false,
+          "payloadSha256": "c630aee547155884e5255aad4e25ac4388215d026a8bf9d9c7ef9c9abe46d27e"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "en",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:1"
+          },
+          "status": "compact",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 1,
+          "held": false,
+          "payloadSha256": "ea3c434c52fd147c5d9bc0a29a4d0c982f3fd30e1451d5d2977eb3ff4bb26e9a"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:2"
+          },
+          "status": "compact",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 1,
+          "held": false,
+          "payloadSha256": "ac15d4a6635deae22ad200ab0d9efb330a588d6cbbedea0b4d21c2498ac6059d"
+        },
+        {
+          "event": "saylo:manifest",
+          "serverGeneration": 1,
+          "kind": "update",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "revision": 1,
+          "held": false,
+          "payloadSha256": "b9364ef9650ec97673891521846ddb7ccc163e1a8c6b6bb54b920fe97cb04779"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:3",
+            "known": {
+              "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 2,
+          "held": true,
+          "payloadSha256": "29635fd2717e16921366f4ba11d30acfd78f87716ff9eb9380fa18d882b08f52"
+        },
+        {
+          "event": "saylo:manifest",
+          "serverGeneration": 1,
+          "kind": "update",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "revision": 2,
+          "held": false,
+          "payloadSha256": "58ec6e2aee77901c11950fa320688e3ebee9bdbea0e0efaf226f645b49503c1a"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:4",
+            "known": {
+              "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+              "catalogVersion": 1
+            }
+          },
+          "status": "compact",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 3,
+          "held": true,
+          "payloadSha256": "431a9ff7b8f7d7d44a49f74a3ed6ea9dc8665db121a4133537ef21b726fe3e90"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:5"
+          },
+          "status": "compact",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 1,
+          "held": true,
+          "payloadSha256": "a8f00cd0cd7fc71f55356ecc147a68b47b9014244e1edb743e068b1b0509f01b"
+        },
+        {
+          "event": "saylo:manifest",
+          "serverGeneration": 2,
+          "kind": "snapshot",
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "770833448-1448432130-3822624755-214802825:1",
+            "generation": 1
+          },
+          "sessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "revision": 0,
+          "held": false,
+          "payloadSha256": "af40a968511aafaaf6f3a57dbdbae3a6705e4ec5fb93ffb5e9f1c5b80bbbadf5"
+        },
+        {
+          "event": "saylo:eager-diagnostic",
+          "serverGeneration": 2,
+          "request": {
+            "locale": "en",
+            "namespaces": [],
+            "scope": "eager",
+            "requestId": "770833448-1448432130-3822624755-214802825:1",
+            "generation": 1
+          },
+          "held": false,
+          "payloadSha256": "aa70e3b4684c6432993118930f5453fa62e88ba57e0d4086bd56a7b179f775fb"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 2,
+          "request": {
+            "locale": "en",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "1741073043-3576518832-25331552-2974819694:1"
+          },
+          "status": "compact",
+          "sessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "catalogVersion": 1,
+          "held": false,
+          "payloadSha256": "967eb36f6f4e62de68dc01efe6be88630a4a2a4be5b8670b862f411deee63f64"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 2,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "1741073043-3576518832-25331552-2974819694:2"
+          },
+          "status": "compact",
+          "sessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "catalogVersion": 1,
+          "held": false,
+          "payloadSha256": "10d760f3e1a1c9cde4c9aa39170163e39c0ad3194e0dd4fa01f69b6aca640fbc"
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 2,
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:3",
+            "known": {
+              "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 2,
+          "held": false,
+          "payloadSha256": "29635fd2717e16921366f4ba11d30acfd78f87716ff9eb9380fa18d882b08f52"
+        }
+      ],
+      "requests": [
+        {
+          "serverGeneration": 1,
+          "locale": "en",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2948245443-1554818088-1811625765-598521071:1"
+        },
+        {
+          "serverGeneration": 1,
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2948245443-1554818088-1811625765-598521071:2"
+        },
+        {
+          "serverGeneration": 1,
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2948245443-1554818088-1811625765-598521071:3",
+          "known": {
+            "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+            "catalogVersion": 1
+          }
+        },
+        {
+          "serverGeneration": 1,
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2948245443-1554818088-1811625765-598521071:4",
+          "known": {
+            "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+            "catalogVersion": 1
+          }
+        },
+        {
+          "serverGeneration": 1,
+          "locale": "ja",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "2948245443-1554818088-1811625765-598521071:5"
+        },
+        {
+          "serverGeneration": 2,
+          "locale": "en",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "1741073043-3576518832-25331552-2974819694:1"
+        },
+        {
+          "serverGeneration": 2,
+          "locale": "fr",
+          "namespace": "demo",
+          "generation": 1,
+          "requestId": "1741073043-3576518832-25331552-2974819694:2"
+        }
+      ],
+      "deliveries": [
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "kind": "release-on-original-socket",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:4",
+            "known": {
+              "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+              "catalogVersion": 1
+            }
+          },
+          "status": "compact",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 3,
+          "held": true,
+          "payloadSha256": "431a9ff7b8f7d7d44a49f74a3ed6ea9dc8665db121a4133537ef21b726fe3e90",
+          "unchangedPayload": true
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "kind": "release-on-original-socket",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:3",
+            "known": {
+              "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 2,
+          "held": true,
+          "payloadSha256": "29635fd2717e16921366f4ba11d30acfd78f87716ff9eb9380fa18d882b08f52",
+          "unchangedPayload": true
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "kind": "release-on-original-socket",
+          "request": {
+            "locale": "ja",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:5"
+          },
+          "status": "compact",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 1,
+          "held": true,
+          "payloadSha256": "a8f00cd0cd7fc71f55356ecc147a68b47b9014244e1edb743e068b1b0509f01b",
+          "unchangedPayload": true
+        },
+        {
+          "event": "saylo:catalog",
+          "serverGeneration": 1,
+          "kind": "controlled-replay-on-new-socket",
+          "request": {
+            "locale": "fr",
+            "namespace": "demo",
+            "generation": 1,
+            "requestId": "2948245443-1554818088-1811625765-598521071:3",
+            "known": {
+              "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+              "catalogVersion": 1
+            }
+          },
+          "status": "patch",
+          "sessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+          "catalogVersion": 2,
+          "held": true,
+          "payloadSha256": "29635fd2717e16921366f4ba11d30acfd78f87716ff9eb9380fa18d882b08f52",
+          "newSessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+          "unchangedPayload": true
+        }
+      ],
+      "oldSessionId": "75594355-75ca-42e0-a0ac-2c1c454332dc",
+      "newSessionId": "a6ca414f-1005-4933-9f9b-1969358bec84",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    }
+  ]
+}
