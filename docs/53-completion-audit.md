@@ -114,6 +114,8 @@
 
 2026-10-11(KST), `ed2bc8c` 이후 패치 생성 할당 최적화를 포함한 소스에서 `npm run check`가 통과했다(테스트 206개·다섯 패키지 소비자 타입 검사·React 예제 타입 검사). 이미 빌드한 dist로 `npm exec -- node scripts/pack-smoke.mjs`를 실행해 다섯 tarball의 독립 JS·TS 소비, React·Svelte selector SSR, Vite 8.3.4 production·SSR 실행을 확인했다. 릴리스 승인 기록은 저장하거나 바꾸지 않았다. 최신 large 편집 단일 run p95는 161.53ms로 여전히 100ms 목표를 넘었다. 원시 자료와 측정 한계는 54의 후속 절을 따른다.
 
+2026-10-11(KST), `2aa5f7d` 기준 편집 large 비교를 다시 기록했다. after pooled p95는 107.49ms이고 100ms 이내 표본은 before 0/50·after 44/50이다. ABBA run p95는 after 107.49·101.75ms, before 140.26·134.60ms이고 queueToDrain pooled는 46.25→2.67ms다. control RTT p95도 5.26→3.33ms로 함께 낮아졌고 순차 독립 실행이라 인과로 보지 않는다. 1~18 기능의 상태는 위 표 그대로이고, 로케일 large 목표는 54의 통과 기록을 유지하며 편집 100ms 목표는 여전히 미달이다. 상세는 [55-next-turn-edits.md](55-next-turn-edits.md)를 따른다.
+
 ## 근거 문서
 
 `01`·`02`·`04`·`05`·`06`·`07`·`08`·`09`·`13`·`38`·`39`·`42`·`43`·`44`·`45`·`46`·`48`·`49`·`50`·`51`·`52`·`54`, `releases/0.1.0-alpha.3.json`, `packages/*/README.md`, `review/feedback-resolution.ko.md`.
