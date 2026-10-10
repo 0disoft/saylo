@@ -1,0 +1,1205 @@
+{
+  "scenario": "1k-3-locales",
+  "samples": [
+    {
+      "token": "1k-3-locales:11",
+      "warmup": true,
+      "saveToAckMs": 28.21849999999995,
+      "saveToManifestBroadcastMs": 11.917100000000119,
+      "fileWriteMs": 8.702099999999973,
+      "receiveToCommitMs": 9,
+      "commitToAckDispatchMs": 0.09999999403953552,
+      "serverStages": {
+        "drainWaitMs": [
+          3.0570999999999913
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 6.334599999999909,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 1.1038999999998396,
+        "validationMs": 0.012300000000095679,
+        "registryReplaceMs": 0.5625999999999749,
+        "catalogDeltaMs": 1.4185999999999694,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 3.0570999999999913,
+        "candidateIntervals": [
+          [
+            9.3916999999999,
+            18.363800000000083
+          ]
+        ],
+        "readAndCandidateMs": 8.972100000000182,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 992,
+      "changedMessages": 1,
+      "positionUpdates": 999
+    },
+    {
+      "token": "1k-3-locales:12",
+      "warmup": true,
+      "saveToAckMs": 69.44860000000017,
+      "saveToManifestBroadcastMs": 59.382499999999936,
+      "fileWriteMs": 5.013100000000122,
+      "receiveToCommitMs": 4,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          14.438200000000052
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 44.981599999999844,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.9878000000001066,
+        "validationMs": 0.022200000000111686,
+        "registryReplaceMs": 0.39020000000004984,
+        "catalogDeltaMs": 1.2632000000000971,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 14.438200000000052,
+        "candidateIntervals": [
+          [
+            59.419799999999896,
+            62.95100000000002
+          ]
+        ],
+        "readAndCandidateMs": 3.5312000000001262,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 926,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:13",
+      "warmup": true,
+      "saveToAckMs": 11.557099999999991,
+      "saveToManifestBroadcastMs": 3.9547999999999774,
+      "fileWriteMs": 5.521900000000187,
+      "receiveToCommitMs": 3,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          2.090099999999893
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 3.690100000000257,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6091999999998734,
+        "validationMs": 0.021200000000135333,
+        "registryReplaceMs": 0.41170000000010987,
+        "catalogDeltaMs": 0.6556000000000495,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 2.090099999999893,
+        "candidateIntervals": [
+          [
+            5.78020000000015,
+            8.390499999999975
+          ]
+        ],
+        "readAndCandidateMs": 2.6102999999998246,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 926,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:14",
+      "warmup": true,
+      "saveToAckMs": 76.06299999999965,
+      "saveToManifestBroadcastMs": 65.6522,
+      "fileWriteMs": 4.808300000000145,
+      "receiveToCommitMs": 4.4000000059604645,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          14.554599999999937
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 52.1246000000001,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6685000000002219,
+        "validationMs": 0.005099999999856664,
+        "registryReplaceMs": 0.44790000000011787,
+        "catalogDeltaMs": 0.9612000000001899,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 14.554599999999937,
+        "candidateIntervals": [
+          [
+            66.67920000000004,
+            69.26870000000008
+          ]
+        ],
+        "readAndCandidateMs": 2.5895000000000437,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 926,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:15",
+      "warmup": true,
+      "saveToAckMs": 14.102599999999711,
+      "saveToManifestBroadcastMs": 4.404700000000048,
+      "fileWriteMs": 5.997100000000046,
+      "receiveToCommitMs": 3.899999998509884,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          2.034400000000005
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 4.3103000000000975,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.9409999999998035,
+        "validationMs": 0.00860000000011496,
+        "registryReplaceMs": 0.5190999999999804,
+        "catalogDeltaMs": 0.8510000000001128,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 2.034400000000005,
+        "candidateIntervals": [
+          [
+            6.344700000000103,
+            8.854600000000119
+          ]
+        ],
+        "readAndCandidateMs": 2.509900000000016,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 926,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:16",
+      "warmup": false,
+      "saveToAckMs": 70.65509999999995,
+      "saveToManifestBroadcastMs": 64.40239999999994,
+      "fileWriteMs": 4.923099999999977,
+      "receiveToCommitMs": 2.9000000059604645,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.284099999999853
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 49.94160000000011,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6350999999999658,
+        "validationMs": 0.004299999999602733,
+        "registryReplaceMs": 0.33140000000003056,
+        "catalogDeltaMs": 0.7193999999999505,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.284099999999853,
+        "candidateIntervals": [
+          [
+            65.22569999999996,
+            68.31579999999985
+          ]
+        ],
+        "readAndCandidateMs": 3.090099999999893,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 926,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:17",
+      "warmup": false,
+      "saveToAckMs": 14.829299999999876,
+      "saveToManifestBroadcastMs": 5.123700000000099,
+      "fileWriteMs": 4.557800000000043,
+      "receiveToCommitMs": 3,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          2.0817000000001826
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 4.190599999999904,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6219999999998436,
+        "validationMs": 0.005500000000211003,
+        "registryReplaceMs": 0.40109999999958745,
+        "catalogDeltaMs": 0.6313999999997577,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 2.0817000000001826,
+        "candidateIntervals": [
+          [
+            6.272300000000087,
+            8.580500000000029
+          ]
+        ],
+        "readAndCandidateMs": 2.3081999999999425,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 926,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:18",
+      "warmup": false,
+      "saveToAckMs": 74.33800000000019,
+      "saveToManifestBroadcastMs": 65.82000000000016,
+      "fileWriteMs": 5.442599999999857,
+      "receiveToCommitMs": 3.1999999955296516,
+      "commitToAckDispatchMs": 0.10000000149011612,
+      "serverStages": {
+        "drainWaitMs": [
+          15.23109999999997
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 52.65010000000029,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5815999999999804,
+        "validationMs": 0.0037000000002080924,
+        "registryReplaceMs": 0.338799999999992,
+        "catalogDeltaMs": 0.4481999999998152,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.23109999999997,
+        "candidateIntervals": [
+          [
+            67.88120000000026,
+            70.32619999999997
+          ]
+        ],
+        "readAndCandidateMs": 2.444999999999709,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 926,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:19",
+      "warmup": false,
+      "saveToAckMs": 9.870300000000043,
+      "saveToManifestBroadcastMs": 2.958099999999831,
+      "fileWriteMs": 8.045900000000074,
+      "receiveToCommitMs": 2.899999998509884,
+      "commitToAckDispatchMs": 0.10000000149011612,
+      "serverStages": {
+        "drainWaitMs": [
+          0.13450000000011642
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 5.210599999999886,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5942000000000007,
+        "validationMs": 0.006699999999909778,
+        "registryReplaceMs": 0.3581000000003769,
+        "catalogDeltaMs": 0.5857999999998356,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 0.13450000000011642,
+        "candidateIntervals": [
+          [
+            5.345100000000002,
+            10.017199999999775
+          ]
+        ],
+        "readAndCandidateMs": 4.672099999999773,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 927,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:20",
+      "warmup": false,
+      "saveToAckMs": 67.38149999999996,
+      "saveToManifestBroadcastMs": 61.73520000000008,
+      "fileWriteMs": 5.162800000000061,
+      "receiveToCommitMs": 2.6999999955296516,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.627500000000055
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 48.07999999999993,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5623999999997977,
+        "validationMs": 0.0039000000001578883,
+        "registryReplaceMs": 0.33750000000009095,
+        "catalogDeltaMs": 0.40319999999974243,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.627500000000055,
+        "candidateIntervals": [
+          [
+            63.70749999999998,
+            65.94060000000036
+          ]
+        ],
+        "readAndCandidateMs": 2.233100000000377,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:21",
+      "warmup": false,
+      "saveToAckMs": 11.400499999999738,
+      "saveToManifestBroadcastMs": 5.3422999999997955,
+      "fileWriteMs": 4.789400000000114,
+      "receiveToCommitMs": 2.7999999970197678,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          2.73700000000008
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 4.371799999999894,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5440999999996166,
+        "validationMs": 0.0030999999999039574,
+        "registryReplaceMs": 0.37770000000000437,
+        "catalogDeltaMs": 0.5384000000003653,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 2.73700000000008,
+        "candidateIntervals": [
+          [
+            7.108799999999974,
+            9.172700000000077
+          ]
+        ],
+        "readAndCandidateMs": 2.0639000000001033,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:22",
+      "warmup": false,
+      "saveToAckMs": 76.88370000000032,
+      "saveToManifestBroadcastMs": 69.81770000000006,
+      "fileWriteMs": 6.550199999999677,
+      "receiveToCommitMs": 2.7000000029802322,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.272199999999884
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 57.4069999999997,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5617000000002008,
+        "validationMs": 0.003200000000106229,
+        "registryReplaceMs": 0.33229999999957727,
+        "catalogDeltaMs": 0.4735000000000582,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.272199999999884,
+        "candidateIntervals": [
+          [
+            72.67919999999958,
+            75.44959999999992
+          ]
+        ],
+        "readAndCandidateMs": 2.770400000000336,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:23",
+      "warmup": false,
+      "saveToAckMs": 12.894400000000132,
+      "saveToManifestBroadcastMs": 4.262200000000121,
+      "fileWriteMs": 6.659899999999652,
+      "receiveToCommitMs": 3.899999998509884,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          2.2210000000000036
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 4.707899999999881,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6089000000001761,
+        "validationMs": 0.004200000000309956,
+        "registryReplaceMs": 1.1890000000003056,
+        "catalogDeltaMs": 0.47060000000010405,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 2.2210000000000036,
+        "candidateIntervals": [
+          [
+            6.928899999999885,
+            9.096299999999701
+          ]
+        ],
+        "readAndCandidateMs": 2.167399999999816,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:24",
+      "warmup": false,
+      "saveToAckMs": 68.32780000000002,
+      "saveToManifestBroadcastMs": 62.64319999999998,
+      "fileWriteMs": 4.356500000000324,
+      "receiveToCommitMs": 2.5,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.571399999999812
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 47.65549999999985,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.7228999999997541,
+        "validationMs": 0.004400000000259752,
+        "registryReplaceMs": 0.3787999999999556,
+        "catalogDeltaMs": 0.4576999999999316,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.571399999999812,
+        "candidateIntervals": [
+          [
+            63.22689999999966,
+            65.86830000000009
+          ]
+        ],
+        "readAndCandidateMs": 2.6414000000004307,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:25",
+      "warmup": false,
+      "saveToAckMs": 9.492799999999988,
+      "saveToManifestBroadcastMs": 3.7861000000002605,
+      "fileWriteMs": 5.141700000000128,
+      "receiveToCommitMs": 2.5,
+      "commitToAckDispatchMs": 0.09999999403953552,
+      "serverStages": {
+        "drainWaitMs": [
+          1.7882000000004155
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 3.6050999999997657,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6494000000002416,
+        "validationMs": 0.00430000000005748,
+        "registryReplaceMs": 0.3572999999996682,
+        "catalogDeltaMs": 0.6213999999999942,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 1.7882000000004155,
+        "candidateIntervals": [
+          [
+            5.393300000000181,
+            7.886399999999867
+          ]
+        ],
+        "readAndCandidateMs": 2.4930999999996857,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:26",
+      "warmup": false,
+      "saveToAckMs": 77.77010000000018,
+      "saveToManifestBroadcastMs": 71.85570000000007,
+      "fileWriteMs": 5.225599999999758,
+      "receiveToCommitMs": 2.5,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.06899999999996
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 58.23959999999988,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.607300000000123,
+        "validationMs": 0.0036000000000058208,
+        "registryReplaceMs": 0.3398000000001957,
+        "catalogDeltaMs": 0.5136999999999716,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.06899999999996,
+        "candidateIntervals": [
+          [
+            73.30859999999984,
+            76.10710000000017
+          ]
+        ],
+        "readAndCandidateMs": 2.798500000000331,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:27",
+      "warmup": false,
+      "saveToAckMs": 8.918700000000172,
+      "saveToManifestBroadcastMs": 3.4762000000000626,
+      "fileWriteMs": 4.938499999999749,
+      "receiveToCommitMs": 2.7000000029802322,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          1.908100000000104
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 3.269000000000233,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6153999999996813,
+        "validationMs": 0.003400000000056025,
+        "registryReplaceMs": 0.33969999999999345,
+        "catalogDeltaMs": 0.3863000000001193,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 1.908100000000104,
+        "candidateIntervals": [
+          [
+            5.177100000000337,
+            7.434900000000198
+          ]
+        ],
+        "readAndCandidateMs": 2.257799999999861,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:28",
+      "warmup": false,
+      "saveToAckMs": 81.74110000000019,
+      "saveToManifestBroadcastMs": 75.13999999999987,
+      "fileWriteMs": 4.270799999999781,
+      "receiveToCommitMs": 3.2000000029802322,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.33849999999984
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 60.61680000000024,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6006999999999607,
+        "validationMs": 0.0037999999999556167,
+        "registryReplaceMs": 0.33130000000028303,
+        "catalogDeltaMs": 0.48289999999997235,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.33849999999984,
+        "candidateIntervals": [
+          [
+            75.95530000000008,
+            78.44700000000012
+          ]
+        ],
+        "readAndCandidateMs": 2.491700000000037,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:29",
+      "warmup": false,
+      "saveToAckMs": 10.106400000000122,
+      "saveToManifestBroadcastMs": 4.551000000000386,
+      "fileWriteMs": 3.135899999999765,
+      "receiveToCommitMs": 2.5999999940395355,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          1.9458999999997104
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 2.8699000000001433,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6048000000000684,
+        "validationMs": 0.0036000000000058208,
+        "registryReplaceMs": 0.35059999999975844,
+        "catalogDeltaMs": 0.38419999999996435,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 1.9458999999997104,
+        "candidateIntervals": [
+          [
+            4.815799999999854,
+            6.708399999999983
+          ]
+        ],
+        "readAndCandidateMs": 1.8926000000001295,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:30",
+      "warmup": false,
+      "saveToAckMs": 81.41269999999986,
+      "saveToManifestBroadcastMs": 75.8139000000001,
+      "fileWriteMs": 4.029199999999946,
+      "receiveToCommitMs": 2.4000000059604645,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.14810000000034
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 60.985499999999774,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6022000000002663,
+        "validationMs": 0.0036000000000058208,
+        "registryReplaceMs": 0.3366000000000895,
+        "catalogDeltaMs": 0.5244999999999891,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.14810000000034,
+        "candidateIntervals": [
+          [
+            76.13360000000011,
+            78.8757999999998
+          ]
+        ],
+        "readAndCandidateMs": 2.7421999999996842,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:31",
+      "warmup": false,
+      "saveToAckMs": 8.898299999999836,
+      "saveToManifestBroadcastMs": 3.4740999999999076,
+      "fileWriteMs": 4.553200000000288,
+      "receiveToCommitMs": 2.5,
+      "commitToAckDispatchMs": 0.10000000149011612,
+      "serverStages": {
+        "drainWaitMs": [
+          1.6934000000001106
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 3.0760999999997694,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5925000000002001,
+        "validationMs": 0.0031999999996514816,
+        "registryReplaceMs": 0.33390000000008513,
+        "catalogDeltaMs": 0.40739999999959764,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 1.6934000000001106,
+        "candidateIntervals": [
+          [
+            4.76949999999988,
+            7.047299999999723
+          ]
+        ],
+        "readAndCandidateMs": 2.277799999999843,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:32",
+      "warmup": false,
+      "saveToAckMs": 82.04649999999992,
+      "saveToManifestBroadcastMs": 76.31500000000005,
+      "fileWriteMs": 4.101300000000265,
+      "receiveToCommitMs": 2.5,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.35739999999987
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 61.26720000000023,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6127000000001317,
+        "validationMs": 0.0037999999999556167,
+        "registryReplaceMs": 0.389299999999821,
+        "catalogDeltaMs": 0.4638999999997395,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.35739999999987,
+        "candidateIntervals": [
+          [
+            76.6246000000001,
+            79.38050000000021
+          ]
+        ],
+        "readAndCandidateMs": 2.7559000000001106,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:33",
+      "warmup": false,
+      "saveToAckMs": 8.617299999999886,
+      "saveToManifestBroadcastMs": 3.28899999999976,
+      "fileWriteMs": 4.6621000000000095,
+      "receiveToCommitMs": 2.399999998509884,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          1.6847999999999956
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 3.173000000000229,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5878999999999905,
+        "validationMs": 0.003499999999803549,
+        "registryReplaceMs": 0.33140000000003056,
+        "catalogDeltaMs": 0.38149999999996,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 1.6847999999999956,
+        "candidateIntervals": [
+          [
+            4.857800000000225,
+            7.008299999999963
+          ]
+        ],
+        "readAndCandidateMs": 2.150499999999738,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:34",
+      "warmup": false,
+      "saveToAckMs": 80.62970000000041,
+      "saveToManifestBroadcastMs": 74.66690000000017,
+      "fileWriteMs": 4.229599999999664,
+      "receiveToCommitMs": 2.5,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          14.765399999999772
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 60.8143,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6382000000003245,
+        "validationMs": 0.00430000000005748,
+        "registryReplaceMs": 0.36959999999999127,
+        "catalogDeltaMs": 0.7537999999999556,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 14.765399999999772,
+        "candidateIntervals": [
+          [
+            75.57969999999978,
+            77.85869999999977
+          ]
+        ],
+        "readAndCandidateMs": 2.2789999999999964,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:35",
+      "warmup": false,
+      "saveToAckMs": 11.129899999999907,
+      "saveToManifestBroadcastMs": 5.485700000000179,
+      "fileWriteMs": 3.3231000000000677,
+      "receiveToCommitMs": 2.6999999955296516,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          2.5131000000001222
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 3.0516999999999825,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5455999999999221,
+        "validationMs": 0.0030999999999039574,
+        "registryReplaceMs": 0.3304000000002816,
+        "catalogDeltaMs": 0.5104999999998654,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 2.5131000000001222,
+        "candidateIntervals": [
+          [
+            5.564800000000105,
+            7.904500000000098
+          ]
+        ],
+        "readAndCandidateMs": 2.3396999999999935,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:36",
+      "warmup": false,
+      "saveToAckMs": 65.49479999999994,
+      "saveToManifestBroadcastMs": 59.789600000000064,
+      "fileWriteMs": 4.551100000000133,
+      "receiveToCommitMs": 2.5,
+      "commitToAckDispatchMs": 0.10000000149011612,
+      "serverStages": {
+        "drainWaitMs": [
+          0.15630000000010114
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 61.3449999999998,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5625,
+        "validationMs": 0.0028999999999541615,
+        "registryReplaceMs": 0.3449000000000524,
+        "catalogDeltaMs": 0.45650000000023283,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 0.15630000000010114,
+        "candidateIntervals": [
+          [
+            61.5012999999999,
+            63.397399999999834
+          ]
+        ],
+        "readAndCandidateMs": 1.896099999999933,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:37",
+      "warmup": false,
+      "saveToAckMs": 9.991799999999785,
+      "saveToManifestBroadcastMs": 4.456900000000132,
+      "fileWriteMs": 3.203899999999976,
+      "receiveToCommitMs": 2.7000000029802322,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          1.877100000000155
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 2.949200000000019,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5577999999995882,
+        "validationMs": 0.003200000000106229,
+        "registryReplaceMs": 0.3255000000003747,
+        "catalogDeltaMs": 0.5270000000000437,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 1.877100000000155,
+        "candidateIntervals": [
+          [
+            4.826300000000174,
+            6.754100000000108
+          ]
+        ],
+        "readAndCandidateMs": 1.9277999999999338,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:38",
+      "warmup": false,
+      "saveToAckMs": 82.79639999999972,
+      "saveToManifestBroadcastMs": 76.53049999999985,
+      "fileWriteMs": 4.2520000000004075,
+      "receiveToCommitMs": 2.399999998509884,
+      "commitToAckDispatchMs": 0.10000000149011612,
+      "serverStages": {
+        "drainWaitMs": [
+          15.199800000000323
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 61.70329999999967,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.6118999999998778,
+        "validationMs": 0.003400000000056025,
+        "registryReplaceMs": 0.3533999999999651,
+        "catalogDeltaMs": 0.45420000000012806,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.199800000000323,
+        "candidateIntervals": [
+          [
+            76.9031,
+            79.7817
+          ]
+        ],
+        "readAndCandidateMs": 2.878600000000006,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:39",
+      "warmup": false,
+      "saveToAckMs": 11.322999999999865,
+      "saveToManifestBroadcastMs": 5.480999999999767,
+      "fileWriteMs": 3.3164999999999054,
+      "receiveToCommitMs": 2.7000000029802322,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          2.3353000000001884
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 3.042899999999918,
+            "origin": "external-enqueue",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5475999999998749,
+        "validationMs": 0.0031000000003587047,
+        "registryReplaceMs": 0.32310000000006767,
+        "catalogDeltaMs": 0.5549999999998363,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 2.3353000000001884,
+        "candidateIntervals": [
+          [
+            5.378200000000106,
+            7.903800000000047
+          ]
+        ],
+        "readAndCandidateMs": 2.5255999999999403,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    },
+    {
+      "token": "1k-3-locales:40",
+      "warmup": false,
+      "saveToAckMs": 80.98769999999968,
+      "saveToManifestBroadcastMs": 75.18010000000004,
+      "fileWriteMs": 3.9379000000003543,
+      "receiveToCommitMs": 2.600000001490116,
+      "commitToAckDispatchMs": 0,
+      "serverStages": {
+        "drainWaitMs": [
+          15.757599999999911
+        ],
+        "enqueueEvents": [
+          {
+            "offsetMs": 59.96300000000019,
+            "origin": "disk-recheck",
+            "hasReader": true
+          }
+        ],
+        "translationPreparationMs": 0.5826999999999316,
+        "validationMs": 0.0035000000002582965,
+        "registryReplaceMs": 0.32199999999966167,
+        "catalogDeltaMs": 0.507799999999861,
+        "fileEvents": 1,
+        "drains": 1,
+        "queueToDrainMs": 15.757599999999911,
+        "candidateIntervals": [
+          [
+            75.7206000000001,
+            78.1872000000003
+          ]
+        ],
+        "readAndCandidateMs": 2.4666000000001986,
+        "boundaryVersion": 2
+      },
+      "catalogReplyKind": "patch",
+      "catalogReplyBytes": 930,
+      "changedMessages": 1,
+      "positionUpdates": 0
+    }
+  ]
+}

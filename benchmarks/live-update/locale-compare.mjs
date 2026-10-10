@@ -18,6 +18,7 @@ const { values } = parseArgs({ options: {
   samples: { type: 'string', default: '25' }, warmup: { type: 'string', default: '5' },
   calibrations: { type: 'string', default: '10' }, smoke: { type: 'boolean', default: false },
   experiment: { type: 'string', default: 'ast-seal' }, mode: { type: 'string', default: 'locale-add' },
+  scenario: { type: 'string', default: '10k-20-locales' },
   'server-file-stages': { type: 'boolean', default: false },
   out: { type: 'string' },
 } });
@@ -31,7 +32,8 @@ const settings = Object.fromEntries(['samples', 'warmup', 'calibrations'].map(na
   return [name, value];
 }));
 if (values.smoke) Object.assign(settings, { samples: 1, warmup: 0, calibrations: 1 });
-const scenario = values.smoke ? '1k-3-locales' : '10k-20-locales';
+const scenario = values.smoke ? '1k-3-locales' : values.scenario;
+assert.ok(['1k-3-locales', '10k-20-locales'].includes(scenario), 'Unknown comparison scenario.');
 const order = values.smoke ? ['before', 'after'] : ['before', 'after', 'after', 'before'];
 const git = async args => (await exec('git', args, { cwd: repository })).stdout.trim();
 const revisions = { before: await git(['rev-parse', values.baseline]), after: await git(['rev-parse', values.current]) };
@@ -40,6 +42,14 @@ const changed = paths(await git(['diff', '--name-only', revisions.before, revisi
 assert.equal(await git(['status', '--porcelain', '--untracked-files=all', '--', 'packages']), '', 'Commit product edits before comparing.');
 const checkoutChanges = paths(await git(['diff', '--name-only', revisions.after, 'HEAD', '--', 'packages']));
 const sources = comparisonSources(values.experiment, changed, checkoutChanges);
+if (values.experiment === 'early-rechecks') {
+  const manifest = async revision => JSON.parse((await exec('git',
+    ['show', `${revision}:packages/vite/package.json`], { cwd: repository })).stdout);
+  const before = await manifest(revisions.before), after = await manifest(revisions.after);
+  assert.equal(after.scripts.test, `${before.scripts.test} test/disk-rechecks.test.mjs`);
+  delete before.scripts.test; delete after.scripts.test;
+  assert.deepEqual(before, after, 'Early recheck comparison only permits the new test script entry.');
+}
 const changedDist = sources.map(file => file.replace('/src/', '/dist/').replace(/\.ts$/, '.js')).sort();
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const originalDistHashes = Object.fromEntries(await Promise.all(changedDist.map(async file => [file, hash(await readFile(path.join(repository, file)))])));

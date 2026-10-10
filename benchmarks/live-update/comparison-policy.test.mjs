@@ -13,6 +13,11 @@ test('snapshot policy accepts the exact experiment while rejecting unrelated sou
   assert.deepEqual(comparisonSources('fast-edits', [live, 'packages/vite/test/plugin.test.mjs'], []), [live]);
   assert.deepEqual(comparisonSources('fast-edits', [live], [live]), [live]);
   const index = 'packages/vite/src/index.ts';
+  const rechecks = 'packages/vite/src/disk-rechecks.ts';
+  assert.deepEqual(comparisonSources('early-rechecks', [rechecks, 'packages/vite/test/disk-rechecks.test.mjs',
+    'packages/vite/package.json'], []), [rechecks]);
+  assert.throws(() => comparisonSources('early-rechecks', [rechecks, live], []));
+  assert.throws(() => comparisonSources('early-rechecks', [rechecks], [live]));
   assert.deepEqual(comparisonSources('fast-additions', [index, live, 'packages/vite/test/plugin.test.mjs'], []), [index, live]);
   assert.deepEqual(comparisonSources('fast-additions', [index, live], [index, live]), [index, live]);
   assert.throws(() => comparisonSources('fast-additions', [index], []));
