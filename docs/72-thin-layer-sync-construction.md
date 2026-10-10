@@ -56,3 +56,7 @@ node benchmarks/thin-layer/lazy-production-browser-probe.mjs --sync --out benchm
 ## 상태
 
 probe·test·raw는 로컬 커밋 `15605cd`에 있다. 미푸시이고 제품 package의 API·의존성·버전은 바뀌지 않았다.
+
+## 후속: 런타임 비용과 snapshot 보유 heap (`6979c84`)
+
+같은 동기 layer와 제품 core를 격리 측정한 비용·heap 기록은 [73](73-thin-layer-runtime-cost.md)에 있다. 이 문서의 생성자 계약 관측과 판정은 그대로 유효하다.

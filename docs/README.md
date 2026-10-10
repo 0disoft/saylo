@@ -90,6 +90,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 69. [72-thin-layer-sync-construction.md](72-thin-layer-sync-construction.md) — 동기 생성자 계약, unit 64개와 typegen·production browser --sync 재확인
 
+70. [73-thin-layer-runtime-cost.md](73-thin-layer-runtime-cost.md) — 동기 layer와 core의 격리 런타임 비용과 snapshot 보유 heap delta 1k·10k
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |
