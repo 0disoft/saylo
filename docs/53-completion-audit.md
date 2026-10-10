@@ -112,6 +112,8 @@
 
 `4aacb93`에서 신규 파싱 프로파일을 기록했고 `169e72b`에서 단순 인자 스키마 반복 생성·직렬화를 줄였다. 관련 테스트 93개와 core 소비 타입 검사가 통과했고 파서 교차 비교의 cold 두 run 모두 p50/p95가 낮았다. [54](54-plain-argument-contracts.md)의 실제 브라우저 ABBA 비교에서 로케일 after 두 run p95는 193.56·184.78ms로 이번 large 조건의 250ms 목표에 들어왔지만, 편집 after pooled p95 197.22ms는 100ms 목표를 넘었다. 로케일 항목은 이번 조건의 측정 통과로 갱신하며, 편집 개선·최종 인수·얇은 기존 도구 계층 비교·미게시 변경 전달 작업은 계속 남아 있다.
 
+2026-10-11(KST), `ed2bc8c` 이후 패치 생성 할당 최적화를 포함한 소스에서 `npm run check`가 통과했다(테스트 206개·다섯 패키지 소비자 타입 검사·React 예제 타입 검사). 이미 빌드한 dist로 `npm exec -- node scripts/pack-smoke.mjs`를 실행해 다섯 tarball의 독립 JS·TS 소비, React·Svelte selector SSR, Vite 8.3.4 production·SSR 실행을 확인했다. 릴리스 승인 기록은 저장하거나 바꾸지 않았다. 최신 large 편집 단일 run p95는 161.53ms로 여전히 100ms 목표를 넘었다. 원시 자료와 측정 한계는 54의 후속 절을 따른다.
+
 ## 근거 문서
 
 `01`·`02`·`04`·`05`·`06`·`07`·`08`·`09`·`13`·`38`·`39`·`42`·`43`·`44`·`45`·`46`·`48`·`49`·`50`·`51`·`52`·`54`, `releases/0.1.0-alpha.3.json`, `packages/*/README.md`, `review/feedback-resolution.ko.md`.

@@ -99,3 +99,32 @@ node benchmarks/live-update/locale-compare.mjs --experiment plain-contracts --mo
 ```
 
 남은 편집 경로에서는 after 서버 queueToDrain p50/p95가 47.56/55.64ms, readAndCandidate가 33.63/52.86ms, catalogDelta가 15.09/23.21ms다. 다음은 대기 정책과 이미 최신인 pair의 불필요한 delta 생성·적용을 실제 요청 범위에서 확인해 개선 후보를 정한다.
+
+## 후속: patch 할당 절감 (2026-10-11 KST)
+
+기준은 `ed2bc8c` → `49b260f`다. 현행 소스 hash는 catalog-patch.ts `c9e96e12`·catalog-registry.ts `2e034408`, dist는 `911c60fe`·`86938035`이고 artifact 값이 현재 파일과 일치한다.
+
+`createCatalogPatch`에서 `Object.entries` tuple 배열과 메시지마다 만들던 shift 객체를 없애고 delta를 지역 변수로 계산한다. `remove`는 for...in과 `Object.hasOwn`으로 상속 메시지를 거르고, dense 판정은 이미 계산된 `patch.messageCount`를 재사용한다.
+
+micro는 같은 입력에 before·after를 교대 호출하고 쌍마다 deepEqual로 대조했다. measured 300 + warmup 60쌍의 patch 내용이 모두 일치했다. 표의 시간 단위는 ms이다.
+
+| 시나리오 | before p50 / p95 | after p50 / p95 | diff median |
+| --- | ---: | ---: | ---: |
+| sameLength | 14.19 / 16.69 | 10.00 / 12.61 | -3.96 |
+| uniform | 14.73 / 22.39 | 10.09 / 15.67 | -4.53 |
+| mixed | 11.24 / 16.16 | 7.66 / 10.75 | -3.50 |
+
+live는 current 단독 edit 실행이다(10k-20-locales, measured 25·warmup 5·calibration 10). 저장→ack는 p50 131.71ms·p95 161.53ms이고, wire는 patch 25·full 0·응답 크기 p50/p95 935B(범위 931~935B), changedMessages 1·positionUpdates 0이며 DOM·state·typegen·wire 검사가 통과했다.
+
+겹쳐 돌린 초기 두 프로세스 출력은 버리고 각 실험을 단독 재실행한 최종 artifact만 근거로 쓴다. before 브라우저 대조가 없어 live는 현행 단독 측정이고 micro 짝 비교는 브라우저 인과가 아니다. 편집 100ms 목표는 미달이다.
+
+기능 회귀 테스트 43개와 Vite typecheck, 전체 check의 206개 테스트와 all typecheck, 독립 JS·TS pack 검증이 부모에서 통과했다. `49b260f`는 소스 2개·`test/patch.test.mjs`·`patch-compare.mjs`·results 3개를 담는다.
+
+원본: [micro](../benchmarks/results/patch-allocations-2026-10-11.json), [live](../benchmarks/results/patch-allocations-live-2026-10-11.json), [live raw](../benchmarks/results/patch-allocations-live-2026-10-11.10k-20-locales.samples.json).
+
+재현 명령:
+
+```sh
+node benchmarks/live-update/patch-compare.mjs --baseline ed2bc8c --out benchmarks/results/patch-allocations-2026-10-11.json
+node benchmarks/live-update/run.mjs --mode edit --scenario 10k-20-locales --samples 25 --warmup 5 --calibrations 10 --out benchmarks/results/patch-allocations-live-2026-10-11.json
+```
