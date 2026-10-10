@@ -1,0 +1,113 @@
+{
+  "format": "saylo-thin-layer-ssr-production-v1",
+  "observedAt": "2026-10-10T19:11:46.001Z",
+  "node": "v24.18.0",
+  "codeHashes": {
+    "benchmarks/thin-layer/ssr-production-probe.mjs": "3d1a29eaa7e48eefec170ea1374a29b79c8db6dc3280a4f6c0f5c05651126a04",
+    "benchmarks/thin-layer/ssr-production-client.mjs": "9a6f49199887b8d5ee8b7316e6775b9852691909344e56509270b28d805aa237",
+    "benchmarks/thin-layer/ssr-view.mjs": "9a11ef048e98198b2268f5713f86a3069debe26b9d282db9dbf9491468e21713",
+    "benchmarks/thin-layer/ssr-fixture.mjs": "ef558b5f150dfa8975d56b442b55d1f4620dd16178a609ec60cc1cc913d83b16",
+    "benchmarks/thin-layer/hydration-layer.mjs": "69fdda07b2af8144037fced8ba7dfd0b0f6afb9bc19b881fbb1191eb5401cdec",
+    "benchmarks/thin-layer/ast-runtime.mjs": "91680c21959435f71a9364c858560cdec3bb859c8438032ede476e17f628653e",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/catalog-layer.mjs": "37c7368933a3d2a2079aef3279f010dce8720cb8fb543e06fe8d3c1c16c850fc",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/boot.js": "6a7dfdd9b2e452b8595c3caa093c49774a87b26034f7c25bad7f653ccbdde4f2",
+    "packages/core/dist/formatters.js": "37925d7ac2976d7ed54df233a03cee48f970f4c94dec13e7e73ddf5cafa61a3e",
+    "packages/vite/dist/ast-formatter.js": "d47a8c37fb07949a1b40e6ac15729e1cf83137a7ae8549d594be969f10bc562c",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "productionClient": {
+    "bytes": 718297,
+    "gzipBytes": 146136,
+    "sha256": "615398f0bde7b6f415c319a75ee788c75dd29fd7214c902cd6d60e187d84b534",
+    "parserImplementationMarker": false,
+    "moduleIds": [
+      "\u0000rolldown/runtime.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/cjs/react.production.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react/index.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/scheduler/cjs/scheduler.production.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/scheduler/index.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/cjs/react-dom.production.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/index.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/cjs/react-dom-client.production.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/react-dom/client.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/diagnostics.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-freeze.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_u64.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/utils.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/_md.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@noble/hashes/sha2.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/schema.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/node_modules/@formatjs/fast-memoize/index.js",
+      "\u0000saylo:intl-ast",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/formatters.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translation-errors.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/translator.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/store.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-errors.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/snapshot-signature.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/loading-registry.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/catalog-loader.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/boot.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/i18n.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/server.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/packages/core/dist/runtime.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/i18next/dist/esm/i18next.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/fast-memoize/index.js",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/node_modules/@formatjs/icu-messageformat-parser/no-parser.js",
+      "\u0000thin-layer:intl-ast",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ast-format.mjs",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/catalog-layer.mjs",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/hydration-layer.mjs",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ssr-view.mjs",
+      "C:/Users/cherr/Documents/workspace/zerodi-wd1/projects/hobby/opensource/saylo/benchmarks/thin-layer/ssr-production-client.mjs"
+    ]
+  },
+  "scope": "Three concurrent Node React SSR requests with isolated locale/timezone, then actual Chromium hydration of one Vite-built production client. Reuses Saylo boot validation and adds a prototype hydration barrier. Three explicit configured timezones in one browser host timezone; not a browser host-TZ matrix. No lazy/session/reconnect/large-scale performance or memory proof. Bundle includes React/DOM and bootstrap validation; not comparable to small translator-only fixture size.",
+  "observations": [
+    {
+      "caseId": 0,
+      "locale": "ru",
+      "timeZone": "UTC",
+      "hostTimeZone": "Asia/Seoul",
+      "when": "1/1/2026 / 00:30",
+      "initial": "Сервер Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 1,
+      "locale": "en",
+      "timeZone": "Asia/Seoul",
+      "hostTimeZone": "Asia/Seoul",
+      "when": "1/1/2026 / 09:30",
+      "initial": "Server Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    },
+    {
+      "caseId": 2,
+      "locale": "ru",
+      "timeZone": "America/Los_Angeles",
+      "hostTimeZone": "Asia/Seoul",
+      "when": "12/31/2025 / 16:30",
+      "initial": "Сервер Ada </script><script>globalThis.__thinInjected=1</script>  ",
+      "final": "Post Ada",
+      "preserved": true,
+      "notifications": 2,
+      "recoverableErrors": [],
+      "injectionAbsent": true,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36"
+    }
+  ]
+}

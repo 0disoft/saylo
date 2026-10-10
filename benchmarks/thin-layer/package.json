@@ -7,6 +7,8 @@
     "probe:timezone": "node timezone-probe.mjs",
     "test:timezone": "node --test timezone.test.mjs",
     "probe:production": "node production-probe.mjs",
+    "test:hydration": "node --test hydration-layer.test.mjs",
+    "probe:ssr-production": "node ssr-production-probe.mjs",
     "browser": "node browser-smoke.mjs"
   },
   "dependencies": {
