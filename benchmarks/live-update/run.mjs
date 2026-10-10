@@ -157,14 +157,16 @@ async function runScenario(scenario) {
       return { count: summary.count, p50Bytes: summary.p50Ms, p95Bytes: summary.p95Ms, minBytes: summary.minMs, maxBytes: summary.maxMs };
     };
     const serverFileStages = values['server-file-stages'] ? {
-      scope: 'Benchmark-only in-memory Node module transform. Path check and UTF-8 read are async wall times; parse is synchronous parseCatalog call including argument construction. candidateOther is a per-sample residual inside readAndCandidate. These stages are included in readAndCandidate; do not add their p95s or treat wall times as CPU times.',
+      boundaryVersion: 2,
+      scope: 'Benchmark-only in-memory Node module transform. Multiple completed reads and failed attempts are retained. Each file stage is the union of its operation intervals; all operations must fit the candidate union. candidateOther is the candidate interval union minus the union of all file operations. Unfinished/missing operations fail. Do not add nested quantiles or treat wall times as CPU times.',
       ...Object.fromEntries(fileMetrics.map(metric => [metric, summarize(measured.map(sample => sample.serverStages.fileStages.timings[metric]))])),
       maxCalls: Object.fromEntries(fileMetrics.slice(0, -1).map(metric => [metric, Math.max(...measured.map(sample => sample.serverStages.fileStages.calls[metric]))])),
     } : undefined;
     const serverStages = stageProbe ? {
+      boundaryVersion: 2,
       scope: values.mode === 'locale-add'
-        ? 'Benchmark-only method wrappers, captured from before catalog write to list DOM ack. Excludes initial boot, selection/full response and removal. queueToDrain includes quiet window; readAndCandidate includes serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, fresh translation validation and quarantine preparation; validation is final active-catalog validation. Do not add stage p95s.'
-        : 'Benchmark-only method wrappers; queueToDrain includes the quiet window; readAndCandidate ends at prepareTranslations and includes the serialized drain wait, path checks, read, parse, candidate filtering and base stat; translationPreparation includes schema lookup, translation validation and quarantine preparation; validation is the final active-catalog validation; stage p95s must not be added. Pre-quarantine readAndCandidate ended at validate, so its boundary differs.',
+        ? 'Benchmark-only method wrappers before list DOM ack. queueToDrain is the first batch queue wait; per-batch waits are retained in drainWaitMs. readAndCandidate is the union of all batch windows, including serialized wait; each closes at its own prepareTranslations, or promise settlement for superseded/error batches. Excludes boot, locale selection and removal. translationPreparation includes schema lookup, validation and quarantine. Boundary v1 overwrote the start on later drains; do not compare those candidate or queue metrics directly. Do not add nested p95s.'
+        : 'Benchmark-only method wrappers. queueToDrain is the first batch wait, with all waits in drainWaitMs. Candidate duration is the interval union of every batch from drain to its own prepareTranslations or settlement for superseded/error batches, including serialized wait. v1 overwrote starts on later drains; candidate and queue metrics are not directly comparable. Preparation/validation/registry/delta retain their prior boundaries; do not add nested p95s.',
       ...Object.fromEntries(['queueToDrainMs', 'readAndCandidateMs', 'translationPreparationMs', 'validationMs', 'registryReplaceMs', 'catalogDeltaMs']
         .map(metric => [metric, summarize(measured.map(sample => sample.serverStages[metric]))])),
       maxFileEvents: Math.max(...measured.map(sample => sample.serverStages.fileEvents)),

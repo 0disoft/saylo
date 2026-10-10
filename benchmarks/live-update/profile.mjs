@@ -1,13 +1,20 @@
 import { Session } from 'node:inspector';
 import { performance } from 'node:perf_hooks';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { LiveRegistry } from '../../packages/vite/dist/live-registry.js';
 import { CatalogRegistry } from '../../packages/vite/dist/catalog-registry.js';
 import { beginFileSample, finishFileSample } from './server-file-profile.mjs';
-import { beginRuntimeSample, startRuntimeWindow, endRuntimeWindow, finishRuntimeSample } from './runtime-profile.mjs';
+import { beginRuntimeSample, startRuntimeWindow, endRuntimeWindow, finishRuntimeSample, union } from './runtime-profile.mjs';
 
 // Benchmark-only wrappers: the library ships no clocks or profiling API.
 export function createStageProbe() {
   let current;
+  const context = new AsyncLocalStorage();
+  const finishCandidate = batch => {
+    if (!batch || batch.end !== undefined) return;
+    batch.end = performance.now();
+    endRuntimeWindow(batch.runtimeWindow, batch.end);
+  };
   const restores = [];
   function wrap(prototype, name, observe) {
     const original = prototype[name];
@@ -16,26 +23,31 @@ export function createStageProbe() {
     restores.push(() => { if (prototype[name] === instrumented) prototype[name] = original; });
   }
   wrap(LiveRegistry.prototype, 'enqueue', function (original, args) {
-    if (current && this.owns(args[0])) { current.firstEventAt ??= performance.now(); current.fileEvents++; }
+    if (current && this.owns(args[0])) {
+      const now = performance.now();
+      current.firstEventAt ??= now; current.queuedAt ??= now; current.fileEvents++;
+    }
     return original.apply(this, args);
   });
   wrap(LiveRegistry.prototype, 'drain', function (original, args) {
-    if (current && this.queued.size) {
-      current.candidateStartedAt = performance.now();
-      current.candidateWindow = startRuntimeWindow('readAndCandidateMs');
-      current.queueToDrainMs = current.candidateStartedAt - current.firstEventAt;
-      current.drains++;
-    }
-    return original.apply(this, args);
+    if (!current || !this.queued.size) return original.apply(this, args);
+    const runtimeWindow = startRuntimeWindow('readAndCandidateMs');
+    const batch = { start: runtimeWindow?.start ?? performance.now(), runtimeWindow };
+    current.batches.push(batch);
+    const wait = batch.start - (current.queuedAt ?? current.firstEventAt);
+    current.queueToDrainMs ??= wait;
+    current.drainWaitMs.push(wait);
+    current.queuedAt = undefined;
+    current.drains++;
+    const result = context.run(batch, () => original.apply(this, args));
+    // Superseded/error batches may never reach prepareTranslations.
+    void this.running.then(() => finishCandidate(batch), () => finishCandidate(batch));
+    return result;
   });
   wrap(LiveRegistry.prototype, 'prepareTranslations', function (original, args) {
     const sample = current;
     const start = performance.now();
-    if (sample?.candidateStartedAt !== undefined) {
-      sample.readAndCandidateMs += start - sample.candidateStartedAt;
-      endRuntimeWindow(sample.candidateWindow, start);
-      sample.candidateStartedAt = undefined;
-    }
+    finishCandidate(context.getStore());
     try { return original.apply(this, args); }
     finally { if (sample) sample.translationPreparationMs += performance.now() - start; }
   });
@@ -54,12 +66,20 @@ export function createStageProbe() {
     });
   }
   return {
-    begin() { beginFileSample(); current = { runtimeWindow: beginRuntimeSample(), readAndCandidateMs: 0, translationPreparationMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 }; },
+    begin() {
+      if (current) throw new Error('Overlapping server stage samples.');
+      current = { startedAt: beginFileSample(), batches: [], drainWaitMs: [], runtimeWindow: beginRuntimeSample(),
+        translationPreparationMs: 0, validationMs: 0, registryReplaceMs: 0, catalogDeltaMs: 0, fileEvents: 0, drains: 0 };
+    },
     finish() {
       if (!current || !Number.isFinite(current.queueToDrainMs) || !current.drains) throw new Error('Missing server stage sample.');
-      const { firstEventAt, candidateStartedAt, candidateWindow, runtimeWindow, ...result } = current;
+      if (current.batches.some(batch => batch.end === undefined)) throw new Error('Unfinished drain at acknowledgement.');
+      const { firstEventAt, queuedAt, startedAt, batches, runtimeWindow, ...result } = current;
+      result.candidateIntervals = batches.map(batch => [batch.start - startedAt, batch.end - startedAt]);
+      result.readAndCandidateMs = union(result.candidateIntervals).reduce((total, [a, b]) => total + b - a, 0);
+      result.boundaryVersion = 2;
       let fileStages;
-      try { fileStages = finishFileSample(current.readAndCandidateMs); }
+      try { fileStages = finishFileSample(result.candidateIntervals); }
       catch (error) { error.message += ` Server stages: ${JSON.stringify(result)}`; throw error; }
       if (fileStages) result.fileStages = fileStages;
       const runtimeWindows = finishRuntimeSample(runtimeWindow);
