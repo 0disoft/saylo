@@ -15,6 +15,7 @@
     "probe:lazy-browser": "node lazy-browser-probe.mjs",
     "probe:lazy-session-browser": "node lazy-session-browser-probe.mjs",
     "probe:typegen": "node typegen-probe.mjs",
+    "probe:runtime-cost": "node runtime-cost-probe.mjs",
     "browser": "node browser-smoke.mjs"
   },
   "dependencies": {
