@@ -66,7 +66,7 @@ export class CatalogRegistry {
     if (!baseline) return outcome;
     const patch = createCatalogPatch(baseline, outcome, known);
     // Dense changes are cheaper and simpler as a full replacement.
-    return patch.upsert.length + patch.remove.length > Math.max(8, Object.keys(outcome.catalog.messages).length / 2) ? outcome : patch;
+    return patch.upsert.length + patch.remove.length > Math.max(8, patch.messageCount / 2) ? outcome : patch;
   }
 
   load(locale: string, namespace: string): CatalogOutcome {

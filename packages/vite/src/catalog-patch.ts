@@ -34,16 +34,22 @@ export function createCatalogPatch(before: ParsedCatalog, after: PresentCatalog,
   let shift: PositionShift | undefined;
   let uniform = true;
   let count = 0;
-  const remove = Object.keys(before.messages).filter(id => !Object.hasOwn(after.catalog.messages, id));
-  for (const [id, message] of Object.entries(after.catalog.messages)) {
+  const remove: string[] = [];
+  for (const id in before.messages) {
+    if (Object.hasOwn(before.messages, id) && !Object.hasOwn(after.catalog.messages, id)) remove.push(id);
+  }
+  for (const id in after.catalog.messages) {
+    if (!Object.hasOwn(after.catalog.messages, id)) continue;
+    const message = after.catalog.messages[id]!;
     count++;
     const previous = Object.hasOwn(before.messages, id) ? before.messages[id] : undefined;
     if (!previous || previous.source !== message.source) upsert.push([id, message]);
     else {
-      const nextShift = { offsetDelta: message.position.offset - previous.position.offset,
-        lineDelta: message.position.line - previous.position.line, columnDelta: message.position.column - previous.position.column };
-      if (!shift) shift = nextShift;
-      else if (shift.offsetDelta !== nextShift.offsetDelta || shift.lineDelta !== nextShift.lineDelta || shift.columnDelta !== nextShift.columnDelta) uniform = false;
+      const offsetDelta = message.position.offset - previous.position.offset;
+      const lineDelta = message.position.line - previous.position.line;
+      const columnDelta = message.position.column - previous.position.column;
+      if (!shift) shift = { offsetDelta, lineDelta, columnDelta };
+      else if (shift.offsetDelta !== offsetDelta || shift.lineDelta !== lineDelta || shift.columnDelta !== columnDelta) uniform = false;
       if (!samePosition(previous.position, message.position)) positions.push([id, message.position]);
     }
   }

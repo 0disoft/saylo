@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
-import { applyCatalogPatch } from '../dist/catalog-patch.js';
+import { applyCatalogPatch, createCatalogPatch } from '../dist/catalog-patch.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
 import { isCatalogRequest } from '../dist/types.js';
 const parse = source => parseCatalog(source, { locale: 'ko', namespace: 'demo' });
@@ -77,6 +77,24 @@ test('older baselines, new sessions, dense edits and deleted/recreated pairs fal
   assert.equal(registry.loadDelta('ko', 'demo', stamp(latest)).status, 'missing');
   registry.replace([before]);
   assert.equal(registry.loadDelta('ko', 'demo', stamp(latest)).status, 'present');
+});
+
+test('mixed source movement remains individual and inherited messages never enter a patch', () => {
+  const before = parse('{"keep":"a","probe":"b","x":"text","y":"text"}');
+  const after = parse('{"keep":"a","probe":"longer","x":"text","y":"text"}');
+  const registry = new CatalogRegistry('one', 'ko', [before]);
+  const baseline = registry.load('ko', 'demo');
+  registry.replace([after]);
+  const outcome = registry.load('ko', 'demo');
+  const inherited = { ghost: before.messages.keep };
+  const withInherited = catalog => ({ ...catalog, messages: Object.assign(Object.create(inherited), catalog.messages) });
+  const patch = createCatalogPatch(withInherited(before), { ...outcome, catalog: withInherited(after) }, stamp(baseline));
+  assert.equal(patch.messageCount, 4);
+  assert.equal(patch.positionShift, undefined);
+  assert.deepEqual(patch.positions.map(([id]) => id), ['x', 'y']);
+  assert.deepEqual(patch.upsert.map(([id]) => id), ['probe']);
+  assert.deepEqual(patch.remove, []);
+  assert.deepEqual(applyCatalogPatch(baseline, patch).catalog, after);
 });
 
 test('catalog request validators reject malformed known stamps but accept legacy full requests', () => {
