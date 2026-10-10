@@ -7,7 +7,7 @@ import { setImmediate as immediate } from 'node:timers/promises';
 import { performance } from 'node:perf_hooks';
 import { DiskRechecks, diskStamp } from '../dist/disk-rechecks.js';
 
-for (const scenario of ['early change', 'change after early match', 'reset and stop']) {
+for (const scenario of ['early change', 'change after early match', 'change after middle match', 'reset and stop']) {
   test(`disk rechecks: ${scenario}`, async t => {
     const directory = await mkdtemp(path.join(os.tmpdir(), 'saylo-recheck-test-'));
     const file = path.join(directory, 'demo.json');
@@ -36,8 +36,16 @@ for (const scenario of ['early change', 'change after early match', 'reset and s
         t.mock.timers.tick(10); await waitFor(1);
         assert.deepEqual(enqueued, []); assert.equal(checks.token(file), check);
         await writeFile(file, 'late changed content');
-        t.mock.timers.tick(49); assert.equal(completed, 1);
+        t.mock.timers.tick(19); assert.equal(completed, 1);
         t.mock.timers.tick(1); await waitFor(2); assert.deepEqual(enqueued, [file]);
+        t.mock.timers.tick(30); await immediate(); assert.equal(completed, 2);
+      } else if (scenario === 'change after middle match') {
+        t.mock.timers.tick(10); await waitFor(1);
+        t.mock.timers.tick(20); await waitFor(2);
+        assert.deepEqual(enqueued, []); assert.equal(checks.token(file), check);
+        await writeFile(file, 'late changed content');
+        t.mock.timers.tick(29); assert.equal(completed, 2);
+        t.mock.timers.tick(1); await waitFor(3); assert.deepEqual(enqueued, [file]);
       } else {
         const newer = checks.reset(file); checks.finish(file, newer, stamp);
         checks.finish(file, check, stamp); // Retired completion cannot reinstall timers.

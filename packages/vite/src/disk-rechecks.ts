@@ -4,8 +4,9 @@ import { stat } from 'node:fs/promises';
 // Keep the first publication immediate. Probe early for a suppressed rapid
 // save, then retain the trailing check for writes arriving after the probe.
 const EARLY_RECHECK_MS = 10;
+const MIDDLE_RECHECK_MS = 30;
 const RECHECK_MS = 60;
-interface Check { early?: ReturnType<typeof setTimeout>; timer?: ReturnType<typeof setTimeout> }
+interface Check { early?: ReturnType<typeof setTimeout>; middle?: ReturnType<typeof setTimeout>; timer?: ReturnType<typeof setTimeout> }
 
 export async function diskStamp(file: string): Promise<string> {
   const value = await stat(file, { bigint: true });
@@ -20,6 +21,7 @@ export class DiskRechecks {
 
   reset(file: string): Check {
     clearTimeout(this.checks.get(file)?.early);
+    clearTimeout(this.checks.get(file)?.middle);
     clearTimeout(this.checks.get(file)?.timer);
     const check: Check = {};
     this.checks.set(file, check);
@@ -34,6 +36,9 @@ export class DiskRechecks {
     check.early = setTimeout(() => {
       void this.verify(file, check, stamp, false);
     }, EARLY_RECHECK_MS);
+    check.middle = setTimeout(() => {
+      void this.verify(file, check, stamp, false);
+    }, MIDDLE_RECHECK_MS);
     check.timer = setTimeout(() => {
       void this.verify(file, check, stamp);
     }, RECHECK_MS);
@@ -44,7 +49,7 @@ export class DiskRechecks {
     const latest = await diskStamp(file).catch(() => undefined);
     if (this.stopped || this.checks.get(file) !== check) return;
     if (latest !== stamp) {
-      clearTimeout(check.early); clearTimeout(check.timer);
+      clearTimeout(check.early); clearTimeout(check.middle); clearTimeout(check.timer);
       this.checks.delete(file);
       this.enqueue(file);
     } else if (final) this.checks.delete(file);
@@ -52,7 +57,7 @@ export class DiskRechecks {
 
   stop() {
     this.stopped = true;
-    for (const check of this.checks.values()) { clearTimeout(check.early); clearTimeout(check.timer); }
+    for (const check of this.checks.values()) { clearTimeout(check.early); clearTimeout(check.middle); clearTimeout(check.timer); }
     this.checks.clear();
   }
 }
