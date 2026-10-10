@@ -347,6 +347,57 @@ test('concurrent saves coalesce to final value and close removes only plugin lis
   assert.equal(events.filter(e => e.event === SNAPSHOT_EVENT).length, 1);
 });
 
+test('read-backed edits coalesce on the next turn while disk events keep their settling window', async t => {
+  const { root, plugin, server, change, events, request } = await setup(t);
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });
+  const first = change('en', '{"hello":"First {name}"}');
+  assert.equal(events.length, 0);
+  t.mock.timers.tick(0);
+  await first;
+  assert.equal(request()[0].data.revision, 1);
+  events.length = 0;
+  const file = path.join(root, 'en', 'demo.json');
+  server.watcher.emit('add', file);
+  let reads = 0;
+  const mixed = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => {
+    reads++;
+    return '{"hello":"Settled {name}"}';
+  } });
+  t.mock.timers.tick(39);
+  assert.equal(reads, 0);
+  assert.equal(events.length, 0);
+  t.mock.timers.tick(1);
+  await mixed;
+  assert.equal(reads, 1);
+  assert.equal(request()[0].data.revision, 2);
+  const next = change('en', '{"hello":"Next {name}"}');
+  t.mock.timers.tick(0);
+  await next;
+  assert.equal(request()[0].data.revision, 3);
+});
+
+test('disk event bursts retain the 200ms drain bound', async t => {
+  const { root, plugin, server, request } = await setup(t);
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });
+  const file = path.join(root, 'en', 'demo.json');
+  server.watcher.emit('add', file);
+  for (let i = 0; i < 6; i++) {
+    t.mock.timers.tick(30);
+    server.watcher.emit('add', file);
+  }
+  let reads = 0;
+  const last = plugin.hotUpdate({ type: 'update', file, modules: [], server, read: () => {
+    reads++;
+    return '{"hello":"Final {name}"}';
+  } });
+  t.mock.timers.tick(19);
+  assert.equal(reads, 0);
+  t.mock.timers.tick(1);
+  await last;
+  assert.equal(reads, 1);
+  assert.equal(request()[0].data.revision, 1);
+});
+
 test('new locale and paired namespace files join the same valid batch', async t => {
   const { disk, request, events } = await setup(t);
   await Promise.all([

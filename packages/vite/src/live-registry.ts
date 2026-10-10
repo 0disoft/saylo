@@ -24,6 +24,7 @@ export class LiveRegistry {
   private waiters: (() => void)[] = [];
   private timer: ReturnType<typeof setTimeout> | undefined;
   private firstQueued = 0;
+  private settleDisk = false;
   private generation = 0;
   private stopped = false;
   private running = Promise.resolve();
@@ -118,8 +119,13 @@ export class LiveRegistry {
 
   private schedule() {
     if (!this.firstQueued) this.firstQueued = Date.now();
+    // Vite supplies a guarded reader for ordinary updates. Coalesce those on
+    // the next turn; disk add/unlink and superseded reads still need settling.
+    // Keep the longer window even if a later reader replaces the same path.
+    for (const read of this.queued.values()) if (!read) { this.settleDisk = true; break; }
+    const quietMs = this.settleDisk ? QUIET_MS : 0;
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.drain(), Math.max(0, Math.min(QUIET_MS, MAX_WAIT_MS - (Date.now() - this.firstQueued))));
+    this.timer = setTimeout(() => this.drain(), Math.max(0, Math.min(quietMs, MAX_WAIT_MS - (Date.now() - this.firstQueued))));
   }
 
   private drain() {
@@ -129,6 +135,7 @@ export class LiveRegistry {
     this.queued = new Map();
     this.waiters = [];
     this.firstQueued = 0;
+    this.settleDisk = false;
     this.timer = undefined;
     this.running = this.running.then(async () => {
       if (this.stopped) return;
