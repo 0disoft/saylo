@@ -76,7 +76,7 @@ const executable = await browserExecutable();
 const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/json.js',
   'packages/core/dist/simple-message.js',
   'packages/core/dist/diagnostics.js', 'packages/core/dist/schema.js', 'packages/typegen/dist/catalog-files.js',
-  'packages/vite/dist/live-registry.js', 'packages/vite/dist/translation-quarantine.js', 'packages/vite/dist/catalog-registry.js', 'packages/vite/dist/catalog-patch.js',
+  'packages/vite/dist/live-registry.js', 'packages/vite/dist/disk-rechecks.js', 'packages/vite/dist/translation-quarantine.js', 'packages/vite/dist/catalog-registry.js', 'packages/vite/dist/catalog-patch.js',
   'benchmarks/live-update/profile.mjs', 'benchmarks/live-update/channel.mjs', 'benchmarks/live-update/run.mjs',
   'benchmarks/live-update/app.jsx', 'benchmarks/live-update/fixture.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json',
   'benchmarks/live-update/browser-profile.mjs', 'benchmarks/live-update/browser-probe.mjs',
