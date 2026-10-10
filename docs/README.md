@@ -78,6 +78,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 63. [66-thin-layer-ssr-production.md](66-thin-layer-ssr-production.md) — 실제 production client의 host 시간대 매트릭스 12페이지 SSR hydration과 누락 pair bug 수정 검증
 
+64. [67-thin-layer-lazy-contracts.md](67-thin-layer-lazy-contracts.md) — 독립 i18next lazy coordinator의 14 시나리오 교차 검증과 production 부분 로딩
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |

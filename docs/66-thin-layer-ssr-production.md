@@ -72,3 +72,7 @@ node benchmarks/thin-layer/ssr-production-probe.mjs --out benchmarks/results/thi
 - 앞선 3페이지 v1(`49c21e2`)·9페이지 v2(`e208980`) raw는 보존한다. metadata·runtime harness가 달라 같은 파일로 재생산되지는 않는다.
 - 재현은 `node benchmarks/thin-layer/ssr-production-probe.mjs --host-matrix --missing-target --out benchmarks/results/thin-layer-ssr-production-missing-pair-fix-2026-10-11.json`이다.
 - `b809e08`에서 metadata의 case 수 hardcode를 실제 관측값으로 고쳤다. 현재 파일은 `caseCount` 12·`missingTargetCases` 3을 기록하고, 재실행도 같은 12케이스 전부 PASS다. 코드 지문도 함께 갱신했다.
+
+## 후속 (`c8f883e`, `4623203`)
+
+이어서 empty boot와 namespace scope, 독립 lazy coordinator를 [67](67-thin-layer-lazy-contracts.md)에서 다룬다. 위 SSR·hydration 12케이스 결과와 판정은 그대로 유효하다.
