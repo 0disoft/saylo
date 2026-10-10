@@ -41,6 +41,8 @@
 - package 버전은 alpha.3이다. selector 로컬 구현은 alpha.3 이후이고 게시하지 않았다. 기존 원격 관측(10/09 이력)과 구분한다.
 - 이 결정은 새 원격 상태나 게시 완료를 뜻하지 않는다.
 
+2026-10-11 후속: 다섯 패키지를 alpha.4로 게시했고 selector와 후속 수정도 포함했다. 정확한 CI artifact·registry SHA-512와 JS/TS·SvelteKit 소비 검증을 통과했다. 현재 게시 상태는 [릴리스 기록](../releases/0.1.0-alpha.4.md)을 따른다. 위 alpha.3 상태는 결정 당시 기록이다.
+
 ## 재검토 조건
 
 - 같은 base argument·old immutable snapshot·source fallback·timezone·atomic lazy·SSR·typegen을 coordinator 중복 없이 제공하면서 현재와 같은 scale의 비용·가벼운 production 증거가 있을 때 다시 본다.

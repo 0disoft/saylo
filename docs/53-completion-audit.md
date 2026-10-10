@@ -84,7 +84,7 @@
 1. 완료: `169e72b`의 편집·로케일 종단 간 경로를 54에서 비교했다.
 2. [75](75-early-disk-rechecks.md)의 최신 small·large 편집 교차 비교와 로케일 목록 측정이 목표를 통과했다. 이전 small tail과 10ms 단독 trial은 역사값으로 보존하고, 다른 OS·워크로드의 안정성은 확인되지 않은 범위로 남긴다.
 3. 완료: owned message map 동결 최적화를 유지로 확정했다. parser 소유 깊은 불변 children만 신뢰하고 외부 shallow map은 일반 freeze하며, 49의 parser incremental 교차 비교 이득을 유지한다. cold 일관성 이득은 주장하지 않고 최신 E2E를 49 단독 효과로 귀속하지 않는다([76](76-runtime-decision.md)).
-4. selector 게시 여부를 결정하고, 게시하면 `check`·`release:pack`·`verify:registry:*`·SvelteKit 검증을 해당 버전으로 수행한다.
+4. 완료: selector를 포함한 `0.1.0-alpha.4`의 CI `check`·`release:pack`·OIDC 게시·승인 integrity 대조·`verify:registry:alpha4`·`verify:registry:sveltekit:alpha4`를 통과했다([릴리스 기록](../releases/0.1.0-alpha.4.md)).
 5. 완료: 제품 형태를 현행 독립 런타임 유지로 결정했다. FormatJS parser·`intl-messageformat` 재사용을 이어가고 i18next prototype은 미채택한다([76](76-runtime-decision.md)).
 6. 완료: `06` 로드맵·`README.md`·`07` 대장을 최신 근거로 갱신하고 과거 검증 기록을 `06-validation-history.md`로 분리했다([77](77-local-release-readiness.md)).
 
@@ -94,7 +94,7 @@
 | --- | --- | --- |
 | 얇은 i18n 레이어 계약 비교 | 완료 | 56의 36개 관측과 64~75의 문서 범위별 검증을 근거로 제품 형태를 현행 독립 런타임 유지로 결정했다([76](76-runtime-decision.md)). 전체 API 동등성 판정은 아니다 |
 | 메모리 overhead 측정 | 비필수 | 성능 목표는 wall-clock p95이고 메모리 수치 목표는 명시되지 않았다. 16의 compact 전송 도입 뒤 남긴 진단 |
-| test·pack·release 재검증 | 조건부 필수 | `09`의 릴리스 게이트다. selector를 게시할 때만 해당 버전으로 다시 돌린다 |
+| test·pack·release 재검증 | 완료 | alpha.4의 CI·승인 integrity·registry JS/TS·selector SSR·SvelteKit Chromium 소비 인수를 통과했다([릴리스](../releases/0.1.0-alpha.4.md)) |
 | 파서 소유 맵 최적화 확정 | 완료 | 49의 parser incremental 이득을 근거로 유지를 확정했다. cold 일관성 이득은 주장하지 않고 최신 E2E를 49 단독 효과로 귀속하지 않는다([76](76-runtime-decision.md)) |
 
 ## 7. 비목표·미래 제안 (필수 작업과 분리)
@@ -106,7 +106,7 @@
 
 ## 8. 완료 판정
 
-기능 범위(1~18)는 소스·테스트 구현 근거가 존재한다. 최신 로컬 warmed 대표 조건에서 편집·로케일 목록 p95 목표를 통과했다([75](75-early-disk-rechecks.md)). 제품 형태는 독립 런타임 유지로 결정했다([76](76-runtime-decision.md)). 새 버전의 릴리스 인수·미게시 변경 전달은 남아 있으므로 장기 목표의 완료를 주장하지 않는다.
+기능 범위(1~18)는 소스·테스트 구현 근거가 존재한다. 최신 로컬 warmed 대표 조건에서 편집·로케일 목록 p95 목표를 통과했다([75](75-early-disk-rechecks.md)). 제품 형태는 독립 런타임 유지로 결정했다([76](76-runtime-decision.md)). 2026-10-11 selector와 후속 수정의 alpha.4 게시·CI·registry·SvelteKit 소비 인수를 완료해 5절의 필수 작업을 마쳤다([릴리스 기록](../releases/0.1.0-alpha.4.md)). 1~4절의 이전 미게시·원격 상태는 감사 당시 이력이며, 다른 OS·cold 조건·비목표 후속은 완료 범위에 넣지 않는다.
 
 ### 후속 진행
 

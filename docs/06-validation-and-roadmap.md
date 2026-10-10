@@ -37,6 +37,8 @@
 
 이 pack은 미게시 후속 코드를 `0.1.0-alpha.3` metadata로 묶은 로컬 proof이고 게시된 `alpha.3` artifact가 아니다. selector 공개 API는 현행 소스에 구현돼 있고 로컬 pack으로 검증했지만 게시본에는 없다. 원격 CI·OIDC·registry 대조는 이번 검증 범위가 아니다.
 
+후속 릴리스 인수: `d26506f`의 `0.1.0-alpha.4`에서 원격 CI 229 tests·소비 타입 검사·OIDC 게시가 성공했다. 승인 CI와 registry tarball SHA-512, 외부 JS/TS·selector SSR 및 SvelteKit Chromium 소비 검증도 통과했다([릴리스 기록](../releases/0.1.0-alpha.4.md)). 위 alpha.3 pack 문단은 사전 로컬 검증 당시 기록이다.
+
 ## 인수 사례
 
 

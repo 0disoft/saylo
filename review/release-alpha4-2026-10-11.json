@@ -1,0 +1,129 @@
+{
+  "observedAt": "2026-10-10T21:46:25.712Z",
+  "releaseRun": 38088660390,
+  "sourceRevision": "d26506ff78076b282033895f3966fb97dc86306c",
+  "packages": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.4",
+      "filename": "0disoft-saylo-core-0.1.0-alpha.4.tgz",
+      "integrity": "sha512-9AvPXq5w00N0I1zDm16tHWBfBTPIv0hgE4QczoXENZJVM8J725RqU0cB4xKJcSz7+0sXrMBhR5byYM5LYfkqdQ==",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "tarball": "https://registry.npmjs.org/@0disoft/saylo-core/-/saylo-core-0.1.0-alpha.4.tgz",
+      "ciTarballMatches": true,
+      "registryTarballMatches": true
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.4",
+      "filename": "0disoft-saylo-react-0.1.0-alpha.4.tgz",
+      "integrity": "sha512-U2LMLTRJ/k3xX8xrwSsH79ryruA2TG3jWekDO1e/6of+evXIJDzHiZ29bFP3qmJvDYTb3e3fOxJCezK9rEw2tQ==",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "tarball": "https://registry.npmjs.org/@0disoft/saylo-react/-/saylo-react-0.1.0-alpha.4.tgz",
+      "ciTarballMatches": true,
+      "registryTarballMatches": true
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.4",
+      "filename": "0disoft-saylo-svelte-0.1.0-alpha.4.tgz",
+      "integrity": "sha512-dgIViZdhtAr+AAq+uW1j/Pa8sET165v76NKrsm5da6kgeUGOagrSRTwcmtM0J0Q+Uzf/31K/WaAftTM1swcBIg==",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "tarball": "https://registry.npmjs.org/@0disoft/saylo-svelte/-/saylo-svelte-0.1.0-alpha.4.tgz",
+      "ciTarballMatches": true,
+      "registryTarballMatches": true
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.4",
+      "filename": "0disoft-saylo-typegen-0.1.0-alpha.4.tgz",
+      "integrity": "sha512-SZ5Cb+EwDAxJfWmf4MToXCKAy7/6Ygozvi2Yz6RG6uwcR4e64ZXMk7DrdLnoXeJd0bEKqqQQ9uzxVPkE0ftfhw==",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "tarball": "https://registry.npmjs.org/@0disoft/saylo-typegen/-/saylo-typegen-0.1.0-alpha.4.tgz",
+      "ciTarballMatches": true,
+      "registryTarballMatches": true
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.4",
+      "filename": "0disoft-saylo-vite-0.1.0-alpha.4.tgz",
+      "integrity": "sha512-ypX20D95dLD2SN4NW4oCgTUCRDyHDjoZtii++LlDxIDlah0if6J9hRCpHTZ3LijvWzqXErzgfop01HKjvS//Yg==",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "tarball": "https://registry.npmjs.org/@0disoft/saylo-vite/-/saylo-vite-0.1.0-alpha.4.tgz",
+      "ciTarballMatches": true,
+      "registryTarballMatches": true
+    }
+  ],
+  "ci": {
+    "conclusion": "success",
+    "createdAt": "2026-10-10T21:42:40Z",
+    "headSha": "d26506ff78076b282033895f3966fb97dc86306c",
+    "status": "completed",
+    "updatedAt": "2026-10-10T21:44:05Z",
+    "url": "https://github.com/0disoft/saylo/actions/runs/38088660390"
+  },
+  "ciTests": {
+    "core": 82,
+    "react": 14,
+    "svelte": 14,
+    "typegen": 9,
+    "vite": 105,
+    "releaseHelpers": 5,
+    "total": 229,
+    "failures": 0
+  },
+  "consumerVerifiedAt": "2026-10-10T21:49:39.627Z",
+  "consumerEnvironment": {
+    "platform": "win32",
+    "node": "v24.18.0",
+    "vite": "8.3.4",
+    "chromium": "154"
+  },
+  "checks": [
+    {
+      "command": "npm run verify:registry:alpha4",
+      "exitCode": 0,
+      "coverage": [
+        "five exact approved tarballs",
+        "JS/checkJs and TS",
+        "README examples and CLI",
+        "runtime and React/Svelte selector SSR",
+        "Vite lazy production",
+        "complete translation failure and recovery",
+        "SSR without dev dependencies"
+      ]
+    },
+    {
+      "command": "npm run verify:registry:sveltekit:alpha4",
+      "exitCode": 0,
+      "coverage": [
+        "five exact approved tarballs",
+        "svelte-check: 0 errors and 0 warnings",
+        "client and SSR builds",
+        "concurrent locale SSR and boot",
+        "dev connection lifecycle",
+        "production HTTP",
+        "Chromium hydration, locale switch, shared layout and exit/re-entry"
+      ]
+    },
+    {
+      "command": "npm --prefix examples/sveltekit ci --workspaces=false --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0
+    }
+  ]
+}

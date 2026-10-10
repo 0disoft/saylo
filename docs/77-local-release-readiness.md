@@ -24,6 +24,8 @@
 - 원격 관측(2026-10-11): 다섯 패키지의 `alpha` tag가 `0.1.0-alpha.3`, `latest`는 placeholder `0.0.0-stage`, `alpha.4`는 없다. 근거는 [review/remote-state-2026-10-11.json](../review/remote-state-2026-10-11.json)이고, 게시 검증 이력(2026-10-09, [릴리스 기록](../releases/0.1.0-alpha.3.md))과 날짜를 구분해 읽는다. 마지막 성공 원격 run의 head는 `534a912`로 현행 소스가 아니다.
 - 현행 head에 대한 외부 CI 실행과 OIDC 토큰 교환은 이번 검증이 아니다.
 
+2026-10-11 후속: `d26506f`의 alpha.4 CI·OIDC 게시, 승인 manifest·registry SHA-512 대조, 게시본 JS/TS·selector SSR·SvelteKit Chromium 검증을 완료했다([릴리스 기록](../releases/0.1.0-alpha.4.md)). 위 alpha.3·미게시·원격 상태는 사전 로컬 검증 당시 기록이며 현재 게시 상태가 아니다.
+
 ## 하지 않은 것
 
 - 버전 승격, push, publish, 승인 manifest `releases/0.1.0-alpha.3.json`과 `.release/` 갱신은 하지 않았다.

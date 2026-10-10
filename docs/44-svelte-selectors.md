@@ -7,9 +7,9 @@
 - secondary quarantine과 build-time parser 런타임 제거(`astRuntime`): npm `0.1.0-alpha.2`에 게시했다.
 - Svelte 어댑터: npm `0.1.0-alpha.2`부터 포함한다.
 - Vite `requireCompleteTranslations`(완역 검사): npm `0.1.0-alpha.3`에 게시했다.
-- React `useI18nSelector`와 Svelte `selectSvelteStore`·`getI18nSelector`(selector 미세구독): 저장소 checkout의 로컬 구현이고 아직 게시본에는 없다.
+- React `useI18nSelector`와 Svelte `selectSvelteStore`·`getI18nSelector`(selector 미세구독): npm `0.1.0-alpha.4`에 게시했다. CI·registry 소비 검증은 [릴리스 기록](../releases/0.1.0-alpha.4.md)을 따른다.
 
-남은 후속은 core의 selector 미세구독, Vue 어댑터, unused message 제거, 대규모 성능 목표, 비교 실험이다.
+선택 후속은 core의 selector 미세구독, Vue 어댑터, unused message 제거, 다른 환경의 성능 측정과 비교 실험이다. 최신 대표 조건의 성능 목표는 [75](75-early-disk-rechecks.md)를 따른다.
 
 ## Svelte 선택자
 
@@ -25,7 +25,7 @@
 
 제약은 다음과 같다. selector는 순수 계산으로 둔다. selector가 props를 캡처해도 prop만 바뀌면 source 알림이 없으므로 자동으로 다시 선택하지 않는다. selector가 매번 새 객체·새 배열을 반환하면 `Object.is`가 다르므로 매 snapshot마다 알림이 발생한다. 동적 컴포넌트 인자는 기존 `$i18n`와 Svelte `$derived`로 조합한다.
 
-selector 예외 처리는 시점별로 나눈다. 첫 구독·재구독 실패는 새 구독을 해제한 뒤 selector가 throw한 값을 그대로 동기 throw하고(Error가 아니거나 `undefined`여도 그대로 전달), 이때 `onError`를 부르지 않으며 이전 성공값을 대신 돌려주지 않는다. 활성 구독 갱신 실패는 마지막 성공값을 유지하고 invalidate·알림 없이 다음 snapshot에서 재시도하며, `onError`(미지정 시 `console.error('[saylo:svelte] selector failed', error)`)로 보고한다. `onError` 자체가 던지면 `console.error('[saylo:svelte] selector error reporter failed', reportingError)`로 보고하고 Svelte 알림은 계속한다. `options`는 저장소 checkout의 로컬 구현이고 아직 게시본에는 없다.
+selector 예외 처리는 시점별로 나눈다. 첫 구독·재구독 실패는 새 구독을 해제한 뒤 selector가 throw한 값을 그대로 동기 throw하고(Error가 아니거나 `undefined`여도 그대로 전달), 이때 `onError`를 부르지 않으며 이전 성공값을 대신 돌려주지 않는다. 활성 구독 갱신 실패는 마지막 성공값을 유지하고 invalidate·알림 없이 다음 snapshot에서 재시도하며, `onError`(미지정 시 `console.error('[saylo:svelte] selector failed', error)`)로 보고한다. `onError` 자체가 던지면 `console.error('[saylo:svelte] selector error reporter failed', reportingError)`로 보고하고 Svelte 알림은 계속한다. `options`도 alpha.4 게시본에 포함한다.
 
 ## 검증 기록
 

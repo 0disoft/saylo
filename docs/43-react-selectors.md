@@ -7,10 +7,10 @@
 - secondary quarantine과 build-time parser 런타임 제거(`astRuntime`): npm `0.1.0-alpha.2`에 게시했다.
 - Svelte 어댑터: npm `0.1.0-alpha.2`부터 포함한다.
 - Vite `requireCompleteTranslations`(완역 검사): npm `0.1.0-alpha.3`에 게시했다.
-- React `useI18nSelector`(selector 미세구독): 저장소 checkout의 로컬 구현이고 아직 게시본에는 없다.
-- Svelte `selectSvelteStore`·`getI18nSelector`(selector 미세구독): 저장소 checkout의 로컬 구현이고 아직 게시본에는 없다. 계약은 [44-svelte-selectors.md](44-svelte-selectors.md)를 따른다.
+- React `useI18nSelector`(selector 미세구독): npm `0.1.0-alpha.4`에 게시했다. CI·registry 소비 검증은 [릴리스 기록](../releases/0.1.0-alpha.4.md)을 따른다.
+- Svelte `selectSvelteStore`·`getI18nSelector`(selector 미세구독): npm `0.1.0-alpha.4`에 게시했다. 계약은 [44-svelte-selectors.md](44-svelte-selectors.md)를 따른다.
 
-남은 후속은 core의 selector 미세구독, Vue 어댑터, unused message 제거, 대규모 성능 목표, 비교 실험이다.
+선택 후속은 core의 selector 미세구독, Vue 어댑터, unused message 제거, 다른 환경의 성능 측정과 비교 실험이다. 최신 대표 조건의 성능 목표는 [75](75-early-disk-rechecks.md)를 따른다.
 
 ## React 선택자
 

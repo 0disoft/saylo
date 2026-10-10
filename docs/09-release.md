@@ -4,9 +4,9 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 
 ## 확정 사항
 
-현행 게시 버전은 `0.1.0-alpha.3`이며 다섯 패키지의 공개·다운로드·외부 소비와 실제 CI OIDC 인증을 2026-10-09 확인했다. 변경 범위와 검증은 [릴리스 기록](../releases/0.1.0-alpha.3.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.3.json)에 있다. 직전 `0.1.0-alpha.2`의 게시·인증 기록은 [릴리스 기록](../releases/0.1.0-alpha.2.md)과 [manifest](../releases/0.1.0-alpha.2.json)에 유지하고, 아래의 기존 게시·인증 결과도 당시 기록으로 유지한다.
+현행 게시 버전은 `0.1.0-alpha.4`다. 2026-10-11 다섯 패키지의 CI OIDC 인증·게시와 승인 tarball SHA-512 대조, 외부 JS/TS·selector SSR·SvelteKit Chromium 소비를 통과했다. 변경·검증은 [릴리스 기록](../releases/0.1.0-alpha.4.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.4.json)에 있다. 이전 릴리스와 아래의 게시·인증 결과는 당시 기록으로 유지한다.
 
-`0.1.0-alpha.3`는 완역 검사 옵션을 포함한다. 아래 로컬 명령과 workflow 기본 버전은 이 버전을 기준으로 한다. 로컬 `.release/npm/`의 후보 tarball과 `manifest.json`은 gitignore 대상이고, 승인 기록은 실제 CI artifact에서 옮긴 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)이다.
+`0.1.0-alpha.3`부터 완역 검사, `alpha.4`부터 React·Svelte selector를 포함한다. 아래 로컬 명령과 workflow 기본 버전은 alpha.4 기준이다. 로컬 `.release/npm/` 후보는 gitignore 대상이고, 승인 기록은 성공한 CI artifact에서 가져온다. 현행 소비 명령은 `npm run verify:registry:alpha4`·`npm run verify:registry:sveltekit:alpha4`다.
 
 2026-10-08 로컬 릴리스 목록에 `@0disoft/saylo-svelte`를 추가했다. 아래의 네 패키지 게시·인증 기록은 2026-10-06 기존 릴리스의 기록이다. 현행 로컬 pack·게시 계획·OIDC 대상은 다섯 패키지이며 `verify:registry`는 기존 `alpha.1` manifest의 네 패키지만 검사한다. 상세 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 있다.
 
@@ -36,14 +36,14 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 ## 로컬 검증 명령
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.3 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.4 --tag alpha
 npm run check
 npm run release:pack
 ```
 
 `release:check`는 루트 `private`, 패키지의 `private` 부재, `license`, `engines`, `publishConfig`, 내부 의존 버전, 다섯 패키지의 `LICENSE`·`NOTICE` 일치를 검사한다. `check`는 빌드·워크스페이스 테스트·소비 타입 검사·typegen·React TS 검사를 돌린다. Svelte 데모 빌드는 `npm run build:svelte`로 별도 실행한다. `release:pack`은 빌드 후 다섯 tarball을 저장소 밖 JS·TS 소비 앱에 설치해 검증하고, 통과하면 tarball과 `manifest.json`(`name`·`version`·`filename`·`integrity`)을 `.release/npm/`에 남긴다. `.release/`는 gitignore 대상이다.
 
-게시된 실물은 `npm run verify:registry`로 대조한다. 현재 명령은 `pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1`을 실행해 커밋된 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json)의 네 패키지 버전과 SHA-512 integrity를 registry metadata·다운로드한 tarball과 비교한다. 현재 소스 버전이나 이동 가능한 `alpha` tag는 과거 파일의 판정에 사용하지 않는다. 설치 metadata와 README 예제도 실제 게시본을 기준으로 검사하며, alpha.1에 없는 `/runtime`·`freezeCatalogs`·Svelte API는 요구하지 않는다. registry tarball을 저장소 밖 JS·TS 앱에 설치해 CLI·checkJs/TS·런타임 SSR·public subpath·Vite production lazy chunk를 확인한다. 새로운 승인 JSON은 실제 CI artifact의 integrity를 기록하는 별도 단계이며 로컬 후보 tarball로 기존 승인 기록을 덮어쓰지 않는다. 현행 다섯 `alpha.3`는 `npm run verify:registry:alpha3`가 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)을 기준으로 같은 방식으로 검사하고, `npm run verify:registry:sveltekit:alpha3`가 그 게시본으로 SvelteKit 앱을 검증한다. 기존 `alpha.1`·`alpha.2` 명령과 `verify:registry:sveltekit`(`alpha.2`)은 그대로 둔다.
+게시된 실물은 `npm run verify:registry`로 대조한다. 현재 명령은 `pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1`을 실행해 커밋된 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json)의 네 패키지 버전과 SHA-512 integrity를 registry metadata·다운로드한 tarball과 비교한다. 현재 소스 버전이나 이동 가능한 `alpha` tag는 과거 파일의 판정에 사용하지 않는다. 설치 metadata와 README 예제도 실제 게시본을 기준으로 검사하며, alpha.1에 없는 `/runtime`·`freezeCatalogs`·Svelte API는 요구하지 않는다. registry tarball을 저장소 밖 JS·TS 앱에 설치해 CLI·checkJs/TS·런타임 SSR·public subpath·Vite production lazy chunk를 확인한다. 새로운 승인 JSON은 실제 CI artifact의 integrity를 기록하는 별도 단계이며 로컬 후보 tarball로 기존 승인 기록을 덮어쓰지 않는다. 현행 다섯 `alpha.4`는 `npm run verify:registry:alpha4`가 [releases/0.1.0-alpha.4.json](../releases/0.1.0-alpha.4.json)을 기준으로 검사하고, `npm run verify:registry:sveltekit:alpha4`가 그 게시본으로 SvelteKit 앱을 검증한다. 과거 alpha.3 검증도 유지한다. 기존 `alpha.1`·`alpha.2` 명령과 `verify:registry:sveltekit`(`alpha.2`)은 그대로 둔다.
 
 ## GitHub Actions 워크플로
 
@@ -51,7 +51,7 @@ npm run release:pack
 
 | 입력 | 값 |
 | --- | --- |
-| `version` | 커밋된 정확한 버전 문자열. 기본 `0.1.0-alpha.3` |
+| `version` | 커밋된 정확한 버전 문자열. 기본 `0.1.0-alpha.4` |
 | `dist_tag` | `alpha`·`next`·`latest`. 기본 `alpha` |
 | `publish` | boolean. 기본 `false` |
 | `verify_oidc` | boolean. 기본 `false`. `true`이면 validation 또는 publication 전에 다섯 Trusted Publisher의 OIDC 토큰 교환을 검증한다 |
