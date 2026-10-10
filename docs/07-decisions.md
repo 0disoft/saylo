@@ -20,7 +20,8 @@
 - 그 실험으로 필수 계약을 충족하는지 확인하고, 남는 차별점이 독립 런타임을 정당화하는지 판단한다.
 - 비교 실험 결과로 제품 형태를 결정한다. 현재 설계의 목표는 독립 라이브러리다.
 - 초기 계약 프로브는 2026-10-11 실시했다. 공개 i18next·Wuchale 확장점 위 Node 실험이고 36개 관측을 기록했다([56](56-thin-layer-contract-probe.md)). 그 범위에서는 기존 formatter 위에서도 계약 일부가 충족됐다.
-- 초기 프로브만으로 전체 계약 충족이나 독립 런타임 필요성은 판정하지 않는다. Vite·브라우저, lifecycle loader·UI·disposal, typegen, 성능, 번들, SSR·hydration은 이 프로브의 범위 밖이다.
+- 브라우저 기능 프로브도 2026-10-11 실시했다. 실제 Vite 8·React 19·headless Chrome에서 eager 연결로 편집·오류 복구·로케일 추가·선택·삭제 8개 시나리오와 입력·상태 보존을 확인했다([57](57-thin-layer-browser-probe.md)).
+- 두 프로브만으로 전체 계약 충족이나 독립 런타임 필요성은 판정하지 않는다. lifecycle loader·UI·disposal, typegen, 성능·메모리, 번들, SSR·hydration, 시간대, lazy·재연결·세션은 범위 밖이다.
 
 ## 초기 설계 결정 (검증 전, 바뀔 수 있음)
 
@@ -72,7 +73,7 @@
 | secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트와 2026-10-07 실제 브라우저 검증을 통과했다. schema-breaking 편집이라 입력·dialog 상태 보존은 일반 보장이 아니다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
 | JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
 | message delta 비용 | request-scoped message delta·immutable catalog signature 재사용·LF 위치 색인 최적화를 로컬 구현했다. 2026-10-07 최종 서버 파일 계측 설정에서 small p95 72.66ms·large 165.94ms였고 각각 측정 50회 모두 patch였다. 파서 key 디코딩 trial은 되돌렸다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. JSON token/임시 entry·메시지 맵 할당, 브라우저 patch 복사·검증 순회, 로케일 추가 시 cold 파싱·추가 선택 비용 최적화와 비교 실험이 남아 있다. compact 전체 전송은 아래 후속 기록을 따른다. 조건·되돌린 실험·부하 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [11-parser-measurements.md](11-parser-measurements.md)를 따른다 |
-| 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 초기 계약 프로브는 2026-10-11 실시해 36개 관측을 남겼지만([56](56-thin-layer-contract-probe.md)), 전체 계층 평가와 필요성 판정은 아직 완료하지 않았다 |
+| 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 초기 계약 프로브는 2026-10-11 실시해 36개 관측을 남겼고([56](56-thin-layer-contract-probe.md)), 브라우저 기능 스모크도 8개 시나리오를 확인했지만([57](57-thin-layer-browser-probe.md)), 전체 계층 평가와 필요성 판정은 아직 완료하지 않았다 |
 
 대규모 로케일 추가의 서버 구간 계측([14](14-locale-add-server-measurements.md))에서 cold 파싱을 다음 대상으로 확인했다. 이후 일반 텍스트·ASCII 단순 인자용 경로를 로컬 구현했다. 같은 프로세스 cold 비교 20쌍 중 18쌍이 빨랐지만 parser p95는 개선되지 않았다. 당시 대규모 목록 표시 p95는 514.47ms로 관측했으며 250ms 목표는 미달이다. 조건·원시 결과·부하 한계는 [15-simple-message-parser.md](15-simple-message-parser.md)를 따른다.
 

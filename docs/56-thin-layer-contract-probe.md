@@ -6,19 +6,20 @@
 
 ## 실험 범위
 
-- 실행 코드: [package.json](../benchmarks/thin-layer/package.json) · [i18next-layer.mjs](../benchmarks/thin-layer/i18next-layer.mjs) · [probe.mjs](../benchmarks/thin-layer/probe.mjs)
+- 실행 코드: [package.json](../benchmarks/thin-layer/package.json) · [catalog-layer.mjs](../benchmarks/thin-layer/catalog-layer.mjs) · [i18next-layer.mjs](../benchmarks/thin-layer/i18next-layer.mjs) · [probe.mjs](../benchmarks/thin-layer/probe.mjs)
 - 의존성 메이저 범위는 i18next 26·i18next-icu 2·intl-messageformat 12·wuchale 0이고 lockfile이 26.4.3·2.5.0·12.1.3·0.26.7을 고정한다.
-- 프로토타입은 공개 i18next API에 ICU 서브클래스 `ValuesICU`를 붙여 `parse(values)`를 브리지하고 Saylo parser·schema·오류 클래스를 재사용한다. 카탈로그 AST를 i18next resource로 넣고 commit마다 새 엔진을 만든다. `t`는 실제 fallback 출처 로케일로 라우팅하고 필수 인자를 직접 검증한다.
-- 여기서 확인한 것은 Node 계약뿐이다. Vite·브라우저 반영, 시간대, 캐시 무효화, 성능·메모리, typegen, 번들, SSR·hydration, DOM 상태 보존은 실행 증거가 없다.
+- AST 얇은 계층은 [catalog-layer.mjs](../benchmarks/thin-layer/catalog-layer.mjs)가 담당한다. 공개 i18next API에 ICU 서브클래스 `ValuesICU`를 붙여 `parse(values)`를 브리지하고, 공개 `@0disoft/saylo-core/runtime`의 `freezeCatalogs`·`createBaseSchema`·`validateTranslation`·오류 클래스를 재사용한다. 카탈로그 AST를 i18next resource로 넣고 commit마다 새 엔진을 만든다. `t`는 실제 fallback 출처 로케일로 라우팅하고 필수 인자를 직접 검증한다.
+- Node 소스 어댑터 [i18next-layer.mjs](../benchmarks/thin-layer/i18next-layer.mjs)는 `parseCatalog`와 증분 cache를 담당한다. 소스가 같으면 이전 파싱 결과를 재사용하고 바뀐 카탈로그만 다시 파싱하며, AST 계층이 받아들인 뒤에만 소스 cache를 커밋한다.
+- 여기서 확인한 것은 Node 계약뿐이다. Vite·브라우저에서의 편집·복구·로케일 전환 기능 동작은 [57](57-thin-layer-browser-probe.md)에서 별도로 관측한다. lazy·재연결·세션, 시간대, 캐시 무효화, 성능·메모리, typegen, 번들, SSR·hydration은 여전히 실행 증거가 없다.
 
 ## 관측 결과
 
-저장소 루트에서 `npm --prefix benchmarks/thin-layer run probe`를 실행하면 exit 0으로 끝나고 관측 36개(`id` 중복 0)를 남긴다. `codeHashes` 6개는 실행 시점 파일과 모두 일치했다.
+저장소 루트에서 `npm --prefix benchmarks/thin-layer run probe`를 실행하면 exit 0으로 끝나고 관측 36개(`id` 중복 0)를 남긴다. `codeHashes` 7개는 실행 시점 파일과 모두 일치했고 아래는 현재 값이다.
 
 ```json
 {
   "schema": "saylo-thin-layer-contract-probe-v1",
-  "observedAt": "2026-10-10T15:33:54.300Z",
+  "observedAt": "2026-10-10T16:08:09.275Z",
   "environment": {
     "node": "v24.18.0"
   },
@@ -29,8 +30,9 @@
     "wuchale": "0.26.7"
   },
   "codeHashes": {
-    "benchmarks/thin-layer/probe.mjs": "0efb53f859357da512189a030a8f60255bdbddf097498b5b15272487fb7c459e",
-    "benchmarks/thin-layer/i18next-layer.mjs": "61786773b2da2428a039188794c10e03f9fa3591bc6009849fd0d32519a6bfcf",
+    "benchmarks/thin-layer/probe.mjs": "58b7985d7a3fc842e155159ac0d0c94c9d94d0dd4c01416393a2bade3725a758",
+    "benchmarks/thin-layer/i18next-layer.mjs": "43996f2b303f5b5224af055245432cb80590214fb78977677191cfdc69907ed5",
+    "benchmarks/thin-layer/catalog-layer.mjs": "bfa59948ce78f00e802c8c89e8ef38e2e0f8c6a04dae481eec5a1ccfb98c9cc9",
     "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
     "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
     "packages/core/dist/catalog.js": "eac4c686d9c15a49b5301ee466568acf19b0fbee0c1e5987aae6dfc0d572b7d9",
@@ -46,6 +48,8 @@
   ]
 }
 ```
+
+`scope`·`prototypeCosts`와 36개 `observations` 전체는 [원본](../benchmarks/results/thin-layer-contracts-2026-10-11.json)에 있다.
 
 ### 프로토타입 계약
 
@@ -89,4 +93,4 @@ npm --prefix benchmarks/thin-layer run probe
 
 ## 상태
 
-시제품과 관측 기록은 로컬 커밋 `2d5b5a2`·`23f298b`에 있다. 제품 패키지의 API·의존성과 버전은 변경하지 않았으며 원격 반영·게시는 없다.
+시제품과 관측 기록은 로컬 커밋 `2d5b5a2`·`23f298b`·`f3dd7a1`에 있다. 브라우저 기능 스모크는 [57](57-thin-layer-browser-probe.md)에 별도로 기록했다. 제품 패키지의 API·의존성과 버전은 변경하지 않았으며 원격 반영·게시는 없다.
