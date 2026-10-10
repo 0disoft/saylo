@@ -89,14 +89,18 @@ async function snapshot(variant) {
     await cp(path.join(repository, 'packages', name, 'dist'), path.join(destination, 'dist'), { recursive: true });
     await symlink(destination, path.join(root, 'node_modules/@0disoft', `saylo-${name}`), 'junction');
   }
-  const core = path.join(root, 'packages/core');
-  await cp(path.join(repository, 'packages/core/src'), path.join(core, 'src'), { recursive: true });
-  await cp(path.join(repository, 'packages/core/tsconfig.json'), path.join(core, 'tsconfig.json'));
+  const rebuilt = ['core', 'vite'].filter(name => sources.some(file => file.startsWith(`packages/${name}/src/`)));
+  for (const name of rebuilt) {
+    const workspace = path.join(root, 'packages', name);
+    await cp(path.join(repository, 'packages', name, 'src'), path.join(workspace, 'src'), { recursive: true });
+    await cp(path.join(repository, 'packages', name, 'tsconfig.json'), path.join(workspace, 'tsconfig.json'));
+  }
   for (const file of sources) {
     const source = (await exec('git', ['show', `${revisions[variant]}:${file}`], { cwd: repository })).stdout;
     await writeFile(path.join(root, file), source);
   }
-  await runNode([path.join(repository, 'node_modules/typescript/bin/tsc'), '-p', path.join(core, 'tsconfig.json')], root);
+  for (const name of rebuilt) await runNode([path.join(repository, 'node_modules/typescript/bin/tsc'),
+    '-p', path.join(root, 'packages', name, 'tsconfig.json')], root);
   const harness = path.join(root, 'benchmarks/live-update');
   await mkdir(harness, { recursive: true });
   for (const name of await readdir(path.join(repository, 'benchmarks/live-update'))) {
