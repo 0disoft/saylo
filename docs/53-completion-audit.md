@@ -130,3 +130,13 @@
 - final same-condition large single run은 두 성능 목표 모두 미달이다(편집 100ms 목표 133.63ms·17/25, 로케일 250ms 목표 322.35ms·21/25).
 - 공개 API·의존성·버전은 그대로, 로컬 커밋만 했고 push·publish는 없다.
 - 상세는 [58-trailing-disk-rechecks.md](58-trailing-disk-rechecks.md)를 따른다.
+
+## 후속 기록 (`5558185`, `432ca35`, `1ab93d5`)
+
+- core에 이전 성공 파싱의 JSON leaf 범위를 재사용하는 단일 문자열 편집 경로를 넣었다. provenance는 성공 파싱만 `WeakMap`에 남기고 키·구조·다중 값 변경, 유효한 단일 문자열로 파싱되지 않는 JSON, foreign catalog는 full strict parse로 되돌린다. 변경된 ICU·스키마 계약도 기존 검증을 따른다.
+- parser paired 비교(`json-leaf-compare-2026-10-11.json`, beforeRef `78b23b7`)는 same-length p95 44.02→12.09ms(100/100), variable-length 152.23→83.73ms(99/100), cold 92.41→92.58ms(10/20)다. cold는 이득을 주장하지 않는다.
+- 종단 간 편집 single run은 small p50 16.31·p95 80.12ms(25/25), large p50 67.36·p95 95.25ms(24/25, 최대 124.11ms)이고 full 응답 0회·`.d.ts` 미변경이다. single run이라 안정 달성을 주장하지 않는다.
+- 같은 조건 로케일 추가 single run은 small p95 135.22ms(250ms 이내 25/25), large p50 196.64·p95 268.58ms(250ms 이내 23/25)로 large가 목표 미달이다.
+- fresh Vite SSR 복구 5/5 `true`, 얇은 계층 브라우저 스모크 8개 PASS는 프로토타입 범위 기록이다. 현행 `npm run check` PASS(모든 build·workspace test·소비자 typecheck·React typecheck·scripts, Vite 테스트 94개)와 `parser-probe` 1 PASS를 기록에 함께 남긴다.
+- 본체 source API·의존성·버전은 그대로이고 로컬 커밋만 했으며 push·publish는 없다. 원시 결과는 `9743a38`에 함께 커밋됐다.
+- 상세는 [59-json-leaf-edits.md](59-json-leaf-edits.md)를 따른다.

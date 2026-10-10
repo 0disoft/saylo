@@ -64,6 +64,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 53. [56-thin-layer-contract-probe.md](56-thin-layer-contract-probe.md) — i18next·Wuchale 공개 확장점 위 계약 프로브 36개 관측과 전체 계층 평가 보류
 54. [57-thin-layer-browser-probe.md](57-thin-layer-browser-probe.md) — 얇은 계층 브라우저 기능 스모크 8개 시나리오와 상태 보존, 성능·SSR·lazy 판정 보류
 55. [58-trailing-disk-rechecks.md](58-trailing-disk-rechecks.md) — 첫 게시 뒤 60ms 꼬리 디스크 재확인으로 watcher throttle 복구, 편집 목표 미달 기록
+56. [59-json-leaf-edits.md](59-json-leaf-edits.md) — JSON leaf 단일 문자열 편집의 파서·브라우저 측정과 로케일 추가 목표 미달 기록
 
 ## 상태 표기 규칙
 

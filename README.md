@@ -24,6 +24,7 @@ Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않
 - `freezeMessageAst` 내부 `seal`을 모듈 범위로 옮기는 최적화를 당시 채택했고 [37](docs/37-seal-locale-add-comparison.md)에서 되돌렸다. cold p95는 332.62→323.81ms, incremental p95는 88.63→80.24ms로 낮게 관측됐지만 incremental 최장 시간은 늘었다. 당시에는 실제 로케일 목록 250ms 목표를 측정하지 않았다. 조건·원시 결과는 [docs/35-shared-ast-seal.md](docs/35-shared-ast-seal.md)에 있다.
 - AST 동결 `seal` 모듈화 후 상세 계측을 끈 large locale-add 재측정에서 목록 p95는 767.54ms로 large 250ms 목표는 미달이다(목록 250ms 이내 11/50). 이번에는 small을 재측정하지 않아 152.13ms는 과거 31 측정값이다. 한 run이라 감소 효과나 퇴행을 확정하지 않는다. 조건·원시 결과는 [docs/36-shared-ast-seal-locale-add.md](docs/36-shared-ast-seal-locale-add.md)에 있다.
 - 변경 전 `cbd6871`과 공유 헬퍼 실험 `4f6b5cd`를 같은 조건의 격리 스냅샷으로 순차 대조한 locale-add 비교에서 두 블록 모두 after 목록 p50·p95가 before보다 크게 관측됐고, 목록 250ms 이내는 before 38/50·after 23/50으로 둘 다 목표 미달이다. 지표별로는 엇갈린다. 이득을 확인하지 못해 `seal` 공유 제품 변경을 되돌렸다(원복 커밋 `d408500`). 조건·원시 결과는 [docs/37-seal-locale-add-comparison.md](docs/37-seal-locale-add-comparison.md)에 있다.
+- `5558185`·`432ca35`에서 core에 이전 성공 파싱의 JSON leaf 범위를 재사용하는 단일 문자열 편집 경로를 넣었고 `1ab93d5`에서 최신 batch가 이미 대기 중이면 이전 읽기의 중복 disk drain 예약을 생략한다. paired 파서 비교는 same-length p95 44.02→12.09ms·variable-length 152.23→83.73ms·cold 92.41→92.58ms다. 종단 간 편집 single run은 large p95 95.25ms(100ms 이내 24/25, 최대 124.11ms)이고 로케일 추가 large는 p95 268.58ms(250ms 이내 23/25)로 목표 미달이다. single run이라 안정 달성을 주장하지 않는다. 조건·원시 결과는 [59](docs/59-json-leaf-edits.md)에 있다.
 
 ## 로컬 실행
 
