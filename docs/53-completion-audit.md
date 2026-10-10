@@ -34,7 +34,7 @@
 | 17 | SvelteKit 예제 SSR·hydration 검증 (39) | 게시 | `examples/sveltekit`, `scripts/pack-sveltekit.mjs` | 없음 |
 | 18 | 릴리스 패키지 소비 검증 (09) | 게시 | `scripts/pack-smoke.mjs`, `verify:registry:alpha3` | selector 포함 재검증 필요 |
 | 19 | 편집 반영 p95 ≤ 100ms (06) | 미달 | `docs/45`·`51`·`52` | tail 원인 분리·최적화 |
-| 20 | 로케일 목록 표시 p95 ≤ 250ms (06) | 최신 large 조건 통과 | `docs/54` after 두 run p95 193.56·184.78ms | 다른 조건의 안정 달성은 미확인 |
+| 20 | 로케일 목록 표시 p95 ≤ 250ms (06) | 54 조건 통과·후속 현행 미달(58) | `docs/54` after 두 run p95 193.56·184.78ms; 후속 `8f25416` single run 322.35ms(58) | 다른 조건의 안정 달성은 미확인 |
 
 ## 2. 로드맵 1~13 직접 확인
 
@@ -82,7 +82,7 @@
 ## 5. 남은 필수 작업 (순차)
 
 1. 완료: `169e72b`의 편집·로케일 종단 간 경로를 54에서 비교했다.
-2. 편집 large 100ms 목표 미달 원인을 줄인다. 로케일 large 250ms 목표는 54의 두 after run에서 통과했다.
+2. 편집 large 100ms 목표 미달 원인을 줄인다. 로케일 large 250ms 목표는 54의 두 after run에서 통과했으나, 후속 `8f25416` single run은 편집·로케일 모두 미달이다(58).
 3. 49의 맵 동결 최적화 채택 여부를 tail 원인 규명 결과와 함께 확정한다.
 4. selector 게시 여부를 결정하고, 게시하면 `check`·`release:pack`·`verify:registry:*`·SvelteKit 검증을 해당 버전으로 수행한다.
 5. i18next·Wuchale 확장점 위 얇은 계층 비교 실험으로 제품 형태(독립 런타임 정당화)를 판정한다.
@@ -106,7 +106,7 @@
 
 ## 8. 완료 판정
 
-기능 범위(1~18)는 소스·테스트 구현 근거가 존재한다. 성능 범위는 로케일 목록이 최신 large 조건에서 통과했고 편집 반영은 미달이다. 전체 인수·제품 형태 비교와 미게시 변경 전달도 남아 있으므로 장기 목표의 완료를 주장하지 않는다.
+기능 범위(1~18)는 소스·테스트 구현 근거가 존재한다. 성능 범위는 로케일 목록이 54 조건에서 통과했고(후속 현행 single run은 미달, 58), 편집 반영은 미달이다. 전체 인수·제품 형태 비교와 미게시 변경 전달도 남아 있으므로 장기 목표의 완료를 주장하지 않는다.
 
 ### 후속 진행
 
@@ -121,3 +121,12 @@
 추가 관측: `2aea993`의 missing-reader 안정화 회귀를 포함해 Vite 테스트 90개와 소비자 타입 검사가 통과했다. 후속 단독 large 편집 p95는 252.95ms·100ms 이내 2/25로 목표에 미달했다. 55에 원시 기록과 이전 ABBA 비교를 함께 보존한다. 얇은 계층의 Node 계약 초기 검증은 36개 관측을 완료했으며, 브라우저·지연 로딩·typegen·운영 번들·시간대·성능 비교는 아직 남아 있다.
 
 `01`·`02`·`04`·`05`·`06`·`07`·`08`·`09`·`13`·`38`·`39`·`42`·`43`·`44`·`45`·`46`·`48`·`49`·`50`·`51`·`52`·`54`, `releases/0.1.0-alpha.3.json`, `packages/*/README.md`, `review/feedback-resolution.ko.md`.
+
+## 후속 기록 (`463083e`, `8f25416`)
+
+- Vite watcher가 짧은 시간의 두 번째 저장을 전달하지 못하는 문제를 꼬리 디스크 재확인으로 복구한다(fresh Vite SSR 5개 케이스 모두 `recovered: true`).
+- `--gap-ms 0` 브라우저 스모크 8개 시나리오, final Vite 93개 테스트·build PASS. Vite 소비자 typecheck는 공개 API 변경 전 코드로 PASS.
+- 전체 root `check`·`release:pack`은 돌리지 않았다. 이번 Vite 경로 한정 검증이다.
+- final same-condition large single run은 두 성능 목표 모두 미달이다(편집 100ms 목표 133.63ms·17/25, 로케일 250ms 목표 322.35ms·21/25).
+- 공개 API·의존성·버전은 그대로, 로컬 커밋만 했고 push·publish는 없다.
+- 상세는 [58-trailing-disk-rechecks.md](58-trailing-disk-rechecks.md)를 따른다.
