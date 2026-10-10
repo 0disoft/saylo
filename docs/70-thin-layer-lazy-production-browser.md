@@ -59,3 +59,7 @@ node benchmarks/thin-layer/lazy-production-browser-probe.mjs --out benchmarks/re
 ## 상태
 
 probe·raw·package script는 로컬 커밋 `225a0fa`에 있고 기존 앱 템플릿을 재사용했다. 미푸시이며 제품 package의 API·의존성·버전은 바뀌지 않았다. SSR·물리 재연결·새 dev session·pending request race·시간대 매트릭스·latency·memory·번들 크기 일반화는 이 프로브의 범위 밖이다. 앞선 SSR·개발 소켓 관측은 [66](66-thin-layer-ssr-production.md)·[68](68-thin-layer-lazy-browser.md)에 보존한다.
+
+## 후속: 세션 교체와 늦은 응답 (`3a4251c`)
+
+여기까지가 production browser lazy다. 실제 개발 서버에서 product reply를 byte 변형 없이 보류·순서 변경하고, locale supersede와 실제 서버 종료·같은 port 재시작 뒤 새 session·옛 응답 replay를 확인한 기록은 [71](71-thin-layer-lazy-session-browser.md)에 있다. 위 6단계와 판정은 그대로 유효하다.

@@ -86,6 +86,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 67. [70-thin-layer-lazy-production-browser.md](70-thin-layer-lazy-production-browser.md) — 실제 Vite production build 두 개의 static HTTP·headless Chromium lazy 부분 로딩 12단계와 parser marker 부재 관측
 
+68. [71-thin-layer-lazy-session-browser.md](71-thin-layer-lazy-session-browser.md) — 실제 Vite 개발 서버 두 fixture에서 product reply 보류·순서 변경, locale supersede, 세션 교체 뒤 늦은 응답 무시 12단계×2
+
 ## 상태 표기 규칙
 
 | 표기 | 의미 |
