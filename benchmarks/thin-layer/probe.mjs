@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
+import path from 'node:path';
 import i18next from 'i18next';
 import ICU from 'i18next-icu';
 import toRuntime from 'wuchale/runtime';
@@ -103,6 +105,7 @@ for (const name of ['i18next', 'i18next-icu', 'intl-messageformat', 'wuchale']) 
   packages[name] = metadata.version;
 }
 const files = [new URL('probe.mjs', import.meta.url), new URL('i18next-layer.mjs', import.meta.url), new URL('catalog-layer.mjs', import.meta.url),
+  new URL('ast-format.mjs', import.meta.url),
   new URL('package-lock.json', import.meta.url), new URL('../../packages/core/dist/schema.js', import.meta.url),
   new URL('../../packages/core/dist/catalog.js', import.meta.url), new URL('../../packages/core/dist/translator.js', import.meta.url)];
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -110,9 +113,11 @@ const codeHashes = Object.fromEntries(await Promise.all(files.map(async url =>
   [fileURLToPath(url).replace(fileURLToPath(new URL('../..', import.meta.url)), '').replaceAll('\\', '/').replace(/^\//, ''), hash(await readFile(url))])));
 const result = { schema: 'saylo-thin-layer-contract-probe-v1', observedAt: new Date().toISOString(),
   environment: { node: process.version }, packages, codeHashes,
-  scope: 'Node contract probe only: public i18next/ICU/Wuchale extension APIs and an isolated i18next AST-resource prototype reusing Saylo parser/schema. Native observations describe tested API behavior, not library defects. No Vite/browser, typegen, lazy session protocol, performance, memory, production bundle or timezone proof.',
-  prototypeCosts: ['Saylo parser/schema retained', 'new i18next and ICU instances per committed snapshot',
+  scope: 'Node contract probe only: public i18next/ICU/Wuchale extension APIs and an isolated i18next AST-resource prototype with a custom IntlMessageFormat i18nFormat module reusing Saylo parser/schema. Native observations describe tested API behavior, not library defects. No Vite/browser, typegen, lazy session protocol, performance, memory, production bundle or timezone proof.',
+  prototypeCosts: ['Saylo parser/schema retained', 'new i18next and custom i18nFormat instances per committed snapshot',
+    'instance-owned timezone formatting and bounded message/Intl caches implemented separately from i18next-icu',
     'incremental parsed catalog and AST resource reuse; revision instances still rebuilt', 'separate argument validation and source-locale fallback routing',
     'public error classes reused; no UI subscription/loader/disposal API implemented'], observations };
-await writeFile(new URL('../results/thin-layer-contracts-2026-10-11.json', import.meta.url), JSON.stringify(result, null, 2) + '\n');
-console.log(JSON.stringify({ packages, observations: observations.length, result: 'benchmarks/results/thin-layer-contracts-2026-10-11.json' }));
+const { values } = parseArgs({ options: { out: { type: 'string', default: 'benchmarks/results/thin-layer-contracts-current.json' } } });
+await writeFile(path.resolve(fileURLToPath(new URL('../..', import.meta.url)), values.out), JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify({ packages, observations: observations.length, result: values.out }));

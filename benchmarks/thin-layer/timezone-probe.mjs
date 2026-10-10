@@ -33,6 +33,9 @@ async function observe() {
     baseCatalogs: [catalogs[0]], translations: [catalogs[1]] });
   const utc = core('UTC'), host = core(hostZone);
   const layer = await createCatalogLayer('en', catalogs, 'ru');
+  const configured = await createCatalogLayer('en', catalogs, 'ru', { timeZone: hostZone });
+  assert.equal(layer.getSnapshot().timeZone, 'UTC');
+  assert.equal(configured.getSnapshot().timeZone, hostZone);
   // Public formats option: add UTC to every built-in named date/time style.
   // No static vendor objects or global Intl APIs are mutated.
   const formats = Object.fromEntries(['date', 'time'].map(type => [type,
@@ -55,22 +58,27 @@ async function observe() {
           const expected = utc.t(key, args);
           const hostExpected = host.t(key, args);
           const native = namedUTC.t(id, { ...args, lng: Object.hasOwn(translated, id) ? 'ru' : 'en' });
-          assert.equal(actual, hostExpected, `${hostZone}/${id}/${instant}/${argumentType}`);
+          const configuredActual = configured.getSnapshot().t(key, args);
+          assert.equal(actual, expected, `default UTC/${hostZone}/${id}/${instant}/${argumentType}`);
+          assert.equal(configuredActual, hostExpected, `explicit zone/${hostZone}/${id}/${instant}/${argumentType}`);
           if (/^(date|time)(short|medium|long|full)$/.test(id) || id === 'timeDefault')
             assert.equal(native, expected, `named UTC/${id}`);
           rows.push({ id, kind, instant, argumentType, expectedUTC: expected, actualLayer: actual,
-            publicNamedUTC: native, layerMatchesUTC: actual === expected, namedMatchesUTC: native === expected });
+            expectedHost: hostExpected, configuredLayer: configuredActual,
+            publicNamedUTC: native, layerMatchesUTC: actual === expected,
+            configuredMatchesHost: configuredActual === hostExpected, namedMatchesUTC: native === expected });
         }
       }
     }
   }
   if (hostZone === 'UTC') assert.ok(rows.every(row => row.layerMatchesUTC && row.namedMatchesUTC));
   else {
-    assert.ok(rows.some(row => !row.layerMatchesUTC));
+    assert.ok(rows.every(row => row.layerMatchesUTC && row.configuredMatchesHost));
     for (const id of ['dateDefault', 'dateSkeleton', 'timeSkeleton', 'nestedSkeleton'])
       assert.ok(rows.some(row => row.id === id && !row.namedMatchesUTC), `${hostZone}/${id} exposes unnamed/skeleton gap`);
   }
   return { hostZone, cases: rows.length, layerUTCFailures: rows.filter(row => !row.layerMatchesUTC).length,
+    configuredTimeZoneFailures: rows.filter(row => !row.configuredMatchesHost).length,
     publicNamedUTCFailures: rows.filter(row => !row.namedMatchesUTC).length, rows };
 }
 
@@ -79,6 +87,7 @@ if (process.argv.includes('--worker')) {
 } else {
   const root = new URL('../../', import.meta.url);
   const paths = ['benchmarks/thin-layer/timezone-probe.mjs', 'benchmarks/thin-layer/catalog-layer.mjs',
+    'benchmarks/thin-layer/ast-format.mjs',
     'benchmarks/thin-layer/package-lock.json', 'packages/core/src/formatters.ts',
     'packages/core/src/translator.ts', 'packages/core/dist/formatters.js', 'packages/core/dist/translator.js'];
   const entries = new Map(paths.map(path => [path, new URL(path, root)]));
@@ -101,13 +110,13 @@ if (process.argv.includes('--worker')) {
   const versions = Object.fromEntries(await Promise.all(['i18next', 'i18next-icu', 'intl-messageformat']
     .map(async name => [name, JSON.parse(await readFile(new URL(`node_modules/${name}/package.json`, import.meta.url))).version])));
   const output = process.argv.indexOf('--out');
-  const out = output < 0 ? new URL('../results/thin-layer-timezone-2026-10-11.json', import.meta.url) : process.argv[output + 1];
+  const out = output < 0 ? new URL('../results/thin-layer-timezone-fixed-2026-10-11.json', import.meta.url) : process.argv[output + 1];
   assert.ok(out, '--out requires a path');
-  await writeFile(out, JSON.stringify({ format: 'saylo-thin-layer-timezone-v1', observedAt: new Date().toISOString(),
+  await writeFile(out, JSON.stringify({ format: 'saylo-thin-layer-timezone-v2', observedAt: new Date().toISOString(),
     node: process.version, versions, hashes: before,
-    scope: 'Node-only contract probe for the unchanged current catalog layer and public ICU formats workaround. Separate child processes control host TZ; no global formatter mutation. Not browser/SSR hydration/performance proof or a vendor defect claim.',
+    scope: 'Node-only default UTC and explicit timezone contract probe for the custom i18next i18nFormat layer. Native i18next-icu formats workaround remains a separate reference. Separate child processes control host TZ; no global formatter mutation. Not browser/SSR hydration/performance proof.',
     results }, null, 2) + '\n');
-  for (const { hostZone, cases, layerUTCFailures, publicNamedUTCFailures } of results)
-    console.log(`${hostZone}: ${cases} cases, layer UTC mismatches ${layerUTCFailures}, public named-format UTC mismatches ${publicNamedUTCFailures}`);
+  for (const { hostZone, cases, layerUTCFailures, configuredTimeZoneFailures, publicNamedUTCFailures } of results)
+    console.log(`${hostZone}: ${cases} cases, default UTC mismatches ${layerUTCFailures}, explicit zone mismatches ${configuredTimeZoneFailures}, native named-format UTC mismatches ${publicNamedUTCFailures}`);
   console.log(`Saved ${out}`);
 }

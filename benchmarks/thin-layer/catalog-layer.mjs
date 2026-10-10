@@ -1,12 +1,8 @@
 import i18next from 'i18next';
-import ICU from 'i18next-icu';
+import { createAstFormat } from './ast-format.mjs';
 import { freezeCatalogs, createBaseSchema, validateTranslation, InvalidArgumentError, UnknownMessageError } from '@0disoft/saylo-core/runtime';
 
 // Experiment only. Receives parsed AST catalogs; no build-time parser in this module.
-class ValuesICU extends ICU {
-  parse(resource, options, ...context) { return super.parse(resource, options.values, ...context); }
-}
-
 function argumentsFor(key, schema, args) {
   if (args !== undefined && (args === null || typeof args !== 'object' || Array.isArray(args)))
     throw new InvalidArgumentError(key, undefined, 'Arguments must be an object.');
@@ -28,7 +24,8 @@ function argumentsFor(key, schema, args) {
   return values;
 }
 
-export async function createCatalogLayer(baseLocale, initialCatalogs, initialLocale) {
+export async function createCatalogLayer(baseLocale, initialCatalogs, initialLocale, options = {}) {
+  const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   let current;
   const resourceCache = new WeakMap();
   const stats = { resourceDictionaries: 0, instances: 0 };
@@ -61,11 +58,10 @@ export async function createCatalogLayer(baseLocale, initialCatalogs, initialLoc
     }
     const availableLocales = Object.freeze(Object.keys(resources).sort());
     const selected = availableLocales.includes(locale) ? locale : baseLocale;
-    const engine = i18next.createInstance().use(new ValuesICU());
+    const engine = i18next.createInstance().use(createAstFormat(timeZone));
     stats.instances++;
     await engine.init({ resources, lng: selected, fallbackLng: baseLocale, initAsync: false,
-      ns: [...bases.keys()], keySeparator: false, nsSeparator: false, interpolation: { escapeValue: false },
-      i18nFormat: { parseErrorHandler: error => { throw error; } } });
+      ns: [...bases.keys()], keySeparator: false, nsSeparator: false, interpolation: { escapeValue: false } });
     const t = (key, args) => {
       if (typeof key !== 'string') throw new UnknownMessageError(String(key));
       const parts = key.split(':');
@@ -79,7 +75,7 @@ export async function createCatalogLayer(baseLocale, initialCatalogs, initialLoc
       // from reserved i18next options such as lng, ns, defaultValue and count.
       return engine.t(id, { lng: source.locale, ns: namespace, values });
     };
-    const snapshot = Object.freeze({ locale: selected, availableLocales,
+    const snapshot = Object.freeze({ locale: selected, timeZone, availableLocales,
       availableNamespaces: Object.freeze([...bases.keys()].sort()), t });
     current = snapshot;
     return snapshot;

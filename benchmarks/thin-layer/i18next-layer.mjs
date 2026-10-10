@@ -2,7 +2,7 @@ import { parseCatalog } from '../../packages/core/dist/index.js';
 import { createCatalogLayer } from './catalog-layer.mjs';
 
 // Node-only source adapter. Commit the source cache only after the AST layer accepts it.
-export async function createLayer(baseLocale, initialSources, initialLocale) {
+export async function createLayer(baseLocale, initialSources, initialLocale, options = {}) {
   let accepted = new Map();
   let parsedCatalogs = 0;
   let layer;
@@ -17,7 +17,7 @@ export async function createLayer(baseLocale, initialSources, initialLocale) {
       return catalog;
     });
     const snapshot = layer ? await layer.replace(catalogs, locale) :
-      (layer = await createCatalogLayer(baseLocale, catalogs, locale ?? initialLocale)).getSnapshot();
+      (layer = await createCatalogLayer(baseLocale, catalogs, locale ?? initialLocale, options)).getSnapshot();
     accepted = candidate;
     return snapshot;
   }

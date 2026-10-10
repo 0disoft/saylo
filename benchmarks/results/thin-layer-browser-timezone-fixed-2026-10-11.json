@@ -1,0 +1,224 @@
+{
+  "schema": "saylo-thin-layer-browser-smoke-v1",
+  "observedAt": "2026-10-10T18:52:14.612Z",
+  "node": "v24.18.0",
+  "browser": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "react": "19.3.0",
+    "hostTimeZone": "Asia/Seoul"
+  },
+  "packages": {
+    "i18next": "26.4.3",
+    "i18next-icu": "2.5.0",
+    "intl-messageformat": "12.1.3",
+    "vite": "8.3.2"
+  },
+  "codeHashes": {
+    "benchmarks/thin-layer/catalog-layer.mjs": "37c7368933a3d2a2079aef3279f010dce8720cb8fb543e06fe8d3c1c16c850fc",
+    "benchmarks/thin-layer/ast-format.mjs": "36f6b0ef762ef1febf6d77af857d8c804350471e7bac2430acd225f0469d8969",
+    "benchmarks/thin-layer/browser-app.jsx": "af8ad6a779c7c9e75489840907393d52f5b78200a8473fdd70b21158a5d48f85",
+    "benchmarks/thin-layer/browser-smoke.mjs": "1d8982103b2d13aa8bdb13e9f3dcc7782374f65604ec878e54e6743c385e2bd7",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/runtime.js": "2d197337d026357b240584ba2d0cf6b7acc90c2288408fdf282dfed7e90354c8",
+    "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
+    "packages/core/dist/catalog-freeze.js": "a3a707cbaf4012ee5c2d959c70b7d472b337707af43131afd89e146f57518005",
+    "packages/vite/dist/index.js": "715ab17cc960c3e673b38997de06f1511e5b9c673d29939661dd5e5a54ba4994",
+    "packages/vite/dist/live-registry.js": "2d958de43a56c66ea7b7415f63f441145a71b405b0d3b71ed18edecccdd019cd",
+    "packages/vite/dist/disk-rechecks.js": "46f6e037f073aa0b8fc875349a5e8fe0a20ab8b2ec5fc16c2932feac3808a472",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "scenarioGapMs": 150,
+  "scope": "Functional probe only: i18next AST layer with custom timezone formatter plus Saylo eager Vite parser/validation/transport and test-only React subscription bridge. Scenario spacing is explicit in scenarioGapMs. Browser profile excluded from the watcher. No lazy/reconnect/session protocol, production build, SSR/hydration, memory or performance comparison. Input value, DOM identity, focus, open dialog, state counter and old snapshot checked after every command. Count 0 distinguishes English fallback plural from French selected-locale formatting. Fixed default UTC date and time skeleton, including old snapshots, checked after every command; no browser timezone matrix. Historical failure/recovery limitation is recorded in docs/57.",
+  "observations": [
+    {
+      "id": "edit",
+      "text": "Updated Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 0,
+      "preserved": true,
+      "timeZone": "UTC",
+      "oldTimeZone": "UTC",
+      "fallbackDate": "1/1/2026 / 00:30",
+      "oldSnapshotDate": "1/1/2026 / 00:30",
+      "fallbackPlural": "0 rows"
+    },
+    {
+      "id": "invalid-json",
+      "text": "Updated Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 1,
+      "preserved": true,
+      "timeZone": "UTC",
+      "oldTimeZone": "UTC",
+      "fallbackDate": "1/1/2026 / 00:30",
+      "oldSnapshotDate": "1/1/2026 / 00:30",
+      "fallbackPlural": "0 rows"
+    },
+    {
+      "id": "recover-json",
+      "text": "Recovered Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 1,
+      "preserved": true,
+      "timeZone": "UTC",
+      "oldTimeZone": "UTC",
+      "fallbackDate": "1/1/2026 / 00:30",
+      "oldSnapshotDate": "1/1/2026 / 00:30",
+      "fallbackPlural": "0 rows"
+    },
+    {
+      "id": "invalid-schema",
+      "text": "Recovered Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "timeZone": "UTC",
+      "oldTimeZone": "UTC",
+      "fallbackDate": "1/1/2026 / 00:30",
+      "oldSnapshotDate": "1/1/2026 / 00:30",
+      "fallbackPlural": "0 rows"
+    },
+    {
+      "id": "recover-schema",
+      "text": "Ready Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "timeZone": "UTC",
+      "oldTimeZone": "UTC",
+      "fallbackDate": "1/1/2026 / 00:30",
+      "oldSnapshotDate": "1/1/2026 / 00:30",
+      "fallbackPlural": "0 rows"
+    },
+    {
+      "id": "locale-add",
+      "text": "Ready Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr",
+        "ja"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "timeZone": "UTC",
+      "oldTimeZone": "UTC",
+      "fallbackDate": "1/1/2026 / 00:30",
+      "oldSnapshotDate": "1/1/2026 / 00:30",
+      "fallbackPlural": "0 rows"
+    },
+    {
+      "id": "locale-select",
+      "text": "こんにちは Ada",
+      "locale": "ja",
+      "locales": [
+        "en",
+        "fr",
+        "ja"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "timeZone": "UTC",
+      "oldTimeZone": "UTC",
+      "fallbackDate": "1/1/2026 / 00:30",
+      "oldSnapshotDate": "1/1/2026 / 00:30",
+      "fallbackPlural": "0 rows"
+    },
+    {
+      "id": "locale-remove-selected",
+      "text": "Hello Ada",
+      "locale": "en",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "timeZone": "UTC",
+      "oldTimeZone": "UTC",
+      "fallbackDate": "1/1/2026 / 00:30",
+      "oldSnapshotDate": "1/1/2026 / 00:30",
+      "fallbackPlural": "0 rows"
+    }
+  ],
+  "traces": [
+    {
+      "kind": "commit",
+      "revision": 0,
+      "locale": "fr",
+      "text": "Bonjour Ada"
+    },
+    {
+      "kind": "commit",
+      "revision": 1,
+      "locale": "fr",
+      "text": "Updated Ada"
+    },
+    {
+      "kind": "diagnostic",
+      "message": "fr/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+    },
+    {
+      "kind": "commit",
+      "revision": 2,
+      "locale": "fr",
+      "text": "Recovered Ada"
+    },
+    {
+      "kind": "diagnostic",
+      "message": "fr/demo.json [greeting]: Translation introduces argument \"unexpected\" absent from the base message."
+    },
+    {
+      "kind": "commit",
+      "revision": 3,
+      "locale": "fr",
+      "text": "Ready Ada"
+    },
+    {
+      "kind": "commit",
+      "revision": 4,
+      "locale": "fr",
+      "text": "Ready Ada"
+    },
+    {
+      "kind": "commit",
+      "revision": 4,
+      "locale": "ja",
+      "text": "こんにちは Ada"
+    },
+    {
+      "kind": "commit",
+      "revision": 5,
+      "locale": "en",
+      "text": "Hello Ada"
+    }
+  ]
+}

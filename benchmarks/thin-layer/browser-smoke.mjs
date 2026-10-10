@@ -31,6 +31,9 @@ const commands = [
 ];
 let vite, child, timer, active, ready = false, finished = false, index = 0;
 const observations = [];
+const at = Date.parse('2026-01-01T00:30:00.000Z');
+const expectedDate = new Intl.DateTimeFormat('en', { timeZone: 'UTC' }).format(at) + ' / ' +
+  new Intl.DateTimeFormat('en', { timeZone: 'UTC', hourCycle: 'h23', hour: '2-digit', minute: '2-digit' }).format(at);
 const traces = [];
 let resolve, reject;
 const completion = new Promise((yes, no) => { resolve = yes; reject = no; });
@@ -71,6 +74,8 @@ const plugin = { name: 'thin-layer-smoke-channel', configureServer(server) {
           assert.equal(data.locale, active.locale); assert.deepEqual(data.locales, active.locales);
           assert.equal(data.oldSnapshotText, 'Bonjour Ada'); assert.equal(data.preserved, true);
           assert.equal(data.fallbackPlural, '0 rows'); assert.ok(data.diagnosticCount >= active.minDiagnostics);
+          assert.equal(data.timeZone, 'UTC'); assert.equal(data.oldTimeZone, 'UTC');
+          assert.equal(data.fallbackDate, expectedDate); assert.equal(data.oldSnapshotDate, expectedDate);
           observations.push(data); console.log(`[thin] ${data.id}: PASS`); index++; active = undefined; arm('next command'); break;
         case '/fail': throw new Error(`Browser failure: ${data.message}`);
         case '/trace': traces.push(data); break;
@@ -83,7 +88,8 @@ const plugin = { name: 'thin-layer-smoke-channel', configureServer(server) {
 try {
   await mkdir(path.join(root, 'locales/en'), { recursive: true });
   await mkdir(path.join(root, 'locales/fr'), { recursive: true });
-  await writeFile(path.join(root, 'locales/en/demo.json'), JSON.stringify({ greeting: 'Hello {name}', rows: '{count, plural, one {one row} other {# rows}}' }));
+  await writeFile(path.join(root, 'locales/en/demo.json'), JSON.stringify({ greeting: 'Hello {name}',
+    rows: '{count, plural, one {one row} other {# rows}}', when: '{at, date} / {at, time, ::HHmm}' }));
   await writeFile(path.join(root, 'locales/fr/demo.json'), JSON.stringify({ greeting: 'Bonjour {name}' }));
   await writeFile(path.join(root, 'package.json'), '{"private":true,"type":"module"}');
   await writeFile(path.join(root, 'index.html'), '<div id="root"></div><script type="module" src="/app.jsx"></script>');
@@ -111,7 +117,7 @@ try {
   child.once('error', fail); child.once('exit', code => fail(new Error(`Browser exited (${code})`)));
   await completion;
   assert.equal(observations.length, commands.length);
-  const files = ['benchmarks/thin-layer/catalog-layer.mjs', 'benchmarks/thin-layer/browser-app.jsx',
+  const files = ['benchmarks/thin-layer/catalog-layer.mjs', 'benchmarks/thin-layer/ast-format.mjs', 'benchmarks/thin-layer/browser-app.jsx',
     'benchmarks/thin-layer/browser-smoke.mjs', 'benchmarks/thin-layer/package-lock.json',
     'packages/core/dist/runtime.js', 'packages/core/dist/schema.js', 'packages/core/dist/catalog-freeze.js',
     'packages/vite/dist/index.js', 'packages/vite/dist/live-registry.js', 'packages/vite/dist/disk-rechecks.js', 'package-lock.json'];
@@ -123,7 +129,7 @@ try {
   packages.vite = JSON.parse(await readFile(path.join(repository, 'node_modules/vite/package.json'), 'utf8')).version;
   const result = { schema: 'saylo-thin-layer-browser-smoke-v1', observedAt: new Date().toISOString(),
     node: process.version, browser: ready, packages, codeHashes, scenarioGapMs: gapMs,
-    scope: 'Functional probe only: i18next AST layer plus Saylo eager Vite parser/validation/transport and test-only React subscription bridge. Scenario spacing is explicit in scenarioGapMs. Browser profile excluded from the watcher. No lazy/reconnect/session protocol, production build, SSR/hydration, timezone, memory or performance comparison. Input value, DOM identity, focus, open dialog, state counter and old snapshot checked after every command. Count 0 distinguishes English fallback plural from French selected-locale formatting. Historical failure/recovery limitation is recorded in docs/57.', observations, traces };
+    scope: 'Functional probe only: i18next AST layer with custom timezone formatter plus Saylo eager Vite parser/validation/transport and test-only React subscription bridge. Scenario spacing is explicit in scenarioGapMs. Browser profile excluded from the watcher. No lazy/reconnect/session protocol, production build, SSR/hydration, memory or performance comparison. Input value, DOM identity, focus, open dialog, state counter and old snapshot checked after every command. Count 0 distinguishes English fallback plural from French selected-locale formatting. Fixed default UTC date and time skeleton, including old snapshots, checked after every command; no browser timezone matrix. Historical failure/recovery limitation is recorded in docs/57.', observations, traces };
   await writeFile(path.resolve(repository, values.out), JSON.stringify(result, null, 2) + '\n');
   console.log(JSON.stringify({ observations: observations.length, result: values.out }));
 } finally {

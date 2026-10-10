@@ -5,6 +5,7 @@
   "scripts": {
     "probe": "node probe.mjs",
     "probe:timezone": "node timezone-probe.mjs",
+    "test:timezone": "node --test timezone.test.mjs",
     "browser": "node browser-smoke.mjs"
   },
   "dependencies": {

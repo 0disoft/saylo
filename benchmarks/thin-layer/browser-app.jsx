@@ -59,13 +59,17 @@ function check() {
   const sample = active;
   void request('ack', { id: sample.id, text, locale: snapshot.locale, locales: snapshot.availableLocales,
     oldSnapshotText: old.t('demo:greeting', { name: 'Ada' }), diagnosticCount, preserved,
+    timeZone: snapshot.timeZone, oldTimeZone: old.timeZone,
+    fallbackDate: snapshot.t('demo:when', { at: Date.parse('2026-01-01T00:30:00.000Z') }),
+    oldSnapshotDate: old.t('demo:when', { at: Date.parse('2026-01-01T00:30:00.000Z') }),
     fallbackPlural: snapshot.t('demo:rows', { count: 0 }) }).then(() => {
     active = undefined; sample.resolve();
   }).catch(fail);
 }
 async function control() {
   await connected;
-  await request('ready', { userAgent: navigator.userAgent, react: React.version });
+  await request('ready', { userAgent: navigator.userAgent, react: React.version,
+    hostTimeZone: new Intl.DateTimeFormat('en').resolvedOptions().timeZone });
   while (true) {
     const command = await request('command');
     if (command.kind === 'done') return;
