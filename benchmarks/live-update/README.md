@@ -187,6 +187,19 @@ AST 동결 `seal` 모듈화 후 상세 계측을 끈 large 재측정은 `node be
 
 seal 공유 전후 종단 간 대조는 `node benchmarks/live-update/locale-compare.mjs --baseline cbd6871 --current 4f6b5cd --out benchmarks/results/locale-add-seal-comparison.json`로 실행했다. 도구는 두 ref의 `diagnostics.ts`만 다른 제품 차이를 검사하고, 외부 의존은 junction으로 공유하되 `@0disoft/saylo-*` alias는 각 스냅샷 패키지로 연결한 뒤 같은 tsc로 빌드한다. 순서 before/after/after/before, run당 large(10k×20) measured 25+warm 5+control 10, 네 run 합계 raw 120·measured 100·control 40이다. pooled 목록 p50/p95는 208.81/547.74→252.49/682.94ms이고 250ms 이내는 38/50→23/50으로 두 variant 모두 목표 미달이다. pooled Browser 선택 p95는 236.40→293.50ms, Node 선택 ack p95는 320.33→296.96ms로 엇갈린다. pooled quantile은 원시 measured 표본에 대한 값이며 run p95 평균이 아니다. 표본별 paired·무작위 배정이 아니고 고정 순서 단일 장비라 인과 증명이 아니다. 결과는 [../results/locale-add-seal-comparison.json](../results/locale-add-seal-comparison.json)에 있고 조건·한계·원복 결정은 [../../docs/37-seal-locale-add-comparison.md](../../docs/37-seal-locale-add-comparison.md)를 따른다. 제품은 `d408500`으로 원복해 현재 core source는 `cbd6871` 상태이고, 원복 뒤 같은 명령이 다시 실행된다.
 
+## 메시지 맵 최적화의 실제 전후 비교
+
+`locale-compare.mjs`는 기존 `ast-seal` 범위 외에 `--experiment owned-map`을 지원한다. 이 범위는 core `catalog.ts`·`diagnostics.ts` 두 소스 변경과 관련 catalog 테스트만 허용한다. 다른 제품 소스·공개 entry·package 변경이 섞이면 거절한다. `--mode edit` 또는 기본 `locale-add`를 선택하고 `--server-file-stages`로 두 variant 모두 파일 구간 계측을 켤 수 있다.
+
+```sh
+node benchmarks/live-update/locale-compare.mjs --experiment owned-map --mode edit --baseline 49fe1eb --current 8046a31 --server-file-stages --out benchmarks/results/owned-map-edit-comparison.json
+node benchmarks/live-update/locale-compare.mjs --experiment owned-map --mode locale-add --baseline 49fe1eb --current 8046a31 --server-file-stages --out benchmarks/results/owned-map-locale-comparison.json
+```
+
+기본 run당 measured 25·warmup 5·control 10, 순서는 before/after/after/before다. fresh fixture·Vite optimizer·브라우저를 사용하고 외부 의존성은 공유하되 workspace alias는 variant별 복사본에 연결한다. 선택한 두 소스를 Git ref에서 복원하고 같은 TypeScript로 core를 빌드한다. 원래 checkout dist는 수정하지 않고 종료 시 hash와 임시 디렉터리 정리를 확인한다. 결과의 `snapshotSourceRevision`은 제품 소스 ref이며 `gitRevision`은 공통 하네스 checkout이다. 비교 실행기·정책 hash도 남긴다.
+
+`--smoke`는 전후 각 1회 small만 실행하고 결과를 임시 보관 후 지운다. 성능 판정에는 사용하지 않는다. 정책 검사는 `node --test benchmarks/live-update/comparison-policy.test.mjs`이다. pooled quantile은 두 run의 원시 표본을 합쳐 계산하며 run별 p95 평균이 아니다. 고정 순서 단일 장비의 실행으로 표본별 pairing·무작위 배정·인과 증명을 주장하지 않는다.
+
 ## 파서 전용 CPU 프로파일
 
 core를 빌드한 뒤 아래 두 명령을 순차 실행한다. 파일 하나의 10k 메시지를 대상으로 하며 브라우저나 Vite는 실행하지 않는다. 마지막 인자는 측정 호출 수(기본 100, 1~1000)다.
