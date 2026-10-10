@@ -1,0 +1,181 @@
+{
+  "schema": "saylo-thin-layer-browser-smoke-v1",
+  "observedAt": "2026-10-10T16:06:00.578Z",
+  "node": "v24.18.0",
+  "browser": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "react": "19.3.0"
+  },
+  "codeHashes": {
+    "benchmarks/thin-layer/catalog-layer.mjs": "03774c0c4faf80d468e3647a78805792a5de4649a867a122740e2abe531842af",
+    "benchmarks/thin-layer/browser-app.jsx": "ddff60a25af6f9d0e79a33d7e94493e65a533b06553fd096a15f1b9e8918121c",
+    "benchmarks/thin-layer/browser-smoke.mjs": "85b7d6a529eab476343be38f75e1afb9ba098fae8ea92aad53c6c98dd8519643",
+    "benchmarks/thin-layer/package-lock.json": "d6bddc277a902507cccadc2dd1ead1d6cac81b923f2d6b6e3bdd4fd69859d7ee",
+    "packages/core/dist/runtime.js": "2d197337d026357b240584ba2d0cf6b7acc90c2288408fdf282dfed7e90354c8",
+    "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
+    "packages/core/dist/catalog-freeze.js": "a3a707cbaf4012ee5c2d959c70b7d472b337707af43131afd89e146f57518005",
+    "packages/vite/dist/index.js": "8931fec68efcbf979adbf7030917fdce1a1994cb369913a740137d9fbb96710e",
+    "packages/vite/dist/live-registry.js": "dc66d7a75d69ce9bde8ea4f26f39d075eb8aad8aedde8e8d3bb9656a71d12d03"
+  },
+  "scope": "Functional probe only: i18next AST layer plus Saylo eager Vite parser/validation/transport and test-only React subscription bridge. Scenarios separated by 150ms to avoid watcher write deduplication. No lazy/reconnect/session protocol, production build, SSR/hydration, timezone, memory or performance comparison. Input value, DOM identity, focus, open dialog, state counter and old snapshot checked after every command.",
+  "observations": [
+    {
+      "id": "edit",
+      "text": "Updated Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 0,
+      "preserved": true,
+      "fallbackPlural": "21 rows"
+    },
+    {
+      "id": "invalid-json",
+      "text": "Updated Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 1,
+      "preserved": true,
+      "fallbackPlural": "21 rows"
+    },
+    {
+      "id": "recover-json",
+      "text": "Recovered Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 1,
+      "preserved": true,
+      "fallbackPlural": "21 rows"
+    },
+    {
+      "id": "invalid-schema",
+      "text": "Recovered Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "fallbackPlural": "21 rows"
+    },
+    {
+      "id": "recover-schema",
+      "text": "Ready Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "fallbackPlural": "21 rows"
+    },
+    {
+      "id": "locale-add",
+      "text": "Ready Ada",
+      "locale": "fr",
+      "locales": [
+        "en",
+        "fr",
+        "ja"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "fallbackPlural": "21 rows"
+    },
+    {
+      "id": "locale-select",
+      "text": "こんにちは Ada",
+      "locale": "ja",
+      "locales": [
+        "en",
+        "fr",
+        "ja"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "fallbackPlural": "21 rows"
+    },
+    {
+      "id": "locale-remove-selected",
+      "text": "Hello Ada",
+      "locale": "en",
+      "locales": [
+        "en",
+        "fr"
+      ],
+      "oldSnapshotText": "Bonjour Ada",
+      "diagnosticCount": 2,
+      "preserved": true,
+      "fallbackPlural": "21 rows"
+    }
+  ],
+  "traces": [
+    {
+      "kind": "commit",
+      "revision": 0,
+      "locale": "fr",
+      "text": "Bonjour Ada"
+    },
+    {
+      "kind": "commit",
+      "revision": 1,
+      "locale": "fr",
+      "text": "Updated Ada"
+    },
+    {
+      "kind": "diagnostic",
+      "message": "fr/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+    },
+    {
+      "kind": "commit",
+      "revision": 2,
+      "locale": "fr",
+      "text": "Recovered Ada"
+    },
+    {
+      "kind": "diagnostic",
+      "message": "fr/demo.json [greeting]: Translation introduces argument \"unexpected\" absent from the base message."
+    },
+    {
+      "kind": "commit",
+      "revision": 3,
+      "locale": "fr",
+      "text": "Ready Ada"
+    },
+    {
+      "kind": "commit",
+      "revision": 4,
+      "locale": "fr",
+      "text": "Ready Ada"
+    },
+    {
+      "kind": "commit",
+      "revision": 4,
+      "locale": "ja",
+      "text": "こんにちは Ada"
+    },
+    {
+      "kind": "commit",
+      "revision": 5,
+      "locale": "en",
+      "text": "Hello Ada"
+    }
+  ]
+}

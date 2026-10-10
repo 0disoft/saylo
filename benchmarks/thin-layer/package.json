@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "probe": "node probe.mjs"
+    "probe": "node probe.mjs",
+    "browser": "node browser-smoke.mjs"
   },
   "dependencies": {
     "i18next": "26",
