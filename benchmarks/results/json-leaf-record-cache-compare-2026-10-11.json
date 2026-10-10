@@ -1,0 +1,2766 @@
+{
+  "schema": "saylo-json-leaf-compare-v1",
+  "observedAt": "2026-10-10T16:53:24.220Z",
+  "node": "v24.18.0",
+  "beforeRef": "78b23b7",
+  "beforeSourceHash": "42c8c18c322a0ae1fa4bb917f6a7d7cddda1b76ee196dd65cdd616e0f1221996",
+  "beforeExecutableHash": "116705fff825bedda155756b993584ed545e30af951cbc0b5f4316ec06c25e0e",
+  "codeHashes": {
+    "packages/core/src/catalog.ts": "cf3f72c51442db069d5dbed0db3660c837925b095cc52734e0b537cbfdda2488",
+    "packages/core/dist/catalog.js": "f209b4e29dfa200ad155c216ea0cf98b6ef1caae633577d885ff53c96520812d",
+    "packages/core/dist/catalog-json.js": "82317656c43e7e6a569237fc6b442cfb25a44410d97e68b78a5d2285e6e95ef1",
+    "packages/core/dist/json.js": "ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf80b",
+    "packages/core/dist/diagnostics.js": "9e8764951f360e4044877e205d6833edcc17b82091e29178a36d36a6d69ccba0",
+    "packages/core/dist/schema.js": "9a006afc8b2a999842bef34d61f4a91bc8610df66458ac3bc6e472bf65dd739f",
+    "packages/core/dist/simple-message.js": "a3b1be697431fcbc00dce1e1f425ac8ace9bfe5a3e55e5ca94ccd48c6ad0453f",
+    "benchmarks/live-update/json-leaf-compare.mjs": "e1485ea8ad558e0877927f7cff862efe02f746397aea98ad6addc876c45a8beb",
+    "benchmarks/live-update/statistics.mjs": "3ba0324738c570bbcb70c6230476271ea1da4dff0bb4f932b9b665a27274863e",
+    "package-lock.json": "fbbc085b496375a98a1aa55884a0acc6dcbb9ae882437eb70ddcf87be945d9d0"
+  },
+  "scope": "Single-process parser-only comparison, alternating before/after pair order. Exact baseline TS read from git and stripped by Node 24; unchanged dependencies shared with current dist. Same-length/variable-length edits reuse each variant own previous catalog. Cold never passes a previous catalog. Input stringify and deep equality excluded from timing. GC/OS/JIT not controlled. Stores successful-parse JSON spans; retained-memory overhead not quantified. No Vite/browser or p95 target claim.",
+  "results": [
+    {
+      "mode": "same-length",
+      "warmup": 20,
+      "count": 100,
+      "messages": 10000,
+      "equalResults": 120,
+      "before": {
+        "count": 100,
+        "p50Ms": 18.41870000000017,
+        "p95Ms": 34.033799999999246,
+        "minMs": 15.558199999999488,
+        "maxMs": 45.63600000000042
+      },
+      "after": {
+        "count": 100,
+        "p50Ms": 5.4483000000000175,
+        "p95Ms": 9.088799999999537,
+        "minMs": 4.2973000000001775,
+        "maxMs": 13.032400000000052
+      },
+      "pairedDelta": {
+        "count": 100,
+        "p50Ms": -12.874899999998888,
+        "p95Ms": -10.559000000000196,
+        "minMs": -32.60360000000037,
+        "maxMs": -9.737099999998463
+      },
+      "improvedPairs": 100,
+      "samples": [
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 33.54220000000009,
+          "afterMs": 12.30379999999991,
+          "deltaMs": -21.238400000000183
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 37.5329999999999,
+          "afterMs": 11.849699999999984,
+          "deltaMs": -25.683299999999917
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 21.869500000000016,
+          "afterMs": 8.425899999999956,
+          "deltaMs": -13.44360000000006
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 22.631099999999833,
+          "afterMs": 7.887299999999868,
+          "deltaMs": -14.743799999999965
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.10849999999982,
+          "afterMs": 6.777600000000348,
+          "deltaMs": -28.330899999999474
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 18.57609999999977,
+          "afterMs": 7.180699999999888,
+          "deltaMs": -11.395399999999881
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 31.598700000000008,
+          "afterMs": 10.860900000000129,
+          "deltaMs": -20.73779999999988
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 19.05049999999983,
+          "afterMs": 5.895899999999983,
+          "deltaMs": -13.154599999999846
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 20.150500000000193,
+          "afterMs": 6.034899999999652,
+          "deltaMs": -14.11560000000054
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 25.27370000000019,
+          "afterMs": 6.7663000000002285,
+          "deltaMs": -18.50739999999996
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 21.43600000000015,
+          "afterMs": 6.422599999999875,
+          "deltaMs": -15.013400000000274
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 23.515199999999822,
+          "afterMs": 9.329799999999977,
+          "deltaMs": -14.185399999999845
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 20.586099999999988,
+          "afterMs": 8.033700000000408,
+          "deltaMs": -12.55239999999958
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 23.790899999999965,
+          "afterMs": 8.568499999999858,
+          "deltaMs": -15.222400000000107
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.921299999999974,
+          "afterMs": 6.02619999999979,
+          "deltaMs": -12.895100000000184
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 20.5012999999999,
+          "afterMs": 5.061200000000099,
+          "deltaMs": -15.440099999999802
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 24.952400000000125,
+          "afterMs": 5.94589999999971,
+          "deltaMs": -19.006500000000415
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.53949999999986,
+          "afterMs": 4.458599999999933,
+          "deltaMs": -12.080899999999929
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 19.965400000000045,
+          "afterMs": 9.262099999999919,
+          "deltaMs": -10.703300000000127
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 25.105800000000272,
+          "afterMs": 5.57169999999951,
+          "deltaMs": -19.534100000000763
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 24.039299999999457,
+          "afterMs": 9.088799999999537,
+          "deltaMs": -14.95049999999992
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 29.04070000000047,
+          "afterMs": 8.350300000000061,
+          "deltaMs": -20.69040000000041
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 21.659899999999652,
+          "afterMs": 8.429900000000089,
+          "deltaMs": -13.229999999999563
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 24.555600000000595,
+          "afterMs": 6.355599999999868,
+          "deltaMs": -18.200000000000728
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 23.357300000000578,
+          "afterMs": 8.459599999999227,
+          "deltaMs": -14.89770000000135
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 27.376000000000204,
+          "afterMs": 6.545999999999367,
+          "deltaMs": -20.830000000000837
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.36440000000039,
+          "afterMs": 8.470699999999852,
+          "deltaMs": -26.893700000000536
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 34.16309999999976,
+          "afterMs": 9.84440000000086,
+          "deltaMs": -24.3186999999989
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 34.0605000000005,
+          "afterMs": 10.286299999999756,
+          "deltaMs": -23.774200000000747
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 45.63600000000042,
+          "afterMs": 13.032400000000052,
+          "deltaMs": -32.60360000000037
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 25.28150000000005,
+          "afterMs": 8.062199999999393,
+          "deltaMs": -17.219300000000658
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 36.9982,
+          "afterMs": 10.118199999999888,
+          "deltaMs": -26.88000000000011
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 34.033799999999246,
+          "afterMs": 10.413300000000163,
+          "deltaMs": -23.620499999999083
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 22.53099999999995,
+          "afterMs": 5.4483000000000175,
+          "deltaMs": -17.08269999999993
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 27.287000000000262,
+          "afterMs": 8.287000000000262,
+          "deltaMs": -19
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 24.164099999999962,
+          "afterMs": 8.809000000000196,
+          "deltaMs": -15.355099999999766
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.984800000000178,
+          "afterMs": 8.425799999999981,
+          "deltaMs": -10.559000000000196
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 15.729299999999967,
+          "afterMs": 4.8926000000001295,
+          "deltaMs": -10.836699999999837
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.036599999999453,
+          "afterMs": 5.930299999999988,
+          "deltaMs": -10.106299999999464
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.844900000000052,
+          "afterMs": 5.321100000000115,
+          "deltaMs": -11.523799999999937
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 21.043400000000474,
+          "afterMs": 6.17659999999978,
+          "deltaMs": -14.866800000000694
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 18.264799999999923,
+          "afterMs": 5.239799999999377,
+          "deltaMs": -13.025000000000546
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.27220000000034,
+          "afterMs": 5.1204000000007,
+          "deltaMs": -13.15179999999964
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 21.33269999999993,
+          "afterMs": 5.797700000000077,
+          "deltaMs": -15.534999999999854
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 20.823999999999614,
+          "afterMs": 5.186999999999898,
+          "deltaMs": -15.636999999999716
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 20.019099999999526,
+          "afterMs": 6.2335000000002765,
+          "deltaMs": -13.78559999999925
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 17.322400000000016,
+          "afterMs": 7.556599999999889,
+          "deltaMs": -9.765800000000127
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 21.159500000000662,
+          "afterMs": 7.684799999999996,
+          "deltaMs": -13.474700000000666
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 20.79659999999967,
+          "afterMs": 7.410799999999654,
+          "deltaMs": -13.385800000000017
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 18.244299999998475,
+          "afterMs": 5.171500000000378,
+          "deltaMs": -13.072799999998097
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 19.464200000000346,
+          "afterMs": 6.080700000000434,
+          "deltaMs": -13.383499999999913
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 19.030399999999645,
+          "afterMs": 5.591399999999339,
+          "deltaMs": -13.439000000000306
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 23.102199999999357,
+          "afterMs": 8.011400000001231,
+          "deltaMs": -15.090799999998126
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 21.728900000000067,
+          "afterMs": 5.599499999998443,
+          "deltaMs": -16.129400000001624
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.828700000000026,
+          "afterMs": 5.171599999999671,
+          "deltaMs": -11.657100000000355
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 15.736000000000786,
+          "afterMs": 4.407000000001062,
+          "deltaMs": -11.328999999999724
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 25.635599999999613,
+          "afterMs": 6.043499999999767,
+          "deltaMs": -19.592099999999846
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 15.558199999999488,
+          "afterMs": 4.596100000000661,
+          "deltaMs": -10.962099999998827
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 24.19640000000072,
+          "afterMs": 6.474299999999857,
+          "deltaMs": -17.722100000000864
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 26.006500000001324,
+          "afterMs": 7.123400000000402,
+          "deltaMs": -18.883100000000923
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.443999999999505,
+          "afterMs": 6.285300000001371,
+          "deltaMs": -12.158699999998134
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 18.497400000000198,
+          "afterMs": 6.233099999999467,
+          "deltaMs": -12.26430000000073
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.6278999999995,
+          "afterMs": 6.158699999999953,
+          "deltaMs": -12.469199999999546
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.432600000000093,
+          "afterMs": 4.885399999999208,
+          "deltaMs": -12.547200000000885
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 19.88919999999962,
+          "afterMs": 5.335900000000038,
+          "deltaMs": -14.553299999999581
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.487699999999677,
+          "afterMs": 4.607099999999264,
+          "deltaMs": -12.880600000000413
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 20.31760000000031,
+          "afterMs": 6.391700000000128,
+          "deltaMs": -13.925900000000183
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.99120000000039,
+          "afterMs": 5.71100000000115,
+          "deltaMs": -12.28019999999924
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.423399999999674,
+          "afterMs": 5.198999999998705,
+          "deltaMs": -13.22440000000097
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.08259999999973,
+          "afterMs": 5.476599999999962,
+          "deltaMs": -11.605999999999767
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 19.02770000000055,
+          "afterMs": 5.2951000000011845,
+          "deltaMs": -13.732599999999366
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 20.86080000000038,
+          "afterMs": 6.455299999999625,
+          "deltaMs": -14.405500000000757
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 15.740399999998772,
+          "afterMs": 4.985099999999875,
+          "deltaMs": -10.755299999998897
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 27.9429999999993,
+          "afterMs": 5.057300000000396,
+          "deltaMs": -22.885699999998906
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.1882999999998,
+          "afterMs": 5.410400000000664,
+          "deltaMs": -12.777899999999136
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 18.474599999999555,
+          "afterMs": 5.5997000000006665,
+          "deltaMs": -12.874899999998888
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 17.495899999999892,
+          "afterMs": 5.2937999999994645,
+          "deltaMs": -12.202100000000428
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.92909999999938,
+          "afterMs": 5.203799999999319,
+          "deltaMs": -12.725300000000061
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.039600000000064,
+          "afterMs": 5.429600000001301,
+          "deltaMs": -10.609999999998763
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.657599999998638,
+          "afterMs": 4.702499999999418,
+          "deltaMs": -11.95509999999922
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.09180000000015,
+          "afterMs": 5.574899999999616,
+          "deltaMs": -10.516900000000533
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.540600000000268,
+          "afterMs": 5.4870000000009895,
+          "deltaMs": -11.053599999999278
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.919199999998455,
+          "afterMs": 5.955600000001141,
+          "deltaMs": -12.963599999997314
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.38130000000092,
+          "afterMs": 5.151299999999537,
+          "deltaMs": -12.230000000001382
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 20.171400000001086,
+          "afterMs": 5.919400000000678,
+          "deltaMs": -14.252000000000407
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 18.56970000000001,
+          "afterMs": 4.934800000000905,
+          "deltaMs": -13.634899999999107
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.807600000000093,
+          "afterMs": 4.9375,
+          "deltaMs": -11.870100000000093
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 19.04489999999896,
+          "afterMs": 5.591699999999037,
+          "deltaMs": -13.453199999999924
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 21.00930000000153,
+          "afterMs": 7.10779999999977,
+          "deltaMs": -13.90150000000176
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.905399999999645,
+          "afterMs": 4.766299999999319,
+          "deltaMs": -12.139100000000326
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 19.66529999999875,
+          "afterMs": 5.259600000001228,
+          "deltaMs": -14.405699999997523
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.006000000001222,
+          "afterMs": 5.4156999999995605,
+          "deltaMs": -11.590300000001662
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.41870000000017,
+          "afterMs": 5.718699999999444,
+          "deltaMs": -12.700000000000728
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.0612000000001,
+          "afterMs": 4.5393999999996595,
+          "deltaMs": -12.52180000000044
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 17.09730000000127,
+          "afterMs": 5.309100000000399,
+          "deltaMs": -11.78820000000087
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.520700000000943,
+          "afterMs": 5.085699999999633,
+          "deltaMs": -11.43500000000131
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.033699999999953,
+          "afterMs": 6.205400000000736,
+          "deltaMs": -9.828299999999217
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.55450000000019,
+          "afterMs": 4.86830000000009,
+          "deltaMs": -11.686200000000099
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 19.86030000000028,
+          "afterMs": 6.7973000000001775,
+          "deltaMs": -13.063000000000102
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 18.634899999999107,
+          "afterMs": 5.478100000000268,
+          "deltaMs": -13.156799999998839
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 18.960299999998824,
+          "afterMs": 5.088600000000952,
+          "deltaMs": -13.871699999997873
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.022499999999127,
+          "afterMs": 5.27599999999984,
+          "deltaMs": -10.746499999999287
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.23999999999978,
+          "afterMs": 4.95640000000094,
+          "deltaMs": -11.283599999998842
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 15.73620000000119,
+          "afterMs": 4.929399999999077,
+          "deltaMs": -10.806800000002113
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.096999999999753,
+          "afterMs": 4.771199999999226,
+          "deltaMs": -11.325800000000527
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.377000000000407,
+          "afterMs": 4.634100000001126,
+          "deltaMs": -11.742899999999281
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.747400000000198,
+          "afterMs": 4.859499999998661,
+          "deltaMs": -11.887900000001537
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 17.15730000000076,
+          "afterMs": 4.2973000000001775,
+          "deltaMs": -12.860000000000582
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 17.2416000000012,
+          "afterMs": 5.279500000000553,
+          "deltaMs": -11.962100000000646
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.741899999999077,
+          "afterMs": 5.3487999999997555,
+          "deltaMs": -11.393099999999322
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.196100000001024,
+          "afterMs": 5.094600000000355,
+          "deltaMs": -11.10150000000067
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.5007999999998,
+          "afterMs": 5.200300000000425,
+          "deltaMs": -11.300499999999374
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 17.37670000000071,
+          "afterMs": 5.045000000000073,
+          "deltaMs": -12.331700000000637
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 15.958599999999933,
+          "afterMs": 4.860399999999572,
+          "deltaMs": -11.09820000000036
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 21.1270999999997,
+          "afterMs": 6.132200000000012,
+          "deltaMs": -14.994899999999689
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.035799999999654,
+          "afterMs": 4.618900000001304,
+          "deltaMs": -11.41689999999835
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.10859999999957,
+          "afterMs": 5.042499999999563,
+          "deltaMs": -11.066100000000006
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.552599999999074,
+          "afterMs": 4.74619999999959,
+          "deltaMs": -11.806399999999485
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 16.533400000000256,
+          "afterMs": 4.86160000000018,
+          "deltaMs": -11.671800000000076
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 16.81289999999899,
+          "afterMs": 7.075800000000527,
+          "deltaMs": -9.737099999998463
+        }
+      ]
+    },
+    {
+      "mode": "variable-length",
+      "warmup": 20,
+      "count": 100,
+      "messages": 10000,
+      "equalResults": 120,
+      "before": {
+        "count": 100,
+        "p50Ms": 45.14589999999953,
+        "p95Ms": 100.47320000000036,
+        "minMs": 34.784999999999854,
+        "maxMs": 160.2380000000012
+      },
+      "after": {
+        "count": 100,
+        "p50Ms": 30.586600000002363,
+        "p95Ms": 58.500700000004144,
+        "minMs": 23.536000000000058,
+        "maxMs": 274.0023000000001
+      },
+      "pairedDelta": {
+        "count": 100,
+        "p50Ms": -13.648200000003271,
+        "p95Ms": 5.9891999999999825,
+        "minMs": -128.4972000000016,
+        "maxMs": 218.97590000000127
+      },
+      "improvedPairs": 92,
+      "samples": [
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.4874000000018,
+          "afterMs": 26.396700000001147,
+          "deltaMs": -9.090700000000652
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 42.101299999998446,
+          "afterMs": 25.69919999999911,
+          "deltaMs": -16.402099999999336
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.42160000000149,
+          "afterMs": 29.429999999996653,
+          "deltaMs": -5.991600000004837
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 105.70999999999913,
+          "afterMs": 25.278999999998632,
+          "deltaMs": -80.4310000000005
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 61.803799999997864,
+          "afterMs": 25.281800000000658,
+          "deltaMs": -36.521999999997206
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 39.498999999999796,
+          "afterMs": 26.160900000002584,
+          "deltaMs": -13.338099999997212
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 37.59240000000136,
+          "afterMs": 26.09560000000056,
+          "deltaMs": -11.496800000000803
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 57.84779999999955,
+          "afterMs": 30.11909999999989,
+          "deltaMs": -27.728699999999662
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 156.20390000000043,
+          "afterMs": 37.287099999997736,
+          "deltaMs": -118.9168000000027
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 40.45019999999931,
+          "afterMs": 25.77339999999822,
+          "deltaMs": -14.676800000001094
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 42.37169999999969,
+          "afterMs": 32.028300000001764,
+          "deltaMs": -10.343399999997928
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 40.51350000000093,
+          "afterMs": 27.350299999998242,
+          "deltaMs": -13.16320000000269
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 63.27809999999954,
+          "afterMs": 33.60770000000048,
+          "deltaMs": -29.670399999999063
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 38.23609999999826,
+          "afterMs": 27.033800000001065,
+          "deltaMs": -11.202299999997194
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 36.17619999999806,
+          "afterMs": 24.818100000000413,
+          "deltaMs": -11.358099999997648
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 57.59629999999743,
+          "afterMs": 28.06289999999717,
+          "deltaMs": -29.533400000000256
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 37.87380000000121,
+          "afterMs": 25.185300000001007,
+          "deltaMs": -12.688500000000204
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 69.28190000000177,
+          "afterMs": 29.883600000001024,
+          "deltaMs": -39.398300000000745
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 69.83550000000105,
+          "afterMs": 44.81419999999707,
+          "deltaMs": -25.021300000003976
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 54.13980000000083,
+          "afterMs": 40.564400000002934,
+          "deltaMs": -13.575399999997899
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 70.53870000000097,
+          "afterMs": 35.443200000001525,
+          "deltaMs": -35.09549999999945
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 160.2380000000012,
+          "afterMs": 31.74079999999958,
+          "deltaMs": -128.4972000000016
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 50.722899999997026,
+          "afterMs": 32.10520000000179,
+          "deltaMs": -18.61769999999524
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 56.66430000000037,
+          "afterMs": 28.956099999999424,
+          "deltaMs": -27.708200000000943
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 52.583300000002055,
+          "afterMs": 31.271300000000338,
+          "deltaMs": -21.312000000001717
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 35.8337999999967,
+          "afterMs": 25.41189999999915,
+          "deltaMs": -10.42189999999755
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 36.12130000000252,
+          "afterMs": 25.993999999998778,
+          "deltaMs": -10.127300000003743
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 43.43149999999878,
+          "afterMs": 26.625899999999092,
+          "deltaMs": -16.805599999999686
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 38.76429999999891,
+          "afterMs": 29.78809999999794,
+          "deltaMs": -8.976200000000972
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 38.856699999996636,
+          "afterMs": 25.835799999997107,
+          "deltaMs": -13.020899999999529
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 51.919300000001385,
+          "afterMs": 26.454499999999825,
+          "deltaMs": -25.46480000000156
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 66.13639999999941,
+          "afterMs": 42.09230000000025,
+          "deltaMs": -24.044099999999162
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 54.57469999999739,
+          "afterMs": 37.750099999997474,
+          "deltaMs": -16.82459999999992
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 47.4916000000012,
+          "afterMs": 37.545099999999366,
+          "deltaMs": -9.946500000001834
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 54.609300000000076,
+          "afterMs": 63.584100000000035,
+          "deltaMs": 8.97479999999996
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 42.18739999999889,
+          "afterMs": 28.849200000000565,
+          "deltaMs": -13.338199999998324
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.765800000001036,
+          "afterMs": 26.007999999997992,
+          "deltaMs": -9.757800000003044
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 43.22030000000086,
+          "afterMs": 27.532599999998638,
+          "deltaMs": -15.687700000002224
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 50.3718000000008,
+          "afterMs": 38.62030000000232,
+          "deltaMs": -11.751499999998487
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 55.02639999999883,
+          "afterMs": 274.0023000000001,
+          "deltaMs": 218.97590000000127
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 45.14589999999953,
+          "afterMs": 29.303499999998166,
+          "deltaMs": -15.842400000001362
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 55.47200000000157,
+          "afterMs": 32.0109999999986,
+          "deltaMs": -23.46100000000297
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 56.617999999998574,
+          "afterMs": 57.21549999999843,
+          "deltaMs": 0.5974999999998545
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 38.74819999999818,
+          "afterMs": 26.31880000000092,
+          "deltaMs": -12.429399999997258
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 37.95639999999912,
+          "afterMs": 27.084100000000035,
+          "deltaMs": -10.872299999999086
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 47.93509999999878,
+          "afterMs": 31.972799999999552,
+          "deltaMs": -15.962299999999232
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 55.15270000000237,
+          "afterMs": 48.96860000000015,
+          "deltaMs": -6.184100000002218
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 65.15940000000046,
+          "afterMs": 33.63390000000072,
+          "deltaMs": -31.525499999999738
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 70.59549999999945,
+          "afterMs": 43.729599999998754,
+          "deltaMs": -26.865900000000693
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 57.352200000001176,
+          "afterMs": 37.81880000000092,
+          "deltaMs": -19.533400000000256
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 88.45740000000296,
+          "afterMs": 41.53429999999935,
+          "deltaMs": -46.923100000003615
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 55.22689999999784,
+          "afterMs": 40.90149999999994,
+          "deltaMs": -14.325399999997899
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 48.47729999999865,
+          "afterMs": 38.903300000001764,
+          "deltaMs": -9.573999999996886
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 87.4262000000017,
+          "afterMs": 44.26759999999922,
+          "deltaMs": -43.15860000000248
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 52.11019999999917,
+          "afterMs": 35.51759999999922,
+          "deltaMs": -16.592599999999948
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 41.16939999999886,
+          "afterMs": 26.921900000001187,
+          "deltaMs": -14.247499999997672
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 61.02249999999913,
+          "afterMs": 42.90370000000257,
+          "deltaMs": -18.118799999996554
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 38.43089999999938,
+          "afterMs": 30.586600000002363,
+          "deltaMs": -7.84429999999702
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 55.92629999999917,
+          "afterMs": 31.094499999999243,
+          "deltaMs": -24.83179999999993
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 43.46259999999893,
+          "afterMs": 27.468199999999342,
+          "deltaMs": -15.994399999999587
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 42.31140000000232,
+          "afterMs": 29.463400000000547,
+          "deltaMs": -12.848000000001775
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 57.296800000000076,
+          "afterMs": 27.127000000000407,
+          "deltaMs": -30.169799999999668
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 39.77170000000115,
+          "afterMs": 27.07419999999911,
+          "deltaMs": -12.697500000002037
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 38.45629999999801,
+          "afterMs": 26.130799999999,
+          "deltaMs": -12.32549999999901
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 39.19180000000051,
+          "afterMs": 27.14129999999932,
+          "deltaMs": -12.050500000001193
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 47.10959999999977,
+          "afterMs": 27.808899999999994,
+          "deltaMs": -19.30069999999978
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 37.03979999999865,
+          "afterMs": 25.885600000001432,
+          "deltaMs": -11.154199999997218
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 36.36160000000018,
+          "afterMs": 25.312700000002224,
+          "deltaMs": -11.048899999997957
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 39.12410000000091,
+          "afterMs": 26.836600000002363,
+          "deltaMs": -12.287499999998545
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 57.08100000000195,
+          "afterMs": 27.67280000000028,
+          "deltaMs": -29.40820000000167
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 37.445599999999104,
+          "afterMs": 29.226000000002387,
+          "deltaMs": -8.219599999996717
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 39.0622000000003,
+          "afterMs": 26.7912000000033,
+          "deltaMs": -12.270999999997002
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 37.83179999999993,
+          "afterMs": 43.82099999999991,
+          "deltaMs": 5.9891999999999825
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 37.51780000000144,
+          "afterMs": 26.217799999998533,
+          "deltaMs": -11.30000000000291
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 151.07080000000133,
+          "afterMs": 27.228699999999662,
+          "deltaMs": -123.84210000000166
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 36.7474000000002,
+          "afterMs": 24.997699999999895,
+          "deltaMs": -11.749700000000303
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.94480000000112,
+          "afterMs": 24.556400000001304,
+          "deltaMs": -11.38839999999982
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 58.2374000000018,
+          "afterMs": 30.975399999999354,
+          "deltaMs": -27.262000000002445
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 34.784999999999854,
+          "afterMs": 24.675700000003417,
+          "deltaMs": -10.109299999996438
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 37.071899999999005,
+          "afterMs": 25.596300000001065,
+          "deltaMs": -11.47559999999794
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.04060000000027,
+          "afterMs": 43.43579999999929,
+          "deltaMs": 8.395199999999022
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 34.973799999999756,
+          "afterMs": 23.802999999999884,
+          "deltaMs": -11.170799999999872
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 42.15139999999883,
+          "afterMs": 24.08680000000095,
+          "deltaMs": -18.06459999999788
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 38.45880000000034,
+          "afterMs": 25.652200000000448,
+          "deltaMs": -12.80659999999989
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.7055999999975,
+          "afterMs": 23.536000000000058,
+          "deltaMs": -12.169599999997445
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 36.51800000000003,
+          "afterMs": 48.49510000000009,
+          "deltaMs": 11.977100000000064
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 43.837900000002264,
+          "afterMs": 24.490900000000693,
+          "deltaMs": -19.34700000000157
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 38.63040000000183,
+          "afterMs": 24.292599999997037,
+          "deltaMs": -14.33780000000479
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 36.49800000000323,
+          "afterMs": 42.48990000000049,
+          "deltaMs": 5.991899999997258
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 36.63999999999942,
+          "afterMs": 28.41400000000067,
+          "deltaMs": -8.225999999998749
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 36.6176000000014,
+          "afterMs": 26.455100000006496,
+          "deltaMs": -10.162499999994907
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 35.94220000000496,
+          "afterMs": 25.81590000000142,
+          "deltaMs": -10.126300000003539
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 37.37809999999445,
+          "afterMs": 25.391799999997602,
+          "deltaMs": -11.986299999996845
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 34.9117000000042,
+          "afterMs": 39.09389999999985,
+          "deltaMs": 4.182199999995646
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 38.77419999999984,
+          "afterMs": 25.125999999996566,
+          "deltaMs": -13.648200000003271
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 36.905800000000454,
+          "afterMs": 25.134900000004563,
+          "deltaMs": -11.77089999999589
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 56.949399999997695,
+          "afterMs": 33.794999999998254,
+          "deltaMs": -23.15439999999944
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 41.608399999997346,
+          "afterMs": 39.86569999999483,
+          "deltaMs": -1.7427000000025146
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 43.29010000000562,
+          "afterMs": 26.806100000001607,
+          "deltaMs": -16.484000000004016
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 39.28360000000248,
+          "afterMs": 32.944799999997485,
+          "deltaMs": -6.338800000004994
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 35.54189999999653,
+          "afterMs": 25.060600000004342,
+          "deltaMs": -10.481299999992189
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 39.2019999999975,
+          "afterMs": 28.54989999999816,
+          "deltaMs": -10.652099999999336
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 46.489400000005844,
+          "afterMs": 41.34130000000005,
+          "deltaMs": -5.1481000000057975
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 79.88270000000193,
+          "afterMs": 29.489999999997963,
+          "deltaMs": -50.39270000000397
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 74.61999999999534,
+          "afterMs": 38.6620000000039,
+          "deltaMs": -35.95799999999144
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 46.10160000000178,
+          "afterMs": 33.8718000000008,
+          "deltaMs": -12.229800000000978
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 62.14890000000014,
+          "afterMs": 36.81970000000001,
+          "deltaMs": -25.329200000000128
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 92.71590000000288,
+          "afterMs": 40.086999999999534,
+          "deltaMs": -52.62890000000334
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 85.34659999999712,
+          "afterMs": 58.500700000004144,
+          "deltaMs": -26.84589999999298
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 90.80220000000554,
+          "afterMs": 51.79460000000108,
+          "deltaMs": -39.00760000000446
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 81.06160000000091,
+          "afterMs": 48.70990000000165,
+          "deltaMs": -32.351699999999255
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 142.52870000000257,
+          "afterMs": 47.750599999999395,
+          "deltaMs": -94.77810000000318
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 102.09859999999753,
+          "afterMs": 76.94710000000487,
+          "deltaMs": -25.151499999992666
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 75.16069999999308,
+          "afterMs": 59.8156999999992,
+          "deltaMs": -15.344999999993888
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 79.44830000000366,
+          "afterMs": 53.12989999999991,
+          "deltaMs": -26.31840000000375
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 123.51199999999517,
+          "afterMs": 56.64009999999689,
+          "deltaMs": -66.87189999999828
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 88.34659999999712,
+          "afterMs": 55.276300000004994,
+          "deltaMs": -33.07029999999213
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 100.47320000000036,
+          "afterMs": 56.83669999999984,
+          "deltaMs": -43.636500000000524
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 78.89839999999822,
+          "afterMs": 75.59380000000237,
+          "deltaMs": -3.304599999995844
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 57.743099999999686,
+          "afterMs": 33.71850000000268,
+          "deltaMs": -24.024599999997008
+        }
+      ]
+    },
+    {
+      "mode": "cold",
+      "warmup": 5,
+      "count": 20,
+      "messages": 10000,
+      "equalResults": 25,
+      "before": {
+        "count": 20,
+        "p50Ms": 54.12930000000051,
+        "p95Ms": 210.9838000000018,
+        "minMs": 45.50340000000142,
+        "maxMs": 463.26720000000205
+      },
+      "after": {
+        "count": 20,
+        "p50Ms": 54.63570000000618,
+        "p95Ms": 75.71889999999985,
+        "minMs": 44.475500000000466,
+        "maxMs": 89.78560000000289
+      },
+      "pairedDelta": {
+        "count": 20,
+        "p50Ms": -1.2727999999988242,
+        "p95Ms": 11.456000000005588,
+        "minMs": -390.8642000000036,
+        "maxMs": 13.117200000000594
+      },
+      "improvedPairs": 11,
+      "samples": [
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 78.8321999999971,
+          "afterMs": 64.10280000000057,
+          "deltaMs": -14.72939999999653
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 90.83030000000144,
+          "afterMs": 85.82570000000123,
+          "deltaMs": -5.0046000000002095
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 92.6339999999982,
+          "afterMs": 83.94900000000052,
+          "deltaMs": -8.684999999997672
+        },
+        {
+          "warmup": true,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 97.0286000000051,
+          "afterMs": 68.78429999999935,
+          "deltaMs": -28.24430000000575
+        },
+        {
+          "warmup": true,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 54.94169999999576,
+          "afterMs": 47.173399999999674,
+          "deltaMs": -7.7682999999960884
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 63.11219999999594,
+          "afterMs": 66.68509999999515,
+          "deltaMs": 3.5728999999992084
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 78.3295999999973,
+          "afterMs": 89.78560000000289,
+          "deltaMs": 11.456000000005588
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 71.36209999999846,
+          "afterMs": 55.921100000006845,
+          "deltaMs": -15.440999999991618
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 463.26720000000205,
+          "afterMs": 72.40299999999843,
+          "deltaMs": -390.8642000000036
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 71.85599999999977,
+          "afterMs": 75.71889999999985,
+          "deltaMs": 3.8629000000000815
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 70.15600000000268,
+          "afterMs": 58.74470000000292,
+          "deltaMs": -11.411299999999756
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 71.18680000000313,
+          "afterMs": 62.56369999999879,
+          "deltaMs": -8.623100000004342
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 63.10519999999815,
+          "afterMs": 53.96149999999761,
+          "deltaMs": -9.143700000000536
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 53.852200000001176,
+          "afterMs": 55.88289999999688,
+          "deltaMs": 2.0306999999957043
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 51.31040000000212,
+          "afterMs": 57.47040000000561,
+          "deltaMs": 6.1600000000034925
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 54.12930000000051,
+          "afterMs": 47.84649999999965,
+          "deltaMs": -6.2828000000008615
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 210.9838000000018,
+          "afterMs": 51.89170000000013,
+          "deltaMs": -159.09210000000166
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 48.291400000001886,
+          "afterMs": 48.36449999999604,
+          "deltaMs": 0.07309999999415595
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 46.30079999999725,
+          "afterMs": 47.109999999993306,
+          "deltaMs": 0.8091999999960535
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 45.50340000000142,
+          "afterMs": 45.474999999998545,
+          "deltaMs": -0.02840000000287546
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 45.74829999999929,
+          "afterMs": 44.475500000000466,
+          "deltaMs": -1.2727999999988242
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 55.152099999999336,
+          "afterMs": 47.83450000000448,
+          "deltaMs": -7.317599999994854
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 52.261399999995774,
+          "afterMs": 54.63570000000618,
+          "deltaMs": 2.3743000000104075
+        },
+        {
+          "warmup": false,
+          "order": [
+            "after",
+            "before"
+          ],
+          "beforeMs": 51.74140000000625,
+          "afterMs": 46.05859999999666,
+          "deltaMs": -5.682800000009593
+        },
+        {
+          "warmup": false,
+          "order": [
+            "before",
+            "after"
+          ],
+          "beforeMs": 45.98189999999886,
+          "afterMs": 59.09909999999945,
+          "deltaMs": 13.117200000000594
+        }
+      ]
+    }
+  ]
+}

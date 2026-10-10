@@ -46,14 +46,14 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
     try {
       const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
-        position: positionAt(messageOffset(entry, offset)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
+        position: positionAt(messageOffset(entry, offset, source)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
       messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });
     } catch (error) {
       if (error instanceof CatalogError) diagnostics.push(...error.diagnostics);
       else {
         const offset = error instanceof Error && 'location' in error
           ? (error.location as { start?: { offset?: number } })?.start?.offset ?? 0 : 0;
-        diagnostics.push({ ...details, code: 'INVALID_ICU', position: positionAt(messageOffset(entry, offset)),
+        diagnostics.push({ ...details, code: 'INVALID_ICU', position: positionAt(messageOffset(entry, offset, source)),
           message: `Invalid ICU message: ${error instanceof Error ? error.message : String(error)}` });
       }
     }

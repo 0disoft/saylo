@@ -13,6 +13,7 @@ const directory = path.join(repository, 'benchmarks');
 const root = await mkdtemp(path.join(directory, '.json-leaf-'));
 const beforeRef = '78b23b7';
 const original = execFileSync('git', ['show', `${beforeRef}:packages/core/src/catalog.ts`], { cwd: repository, encoding: 'utf8' });
+const originalJson = execFileSync('git', ['show', `${beforeRef}:packages/core/src/json.ts`], { cwd: repository, encoding: 'utf8' });
 const hash = value => createHash('sha256').update(value).digest('hex');
 const signedSummary = values => {
   const shift = Math.max(0, -Math.min(...values));
@@ -22,13 +23,17 @@ const signedSummary = values => {
 };
 const results = [];
 try {
-  // Node 24 strips the baseline's types. Both variants share unchanged current
-  // JSON/ICU/schema/freeze dependencies; no baseline source is rewritten in git.
+  // Node 24 strips the baseline's types. Restore its JSON entry representation
+  // too; ICU/schema/freeze dependencies remain shared and unchanged.
+  const beforeJson = originalJson.replace("from './diagnostics.js'",
+    `from ${JSON.stringify(pathToFileURL(path.join(repository, 'packages/core/dist/diagnostics.js')).href)}`);
+  const jsonFile = path.join(root, 'before-json.mts');
+  await writeFile(jsonFile, beforeJson);
   let code = original;
   for (const name of ['diagnostics', 'json', 'schema', 'simple-message']) {
     const needle = `from './${name}.js'`;
     assert.equal(code.split(needle).length, 2);
-    code = code.replace(needle, `from ${JSON.stringify(pathToFileURL(path.join(repository, 'packages/core/dist', `${name}.js`)).href)}`);
+    code = code.replace(needle, `from ${JSON.stringify(pathToFileURL(name === 'json' ? jsonFile : path.join(repository, 'packages/core/dist', `${name}.js`)).href)}`);
   }
   const file = path.join(root, 'before.mts');
   await writeFile(file, code);
@@ -73,8 +78,9 @@ try {
     'benchmarks/live-update/json-leaf-compare.mjs', 'benchmarks/live-update/statistics.mjs', 'package-lock.json'];
   const codeHashes = Object.fromEntries(await Promise.all(files.map(async name => [name, hash(await readFile(path.join(repository, name)))])));
   const output = { schema: 'saylo-json-leaf-compare-v1', observedAt: new Date().toISOString(), node: process.version,
-    beforeRef, beforeSourceHash: hash(original), beforeExecutableHash: hash(code), codeHashes,
-    scope: 'Single-process parser-only comparison, alternating before/after pair order. Exact baseline TS read from git and stripped by Node 24; unchanged dependencies shared with current dist. Same-length/variable-length edits reuse each variant own previous catalog. Cold never passes a previous catalog. Input stringify and deep equality excluded from timing. GC/OS/JIT not controlled. Stores successful-parse JSON spans; retained-memory overhead not quantified. No Vite/browser or p95 target claim.', results };
+    beforeRef, beforeSourceHash: hash(original), beforeJsonSourceHash: hash(originalJson),
+    beforeExecutableHash: hash(code), beforeJsonExecutableHash: hash(beforeJson), codeHashes,
+    scope: 'Single-process parser-only comparison, alternating before/after pair order. Exact baseline catalog and JSON TS read from git and stripped by Node 24; unchanged ICU/schema/freeze dependencies shared with current dist. Same-length/variable-length edits reuse each variant own previous catalog. Cold never passes a previous catalog. Input stringify and deep equality excluded from timing. GC/OS/JIT not controlled. Stores successful-parse JSON offsets/lengths and decoded values; retained-memory overhead not quantified. No Vite/browser or p95 target claim.', results };
   await writeFile(path.join(repository, 'benchmarks/results/json-leaf-compare-2026-10-11.json'), JSON.stringify(output, null, 2) + '\n');
 } finally {
   const resolved = path.resolve(root);

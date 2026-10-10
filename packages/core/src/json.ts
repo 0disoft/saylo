@@ -6,7 +6,7 @@ export interface JsonEntry {
   value: string;
   keyOffset: number;
   valueOffset: number;
-  rawValue: string;
+  valueLength: number;
 }
 
 /** Strict flat JSON. JSON.parse checks syntax; tokens retain decoded duplicate keys. */
@@ -49,17 +49,17 @@ export function readJson(source: string, context: Required<CatalogOptions>): Jso
     seen.add(id);
     // The initial strict parse already decoded these values. Duplicate IDs or
     // overwritten non-string tokens still fail before entries leave this function.
-    entries.push({ id, value: (object as Record<string, string>)[id]!, keyOffset: key.index, valueOffset, rawValue: value[0] });
+    entries.push({ id, value: (object as Record<string, string>)[id]!, keyOffset: key.index, valueOffset, valueLength: value[0].length });
   }
   if (diagnostics.length) throw new CatalogError(diagnostics);
   return entries;
 }
 
 /** Translate an ICU offset in decoded text back to its JSON source string. */
-export function messageOffset(entry: JsonEntry, decodedOffset: number): number {
+export function messageOffset(entry: JsonEntry, decodedOffset: number, source: string): number {
   let raw = 1;
-  for (let decoded = 0; decoded < decodedOffset && raw < entry.rawValue.length - 1; decoded++) {
-    raw += entry.rawValue[raw] === '\\' ? (entry.rawValue[raw + 1] === 'u' ? 6 : 2) : 1;
+  for (let decoded = 0; decoded < decodedOffset && raw < entry.valueLength - 1; decoded++) {
+    raw += source[entry.valueOffset + raw] === '\\' ? (source[entry.valueOffset + raw + 1] === 'u' ? 6 : 2) : 1;
   }
   return entry.valueOffset + raw;
 }

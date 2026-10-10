@@ -88,6 +88,9 @@ test('JSON provenance is scoped to successful parses and catalog context', () =>
   const extra = parseCatalog(source, { ...options, marker: 'old' });
   assert.equal(parseCatalog(source, { ...options, marker: 'new' }, extra).marker, 'new');
   assert.equal(parseCatalog(source, options, extra).marker, undefined);
+  const marker = Symbol('context marker');
+  const symbolContext = parseCatalog(source, { ...options, [marker]: 'old' });
+  assert.equal(parseCatalog(source, { ...options, [marker]: 'new' }, symbolContext)[marker], 'new');
 });
 
 test('duplicate decoded JSON IDs are rejected before overwritten values disappear', () => {
