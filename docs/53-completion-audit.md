@@ -33,8 +33,8 @@
 | 16 | Svelte 어댑터·selector (44) | 어댑터 alpha.2 게시, selector 로컬 | svelte `index.ts` selectSvelteStore·getI18nSelector; `selectors.test` | 게시 시 릴리스 검증 |
 | 17 | SvelteKit 예제 SSR·hydration 검증 (39) | 게시 | `examples/sveltekit`, `scripts/pack-sveltekit.mjs` | 없음 |
 | 18 | 릴리스 패키지 소비 검증 (09) | 게시 | `scripts/pack-smoke.mjs`, `verify:registry:alpha3` | selector 포함 재검증 필요 |
-| 19 | 편집 반영 p95 ≤ 100ms (06) | large 통과·small 미달 | `docs/74`: large `validation-cache-edit-large`·`-repeat` p95 70.35·61.91ms(50표본 중 49), small `validation-cache-edit-small` p95 108.61ms(23/25) | small tail 조사·안정 달성 미확인 |
-| 20 | 로케일 목록 표시 p95 ≤ 250ms (06) | 최신 스모크 통과, 다른 조건 미확인 | `docs/74`: small 목록 p95 84.29ms(25/25), large 목록 p95 137.09·159.75ms·50표본 pooled 159.75ms(49/50) | 첫 locale 선택 translation p95 267.80·262.38ms와 다른 조건은 별도 |
+| 19 | 편집 반영 p95 ≤ 100ms (06) | 최신 small·large 교차 비교 통과 | `docs/75`: after 각 50표본 pooled p95 small 49.57ms(50/50 이내), large 80.25ms(49/50 이내) | 다른 OS·워크로드의 안정 달성 미확인 |
+| 20 | 로케일 목록 표시 p95 ≤ 250ms (06) | 최신 small·large 조건 통과 | `docs/75`: 각 25표본 small 목록 p95 77.46ms(25/25), large 177.83ms(24/25) | 목록과 첫 번역은 별도, 다른 조건 안정성 미확인 |
 
 ## 2. 로드맵 1~13 직접 확인
 
@@ -82,7 +82,7 @@
 ## 5. 남은 필수 작업 (순차)
 
 1. 완료: `169e72b`의 편집·로케일 종단 간 경로를 54에서 비교했다.
-2. [74](74-immutable-validation-reuse.md)의 large 편집·로케일 목록은 최신 두 run에서 목표를 통과했다. small 편집 p95 108.61ms의 tail을 조사하고, 다른 조건의 안정 달성을 확인한다. 이전 58의 미달 결과는 역사값으로 보존한다.
+2. [75](75-early-disk-rechecks.md)의 최신 small·large 편집 교차 비교와 로케일 목록 측정이 목표를 통과했다. 이전 small tail과 10ms 단독 trial은 역사값으로 보존하고, 다른 OS·워크로드의 안정성은 확인되지 않은 범위로 남긴다.
 3. 49의 맵 동결 최적화 채택 여부를 tail 원인 규명 결과와 함께 확정한다.
 4. selector 게시 여부를 결정하고, 게시하면 `check`·`release:pack`·`verify:registry:*`·SvelteKit 검증을 해당 버전으로 수행한다.
 5. i18next·Wuchale 확장점 위 얇은 계층 비교 실험으로 제품 형태(독립 런타임 정당화)를 판정한다.
@@ -178,3 +178,5 @@
 2026-10-11(KST), benchmark 전용 동기 layer와 제품 core를 같은 fixture에서 격리 측정해 런타임 비용과 snapshot 보유 heap을 기록했다(`6979c84`). `--expose-gc` 자식 8개를 key 1k·10k × core·layer·layer·core 순서로 돌려 commit p50/p95는 core 1k 1.48/2.25ms·10k 13.01/16.46ms, layer 1k 4.18/6.20ms·10k 30.43/40.50ms다. live steady heap delta는 10k에서 layer 1.50MB가 core 2.18MB보다 낮고 1k에서는 layer 0.75~0.76MB가 core 0.43~0.45MB보다 높으며, 옛 snapshot 8개 보유 delta는 layer가 더 크다(1k 1.02~1.04 대 0.55MB, 10k 7.72 대 4.59~4.71MB). 이것은 라이브러리 격리 비용이고 종단 간 100ms·250ms 목표나 브라우저·RSS 메모리 판정이 아니다. 제품 package·공개 API·버전·원격은 그대로이고 코드·원시 자료는 로컬 커밋 `6979c84`(미푸시)이다. 상세는 [73](73-thin-layer-runtime-cost.md)를 따른다.
 
 2026-10-11(KST), core `validateTranslation`이 깊게 동결된 schema·catalog 성공 identity pair를 다시 검사하지 않도록 고쳤다(`5586bf2`). `validatedCatalogs` WeakMap<schema, WeakSet<catalog>>로 전체 검증을 통과한 pair만 기억하고 변경 identity·mutable·shallow frozen·실패 결과는 재검사하며 기존 인자 캐시는 그대로 둔다. core 82·Vite 101·typegen 9에 prototype 64를 더한 256 tests PASS와 core build·소비자 typecheck PASS를 확인했다. 격리 런타임 비용 재측정은 10k core p95 16.46→23.49ms(높음)·layer 40.50→34.24ms(낮음)인데 baseline과 after가 다른 시간대라 원인이나 전면 향상을 주장하지 않는다. CPU 표본(`ad7b55e`)은 full-worker 단일 1kHz 프로파일로 core `validateTranslation` self 270/1454·layer 522/2205이고 setup·parse·copy·GC를 포함한다. default prebundle에 typegen on인 large 편집은 각 25표본 p95 70.35·61.91ms·pool 66.16ms(100ms 이내 49/50)지만 small 편집은 p95 108.61ms(23/25)로 미달이다. locale-add 목록은 small 84.29ms(25/25)·large 137.09·159.75ms(50표본 pooled 159.75ms, 49/50)이고 첫 locale 선택 translation은 별도로 267.80·262.38ms다. 제품 API·버전·의존성은 그대로이고 소스 변경은 로컬 커밋 `5586bf2`(미푸시)이다. 상세는 [74](74-immutable-validation-reuse.md)를 따른다.
+
+2026-10-11(KST), Vite watcher가 짧은 창의 두 번째 저장을 놓치는 문제를 꼬리 재확인 앞에서 잡으려고 10ms 이른 확인을 넣었지만(`08b1d7c`) 같은 하네스 ABBA에서 small pooled p95 83.81→86.23ms로 이득 증거가 없어 채택하지 않았다. 30ms 중간 확인을 더한 3단계(`eb66af8`)에서는 ABBA pooled가 small p50 19.43→17.61ms·p95 82.05→49.57ms, large p95 85.60→80.25ms이고 두 크기 모두 p95 목표 안이며 large 50표본 중 49개가 100ms 이내(최대 101.93ms)다. 계측(`c184fcb`)은 꼬리 재확인과 외부 enqueue를 origin으로 분리해 25건 중 disk-recheck 13건이 64.98~83.84ms임을 기록했고, 단발 로케일 목록은 small p95 77.46ms·large 177.83ms다. 실제 watcher SSR rapid-recovery 5개는 모두 `recovered: true`다. 공개 API·의존성·버전은 그대로이고 제품 커밋 `eb66af8`은 미푸시이며 comparison 원시 자료는 `05b1fe6`, 로케일 원시 자료는 `a763e80`에 있다. 상세는 [75](75-early-disk-rechecks.md)를 따른다.

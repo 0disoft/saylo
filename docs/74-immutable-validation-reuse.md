@@ -69,3 +69,5 @@ node benchmarks/thin-layer/runtime-cost-probe.mjs --iterations 30 --out benchmar
 ## 상태
 
 제품 source 변경은 `5586bf2`에 있고 공개 API·의존성·버전은 그대로다. CPU raw는 `ad7b55e`, after runtime·lazy contracts raw는 `5586bf2`, repeat·locale·small raw는 `9093d46`에 있다. 모두 미푸시이고 원격 반영은 없다.
+
+이어지는 이른 디스크 재확인 시도와 30ms 보완 채택은 [75-early-disk-rechecks.md](75-early-disk-rechecks.md)를 따른다.
