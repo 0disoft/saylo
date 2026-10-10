@@ -19,7 +19,8 @@
 - i18next·Wuchale 같은 기존 도구의 공개 확장점 위에 얇은 검증·갱신·typegen 계층을 얹는 비교 실험을 먼저 둔다.
 - 그 실험으로 필수 계약을 충족하는지 확인하고, 남는 차별점이 독립 런타임을 정당화하는지 판단한다.
 - 비교 실험 결과로 제품 형태를 결정한다. 현재 설계의 목표는 독립 라이브러리다.
-- 이 비교 실험은 아직 실시하지 않았다.
+- 초기 계약 프로브는 2026-10-11 실시했다. 공개 i18next·Wuchale 확장점 위 Node 실험이고 36개 관측을 기록했다([56](56-thin-layer-contract-probe.md)). 그 범위에서는 기존 formatter 위에서도 계약 일부가 충족됐다.
+- 초기 프로브만으로 전체 계약 충족이나 독립 런타임 필요성은 판정하지 않는다. Vite·브라우저, lifecycle loader·UI·disposal, typegen, 성능, 번들, SSR·hydration은 이 프로브의 범위 밖이다.
 
 ## 초기 설계 결정 (검증 전, 바뀔 수 있음)
 
@@ -71,7 +72,7 @@
 | secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트와 2026-10-07 실제 브라우저 검증을 통과했다. schema-breaking 편집이라 입력·dialog 상태 보존은 일반 보장이 아니다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
 | JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
 | message delta 비용 | request-scoped message delta·immutable catalog signature 재사용·LF 위치 색인 최적화를 로컬 구현했다. 2026-10-07 최종 서버 파일 계측 설정에서 small p95 72.66ms·large 165.94ms였고 각각 측정 50회 모두 patch였다. 파서 key 디코딩 trial은 되돌렸다. 대규모 목표 p95 ≤ 100ms는 여전히 미달이다. JSON token/임시 entry·메시지 맵 할당, 브라우저 patch 복사·검증 순회, 로케일 추가 시 cold 파싱·추가 선택 비용 최적화와 비교 실험이 남아 있다. compact 전체 전송은 아래 후속 기록을 따른다. 조건·되돌린 실험·부하 한계는 [10-performance-measurements.md](10-performance-measurements.md)와 [11-parser-measurements.md](11-parser-measurements.md)를 따른다 |
-| 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 비교 실험은 아직 실시하지 않았다 |
+| 독립 런타임 필요성 | 기존 도구 위 얇은 계층 비교 실험으로 검증한다. 초기 계약 프로브는 2026-10-11 실시해 36개 관측을 남겼지만([56](56-thin-layer-contract-probe.md)), 전체 계층 평가와 필요성 판정은 아직 완료하지 않았다 |
 
 대규모 로케일 추가의 서버 구간 계측([14](14-locale-add-server-measurements.md))에서 cold 파싱을 다음 대상으로 확인했다. 이후 일반 텍스트·ASCII 단순 인자용 경로를 로컬 구현했다. 같은 프로세스 cold 비교 20쌍 중 18쌍이 빨랐지만 parser p95는 개선되지 않았다. 당시 대규모 목록 표시 p95는 514.47ms로 관측했으며 250ms 목표는 미달이다. 조건·원시 결과·부하 한계는 [15-simple-message-parser.md](15-simple-message-parser.md)를 따른다.
 
@@ -81,7 +82,7 @@ full catalog 선택 경로에는 compact 개발 전송을 로컬 구현했다. �
 
 cold 내부 계측에서는 인자 스키마·메시지·최종 카탈로그 동결 구간을 우선 후보로 확인했다([17](17-cold-parser-measurements.md)). 이후 호출 내 동일 인자 스키마 공유와 성공한 불변 계약 쌍의 검증 재사용을 로컬 구현했다. cold 교차 비교는 20쌍 중 17쌍과 중앙값에서 개선됐지만 p95는 증가했다. GC를 tail 지연의 유일한 원인으로 단정하지 않는다. 다음 후보는 메시지·AST 동결 경로이며 불변성·ICU·오류 위치 계약을 유지한다. 조건과 원시 결과는 [18-shared-argument-schemas.md](18-shared-argument-schemas.md)를 따른다.
 
-Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 2026-10-07 Paraglide 2.25.4와 같은 fixture의 small 문구 수정·로케일 추가를 각각 10회 측정했다. Paraglide 문구 편집은 Fast Refresh로 입력과 상태를 유지했고, 로케일 추가·기본 setter 선택은 document reload로 최초 상태를 잃었다. Saylo는 두 흐름에서 상태 보존을 확인했다. large는 Paraglide 초기 compile의 하위 SDK timeout으로 비교를 완료하지 못했다. 조건·원시 결과·한계는 [13-paraglide-comparison.md](13-paraglide-comparison.md)를 따른다. 위 i18next/Wuchale 얇은 계층 비교 실험은 아직 실시하지 않았으며 이 측정으로 독립 런타임 필요성을 확정하지 않는다.
+Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 2026-10-07 Paraglide 2.25.4와 같은 fixture의 small 문구 수정·로케일 추가를 각각 10회 측정했다. Paraglide 문구 편집은 Fast Refresh로 입력과 상태를 유지했고, 로케일 추가·기본 setter 선택은 document reload로 최초 상태를 잃었다. Saylo는 두 흐름에서 상태 보존을 확인했다. large는 Paraglide 초기 compile의 하위 SDK timeout으로 비교를 완료하지 못했다. 조건·원시 결과·한계는 [13-paraglide-comparison.md](13-paraglide-comparison.md)를 따른다. i18next/Wuchale 얇은 계층 초기 계약 프로브는 2026-10-11 실시했고 전체 계층 평가는 아직 완료하지 않았다([56](56-thin-layer-contract-probe.md)). 이 측정과 그 프로브 어느 쪽도 독립 런타임 필요성을 확정하지 않는다.
 
 파서 소유 literal·argument AST에는 알려진 구조의 위치·노드를 직접 동결하는 경로를 선택했다. 복잡한 ICU와 외부 입력의 일반 동결은 유지한다. cold 교차 비교 p50·p95는 낮게 관측됐지만 incremental 중앙값에서는 개선을 확인하지 못했다. 일반 동결을 for...in으로 바꾼 실험은 느려져 되돌렸다. 다음은 로케일 추가 종단 간 재측정이며 조건·한계는 [19](19-ast-freeze-measurements.md)에 있다.
 

@@ -61,6 +61,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 50. [53-completion-audit.md](53-completion-audit.md) — 원래 명시 요구사항·로드맵 대조 완료 감사와 남은 작업
 51. [54-plain-argument-contracts.md](54-plain-argument-contracts.md) — plain argument contract 재사용의 cold·incremental 교차 비교와 로컬 채택
 52. [55-next-turn-edits.md](55-next-turn-edits.md) — 다음 턴 편집 병합의 Vite·브라우저 교차 비교와 편집 목표 미달
+53. [56-thin-layer-contract-probe.md](56-thin-layer-contract-probe.md) — i18next·Wuchale 공개 확장점 위 계약 프로브 36개 관측과 전체 계층 평가 보류
 
 ## 상태 표기 규칙
 
