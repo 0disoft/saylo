@@ -1,0 +1,1025 @@
+{
+  "schema": "saylo.demo-page-zoom-acceptance/v1",
+  "observedAt": "2026-10-11T17:28:19.765Z",
+  "sourceCommit": "90498782ca64246a7d9e2c850c2ad79d2321cf58",
+  "sourceHashes": {
+    "scripts/demo-accessibility-browser.mjs": "4d0e86d36952a95359ec251734f2ad7eb08dce8dd37943021053b0f71bb44dd0",
+    "scripts/verify-demo-accessibility.mjs": "744f5d800fa2aee0c0dcffc382885b081e61abba4dc71322481ef7e75bcece84",
+    "docs/demo-accessibility.md": "ee8f0c8c5df266492149d427d98d1d17dadea798cce4aff156a81136af71195f"
+  },
+  "method": "Chromium normal page zoom via partition.default_zoom_level.x in fresh disposable profiles. 1280x1024 headless window and device scale 1. DOM assertions verify DPR, reduced CSS layout width and visualViewport.scale=1.",
+  "references": [
+    "https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/ui/zoom/chrome_zoom_level_prefs.cc",
+    "https://raw.githubusercontent.com/chromium/chromium/main/third_party/blink/common/page/page_zoom.cc"
+  ],
+  "checkedStates": 60,
+  "runs": [
+    {
+      "zoom": 1,
+      "command": "node scripts/verify-demo-accessibility.mjs --zoom 1",
+      "exitCode": 0,
+      "artifact": {
+        "path": ".release/accessibility-zoom-1-report.json",
+        "sha256": "cc7584317d62137c84327c4b1febb937dfd49e192a30d44b80c9b0ed0d70df5a"
+      },
+      "frameworks": [
+        {
+          "framework": "vanilla",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 1262,
+            "innerHeight": 928,
+            "devicePixelRatio": 1,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            }
+          ]
+        },
+        {
+          "framework": "react",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 1262,
+            "innerHeight": 928,
+            "devicePixelRatio": 1,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            }
+          ]
+        },
+        {
+          "framework": "svelte",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 1262,
+            "innerHeight": 928,
+            "devicePixelRatio": 1,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            }
+          ]
+        },
+        {
+          "framework": "npm",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 1262,
+            "innerHeight": 928,
+            "devicePixelRatio": 1,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1262,
+                "rootScrollWidth": 1262
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [
+                {
+                  "id": "color-contrast",
+                  "impact": "serious",
+                  "help": "Elements must meet minimum color contrast ratio thresholds",
+                  "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+                  "nodes": [
+                    {
+                      "target": [
+                        "#dialog-title"
+                      ],
+                      "html": "<h2 id=\"dialog-title\" data-i18n=\"demo:dialogTitle\">Zoom preview님, 입력한 내용을 확인해 주세요</h2>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+                    }
+                  ]
+                }
+              ],
+              "layout": {
+                "rootClientWidth": 1262,
+                "rootScrollWidth": 1262,
+                "dialogClientWidth": 440,
+                "dialogScrollWidth": 440
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1262,
+                "rootScrollWidth": 1262
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1262,
+                "rootScrollWidth": 1262,
+                "dialogClientWidth": 440,
+                "dialogScrollWidth": 440
+              }
+            }
+          ]
+        },
+        {
+          "framework": "sveltekit",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 1262,
+            "innerHeight": 928,
+            "devicePixelRatio": 1,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 1247,
+                "rootScrollWidth": 1247,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "zoom": 2,
+      "command": "node scripts/verify-demo-accessibility.mjs --zoom 2",
+      "exitCode": 0,
+      "artifact": {
+        "path": ".release/accessibility-zoom-2-report.json",
+        "sha256": "08acae2c79fd670966a5e1651f95c875fbffe12e3ddbac0e7ce839829f10cb7c"
+      },
+      "frameworks": [
+        {
+          "framework": "vanilla",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 631,
+            "innerHeight": 464,
+            "devicePixelRatio": 2,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            }
+          ]
+        },
+        {
+          "framework": "react",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 631,
+            "innerHeight": 464,
+            "devicePixelRatio": 2,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            }
+          ]
+        },
+        {
+          "framework": "svelte",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 631,
+            "innerHeight": 464,
+            "devicePixelRatio": 2,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            }
+          ]
+        },
+        {
+          "framework": "npm",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 631,
+            "innerHeight": 464,
+            "devicePixelRatio": 2,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [
+                {
+                  "id": "color-contrast",
+                  "impact": "serious",
+                  "help": "Elements must meet minimum color contrast ratio thresholds",
+                  "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+                  "nodes": [
+                    {
+                      "target": [
+                        "#dialog-title"
+                      ],
+                      "html": "<h2 id=\"dialog-title\" data-i18n=\"demo:dialogTitle\">Zoom preview님, 입력한 내용을 확인해 주세요</h2>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+                    }
+                  ]
+                }
+              ],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 440,
+                "dialogScrollWidth": 440
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 440,
+                "dialogScrollWidth": 440
+              }
+            }
+          ]
+        },
+        {
+          "framework": "sveltekit",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 631,
+            "innerHeight": 464,
+            "devicePixelRatio": 2,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 623,
+                "rootScrollWidth": 623,
+                "dialogClientWidth": 450,
+                "dialogScrollWidth": 450
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "zoom": 4,
+      "command": "node scripts/verify-demo-accessibility.mjs --zoom 4",
+      "exitCode": 0,
+      "artifact": {
+        "path": ".release/accessibility-zoom-4-report.json",
+        "sha256": "725f9f3e1fb39aa567b7b93b82842f807afad88ea7cf46caaaff9fc958f24e71"
+      },
+      "frameworks": [
+        {
+          "framework": "vanilla",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [
+                {
+                  "id": "color-contrast",
+                  "impact": "serious",
+                  "help": "Elements must meet minimum color contrast ratio thresholds",
+                  "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+                  "nodes": [
+                    {
+                      "target": [
+                        "#dialog-title"
+                      ],
+                      "html": "<h2 id=\"dialog-title\" data-message=\"demo:dialogTitle\">Review your input</h2>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    },
+                    {
+                      "target": [
+                        "span[data-message=\"demo:dialogNote\"]"
+                      ],
+                      "html": "<span data-message=\"demo:dialogNote\">Confirmation note</span>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    }
+                  ]
+                }
+              ],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            }
+          ]
+        },
+        {
+          "framework": "react",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [
+                {
+                  "id": "color-contrast",
+                  "impact": "serious",
+                  "help": "Elements must meet minimum color contrast ratio thresholds",
+                  "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+                  "nodes": [
+                    {
+                      "target": [
+                        "#dialog-title"
+                      ],
+                      "html": "<h2 id=\"dialog-title\">Review your input</h2>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    },
+                    {
+                      "target": [
+                        "form[method=\"dialog\"] > label"
+                      ],
+                      "html": "<label>Confirmation note<input id=\"confirmation-note\" autocomplete=\"off\" value=\"Zoom confirmation\"></label>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    }
+                  ]
+                }
+              ],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            }
+          ]
+        },
+        {
+          "framework": "svelte",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [
+                {
+                  "id": "color-contrast",
+                  "impact": "serious",
+                  "help": "Elements must meet minimum color contrast ratio thresholds",
+                  "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+                  "nodes": [
+                    {
+                      "target": [
+                        "#dialog-title"
+                      ],
+                      "html": "<h2 id=\"dialog-title\">Review your input</h2>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    },
+                    {
+                      "target": [
+                        "form[method=\"dialog\"] > label"
+                      ],
+                      "html": "<label>Confirmation note<input id=\"confirmation-note\" autocomplete=\"off\"></label>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    }
+                  ]
+                }
+              ],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            }
+          ]
+        },
+        {
+          "framework": "npm",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [
+                {
+                  "id": "color-contrast",
+                  "impact": "serious",
+                  "help": "Elements must meet minimum color contrast ratio thresholds",
+                  "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+                  "nodes": [
+                    {
+                      "target": [
+                        "#dialog-title"
+                      ],
+                      "html": "<h2 id=\"dialog-title\" data-i18n=\"demo:dialogTitle\">Check your input, Zoom preview</h2>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    }
+                  ]
+                }
+              ],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            }
+          ]
+        },
+        {
+          "framework": "sveltekit",
+          "axeVersion": "4.14.0",
+          "checksPassed": true,
+          "violations": 0,
+          "viewport": {
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1
+          },
+          "states": [
+            {
+              "locale": "ko",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "ko",
+              "dialog": true,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": false,
+              "incomplete": [],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311
+              }
+            },
+            {
+              "locale": "en",
+              "dialog": true,
+              "incomplete": [
+                {
+                  "id": "color-contrast",
+                  "impact": "serious",
+                  "help": "Elements must meet minimum color contrast ratio thresholds",
+                  "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+                  "nodes": [
+                    {
+                      "target": [
+                        "#dialog-title"
+                      ],
+                      "html": "<h2 id=\"dialog-title\">Review your input</h2>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    },
+                    {
+                      "target": [
+                        "form[method=\"dialog\"] > label"
+                      ],
+                      "html": "<label>Confirmation note<input id=\"confirmation-note\" autocomplete=\"off\"></label>",
+                      "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+                    }
+                  ]
+                }
+              ],
+              "layout": {
+                "rootClientWidth": 311,
+                "rootScrollWidth": 311,
+                "dialogClientWidth": 270,
+                "dialogScrollWidth": 270
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "legacyInvocation": {
+    "command": "node scripts/verify-demo-accessibility.mjs --framework vanilla",
+    "exitCode": 0,
+    "artifact": {
+      "path": ".release/accessibility-report.json",
+      "sha256": "778d80915df788567f53f786e62862ad1b1068f9bd14555458d58d3851838214"
+    }
+  },
+  "actions": [
+    "Preserve name and note across ko/en changes",
+    "Open modal and focus confirmation input",
+    "Fill confirmation",
+    "Scroll close control into view and assert it is inside both viewport axes",
+    "Close modal, restore opener focus and preserve all input values"
+  ],
+  "findings": "Automated reflow and modal checks passed at 100/200/400 percent. No runtime layout change was made. Axe returned incomplete contrast checks in seven states; these are not passes and require separate overlap/visibility review.",
+  "harnessCorrection": "The first React probe used direct value assignment, which bypassed its input event tracking. Reused native prototype setters from the existing recovery/starter fixtures; final runs passed.",
+  "cleanup": "Each successful runner awaited owned browser termination, Vite close and removal of its validated temporary profile and SvelteKit clone.",
+  "limits": [
+    "Programmatic input/focus/click/scroll; this does not replace physical keyboard or assistive-technology speech observation.",
+    "Headless Chromium development rendering only; OS text enlargement, other browsers and production zoom acceptance are incomplete.",
+    "The existing alpha.5 candidate remains frozen at 722e497; this slice changes optional QA tooling and records only.",
+    "No version bump, push, registry publication, CI job or package runtime change."
+  ]
+}
