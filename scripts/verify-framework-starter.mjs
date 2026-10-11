@@ -17,13 +17,14 @@ assert.ok(npmCli, 'Run through an npm verify:starter script.');
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const docPath = `docs/getting-started-${framework}.md`;
 const doc = await readFile(path.join(repository, docPath), 'utf8');
+const recovery = !sveltekit && doc.includes('### demo-messages.ts');
 const files = sveltekit ? ['package.json', 'vite.config.mjs', 'tsconfig.json', 'src/app.d.ts', 'src/app.html',
   'src/hooks.server.ts', 'src/lib/i18n.ts', 'src/lib/client-connection.ts', 'src/lib/Workbench.svelte', 'src/lib/style.css',
   'src/routes/(saylo)/+layout.server.ts', 'src/routes/(saylo)/+layout.svelte', 'src/routes/(saylo)/+page.svelte',
   'src/routes/(saylo)/about/+page.svelte', 'src/routes/plain/+page.svelte', 'locales/ko/demo.json', 'locales/en/demo.json', 'verify-ssr.mjs']
   : ['package.json', 'vite.config.mjs', 'tsconfig.json', 'index.html',
   framework === 'react' ? 'main.tsx' : 'main.ts', ...(framework === 'svelte' ? ['i18n.ts', 'App.svelte'] : []),
-  'locales/ko/demo.json', 'locales/en/demo.json'];
+  ...(recovery ? ['demo-messages.ts'] : []), 'locales/ko/demo.json', 'locales/en/demo.json'];
 const ownsRoot = !values.consumer;
 const root = ownsRoot ? await mkdtemp(path.join(os.tmpdir(), `saylo-${framework}-starter-`)) : path.resolve(values.consumer);
 assert.equal(path.dirname(path.resolve(root)), path.resolve(os.tmpdir()));
@@ -101,6 +102,8 @@ try {
   const { createServer, preview } = await import(pathToFileURL(require.resolve('vite')).href);
   const probe = await readFile(new URL('./starter-browser.mjs', import.meta.url), 'utf8');
   const enFile = path.join(root, 'locales/en/demo.json');
+  const koFile = path.join(root, 'locales/ko/demo.json');
+  const koOriginal = await readFile(koFile, 'utf8');
   const en = JSON.parse(await readFile(enFile, 'utf8'));
   const ja = { ...en, heading: `Saylo ${framework === 'react' ? 'React' : 'Svelte'} 日本語`, greeting: 'こんにちは {name}' };
   const edited = { ...en, greeting: 'Updated {name}' };
@@ -119,6 +122,14 @@ try {
       // Fixed test mutations only; requests can never choose a filesystem path.
       if (body === 'edit' || body === 'restore') await writeFile(enFile, JSON.stringify(edited));
       else if (body === 'invalid') await writeFile(enFile, JSON.stringify({ ...edited, greeting: '{name' }));
+      else if (body === 'remove-key') {
+        const missing = JSON.parse(koOriginal); delete missing.greeting;
+        await writeFile(koFile, JSON.stringify(missing));
+      } else if (body === 'empty-base') await writeFile(koFile, '{}');
+      else if (body === 'restore-base') await writeFile(koFile, koOriginal);
+      else if (body === 'restore-all') {
+        await writeFile(koFile, koOriginal); await writeFile(enFile, JSON.stringify(edited));
+      }
       else if (body === 'add-locale') {
         await mkdir(path.join(root, 'locales/ja'), { recursive: true });
         await writeFile(path.join(root, 'locales/ja/demo.json'), JSON.stringify(ja));
@@ -137,16 +148,18 @@ try {
     void result.catch(() => {});
     child = spawn(browser, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
       '--disable-background-networking', `--user-data-dir=${path.join(root, `browser-${mode}`)}`,
-      `${origin}?starter-check=${framework}&mode=${mode}`], { windowsHide: true, stdio: 'ignore' });
+      `${origin}?starter-check=${framework}&mode=${mode}&recovery=${recovery ? '1' : '0'}`], { windowsHide: true, stdio: 'ignore' });
     child.once('error', error => rejectBrowser?.(error));
     child.once('exit', code => rejectBrowser?.(new Error(`Chromium exited before its report (${code}).`)));
     timer = setTimeout(() => rejectBrowser?.(new Error('Starter browser timed out after 45s.')), 45000);
     const report = await result;
     assert.equal(report.ok, true, report.error);
     assert.deepEqual(report.errors, [], 'Browser runtime errors');
-    assert.deepEqual(report.checks, mode === 'dev'
-      ? ['first-render', 'locale-switch', 'live-edit', 'new-locale', 'invalid-last-good', 'repair', 'input-dialog-focus-preserved']
-      : ['first-render', 'locale-switch', 'input-dialog-focus-preserved']);
+    assert.deepEqual(report.checks, mode === 'cold'
+      ? ['cold-empty-view', 'cold-interaction', 'cold-restoration']
+      : ['first-render', 'locale-switch', ...(mode === 'dev'
+        ? ['live-edit', 'new-locale', 'invalid-last-good', 'repair', ...(recovery
+          ? ['key-removal', 'current-input-fallback', 'empty-base', 'base-recovery'] : [])] : []), 'input-dialog-focus-preserved']);
     clearTimeout(timer);
     rejectBrowser = undefined;
     await stopBrowser();
@@ -154,11 +167,22 @@ try {
     return report;
   }
   server = await createServer({ root, plugins: [plugin], server: { host: '127.0.0.1', port: 0, strictPort: true,
-    watch: { ignored: ['**/browser-dev/**', '**/browser-production/**'] } } });
+    watch: { ignored: ['**/browser-dev/**', '**/browser-cold/**', '**/browser-production/**'] } } });
   await server.listen();
   const dev = await launch(server.resolvedUrls.local[0], 'dev');
   await server.close();
   server = undefined;
+  let cold;
+  if (recovery) {
+    await writeFile(koFile, '{}'); await writeFile(enFile, '{}');
+    // Remove the test locale before creating a genuinely empty initial view.
+    await rm(path.join(root, 'locales/ja/demo.json'));
+    server = await createServer({ root, plugins: [plugin], server: { host: '127.0.0.1', port: 0, strictPort: true,
+      watch: { ignored: ['**/browser-dev/**', '**/browser-cold/**', '**/browser-production/**'] } } });
+    await server.listen();
+    cold = await launch(server.resolvedUrls.local[0], 'cold');
+    await server.close(); server = undefined;
+  }
   console.log((await npm(['run', 'build'])).trim());
   const builtHtml = path.join(root, 'dist/index.html');
   await writeFile(builtHtml, (await readFile(builtHtml, 'utf8')).replace('</head>',
@@ -168,7 +192,7 @@ try {
   const production = await launch(server.resolvedUrls.local[0], 'production');
   console.log(JSON.stringify({ document: docPath, documentSha256: createHash('sha256').update(doc).digest('hex'),
     files: files.length, installed: Object.fromEntries(names.map(name => [name, lock.packages[`node_modules/${name}`].version])),
-    dev, production, limits: ['No SSR hydration or cross-browser matrix in this starter check.'] }, null, 2));
+    dev, ...(cold ? { cold } : {}), production, limits: ['No SSR hydration or cross-browser matrix in this starter check.'] }, null, 2));
   }
 } catch (error) {
   if (error.stdout) console.error(error.stdout.trim());

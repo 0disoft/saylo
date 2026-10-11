@@ -103,7 +103,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 ## 실제 효용 우선 Top 3
 
-1. 독립 시작 안내에도 렌더 오류 복구를 반영한다(6·7·27행). 저장소 React·Svelte·SvelteKit 예제는 빈 카탈로그와 파일 삭제·복원을 확인했다. SvelteKit은 빈 카탈로그의 HTTP 500과 같은 URL의 로케일 재선택 실패를 수정하고 브라우저 10단계·SSR 12요청을 통과했다(`review/sveltekit-render-recovery-2026-10-11.json`). 시작 안내의 코드 블록은 여전히 컴포넌트에서 번역을 직접 호출하므로 같은 조건은 별도 보완·검증해야 한다.
+1. Svelte·SvelteKit 독립 시작 안내에도 렌더 오류 복구를 반영한다(6·7·27행). 저장소의 세 프레임워크 예제와 React 독립 시작 안내는 보완했다. React 문서의 8파일을 public alpha.4로 독립 설치해 dev 11단계·빈 첫 실행 3단계·운영 미리보기 3단계를 통과했다(`review/react-starter-render-recovery-2026-10-11.json`). Svelte·SvelteKit 시작 안내는 여전히 번역을 직접 호출하므로 같은 조건을 별도 보완·검증해야 한다.
 2. 외부 문의 창구와 비공개 제보 연락처를 정한다(45·73행). PRIVATE 저장소의 bugs 링크가 인증 없이 404인 것을 확인했다(`review/reporting-access-2026-10-11.json`). 기존 비공개 이력 공개는 별도 판단이 필요하다. 대체 연락처는 아직 미정이고 원격 설정은 변경하지 않았다.
 3. 시작 안내의 공개 전달 경로를 정한다(6·27행). vanilla·React·Svelte·SvelteKit 문서는 로컬 저장소에 있고 설치 코드는 public npm만으로 검증했다. PRIVATE 저장소 링크 대신 이용자가 읽을 문서 배포 경로와 SSR·lazy 활용 안내의 충분성을 점검한다.
 

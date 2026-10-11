@@ -1,0 +1,21 @@
+{
+  "observedOn": "2026-10-11",
+  "document": "docs/getting-started-react.md",
+  "documentSha256": "e41304bc1d61a44d93cb1d52b2082bc5360d4439e9ba36b5b97b1fd45addef59",
+  "command": "npm run verify:starter:react",
+  "exitCode": 0,
+  "standaloneFiles": 8,
+  "installation": "Document code blocks extracted outside the repository; public registry dependencies verified in package-lock and no symlinks",
+  "installed": { "@0disoft/saylo-core": "0.1.0-alpha.4", "@0disoft/saylo-react": "0.1.0-alpha.4", "@0disoft/saylo-vite": "0.1.0-alpha.4", "vite": "8.3.4" },
+  "developmentChromium": {
+    "checks": ["first-render", "locale-switch", "live-edit", "new-locale", "invalid-last-good", "repair", "key-removal", "current-input-fallback", "empty-base", "base-recovery", "input-dialog-focus-preserved"],
+    "runtimeErrorsAndWarnings": []
+  },
+  "coldChromium": { "checks": ["cold-empty-view", "cold-interaction", "cold-restoration"], "runtimeErrorsAndWarnings": [] },
+  "productionChromium": { "checks": ["first-render", "locale-switch", "input-dialog-focus-preserved"], "runtimeErrorsAndWarnings": [] },
+  "build": "Document TypeScript check and Vite production build passed",
+  "implementation": ["Complete typed view projection before JSX", "Only committed successful snapshots become fallback", "Previous immutable translator interpolates current name during key deletion", "First empty catalogs render an explicit setup view", "Correction hint visible in the open modal"],
+  "environment": { "os": "Windows", "node": "24.18.0", "browser": "HeadlessChrome/154.0.0.0" },
+  "cleanup": "Worker, browser, Vite servers and bounded independent consumer removed",
+  "limits": ["React guide only; Svelte and SvelteKit guide recovery remains pending", "Production preview uses repaired catalogs", "No SSR or browser matrix", "No unpublished API, package version bump, push or publication"]
+}

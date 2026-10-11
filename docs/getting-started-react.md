@@ -1,6 +1,6 @@
 # 빈 폴더에서 React로 Saylo 시작하기
 
-Saylo 저장소를 clone하지 않고 npm registry만으로 Vite 8 + React 19 앱에 Saylo를 붙인다. 빈 폴더에 파일 7개를 만들고 개발 서버를 띄우면, 로케일 JSON을 고치는 즉시 문구가 바뀌고 폼·모달 상태는 그대로 남는다. 이 문서는 게시본 `0.1.0-alpha.4`의 공개 API만 쓴다. 로컬 미게시 API(`onSyncState`, 문의용 진단 보고서)는 쓰지 않는다.
+Saylo 저장소를 clone하지 않고 npm registry만으로 Vite 8 + React 19 앱에 Saylo를 붙인다. 빈 폴더에 파일 8개를 만들고 개발 서버를 띄우면, 로케일 JSON을 고치는 즉시 문구가 바뀌고 폼·모달 상태는 그대로 남는다. 이 문서는 게시본 `0.1.0-alpha.4`의 공개 API만 쓴다. 로컬 미게시 API(`onSyncState`, 문의용 진단 보고서)는 쓰지 않는다.
 
 ## 전제
 
@@ -10,9 +10,9 @@ Saylo 저장소를 clone하지 않고 npm registry만으로 Vite 8 + React 19 �
 - React는 peer이고 조건은 19, Vite는 `@0disoft/saylo-vite`의 peer이며 조건은 8이다.
 - 대조한 게시본은 `0.1.0-alpha.4`다. alpha는 게시마다 올라가므로 새 게시본에서는 아래 절차를 다시 확인한다.
 
-## 파일 7개
+## 파일 8개
 
-빈 폴더에 아래 7개 파일을 만든다. `locales/ko`, `locales/en` 폴더를 먼저 만든다.
+빈 폴더에 아래 8개 파일을 만든다. `locales/ko`, `locales/en` 폴더를 먼저 만든다.
 
 ### package.json
 
@@ -104,16 +104,17 @@ export default defineConfig({
 ### main.tsx
 
 ```tsx
-import { StrictMode, useEffect, useRef, useSyncExternalStore, useState } from 'react';
+import { StrictMode, useEffect, useRef, useMemo, useSyncExternalStore, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createStore } from '@0disoft/saylo-core';
 import { createSayloReact } from '@0disoft/saylo-react';
 import { connectDev } from '@0disoft/saylo-vite/client';
 import type { LiveDiagnostic } from '@0disoft/saylo-vite/client';
 import { baseLocale, initialCatalogs, initialLocale, timeZone } from 'virtual:saylo';
+import { projectMessages } from './demo-messages';
 
 // 기준 로케일에서 만든 스키마. saylo-typegen이 같은 형태를 생성한다.
-type AppSchema = {
+export type AppSchema = {
   'demo:heading': {};
   'demo:greeting': { name: string | number };
   'demo:nameLabel': {};
@@ -151,6 +152,11 @@ function App() {
   const snapshot = useI18n();
   const [name, setName] = useState('Saylo');
   const [note, setNote] = useState('');
+  const lastRendered = useRef<ReturnType<typeof store.getSnapshot> | undefined>(undefined);
+  const presentation = useMemo(() => projectMessages(snapshot, lastRendered.current, name), [snapshot, name]);
+  const text = presentation.messages;
+  // Only a successful committed render can become the fallback.
+  useEffect(() => { if (presentation.accepted) lastRendered.current = presentation.accepted; }, [presentation]);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const diagnostic = useSyncExternalStore(subscribeDiagnostic, readDiagnostic);
 
@@ -162,24 +168,26 @@ function App() {
 
   return (
     <>
-      <h1 id="heading">{snapshot.t('demo:heading')}</h1>
+      <h1 id="heading">{text.heading}</h1>
       <select id="locale" aria-label="Locale" value={snapshot.locale}
         onChange={event => snapshot.setLocale(event.target.value)}>
         {snapshot.availableLocales.map(locale => <option key={locale} value={locale}>{locale}</option>)}
       </select>
-      <p id="greeting">{snapshot.t('demo:greeting', { name })}</p>
-      <label htmlFor="name">{snapshot.t('demo:nameLabel')}</label>
+      <p id="greeting">{text.greeting}</p>
+      <label htmlFor="name">{text.nameLabel}</label>
       <input id="name" value={name} autoComplete="off" onChange={event => setName(event.target.value)} />
-      <label htmlFor="note">{snapshot.t('demo:noteLabel')}</label>
+      <label htmlFor="note">{text.noteLabel}</label>
       <textarea id="note" value={note} onChange={event => setNote(event.target.value)} />
-      <button id="open-dialog" type="button" onClick={openDialog}>{snapshot.t('demo:openDialog')}</button>
+      <button id="open-dialog" type="button" onClick={openDialog}>{text.openDialog}</button>
       <p id="error" role="alert">{diagnostic}</p>
+      <p id="render-error" role="alert">{presentation.error}</p>
       <dialog ref={dialogRef} id="confirmation" aria-labelledby="dialog-title">
-        <h2 id="dialog-title">{snapshot.t('demo:dialogTitle')}</h2>
+        <h2 id="dialog-title">{text.dialogTitle}</h2>
         <p id="dialog-status" role="status">{diagnostic}</p>
-        <label htmlFor="dialog-note">{snapshot.t('demo:noteLabel')}</label>
+        <p id="dialog-render-error" role="alert">{presentation.error}</p>
+        <label htmlFor="dialog-note">{text.noteLabel}</label>
         <textarea id="dialog-note" value={note} onChange={event => setNote(event.target.value)} />
-        <button id="close-dialog" type="button" onClick={closeDialog}>{snapshot.t('demo:closeDialog')}</button>
+        <button id="close-dialog" type="button" onClick={closeDialog}>{text.closeDialog}</button>
       </dialog>
     </>
   );
@@ -210,6 +218,40 @@ if (import.meta.hot) import.meta.hot.dispose(cleanup);
 `createStore`는 `virtual:saylo`가 넘긴 eager 카탈로그로 만든다. `useI18n`은 그 렌더의 불변 snapshot과 `setLocale`을 돌려주고, eager store의 `setLocale`은 `void`라 Promise 처리가 필요 없다. store 구독은 react 패키지가 맡으므로 앱은 `store.subscribe`를 직접 걸지 않는다.
 
 `name`·`note`는 React state다. 카탈로그가 갱신돼도 컴포넌트가 다시 mount되지 않으므로 입력값과 열어 둔 모달이 남는다. `#dialog-note`는 `#note`와 같은 state를 쓰고, 진단 문자열은 `#error`(`role="alert"`)와 모달 안 `#dialog-status`(`role="status"`)에 함께 보인다.
+
+### demo-messages.ts
+
+```ts
+import type { StoreSnapshot } from '@0disoft/saylo-core';
+import type { AppSchema } from './main';
+
+function read(snapshot: StoreSnapshot<AppSchema>, name: string) {
+  const { t } = snapshot;
+  return {
+    heading: t('demo:heading'), greeting: t('demo:greeting', { name }),
+    nameLabel: t('demo:nameLabel'), noteLabel: t('demo:noteLabel'),
+    openDialog: t('demo:openDialog'), closeDialog: t('demo:closeDialog'), dialogTitle: t('demo:dialogTitle'),
+  };
+}
+
+export function projectMessages(snapshot: StoreSnapshot<AppSchema>, previous: StoreSnapshot<AppSchema> | undefined, name: string) {
+  try { return { messages: read(snapshot, name), accepted: snapshot, error: '' }; }
+  catch (error) {
+    let messages = {
+      heading: '번역을 준비하세요.', greeting: `이름: ${name}`,
+      nameLabel: '이름', noteLabel: '메모', openDialog: '확인 창 열기', closeDialog: '닫기', dialogTitle: '메모 확인',
+    };
+    // Snapshot translators are immutable. Reformat the previous translation
+    // with the current input instead of freezing the previous greeting.
+    if (previous) { try { messages = read(previous, name); } catch { /* Keep the setup view. */ } }
+    const message = error instanceof Error ? error.message : String(error);
+    return { messages, accepted: undefined,
+      error: `${message}\nlocales/ko/demo.json의 키·인자를 확인하고 저장하세요. 입력은 유지됩니다.` };
+  }
+}
+```
+
+컴포넌트에 번역을 넘기기 전에 필요한 문구를 전부 계산한다. 키가 삭제되거나 기준 카탈로그가 비면 마지막 정상 snapshot으로 현재 이름을 다시 보간하고, 처음부터 번역이 없으면 수정 안내와 입력 화면을 표시한다. snapshot은 컴포넌트별로 보관하므로 다른 화면의 번역을 공유하지 않는다.
 
 ### locales/ko/demo.json
 
@@ -272,7 +314,10 @@ npm run dev
 
 4. `locales/en/demo.json`의 `greeting`을 `"{name"` 처럼 ICU가 깨진 값으로 저장하면 그 파일은 게시되지 않고 마지막 정상 문구가 유지되며 `#error`에 진단이 뜬다. 값을 되돌리면 진단이 해제된다.
 
-정상 편집은 기준 스키마를 유지하므로 폼·모달 상태가 보존된다. 기준에 없는 키나 인자를 넣으면 그 파일은 게시되지 않고 진단이 뜬다. 키 삭제나 필수 인자 추가처럼 기준 스키마 자체를 바꾸는 편집은 이 보존 범위 밖이고, 그런 편집의 안전 처리는 향후 범위다.
+5. `locales/ko/demo.json`에서 `greeting` 키를 지우거나 파일 내용을 `{}`로 바꾸면 `#render-error`와 열린 모달에 수정 안내가 뜬다. 입력값과 마지막 정상 번역은 유지되고, 이름을 고치면 이전 번역으로 새 이름을 보간한다. 키를 복원하면 안내가 해제된다.
+6. ko/en 파일이 처음부터 `{}`인 상태로 개발 서버를 켜면 번역 준비 안내와 입력 화면이 나온다. 파일을 채워 저장하면 입력을 유지한 채 번역 화면으로 복구된다.
+
+기준에 없는 키나 인자는 기존 카탈로그 진단으로 처리하고, 기준 키 삭제·빈 카탈로그로 생긴 렌더 실패는 `projectMessages`가 처리한다. 새로운 키·인자를 쓰려면 앱 호출부와 타입도 함께 갱신한다.
 
 ## 빌드와 미리보기
 
