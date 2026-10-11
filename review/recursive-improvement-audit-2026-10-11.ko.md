@@ -54,9 +54,9 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 40 | 역할과 권한 관리 — "관리자·편집자·조회자처럼 역할을 나누고, 팀이나 조직별로 접근 권한을 관리하게 할까?" | 비적용(L1+L2) | 역할 모델 없음(14행). 저장소 쪽은 npm 게시 권한·GitHub environment(npm-release). |
 | 41 | 검토와 승인 흐름 — "중요한 변경을 초안 작성, 검토, 승인, 반영 단계로 처리하는 기능을 추가할까?" | 비적용(L1+L2) | 제품 승인 워크플로 없음. 릴리스는 수동 dispatch·`publish` 기본 false·Trusted Publisher(`docs/09`). |
 | 42 | 운영자 관리 화면 — "계정, 데이터, 작업 상태를 운영자가 직접 관리할 수 있는 관리 화면을 구축할까?" | 비적용(L1) | 관리 화면 없음. 운영 접점은 Vite dev 콘솔·CLI 로그뿐. |
-| 43 | 문의용 진단 자료 — "사용자가 문제를 겪으면 민감한 정보를 제외한 실행 환경과 오류 기록을 한 번에 모아 보내게 할까?" | 부분(L0+L1) | `createSupportReport`·`createSupportRecorder`와 `docs/support-report.md`로 환경 버전·오류 코드·위치·연결 상태를 허용 목록 자료로 제공한다. vanilla 생성·검토·초기화 UI와 실브라우저 검사, 독립 JS/TS tarball 검사 완료(`d7097dc`, `review/support-report-api-2026-10-11.json`·`review/support-report-ui-2026-10-11.json`). 원문·파일명·키·request ID 제외, 최근32이벤트/각64행 제한. 환경값은 caller 제공이고 React·Svelte·SvelteKit 생성·검토·초기화와 실브라우저 검증도 완료(분리 실행 기록). 공개 문의창구는 미확인(45행). 자동 제출 없음. |
+| 43 | 문의용 진단 자료 — "사용자가 문제를 겪으면 민감한 정보를 제외한 실행 환경과 오류 기록을 한 번에 모아 보내게 할까?" | 부분(L0+L1) | `createSupportReport`·`createSupportRecorder`와 `docs/support-report.md`로 환경 버전·오류 코드·위치·연결 상태를 허용 목록 자료로 제공한다. vanilla 생성·검토·초기화 UI와 실브라우저 검사, 독립 JS/TS tarball 검사 완료(`d7097dc`, `review/support-report-api-2026-10-11.json`·`review/support-report-ui-2026-10-11.json`). 원문·파일명·키·request ID 제외, 최근32이벤트/각64행 제한. 환경값은 caller 제공이고 React·Svelte·SvelteKit 생성·검토·초기화와 실브라우저 검증도 완료(분리 실행 기록). 문의 안내와 메타데이터는 로컬 준비 완료(45행), 실제 제출·수신은 미확인. 자동 제출 없음. |
 | 44 | 제품 안의 도움말 — "사용 중인 기능 옆에서 설명과 예제를 보고 바로 따라 할 수 있는 도움말을 추가할까?" | 부분(L0) | 문서형은 `packages/*/README.md`·`docs/03`·`docs/08`. 인라인 도움말 없음. JSDoc·타입 힌트가 일부 대체. |
-| 45 | 의견 수집 창구 — "불편 신고와 기능 제안을 제품 안에서 받고, 처리 상태도 사용자에게 보여줄까?" | 보완(L2) | 제품 내 창구 없음. 인증된 GitHub 조회에서 PRIVATE·issues 활성, 인증 없는 issues HTTP 요청은 404다(`review/reporting-access-2026-10-11.json`). 루트 `CONTRIBUTING.md`·`SECURITY.md`·`CODE_OF_CONDUCT.md`도 없다. 다음: 외부 문의 창구 결정(visibility 변경은 scope 밖). |
+| 45 | 의견 수집 창구 — "불편 신고와 기능 제안을 제품 안에서 받고, 처리 상태도 사용자에게 보여줄까?" | 부분(L2) | `SUPPORT.md`·`SECURITY.md`와 다섯 README에 공개 프로필 연락처를 연결하고 `bugs.email`로 교체했다. npm CLI가 메일 주소와 공개 npm homepage를 출력하는지 다섯 패키지에서 확인했다. Vite 문서 15파일의 tarball 독립 설치 검증도 통과했다(`review/public-reporting-destination-acceptance-2026-10-11.json`). 로컬 미게시이며 메일 수신·처리 상태 UI는 미확인. CONTRIBUTING·CODE_OF_CONDUCT는 별도다.
 | 46 | 사용 현황 대시보드 — "어떤 기능이 쓰이고 어디서 사용을 포기하는지 볼 수 있도록 필요한 지표를 수집하고 보여줄까?" | 비적용(L1) | 텔레메트리 없음. 대체 지표는 npm 다운로드·CI 테스트 수. 계측은 프라이버시·번들 비용. |
 | 47 | 오래 걸리는 작업 관리 — "시간이 걸리는 작업을 백그라운드에서 실행하고, 진행률·취소·재시도를 제공하는 작업 큐를 만들까?" | 부분(L0+L1) | typegen worker·generation 취소·race(`typegen/worker.ts`, `generator-race.test.mjs`). 진행률·재시도 큐 없음. 다음: 대형 카탈로그 관측. |
 | 48 | 백업과 복원 — "데이터를 자동으로 백업하고, 사용자가 필요한 백업을 골라 복원하는 기능을 구축할까?" | 비적용(L1+L2) | 백업 대상 저장소 없음. 카탈로그는 소비 앱 git. 인접: CI artifact 7일·`releases/*.json` 승인 기록. |
@@ -84,7 +84,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 70 | 기능 활성화 제어 — "배포와 기능 공개를 분리하고, 일부 대상에게 먼저 적용하거나 문제가 생기면 즉시 끌 수 있는 기반을 만들까?" | 부분(L0+L2) | 플래그 `astRuntime`·`requireCompleteTranslations`, dist-tag `alpha`/`next`/`latest` 분리. 원격 플래그·점진 배포·kill switch 없음. |
 | 71 | 백업과 복구 자동화 — "백업 생성·보관·복원 검증을 자동화하고, 장애 때 정해진 절차로 복구할 수 있는 기반을 구축할까?" | 비적용(L1+L2) | 백업 대상 데이터 없음(48행). 자동 보관은 CI artifact 7일과 `releases/*.json`. tarball SHA-512 대조가 복원 검증 일부. |
 | 72 | 운영 절차의 실행 도구화 — "장애 대응과 정기 관리 절차를 문서와 실행 도구로 함께 만들어, 담당자가 바뀌어도 운영할 수 있게 할까?" | 적용(L2) | `docs/09-release.md` runbook과 `scripts/release-check.mjs`·`release-publish.mjs`·`verify-oidc.mjs`·`registry-release.mjs`. CLI 재현 명령까지 기재. |
-| 73 | 보안 검증 파이프라인 — "비밀정보 유출·취약 의존성·위험한 권한 변경을 개발과 배포 과정에서 잡아내는 기반을 구축할까?" | 보완(L2) | 있는 것: OIDC 게시·secret 미사용(`release.yml`), `verify-oidc.mjs` 토큰 미저장+테스트 3개, Actions 밖 `--publish` 거부, SHA-512 변조 거부. 없는 것: 취약점 스캔·`SECURITY.md`·권한 변경 감지. 다음: 스캔 존재 여부 확인. |
+| 73 | 보안 검증 파이프라인 — "비밀정보 유출·취약 의존성·위험한 권한 변경을 개발과 배포 과정에서 잡아내는 기반을 구축할까?" | 보완(L2) | 있는 것: OIDC 게시·secret 미사용(`release.yml`), `verify-oidc.mjs` 토큰 미저장+테스트 3개, Actions 밖 `--publish` 거부, SHA-512 변조 거부. 추가: `SECURITY.md`의 비공개 제보 안내와 패키지 동봉 검증(로컬 미게시). 남음: 취약점 스캔·권한 변경 감지. 다음: 스캔 존재 여부 확인. |
 | 74 | 코드와 문서의 동기화 — "API 명세·설정 항목·개발 명령을 실제 코드에서 추출하고, 변경 때 관련 문서도 함께 갱신되는 구조를 만들까?" | 부분(L0+L2) | typegen이 기준 스키마에서 `.d.ts` 추출(`typegen/generator.ts`)하고 fixture가 검증. 나머지는 수동: `docs/README.md` 우선순위 규칙, `docs/06` 사람이 링크·예제 확인. CI 문서 검증 없음. |
 
 ## 실행검증 완료
@@ -104,8 +104,8 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 ## 실제 효용 우선 Top 3
 
 1. 예제의 일반 브라우저 확대·실제 보조 기술 흐름을 확인한다(17·18행). vanilla 320px·긴 문구와 페이지 확대2·3배의 키보드·모달은 확인했다. 페이지 확대는 layout 폭을 바꾸지 않고 화면을 이동하며 읽으므로 reflow 확대 검증을 대신하지 않는다. 일반 배율 변경·OS 글자 확대·AT 발음·다른 예제의 같은 조건은 남아 있다.
-2. 외부 문의 창구와 비공개 제보 연락처를 정한다(45·73행). PRIVATE 저장소의 bugs 링크가 인증 없이 404인 것을 확인했다(`review/reporting-access-2026-10-11.json`). 기존 비공개 이력 공개는 별도 판단이 필요하다. 대체 연락처는 아직 미정이고 원격 설정은 변경하지 않았다.
-3. 다음 승인 릴리스에서 동봉 문서의 공개 전달을 확인한다(6·27행). `packages/vite` 빌드가 네 시작 안내·다섯 API README·두 계약을 13파일로 묶고, 실제 tarball의 독립 설치에서 내용·내부 파일 링크를 확인했다(`review/package-docs-acceptance-2026-10-11.json`). 로컬 준비는 끝났지만 public alpha.4에는 없으므로 게시·registry 확인을 완료로 보지 않는다. 버전 승격·푸시·게시는 이번 범위에서 하지 않았다.
+2. 다음 승인 릴리스에서 문의·보안 안내와 메타데이터 교체를 공개 전달한다(45·73행). 공개 프로필 이메일을 연결했고 다섯 로컬 패키지의 npm CLI 목적지·tarball 독립 설치를 확인했다(`review/public-reporting-destination-acceptance-2026-10-11.json`). 메일 전송·수신과 registry 갱신은 미검증이며 저장소 visibility는 바꾸지 않았다.
+3. 다음 승인 릴리스에서 동봉 문서의 공개 전달을 확인한다(6·27행). `packages/vite` 빌드가 네 시작 안내·다섯 API README·두 계약·문의와 보안 안내를 15파일로 묶고, 실제 tarball의 독립 설치에서 내용·내부 파일 링크를 확인했다(`review/package-docs-acceptance-2026-10-11.json`). 로컬 준비는 끝났지만 public alpha.4에는 없으므로 게시·registry 확인을 완료로 보지 않는다. 버전 승격·푸시·게시는 이번 범위에서 하지 않았다.
 
 완료로 내린 항목: lazy 갱신 observer 오류 처리(7·21·62행). lazy `onUpdate` 예외를 eager와 같은 `observer`로 보고하도록 고쳤고, 최초 `onUpdate`가 던져도 binding·locale 커밋·이후 복구가 유지된다. 수정 전 회귀 2 fail(최초 update view 실패, locale 커밋 뒤 `AggregateError` rejection), 수정 후 `vite build`+lazy/sync-state/client/support-report 49 pass, consumer `tsc` pass다(근거 `review/lazy-update-observer-2026-10-11.json`).
 
@@ -123,7 +123,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
-상태 UI·진단 수집 UI·React cached 수명·lazy observer 오류 처리는 분리 실행 기록의 범위까지 확인했고, 기존 동작 문서와 게시본 검증 예제 경계도 정리했다. 세 프레임워크 예제와 독립 시작 안내의 빈 카탈로그 복구, 문서 동봉 tarball의 독립 설치도 확인했다. vanilla의 키보드·좁은 화면·긴 문구는 확인하고 넘침을 수정했다. 다음은 확대·보조 기술, 문의·보안 실제 접근 경로, 승인 릴리스의 문서 공개 전달이다. 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
+상태 UI·진단 수집 UI·React cached 수명·lazy observer 오류 처리는 분리 실행 기록의 범위까지 확인했고, 기존 동작 문서와 게시본 검증 예제 경계도 정리했다. 세 프레임워크 예제와 독립 시작 안내의 빈 카탈로그 복구, 문서 동봉 tarball의 독립 설치도 확인했다. vanilla의 키보드·좁은 화면·긴 문구는 확인하고 넘침을 수정했다. 다음은 확대·보조 기술, 문의 수신과 승인 릴리스의 문서·연락처 공개 전달이다. 문의·보안 안내의 로컬 문서와 메타데이터는 독립 tarball 검사까지 완료했다. 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
 
 ---
 작성 2026-10-11(KST). 초기 감사 기준 `c92515d`. 후속 검증 범위·커밋·근거는 분리 실행 기록과 각 JSON을 따른다. 개발 클라이언트·예제·시작 문서의 로컬 변경을 포함하며 패키지 버전·registry 상태는 그대로다.

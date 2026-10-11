@@ -8,9 +8,9 @@
     "url": "git+https://github.com/0disoft/saylo.git",
     "directory": "packages/svelte"
   },
-  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/svelte#readme",
+  "homepage": "https://www.npmjs.com/package/@0disoft/saylo-svelte",
   "bugs": {
-    "url": "https://github.com/0disoft/saylo/issues"
+    "email": "rodisoft1@gmail.com"
   },
   "keywords": [
     "i18n",

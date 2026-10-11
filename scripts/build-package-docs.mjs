@@ -9,6 +9,8 @@ const destination = path.join(repository, 'packages/vite/docs');
 // Explicit consumer-facing inputs only. Review logs, design histories, credentials
 // and application sources are never discovered or recursively copied.
 export const packageDocInputs = [
+  { source: 'SUPPORT.md', target: 'support.md' },
+  { source: 'SECURITY.md', target: 'security.md' },
   ...['getting-started', 'getting-started-react', 'getting-started-svelte', 'getting-started-sveltekit',
     'dev-sync-state', 'support-report'].map(name => ({ source: `docs/${name}.md`, target: `${name}.md` })),
   ...['core', 'react', 'svelte', 'typegen', 'vite'].map(name => ({ source: `packages/${name}/README.md`, target: `api/${name}.md` })),
@@ -73,7 +75,7 @@ async function render() {
     files.set(target, bundled);
     entries.push({ source, target, sourceSha256: hash(input), bundledSha256: hash(bundled) });
   }
-  files.set('README.md', `# Saylo 설치 폴더의 사용 안내\n\n이 문서 묶음은 ${manifest.name} ${manifest.version}의 tarball을 만들 때 포함한다. GitHub 로그인 없이 설치 폴더에서 읽을 수 있다.\n\n## 시작하기\n\n- [JavaScript와 TypeScript](getting-started.md)\n- [React](getting-started-react.md)\n- [Svelte](getting-started-svelte.md)\n- [SvelteKit와 SSR](getting-started-sveltekit.md)\n\n## API와 사용 계약\n\n${['core', 'react', 'svelte', 'typegen', 'vite'].map(id => `- [@0disoft/saylo-${id}](api/${id}.md)`).join('\n')}\n- [개발 연결 상태](dev-sync-state.md)\n- [문의용 진단 자료](support-report.md)\n\n시작 안내는 public npm의 alpha.4로 검증한 예제다. API 문서의 게시 버전·미게시 표시를 확인하고 설치 버전과 맞춰 사용한다. 이 묶음의 버전은 만들 때의 package.json 값이며 registry 게시 완료를 뜻하지 않는다. 포함하지 않은 설계·측정 기록은 제목만 남겼다. 외부 웹 문서와 fragment 목적지는 이 묶음의 파일 검사 범위 밖이다.\n\nmanifest.json은 LF로 정규화한 원본과 묶음 파일의 SHA-256을 기록한다. 실행 코드 블록은 원본과 같다.\n`);
+  files.set('README.md', `# Saylo 설치 폴더의 사용 안내\n\n이 문서 묶음은 ${manifest.name} ${manifest.version}의 tarball을 만들 때 포함한다. GitHub 로그인 없이 설치 폴더에서 읽을 수 있다.\n\n## 시작하기\n\n- [JavaScript와 TypeScript](getting-started.md)\n- [React](getting-started-react.md)\n- [Svelte](getting-started-svelte.md)\n- [SvelteKit와 SSR](getting-started-sveltekit.md)\n\n## API와 사용 계약\n\n${['core', 'react', 'svelte', 'typegen', 'vite'].map(id => `- [@0disoft/saylo-${id}](api/${id}.md)`).join('\n')}\n- [개발 연결 상태](dev-sync-state.md)\n- [문의용 진단 자료](support-report.md)\n- [문의와 기능 제안](support.md)\n- [비공개 보안 제보](security.md)\n\n시작 안내는 public npm의 alpha.4로 검증한 예제다. API 문서의 게시 버전·미게시 표시를 확인하고 설치 버전과 맞춰 사용한다. 이 묶음의 버전은 만들 때의 package.json 값이며 registry 게시 완료를 뜻하지 않는다. 포함하지 않은 설계·측정 기록은 제목만 남겼다. 외부 웹 문서와 fragment 목적지는 이 묶음의 파일 검사 범위 밖이다.\n\nmanifest.json은 LF로 정규화한 원본과 묶음 파일의 SHA-256을 기록한다. 실행 코드 블록은 원본과 같다.\n`);
   files.set('manifest.json', JSON.stringify({ schema: 'saylo.package-docs/v1', package: manifest.name,
     version: manifest.version, textNormalization: 'CRLF to LF', documents: entries }, null, 2) + '\n');
   assertLocalLinks(files);

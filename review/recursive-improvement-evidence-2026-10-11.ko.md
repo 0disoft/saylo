@@ -66,3 +66,5 @@
 
 판정 반영은 6·27행에 시작 안내와 문서 동봉 산출물, 7행에 세 프레임워크 예제와 시작 안내의 빈 카탈로그 복구, 9행에 React 수명, 17·18행에 언어 영역·키보드·대비·좁은 화면·페이지 확대, 21·43행에 진단 자료, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
 
+
+**문의·보안 연락처 연결.** 앞선 외부 경로 점검의 대체 연락처 미정 상태를 로컬에서 보완했다. 공개 GitHub 프로필의 `rodisoft1@gmail.com`을 다섯 패키지 `bugs.email`과 README에 연결하고 homepage는 공개 npm 페이지로 바꿨다. `SUPPORT.md`·`SECURITY.md`를 Vite 문서 묶음에 넣어 13문서·15파일이 됐다. 코드 블록·내부 파일 링크 검사와 독립 JS/TS 앱의 다섯 tarball 소비 검사가 통과했다. 다섯 로컬 패키지에 `npm bugs`·`npm docs`를 `--browser=false --json`으로 실행해 목적지를 확인했다. 메일 수신·응답을 약속하거나 검사하지 않았고 버전·registry·visibility는 그대로다. 공개 Vite alpha.4의 기존 404 bugs URL과 alpha/latest 태그를 다시 조회했다. alpha.1~4 registry 검사의 과거 메타데이터 기대값은 보존했다. 근거는 `review/public-reporting-destination-acceptance-2026-10-11.json`이다.

@@ -101,8 +101,14 @@ try {
     assert.deepEqual(manifest.engines, { node: '24.x' });
     assert.ok(typeof manifest.description === 'string' && manifest.description.trim(), `${pack.name} needs a description`);
     assert.deepEqual(manifest.repository, { type: 'git', url: 'git+https://github.com/0disoft/saylo.git', directory: `packages/${packages[pack.name]}` });
-    assert.equal(manifest.homepage, `https://github.com/0disoft/saylo/tree/main/packages/${packages[pack.name]}#readme`);
-    assert.deepEqual(manifest.bugs, { url: 'https://github.com/0disoft/saylo/issues' });
+    // Keep historical registry artifacts tied to their original metadata.
+    const legacyReportingMetadata = fromRegistry && /^0\.1\.0-alpha\.[1-4]$/.test(manifest.version);
+    assert.equal(manifest.homepage, legacyReportingMetadata
+      ? `https://github.com/0disoft/saylo/tree/main/packages/${packages[pack.name]}#readme`
+      : `https://www.npmjs.com/package/${pack.name}`);
+    assert.deepEqual(manifest.bugs, legacyReportingMetadata
+      ? { url: 'https://github.com/0disoft/saylo/issues' }
+      : { email: 'rodisoft1@gmail.com' });
     assert.ok(Array.isArray(manifest.keywords) && manifest.keywords.length && manifest.keywords.every(word => typeof word === 'string' && word.trim()), `${pack.name} needs search keywords`);
     packageDocs.set(pack.name, { manifest, readme: fromRegistry ? undefined : await readFile(path.join(directory, 'README.md'), 'utf8') });
     for (const target of [...Object.values(manifest.exports).flatMap(entry => Object.values(entry)), ...Object.values(manifest.bin ?? {})])

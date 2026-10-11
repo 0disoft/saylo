@@ -1,0 +1,93 @@
+{
+  "observedOn": "2026-10-11",
+  "baseCommit": "edb04be",
+  "state": "local verified; not published",
+  "contactSource": {
+    "command": "gh api users/0disoft --jq '{login,email,blog}'",
+    "profile": "https://github.com/0disoft",
+    "email": "rodisoft1@gmail.com"
+  },
+  "repository": {
+    "visibility": "PRIVATE",
+    "priorAccessEvidence": "review/reporting-access-2026-10-11.json"
+  },
+  "publishedMetadataObserved": {
+    "package": "@0disoft/saylo-vite",
+    "version": "0.1.0-alpha.4",
+    "bugs": {
+      "url": "https://github.com/0disoft/saylo/issues"
+    },
+    "homepage": "https://github.com/0disoft/saylo/tree/main/packages/vite#readme",
+    "tags": {
+      "latest": "0.0.0-stage",
+      "alpha": "0.1.0-alpha.4"
+    }
+  },
+  "localMetadataCliChecks": [
+    {
+      "package": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.4",
+      "bugs": "mailto:rodisoft1@gmail.com",
+      "homepage": "https://www.npmjs.com/package/@0disoft/saylo-core"
+    },
+    {
+      "package": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.4",
+      "bugs": "mailto:rodisoft1@gmail.com",
+      "homepage": "https://www.npmjs.com/package/@0disoft/saylo-react"
+    },
+    {
+      "package": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.4",
+      "bugs": "mailto:rodisoft1@gmail.com",
+      "homepage": "https://www.npmjs.com/package/@0disoft/saylo-svelte"
+    },
+    {
+      "package": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.4",
+      "bugs": "mailto:rodisoft1@gmail.com",
+      "homepage": "https://www.npmjs.com/package/@0disoft/saylo-typegen"
+    },
+    {
+      "package": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.4",
+      "bugs": "mailto:rodisoft1@gmail.com",
+      "homepage": "https://www.npmjs.com/package/@0disoft/saylo-vite"
+    }
+  ],
+  "documents": {
+    "documents": 13,
+    "files": 15,
+    "bytes": 146587,
+    "supportSha256": "10f027d314f4eaf2d37968efa0cf472447a48b292be2e773e95094b6d3d2b71f",
+    "securitySha256": "f94d7a349565f7c7b4a9be300ab4d2837ae025432bd73b4816b1e3cfbe0a21d0"
+  },
+  "verification": [
+    {
+      "command": "npm run build:docs",
+      "result": "passed"
+    },
+    {
+      "command": "npm run verify:docs",
+      "result": "passed; code fences retained and bundled file links exist"
+    },
+    {
+      "command": "npm run verify:pack",
+      "result": "passed; 5 tarballs installed independently in JS and TS apps; installed docs checked; runtime, selectors, SSR, CLI and lazy Vite production build exercised"
+    },
+    {
+      "command": "npm bugs ./packages/<id> --browser=false --json; npm docs ./packages/<id> --browser=false --json",
+      "result": "passed for all five; prints destinations without opening mail/browser"
+    },
+    {
+      "command": "resolve-security-md --scope packages/vite/src/index.ts --out -",
+      "result": "root SECURITY.md resolved; no new exclusions or accepted risk decisions"
+    }
+  ],
+  "limits": [
+    "No email sent; receipt and response not verified",
+    "No version bump, push, publish, repository visibility or remote setting change",
+    "Registry smoke not repeated; alpha.1 through alpha.4 legacy expectations retained explicitly",
+    "Full security scan and OS email handler execution not part of this metadata/documentation change"
+  ]
+}

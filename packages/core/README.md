@@ -77,6 +77,12 @@ Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환�
 
 런타임 target은 ES2022이고 브라우저 대상이라 Node API에 의존하지 않는다. 이 패키지에는 런타임 peer 의존성이 없다.
 
+## 문의와 보안 제보
+
+일반 문의·기능 제안·버그는 [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com)으로 보낸다. 패키지·버전, 환경, 기대한 동작과 실제 동작, 합성 데이터로 만든 최소 재현을 적는다. 보안 문제도 같은 이메일에 `Saylo security` 제목으로 비공개 제보한다. 토큰·키·쿠키·실제 사용자 데이터는 보내지 않는다.
+
+Vite 패키지를 설치했다면 `node_modules/@0disoft/saylo-vite/docs/support.md`와 `security.md`에서 자세한 안내를 읽을 수 있다. 이 안내와 연락처 변경은 로컬 미게시 상태이며 기존 alpha.4 tarball에는 없다.
+
 ## 라이선스
 
 Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.

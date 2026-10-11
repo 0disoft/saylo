@@ -263,6 +263,10 @@ npm run release:pack
 
 설치 후 프레임워크 없이 Vite에서 바로 실행하는 예제는 [examples/npm/README.md](examples/npm/README.md)에 있다.
 
+## 문의와 보안 제보
+
+일반 문의·기능 제안·버그는 [지원 안내](SUPPORT.md), 비공개 보안 제보는 [보안 안내](SECURITY.md)를 따른다. Vite 패키지의 설치 폴더에는 이 안내도 동봉한다. 문서 동봉과 연락처 교체는 로컬 미게시 변경이다.
+
 ## 문서
 
 | 문서 | 내용 |

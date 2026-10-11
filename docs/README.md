@@ -4,6 +4,8 @@
 
 로컬 검증을 마친 항목은 이 디렉터리와 `packages/*/README.md`에 함께 적는다. 아직 구현하지 않은 기능은 문서가 완료를 주장하지 않는다.
 
+문의와 기능 제안은 [지원 안내](../SUPPORT.md), 비공개 보안 제보는 [보안 안내](../SECURITY.md)를 따른다.
+
 ## 읽는 순서
 
 빈 폴더에서 게시 패키지를 설치해 시작하는 절차는 [getting-started.md](getting-started.md)에 있다.
