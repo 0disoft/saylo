@@ -1,0 +1,86 @@
+{
+  "schema": "saylo.remaining-audit-reconciliation/v1",
+  "observedAt": "2026-10-11T18:55:40.118Z",
+  "baseCommit": "6effdf24b87a4db32d45b9f61d6d392bf04e27ef",
+  "reviewedObjectiveLines": [
+    4,
+    63
+  ],
+  "acceptanceFile": "review/release-alpha5-manifest-candidate-acceptance-2026-10-12.json",
+  "acceptanceSha256": "53d4b647f326aa607bccfe595a9553584ff24baef393dd9794bed6eadd39b35f",
+  "candidateSource": "0b85c933f0311abfb7fa7aaa86fd1c835a524d58",
+  "validationSha256": "0a710d36970d678cee1c883fad6bc6e4684e2f0019cfe0ccd5822b013dca9ed3",
+  "reusedChecks": {
+    "checkLogSha256": "3ace896b5e1e4083afe48f58831c6e1bfc87a4d47eaecabe281a2ee01da22807",
+    "totalTests": 267,
+    "exitCode": 0,
+    "reportTests": [
+      "real parser diagnostics discard paths, raw text, keys, arguments and request identifiers",
+      "strict allowlists reject arbitrary codes, environment labels and malformed positions",
+      "bounded history retains newest events and explicitly reports dropped rows",
+      "recording immediately snapshots inputs; returned reports are deeply immutable and clear is explicit"
+    ]
+  },
+  "verifiedSources": [
+    {
+      "file": "packages/vite/src/support-report.ts",
+      "rawSha256": "cb0e8877c676e194d31448271a788527aa4eccd7447b8a3b633aae3a9694d7c1",
+      "frozenSha256": "cb0e8877c676e194d31448271a788527aa4eccd7447b8a3b633aae3a9694d7c1",
+      "match": "exact bytes"
+    },
+    {
+      "file": "packages/vite/test/support-report.test.mjs",
+      "rawSha256": "ce5e13e1ede6a1a0804fdab3a93a599dbe3461ea6a19484ca13b5691f5d8419b",
+      "frozenSha256": "ce5e13e1ede6a1a0804fdab3a93a599dbe3461ea6a19484ca13b5691f5d8419b",
+      "match": "exact bytes"
+    },
+    {
+      "file": "docs/support-report.md",
+      "rawSha256": "9fccee4c9126e06a4060cd32cfa7f5534e1b465dab5e0f5a4f33f50082352c69",
+      "frozenSha256": "9fccee4c9126e06a4060cd32cfa7f5534e1b465dab5e0f5a4f33f50082352c69",
+      "match": "exact bytes"
+    },
+    {
+      "file": "docs/06-validation-and-roadmap.md",
+      "rawSha256": "cad9b5db4799393b3f75ad60ccfade63c5c4291635fca39830622d6aa576e890",
+      "frozenSha256": "cad9b5db4799393b3f75ad60ccfade63c5c4291635fca39830622d6aa576e890",
+      "match": "exact bytes"
+    },
+    {
+      "file": "docs/07-decisions.md",
+      "rawSha256": "5ef3ba42678dc7ff900f18ed606a5dcfa9df82730f5e383710e1b9bac1a85b2e",
+      "frozenSha256": "5ef3ba42678dc7ff900f18ed606a5dcfa9df82730f5e383710e1b9bac1a85b2e",
+      "match": "exact bytes"
+    },
+    {
+      "file": "docs/53-completion-audit.md",
+      "rawSha256": "958e08059e524f4aee4d1a72b4035d9a0adfda0a3c817374689a5372b6d5aa96",
+      "frozenSha256": "b1408f6ed5cad5255f5a08f4aa71621abed8a73b4b2ae4be055456f398a7542b",
+      "match": "LF normalization only"
+    }
+  ],
+  "observations": [
+    "Support report v1 is a typed structured object with allowlisted environment, operation, diagnostics, source aliases, positions, current sync state and bounded omission counts.",
+    "Raw request IDs are excluded by contract and an executed regression; source aliases are scoped to one diagnostic event.",
+    "No general logging sink, cross-event source identity or distributed request tracing was established.",
+    "Roadmap 1-13 is locally implemented; original feature requirements 1-18 are distinct from roadmap stage numbers. Optional future scope and new candidate publication are separate gates."
+  ],
+  "decisions": [
+    {
+      "line": 4,
+      "from": "보완(L0)",
+      "to": "부분(L0+L2)",
+      "reason": "An implemented and validated local feature scope plus open publication/environment gates does not itself identify an unfinished runtime stub."
+    },
+    {
+      "line": 63,
+      "from": "보완(L0)",
+      "to": "부분(L0)",
+      "reason": "A structured sanitized report exists; unrestricted request ID logging is not a justified default change. General log sinks and full tracing remain outside this report."
+    }
+  ],
+  "limits": [
+    "Static reassessment plus reused unchanged-input checks; not a new release, remote inspection or completion of the overall 72-consideration goal.",
+    "No product fields, schema changes, raw identifiers, version bump, push or publication."
+  ]
+}
