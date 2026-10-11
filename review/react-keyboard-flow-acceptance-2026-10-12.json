@@ -1,0 +1,65 @@
+{
+  "schema": "saylo.keyboard-flow-acceptance/v1",
+  "observedAt": "2026-10-11T16:55:16.186Z",
+  "sourceCommit": "03f7b7d",
+  "framework": "react",
+  "method": "Codex in-app browser routed pressKey(null, key) and typeText(null, text) through current focus; no mouse, click, setValue, fill or programmatic focus.",
+  "url": "http://127.0.0.1:62854/",
+  "checks": [
+    "Tab to locale and Up to English",
+    "Tab/type form name and note; Up changes count from 2 to 3",
+    "Return opens confirmation and focuses confirmation-note",
+    "Tab to Close and Return closes with focus restored to opener",
+    "Return reopens with confirmation text retained; Escape closes and restores opener",
+    "Tab to support disclosure; Return opens it",
+    "Tab/Return generates report; user-entered test values absent",
+    "Tab/Return clears report while preserving form values"
+  ],
+  "result": {
+    "activeId": "support-clear",
+    "confirmationNote": "Keyboard confirmation",
+    "count": "3",
+    "locale": "en",
+    "name": "Keyboard React",
+    "note": "Keep keyboard note",
+    "reportLength": 0
+  },
+  "focusBoundaryObservation": {
+    "action": "Shift+Tab from first dialog input",
+    "observedActiveTag": "BODY",
+    "dialogStillOpen": true,
+    "reentry": "The next Tab returned to confirmation-note",
+    "limitation": "Full dialog focus trapping is not claimed; browser-host boundary handling was observed."
+  },
+  "artifacts": {
+    "ax": {
+      "path": ".release/react-keyboard-2026-10-12-ax.json",
+      "sha256": "35e5d39e99cde7b921c6be03c90f0b0910ca6dd7680f97b6acfe455055998f79"
+    },
+    "screenshot": {
+      "path": ".release/react-keyboard-2026-10-12.png",
+      "sha256": "8c9e6b177f651f646c540ce450a61181b8b45d80643887a2235f33b0a80782aa"
+    }
+  },
+  "sourceHashes": {
+    "examples/react/main.tsx": "fad0fa724291d78ec3b44c9968965ccb104373583b4ca6cdd3e5fcaf5bd794ee",
+    "examples/react/SupportPanel.tsx": "38b7b6c559ed7dc93620cad41eb15150c634ec4399b00747e27251847c257534",
+    "examples/react/demo-messages.ts": "6f23841ba45eef36ce173e9b2a39df57f93fad42e571a005dd16034e3c0a45aa",
+    "examples/react/vite.config.mjs": "5aeec52758aa489a02d9a44bb5be1c728d3a600b404b9bd6e7af331c6731e6f2",
+    "examples/vanilla/style.css": "debd708aadcb27a33d9713215591d7bea1bf59dd0b5d59a2d35912e5c6638567",
+    "examples/react/i18n.ts": "a8f30dbefd42ef5802bb2042c59ff626cf65174f4bbd7c85161d84e3532dfb6a",
+    "examples/shared/dev-status.ts": "ddc00c3f73347c971b4a0003852737e71cd5ebd7d85a5d9cbe8fad0750a2f3b4"
+  },
+  "cleanup": {
+    "temporaryTabClosed": true,
+    "ownedServerSession": 89749,
+    "ownedServerExitCode": 0,
+    "ownedPortReachableAfterExit": false
+  },
+  "limits": [
+    "One React development demo in the in-app browser. Other frameworks and browsers remain outside this observation.",
+    "Automation-routed keyboard input is not a physical-device or accessibility-conformance certification.",
+    "No screen-reader speech, ordinary 200/400 percent browser zoom, full modal focus-cycle claim, low-spec device or publication acceptance.",
+    "No production code, package version, registry state or workflow was changed."
+  ]
+}
