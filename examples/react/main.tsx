@@ -15,16 +15,17 @@ function CatalogPanel({ catalogs, diagnostic, handshakeMessage, connection, rend
 }) {
   const source = (locale: string) => {
     const catalog = catalogs.find(c => c.locale === locale && c.namespace === 'demo');
-    return catalog ? JSON.stringify(Object.fromEntries(Object.entries(catalog.messages).map(([key, message]) => [key, message.source])), null, 2) : '아직 로드하지 않았습니다.';
+    return catalog ? JSON.stringify(Object.fromEntries(Object.entries(catalog.messages).map(([key, message]) => [key, message.source])), null, 2)
+      : locale === 'en' ? 'Not loaded yet.' : '아직 로드하지 않았습니다.';
   };
   const details = diagnostic.diagnostics.length
     ? diagnostic.diagnostics.map(d => `${d.sourceName}${d.id ? ` [${d.id}]` : ''}: ${d.message}`).join('\n')
     : diagnostic.message;
-  return <section className="panel editor">
+  return <section className="panel editor" lang="ko">
     <div className="panel-header"><h2>불러온 파일 문구</h2><span className="badge">JSON</span></div>
     <p className="hint">vanilla 데모와 같은 번역 파일을 사용합니다. <code>examples/vanilla/locales/ko/demo.json</code>을 수정하고 저장하세요.</p>
     <label>기준 문구 · 한국어<textarea className="code" rows={12} spellCheck={false} aria-label="한국어 카탈로그" readOnly value={source('ko')} /></label>
-    <label>번역 문구 · English<textarea className="code" rows={12} spellCheck={false} aria-label="영어 카탈로그" readOnly value={source('en')} /></label>
+    <label>번역 문구 · English<textarea className="code" rows={12} spellCheck={false} aria-label="English catalog" lang="en" readOnly value={source('en')} /></label>
     <p id="status" className="hint" role="status">{connection}</p>
     <pre id="error" role="alert">{[details, handshakeMessage].filter(Boolean).join('\n')}</pre>
     <p id="render-error" role="alert" className="hint">{renderError}</p>
@@ -90,24 +91,24 @@ function App() {
   }, [open]);
   return <>
     <main>
-      <header>
-        <a className="brand" href="/">Saylo <span>React demo · StrictMode</span></a>
+      <header lang="ko">
+        <a className="brand" href="/">Saylo <span lang="en">React demo · StrictMode</span></a>
         <label className="locale-control">화면 언어
           <select id="locale" aria-label="화면 언어" value={pendingLocale ?? locale} onChange={event => { void selectLocale(event.target.value); }}>
-            {snapshot.availableLocales.map(value => <option key={value} value={value}>{({ ko: '한국어', en: 'English' } as Record<string, string>)[value] ?? value}</option>)}
+            {snapshot.availableLocales.map(value => <option key={value} value={value} lang={value}>{({ ko: '한국어', en: 'English' } as Record<string, string>)[value] ?? value}</option>)}
           </select>
         </label>
       </header>
-      <section className="intro">
-        <p className="eyebrow">REACT LIVE CATALOG PREVIEW</p>
+      <section className="intro" lang={presentation.locale}>
+        <p className="eyebrow" lang="en">REACT LIVE CATALOG PREVIEW</p>
         <h1>{text.heading}</h1>
         <p>{text.description}</p>
-        {pendingLocale && <p role="status">{pendingLocale} 문구를 불러오는 중입니다.</p>}
-        <p role="alert" id="transition-error">{transitionError}</p>
+        {pendingLocale && <p role="status" lang="ko">{pendingLocale} 문구를 불러오는 중입니다.</p>}
+        <p role="alert" id="transition-error" lang="ko">{transitionError}</p>
       </section>
       <div className="layout">
-        <section className="panel preview">
-          <div className="panel-header"><h2>{text.formTitle}</h2><span id="revision" className="badge">revision {snapshot.stateRevision}</span></div>
+        <section className="panel preview" lang={presentation.locale}>
+          <div className="panel-header"><h2>{text.formTitle}</h2><span id="revision" className="badge" lang="en">revision {snapshot.stateRevision}</span></div>
           <form id="order-form" onSubmit={event => { event.preventDefault(); setOpen(true); }}>
             <label>{text.name}<input id="name" autoComplete="off" placeholder={text.namePlaceholder} value={name} onChange={event => setName(event.target.value)} /></label>
             <label>{text.note}<textarea id="note" rows={4} placeholder={text.notePlaceholder} value={note} onChange={event => setNote(event.target.value)} /></label>
@@ -115,11 +116,11 @@ function App() {
             <p id="summary" className="summary" aria-live="polite">{text.summary}</p>
             <button type="submit">{text.openDialog}</button>
           </form>
-          <p className="hint">입력값은 React state로 관리합니다. 번역 파일을 저장해도 입력과 열린 모달이 유지됩니다.</p>
-          <p className="hint">사용 가능한 namespace: <span id="namespaces">{snapshot.availableNamespaces.join(', ')}</span></p>
-          <p className="hint">불러온 namespace: <span id="loaded-namespaces">{snapshot.loadedNamespaces.join(', ')}</span></p>
+          <p className="hint" lang="ko">입력값은 React state로 관리합니다. 번역 파일을 저장해도 입력과 열린 모달이 유지됩니다.</p>
+          <p className="hint" lang="ko">사용 가능한 namespace: <span id="namespaces">{snapshot.availableNamespaces.join(', ')}</span></p>
+          <p className="hint" lang="ko">불러온 namespace: <span id="loaded-namespaces">{snapshot.loadedNamespaces.join(', ')}</span></p>
           {snapshot.availableNamespaces.filter(namespace => !snapshot.loadedNamespaces.includes(namespace)).map(namespace =>
-            <button key={namespace} type="button" disabled={pendingNamespace !== undefined} onClick={() => { void loadNamespace(namespace); }}>
+            <button key={namespace} type="button" lang="ko" disabled={pendingNamespace !== undefined} onClick={() => { void loadNamespace(namespace); }}>
               {pendingNamespace === namespace ? '불러오는 중' : `${namespace} 불러오기`}
             </button>)}
         </section>
@@ -127,14 +128,14 @@ function App() {
       </div>
       <SupportPanel recorder={support} syncState={syncState} />
     </main>
-    <dialog id="confirmation" ref={dialog} onClose={() => setOpen(false)} aria-labelledby="dialog-title">
+    <dialog id="confirmation" ref={dialog} lang={presentation.locale} onClose={() => setOpen(false)} aria-labelledby="dialog-title">
       <form method="dialog">
         <h2 id="dialog-title">{text.dialogTitle}</h2>
         <label>{text.dialogNote}<input id="confirmation-note" autoComplete="off" value={confirmation} onChange={event => setConfirmation(event.target.value)} /></label>
         <button>{text.closeDialog}</button>
-        <p id="dialog-status" className="hint" role="status">{connection}{diagnostic.message && `\n${diagnostic.message}`}{handshakeMessage && `\n${handshakeMessage}`}</p>
-        <p id="dialog-render-error" className="hint" role="alert">{presentation.error}</p>
-        <p className="hint">번역 파일을 저장해도 이 창은 열린 채 유지됩니다.</p>
+        <p id="dialog-status" className="hint" role="status" lang="ko">{connection}{diagnostic.message && `\n${diagnostic.message}`}{handshakeMessage && `\n${handshakeMessage}`}</p>
+        <p id="dialog-render-error" className="hint" role="alert" lang="ko">{presentation.error}</p>
+        <p className="hint" lang="ko">번역 파일을 저장해도 이 창은 열린 채 유지됩니다.</p>
       </form>
     </dialog>
   </>;

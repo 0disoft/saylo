@@ -16,7 +16,7 @@ function read(snapshot: StoreSnapshot<AppSchema>) {
 export type DemoMessages = ReturnType<typeof read>;
 
 export function projectDemoMessages(snapshot: StoreSnapshot<AppSchema>, previous: StoreSnapshot<AppSchema> | undefined) {
-  try { return { messages: read(snapshot), accepted: snapshot, error: '' }; }
+  try { return { messages: read(snapshot), locale: snapshot.locale, accepted: snapshot, error: '' }; }
   catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     let messages: DemoMessages = {
@@ -26,8 +26,9 @@ export function projectDemoMessages(snapshot: StoreSnapshot<AppSchema>, previous
       formTitle: '입력 미리보기', name: '이름', note: '메모', openDialog: '확인 창 열기',
       dialogTitle: '입력 확인', dialogNote: '확인 메모', closeDialog: '닫기',
     };
-    if (previous) { try { messages = read(previous); } catch { /* Keep the explicit setup view. */ } }
-    return { messages, accepted: undefined,
+    let locale = 'ko';
+    if (previous) { try { messages = read(previous); locale = previous.locale; } catch { /* Keep the explicit setup view. */ } }
+    return { messages, locale, accepted: undefined,
       error: `${message}\n로케일 파일의 키·인자를 확인하고 다시 저장하세요. 입력은 유지됩니다.` };
   }
 }

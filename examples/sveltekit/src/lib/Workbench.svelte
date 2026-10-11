@@ -18,7 +18,7 @@
 </script>
 
 <section class="panel preview">
-  <div class="panel-header"><h2>{messages.formTitle}</h2><span id="revision" class="badge">revision {$i18n.stateRevision}</span></div>
+  <div class="panel-header"><h2>{messages.formTitle}</h2><span id="revision" class="badge" lang="en">revision {$i18n.stateRevision}</span></div>
   <form onsubmit={event => { event.preventDefault(); open = true; }}>
     <label>{messages.name}<input id="name" autocomplete="off" bind:value={name} /></label>
     <label>{messages.note}<textarea id="note" rows="3" bind:value={note}></textarea></label>
@@ -31,7 +31,7 @@
     <label>{messages.dialogNote}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
     <button id="close-dialog">{messages.closeDialog}</button>
     <a id="dialog-about" href="/about?locale={$i18n.locale}">{messages.about}</a>
-    <p id="dialog-render-error" class="hint" role="alert">{renderError}</p>
-    <p id="dialog-status" class="hint" role="status">{connection}{details && `\n${details}`}</p>
+    <p id="dialog-render-error" class="hint" role="alert" lang="ko">{renderError}</p>
+    <p id="dialog-status" class="hint" role="status" lang="ko">{connection}{details && `\n${details}`}</p>
   </form>
 </dialog>

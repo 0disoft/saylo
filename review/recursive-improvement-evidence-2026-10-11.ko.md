@@ -56,5 +56,7 @@
 
 **vanilla의 언어 영역.** 모든 예제에 문서 lang 갱신은 이미 있었다. vanilla에서 영어 선택 후 한국어 안내가 en을 상속하고 한국어 선택 후 영어 카탈로그가 ko를 상속하는 부분을 수정했다. 고정 한국어 header·안내·상태·지원 자료 영역과 영어 subtitle·eyebrow·revision·카탈로그, 로케일별 option에 lang을 명시했다. 영어 카탈로그의 접근 가능한 이름도 English catalog로 맞췄다. 기존 캐시 수명 회귀에 en/ko 전환 후 가장 가까운 lang 확인을 추가했다. `verify:demo:vanilla`는 생산 빌드47모듈과 jsdom 회귀3개를 통과했다. 원래 입력 유지·지원 자료·렌더 실패 복구 검사도 통과했다. 실제 스크린리더 발음·적합성은 주장하지 않고 다른 프레임워크의 고정 언어 영역은 별도 작업이다. 근거는 `review/vanilla-language-regions-2026-10-11.json`이다.
 
+**세 프레임워크의 언어 영역과 유지 화면.** React·Svelte·SvelteKit에 고정 한국어 header·안내·상태·지원 UI와 영어 subtitle·eyebrow·revision, 로케일별 option의 lang을 추가했다. React 영어 카탈로그의 이름·내용도 en으로 맞췄다. 문구 projection이 표시 중인 snapshot의 locale을 함께 돌려주므로 오류 중 선택 locale만 바뀌어도 마지막 영어 화면은 en을 유지하고 한국어 초기 안내는 ko를 쓴다. React 타입·생산 빌드64모듈·jsdom 회귀1개, Svelte 타입·빌드160모듈, SvelteKit 컴포넌트 오류·경고0·SSR190/클라이언트229모듈 빌드가 통과했다. 세 복구 명령은 각각 실 Chromium의 dev7단계·빈 첫 실행3단계와 언어 영역·입력·모달·포커스 유지를 확인했다. SvelteKit normal·empty·restored SSR12요청은 200/no-store와 요청 언어·표시 언어·고정 언어를 확인했다. React 첫 병렬 실행은 기존7초 mount 대기를 초과했지만 단독 재실행은 제한 시간 수정 없이 통과했다. 브라우저 오류는 세 예제 모두0이며 원인은 확정하지 않았다. 도구가 서버·브라우저·임시 복사본을 정리했고 원본 카탈로그는 수정하지 않았다. 스크린리더 발음·확대·독립 시작 안내와 npm 예제의 lang은 남아 있다. 근거는 `review/framework-language-regions-2026-10-11.json`이다.
+
 판정 반영은 6·27행에 시작 안내와 문서 동봉 산출물, 7행에 세 프레임워크 예제와 시작 안내의 빈 카탈로그 복구, 9행에 React 수명, 17·18행에 언어 영역·키보드·좁은 화면, 21·43행에 진단 자료, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
 

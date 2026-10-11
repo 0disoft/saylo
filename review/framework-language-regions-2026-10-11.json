@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-11",
+  "baselineCommit": "219348a",
+  "finding": "React, Svelte and SvelteKit fixed Korean UI inherited the selected document language. Recovery views could retain English text while a failed switch selected ko, or render Korean setup text in an en SSR document.",
+  "changes": {
+    "fixedRegions": "Korean headers, status, guidance, support UI and navigation labels; English subtitles, eyebrows and revision badges; options tagged with their own locale",
+    "reactCatalogs": "English textarea and its accessible name marked en; unloaded English value is Not loaded yet; Korean editor inherits ko",
+    "renderedLocale": "Message projections carry the successfully rendered snapshot locale, the retained snapshot locale, or ko for the explicit setup view; translated regions use this locale independently of the selected locale",
+    "publicApiChanged": false
+  },
+  "verification": {
+    "reactProduction": { "command": "npm run verify:demo:react", "exitCode": 0, "buildModules": 64, "tests": 1, "method": "TypeScript, Vite production build and jsdom ESM execution; language regions checked after lazy English selection" },
+    "svelteProduction": { "commands": ["npx tsc -p examples/svelte/tsconfig.json", "npx vite build --config examples/svelte/vite.config.mjs"], "exitCode": 0, "buildModules": 160 },
+    "sveltekitProduction": { "command": "npm --prefix examples/sveltekit run build", "exitCode": 0, "svelteCheckErrors": 0, "svelteCheckWarnings": 0, "ssrModules": 190, "clientModules": 229 },
+    "recovery": {
+      "commands": ["npm run verify:demo:react:recovery", "npm run verify:demo:svelte:recovery", "npm run verify:demo:sveltekit:recovery"],
+      "exitCodes": [0, 0, 0],
+      "browser": "HeadlessChrome/154.0.0.0 on Windows",
+      "stagesPerFramework": { "liveRecovery": 7, "coldEmptyStartup": 3 },
+      "checksAdded": ["ko/en translated and fixed-language ancestors", "locale option languages", "failed ko selection retains en language on last good English view", "translation correction leaves controls, input, native dialog and focused confirmation intact"],
+      "runtimeErrorsPerFramework": [0, 0, 0],
+      "reactFirstAttempt": "Concurrent run with other cold Vite fixtures exceeded existing 7s initial mount wait; no browser errors captured. An isolated rerun of the same command passed without changing the timeout. Cause not established."
+    },
+    "sveltekitSSR": { "requests": 12, "paths": ["/?locale=ko", "/?locale=en", "/about?locale=ko", "/about?locale=en"], "phases": ["normal", "empty", "restored"], "allStatus": 200, "allCacheControl": "no-store", "languages": "Request locale remains on html; translated regions use ko for empty setup or the request locale for normal translations; fixed Korean regions remain ko", "method": "HTTP response HTML parsed with jsdom; no scripts executed for SSR assertions" },
+    "cleanup": "Recovery tools closed browsers and servers and removed owned temporary copies; original catalogs were not edited"
+  },
+  "previousEvidence": "review/vanilla-language-regions-2026-10-11.json",
+  "limits": ["Language metadata and existing interactive recovery verification, not screen reader pronunciation or accessibility conformance", "Standalone getting-started examples and npm demo language regions remain to be reviewed", "No per-message detection for a translation that falls back to another locale", "No push, version bump or publication"]
+}

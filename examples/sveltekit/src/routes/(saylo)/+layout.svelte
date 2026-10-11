@@ -92,27 +92,27 @@
 </script>
 
 <svelte:head><title>Saylo · SvelteKit SSR demo</title></svelte:head>
-<main data-ready={ready} id="saylo-layout">
-  <header>
-    <a class="brand" href="/?locale={$i18n.locale}">Saylo <span>SvelteKit 3 · SSR</span></a>
+<main data-ready={ready} id="saylo-layout" lang={presentation.locale}>
+  <header lang="ko">
+    <a class="brand" href="/?locale={$i18n.locale}">Saylo <span lang="en">SvelteKit 3 · SSR</span></a>
     <label class="locale-control">화면 언어
       <select id="locale" value={pendingLocale ?? $i18n.locale} onchange={event => { void selectLocale(event.currentTarget.value); }}>
         {#each $i18n.availableLocales as locale (locale)}
-          <option value={locale}>{locale === 'ko' ? '한국어' : locale === 'en' ? 'English' : locale}</option>
+          <option value={locale} lang={locale}>{locale === 'ko' ? '한국어' : locale === 'en' ? 'English' : locale}</option>
         {/each}
       </select>
     </label>
   </header>
-  <nav class="demo-nav" aria-label="예제 페이지">
-    <a id="home-link" href="/?locale={$i18n.locale}" aria-current={page.url.pathname === '/' ? 'page' : undefined}>{text.home}</a>
-    <a id="about-link" href="/about?locale={$i18n.locale}" aria-current={page.url.pathname === '/about' ? 'page' : undefined}>{text.about}</a>
+  <nav class="demo-nav" aria-label="예제 페이지" lang="ko">
+    <a id="home-link" lang={presentation.locale} href="/?locale={$i18n.locale}" aria-current={page.url.pathname === '/' ? 'page' : undefined}>{text.home}</a>
+    <a id="about-link" lang={presentation.locale} href="/about?locale={$i18n.locale}" aria-current={page.url.pathname === '/about' ? 'page' : undefined}>{text.about}</a>
     <a id="leave-link" href="/plain?locale={$i18n.locale}">번역 화면 나가기</a>
   </nav>
-  <p id="transition-error" role="alert">{transitionError}</p>
-  <p id="render-error" class="hint" role="alert">{presentation.error}</p>
+  <p id="transition-error" role="alert" lang="ko">{transitionError}</p>
+  <p id="render-error" class="hint" role="alert" lang="ko">{presentation.error}</p>
   {@render children()}
   <Workbench connection={connectionStatus} {details} messages={text} renderError={presentation.error} />
-  <p id="status" class="hint" role="status">{connectionStatus}</p>
-  <pre id="error" role="alert">{details}</pre>
+  <p id="status" class="hint" role="status" lang="ko">{connectionStatus}</p>
+  <pre id="error" role="alert" lang="ko">{details}</pre>
   <SupportPanel recorder={support} {syncState} />
 </main>

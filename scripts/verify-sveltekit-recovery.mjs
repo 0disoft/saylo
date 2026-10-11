@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import path from 'node:path';
 import { createServer } from '../examples/sveltekit/node_modules/vite/dist/node/index.js';
+import { JSDOM } from 'jsdom';
 
 const example = fileURLToPath(new URL('../examples/sveltekit/', import.meta.url));
 const root = await mkdtemp(path.join(example, '.recovery-'));
@@ -83,6 +84,17 @@ try {
         ? (page.endsWith('en') ? 'New page. Same input.' : '페이지를 이동해도, 입력은 그대로')
         : (page.endsWith('en') ? 'New words. Same input.' : '번역을 바꿔도, 입력은 그대로'))));
       if (empty) assert.ok(html.includes('demo:home'), 'Missing SSR correction hint');
+      const dom = new JSDOM(html);
+      try {
+        const language = selector => dom.window.document.querySelector(selector)?.closest('[lang]')?.lang;
+        const renderedLocale = empty ? 'ko' : (page.endsWith('en') ? 'en' : 'ko');
+        for (const selector of ['h1', '#name', '#dialog-title', '#home-link', '#about-link']) {
+          assert.equal(language(selector), renderedLocale, `${page}: wrong rendered language for ${selector}`);
+        }
+        for (const selector of ['header', '#locale', 'nav', '#leave-link', '#status', '#dialog-status', '#support-status']) {
+          assert.equal(language(selector), 'ko', `${page}: wrong fixed language for ${selector}`);
+        }
+      } finally { dom.window.close(); }
       return { page, status: response.status, setupHint: empty };
     }));
     console.log(JSON.stringify({ ssr: empty ? 'empty' : 'normal', results }));

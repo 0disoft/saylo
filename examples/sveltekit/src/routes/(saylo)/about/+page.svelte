@@ -5,7 +5,7 @@
 </script>
 
 <section class="intro">
-  <p class="eyebrow">SHARED LAYOUT</p>
+  <p class="eyebrow" lang="en">SHARED LAYOUT</p>
   <h1>{text.aboutHeading}</h1>
   <p>{text.aboutBody}</p>
 </section>

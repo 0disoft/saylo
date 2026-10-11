@@ -14,7 +14,7 @@ export function SupportPanel({ recorder, syncState }: { recorder: SupportRecorde
     setReport('');
     setStatus('이전 오류 기록과 생성한 자료를 지웠습니다. 현재 연결 상태는 유지합니다.');
   }
-  return <details id="support-panel">
+  return <details id="support-panel" lang="ko">
     <summary>문의용 진단 자료</summary>
     <p className="hint">번역 원문·파일 경로·입력값을 제외한 최근 오류 코드와 연결 상태를 모읍니다. 자동 전송하지 않습니다. Node 버전은 개발·빌드 환경 기준입니다.</p>
     <button id="support-export" type="button" onClick={generate}>진단 자료 만들기</button>

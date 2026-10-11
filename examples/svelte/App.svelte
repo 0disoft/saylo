@@ -25,7 +25,7 @@
 
 <main>
   <Preview {connection} {details} onRenderDiagnostic={message => support.onDiagnostic({ message, diagnostics: [], operation: 'observer' })} />
-  <p id="status" class="hint" role="status">{connection}</p>
-  <pre id="error" role="alert">{details}</pre>
+  <p id="status" class="hint" role="status" lang="ko">{connection}</p>
+  <pre id="error" role="alert" lang="ko">{details}</pre>
   <SupportPanel recorder={support} {syncState} />
 </main>

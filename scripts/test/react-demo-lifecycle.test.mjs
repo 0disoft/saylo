@@ -99,6 +99,15 @@ test('React production app retains inputs, modal and working controls across rep
   locale.dispatchEvent(new window.Event('change', { bubbles: true }));
   await settle(() => document.querySelector('h1')?.textContent === 'New words. Same input.', 'Lazy locale loading stopped after history restoration');
   assert.equal(document.documentElement.lang, 'en');
+  const language = selector => document.querySelector(selector).closest('[lang]').lang;
+  for (const selector of ['h1', '#name', '#dialog-title']) assert.equal(language(selector), 'en', selector);
+  for (const selector of ['header', '#locale', '.preview > .hint', '#status', '#dialog-status', '#support-status']) {
+    assert.equal(language(selector), 'ko', selector);
+  }
+  assert.equal(language('.brand span'), 'en');
+  assert.equal(language('[aria-label="English catalog"]'), 'en');
+  assert.equal(language('[aria-label="한국어 카탈로그"]'), 'ko');
+  for (const option of locale.options) assert.equal(option.lang, option.value);
   assert.equal(document.querySelector('#confirmation'), dialog);
   assert.equal(dialog.open, true);
   document.querySelector('#support-clear').click();

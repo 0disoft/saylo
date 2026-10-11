@@ -2,6 +2,17 @@ const errors = globalThis.__sayloRecoveryErrors ?? [];
 const checks = [];
 const node = selector => document.querySelector(selector);
 const check = (condition, message) => { if (!condition) throw new Error(message); };
+const checkLanguages = translatedLocale => {
+  const language = selector => node(selector)?.closest('[lang]')?.getAttribute('lang');
+  for (const selector of ['h1', '#name', '#dialog-title', '#home-link', '#about-link']) {
+    check(language(selector) === translatedLocale, `${selector} has wrong translation language`);
+  }
+  for (const selector of ['header', '#locale', 'nav', '#leave-link', '#status', '#dialog-status', '#support-status']) {
+    check(language(selector) === 'ko', `${selector} lost its Korean language`);
+  }
+  check(language('.brand span') === 'en', 'Demo subtitle lost its English language');
+  for (const option of node('#locale').options) check(option.lang === option.value, 'Locale option has wrong language');
+};
 const wait = async (condition, message) => {
   const end = performance.now() + 10000;
   while (!condition()) {
@@ -21,6 +32,7 @@ const locale = async value => {
 void (async () => {
   try {
     await wait(() => node('#saylo-layout')?.dataset.ready === 'true', 'Hydrated layout is not ready');
+    checkLanguages('ko');
     const cold = new URL(location.href).searchParams.has('cold');
     if (cold) {
       check(node('h1').textContent === '번역을 준비하세요.', 'Empty startup has no setup view');
@@ -49,17 +61,23 @@ void (async () => {
       await wait(() => !node('#render-error').textContent && node('h1').textContent === '번역을 바꿔도, 입력은 그대로', 'Cold startup did not recover');
       preserved(); checks.push('cold-restoration');
     } else {
-      await locale('en'); preserved();
+      await locale('en'); checkLanguages('en'); preserved();
       await action('remove-locale');
       await wait(() => document.documentElement.lang === 'ko' && ![...node('#locale').options].some(value => value.value === 'en'), 'Removed locale did not fall back');
+      checkLanguages('ko');
       preserved(); checks.push('locale-removal');
       await action('restore-locale');
       await wait(() => [...node('#locale').options].some(value => value.value === 'en'), 'Restored locale missing');
-      await locale('en'); preserved(); checks.push('locale-restoration');
+      await locale('en'); checkLanguages('en'); preserved(); checks.push('locale-restoration');
       await action('empty-base');
       await wait(() => node('#render-error').textContent.includes('demo:home'), 'Empty base did not show correction hint');
       check(node('h1').textContent === 'New words. Same input.', 'Last good heading lost');
       check(node('#dialog-render-error').textContent.length > 0, 'Modal has no correction hint');
+      await locale('ko');
+      check(node('h1').textContent === 'New words. Same input.', 'Failed locale change lost the last good English view');
+      checkLanguages('en');
+      await locale('en');
+      checkLanguages('en');
       preserved(); checks.push('empty-base');
       node('#dialog-about').click();
       await wait(() => location.pathname === '/about' && node('h1')?.textContent === 'New page. Same input.', 'Broken catalog blocked shared-layout navigation');

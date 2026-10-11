@@ -15,6 +15,17 @@ const wait = async (condition, message) => {
   }
 };
 const node = selector => document.querySelector(selector);
+const checkLanguages = translatedLocale => {
+  const language = selector => node(selector)?.closest('[lang]')?.getAttribute('lang');
+  for (const selector of ['h1', '#name', '#dialog-title']) check(language(selector) === translatedLocale, `${selector} has wrong translation language`);
+  for (const selector of ['header', '#locale', '.preview > .hint', '#status', '#dialog-status', '#support-status']) {
+    check(language(selector) === 'ko', `${selector} lost its Korean language`);
+  }
+  check(language('.brand span') === 'en', 'Demo subtitle lost its English language');
+  for (const option of node('#locale').options) check(option.lang === option.value, 'Locale option has wrong language');
+  const english = node('[aria-label="English catalog"]');
+  if (english) check(english.lang === 'en', 'English catalog lost its language');
+};
 const fill = (selector, value) => {
   const element = node(selector);
   const prototype = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
@@ -29,6 +40,7 @@ const locale = async value => {
 void (async () => {
   try {
     await wait(() => node('#name'), 'Demo did not mount');
+    checkLanguages('ko');
     if (new URL(location.href).searchParams.has('cold')) {
       await wait(() => node('#render-error')?.textContent.includes('demo:heading'), 'Cold empty catalog has no correction hint');
       check(node('h1').textContent === '번역을 준비하세요.', 'Cold empty catalog pretends to have a translation');
@@ -67,16 +79,23 @@ void (async () => {
       check(node('#support-report').value === reportText, 'Generated report reset');
     };
     await locale('en');
+    checkLanguages('en');
     await action('remove-locale');
     await wait(() => document.documentElement.lang === 'ko' && ![...node('#locale').options].some(option => option.value === 'en'), 'Removed locale did not fall back');
+    checkLanguages('ko');
     preserved(); checks.push('locale-removal');
     await action('restore-locale');
     await wait(() => [...node('#locale').options].some(option => option.value === 'en'), 'Restored locale missing');
-    await locale('en'); preserved(); checks.push('locale-restoration');
+    await locale('en'); checkLanguages('en'); preserved(); checks.push('locale-restoration');
     await action('empty-base');
     await wait(() => node('#render-error')?.textContent.includes('demo:heading'), 'Empty base did not show recoverable render diagnostics');
     check(node('h1').textContent === 'New words. Same input.', 'Last good heading was lost');
     check(node('#dialog-render-error').textContent.length > 0, 'Open dialog has no correction hint');
+    await locale('ko');
+    check(node('h1').textContent === 'New words. Same input.', 'Failed locale change lost the last good English view');
+    checkLanguages('en');
+    await locale('en');
+    checkLanguages('en');
     preserved(); checks.push('empty-base');
     fill('#count', '4');
     await wait(() => node('#summary')?.textContent.includes('4'), 'Fallback formatter does not follow current input');

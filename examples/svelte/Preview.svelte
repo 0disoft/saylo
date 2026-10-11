@@ -39,26 +39,26 @@
   });
 </script>
 
-<header>
-  <a class="brand" href="/">Saylo <span>Svelte 5 demo</span></a>
+<header lang="ko">
+  <a class="brand" href="/">Saylo <span lang="en">Svelte 5 demo</span></a>
   <label class="locale-control">화면 언어
     <select id="locale" value={pendingLocale ?? $i18n.locale} onchange={event => { void selectLocale(event.currentTarget.value); }}>
       {#each $i18n.availableLocales as locale (locale)}
-        <option value={locale}>{locale === 'ko' ? '한국어' : locale === 'en' ? 'English' : locale}</option>
+        <option value={locale} lang={locale}>{locale === 'ko' ? '한국어' : locale === 'en' ? 'English' : locale}</option>
       {/each}
     </select>
   </label>
 </header>
-<section class="intro">
-  <p class="eyebrow">SVELTE LIVE CATALOG PREVIEW</p>
+<section class="intro" lang={presentation.locale}>
+  <p class="eyebrow" lang="en">SVELTE LIVE CATALOG PREVIEW</p>
   <h1>{text.heading}</h1>
   <p>{text.description}</p>
-  {#if pendingLocale}<p role="status">{pendingLocale} 문구를 불러오는 중입니다.</p>{/if}
-  <p id="transition-error" role="alert">{transitionError}</p>
-  <p id="render-error" class="hint" role="alert">{presentation.error}</p>
+  {#if pendingLocale}<p role="status" lang="ko">{pendingLocale} 문구를 불러오는 중입니다.</p>{/if}
+  <p id="transition-error" role="alert" lang="ko">{transitionError}</p>
+  <p id="render-error" class="hint" role="alert" lang="ko">{presentation.error}</p>
 </section>
-<section class="panel preview">
-  <div class="panel-header"><h2>{text.formTitle}</h2><span id="revision" class="badge">revision {$i18n.stateRevision}</span></div>
+<section class="panel preview" lang={presentation.locale}>
+  <div class="panel-header"><h2>{text.formTitle}</h2><span id="revision" class="badge" lang="en">revision {$i18n.stateRevision}</span></div>
   <form id="order-form" onsubmit={event => { event.preventDefault(); open = true; }}>
     <label>{text.name}<input id="name" autocomplete="off" placeholder={text.namePlaceholder} bind:value={name} /></label>
     <label>{text.note}<textarea id="note" rows="4" placeholder={text.notePlaceholder} bind:value={note}></textarea></label>
@@ -66,15 +66,15 @@
     <p id="summary" class="summary" aria-live="polite">{text.summary}</p>
     <button id="open-dialog" type="submit">{text.openDialog}</button>
   </form>
-  <p class="hint">입력하고 확인 창을 연 뒤 <code>examples/svelte/locales/ko/demo.json</code>을 수정하고 저장하세요.</p>
-  <p class="hint">불러온 namespace: <span id="loaded-namespaces">{$i18n.loadedNamespaces.join(', ')}</span></p>
+  <p class="hint" lang="ko">입력하고 확인 창을 연 뒤 <code>examples/svelte/locales/ko/demo.json</code>을 수정하고 저장하세요.</p>
+  <p class="hint" lang="ko">불러온 namespace: <span id="loaded-namespaces">{$i18n.loadedNamespaces.join(', ')}</span></p>
 </section>
-<dialog id="confirmation" aria-labelledby="dialog-title" bind:this={dialog} onclose={() => { open = false; }}>
+<dialog id="confirmation" lang={presentation.locale} aria-labelledby="dialog-title" bind:this={dialog} onclose={() => { open = false; }}>
   <form method="dialog">
     <h2 id="dialog-title">{text.dialogTitle}</h2>
     <label>{text.dialogNote}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
     <button id="close-dialog">{text.closeDialog}</button>
-    <p id="dialog-render-error" class="hint" role="alert">{presentation.error}</p>
-    <p id="dialog-status" class="hint" role="status">{connection}{details && `\n${details}`}</p>
+    <p id="dialog-render-error" class="hint" role="alert" lang="ko">{presentation.error}</p>
+    <p id="dialog-status" class="hint" role="status" lang="ko">{connection}{details && `\n${details}`}</p>
   </form>
 </dialog>
