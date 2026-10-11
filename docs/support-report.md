@@ -258,7 +258,17 @@ await navigator.clipboard.writeText(json); // 또는 Blob으로 파일 저장
 
 제출 전에는 사람이 한 번 읽는다. 보고서에는 원문 메시지와 파일 이름이 없으므로 개인정보가 새지 않을 것으로 기대하지만, `position`이나 이벤트 개수 같은 숫자로 문제 규모를 파악하고, 문의 본문에 재현 절차를 함께 적는다.
 
-vanilla 데모는 이 흐름을 화면으로 제공한다. `진단 자료 만들기` 버튼이 `getReport()`를 읽기 전용 textarea에 채우고, 사용자가 내용을 확인한 뒤 복사한다. `오류 기록 지우기` 버튼은 `clear()`로 누적 기록을 비우고, 비운 뒤 현재 연결 상태를 다시 기록해 화면의 동기화 표시와 보고서가 어긋나지 않게 한다.
+### 예제 데모의 검토 UI
+
+vanilla·React·Svelte·SvelteKit 예제는 같은 흐름의 문의용 진단 패널을 제공한다. `진단 자료 만들기`가 `getReport()`를 읽기 전용 textarea에 채우고, `오류 기록 지우기`가 `clear()` 뒤 현재 연결 상태를 다시 기록해 화면의 동기화 표시와 보고서가 어긋나지 않게 한다. 진단 자료의 textarea와 JSON에는 입력값·번역 원문·파일 이름이 들어가지 않고, 예제도 JSON을 저장하거나 전송하지 않는다. 생성·검토·지우기 흐름은 네 예제의 브라우저 확인에 포함됐다.
+
+recorder 수명은 프레임워크에 맞춘다. React는 `useState` lazy initializer로 만들어 StrictMode 이중 렌더에서도 하나를 유지하고, Svelte는 컴포넌트 인스턴스 `const`로 만들며, SvelteKit은 공유 layout 인스턴스 `const`로 만들어 모듈 전역에 두지 않는다. 그래서 layout 안에서 `/`→`/about` SPA 이동에는 패널 입력과 진단 자료 문자열이 유지되고, layout 밖 `/plain`으로 나갔다 들어오면 새 recorder가 된다.
+
+환경 메타데이터는 Vite `define`으로 주입한다. vanilla는 자체 Vite 설정에서 core·vite 버전을 읽고, React·Svelte는 `examples/shared/support-environment.mjs`에서 core·vite와 해당 adapter 버전을 읽는다. 개발·빌드 Node 버전도 함께 주입한다. SvelteKit은 독립 설치한 consumer라 `node_modules`에 설치된 패키지 `package.json`에서 버전을 읽는다.
+
+`npm run verify:pack:sveltekit`은 독립 설치한 production 빌드를 Chromium에서 확인하며, support-check 단계는 기본 local 모드에서만 돈다. 등록 패키지 검증(`--registry-version`)은 이 단계를 건너뛴다.
+
+확인 범위는 이 네 예제다. 다른 예제가 지원한다고 이 문서는 단정하지 않는다.
 
 ### 정상 복구와 초기화
 

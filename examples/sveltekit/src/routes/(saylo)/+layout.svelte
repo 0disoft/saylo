@@ -2,12 +2,14 @@
   import { onDestroy, onMount, untrack } from 'svelte';
   import { decodeBootSnapshot } from '@0disoft/saylo-core';
   import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
+  import { createSupportRecorder } from '@0disoft/saylo-vite/client';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import type { LayoutProps } from './$types';
   import { createBootInstance, setSayloContext } from '#lib/i18n.ts';
   import { connectBootClient } from '#lib/client-connection.ts';
   import Workbench from '#lib/Workbench.svelte';
+  import SupportPanel from '#lib/SupportPanel.svelte';
   import '#lib/style.css';
   import { formatDevSyncState } from '#lib/dev-status.ts';
 
@@ -15,6 +17,7 @@
   const boot = untrack(() => decodeBootSnapshot(data.sayloBoot));
   const { instance, attachSource } = createBootInstance(boot);
   const i18n = setSayloContext(instance);
+  const support = createSupportRecorder(__SAYLO_SUPPORT_ENV__);
   let ready = $state(false);
   let diagnostic = $state.raw<LiveDiagnostic>({ message: '', diagnostics: [] });
   let handshakeMessage = $state('');
@@ -46,8 +49,8 @@
   onMount(() => {
     let active = true;
     const connection = connectBootClient({ boot, instance, attachSource, hot: import.meta.hot,
-      onDiagnostic: value => { if (value.operation === 'handshake') handshakeMessage = value.message; else diagnostic = value; },
-      onSyncState: value => { syncState = value; if (value.status === 'connected') handshakeMessage = ''; }
+      onDiagnostic: value => { support.onDiagnostic(value); if (value.operation === 'handshake') handshakeMessage = value.message; else diagnostic = value; },
+      onSyncState: value => { support.onSyncState(value); syncState = value; if (value.status === 'connected') handshakeMessage = ''; }
     });
     void connection.ready.then(connected => {
       if (active && connected) ready = true;
@@ -97,4 +100,5 @@
   <Workbench connection={connectionStatus} {details} />
   <p id="status" class="hint" role="status">{connectionStatus}</p>
   <pre id="error" role="alert">{details}</pre>
+  <SupportPanel recorder={support} {syncState} />
 </main>

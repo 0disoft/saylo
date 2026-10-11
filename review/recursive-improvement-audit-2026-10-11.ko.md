@@ -1,6 +1,6 @@
 # 재귀 개선 감사 — goal-objective.md 고려사항 전량 매핑 (2026-10-11, 진행 중)
 
-**진행 중 감사다. 최종 완료 판정이 아니다.** 기준은 `projects/hobby/opensource/saylo`, HEAD `c92515d`이고 동기화 API는 `b534b4f`, 계약 문서·기록은 `b8540cb`, handshake·observer 진단 분리는 `928377e`, vanilla·React 상태 UI는 `c92515d`다. 이번 판에서 개발 동기화 상태 신호 `onSyncState(state: DevSyncState)`가 라이브러리에 들어갔다. eager·lazy `connectDev` 공통이고 lazy `DevCatalogSource`는 `getSyncState()`·`subscribeSyncState()`를 선택 메서드로 제공한다. 계약 문서는 `docs/dev-sync-state.md`와 `packages/vite/README.md`의 동기화 상태 절이다. 이 API·문서는 로컬 미게시이고 패키지 버전은 올리지 않았다. 실행 근거는 분리한 [실행 검증 기록](recursive-improvement-evidence-2026-10-11.ko.md)에 있다. npm 예제·시작 문서 근거(`1336aa5`·`8febdda`·`5db3517`·`c3d4036`·`d424345`)와 나머지 정적 판정은 이전 판 그대로이며, goal file 3~74행 고려사항 72개를 전량 매핑한다.
+**진행 중 감사다. 최종 완료 판정이 아니다.** 기준은 `projects/hobby/opensource/saylo`, 원본 정적 기준 HEAD `c92515d`이고 후속 구현·검증은 분리 실행 기록에 누적한다. 동기화 API는 `b534b4f`, 계약 문서·기록은 `b8540cb`, handshake·observer 진단 분리는 `928377e`, vanilla·React 상태 UI는 `c92515d`다. 이번 판에서 개발 동기화 상태 신호 `onSyncState(state: DevSyncState)`가 라이브러리에 들어갔다. eager·lazy `connectDev` 공통이고 lazy `DevCatalogSource`는 `getSyncState()`·`subscribeSyncState()`를 선택 메서드로 제공한다. 계약 문서는 `docs/dev-sync-state.md`와 `packages/vite/README.md`의 동기화 상태 절이다. 이 API·문서는 로컬 미게시이고 패키지 버전은 올리지 않았다. 실행 근거는 분리한 [실행 검증 기록](recursive-improvement-evidence-2026-10-11.ko.md)에 있다. npm 예제·시작 문서 근거(`1336aa5`·`8febdda`·`5db3517`·`c3d4036`·`d424345`)와 나머지 정적 판정은 이전 판 그대로이며, goal file 3~74행 고려사항 72개를 전량 매핑한다.
 
 판정: 적용=제공 경로 있음 / 부분=계층 일부만 / 보완=저장소가 고칠 수 있음 / 비적용=경계 밖. 경계: L0 Saylo(5패키지), L1 소비 앱, L2 저장소·릴리스. 근거는 좁게 읽은 소스·문서이고, 실행 검증은 아래 실행검증 완료에 적은 범위뿐이며 나머지는 이번 감사에서 다시 돌리지 않았다.
 
@@ -54,7 +54,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 40 | 역할과 권한 관리 — "관리자·편집자·조회자처럼 역할을 나누고, 팀이나 조직별로 접근 권한을 관리하게 할까?" | 비적용(L1+L2) | 역할 모델 없음(14행). 저장소 쪽은 npm 게시 권한·GitHub environment(npm-release). |
 | 41 | 검토와 승인 흐름 — "중요한 변경을 초안 작성, 검토, 승인, 반영 단계로 처리하는 기능을 추가할까?" | 비적용(L1+L2) | 제품 승인 워크플로 없음. 릴리스는 수동 dispatch·`publish` 기본 false·Trusted Publisher(`docs/09`). |
 | 42 | 운영자 관리 화면 — "계정, 데이터, 작업 상태를 운영자가 직접 관리할 수 있는 관리 화면을 구축할까?" | 비적용(L1) | 관리 화면 없음. 운영 접점은 Vite dev 콘솔·CLI 로그뿐. |
-| 43 | 문의용 진단 자료 — "사용자가 문제를 겪으면 민감한 정보를 제외한 실행 환경과 오류 기록을 한 번에 모아 보내게 할까?" | 부분(L0+L1) | `createSupportReport`·`createSupportRecorder`와 `docs/support-report.md`로 환경 버전·오류 코드·위치·연결 상태를 허용 목록 자료로 제공한다. vanilla 생성·검토·초기화 UI와 실브라우저 검사, 독립 JS/TS tarball 검사 완료(`d7097dc`, `review/support-report-api-2026-10-11.json`·`review/support-report-ui-2026-10-11.json`). 원문·파일명·키·request ID 제외, 최근32이벤트/각64행 제한. 환경값은 caller 제공이고 공개 문의창구와 다른 예제 UI는 남음. 자동 제출 없음. |
+| 43 | 문의용 진단 자료 — "사용자가 문제를 겪으면 민감한 정보를 제외한 실행 환경과 오류 기록을 한 번에 모아 보내게 할까?" | 부분(L0+L1) | `createSupportReport`·`createSupportRecorder`와 `docs/support-report.md`로 환경 버전·오류 코드·위치·연결 상태를 허용 목록 자료로 제공한다. vanilla 생성·검토·초기화 UI와 실브라우저 검사, 독립 JS/TS tarball 검사 완료(`d7097dc`, `review/support-report-api-2026-10-11.json`·`review/support-report-ui-2026-10-11.json`). 원문·파일명·키·request ID 제외, 최근32이벤트/각64행 제한. 환경값은 caller 제공이고 React·Svelte·SvelteKit 생성·검토·초기화와 실브라우저 검증도 완료(분리 실행 기록). 공개 문의창구는 미확인(45행). 자동 제출 없음. |
 | 44 | 제품 안의 도움말 — "사용 중인 기능 옆에서 설명과 예제를 보고 바로 따라 할 수 있는 도움말을 추가할까?" | 부분(L0) | 문서형은 `packages/*/README.md`·`docs/03`·`docs/08`. 인라인 도움말 없음. JSDoc·타입 힌트가 일부 대체. |
 | 45 | 의견 수집 창구 — "불편 신고와 기능 제안을 제품 안에서 받고, 처리 상태도 사용자에게 보여줄까?" | 보완(L2) | 제품 내 창구 없음. repo가 PRIVATE라 공개 npm 사용자는 GitHub Issues 접근이 어렵고, 루트에 `CONTRIBUTING.md`·`SECURITY.md`·`CODE_OF_CONDUCT.md`도 없다. 다음: 창구 확인(visibility 변경은 scope 밖). |
 | 46 | 사용 현황 대시보드 — "어떤 기능이 쓰이고 어디서 사용을 포기하는지 볼 수 있도록 필요한 지표를 수집하고 보여줄까?" | 비적용(L1) | 텔레메트리 없음. 대체 지표는 npm 다운로드·CI 테스트 수. 계측은 프라이버시·번들 비용. |
@@ -103,7 +103,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 ## 실제 효용 우선 Top 3
 
-1. 진단 자료 UI를 나머지 예제에 연결한다(21·43행). API·문서·vanilla 수집/검토/초기화 흐름은 `d7097dc`와 실브라우저 검사로 확인했다. React·Svelte·SvelteKit도 같은 수집 경로를 제공한다.
+1. React cached `pagehide` 수명을 보완한다(9행). `examples/react/main.tsx`는 현재 cached 이탈에도 root·store를 폐기하고 once 핸들러를 제거한다. vanilla·Svelte처럼 캐시 복귀에 맞는 수명으로 수정하고 생산 번들로 확인한다. 실제 브라우저 BFCache 채택은 별도 범위다.
 2. 오류·상태 표시 계약을 `docs/04` 계열에 남긴다. npm 예제의 규칙(진단 유지·수정 안내·명시적 해제·모달 내 안내·렌더 오류와 진단 분리)에 더해, 수송 실패와 callback 실패의 분리(`LiveDiagnostic.operation`, `928377e`)와 handshake 문구만 `connected`에서 해제하는 규칙을 적는다(3·7·21행).
 3. 프레임워크별 첫사용 안내를 보완한다(6·27행). vanilla 시작 문서 검증은 있지만 독립 React·Svelte 시작 안내는 남아 있다.
 
@@ -119,7 +119,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
-상태 UI는 vanilla·React·Svelte·SvelteKit까지 실브라우저 실패·복구 검사를 마쳤다. SvelteKit setup 오류도 수정해 원래 명령이 통과했다. 문의용 진단 API·문서와 vanilla 수집 UI도 구현·검증했다. 다음은 다른 예제의 수집 경로와 프레임워크별 시작 안내다. 표시 계약 문서화를 작은 커밋으로 진행하고, 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
+상태 UI는 vanilla·React·Svelte·SvelteKit까지 실브라우저 실패·복구 검사를 마쳤다. SvelteKit setup 오류도 수정해 원래 명령이 통과했다. 문의용 진단 API·문서와 vanilla 수집 UI도 구현·검증했다. 진단 수집 UI는 React·Svelte·SvelteKit에도 적용·검증했다. 다음은 React cached 수명과 프레임워크별 시작 안내다. 표시 계약 문서화를 작은 커밋으로 진행하고, 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
 
 ---
 작성 2026-10-11(KST). 기준 HEAD `c92515d`. 시작 안내 `d424345`, 연결 종료 표시 `5db3517`, 동기화 API `b534b4f`, 계약 문서·기록 `b8540cb`, handshake 진단 분리 `928377e`, vanilla·React 상태 UI `c92515d`가 커밋돼 있다. 실행 검증 표시는 연결한 실제 관측 기록의 범위에 한정한다. 이번 판에서 검증된 source 변화는 커밋된 `packages/vite` 개발 클라이언트(alpha 미게시)와 vanilla·React·npm 예제·시작 문서이고, 패키지 버전·registry 상태는 그대로다.

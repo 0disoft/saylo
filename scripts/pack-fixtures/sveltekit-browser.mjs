@@ -50,6 +50,24 @@ if (new URL(location.href).searchParams.has('pack-check')) {
         sameInputs();
       }
       checks.push('ko-en-ko');
+      if (new URL(location.href).searchParams.has('support-check')) {
+        element('#support-panel').open = true;
+        element('#support-export').click();
+        await wait(() => element('#support-report').value.length > 0, 'Support report did not generate');
+        const text = element('#support-report').value;
+        const report = JSON.parse(text);
+        check(report.schemaVersion === 'saylo.support/v1', 'Support schema differs');
+        check(report.environment.runtime === 'browser' && typeof report.environment.sayloSvelte === 'string', 'Support environment missing');
+        check(element('#support-report').readOnly, 'Support output is editable');
+        check(!text.includes('Packed Saylo') && !text.includes('Keep this note') && !text.includes('demo.json'), 'Support report included form content or file names');
+        element('#support-clear').click();
+        await wait(() => element('#support-report').value === '', 'Support report did not clear');
+        element('#support-export').click();
+        await wait(() => element('#support-report').value.length > 0, 'Support report did not regenerate');
+        check(JSON.parse(element('#support-report').value).events.length === 0, 'Cleared support history retained events');
+        sameInputs();
+        checks.push('support-report');
+      }
       element('#open-dialog').click();
       await wait(() => document.querySelector('#confirmation')?.open, 'Dialog did not open');
       fill('#confirmation-note', 'Keep this confirmation');

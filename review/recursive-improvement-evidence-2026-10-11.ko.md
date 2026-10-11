@@ -22,5 +22,7 @@
 
 **vanilla 진단 자료 UI.** 실브라우저에서 handshake 3회 실패 상태를 수집하고, 연결 복구 뒤 영어 ICU 파손 진단을 자료로 만들었다. `INVALID_ICU`와 위치는 남고 합성 입력값·문구·파일 이름·request ID는 빠졌다. 파일 복구 뒤 화면 오류는 해제되고 이전 기록은 자료에 남았으며, 기록 지우기 후 다시 생성하면 현재 `connected` 상태와 빈 이벤트 배열이 나왔다. 입력값은 유지됐다. 생산 bundle 검사 3개가 통과했고 콘솔 경고·오류는 0이었다. 서버·탭은 종료하고 카탈로그를 복원했다. 근거는 `review/support-report-ui-2026-10-11.json`이다. UI는 vanilla 한정이고 실제 제출·공개 문의창구는 검증하지 않았다.
 
+**React·Svelte·SvelteKit 진단 자료 UI.** React `d559d27`과 Svelte `2f732ca`, SvelteKit 공유 layout에도 생성·검토·초기화 UI를 연결했다. 각 예제는 실제 handshake 응답 차단으로 3회 실패 상태를 수집하고, 복구 뒤 합성 ICU 오류의 코드·좌표는 남기되 입력값·문구·파일 이름은 제외했다. 파일 복구 후 화면 진단은 해제되고 자료에 이전 오류는 남았으며, 초기화 뒤 생성하면 현재 `connected` 상태와 빈 이벤트 배열이 나왔다. 입력값은 유지됐다. SvelteKit `/about` 이동에서도 입력과 생성한 자료 문자열이 유지됐다. React 타입 검사·63모듈 빌드, Svelte 타입·컴포넌트 검사(오류·경고 0)·159모듈 빌드, SvelteKit setup·검사·SSR·운영 빌드가 통과했다. 독립 `verify:pack:sveltekit`은 운영 Chromium에서 자료 생성·입력값 제외·초기화 검사까지 수행했다. 근거는 `review/support-report-react-2026-10-11.json`·`review/support-report-svelte-2026-10-11.json`·`review/support-report-sveltekit-2026-10-11.json`이다. 콘솔 경고·오류는 0, 서버·탭은 종료하고 편집 카탈로그는 복원했다. registry 검증과 공개 제출은 하지 않았다.
+
 판정 반영은 21·43행에 진단 자료 근거를 추가한다. 이 검증들은 예제 UI·문서 변경과 커밋된 라이브러리 소스 변경(alpha 미게시)이고 패키지 버전·registry 상태는 그대로다.
 
