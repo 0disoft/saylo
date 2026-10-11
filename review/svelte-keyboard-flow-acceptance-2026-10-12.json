@@ -1,0 +1,58 @@
+{
+  "schema": "saylo.keyboard-flow-acceptance/v1",
+  "observedAt": "2026-10-11T17:01:24.468Z",
+  "sourceCommit": "597beed",
+  "framework": "svelte",
+  "method": "Codex in-app browser routed pressKey(null, key) and typeText(null, text) through current focus; no mouse, click, setValue, fill or programmatic focus.",
+  "url": "http://127.0.0.1:57524/",
+  "checks": [
+    "Tab to locale and Up to English",
+    "Tab/type name and note; Up changes count from 2 to 3",
+    "Return opens confirmation and focuses confirmation-note",
+    "Tab to Close and Return closes with focus restored to opener",
+    "Return reopens with confirmation text retained; Escape closes and restores opener",
+    "Tab/Return opens support disclosure",
+    "Tab/Return generates report without synthetic form input values",
+    "Tab/Return clears report while preserving form values"
+  ],
+  "result": {
+    "activeId": "support-clear",
+    "confirmationNote": "Svelte confirmation",
+    "count": "3",
+    "locale": "en",
+    "name": "Keyboard Svelte",
+    "note": "Keep Svelte note",
+    "reportLength": 0
+  },
+  "artifacts": {
+    "ax": {
+      "path": ".release/svelte-keyboard-2026-10-12-ax.json",
+      "sha256": "81fe3db0d5cddba31298fb367488e5e9e65f7376754f45bca958fc82ed89521d"
+    },
+    "screenshot": {
+      "path": ".release/svelte-keyboard-2026-10-12.png",
+      "sha256": "802c90d0d795941e6fe3fc8d658b221932c4e8dbe6e5e4802aa74560ea85ed66"
+    }
+  },
+  "sourceHashes": {
+    "examples/svelte/App.svelte": "2080f373246cdd4c174d234bad4f1efe7e8a3636daa6d4155d6625c475f27250",
+    "examples/svelte/Preview.svelte": "5fb5e55beb82a53a8a69b5836226259bd9a205ba4bb0475b5b2754a0f2185ba7",
+    "examples/svelte/SupportPanel.svelte": "3acb585c4686b831e9d0e0a5cb5a5a3bc7619761aa726afd7bca87ee16f87bbb",
+    "examples/svelte/i18n.ts": "d23186b4b2b369a609668f3e891a2856591c5797710ce48746df756e2fa4e423",
+    "examples/svelte/vite.config.mjs": "78b0d413cf65c5d76759899d4701281bf7785cfb880c6ff4cec1749447a77aab",
+    "examples/vanilla/style.css": "debd708aadcb27a33d9713215591d7bea1bf59dd0b5d59a2d35912e5c6638567",
+    "examples/shared/dev-status.ts": "ddc00c3f73347c971b4a0003852737e71cd5ebd7d85a5d9cbe8fad0750a2f3b4"
+  },
+  "cleanup": {
+    "temporaryTabClosed": true,
+    "ownedServerSession": 23880,
+    "ownedServerExitCode": 0,
+    "ownedPortReachableAfterExit": false
+  },
+  "limits": [
+    "One Svelte development demo in the in-app browser; other frameworks and browsers are outside this observation.",
+    "Automation-routed keyboard input is not physical-device or accessibility-conformance certification.",
+    "No screen-reader speech, ordinary 200/400 percent browser zoom, full modal focus-cycle claim, low-spec device or publication acceptance.",
+    "No production code, package version, registry state or workflow was changed."
+  ]
+}
