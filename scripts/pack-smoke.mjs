@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkRelease, packageIds, releaseInput } from './release-check.mjs';
 import { approvedRegistryRelease, verifyRegistryVersion } from './registry-release.mjs';
+import { packageDocPaths, verifyPackageDocs } from './build-package-docs.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const fixtures = fileURLToPath(new URL('./pack-fixtures/', import.meta.url));
@@ -88,7 +89,12 @@ try {
     const files = new Set(pack.files.map(file => file.path));
     assert.ok(files.has('README.md'), `${pack.name} is missing its README`);
     assert.ok(files.has('LICENSE') && files.has('NOTICE'), `${pack.name} needs license files`);
-    assert.ok([...files].every(file => file.startsWith('dist/') || ['package.json', 'README.md', 'LICENSE', 'NOTICE'].includes(file)), `${pack.name} contains unexpected release files`);
+    const docs = new Set(pack.name === '@0disoft/saylo-vite' && (!fromRegistry || files.has('docs/manifest.json'))
+      ? packageDocPaths.map(file => `docs/${file}`) : []);
+    for (const file of docs) assert.ok(files.has(file), `${pack.name} missing bundled document ${file}`);
+    assert.ok([...files].every(file => file.startsWith('dist/') || docs.has(file)
+      || ['package.json', 'README.md', 'LICENSE', 'NOTICE'].includes(file)), `${pack.name} contains unexpected release files`);
+    if (docs.size && !fromRegistry) await verifyPackageDocs(path.join(directory, 'docs'));
     assert.equal(manifest.license, 'Apache-2.0');
     assert.equal(manifest.private, undefined);
     assert.equal(pack.version, manifest.version);
@@ -129,6 +135,10 @@ try {
       include: [`src/**/*.${language}`, ...(hasSvelte ? ['src/consumer-svelte*.js'] : []), 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
     console.log(`[pack] ${language}: installing tarballs and declared peer/tool major ranges outside the workspace`);
     await npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', '--workspaces=false'], app);
+    if (!fromRegistry && language === 'js') {
+      const bundled = await verifyPackageDocs(path.join(app, 'node_modules/@0disoft/saylo-vite/docs'));
+      console.log(`[pack] Installed document bundle: ${JSON.stringify(bundled)}; contents and local file links match source.`);
+    }
     for (const name of names) {
       const installed = path.join(app, 'node_modules', name);
       assert.equal((await lstat(installed)).isSymbolicLink(), false, `${name} is a workspace link`);

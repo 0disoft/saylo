@@ -38,7 +38,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 24 | 설치·업데이트·배포 — "새 환경에서 실행하고 새 버전으로 바꾸는 과정에 빠진 설정이나 수동 단계가 있고, 실패하면 이전 상태로 돌아갈 수 있어?" | 적용(L2) | `docs/09-release.md` runbook, `scripts/release-*.mjs`·`verify-oidc.mjs`·`pack-smoke.mjs`, `release.yml`, `verify:registry:alpha4`. 게시는 비원자적. 다음: 실행. |
 | 25 | 사용자에게 한 약속 — "소개 문구, 도움말, 요금제 설명이 현재 기능과 일치하는지 확인하고, 과장되거나 빠진 내용을 찾아줄래?" | 부분(L2) | `docs/README.md` 우선순위 규칙, `docs/06` "실행하지 않은 검사는 pass 아님", `docs/77` 미게시 코드 구분. repo PRIVATE·npm public 접점 주의. 다음: 링크·예제 자동검사(74행). |
 | 26 | 다음 작업의 우선순위 — "지금까지 확인한 문제와 사용자 의견을 기준으로, 다음에 할 일 세 가지와 당분간 하지 않을 일을 이유와 함께 골라줄래?" | 적용(L0+L2) | `docs/06` 로드맵, `docs/07` 미해결. 이 감사 6절 Top3·제외. |
-| 27 | 첫 실행 안내 — "처음 사용하는 사람이 설정부터 첫 작업 완료까지 따라갈 수 있는 시작 안내를 만들까?" | 부분(L0) | 네 시작 안내를 루트·docs README에서 연결했다. 문서 코드만으로 public npm 설치·실행을 검증한다. React 8파일·Svelte 10파일·SvelteKit 19파일의 최신 검사는 키 삭제·빈 카탈로그 복구를 포함한다(`review/react-starter-render-recovery-2026-10-11.json`·`review/svelte-starter-render-recovery-2026-10-11.json`·`review/sveltekit-starter-render-recovery-2026-10-11.json`). SvelteKit은 요청별 SSR·공유 layout·Node 서버까지 확인했다. 문서 공개 전달과 나머지 활용 안내의 충분성은 남아 있다. |
+| 27 | 첫 실행 안내 — "처음 사용하는 사람이 설정부터 첫 작업 완료까지 따라갈 수 있는 시작 안내를 만들까?" | 부분(L0) | 네 시작 안내를 루트·docs README에서 연결했다. 문서 코드만으로 public npm 설치·실행을 검증한다. React 8파일·Svelte 10파일·SvelteKit 19파일의 최신 검사는 키 삭제·빈 카탈로그 복구를 포함한다(`review/react-starter-render-recovery-2026-10-11.json`·`review/svelte-starter-render-recovery-2026-10-11.json`·`review/sveltekit-starter-render-recovery-2026-10-11.json`). SvelteKit은 요청별 SSR·공유 layout·Node 서버까지 확인했다. 로컬 Vite tarball에 13파일의 사용 문서 묶음을 포함하고 실제 설치 내용·내부 파일 링크를 검증했다(`review/package-docs-acceptance-2026-10-11.json`). registry 공개 전달과 나머지 활용 안내의 충분성은 남아 있다. |
 | 28 | 체험 공간 — "설치나 가입 전에 핵심 기능을 써볼 수 있는 데모와 샘플 데이터를 추가할까?" | 부분(L0) | 호스팅 데모 없음. 실제 체험 접점은 npm 설치 후 예제 5종(`examples/*`)과 `scripts/pack-smoke.mjs` 독립 설치 검증(`docs/77`). |
 | 29 | 작업 템플릿 — "자주 하는 작업을 빈 화면부터 시작하지 않도록 기본 템플릿과 예제를 제공할까?" | 비적용(L1) | "작업" 도메인 없음. 대안은 예제 카탈로그(`examples/*/locales/`)·pack fixture·typegen `.d.ts`. 소비 제품 담당. |
 | 30 | 통합 검색 — "프로젝트 안의 데이터, 기능, 설정을 한곳에서 찾아 바로 이동하는 검색을 만들까?" | 비적용(L1) | 프로젝트·설정 화면 없음. 인접 실체는 typegen 타입과 키·namespace 오류 메시지(`core/translation-errors.ts`)뿐. |
@@ -99,13 +99,13 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 여기 적은 항목은 이전 실행 결과가 없다는 뜻이 아니라, 이번 감사가 그 명령과 관측을 다시 돌리지 않았다는 뜻이다. 이전 턴의 실행 결과는 분리한 [실행 검증 기록](recursive-improvement-evidence-2026-10-11.ko.md)에 그대로 남아 있다.
 
-이번 감사에서 재실행하지 않은 것: `npm run test`·`build` 전체, `verify:registry:*`, `bench:live` 재계산, `release:check`·`pack`·`oidc`·dispatch, registry 조회, 시작 문서 밖의 클린 설치 재현. (`check`·`typecheck:consumers`·`verify:pack`은 `b534b4f` 범위에서 돌렸다.) 59·60·73행의 remote 상태(자동 갱신 체계, 취약점 스캔, 이슈 창구 접근성)도 미확인이다.
+이번 감사에서 재실행하지 않은 것: `npm run test`·`build` 전체, `verify:registry:*`, `bench:live` 재계산, `release:check`·`release:pack`(산출물 저장)·`oidc`·dispatch, registry 조회, 시작 문서 밖의 클린 설치 재현. (`check`·`typecheck:consumers`·`verify:pack`은 `b534b4f` 범위에서 돌렸다.) 59·60·73행의 remote 상태(자동 갱신 체계, 취약점 스캔, 이슈 창구 접근성)도 미확인이다.
 
 ## 실제 효용 우선 Top 3
 
-1. 시작 안내를 npm 이용자에게 전달할 산출물을 준비한다(6·27행). 세 프레임워크의 시작 안내도 빈 카탈로그 복구를 확인했다. SvelteKit 19파일은 public alpha.4 설치에서 dev 15단계·빈 첫 실행 3단계·운영 미리보기 4단계와 빈 SSR·boot 8요청을 통과했다(`review/sveltekit-starter-render-recovery-2026-10-11.json`). 문서는 PRIVATE 저장소에만 있으므로 기존 시작 안내를 패키지에 포함하는 경로부터 검토한다. 게시와 공개 사이트 배포는 아직 하지 않았다.
+1. 예제의 키보드·좁은 화면 흐름을 확인한다(17·18행). native dialog와 파일 갱신 중 포커스 유지의 실행 근거는 있지만, 현재 검사는 주로 프로그램으로 입력·클릭한다. 실제 키보드 이동과 작은 화면의 핵심 조작은 별도 확인이 남아 있다.
 2. 외부 문의 창구와 비공개 제보 연락처를 정한다(45·73행). PRIVATE 저장소의 bugs 링크가 인증 없이 404인 것을 확인했다(`review/reporting-access-2026-10-11.json`). 기존 비공개 이력 공개는 별도 판단이 필요하다. 대체 연락처는 아직 미정이고 원격 설정은 변경하지 않았다.
-3. 예제의 키보드·좁은 화면 흐름을 확인한다(17·18행). native dialog와 파일 갱신 중 포커스 유지의 실행 근거는 있지만, 현재 검사는 주로 프로그램으로 입력·클릭한다. 실제 키보드 이동과 작은 화면의 핵심 조작은 별도 확인이 남아 있다.
+3. 다음 승인 릴리스에서 동봉 문서의 공개 전달을 확인한다(6·27행). `packages/vite` 빌드가 네 시작 안내·다섯 API README·두 계약을 13파일로 묶고, 실제 tarball의 독립 설치에서 내용·내부 파일 링크를 확인했다(`review/package-docs-acceptance-2026-10-11.json`). 로컬 준비는 끝났지만 public alpha.4에는 없으므로 게시·registry 확인을 완료로 보지 않는다. 버전 승격·푸시·게시는 이번 범위에서 하지 않았다.
 
 완료로 내린 항목: lazy 갱신 observer 오류 처리(7·21·62행). lazy `onUpdate` 예외를 eager와 같은 `observer`로 보고하도록 고쳤고, 최초 `onUpdate`가 던져도 binding·locale 커밋·이후 복구가 유지된다. 수정 전 회귀 2 fail(최초 update view 실패, locale 커밋 뒤 `AggregateError` rejection), 수정 후 `vite build`+lazy/sync-state/client/support-report 49 pass, consumer `tsc` pass다(근거 `review/lazy-update-observer-2026-10-11.json`).
 
@@ -123,7 +123,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
-상태 UI·진단 수집 UI·React cached 수명·lazy observer 오류 처리는 분리 실행 기록의 범위까지 확인했고, 기존 동작 문서와 게시본 검증 예제 경계도 정리했다. 세 프레임워크 예제와 독립 시작 안내의 빈 카탈로그 복구도 확인했다. 다음은 시작 안내 전달 산출물, 문의·보안 실제 접근 경로, 키보드·좁은 화면이다. 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
+상태 UI·진단 수집 UI·React cached 수명·lazy observer 오류 처리는 분리 실행 기록의 범위까지 확인했고, 기존 동작 문서와 게시본 검증 예제 경계도 정리했다. 세 프레임워크 예제와 독립 시작 안내의 빈 카탈로그 복구, 문서 동봉 tarball의 독립 설치도 확인했다. 다음은 키보드·좁은 화면, 문의·보안 실제 접근 경로, 승인 릴리스의 문서 공개 전달이다. 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
 
 ---
 작성 2026-10-11(KST). 초기 감사 기준 HEAD `c92515d`. 후속 예제·시작 안내 검증은 분리 실행 기록과 각 JSON을 따른다. 시작 안내 `d424345`, 연결 종료 표시 `5db3517`, 동기화 API `b534b4f`, 계약 문서·기록 `b8540cb`, handshake 진단 분리 `928377e`, vanilla·React 상태 UI `c92515d`가 커밋돼 있다. 실행 검증 표시는 연결한 실제 관측 기록의 범위에 한정한다. 이번 판에서 검증된 source 변화는 커밋된 `packages/vite` 개발 클라이언트(alpha 미게시)와 vanilla·React·Svelte·SvelteKit·npm 예제·시작 문서이고, 패키지 버전·registry 상태는 그대로다.

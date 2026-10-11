@@ -8,6 +8,16 @@ Saylo의 Vite 8 플러그인과 개발 클라이언트다. 카탈로그 파일 �
 
 lazy 개발 경로는 full present 응답을 compact로 보내고 브라우저에서 기존 카탈로그 형태로 복원한다. 복잡한 ICU AST와 오류 위치를 유지하며 브라우저 ICU 재파싱은 없다. 이 변경은 `0.1.0-alpha.2` 게시본에 포함된다. 범위·검증·성능 측정은 [compact 전송 기록](https://github.com/0disoft/saylo/blob/main/docs/16-compact-catalog-transport.md)을 따른다.
 
+## 설치 폴더의 시작 안내
+
+다음 릴리스의 tarball에는 [문서 목차](docs/README.md), JavaScript/TypeScript·React·Svelte·SvelteKit 시작 안내와 패키지 API 문서를 함께 싣는다. GitHub 로그인 없이 앱의 `node_modules/@0disoft/saylo-vite/docs/`에서 읽는다. 현재 공개 alpha.4에는 이 문서 묶음이 없고, 로컬 빌드·pack으로 준비하는 변경이다.
+
+```sh
+node -e "console.log(require('node:fs').readFileSync('node_modules/@0disoft/saylo-vite/docs/README.md', 'utf8'))"
+```
+
+묶음 안의 링크는 같이 설치한 문서를 가리킨다. `manifest.json`은 원본과 묶음의 SHA-256을 기록하며, 시작 안내의 실행 코드 블록은 원본 그대로다. 포함하지 않은 설계·측정 기록은 제목만 남긴다.
+
 ## 설치
 
 앱 런타임에는 `@0disoft/saylo-core`를 설치하고, 플러그인과 dev client는 개발 의존성으로 넣는다. `vite`는 peer 의존성이며 현재 조건은 Vite 8이다.

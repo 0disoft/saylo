@@ -43,6 +43,8 @@ npm run release:pack
 
 `release:check`는 루트 `private`, 패키지의 `private` 부재, `license`, `engines`, `publishConfig`, 내부 의존 버전, 다섯 패키지의 `LICENSE`·`NOTICE` 일치를 검사한다. `check`는 빌드·워크스페이스 테스트·소비 타입 검사·typegen·React TS 검사를 돌린다. Svelte 데모 빌드는 `npm run build:svelte`로 별도 실행한다. `release:pack`은 빌드 후 다섯 tarball을 저장소 밖 JS·TS 소비 앱에 설치해 검증하고, 통과하면 tarball과 `manifest.json`(`name`·`version`·`filename`·`integrity`)을 `.release/npm/`에 남긴다. `.release/`는 gitignore 대상이다.
 
+`packages/vite` 빌드는 원본 사용 문서에서 설치용 `docs/`를 생성한다. `release:pack`의 `--ignore-scripts`는 이 빌드 산출물을 그대로 포장하며, 문서 13파일의 누락·예상 밖 파일·원본 불일치와 실제 설치 후 내부 파일 링크를 함께 검사한다. `npm run build:docs`·`npm run verify:docs`로 문서만 생성·대조할 수 있다. 실행 코드 블록은 보존하고 외부 URL·heading fragment는 파일 존재 검사 범위에 넣지 않는다. 이 동봉 변경은 로컬 준비 상태이며 기존 공개 alpha.4에는 없다.
+
 게시된 실물은 `npm run verify:registry`로 대조한다. 현재 명령은 `pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1`을 실행해 커밋된 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json)의 네 패키지 버전과 SHA-512 integrity를 registry metadata·다운로드한 tarball과 비교한다. 현재 소스 버전이나 이동 가능한 `alpha` tag는 과거 파일의 판정에 사용하지 않는다. 설치 metadata와 README 예제도 실제 게시본을 기준으로 검사하며, alpha.1에 없는 `/runtime`·`freezeCatalogs`·Svelte API는 요구하지 않는다. registry tarball을 저장소 밖 JS·TS 앱에 설치해 CLI·checkJs/TS·런타임 SSR·public subpath·Vite production lazy chunk를 확인한다. 새로운 승인 JSON은 실제 CI artifact의 integrity를 기록하는 별도 단계이며 로컬 후보 tarball로 기존 승인 기록을 덮어쓰지 않는다. 현행 다섯 `alpha.4`는 `npm run verify:registry:alpha4`가 [releases/0.1.0-alpha.4.json](../releases/0.1.0-alpha.4.json)을 기준으로 검사하고, `npm run verify:registry:sveltekit:alpha4`가 그 게시본으로 SvelteKit 앱을 검증한다. 과거 alpha.3 검증도 유지한다. 기존 `alpha.1`·`alpha.2` 명령과 `verify:registry:sveltekit`(`alpha.2`)은 그대로 둔다.
 
 ## GitHub Actions 워크플로

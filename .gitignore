@@ -3,6 +3,7 @@ dist/
 *.tsbuildinfo
 *.tgz
 .release/
+packages/vite/docs/
 packages/svelte/test/.compiled/
 examples/sveltekit/.svelte-kit/
 examples/sveltekit/build/

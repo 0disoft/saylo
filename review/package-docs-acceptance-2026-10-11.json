@@ -1,0 +1,34 @@
+{
+  "observedOn": "2026-10-11",
+  "scope": "Consumer documentation bundled in the local Vite npm artifact",
+  "commands": [
+    { "command": "npm run build:docs", "exitCode": 0 },
+    { "command": "npm run verify:docs", "exitCode": 0 },
+    { "command": "npm run verify:pack", "exitCode": 0 }
+  ],
+  "bundle": {
+    "package": "@0disoft/saylo-vite",
+    "sourceVersion": "0.1.0-alpha.4",
+    "sourceDocuments": 11,
+    "generatedFiles": 13,
+    "generatedBytes": 135911,
+    "groups": ["four standalone guides", "five package API READMEs", "development connection state contract", "support report contract", "generated index and SHA-256 manifest"],
+    "installedLocation": "node_modules/@0disoft/saylo-vite/docs/README.md"
+  },
+  "artifact": { "files": 58, "compressedBytes": 75924, "verification": "Fresh local tarball installed outside the repository; all bundled bytes and local file links match source" },
+  "verifiedBehavior": [
+    "Vite workspace build regenerates documentation before the existing ignore-scripts pack step",
+    "Only explicit consumer-facing Markdown inputs are included",
+    "Runnable fenced code blocks are unchanged",
+    "Bundled internal file links resolve inside the installed docs tree",
+    "Missing optional design references become unlinked titles",
+    "Early design API pointer follows the actual core README",
+    "Source and transformed document SHA-256 recorded using LF normalization",
+    "Local package smoke requires every expected documentation file and rejects extra files",
+    "Existing five-package independent JS/TS, public imports, typegen, SSR, support report, lazy build and pruned SSR checks pass"
+  ],
+  "generation": "Built from source, ignored in Git; no lifecycle hook or new runtime dependency",
+  "registryCompatibility": "Historical packages without the document manifest do not require these new files; future artifacts carrying it use the document allowlist",
+  "cleanup": "Existing pack-smoke bounded independent consumers removed; generated local docs retained for inspection",
+  "limits": ["Local artifact only; public alpha.4 still lacks the bundle", "No version bump, push, publication, registry verification or website deployment", "External URLs and heading fragments are outside the local file-link check", "Standalone browser results reused because the executable code blocks are unchanged", "Original API publication-status notes retained"]
+}

@@ -46,7 +46,9 @@
     "verify:demo:react": "tsc -p examples/react/tsconfig.json && vite build --config examples/react/vite.config.mjs && node --experimental-vm-modules --test scripts/test/react-demo-lifecycle.test.mjs",
     "verify:demo:react:recovery": "node scripts/verify-demo-recovery.mjs --framework react",
     "verify:demo:svelte:recovery": "node scripts/verify-demo-recovery.mjs --framework svelte",
-    "verify:demo:sveltekit:recovery": "node scripts/verify-sveltekit-recovery.mjs"
+    "verify:demo:sveltekit:recovery": "node scripts/verify-sveltekit-recovery.mjs",
+    "build:docs": "node scripts/build-package-docs.mjs",
+    "verify:docs": "node scripts/build-package-docs.mjs --check"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "7",
