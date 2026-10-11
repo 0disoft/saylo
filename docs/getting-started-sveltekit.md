@@ -1,6 +1,6 @@
 # 빈 폴더에서 SvelteKit으로 Saylo 시작하기
 
-Saylo 저장소를 clone하지 않고 npm registry만으로 SvelteKit 3 + Svelte 5 앱에 Saylo를 붙인다. 빈 폴더에 파일 18개를 만들고 설치하면 로케일 JSON을 고치는 즉시 문구가 바뀐다. 정상 파일 편집 중 폼과 확인 창의 입력·포커스 유지가 검증 범위다. 이 문서는 게시본 alpha의 공개 API만 쓴다. 로컬 미게시 API(`onSyncState`, 문의용 진단 보고서)는 쓰지 않는다.
+Saylo 저장소를 clone하지 않고 npm registry만으로 SvelteKit 3 + Svelte 5 앱에 Saylo를 붙인다. 빈 폴더에 파일 19개를 만들고 설치하면 로케일 JSON을 고치는 즉시 문구가 바뀐다. 파일 편집과 빈 카탈로그 복구 중 폼과 확인 창의 입력·포커스를 유지한다. 이 문서는 게시본 alpha의 공개 API만 쓴다. 로컬 미게시 API(`onSyncState`, 문의용 진단 보고서)는 쓰지 않는다.
 
 ## 전제
 
@@ -10,7 +10,7 @@ Saylo 저장소를 clone하지 않고 npm registry만으로 SvelteKit 3 + Svelte
 - 도구는 메이저 범위만 적는다. SvelteKit 3, Svelte 5, `@sveltejs/vite-plugin-svelte` 7, `@sveltejs/adapter-node` 6, TypeScript 6, `svelte-check` 4, `@types/node` 24, Vite 8이다.
 - `svelte-check` 4가 받는 TypeScript는 5와 6뿐이라 지금은 6에서 멈춘다.
 
-## 파일 18개
+## 파일 19개
 
 ### package.json
 
@@ -192,11 +192,61 @@ export function connectBootClient(options: {
 }
 ```
 
+### src/lib/demo-messages.ts
+
+```ts
+import { getContext, setContext } from 'svelte';
+import type { StoreSnapshot } from '@0disoft/saylo-core';
+import type { AppSchema } from './generated';
+
+function read(snapshot: StoreSnapshot<AppSchema>) {
+  const { t } = snapshot;
+  // Project the complete shared view before any component renders a label.
+  return {
+    home: t('demo:home'), about: t('demo:about'), heading: t('demo:heading'), description: t('demo:description'),
+    aboutHeading: t('demo:aboutHeading'), aboutBody: t('demo:aboutBody'), formTitle: t('demo:formTitle'),
+    name: t('demo:name'), note: t('demo:note'), openDialog: t('demo:openDialog'),
+    dialogTitle: t('demo:dialogTitle'), dialogNote: t('demo:dialogNote'), closeDialog: t('demo:closeDialog'),
+  };
+}
+
+export type DemoMessages = ReturnType<typeof read>;
+
+export function projectDemoMessages(snapshot: StoreSnapshot<AppSchema>, previous: StoreSnapshot<AppSchema> | undefined) {
+  try { return { messages: read(snapshot), accepted: snapshot, error: '' }; }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    let messages: DemoMessages = {
+      home: '미리보기', about: '연결 설명', heading: '번역을 준비하세요.',
+      description: '기준 로케일의 demo.json에 필요한 키와 인자를 채우고 저장하세요.',
+      aboutHeading: '번역을 준비하세요.', aboutBody: '번역 파일을 수정하고 저장하면 이 화면도 복구됩니다.',
+      formTitle: '입력 미리보기', name: '이름', note: '메모', openDialog: '확인 창 열기',
+      dialogTitle: '입력 확인', dialogNote: '확인 메모', closeDialog: '닫기',
+    };
+    if (previous) { try { messages = read(previous); } catch { /* Keep the explicit setup view. */ } }
+    return { messages, accepted: undefined,
+      error: `${message}\n로케일 파일의 키·인자를 확인하고 다시 저장하세요. 입력은 유지됩니다.` };
+  }
+}
+
+// The key is shared; the getter and last-good snapshot belong to one layout/request.
+const key = Symbol('Saylo demo presentation');
+type DemoView = { readonly current: ReturnType<typeof projectDemoMessages> };
+export const setDemoView = (view: DemoView) => setContext(key, view);
+export const getDemoView = () => getContext<DemoView>(key);
+```
+
+layout이 필요한 문구를 모두 계산해 페이지와 입력 화면에 공유한다. 마지막 정상 snapshot과 context 값은 layout마다 따로 보관한다. 새 SSR 요청에는 이전 요청의 번역을 재사용하지 않는다.
+
 ### src/lib/Workbench.svelte
 
 ```svelte
 <script lang="ts">
   import { getI18n } from './i18n';
+  import type { DemoMessages } from './demo-messages';
+  let { connection = '', details = '', messages, renderError = '' }: {
+    connection?: string; details?: string; messages: DemoMessages; renderError?: string;
+  } = $props();
   const i18n = getI18n();
   let name = $state('');
   let note = $state('');
@@ -211,19 +261,21 @@ export function connectBootClient(options: {
 </script>
 
 <section class="panel preview">
-  <div class="panel-header"><h2>{$i18n.t('demo:formTitle')}</h2><span id="revision" class="badge">revision {$i18n.stateRevision}</span></div>
+  <div class="panel-header"><h2>{messages.formTitle}</h2><span id="revision" class="badge">revision {$i18n.stateRevision}</span></div>
   <form onsubmit={event => { event.preventDefault(); open = true; }}>
-    <label>{$i18n.t('demo:name')}<input id="name" autocomplete="off" bind:value={name} /></label>
-    <label>{$i18n.t('demo:note')}<textarea id="note" rows="3" bind:value={note}></textarea></label>
-    <button id="open-dialog" type="submit">{$i18n.t('demo:openDialog')}</button>
+    <label>{messages.name}<input id="name" autocomplete="off" bind:value={name} /></label>
+    <label>{messages.note}<textarea id="note" rows="3" bind:value={note}></textarea></label>
+    <button id="open-dialog" type="submit">{messages.openDialog}</button>
   </form>
 </section>
-<dialog id="confirmation" bind:this={dialog} onclose={() => { open = false; }}>
+<dialog id="confirmation" aria-labelledby="dialog-title" bind:this={dialog} onclose={() => { open = false; }}>
   <form method="dialog">
-    <h2>{$i18n.t('demo:dialogTitle')}</h2>
-    <label>{$i18n.t('demo:dialogNote')}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
-    <button id="close-dialog">{$i18n.t('demo:closeDialog')}</button>
-    <a id="dialog-about" href="/about?locale={$i18n.locale}">{$i18n.t('demo:about')}</a>
+    <h2 id="dialog-title">{messages.dialogTitle}</h2>
+    <label>{messages.dialogNote}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
+    <button id="close-dialog">{messages.closeDialog}</button>
+    <a id="dialog-about" href="/about?locale={$i18n.locale}">{messages.about}</a>
+    <p id="dialog-render-error" class="hint" role="alert">{renderError}</p>
+    <p id="dialog-status" class="hint" role="status">{connection}{details && `\n${details}`}</p>
   </form>
 </dialog>
 ```
@@ -303,6 +355,8 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
 <script lang="ts">
   import { onDestroy, onMount, untrack } from 'svelte';
   import { decodeBootSnapshot } from '@0disoft/saylo-core';
+  import type { StoreSnapshot } from '@0disoft/saylo-core';
+  import type { AppSchema } from '#lib/generated.d.ts';
   import type { LiveDiagnostic } from '@0disoft/saylo-vite/client';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -310,14 +364,22 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
   import { createBootInstance, setSayloContext } from '#lib/i18n.ts';
   import { connectBootClient } from '#lib/client-connection.ts';
   import Workbench from '#lib/Workbench.svelte';
+  import { projectDemoMessages, setDemoView } from '#lib/demo-messages.ts';
   import '#lib/style.css';
 
   let { data, children }: LayoutProps = $props();
   const boot = untrack(() => decodeBootSnapshot(data.sayloBoot));
   const { instance, attachSource } = createBootInstance(boot);
   const i18n = setSayloContext(instance);
+  const lastRendered: { current: StoreSnapshot<AppSchema> | undefined } = { current: undefined };
+  const presentation = $derived(projectDemoMessages($i18n, lastRendered.current));
+  const text = $derived(presentation.messages);
+  setDemoView({ get current() { return presentation; } });
+  $effect(() => { if (presentation.accepted) lastRendered.current = presentation.accepted; });
   let ready = $state(false);
   let diagnostic = $state<LiveDiagnostic>({ message: '', diagnostics: [] });
+  const details = $derived(diagnostic.diagnostics.length
+    ? diagnostic.diagnostics.map(value => `${value.sourceName}: ${value.message}`).join('\n') : diagnostic.message);
   let pendingLocale = $state<string>();
   let transitionError = $state('');
   let navigationGeneration = 0;
@@ -329,7 +391,7 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
     transitionError = '';
     const url = new URL(page.url.href);
     url.searchParams.set('locale', locale);
-    try { await goto(url, { reset: false }); }
+    try { await goto(url, { reset: false, refreshAll: true }); }
     catch (error) {
       if (generation === navigationGeneration) {
         pendingLocale = undefined;
@@ -381,13 +443,14 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
     </label>
   </header>
   <nav class="demo-nav" aria-label="예제 페이지">
-    <a id="home-link" href="/?locale={$i18n.locale}" aria-current={page.url.pathname === '/' ? 'page' : undefined}>{$i18n.t('demo:home')}</a>
-    <a id="about-link" href="/about?locale={$i18n.locale}" aria-current={page.url.pathname === '/about' ? 'page' : undefined}>{$i18n.t('demo:about')}</a>
+    <a id="home-link" href="/?locale={$i18n.locale}" aria-current={page.url.pathname === '/' ? 'page' : undefined}>{text.home}</a>
+    <a id="about-link" href="/about?locale={$i18n.locale}" aria-current={page.url.pathname === '/about' ? 'page' : undefined}>{text.about}</a>
     <a id="leave-link" href="/plain?locale={$i18n.locale}">번역 화면 나가기</a>
   </nav>
   <p id="transition-error" role="alert">{transitionError}</p>
+  <p id="render-error" class="hint" role="alert">{presentation.error}</p>
   {@render children()}
-  <Workbench />
+  <Workbench messages={text} renderError={presentation.error} {details} />
   <p id="status" class="hint" role="status">{diagnostic.message ? '번역 연결을 확인해 주세요.'
     : ready ? import.meta.hot ? '번역 파일을 저장하면 화면에 반영됩니다.' : '빌드된 번역을 사용합니다.'
     : '서버에서 준비한 번역을 표시합니다.'}</p>
@@ -400,14 +463,15 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
 
 ```svelte
 <script lang="ts">
-  import { getI18n } from '#lib/i18n.ts';
-  const i18n = getI18n();
+  import { getDemoView } from '#lib/demo-messages.ts';
+  const view = getDemoView();
+  const text = $derived(view.current.messages);
 </script>
 
 <section class="intro">
   <p class="eyebrow">SVELTEKIT LIVE CATALOG PREVIEW</p>
-  <h1>{$i18n.t('demo:heading')}</h1>
-  <p>{$i18n.t('demo:description')}</p>
+  <h1>{text.heading}</h1>
+  <p>{text.description}</p>
   <p class="hint">입력과 확인 창은 공통 layout에 두어 페이지를 이동해도 유지합니다.</p>
 </section>
 ```
@@ -416,14 +480,15 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
 
 ```svelte
 <script lang="ts">
-  import { getI18n } from '#lib/i18n.ts';
-  const i18n = getI18n();
+  import { getDemoView } from '#lib/demo-messages.ts';
+  const view = getDemoView();
+  const text = $derived(view.current.messages);
 </script>
 
 <section class="intro">
   <p class="eyebrow">SHARED LAYOUT</p>
-  <h1>{$i18n.t('demo:aboutHeading')}</h1>
-  <p>{$i18n.t('demo:aboutBody')}</p>
+  <h1>{text.aboutHeading}</h1>
+  <p>{text.aboutBody}</p>
 </section>
 ```
 
@@ -597,7 +662,7 @@ layout load는 요청마다 `createRequestI18n({ locale: locals.locale })`로 in
 
 요청 로케일은 hooks에서 `Intl.getCanonicalLocales`로 정규화한다. `EN`은 `en`이 되고, 잘못된 태그 `en_US`와 카탈로그가 없는 `fr`은 기준 로케일 `ko`를 사용한다.
 
-화면의 로케일 선택은 `goto(url, { reset: false })`로 쿼리만 바꾼다. 주소의 `locale`이 따라오고 폼은 공유 layout에서 관리한다. 라우트 이동의 포커스 처리는 SvelteKit 라우터가 맡는다.
+화면의 로케일 선택은 `goto(url, { reset: false, refreshAll: true })`로 쿼리와 서버 데이터를 갱신한다. 삭제했던 언어를 다시 추가했을 때 URL이 같아도 요청별 boot를 다시 읽는다. 주소의 `locale`이 따라오고 폼은 공유 layout에서 관리한다. 라우트 이동의 포커스 처리는 SvelteKit 라우터가 맡는다.
 
 ## 연결과 layout 수명
 
@@ -615,6 +680,10 @@ layout은 `onMount`에서 연결을 붙인다. 모듈이 공유하는 것은 con
 
 `heading`을 `{name`처럼 ICU가 깨진 값으로 저장하면 그 파일은 게시되지 않고 마지막 정상 문구가 유지되며 진단이 뜬다. 값을 되돌리면 진단이 사라지고 원래 문구가 돌아온다.
 
+기준 파일 `locales/ko/demo.json`에서 `heading` 키를 지우거나 내용을 `{}`로 바꿔도 입력과 모달은 남는다. 마지막 정상 번역을 표시하고 `#render-error`와 모달에 파일 수정 안내가 나온다. 파일을 복원하면 안내가 해제된다.
+
+ko/en 카탈로그를 처음부터 `{}`로 두고 개발 서버에 접속하면 SSR과 hydration 모두 번역 준비 안내와 입력 화면을 표시한다. 필요한 키를 채워 저장하면 입력을 유지한 채 번역 화면으로 복구된다. 파일 편집이 아니라 파일 자체가 없어 기준 카탈로그를 만들 수 없으면 플러그인의 서버 시작 진단을 먼저 해결한다.
+
 ## 생산 빌드
 
 `npm run build`는 `npm run check` 뒤에 Vite 생산 빌드를 돌리고 `@sveltejs/adapter-node` 6으로 `build/`를 남긴다. 그 서버를 직접 띄우려면 다음처럼 실행한다.
@@ -631,7 +700,8 @@ $env:HOST='127.0.0.1'; $env:PORT='5198'; $env:ORIGIN='http://127.0.0.1:5198'; no
 
 ## 보장 범위
 
-- 기준 스키마를 바꾸는 편집(키 삭제, 인자 추가·변경)은 보장하지 않는다.
+- 기준 키 삭제·빈 카탈로그의 렌더 실패는 수정 안내와 마지막 정상 번역으로 처리한다. 새 키·인자를 쓰려면 앱 호출부와 생성 타입도 갱신한다.
+- 빈 카탈로그의 복구 검사는 개발 서버 기준이다. 생산 빌드에는 정상 카탈로그와 맞는 생성 타입을 준비한다.
 - SSR에서 instance를 전역으로 공유하는 구성은 보장하지 않는다. 기준은 요청별 instance다.
 - 파일 편집 중 입력·모달·포커스는 유지한다. `/plain`으로 나갔다 돌아오면 새 layout과 빈 폼으로 시작한다.
 

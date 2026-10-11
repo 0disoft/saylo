@@ -1,0 +1,29 @@
+{
+  "observedOn": "2026-10-11",
+  "document": "docs/getting-started-sveltekit.md",
+  "documentSha256": "7e0f4a5dfb91b2c0efb71f985cd19e4a0edcebf095e84d7b0f0a1154dacec1b2",
+  "command": "npm run verify:starter:sveltekit",
+  "exitCode": 0,
+  "standaloneFiles": 19,
+  "installation": "Document code blocks extracted outside the repository; public registry dependencies verified in package-lock and no symlinks",
+  "installed": { "@0disoft/saylo-core": "0.1.0-alpha.4", "@0disoft/saylo-svelte": "0.1.0-alpha.4", "@0disoft/saylo-vite": "0.1.0-alpha.4", "@0disoft/saylo-typegen": "0.1.0-alpha.4", "vite": "8.3.4" },
+  "developmentChromium": {
+    "checks": ["hydration", "locale-url", "live-edit", "new-locale", "invalid-last-good", "repair", "focus-preserved", "locale-removal", "locale-restoration", "key-removal", "empty-base", "navigation-during-error", "base-recovery", "shared-layout", "exit-reentry"],
+    "runtimeErrorsAndHydrationWarnings": []
+  },
+  "coldChromium": { "checks": ["cold-empty-hydration", "cold-interaction", "cold-restoration"], "runtimeErrorsAndHydrationWarnings": [] },
+  "emptySSR": {
+    "routes": ["/?locale=ko", "/?locale=en", "/about?locale=ko", "/about?locale=en"],
+    "htmlRequests": 4,
+    "bootRequests": 4,
+    "assertions": ["HTTP 200", "no-store", "request locale in HTML", "setup instructions and missing-key hint", "decoded boot locale matches request", "demo namespace loaded"]
+  },
+  "productionChromium": { "checks": ["hydration", "locale-url", "shared-layout", "exit-reentry"], "runtimeErrorsAndHydrationWarnings": [] },
+  "build": { "result": "Document check, typegen, Svelte component check and adapter-node production build passed", "componentErrors": 0, "componentWarnings": 0 },
+  "normalSSR": ["document standalone dev command", "concurrent ko/en, canonical/fallback, no-store and boot identity", "listener disposal and late source cancellation", "production preview HTTP with trailing slash origin", "direct node build/index.js server HTTP"],
+  "verificationToolRepair": "First run passed dev checks then failed to resolve the ESM-only core with require conditions; rerun uses the installed manifest public import entry and passes the entire command",
+  "implementation": ["Whole shared view projected before layout and route rendering", "Fallback snapshot belongs to the committed layout; no global request cache", "Missing keys and empty catalogs show correction hints without resetting inputs or modal", "Restored locale selection refreshes server data even when URL is unchanged"],
+  "environment": { "os": "Windows", "node": "24.18.0", "browser": "HeadlessChrome/154.0.0.0" },
+  "cleanup": "Worker, browser, Vite servers, adapter-node process and bounded independent consumer removed",
+  "limits": ["Production build uses repaired catalogs and matching generated types", "No browser matrix or hosting deployment", "Page navigation may reset focus; catalog-edit focus preservation verified", "No unpublished API, package version bump, push or publication", "Documentation remains local while repository is private"]
+}

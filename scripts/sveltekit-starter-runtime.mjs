@@ -16,6 +16,8 @@ export async function verifySvelteKitStarter({ root, browser, npm, signal }) {
   const original = await readFile(path.join(root, 'locales/en/demo.json'), 'utf8');
   const en = JSON.parse(original);
   const enFile = path.join(root, 'locales/en/demo.json');
+  const koFile = path.join(root, 'locales/ko/demo.json');
+  const koOriginal = await readFile(koFile, 'utf8');
   const jaDirectory = path.join(root, 'locales/ja');
   const probe = await readFile(new URL('./sveltekit-starter-browser.mjs', import.meta.url), 'utf8');
   let server, child, adapterChild, timer, settle, reject;
@@ -49,6 +51,16 @@ export async function verifySvelteKitStarter({ root, browser, npm, signal }) {
       if (body === 'edit') await writeFile(enFile, JSON.stringify({ ...en, heading: 'Updated words. Same input.' }));
       else if (body === 'invalid') await writeFile(enFile, JSON.stringify({ ...en, heading: '{name' }));
       else if (body === 'restore') await writeFile(enFile, original);
+      else if (body === 'remove-locale') await rm(enFile);
+      else if (body === 'restore-locale') await writeFile(enFile, original);
+      else if (body === 'remove-key') {
+        const missing = JSON.parse(koOriginal); delete missing.heading;
+        await writeFile(koFile, JSON.stringify(missing));
+      } else if (body === 'empty-base') await writeFile(koFile, '{}');
+      else if (body === 'restore-base') await writeFile(koFile, koOriginal);
+      else if (body === 'restore-all') {
+        await writeFile(koFile, koOriginal); await writeFile(enFile, original);
+      }
       else if (body === 'add-locale') {
         await mkdir(jaDirectory, { recursive: true });
         await writeFile(path.join(jaDirectory, 'demo.json'), JSON.stringify({ ...en, heading: 'Saylo 日本語' }));
@@ -73,13 +85,44 @@ export async function verifySvelteKitStarter({ root, browser, npm, signal }) {
     const report = await completed;
     assert.equal(report.ok, true, report.error);
     assert.deepEqual(report.errors, [], 'Browser runtime errors or hydration warnings');
-    assert.deepEqual(report.checks, ['hydration', 'locale-url', ...(mode === 'dev'
-      ? ['live-edit', 'new-locale', 'invalid-last-good', 'repair', 'focus-preserved'] : []), 'shared-layout', 'exit-reentry']);
+    assert.deepEqual(report.checks, mode === 'cold'
+      ? ['cold-empty-hydration', 'cold-interaction', 'cold-restoration']
+      : ['hydration', 'locale-url', ...(mode === 'dev'
+        ? ['live-edit', 'new-locale', 'invalid-last-good', 'repair', 'focus-preserved', 'locale-removal', 'locale-restoration',
+          'key-removal', 'empty-base', 'navigation-during-error', 'base-recovery'] : []), 'shared-layout', 'exit-reentry']);
     clearTimeout(timer);
     reject = undefined;
     await stopOwned(child);
     console.log(`[starter:sveltekit] ${mode} Chromium: ${report.checks.join(', ')}`);
     return report;
+  }
+  async function emptySSR(origin) {
+    // This package is ESM-only. createRequire.resolve uses the require condition,
+    // so load the installed manifest's public import entry instead.
+    const coreDirectory = path.join(root, 'node_modules/@0disoft/saylo-core');
+    const coreManifest = JSON.parse(await readFile(path.join(coreDirectory, 'package.json'), 'utf8'));
+    const { decodeBootSnapshot } = await import(pathToFileURL(path.join(coreDirectory, coreManifest.exports['.'].import)).href);
+    const results = await Promise.all(['/?locale=ko', '/?locale=en', '/about?locale=ko', '/about?locale=en'].map(async page => {
+      const locale = new URL(origin + page).searchParams.get('locale');
+      const response = await requestFetch(origin + page);
+      assert.equal(response.status, 200, 'Empty catalogs broke SSR');
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      const html = await response.text();
+      assert.ok(html.includes(`<html lang="${locale}">`));
+      assert.ok(html.includes('번역을 준비하세요.') && html.includes('demo:home'), 'Empty SSR has no correction view');
+      const url = new URL(origin + page);
+      const dataResponse = await requestFetch(`${origin}${url.pathname.replace(/\/$/, '')}/__data.json${url.search}`);
+      assert.equal(dataResponse.status, 200);
+      const data = await dataResponse.json();
+      const layout = data.nodes.find(node => node?.type === 'data' && node.data?.[0]?.sayloBoot !== undefined);
+      assert.ok(layout, 'Empty SSR boot missing');
+      const boot = decodeBootSnapshot(layout.data[layout.data[0].sayloBoot]);
+      assert.equal(boot.locale, locale);
+      assert.deepEqual(boot.loadedNamespaces, ['demo']);
+      return { page, status: 200, bootLocale: boot.locale };
+    }));
+    console.log(`[starter:sveltekit] Empty SSR and matching boot: ${JSON.stringify(results)}`);
+    return results;
   }
   try {
     console.log((await npm(['run', 'check'])).trim());
@@ -89,12 +132,22 @@ export async function verifySvelteKitStarter({ root, browser, npm, signal }) {
     await writeFile(html, (await readFile(html, 'utf8')).replace('</head>',
       '<script type="module" src="/__saylo_starter_probe.mjs"></script></head>'));
     server = await createServer({ root, plugins: [plugin], server: { host: '127.0.0.1', port: 0, strictPort: true,
-      watch: { ignored: ['**/browser-dev/**', '**/browser-production/**'] } } });
+      watch: { ignored: ['**/browser-dev/**', '**/browser-cold/**', '**/browser-production/**'] } } });
     await server.listen();
     const dev = await launch(new URL(server.resolvedUrls.local[0]).origin, 'dev');
     await server.close();
     server = undefined;
+    await writeFile(koFile, '{}'); await writeFile(enFile, '{}');
+    await rm(path.join(jaDirectory, 'demo.json'));
+    server = await createServer({ root, plugins: [plugin], server: { host: '127.0.0.1', port: 0, strictPort: true,
+      watch: { ignored: ['**/browser-dev/**', '**/browser-cold/**', '**/browser-production/**'] } } });
+    await server.listen();
+    const emptyOrigin = new URL(server.resolvedUrls.local[0]).origin;
+    const empty = await emptySSR(emptyOrigin);
+    const cold = await launch(emptyOrigin, 'cold');
+    await server.close(); server = undefined;
     // Restore the documented inputs before the strict production build and SSR assertions.
+    await writeFile(koFile, koOriginal);
     await writeFile(enFile, original);
     assert.equal(path.dirname(jaDirectory), path.join(root, 'locales'));
     await rm(jaDirectory, { recursive: true, force: true });
@@ -124,9 +177,9 @@ export async function verifySvelteKitStarter({ root, browser, npm, signal }) {
     }
     console.log((await npm(['run', 'verify:ssr', '--', nodeOrigin])).trim());
     console.log('[starter:sveltekit] Direct node build/index.js with HOST, PORT and ORIGIN: production HTTP SSR passed.');
-    return { dev, production,
+    return { dev, cold, emptySSR: empty, production,
       ssr: ['guide standalone dev command', 'concurrent ko/en, canonical and fallback, no-store and boot identity', 'production preview HTTP with trailing slash origin', 'direct adapter-node server HTTP'],
-      limits: ['No browser matrix, hosting deployment, or schema-breaking edit guarantee.'] };
+      limits: ['No browser matrix or hosting deployment; production build uses repaired catalogs and generated types.'] };
   } finally {
     clearTimeout(timer);
     reject = undefined;

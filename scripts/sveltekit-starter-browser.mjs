@@ -31,6 +31,26 @@ if (new URL(location.href).searchParams.get('starter-check') === 'sveltekit') {
       check(!sessionStorage.getItem('saylo-kit-starter'), 'Document reloaded during navigation or locale editing');
       sessionStorage.setItem('saylo-kit-starter', 'yes');
       await wait(() => document.querySelector('#saylo-layout')?.dataset.ready === 'true', 'Hydration did not connect');
+      if (mode === 'cold') {
+        check(element('h1').textContent === '번역을 준비하세요.', 'Cold empty catalog has no setup view');
+        check(element('#render-error').textContent.includes('demo:home'), 'Cold setup has no correction hint');
+        checks.push('cold-empty-hydration');
+        fill('#name', 'Cold user'); fill('#note', 'Cold draft');
+        element('#open-dialog').click();
+        await wait(() => element('#confirmation').open, 'Cold setup modal is not interactive');
+        fill('#confirmation-note', 'Cold confirmation'); element('#confirmation-note').focus();
+        const name = element('#name'), note = element('#note'), dialog = element('#confirmation'), field = element('#confirmation-note');
+        checks.push('cold-interaction');
+        await action('restore-all');
+        await wait(() => !element('#render-error').textContent && element('h1').textContent === '번역을 바꿔도, 입력은 그대로', 'Cold repair did not recover');
+        check(element('#name') === name && name.value === 'Cold user', 'Cold repair replaced name input');
+        check(element('#note') === note && note.value === 'Cold draft', 'Cold repair replaced draft');
+        check(element('#confirmation') === dialog && dialog.open, 'Cold repair reset modal');
+        check(element('#confirmation-note') === field && field.value === 'Cold confirmation' && document.activeElement === field, 'Cold repair reset confirmation/focus');
+        checks.push('cold-restoration');
+        await fetch('/__saylo_starter_result', { method: 'POST', body: JSON.stringify({ ok: true, checks, errors, browser: navigator.userAgent }) });
+        return;
+      }
       check(document.documentElement.lang === 'ko', 'Hydrated locale differs from SSR');
       check(element('h1').textContent === '번역을 바꿔도, 입력은 그대로', 'Hydrated translation differs from SSR');
       checks.push('hydration');
@@ -75,6 +95,29 @@ if (new URL(location.href).searchParams.get('starter-check') === 'sveltekit') {
         await action('restore');
         await wait(() => element('#error').textContent.length === 0 && element('h1').textContent === 'New words. Same input.', 'Repair did not recover');
         focused(); checks.push('repair', 'focus-preserved');
+        await action('remove-locale');
+        await wait(() => document.documentElement.lang === 'ko' && ![...element('#locale').options].some(option => option.value === 'en'), 'Removed locale did not fall back');
+        focused(); checks.push('locale-removal');
+        await action('restore-locale');
+        await wait(() => [...element('#locale').options].some(option => option.value === 'en'), 'Restored locale is missing');
+        await select('en', 'New words. Same input.');
+        focused(); checks.push('locale-restoration');
+        await action('remove-key');
+        await wait(() => element('#render-error').textContent.includes('demo:heading'), 'Deleted key has no correction hint');
+        check(element('#dialog-render-error').textContent.length > 0, 'Open modal has no correction hint');
+        focused(); checks.push('key-removal');
+        await action('empty-base');
+        await wait(() => element('#render-error').textContent.includes('demo:home'), 'Empty base has no correction hint');
+        check(element('h1').textContent === 'New words. Same input.', 'Empty base discarded last good heading');
+        focused(); checks.push('empty-base');
+        element('#dialog-about').click();
+        await wait(() => location.pathname === '/about' && document.querySelector('h1')?.textContent === 'New page. Same input.', 'Catalog error blocked shared-layout navigation');
+        sameInputs(); check(dialog.open && field.value === 'Keep this confirmation', 'Error navigation reset modal');
+        field.focus(); focused(); checks.push('navigation-during-error');
+        await action('restore-base');
+        await wait(() => !element('#render-error').textContent && !element('#error').textContent, 'Base repair did not clear diagnostics');
+        focused(); checks.push('base-recovery');
+        await select('en', 'New page. Same input.');
       }
       element('#dialog-about').click();
       await wait(() => location.pathname === '/about' && document.querySelector('h1')?.textContent === 'New page. Same input.', 'About did not render');

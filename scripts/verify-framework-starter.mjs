@@ -19,7 +19,7 @@ const docPath = `docs/getting-started-${framework}.md`;
 const doc = await readFile(path.join(repository, docPath), 'utf8');
 const recovery = !sveltekit && doc.includes('### demo-messages.ts');
 const files = sveltekit ? ['package.json', 'vite.config.mjs', 'tsconfig.json', 'src/app.d.ts', 'src/app.html',
-  'src/hooks.server.ts', 'src/lib/i18n.ts', 'src/lib/client-connection.ts', 'src/lib/Workbench.svelte', 'src/lib/style.css',
+  'src/hooks.server.ts', 'src/lib/i18n.ts', 'src/lib/client-connection.ts', 'src/lib/Workbench.svelte', 'src/lib/demo-messages.ts', 'src/lib/style.css',
   'src/routes/(saylo)/+layout.server.ts', 'src/routes/(saylo)/+layout.svelte', 'src/routes/(saylo)/+page.svelte',
   'src/routes/(saylo)/about/+page.svelte', 'src/routes/plain/+page.svelte', 'locales/ko/demo.json', 'locales/en/demo.json', 'verify-ssr.mjs']
   : ['package.json', 'vite.config.mjs', 'tsconfig.json', 'index.html',
