@@ -7,6 +7,7 @@ npm run verify:demo:a11y
 npm run verify:demo:a11y -- --framework npm
 npm run verify:demo:a11y -- --zoom 2
 npm run verify:demo:a11y -- --zoom 4
+npm run verify:demo:a11y -- --long-text --zoom 4
 ```
 
 `--framework` 없이 돌리면 vanilla·react·svelte·npm·sveltekit 다섯을 순서대로 검사하고, `--framework <name>`으로 하나만 고를 수 있다. Chromium이나 Chrome이 필요하고 `CHROME_BIN`으로 다른 실행 파일을 지정할 수 있다. Node 24에서 돌리고 `examples/npm`·`examples/sveltekit`은 의존성 설치가 선행돼야 한다.
@@ -14,6 +15,8 @@ npm run verify:demo:a11y -- --zoom 4
 `scripts/verify-demo-accessibility.mjs`가 Vite dev 서버를 띄우고 `scripts/demo-accessibility-browser.mjs`가 페이지 안에서 스캔한다. 실제 렌더를 열어 ko·en × dialog 닫힘·열림 네 상태를 프레임워크마다 보므로 모두 20회다. axe-core 4를 페이지에 넣고 `wcag2a`·`wcag2aa`·`wcag21a`·`wcag21aa`·`wcag22aa`·`best-practice` 태그로 `runOnly` 스캔한다([axe-core API](https://github.com/dequelabs/axe-core/blob/develop/doc/API.md)). 지원 자료 패널이 있는 예제는 패널을 열고 자료를 생성한 뒤 스캔한다.
 
 사용자 로케일 파일은 고치지 않는다. SvelteKit은 앱 사본과 임시 브라우저 프로필로 돌리고 끝나면 지운다.
+
+`--long-text --zoom 4`는 임시 카탈로그에 공백 없는 긴 제목·폼 라벨·모달 제목·열기 버튼 번역을 넣고, 400% 페이지 확대에서 실제 번역 렌더·가로 넘침·입력 보존·모달 닫기 접근을 검사한다. 한국어 128자와 영어 352자를 사용하며 원본 카탈로그와 생성 타입은 수정하지 않는다. 결과는 `.release/accessibility-long-text-zoom-4-report.json`에 남는다. 닫기 버튼 문구는 원래 번역을 유지한다.
 
 `--zoom 1|2|4`는 임시 Chromium 프로필의 기본 페이지 확대를 100%·200%·400%로 설정한다. 1280×1024 창과 기기 배율 1을 기준으로 DPR·CSS 화면 폭·visualViewport 배율을 함께 검사해 실제 페이지 확대 적용을 확인한다. 페이지와 모달의 가로 넘침, 언어 변경 뒤 입력 보존, 모달 입력의 초기 포커스, 세로 스크롤 뒤 닫기 버튼 접근, 닫은 뒤 포커스 복귀도 검사한다. 입력과 버튼 조작은 페이지 안 테스트 코드가 실행한다. 기존 사용자 브라우저 프로필은 변경하지 않는다. 설정 근거는 [Chromium 확대 설정](https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/ui/zoom/chrome_zoom_level_prefs.cc)과 [배율 변환](https://raw.githubusercontent.com/chromium/chromium/main/third_party/blink/common/page/page_zoom.cc)에 있다.
 

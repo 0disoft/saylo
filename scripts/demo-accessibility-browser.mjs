@@ -5,6 +5,7 @@ const keyboard = [];
 const keyboardChecks = new URL(location.href).searchParams.has('saylo-keyboard');
 const zoomChecks = new URL(location.href).searchParams.has('saylo-zoom');
 const journeyChecks = new URL(location.href).searchParams.has('saylo-journey');
+const longTextChecks = new URL(location.href).searchParams.has('saylo-long-text');
 const check = (condition, message) => { if (!condition) throw new Error(message); };
 const wait = async condition => {
   const until = performance.now() + 20000;
@@ -52,6 +53,8 @@ async function scan(locale, dialog) {
   const secondary = node('#close-dialog.secondary');
   const contrastReview = zoomChecks && dialog ? await reviewContrast(result, summarize) : null;
   states.push({ locale, dialog, violations: result.violations.map(summarize),
+    ...(longTextChecks ? { longText: { headingLength: node('h1').textContent.trim().length,
+      dialogTitleLength: node('#confirmation h2').textContent.trim().length } } : {}),
     ...(contrastReview ? { contrastReview } : {}),
     ...(zoomChecks ? { metrics: { innerWidth, innerHeight, devicePixelRatio, visualScale: visualViewport.scale,
       rootClientWidth: document.documentElement.clientWidth, rootScrollWidth: document.documentElement.scrollWidth,
@@ -90,6 +93,8 @@ try {
     }
     await wait(() => document.documentElement.lang === locale);
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    if (longTextChecks) check(node('h1').textContent.trim() === (locale === 'ko' ? '번역문구' : 'Translation').repeat(32),
+      'Long-text fixture was not rendered through the selected locale');
     if (zoomChecks || keyboardChecks) sameInputs();
     await scan(locale, false);
     const opener = node('#open-dialog') ?? node('#order-form button[type="submit"]');
@@ -97,6 +102,8 @@ try {
     else if (zoomChecks || keyboardChecks) opener.focus();
     if (keyboardChecks) await press('Enter'); else opener.click();
     await wait(() => node('#confirmation').open);
+    if (longTextChecks) check(node('#confirmation h2').textContent.trim() === (locale === 'ko' ? '번역문구' : 'Translation').repeat(32),
+      'Long-text fixture was not rendered in the modal');
     const confirmation = node('#confirmation-note') ?? node('#dialog-note');
     if (zoomChecks || keyboardChecks) {
       check(document.activeElement === confirmation, 'Zoomed dialog did not focus its input');

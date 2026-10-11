@@ -5,8 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
-import { createServer } from 'vite';
 import { createKeyboardDriver } from './demo-keyboard-driver.mjs';
+import { longTextConfig } from './demo-long-text-fixture.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 await mkdir(path.join(repository, '.release'), { recursive: true });
@@ -17,16 +17,18 @@ const journeyProbe = await readFile(new URL('./demo-keyboard-journey.mjs', impor
 const exec = promisify(execFile);
 const reports = [];
 const originalCwd = process.cwd();
-const { values } = parseArgs({ options: { framework: { type: 'string' }, zoom: { type: 'string' }, keyboard: { type: 'boolean' }, journey: { type: 'boolean' }, 'cpu-rate': { type: 'string' } } });
+const { values } = parseArgs({ options: { framework: { type: 'string' }, zoom: { type: 'string' }, keyboard: { type: 'boolean' }, journey: { type: 'boolean' }, 'cpu-rate': { type: 'string' }, 'long-text': { type: 'boolean' } } });
+const longTextChecks = values['long-text'] === true;
 const journeyChecks = values.journey === true;
 const cpuRate = Number(values['cpu-rate'] ?? 1);
 assert.ok(Number.isFinite(cpuRate) && cpuRate >= 1 && cpuRate <= 20, 'CPU rate must be between 1 and 20');
 assert.ok(cpuRate === 1 || journeyChecks, 'CPU-restricted checks require --journey so input waits for the driver');
 const keyboardChecks = values.keyboard === true || journeyChecks;
 const zoomChecks = values.zoom !== undefined;
+assert.ok(!longTextChecks || zoomChecks, 'Long-text checks require --zoom to verify reflow');
 const zoom = Number(values.zoom ?? 1);
 assert.ok([1, 2, 4].includes(zoom), 'Supported zoom factors: 1, 2, 4');
-const reportPath = `.release/accessibility${journeyChecks ? '-journey' : keyboardChecks ? '-keyboard' : ''}${cpuRate > 1 ? `-cpu-${cpuRate}` : ''}${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
+const reportPath = `.release/accessibility${longTextChecks ? '-long-text' : ''}${journeyChecks ? '-journey' : keyboardChecks ? '-keyboard' : ''}${cpuRate > 1 ? `-cpu-${cpuRate}` : ''}${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
 const frameworks = values.framework ? [values.framework] : ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'];
 assert.ok(frameworks.every(name => ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'].includes(name)));
 let activeReject;
@@ -36,7 +38,7 @@ try {
   for (const framework of frameworks) {
     const example = path.join(repository, 'examples', framework);
     const profile = await mkdtemp(path.join(os.tmpdir(), 'saylo-a11y-browser-'));
-    let app = example, clone, server, browser, timer, keyboardDriver;
+    let app = example, clone, server, browser, timer, keyboardDriver, longTextFixture;
     async function stopBrowser() {
       if (!browser?.pid || browser.exitCode !== null || browser.signalCode !== null) return;
       const ended = new Promise(resolve => browser.once('exit', resolve));
@@ -105,8 +107,10 @@ try {
           });
         }); },
       };
-      const factory = kit ? (await import(pathToFileURL(path.join(example, 'node_modules/vite/dist/node/index.js')).href)).createServer : createServer;
-      server = await factory({ root: app, configFile: path.join(app, 'vite.config.mjs'), plugins: [plugin],
+      const vite = kit ? await import(pathToFileURL(path.join(example, 'node_modules/vite/dist/node/index.js')).href) : await import('vite');
+      if (longTextChecks) longTextFixture = await longTextConfig(vite, example, path.join(app, 'vite.config.mjs'), framework);
+      const config = longTextFixture?.config ?? { configFile: path.join(app, 'vite.config.mjs'), plugins: [] };
+      server = await vite.createServer({ ...config, root: app, plugins: [...config.plugins, plugin],
         server: { host: '127.0.0.1', port: 0, strictPort: true, watch: { ignored: ['**/browser-profile/**'] } } });
       await server.listen();
       const executable = process.env.CHROME_BIN ?? (process.platform === 'win32'
@@ -124,6 +128,7 @@ try {
       if (zoomChecks) target.searchParams.set('saylo-zoom', String(zoom));
       if (keyboardChecks) target.searchParams.set('saylo-keyboard', '1');
       if (journeyChecks) target.searchParams.set('saylo-journey', '1');
+      if (longTextChecks) target.searchParams.set('saylo-long-text', '1');
       browser = spawn(executable, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
         ...(keyboardChecks ? ['--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0'] : []),
         '--disable-background-networking', ...(zoomChecks ? ['--window-size=1280,1024', '--force-device-scale-factor=1']
@@ -168,7 +173,7 @@ try {
     } finally {
       clearTimeout(timer); activeReject = undefined;
       if (keyboardDriver) (await keyboardDriver.catch(() => undefined))?.close();
-      await stopBrowser(); await server?.close(); process.chdir(originalCwd);
+      await stopBrowser(); await server?.close(); await longTextFixture?.dispose(); process.chdir(originalCwd);
       assert.equal(path.dirname(path.resolve(profile)), path.resolve(os.tmpdir()));
       assert.ok(path.basename(profile).startsWith('saylo-a11y-browser-'));
       await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
@@ -182,9 +187,10 @@ try {
 } finally {
   process.removeListener('SIGINT', interrupt); process.removeListener('SIGTERM', interrupt);
   process.chdir(originalCwd);
-  await writeFile(path.join(repository, reportPath), JSON.stringify({ reports, keyboardChecks, journeyChecks, requestedCpuRate: cpuRate, requestedPageZoom: zoomChecks ? zoom : null,
+  await writeFile(path.join(repository, reportPath), JSON.stringify({ reports, keyboardChecks, journeyChecks, longTextChecks, requestedCpuRate: cpuRate, requestedPageZoom: zoomChecks ? zoom : null,
     runComplete: reports.length === frameworks.length && reports.every(report => report.checksPassed),
-    scope: journeyChecks ? 'Chromium key/text input: locale choice, name/note editing, support generation/reset and modal traversal/dismissal across ko/en demos; axe checks'
+    scope: longTextChecks ? 'Isolated catalogs with long unbroken translated headings, form labels and modal headings/actions; Chromium page zoom, reflow, input preservation and modal close access across ko/en demos; axe checks'
+      : journeyChecks ? 'Chromium key/text input: locale choice, name/note editing, support generation/reset and modal traversal/dismissal across ko/en demos; axe checks'
       : keyboardChecks ? 'Chromium Tab/Shift+Tab modal traversal, Escape/Enter activation and opener restoration across ko/en demos; axe checks'
       : zoomChecks ? 'Chromium page zoom, reflow, input preservation, modal focus/close reachability and axe checks across ko/en demos'
       : 'Rendered demo ko/en pages and open/closed dialogs with visible support panel; automated axe checks only',

@@ -1,0 +1,531 @@
+{
+  "schema": "saylo.demo-long-text-acceptance/v1",
+  "observedAt": "2026-10-11T19:12:32.432Z",
+  "baselineCommit": "09b985154e7d44ac1bb18ef5c42d89991a7a958c",
+  "command": "node scripts/verify-demo-accessibility.mjs --long-text --zoom 4",
+  "method": "Temporary copied catalogs parsed by the installed Saylo plugin; original example catalogs and generated types unchanged. Owned headless Chromium profile uses normal 400% page zoom. Browser asserts exact translated heading/modal text, geometry, input preservation, modal focus and close reachability; axe scans four locale/dialog states per example.",
+  "fixture": {
+    "locales": [
+      "ko",
+      "en"
+    ],
+    "unbrokenCharacters": {
+      "ko": 128,
+      "en": 352
+    },
+    "fields": [
+      "heading",
+      "formTitle",
+      "name",
+      "nameLabel",
+      "openDialog",
+      "dialogTitle"
+    ],
+    "missingFields": "Skipped for minimal npm catalog",
+    "closeDialog": "Original short translation retained"
+  },
+  "before": {
+    "npmWidths": [
+      {
+        "locale": "ko",
+        "dialog": false,
+        "innerWidth": 315,
+        "innerHeight": 232,
+        "devicePixelRatio": 4,
+        "visualScale": 1,
+        "rootClientWidth": 311,
+        "rootScrollWidth": 311,
+        "dialogClientWidth": 0,
+        "dialogScrollWidth": 0
+      },
+      {
+        "locale": "ko",
+        "dialog": true,
+        "innerWidth": 315,
+        "innerHeight": 232,
+        "devicePixelRatio": 4,
+        "visualScale": 1,
+        "rootClientWidth": 311,
+        "rootScrollWidth": 311,
+        "dialogClientWidth": 270,
+        "dialogScrollWidth": 270
+      },
+      {
+        "locale": "en",
+        "dialog": false,
+        "innerWidth": 315,
+        "innerHeight": 232,
+        "devicePixelRatio": 4,
+        "visualScale": 1,
+        "rootClientWidth": 311,
+        "rootScrollWidth": 4021,
+        "dialogClientWidth": 0,
+        "dialogScrollWidth": 0
+      },
+      {
+        "locale": "en",
+        "dialog": true,
+        "innerWidth": 315,
+        "innerHeight": 232,
+        "devicePixelRatio": 4,
+        "visualScale": 1,
+        "rootClientWidth": 311,
+        "rootScrollWidth": 4021,
+        "dialogClientWidth": 270,
+        "dialogScrollWidth": 4026
+      }
+    ],
+    "result": "Runner exited 1 on horizontal overflow after npm browser checks. SvelteKit was not reached in this baseline run."
+  },
+  "after": {
+    "states": 20,
+    "violations": 0,
+    "exitCode": 0,
+    "frameworks": [
+      {
+        "framework": "vanilla",
+        "checksPassed": true,
+        "states": [
+          {
+            "locale": "ko",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": []
+          },
+          {
+            "locale": "ko",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "locale": "en",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": []
+          },
+          {
+            "locale": "en",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "framework": "react",
+        "checksPassed": true,
+        "states": [
+          {
+            "locale": "ko",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": []
+          },
+          {
+            "locale": "ko",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "locale": "en",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": []
+          },
+          {
+            "locale": "en",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "framework": "svelte",
+        "checksPassed": true,
+        "states": [
+          {
+            "locale": "ko",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": []
+          },
+          {
+            "locale": "ko",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "locale": "en",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": []
+          },
+          {
+            "locale": "en",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "framework": "npm",
+        "checksPassed": true,
+        "states": [
+          {
+            "locale": "ko",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": []
+          },
+          {
+            "locale": "ko",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "locale": "en",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": []
+          },
+          {
+            "locale": "en",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "framework": "sveltekit",
+        "checksPassed": true,
+        "states": [
+          {
+            "locale": "ko",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": []
+          },
+          {
+            "locale": "ko",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 128,
+            "dialogTitleLength": 128,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "locale": "en",
+            "dialog": false,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 0,
+            "dialogScrollWidth": 0,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": []
+          },
+          {
+            "locale": "en",
+            "dialog": true,
+            "innerWidth": 315,
+            "innerHeight": 232,
+            "devicePixelRatio": 4,
+            "visualScale": 1,
+            "rootClientWidth": 311,
+            "rootScrollWidth": 311,
+            "dialogClientWidth": 270,
+            "dialogScrollWidth": 270,
+            "headingLength": 352,
+            "dialogTitleLength": 352,
+            "incomplete": [
+              {
+                "id": "color-contrast",
+                "targets": [
+                  [
+                    "#dialog-title"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "productionBuild": {
+    "command": "npm --prefix examples/npm run build",
+    "exitCode": 0,
+    "modules": 45
+  },
+  "sourceHashes": {
+    "examples/npm/style.css": "8287c51e5301d708cf270b240f9333c5344276521bfcf75741756ac83c637a4f",
+    "scripts/demo-long-text-fixture.mjs": "b7dda044d6bdb68729e575a61c241087db90e674af47585d55811bdd0427b7c5",
+    "scripts/verify-demo-accessibility.mjs": "4c791223c104d567760c708b5bf99beb0f51409e1ae5765f62fb728a82f290fd",
+    "scripts/demo-accessibility-browser.mjs": "eb8d5f9c7f6d92b9b38f589ca5174ade535b98770e1766692a511fed38cb5d1c"
+  },
+  "artifacts": {
+    ".release/long-text-before-report.json": "d08a46d5d2b74ce6b700c322a5a5541478621cf8dff9b304590d319d6f77fa0a",
+    ".release/accessibility-long-text-zoom-4-report.json": "4af11f6fcae4e98d58305f1453a4e12eae8c58f35a16d293f7896bd97d58b4aa",
+    ".release/long-text-before.log": "5be10b78af5ba87d8a6ca6336df1b39afedc0a3bf827044275b8700ae31b4d95",
+    ".release/long-text-after.log": "a597f41225a99b4757b278af14a6de28cd47b5c9e2699c1aa579baa950966844"
+  },
+  "cleanup": "Runner closes owned browser/server and removes guarded temporary profiles, catalogs and SvelteKit clone in finally blocks.",
+  "limits": [
+    "Headless Chromium dev rendering; npm example uses published alpha.4 dependencies.",
+    "Axe incomplete is preserved and is not a contrast pass.",
+    "No native screen-reader speech, other engine, physical low-spec device or arbitrary text-length certification.",
+    "No package API/version, push or npm publication changes."
+  ]
+}
