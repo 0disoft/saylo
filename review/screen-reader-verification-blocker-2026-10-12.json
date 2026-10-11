@@ -1,0 +1,35 @@
+{
+  "schema": "saylo.screen-reader-verification-blocker/v1",
+  "observedAt": "2026-10-11T18:43:09.164Z",
+  "state": "not verified; native automation blocked",
+  "narratorVersion": "10.0.26100.8972",
+  "officialCommandReference": "https://support.microsoft.com/en-us/accessibility/windows/narrator/appendix-b-narrator-keyboard-commands-and-touch-gestures",
+  "observations": [
+    {
+      "operation": "sky.get_window_state on the selected Chrome demo",
+      "outcome": "Computer Use stopped because current browser URL could not be determined confidently enough for policy enforcement."
+    },
+    {
+      "operation": "sky.launch_app for installed Narrator",
+      "outcome": "No targetable window was exposed by launch; an owned Narrator process nevertheless started."
+    },
+    {
+      "operation": "Stop-Process of the ownership-verified Narrator PID",
+      "outcome": "Access denied; process remained running."
+    },
+    {
+      "operation": "sky.get_window_state on the subsequently returned Narrator window",
+      "outcome": "Accessibility limited because target Windows integrity is higher than the Computer Use helper."
+    }
+  ],
+  "cleanup": {
+    "localDevServer": "stopped; port 5291 listener absent at the cleanup observation",
+    "narrator": "still running at the latest process observation; local user asked to exit via Caps Lock + Esc",
+    "userReply": "pending at record time"
+  },
+  "limits": [
+    "No screen-reader speech, speech recap, announcement or pronunciation was observed.",
+    "No native input was issued after discovering the higher-integrity boundary.",
+    "No Windows security/privacy setting, elevation prompt or permission bypass was attempted."
+  ]
+}

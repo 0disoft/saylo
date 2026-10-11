@@ -3,7 +3,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 // Connect only to the disposable Chromium profile launched by the a11y runner.
-export async function createKeyboardDriver(profile, target) {
+export async function createKeyboardDriver(profile, target, { cpuRate = 1 } = {}) {
+  assert.ok(Number.isFinite(cpuRate) && cpuRate >= 1 && cpuRate <= 20);
   const until = Date.now() + 10000;
   let endpoint;
   while (Date.now() < until) {
@@ -45,7 +46,30 @@ export async function createKeyboardDriver(profile, target) {
     pending.set(id, { resolve, reject, timer });
     socket.send(JSON.stringify({ id, method, params }));
   });
+  let environment;
+  try {
+    const browser = await send('Browser.getVersion', {});
+    let calibration = null;
+    if (cpuRate > 1) {
+      const sample = async () => {
+        const reply = await send('Runtime.evaluate', { returnByValue: true,
+          expression: '(() => { const start = performance.now(); let checksum = 0; for (let i = 0; i < 2000000; i++) checksum += Math.sin(i); return { ms: performance.now() - start, checksum }; })()' });
+        assert.ok(!reply.exceptionDetails && Number.isFinite(reply.result.value.ms) && reply.result.value.ms > 0);
+        assert.ok(Number.isFinite(reply.result.value.checksum));
+        return reply.result.value.ms;
+      };
+      await sample(); // Warm the exact same bounded loop before measuring it.
+      const before = [await sample(), await sample(), await sample()];
+      await send('Emulation.setCPUThrottlingRate', { rate: cpuRate });
+      const after = [await sample(), await sample(), await sample()];
+      const median = values => [...values].sort((a, b) => a - b)[1];
+      calibration = { beforeMs: before, afterMs: after, observedRatio: median(after) / median(before) };
+      assert.ok(calibration.observedRatio > 1.25, 'CPU restriction was acknowledged but calibration did not demonstrate slower execution');
+    }
+    environment = { browser, requestedCpuRate: cpuRate, calibration };
+  } catch (error) { fail(); socket.close(); throw error; }
   return {
+    environment,
     async press(action) {
       const codes = { Tab: 9, Escape: 27, Enter: 13, Home: 36, ArrowDown: 40, SelectAll: 65 };
       assert.ok(Object.hasOwn(codes, action) || action === 'ShiftTab', 'Unsupported verification key');

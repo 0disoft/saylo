@@ -1,0 +1,307 @@
+{
+  "schema": "saylo.demo-cpu-restriction-acceptance/v1",
+  "observedAt": "2026-10-11T18:43:09.101Z",
+  "baseCommit": "7d65c6502482f90a0d67104a18b596e92fb6e9e0",
+  "sourceHashes": {
+    "scripts/demo-keyboard-driver.mjs": "9de05950046de6dc970806de3d5484dde40db7ff437095e2b4cd3968fc466797",
+    "scripts/verify-demo-accessibility.mjs": "67058b6f5ff2e94f111698cc5ea99a3203845eeb8a54bf0bb388292c63466c94"
+  },
+  "command": "node scripts/verify-demo-accessibility.mjs --journey --cpu-rate 6 --zoom 4",
+  "exitCode": 0,
+  "artifact": {
+    "path": ".release/accessibility-journey-cpu-6-zoom-4-report.json",
+    "sha256": "e0b369a540874ed740a5d7f53e5cde5f29e0a8ee1d010204284e2c8fd0501aac"
+  },
+  "log": {
+    "path": ".release/keyboard-journey-cpu6-zoom4.log",
+    "sha256": "64f5ce0c16bd69490874a211b227d1c2ba14675d33cfe5478087056b7b4ff81e"
+  },
+  "protocolReference": "https://chromedevtools.github.io/devtools-protocol/tot/Emulation/#method-setCPUThrottlingRate",
+  "method": "On the owned page, a warmed bounded sine loop is measured three times before and after a successful CPU-restriction command. All journey key/text input waits for that driver. The median after/before ratio must exceed the noise margin. Actual browser version is obtained from Browser.getVersion.",
+  "states": 20,
+  "journeys": 10,
+  "supportGenerationAndResetFlows": 8,
+  "violations": 0,
+  "frameworks": [
+    {
+      "framework": "vanilla",
+      "environment": {
+        "browser": {
+          "protocolVersion": "1.3",
+          "product": "Chrome/154.0.8037.98",
+          "revision": "@b859317bf11f6be47f9b7799ec690a0a42a1fb33",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+          "jsVersion": "15.4.80.20"
+        },
+        "requestedCpuRate": 6,
+        "calibration": {
+          "beforeMs": [
+            142.80000001192093,
+            135.30000001192093,
+            132.80000001192093
+          ],
+          "afterMs": [
+            1024.2999999970198,
+            1026.5999999940395,
+            1398.2999999970198
+          ],
+          "observedRatio": 7.587583147846183
+        }
+      },
+      "viewport": {
+        "width": 315,
+        "height": 232
+      },
+      "journeys": [
+        {
+          "locale": "ko",
+          "localeSelected": true,
+          "formPreserved": true,
+          "reportGenerated": true,
+          "reportCleared": true
+        },
+        {
+          "locale": "en",
+          "localeSelected": true,
+          "formPreserved": true,
+          "reportGenerated": true,
+          "reportCleared": true
+        }
+      ],
+      "incomplete": [
+        {
+          "locale": "en",
+          "dialog": true,
+          "rules": [
+            "color-contrast"
+          ]
+        }
+      ]
+    },
+    {
+      "framework": "react",
+      "environment": {
+        "browser": {
+          "protocolVersion": "1.3",
+          "product": "Chrome/154.0.8037.98",
+          "revision": "@b859317bf11f6be47f9b7799ec690a0a42a1fb33",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+          "jsVersion": "15.4.80.20"
+        },
+        "requestedCpuRate": 6,
+        "calibration": {
+          "beforeMs": [
+            138.3999999910593,
+            145.29999999701977,
+            147.1000000089407
+          ],
+          "afterMs": [
+            991.9000000059605,
+            1052.7000000029802,
+            1470.4000000059605
+          ],
+          "observedRatio": 7.245010323637798
+        }
+      },
+      "viewport": {
+        "width": 315,
+        "height": 232
+      },
+      "journeys": [
+        {
+          "locale": "ko",
+          "localeSelected": true,
+          "formPreserved": true,
+          "reportGenerated": true,
+          "reportCleared": true
+        },
+        {
+          "locale": "en",
+          "localeSelected": true,
+          "formPreserved": true,
+          "reportGenerated": true,
+          "reportCleared": true
+        }
+      ],
+      "incomplete": [
+        {
+          "locale": "en",
+          "dialog": true,
+          "rules": [
+            "color-contrast"
+          ]
+        }
+      ]
+    },
+    {
+      "framework": "svelte",
+      "environment": {
+        "browser": {
+          "protocolVersion": "1.3",
+          "product": "Chrome/154.0.8037.98",
+          "revision": "@b859317bf11f6be47f9b7799ec690a0a42a1fb33",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+          "jsVersion": "15.4.80.20"
+        },
+        "requestedCpuRate": 6,
+        "calibration": {
+          "beforeMs": [
+            148.5,
+            137.20000000298023,
+            130.79999999701977
+          ],
+          "afterMs": [
+            1022.2000000029802,
+            1054.7999999970198,
+            1584.7999999970198
+          ],
+          "observedRatio": 7.688046647041601
+        }
+      },
+      "viewport": {
+        "width": 315,
+        "height": 232
+      },
+      "journeys": [
+        {
+          "locale": "ko",
+          "localeSelected": true,
+          "formPreserved": true,
+          "reportGenerated": true,
+          "reportCleared": true
+        },
+        {
+          "locale": "en",
+          "localeSelected": true,
+          "formPreserved": true,
+          "reportGenerated": true,
+          "reportCleared": true
+        }
+      ],
+      "incomplete": [
+        {
+          "locale": "en",
+          "dialog": true,
+          "rules": [
+            "color-contrast"
+          ]
+        }
+      ]
+    },
+    {
+      "framework": "npm",
+      "environment": {
+        "browser": {
+          "protocolVersion": "1.3",
+          "product": "Chrome/154.0.8037.98",
+          "revision": "@b859317bf11f6be47f9b7799ec690a0a42a1fb33",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+          "jsVersion": "15.4.80.20"
+        },
+        "requestedCpuRate": 6,
+        "calibration": {
+          "beforeMs": [
+            192.8999999910593,
+            163.19999998807907,
+            139.3999999910593
+          ],
+          "afterMs": [
+            1111.6000000089407,
+            1096.7000000029802,
+            1170.2000000029802
+          ],
+          "observedRatio": 6.811274510356234
+        }
+      },
+      "viewport": {
+        "width": 315,
+        "height": 232
+      },
+      "journeys": [
+        {
+          "locale": "ko",
+          "localeSelected": true,
+          "formPreserved": true,
+          "support": "not provided by this example"
+        },
+        {
+          "locale": "en",
+          "localeSelected": true,
+          "formPreserved": true,
+          "support": "not provided by this example"
+        }
+      ],
+      "incomplete": [
+        {
+          "locale": "en",
+          "dialog": true,
+          "rules": [
+            "color-contrast"
+          ]
+        }
+      ]
+    },
+    {
+      "framework": "sveltekit",
+      "environment": {
+        "browser": {
+          "protocolVersion": "1.3",
+          "product": "Chrome/154.0.8037.98",
+          "revision": "@b859317bf11f6be47f9b7799ec690a0a42a1fb33",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+          "jsVersion": "15.4.80.20"
+        },
+        "requestedCpuRate": 6,
+        "calibration": {
+          "beforeMs": [
+            149.3999999910593,
+            140.3999999910593,
+            134.40000000596046
+          ],
+          "afterMs": [
+            993.7999999970198,
+            937.5,
+            1247.9000000059605
+          ],
+          "observedRatio": 7.078347578777102
+        }
+      },
+      "viewport": {
+        "width": 315,
+        "height": 232
+      },
+      "journeys": [
+        {
+          "locale": "ko",
+          "localeSelected": true,
+          "formPreserved": true,
+          "reportGenerated": true,
+          "reportCleared": true
+        },
+        {
+          "locale": "en",
+          "localeSelected": true,
+          "formPreserved": true,
+          "reportGenerated": true,
+          "reportCleared": true
+        }
+      ],
+      "incomplete": [
+        {
+          "locale": "en",
+          "dialog": true,
+          "rules": [
+            "color-contrast"
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "CPU emulation begins after initial page load and before journey input. This is not a startup benchmark or a physical low-spec device. Memory, GPU and network are unchanged.",
+    "A calibration ratio is not an application latency result or a physical hardware performance tier.",
+    "Chrome 154 only; installing other browsers was not attempted. Existing Canary 157 remains untested by this record.",
+    "Five 400% axe incomplete states are retained. Screen-reader speech, OS text scaling and other engines are unverified.",
+    "Product and bundled-doc inputs remain identical to the 0b85c93 candidate. No version bump, push or publication."
+  ]
+}

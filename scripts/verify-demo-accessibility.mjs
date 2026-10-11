@@ -17,13 +17,16 @@ const journeyProbe = await readFile(new URL('./demo-keyboard-journey.mjs', impor
 const exec = promisify(execFile);
 const reports = [];
 const originalCwd = process.cwd();
-const { values } = parseArgs({ options: { framework: { type: 'string' }, zoom: { type: 'string' }, keyboard: { type: 'boolean' }, journey: { type: 'boolean' } } });
+const { values } = parseArgs({ options: { framework: { type: 'string' }, zoom: { type: 'string' }, keyboard: { type: 'boolean' }, journey: { type: 'boolean' }, 'cpu-rate': { type: 'string' } } });
 const journeyChecks = values.journey === true;
+const cpuRate = Number(values['cpu-rate'] ?? 1);
+assert.ok(Number.isFinite(cpuRate) && cpuRate >= 1 && cpuRate <= 20, 'CPU rate must be between 1 and 20');
+assert.ok(cpuRate === 1 || journeyChecks, 'CPU-restricted checks require --journey so input waits for the driver');
 const keyboardChecks = values.keyboard === true || journeyChecks;
 const zoomChecks = values.zoom !== undefined;
 const zoom = Number(values.zoom ?? 1);
 assert.ok([1, 2, 4].includes(zoom), 'Supported zoom factors: 1, 2, 4');
-const reportPath = `.release/accessibility${journeyChecks ? '-journey' : keyboardChecks ? '-keyboard' : ''}${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
+const reportPath = `.release/accessibility${journeyChecks ? '-journey' : keyboardChecks ? '-keyboard' : ''}${cpuRate > 1 ? `-cpu-${cpuRate}` : ''}${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
 const frameworks = values.framework ? [values.framework] : ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'];
 assert.ok(frameworks.every(name => ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'].includes(name)));
 let activeReject;
@@ -129,12 +132,13 @@ try {
       browser.once('error', activeReject);
       browser.once('exit', code => activeReject?.(new Error(`Chromium exited before accessibility result (${code})`)));
       if (keyboardChecks) {
-        keyboardDriver = createKeyboardDriver(profile, target.href);
+        keyboardDriver = createKeyboardDriver(profile, target.href, { cpuRate });
         void keyboardDriver.catch(error => activeReject?.(error));
       }
       timer = setTimeout(() => activeReject?.(new Error(`${framework} accessibility probe timed out`)), 90000);
       const report = await completed;
       reports.push({ framework, ...report });
+      if (keyboardChecks) reports.at(-1).environment = (await keyboardDriver).environment;
       assert.equal(report.ok, true, report.error);
       assert.equal(report.states.length, 4);
       if (journeyChecks) {
@@ -178,13 +182,14 @@ try {
 } finally {
   process.removeListener('SIGINT', interrupt); process.removeListener('SIGTERM', interrupt);
   process.chdir(originalCwd);
-  await writeFile(path.join(repository, reportPath), JSON.stringify({ reports, keyboardChecks, journeyChecks, requestedPageZoom: zoomChecks ? zoom : null,
+  await writeFile(path.join(repository, reportPath), JSON.stringify({ reports, keyboardChecks, journeyChecks, requestedCpuRate: cpuRate, requestedPageZoom: zoomChecks ? zoom : null,
     runComplete: reports.length === frameworks.length && reports.every(report => report.checksPassed),
     scope: journeyChecks ? 'Chromium key/text input: locale choice, name/note editing, support generation/reset and modal traversal/dismissal across ko/en demos; axe checks'
       : keyboardChecks ? 'Chromium Tab/Shift+Tab modal traversal, Escape/Enter activation and opener restoration across ko/en demos; axe checks'
       : zoomChecks ? 'Chromium page zoom, reflow, input preservation, modal focus/close reachability and axe checks across ko/en demos'
       : 'Rendered demo ko/en pages and open/closed dialogs with visible support panel; automated axe checks only',
     limits: ['No screen-reader speech observation or keyboard-only certification', ...(!zoomChecks ? ['No browser zoom observation'] : []),
+      ...(cpuRate > 1 ? ['CPU restriction starts before journey input, after initial page load; not a measurement of startup or a physical low-spec machine. Memory, GPU and network are unchanged.'] : []),
       'Headless Chromium only; dev rendering; installed npm demo uses its existing published dependencies'],
   }, null, 2) + '\n');
 }
