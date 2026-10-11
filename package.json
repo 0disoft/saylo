@@ -24,7 +24,7 @@
     "dev:svelte": "npm run build && vite --config examples/svelte/vite.config.mjs --host 127.0.0.1",
     "typegen:svelte": "npm run build && node packages/typegen/dist/cli.js --locales-dir examples/svelte/locales --base-locale ko --out-file examples/svelte/generated.d.ts",
     "build:svelte": "npm run typegen:svelte && tsc -p examples/svelte/tsconfig.json && vite build --config examples/svelte/vite.config.mjs",
-    "setup:sveltekit": "npm run build && npm --prefix examples/sveltekit ci --workspaces=false --ignore-scripts --no-audit --no-fund",
+    "setup:sveltekit": "npm run build && node scripts/setup-sveltekit.mjs",
     "dev:sveltekit": "npm --prefix examples/sveltekit run dev",
     "build:sveltekit": "npm --prefix examples/sveltekit run build",
     "verify:sveltekit": "npm --prefix examples/sveltekit run verify:ssr",

@@ -16,5 +16,7 @@
 
 **Svelte·SvelteKit 상태 UI.** Svelte `b5dbb17`과 SvelteKit 예제도 실제 Vite 응답을 차단해 연결 시도·재시도·3회 소진 실패를 확인하고, 응답 허용 뒤 실제 한국어 파일 저장으로 복구했다. 이름·확인 메모·모달·포커스(`confirmation-note`)가 전 구간 유지됐으며 실패 안내를 모달에서도 확인했다. 복구 뒤 오류는 비었고 콘솔 경고·오류는 0이었다. SvelteKit은 영어 JSON 파손 뒤 다른 한국어 파일을 저장해도 영어 진단이 유지되고 영어 파일 복원 때만 해제됨을 확인했다. Svelte `tsc`·`svelte-check`(오류·경고 0)·157모듈 생산 빌드와 SvelteKit 검사·생산 빌드·`verify:ssr`가 통과했다. 근거는 `review/dev-sync-ui-svelte-2026-10-11.json`·`review/dev-sync-ui-sveltekit-2026-10-11.json`이다. Svelte cached `pagehide` 정리는 수정했지만 실제 브라우저 BFCache 채택은 확인하지 않았다. 검사 서버·탭은 종료했고 편집한 카탈로그는 복원했다. SvelteKit 설치는 기존 setup 명령이 npm 12 상속 설정에 막혀 빌드와 `npm ci`를 직접 실행했다. 이 설치 명령 문제는 별도 수정 대상이다.
 
+**SvelteKit 첫 설치 명령 복구.** npm 12가 lifecycle 환경에 내보낸 `npm_config_allow_scripts`를 하위 설치 CLI 인자로 취급해 `EALLOWSCRIPTS`를 냈다. `scripts/setup-sveltekit.mjs`는 하위 npm의 환경에서 이 항목만 제외하고 `--ignore-scripts`를 유지한다. 전역·사용자 설정 파일은 수정하지 않는다. 수정 후 원래 `npm run setup:sveltekit` 명령이 workspace 빌드와 예제 65패키지 설치를 마치고 exit 0이었다. 근거는 `review/sveltekit-setup-2026-10-11.json`이며 Windows·Node 24.18.0·npm 12.0.2에서만 관측했다.
+
 판정 반영은 3·6·7·12·27·51·58행이고 동기화 검증은 3·7·12·62·65행 근거를 갱신한다(판정 등급은 그대로). 이 검증들은 예제 UI·문서 변경과 커밋된 라이브러리 소스 변경(alpha 미게시)이고 패키지 버전·registry 상태는 그대로다.
 

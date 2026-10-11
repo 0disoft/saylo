@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-11",
+  "environment": { "node": "24.18.0", "npm": "12.0.2" },
+  "before": {
+    "command": "npm run setup:sveltekit",
+    "exitCode": 1,
+    "reason": "EALLOWSCRIPTS: npm lifecycle inherited npm_config_allow_scripts; nested project install rejected it despite --ignore-scripts"
+  },
+  "change": "Use npm's invoking CLI with a child-local environment excluding only npm_config_allow_scripts; retain explicit --ignore-scripts and all user config files",
+  "after": {
+    "command": "npm run setup:sveltekit",
+    "exitCode": 0,
+    "result": "All workspace packages built and 65 SvelteKit example packages installed"
+  },
+  "limits": ["Observed on Windows with npm 12.0.2; other OS/npm versions were not exercised."],
+  "pushedOrPublished": false
+}
