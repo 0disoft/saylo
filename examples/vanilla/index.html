@@ -37,6 +37,14 @@
           <label>번역 문구 · English<textarea id="en-editor" class="code" rows="12" spellcheck="false" aria-label="영어 카탈로그" readonly></textarea></label>
           <p id="status" class="hint" role="status">개발 서버에 연결 중입니다.</p>
           <pre id="error" role="alert"></pre>
+          <details id="support-panel">
+            <summary>문의용 진단 자료</summary>
+            <p class="hint">번역 원문·파일 경로·입력값을 제외한 최근 오류 코드와 연결 상태를 모읍니다. 자동 전송하지 않습니다. Node 버전은 이 화면을 만든 개발·빌드 환경 기준입니다.</p>
+            <button id="support-export" type="button">진단 자료 만들기</button>
+            <button id="support-clear" type="button">오류 기록 지우기</button>
+            <label>검토하고 복사할 JSON<textarea id="support-report" class="code" rows="8" readonly spellcheck="false"></textarea></label>
+            <p id="support-status" role="status"></p>
+          </details>
           <p class="footnote">로케일 폴더나 namespace JSON 파일을 추가·삭제하면 목록도 자동으로 바뀝니다. 현재 언어의 모든 파일을 삭제하면 기준 언어로 전환합니다.</p>
         </section>
       </div>

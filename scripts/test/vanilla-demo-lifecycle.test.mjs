@@ -28,6 +28,27 @@ test('vanilla cached page retains live locale controls and form inputs', t => {
   assert.equal(document.querySelector('#name').value, 'Returning user');
 });
 
+test('vanilla support controls generate reviewable metadata without form or catalog content', t => {
+  const window = page(t);
+  const { document } = window;
+  document.querySelector('#name').value = 'PRIVATE_INPUT_MARKER';
+  document.querySelector('#support-export').click();
+  const field = document.querySelector('#support-report');
+  const report = JSON.parse(field.value);
+  assert.equal(report.schemaVersion, 'saylo.support/v1');
+  assert.equal(report.environment.runtime, 'browser');
+  assert.match(report.environment.node, /^\d+\.\d+\.\d+$/);
+  assert.match(report.environment.vite, /^8\./);
+  assert.equal(field.readOnly, true);
+  for (const text of ['PRIVATE_INPUT_MARKER', 'demo.json', '번역을 바꿔도', 'New words']) assert.ok(!field.value.includes(text));
+  document.querySelector('#support-clear').click();
+  assert.equal(field.value, '');
+  assert.match(document.querySelector('#support-status').textContent, /지웠습니다/);
+  document.querySelector('#support-export').click();
+  assert.deepEqual(JSON.parse(field.value).events, []);
+  assert.equal(document.querySelector('#name').value, 'PRIVATE_INPUT_MARKER');
+});
+
 test('vanilla rendering error retains the last screen and clears both status areas after repair', t => {
   const window = page(t);
   const { document } = window;

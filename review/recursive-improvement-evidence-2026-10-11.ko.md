@@ -18,5 +18,9 @@
 
 **SvelteKit 첫 설치 명령 복구.** npm 12가 lifecycle 환경에 내보낸 `npm_config_allow_scripts`를 하위 설치 CLI 인자로 취급해 `EALLOWSCRIPTS`를 냈다. `scripts/setup-sveltekit.mjs`는 하위 npm의 환경에서 이 항목만 제외하고 `--ignore-scripts`를 유지한다. 전역·사용자 설정 파일은 수정하지 않는다. 수정 후 원래 `npm run setup:sveltekit` 명령이 workspace 빌드와 예제 65패키지 설치를 마치고 exit 0이었다. 근거는 `review/sveltekit-setup-2026-10-11.json`이며 Windows·Node 24.18.0·npm 12.0.2에서만 관측했다.
 
-판정 반영은 3·6·7·12·27·51·58행이고 동기화 검증은 3·7·12·62·65행 근거를 갱신한다(판정 등급은 그대로). 이 검증들은 예제 UI·문서 변경과 커밋된 라이브러리 소스 변경(alpha 미게시)이고 패키지 버전·registry 상태는 그대로다.
+**문의용 진단 자료(`d7097dc`).** `createSupportReport`·`createSupportRecorder`가 최근 32개 진단 이벤트와 이벤트당 앞 64행만 축약한다. 오류 코드·숫자 출처 별칭·위치 좌표·현재 연결 상태·검사된 환경 버전만 담고, 오류 문구·키·원문 출처·request ID는 제외한다. 원본은 기록 시점에 축약하며 반환 객체는 깊게 동결한다. 실제 ICU 파서 오류의 합성 비밀 문자열 제외·허용 목록 검사·상한과 누락 수·초기화·입력 사후 변경 격리 4검사와 JS/TS consumer 검사, `npm run check`, 독립 tarball JS/TS 소비자(`verify:pack`)가 통과했다. 신규 API 소비 사례도 pack 검사에 포함했다. 문서는 `docs/support-report.md`, 근거는 `review/support-report-api-2026-10-11.json`이다.
+
+**vanilla 진단 자료 UI.** 실브라우저에서 handshake 3회 실패 상태를 수집하고, 연결 복구 뒤 영어 ICU 파손 진단을 자료로 만들었다. `INVALID_ICU`와 위치는 남고 합성 입력값·문구·파일 이름·request ID는 빠졌다. 파일 복구 뒤 화면 오류는 해제되고 이전 기록은 자료에 남았으며, 기록 지우기 후 다시 생성하면 현재 `connected` 상태와 빈 이벤트 배열이 나왔다. 입력값은 유지됐다. 생산 bundle 검사 3개가 통과했고 콘솔 경고·오류는 0이었다. 서버·탭은 종료하고 카탈로그를 복원했다. 근거는 `review/support-report-ui-2026-10-11.json`이다. UI는 vanilla 한정이고 실제 제출·공개 문의창구는 검증하지 않았다.
+
+판정 반영은 21·43행에 진단 자료 근거를 추가한다. 이 검증들은 예제 UI·문서 변경과 커밋된 라이브러리 소스 변경(alpha 미게시)이고 패키지 버전·registry 상태는 그대로다.
 

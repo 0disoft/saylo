@@ -1,11 +1,12 @@
 import { createStore } from '@0disoft/saylo-core';
-import { connectDev } from '@0disoft/saylo-vite/client';
+import { connectDev, createSupportRecorder } from '@0disoft/saylo-vite/client';
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 import { formatDevSyncState } from '../shared/dev-status.js';
 
 const element = id => document.getElementById(id);
 const editors = { ko: element('ko-editor'), en: element('en-editor') };
 const store = createStore({ baseLocale, locale: initialLocale, catalogs: initialCatalogs, timeZone });
+const support = createSupportRecorder(__SAYLO_SUPPORT_ENV__);
 const controls = new AbortController();
 const on = (target, event, callback) => target.addEventListener(event, callback, { signal: controls.signal });
 const textNodes = [...document.querySelectorAll('[data-message]')];
@@ -72,6 +73,7 @@ const disconnect = connectDev(store, {
     refreshStatus();
   },
   onDiagnostic: diagnostic => {
+    support.onDiagnostic(diagnostic);
     const details = diagnostic.diagnostics.length
       ? diagnostic.diagnostics.map(d => `${d.sourceName}${d.id ? ` [${d.id}]` : ''}: ${d.message}`).join('\n')
       : diagnostic.message;
@@ -79,11 +81,21 @@ const disconnect = connectDev(store, {
     else diagnosticMessage = details;
     refreshStatus();
   },
-  onSyncState: state => { syncState = state; if (state.status === 'connected') handshakeMessage = ''; refreshStatus(); },
+  onSyncState: state => { support.onSyncState(state); syncState = state; if (state.status === 'connected') handshakeMessage = ''; refreshStatus(); },
 });
 refreshStatus();
 on(localeSelect, 'change', () => store.setLocale(localeSelect.value));
 on(count, 'input', () => render(store.getSnapshot()));
+on(element('support-export'), 'click', () => {
+  element('support-report').value = JSON.stringify(support.getReport(), null, 2);
+  element('support-status').textContent = '진단 자료를 만들었습니다. 내용을 확인한 뒤 필요한 곳에 직접 복사하세요.';
+});
+on(element('support-clear'), 'click', () => {
+  support.clear();
+  if (syncState) support.onSyncState(syncState);
+  element('support-report').value = '';
+  element('support-status').textContent = '이전 오류 기록과 생성한 자료를 지웠습니다. 현재 연결 상태는 유지합니다.';
+});
 on(element('order-form'), 'submit', event => {
   event.preventDefault();
   element('confirmation').showModal();

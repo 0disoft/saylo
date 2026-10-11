@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-11",
+  "apiCommit": "d7097dc",
+  "scope": "Vanilla demo manual support-report generation and reset",
+  "localChecks": {
+    "npm run verify:demo:vanilla": "exit 0; production build and existing two lifecycle checks",
+    "node --test scripts/test/vanilla-demo-lifecycle.test.mjs": "3 passed after adding production-bundle report controls check"
+  },
+  "browser": {
+    "environment": "Codex in-app browser and real Vite 8.3.2 server on loopback port 5196",
+    "method": "Suppress handshake snapshots until failed attempt 3; restore replies and save ko catalog; insert synthetic invalid ICU in en catalog; repair; generate and clear reports through UI",
+    "failedReport": { "status": "failed", "attempt": 3, "hasHandshakeEvent": true },
+    "catalogErrorReport": {
+      "status": "connected",
+      "code": "INVALID_ICU",
+      "source": 1,
+      "position": { "offset": 387, "line": 10, "column": 55 },
+      "excludesSyntheticPrivateInputAndMessageMarkers": true,
+      "excludesOriginalFileNameAndRequestId": true,
+      "inputRetained": true,
+      "readonlyReport": true
+    },
+    "repair": { "visibleError": "", "status": "connected", "priorICUDiagnosticRetainedInReport": true },
+    "clearAndRegenerate": { "status": "connected", "events": [], "omittedEvents": 0, "inputRetained": true },
+    "environmentReported": { "runtime": "browser", "node": "24.18.0", "vite": "8.3.2", "sayloCore": "0.1.0-alpha.4", "sayloVite": "0.1.0-alpha.4" },
+    "consoleWarningsAndErrors": [],
+    "tabClosed": true,
+    "serverExited": 0,
+    "catalogDiffAfterCleanup": "none"
+  },
+  "limits": [
+    "Generation is manual and outputs reviewable JSON; no clipboard write, remote submission or automatic upload was exercised",
+    "Demo environment versions describe build/development tools; no browser fingerprint is gathered",
+    "Form values and translations are not inputs to the recorder; raw diagnostics are still displayed locally in existing error UI",
+    "Only the Vanilla example has collection controls in this commit"
+  ],
+  "pushedOrPublished": false
+}

@@ -1,9 +1,9 @@
 {
-  "observedAt": "2026-10-11T11:16:03.609Z",
+  "observedAt": "2026-10-11T11:28:32.955Z",
   "objectiveFile": "goal-objective.md",
   "objectiveSha256": "d8973060a056123e648ada1691ede5a341e1ea0c567797f04572ad7ffb06b3a0",
   "auditFile": "review/recursive-improvement-audit-2026-10-11.ko.md",
-  "auditSha256": "d0f4d3037185f8620e4c9f2c6b896e6013a7b4ce3552c61b9740b37480e90c3d",
+  "auditSha256": "e7381f47d552f7c76d1b38e0fd81f7b451653c2ef57dbe7c7aa0fc15fb3210ff",
   "considerations": [
     {
       "line": 3,
@@ -98,7 +98,7 @@
     {
       "line": 21,
       "text": "문제 발견과 추적 — \"사용자가 오류를 신고하면 어떤 작업에서 왜 실패했는지 운영자가 찾을 수 있어?\"",
-      "assessment": "보완(L0+L1)"
+      "assessment": "부분(L0+L1)"
     },
     {
       "line": 22,
@@ -208,7 +208,7 @@
     {
       "line": 43,
       "text": "문의용 진단 자료 — \"사용자가 문제를 겪으면 민감한 정보를 제외한 실행 환경과 오류 기록을 한 번에 모아 보내게 할까?\"",
-      "assessment": "보완(L0+L1)"
+      "assessment": "부분(L0+L1)"
     },
     {
       "line": 44,
