@@ -84,7 +84,11 @@ try {
   }
   // Copy only app inputs. Never carry node_modules, build outputs or the file:-based lockfile.
   await mkdir(app);
-  const example = path.join(repository, 'examples/sveltekit');
+  // Registry smoke exercises the published contract. The evolving local demo
+  // intentionally imports APIs that may not exist in any approved release yet.
+  const example = path.join(repository, approved
+    ? 'scripts/pack-fixtures/sveltekit-registry' : 'examples/sveltekit');
+  console.log(`[pack:sveltekit] Consumer inputs: ${path.relative(repository, example)}`);
   for (const name of ['src', 'locales', 'vite.config.mjs', 'tsconfig.json', 'verify-ssr.mjs', '.npmrc'])
     await cp(path.join(example, name), path.join(app, name), { recursive: true });
   const manifest = JSON.parse(await readFile(path.join(example, 'package.json'), 'utf8'));

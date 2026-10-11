@@ -1,0 +1,38 @@
+{
+  "observedOn": "2026-10-11",
+  "scope": "SvelteKit published-contract verification separated from the evolving unpublished local example",
+  "before": {
+    "command": "npm run verify:registry:sveltekit:alpha4",
+    "exitCode": 1,
+    "typeErrors": 8,
+    "cause": "The current example imports unpublished DevSyncState, SupportRecorder, createSupportRecorder and LiveDiagnostic.operation from published alpha.4 packages"
+  },
+  "fixture": {
+    "path": "scripts/pack-fixtures/sveltekit-registry",
+    "sourceRevision": "d26506ff78076b282033895f3966fb97dc86306c",
+    "sourceInputs": 20,
+    "byteForByteProvenanceCheck": "passed",
+    "metadata": "fixture.json",
+    "unpublishedSupportAPI": false
+  },
+  "after": [
+    { "command": "npm run verify:registry:sveltekit", "version": "0.1.0-alpha.2", "exitCode": 0 },
+    { "command": "npm run verify:registry:sveltekit:alpha3", "version": "0.1.0-alpha.3", "exitCode": 0 },
+    { "command": "npm run verify:registry:sveltekit:alpha4", "version": "0.1.0-alpha.4", "exitCode": 0 },
+    { "command": "npm run verify:pack:sveltekit", "source": "current local tarballs", "exitCode": 0 }
+  ],
+  "sharedChecks": [
+    "Five independently installed tarballs outside the workspace, without workspace links",
+    "Typecheck with zero Svelte errors and warnings, client and SSR production build",
+    "Concurrent ko/en SSR and matching boot data, canonical locale and fallback",
+    "Owned listener cleanup, idempotent stop and late connection cancellation",
+    "Production HTTP and Chromium hydration, locale switching, shared-layout state, exit and re-entry"
+  ],
+  "registryOnlyCheck": "All five tarball SHA-512 digests match their approved releases/<version>.json",
+  "localOnlyCheck": "Chromium support report generation, private form content exclusion, review/reset and input preservation",
+  "limits": [
+    "Published fixtures verify the historical API contract, not unpublished support APIs",
+    "Windows Node 24 and installed Chromium; other operating systems were not rerun",
+    "No package version changes, publishing or remote push"
+  ]
+}

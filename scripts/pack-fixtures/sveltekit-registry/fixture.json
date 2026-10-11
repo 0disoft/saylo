@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "saylo.sveltekit-registry-fixture/v1",
+  "sourceRevision": "d26506ff78076b282033895f3966fb97dc86306c",
+  "sourceDirectory": "examples/sveltekit",
+  "purpose": "Published-contract consumer for registry smoke verification, independent of the evolving local demo",
+  "checks": ["concurrent SSR and boot", "locale switching", "shared-layout inputs and modal", "cleanup and re-entry"],
+  "runtimePackages": "Installed from the requested approved registry release; SHA-512 integrity must match releases/<version>.json",
+  "toolVersions": "Declared major ranges; no copied node_modules, build output or lockfile",
+  "unpublishedSupportAPI": false
+}

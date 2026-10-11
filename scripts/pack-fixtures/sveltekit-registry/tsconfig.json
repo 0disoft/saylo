@@ -1,0 +1,11 @@
+{
+  "extends": "$app/tsconfig",
+  "compilerOptions": {
+    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    "types": ["$app/types", "node", "vite/client", "@0disoft/saylo-vite/virtual"]
+  },
+  "include": ["src", "vite.config.mjs"],
+  "exclude": ["node_modules", "build"]
+}
