@@ -125,7 +125,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 2026-10-12 SvelteKit 키보드 후속: 열린 공통 layout 모달에서 링크를 Enter로 실행하면 페이지는 이동하지만 포커스가 body로 빠지는 문제를 재현했다. 모달 안 링크에만 SvelteKit 3의 `data-sveltekit-reset="false"`를 적용하고 시작 안내·alpha.5 소비 fixture를 맞췄다. IAB의 Tab/Enter 입력으로 이동 뒤 링크 포커스·입력 3개·열린 모달 보존과 닫기 뒤 opener 복귀를 확인했다. 독립 설치한 다섯 tarball의 타입·SSR·Chromium 인수에도 `modal-navigation-focus`를 추가해 통과했다(`review/sveltekit-keyboard-navigation-focus-acceptance-2026-10-12.json`). 실제 보조 기술·일반 확대·전체 포커스 순환 검증은 계속 남아 있다.
 
-2026-10-12 최신 후보: `b39b3fd`를 동결한 alpha.5 사본에서 입력 973개 대조·전체 256개 테스트·JS/TS 소비와 SvelteKit SSR/Chromium 검사를 통과했다. SvelteKit 뒤 입력 불변과 다섯 tarball 재pack integrity도 확인했다. 8파일 버전 승격 패치는 `git apply --check`만 했으며 원본 버전은 alpha.4다(`review/release-alpha5-candidate-refresh-2026-10-12.json`). 로컬 검토 근거를 마련했지만 CI/OIDC·실제 게시·새 registry 인수·보조 기술 실사용은 계속 남아 있다.
+2026-10-12 최신 후보: `722e497`를 동결한 alpha.5 사본에서 입력 977개 대조·전체 256개 테스트·JS/TS 소비와 SvelteKit SSR/Chromium·모달 이동 포커스 검사를 통과했다. SvelteKit 뒤 입력 불변과 다섯 tarball 재pack integrity도 확인했다. 기존 8파일 버전 승격 패치는 `git apply --check`만 했으며 원본 버전은 alpha.4다(`review/release-alpha5-focus-candidate-acceptance-2026-10-12.json`). 앞선 `b39b3fd` 후보의 이력은 `review/release-alpha5-candidate-refresh-2026-10-12.json`에 남긴다. 로컬 검토 근거를 마련했지만 CI/OIDC·실제 게시·새 registry 인수·보조 기술 실사용은 계속 남아 있다.
 
 2026-10-12 registry 검사 후속: alpha.5 이후에는 문의 진단 API·동기화 상태·동봉 문서·CLI 도움말을 필수로 검사하도록 바꿨다. 고정한 새 SvelteKit 예제는 로컬 tarball의 상태 관측·보고서 생성/초기화와 실제 Chromium 인수를 통과했다. 로컬 독립 JS/TS와 기존 승인 alpha.4 registry 소비도 통과했다(`review/registry-consumer-contract-acceptance-2026-10-12.json`). 앞선 문서 후속의 "새 API를 건너뛰는 경로"는 준비 코드에서 해결했으며, 새 버전의 실제 게시·CI 승인 manifest·registry 인수는 여전히 남아 있다. alpha.5 승인 JSON은 만들어 넣지 않았다.
 
