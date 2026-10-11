@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-11",
+  "scope": "Svelte support report UI",
+  "checks": { "tsc -p examples/svelte/tsconfig.json": "exit 0", "svelte-check --workspace examples/svelte --tsconfig ./tsconfig.json": "0 errors, 0 warnings", "vite build --config examples/svelte/vite.config.mjs": "exit 0, 159 modules" },
+  "browser": {
+    "environment": "Codex in-app browser, real Vite 8.3.2 on loopback 5196",
+    "method": "Suppress handshake snapshot replies until three attempts fail; restore replies with ko edit; corrupt en ICU; repair; generate, clear and regenerate through controls",
+    "failedReport": { "status": "failed", "attempt": 3, "hasHandshakeEvent": true },
+    "catalogErrorReport": { "status": "connected", "code": "INVALID_ICU", "source": 1, "position": { "offset": 378, "line": 10, "column": 55 }, "excludesSyntheticInputAndMessageMarkers": true, "excludesFileName": true, "readonly": true },
+    "repair": { "visibleError": "", "priorErrorRetainedInReport": true },
+    "clearAndRegenerate": { "status": "connected", "events": [], "omittedEvents": 0, "inputRetained": true },
+    "adapterVersionIncluded": "sayloSvelte: 0.1.0-alpha.4",
+    "consoleWarningsAndErrors": [], "tabClosed": true, "serverExited": 0, "catalogDiffAfterCleanup": "none"
+  },
+  "limits": ["No clipboard write or remote submission", "Metadata is development/build information; unpublished source may share the package version", "Actual BFCache adoption and persisted drafts across reloads were not tested"],
+  "pushedOrPublished": false
+}

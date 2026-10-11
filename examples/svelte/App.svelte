@@ -1,13 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { connectDev } from '@0disoft/saylo-vite/client';
+  import { connectDev, createSupportRecorder } from '@0disoft/saylo-vite/client';
   import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
   import { catalogSource } from 'virtual:saylo/lazy';
   import { setSayloContext, store } from './i18n';
   import Preview from './Preview.svelte';
   import { formatDevSyncState } from '../shared/dev-status';
+  import SupportPanel from './SupportPanel.svelte';
 
   setSayloContext(store);
+  const support = createSupportRecorder(__SAYLO_SUPPORT_ENV__);
   let diagnostic = $state.raw<LiveDiagnostic>({ message: '', diagnostics: [] });
   let handshakeMessage = $state('');
   let syncState = $state.raw<DevSyncState>();
@@ -16,8 +18,8 @@
     ? diagnostic.diagnostics.map(value => `${value.sourceName}: ${value.message}`).join('\n') : diagnostic.message,
     handshakeMessage].filter(Boolean).join('\n'));
   onMount(() => connectDev(store, { catalogSource,
-    onDiagnostic: value => { if (value.operation === 'handshake') handshakeMessage = value.message; else diagnostic = value; },
-    onSyncState: value => { syncState = value; if (value.status === 'connected') handshakeMessage = ''; }
+    onDiagnostic: value => { support.onDiagnostic(value); if (value.operation === 'handshake') handshakeMessage = value.message; else diagnostic = value; },
+    onSyncState: value => { support.onSyncState(value); syncState = value; if (value.status === 'connected') handshakeMessage = ''; }
   }));
 </script>
 
@@ -25,4 +27,5 @@
   <Preview {connection} {details} />
   <p id="status" class="hint" role="status">{connection}</p>
   <pre id="error" role="alert">{details}</pre>
+  <SupportPanel recorder={support} {syncState} />
 </main>
