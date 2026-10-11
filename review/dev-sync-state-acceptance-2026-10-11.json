@@ -26,6 +26,17 @@
     "Legacy custom lazy sources without state observation still work",
     "Lazy disposal in idle and connecting does not acquire or leak a source reference, or deliver a late update"
   ],
+  "additionalSourceBoundaryFix": {
+    "implementationCommit": "d6d63b5",
+    "command": "node --test packages/vite/test/sync-state.test.mjs",
+    "passed": 9,
+    "failed": 0,
+    "cases": [
+      "Custom mutable status objects are copied without freezing the provider-owned object",
+      "Frozen getters cannot change a prior bridge observation",
+      "A throwing status getter reports an observer error without breaking the instance"
+    ]
+  },
   "limits": [
     "Connected describes accepted snapshot/manifest synchronization, not renderer success or all lazy pairs loaded.",
     "Individual pair loading timeouts continue through the existing core loading state and error path.",
