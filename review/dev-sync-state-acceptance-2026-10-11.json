@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-11",
+  "implementationCommit": "b534b4f",
+  "scope": "Shared eager snapshot and lazy manifest handshake observation",
+  "api": {
+    "callback": "connectDev(..., { onSyncState }) in both overloads",
+    "source": "Optional getSyncState and subscribeSyncState methods on DevCatalogSource; present on createDevCatalogSource results",
+    "states": ["idle", "connecting", "retrying", "connected", "disconnected", "failed", "stopped"],
+    "maximumAttempts": 3,
+    "published": false
+  },
+  "verification": [
+    { "command": "node --test packages/vite/test/sync-state.test.mjs", "passed": 8, "failed": 0 },
+    { "command": "npm run check", "exitCode": 0 },
+    { "command": "npm run typecheck:consumers --workspace=@0disoft/saylo-vite", "exitCode": 0, "scope": "TS and checkJs including immutable new state types" },
+    { "command": "npm run verify:pack", "exitCode": 0, "scope": "All five local tarballs consumed outside the repository by JS and TS apps" }
+  ],
+  "cases": [
+    "No-reply timeout: connecting 1, retrying 2, retrying 3, failed 3 with last-good translation retained",
+    "Disconnect and reconnect: new attempt then accepted current reply; stale reply and post-cleanup state events ignored",
+    "State and diagnostic observer exceptions do not block an eager handshake",
+    "Disposal during eager connecting prevents sending and releases listeners",
+    "Initial send failure reports failed 1 and leaves a reusable binding",
+    "Lazy source and bridge share immutable manifest state; one failing observer does not block the others",
+    "Catalog diagnostics remain separate from connected transport state",
+    "Legacy custom lazy sources without state observation still work",
+    "Lazy disposal in idle and connecting does not acquire or leak a source reference, or deliver a late update"
+  ],
+  "limits": [
+    "Connected describes accepted snapshot/manifest synchronization, not renderer success or all lazy pairs loaded.",
+    "Individual pair loading timeouts continue through the existing core loading state and error path.",
+    "The existing snapshot timeout and three-attempt retry policy were not changed.",
+    "No browser UI acceptance is claimed by this transport test record.",
+    "No version bump, publish, or remote push."
+  ]
+}

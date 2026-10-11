@@ -103,6 +103,8 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 74. [77-local-release-readiness.md](77-local-release-readiness.md) — 사전 로컬 check·tarball·SvelteKit browser 검증과 alpha.4 게시 후속
 75. [alpha.4 릴리스](../releases/0.1.0-alpha.4.md) — CI·OIDC 게시·승인 integrity·registry JS/TS 및 SvelteKit 소비 인수
 
+개발 클라이언트의 handshake 상태 계약은 [dev-sync-state.md](dev-sync-state.md)에 있다.
+
 검증과 로드맵의 기존 상세 이력은 [06-validation-history.md](06-validation-history.md)에 보존한다.
 
 ## 상태 표기 규칙

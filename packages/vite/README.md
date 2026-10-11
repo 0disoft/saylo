@@ -79,6 +79,21 @@ TS/checkJs 소비자는 `compilerOptions.types`에 `["vite/client", "@0disoft/sa
 
 `virtual:saylo`는 전체 카탈로그를 한 번에 싣는 eager 경로다. eager store는 `virtual:saylo`의 `initialCatalogs`·`baseLocale`·`initialLocale`·`timeZone`으로 만든다.
 
+## 동기화 상태
+
+`connectDev`는 eager·lazy 두 경로 모두 `onSyncState(state)`로 개발 서버 handshake 상태를 알린다. `state`는 `{ status, attempt, maxAttempts: 3 }`인 frozen 객체이고 `status`는 `idle`·`connecting`·`retrying`·`connected`·`disconnected`·`failed`·`stopped` 중 하나다. `attempt`는 `connecting`에서 1, `retrying`에서 2·3, `failed`에서 마지막 시도값이고 나머지 상태는 0이다.
+
+```ts
+connectDev(i18n, {
+  catalogSource,
+  onSyncState: state => console.log(state.status, state.attempt),
+});
+```
+
+이 상태는 snapshot·manifest handshake의 결과이지 개별 lazy 카탈로그 로딩이나 화면 렌더 성공 여부가 아니다. 로케일 파일 진단은 `onDiagnostic`이 계속 맡는다. lazy 경로에서 `DevCatalogSource`의 `getSyncState`·`subscribeSyncState`는 선택 메서드라서 이 API 이전에 만든 외부 source와 타입 호환이 유지된다. production에는 hot context가 없으므로 eager `connectDev`는 noop을 돌려주고 상태 콜백을 부르지 않는다. 재시도 정책은 그대로이고 요청당 기본 타임아웃은 5000ms다.
+
+이 API는 로컬 미게시 변경이며 현재 게시본 `0.1.0-alpha.4`에는 없다. 계약 상세는 [개발 동기화 상태](https://github.com/0disoft/saylo/blob/main/docs/dev-sync-state.md)에 있다.
+
 ## 동작 범위
 
 플러그인은 파일을 감시해 정상 카탈로그만 게시하고, 클라이언트는 snapshot을 받아 앱에 전달한다. 기준 schema가 바뀌어 기존 번역이 부적합해지면 plugin이 그 파일의 last-good 번역에서 부적합 메시지만 제거해 게시하고, 빠진 메시지는 기준 로케일 값으로 fallback한다. 잘못된 번역 편집은 그 파일의 last-good을 유지하고 다른 파일 변경은 계속 반영한다. last-good이 없는 새 번역 파일은 게시하지 않고, 파일을 삭제하면 그 last-good도 지운다. 기준이나 번역이 복구되면 자동 재검증해 복원한다. 코어 `createStore`·`replaceCatalogs`는 자동 격리를 하지 않고, startup·build는 전체 카탈로그를 엄격 검증한다. 격리는 이 plugin에서만 한다. production에서는 `astRuntime`이 켜져 있으면 Saylo AST 경계의 parser 런타임이 빠지고, 앱이 직접 `parseCatalog`를 쓰면 parser가 그대로 포함된다. 코어와 store는 DOM을 직접 다루지 않으므로 화면 갱신은 앱이 snapshot을 렌더해 처리한다. Vite는 앱 모듈을 교체하지 않는다.
