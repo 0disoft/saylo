@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-11",
+  "scope": "React example pagehide lifecycle",
+  "before": {
+    "command": "node --experimental-vm-modules --test scripts/test/react-demo-lifecycle.test.mjs",
+    "exitCode": 1,
+    "failure": "Cached page unmounted the React root: expected original HTMLInputElement, received null",
+    "method": "Unmodified production ESM bundle in a jsdom VM module context, after controlled input, modal and report generation"
+  },
+  "after": {
+    "command": "npm run verify:demo:react",
+    "exitCode": 0,
+    "testsPassed": 1,
+    "checks": [
+      "React TypeScript check and 63-module production build",
+      "Two cached pagehide/pageshow cycles retain original input and dialog nodes, controlled values, open modal and report JSON",
+      "Count input and real emitted lazy English catalog module continue updating after modeled restoration",
+      "Support clear works and a later React render retains the controlled name",
+      "Terminal pagehide removes the React root even after prior cached cycles; repeated terminal exit is safe",
+      "No jsdom or React console errors"
+    ]
+  },
+  "browser": {
+    "environment": "Codex in-app browser and React production preview on loopback 5196",
+    "method": "Temporary HTML-only pageshow.persisted observer; navigate with populated form, open modal and report to a same-origin plain page, then use browser back",
+    "actualPageshowPersisted": false,
+    "result": "Browser performed a fresh page load; form, modal and report returned to initial state",
+    "localeSwitchAfterFreshReturn": { "locale": "en", "heading": "New words. Same input." },
+    "tabClosed": true,
+    "previewExited": 0
+  },
+  "limits": [
+    "Cached lifecycle semantics were reproduced and verified with model events, not actual browser BFCache adoption",
+    "jsdom dialog showModal/close were minimally modeled; native modal/focus persistence through BFCache remains unverified",
+    "This change retains existing in-memory state on cached navigation; fresh reload and app restart do not persist drafts",
+    "VM Modules are used only by the verification harness and require Node's experimental-vm-modules flag"
+  ],
+  "pushedOrPublished": false
+}

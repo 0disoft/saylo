@@ -20,7 +20,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 6 | 첫 사용 경험 — "처음 온 사람이 설명을 따로 듣지 않고 첫 번째 성과를 얻을 수 있도록 무엇을 바꾸면 좋을까?" | 부분(L0) | 루트 `README.md` 로컬 실행, `examples/npm/README.md` 설치본 흐름, `docs/getting-started.md`(파일 6개, 공개 npm 설치). 저장소 밖 빈 임시 폴더 복사 뒤 `verify:starter`가 설치·생산 build·DOM 렌더·typegen·TS/checkJs 오류 거부까지 확인했다. 스캐폴드와 프레임워크별 시작 문서는 없음. 다음: 나머지 예제 시작 경로. |
 | 7 | 빈 화면과 예외 상황 — "데이터가 없거나, 결과를 찾지 못하거나, 작업에 실패했을 때도 다음 행동을 알 수 있게 돼 있어?" | 부분(L0+L1) | `docs/01` 원칙4, `vite/translation-quarantine.ts`; npm 예제는 진단 유지·수정 안내·모달 안내(`index.html` aria-labelledby) `1336aa5` 실행검증완료, 렌더 오류는 `8febdda`로 en·ko `heading` 삭제 → `Unknown message "demo:heading"`+수정 안내 → 복원 `Connected`, 모달·입력·포커스·last-rendered 화면 유지, 콘솔 0(`review/npm-demo-render-error-recovery-2026-10-11.json`), `verify:demo:npm` 생산 bundle jsdom 3개 통과. React는 `en` 파일 파손 진단이 다른 `ko` 저장으로는 풀리지 않고 `en` 복원 때만 해제됨을 실브라우저로 확인했고(`c92515d`, `review/dev-sync-ui-acceptance-2026-10-11.json`), 수송 실패와 callback 실패는 `LiveDiagnostic.operation`(`928377e`)으로 구분한다. 다음: 빈 카탈로그·누락 로케일. |
 | 8 | 입력 실수 대응 — "사용자가 잘못 입력했을 때 문제를 정확히 알려주고, 이미 입력한 내용을 살려서 고칠 수 있어?" | 적용(L0) | `core/translation-errors.ts`·`loading-errors.ts` 6종, `diagnostics.ts` 위치 계산. 폼 UI는 L1. |
-| 9 | 작업 중단과 복귀 — "새로고침하거나 앱을 닫았다 돌아와도 진행하던 작업을 이어갈 수 있어야 할 부분은 어디야?" | 부분(L1+L2) | npm 예제가 cached pagehide에서 핸들러를 제거하는 문제를 운영 번들+jsdom으로 재현·수정했다. `verify:demo:npm` 수명 회귀 2개 통과, 근거 `review/npm-demo-history-lifecycle-2026-10-11.json`. 실제 BFCache 채택은 미검증. 재시작·새로고침 뒤 초안 저장은 소비 앱 책임이다. |
+| 9 | 작업 중단과 복귀 — "새로고침하거나 앱을 닫았다 돌아와도 진행하던 작업을 이어갈 수 있어야 할 부분은 어디야?" | 부분(L1+L2) | npm 예제가 cached pagehide에서 핸들러를 제거하는 문제를 운영 번들+jsdom으로 재현·수정했다. `verify:demo:npm` 수명 회귀 2개 통과, 근거 `review/npm-demo-history-lifecycle-2026-10-11.json`. React도 생산 ESM 번들에서 cached 이탈 시 root 해제를 재현·수정하고 `verify:demo:react`로 반복 복귀·입력·모달·진단 자료·lazy 언어 로딩·최종 해제를 확인했다(`review/react-demo-history-lifecycle-2026-10-11.json`). 실제 브라우저는 캐시를 쓰지 않아 새로 로드됐다. 실제 BFCache 채택은 미검증. 재시작·새로고침 뒤 초안 저장은 소비 앱 책임이다. |
 | 10 | 취소와 되돌리기 — "실수하기 쉬운 행동 중 취소하거나 되돌릴 수 없어 곤란해지는 부분을 찾아줄래?" | 부분(L0) | `client.ts` idempotent disposer, `store.dispose()`, typegen `generator.ts` 취소·race. 다음: late 응답 폐기 실행. |
 | 11 | 중복과 동시 작업 — "버튼을 두 번 누르거나 여러 창과 여러 사용자가 동시에 작업하면 결과가 꼬이는 부분이 있어?" | 적용(L0) | `client.ts` bindings WeakMap 단일 binding, `vite/types.ts` requestId·generation. 다중 사용자 없음(14행). 다음: 동시요청 실행. |
 | 12 | 느린 응답과 연결 끊김 — "네트워크나 외부 서비스가 느려지거나 끊겼을 때 사용자가 기다림, 재시도, 실패를 구분할 수 있어?" | 부분(L0+L1) | `client.ts` timeout 5000ms·3회, RangeError, SupersededRequestError, CatalogLoadError. 이제 `onSyncState`가 재시도·최종 실패를 신호한다(`connecting`·`retrying`·`failed`와 `attempt`/`maxAttempts`, `b534b4f`, 계약 `docs/dev-sync-state.md`). 표시 구분은 L1. vanilla·React는 실제 Vite 응답 차단으로 `connecting` 1/3, `retrying`(Vanilla 3/3, React 2/3), `failed` 3/3을 표시하고 응답 복구 뒤 정상 연결로 돌아오며 이름·확인 메모·모달·포커스가 유지됐다(`c92515d`, `review/dev-sync-ui-acceptance-2026-10-11.json`). npm 예제의 서버 정지 표시는 그대로다(`5db3517`, `review/npm-demo-connection-status-2026-10-11.json`). Svelte·SvelteKit에도 같은 표시와 모달 안내를 적용하고 실제 실패·복구 중 입력·모달·포커스 유지를 확인했다(`review/dev-sync-ui-svelte-2026-10-11.json`·`review/dev-sync-ui-sveltekit-2026-10-11.json`). 서버 재시작 뒤 초안 복원은 별도 소비 앱 책임이다. |
@@ -103,9 +103,9 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 ## 실제 효용 우선 Top 3
 
-1. React cached `pagehide` 수명을 보완한다(9행). `examples/react/main.tsx`는 현재 cached 이탈에도 root·store를 폐기하고 once 핸들러를 제거한다. vanilla·Svelte처럼 캐시 복귀에 맞는 수명으로 수정하고 생산 번들로 확인한다. 실제 브라우저 BFCache 채택은 별도 범위다.
-2. 오류·상태 표시 계약을 `docs/04` 계열에 남긴다. npm 예제의 규칙(진단 유지·수정 안내·명시적 해제·모달 내 안내·렌더 오류와 진단 분리)에 더해, 수송 실패와 callback 실패의 분리(`LiveDiagnostic.operation`, `928377e`)와 handshake 문구만 `connected`에서 해제하는 규칙을 적는다(3·7·21행).
-3. 프레임워크별 첫사용 안내를 보완한다(6·27행). vanilla 시작 문서 검증은 있지만 독립 React·Svelte 시작 안내는 남아 있다.
+1. 오류·상태 표시 계약을 기존 설계 문서와 맞춘다(3·7·21행). React cached 수명 수정은 생산 번들 회귀 검사로 끝냈고 실제 BFCache 채택 한계도 기록했다. 다음은 전용 계약 문서와 기존 `docs/04`의 동작 설명을 대조한다.
+2. 프레임워크별 첫사용 안내를 보완한다(6·27행). vanilla 시작 문서 검증은 있지만 독립 React·Svelte 시작 안내는 남아 있다. 게시본과 로컬 미게시 API의 차이를 설치 경로에서도 표시한다.
+3. 게시본 SvelteKit 검증의 예제 경계를 확인한다(25·68·69행). 현재 예제는 미게시 상태·진단 API를 import하므로 기존 registry 버전 검증은 별도 호환 fixture가 필요하다. 신규 로컬 pack 검사와 이전 게시본 검사를 섞지 않는다.
 
 이전 판 Top 3의 시작 안내 항목은 `docs/getting-started.md`+`verify:starter`+실브라우저 확인으로 실행 근거가 생겨 목록에서 내렸다. 다만 나머지 예제 4종의 시작 경로와 프레임워크별 안내는 남아 있어 6·27행을 닫지 않는다.
 
@@ -119,7 +119,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
-상태 UI는 vanilla·React·Svelte·SvelteKit까지 실브라우저 실패·복구 검사를 마쳤다. SvelteKit setup 오류도 수정해 원래 명령이 통과했다. 문의용 진단 API·문서와 vanilla 수집 UI도 구현·검증했다. 진단 수집 UI는 React·Svelte·SvelteKit에도 적용·검증했다. 다음은 React cached 수명과 프레임워크별 시작 안내다. 표시 계약 문서화를 작은 커밋으로 진행하고, 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
+상태 UI는 vanilla·React·Svelte·SvelteKit까지 실브라우저 실패·복구 검사를 마쳤다. SvelteKit setup 오류도 수정해 원래 명령이 통과했다. 문의용 진단 API·문서와 vanilla 수집 UI도 구현·검증했다. 진단 수집 UI는 React·Svelte·SvelteKit에도 적용·검증했다. React cached 수명도 재현·수정했다. 다음은 기존 동작 문서·프레임워크별 시작 안내·게시본 검증 예제 경계다. 표시 계약 문서화를 작은 커밋으로 진행하고, 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
 
 ---
 작성 2026-10-11(KST). 기준 HEAD `c92515d`. 시작 안내 `d424345`, 연결 종료 표시 `5db3517`, 동기화 API `b534b4f`, 계약 문서·기록 `b8540cb`, handshake 진단 분리 `928377e`, vanilla·React 상태 UI `c92515d`가 커밋돼 있다. 실행 검증 표시는 연결한 실제 관측 기록의 범위에 한정한다. 이번 판에서 검증된 source 변화는 커밋된 `packages/vite` 개발 클라이언트(alpha 미게시)와 vanilla·React·npm 예제·시작 문서이고, 패키지 버전·registry 상태는 그대로다.

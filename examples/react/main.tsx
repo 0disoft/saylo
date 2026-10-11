@@ -128,6 +128,13 @@ function App() {
 
 const root = createRoot(document.getElementById('root')!);
 root.render(<StrictMode><SayloProvider instance={store}><App /></SayloProvider></StrictMode>);
-function cleanup() { window.removeEventListener('pagehide', cleanup); root.unmount(); store.dispose(); }
-window.addEventListener('pagehide', cleanup, { once: true });
+let stopped = false;
+function cleanup() {
+  if (stopped) return;
+  stopped = true;
+  window.removeEventListener('pagehide', pagehide);
+  try { root.unmount(); } finally { store.dispose(); }
+}
+function pagehide(event: PageTransitionEvent) { if (!event.persisted) cleanup(); }
+window.addEventListener('pagehide', pagehide);
 if (import.meta.hot) import.meta.hot.dispose(cleanup);
