@@ -10,13 +10,18 @@ import { parseArgs, promisify } from 'node:util';
 
 const { values } = parseArgs({ options: { framework: { type: 'string' }, browser: { type: 'string' }, consumer: { type: 'string' } } });
 const framework = values.framework;
-assert.ok(['react', 'svelte'].includes(framework), 'Pass --framework react or svelte.');
+assert.ok(['react', 'svelte', 'sveltekit'].includes(framework), 'Pass --framework react, svelte or sveltekit.');
+const sveltekit = framework === 'sveltekit';
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through an npm verify:starter script.');
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const docPath = `docs/getting-started-${framework}.md`;
 const doc = await readFile(path.join(repository, docPath), 'utf8');
-const files = ['package.json', 'vite.config.mjs', 'tsconfig.json', 'index.html',
+const files = sveltekit ? ['package.json', 'vite.config.mjs', 'tsconfig.json', 'src/app.d.ts', 'src/app.html',
+  'src/hooks.server.ts', 'src/lib/i18n.ts', 'src/lib/client-connection.ts', 'src/lib/Workbench.svelte', 'src/lib/style.css',
+  'src/routes/(saylo)/+layout.server.ts', 'src/routes/(saylo)/+layout.svelte', 'src/routes/(saylo)/+page.svelte',
+  'src/routes/(saylo)/about/+page.svelte', 'src/routes/plain/+page.svelte', 'locales/ko/demo.json', 'locales/en/demo.json', 'verify-ssr.mjs']
+  : ['package.json', 'vite.config.mjs', 'tsconfig.json', 'index.html',
   framework === 'react' ? 'main.tsx' : 'main.ts', ...(framework === 'svelte' ? ['i18n.ts', 'App.svelte'] : []),
   'locales/ko/demo.json', 'locales/en/demo.json'];
 const ownsRoot = !values.consumer;
@@ -72,7 +77,8 @@ try {
   await npm(['install', '--ignore-scripts', '--no-audit', '--no-fund']);
   }
   const lock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
-  const names = ['@0disoft/saylo-core', `@0disoft/saylo-${framework}`, '@0disoft/saylo-vite', 'vite'];
+  const names = ['@0disoft/saylo-core', `@0disoft/saylo-${sveltekit ? 'svelte' : framework}`, '@0disoft/saylo-vite',
+    ...(sveltekit ? ['@0disoft/saylo-typegen'] : []), 'vite'];
   for (const name of names) {
     assert.ok(lock.packages[`node_modules/${name}`].resolved?.startsWith('https://registry.npmjs.org/'), `${name} must come from public npm`);
     assert.equal((await lstat(path.join(root, 'node_modules', name))).isSymbolicLink(), false);
@@ -84,6 +90,12 @@ try {
       '--consumer', root, '--browser', browser], { cwd: root, env, windowsHide: true,
       timeout: 180000, maxBuffer: 4 * 1024 * 1024, signal: cancellation.signal });
     console.log(worker.stdout.trim());
+  } else if (sveltekit) {
+    const { verifySvelteKitStarter } = await import('./sveltekit-starter-runtime.mjs');
+    const result = await verifySvelteKitStarter({ root, browser, npm, signal: cancellation.signal });
+    console.log(JSON.stringify({ document: docPath, documentSha256: createHash('sha256').update(doc).digest('hex'),
+      files: files.length, installed: Object.fromEntries(names.map(name => [name, lock.packages[`node_modules/${name}`].version])),
+      ...result }, null, 2));
   } else {
   const require = createRequire(path.join(root, 'package.json'));
   const { createServer, preview } = await import(pathToFileURL(require.resolve('vite')).href);
@@ -158,6 +170,10 @@ try {
     files: files.length, installed: Object.fromEntries(names.map(name => [name, lock.packages[`node_modules/${name}`].version])),
     dev, production, limits: ['No SSR hydration or cross-browser matrix in this starter check.'] }, null, 2));
   }
+} catch (error) {
+  if (error.stdout) console.error(error.stdout.trim());
+  console.error((error.stderr || error.message || String(error)).trim());
+  process.exitCode = 1;
 } finally {
   clearTimeout(timer);
   rejectBrowser = undefined;

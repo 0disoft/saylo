@@ -36,5 +36,7 @@
 
 **React·Svelte 빈 폴더 시작 안내.** `docs/getting-started-react.md`의 7파일과 `docs/getting-started-svelte.md`의 9파일을 코드 블록에서 추출해 public npm의 core·react/svelte·vite alpha.4와 Vite 8.3.4를 저장소 밖에 설치했다. `verify:starter:react`·`verify:starter:svelte`는 실제 Chromium에서 영어 첫 렌더·ko/en 전환·영어 JSON 변경·ja 추가·ICU 파손 last-good 유지·파일 복구·입력 DOM/state/모달/포커스 보존을 확인하고, 문서 build와 production preview에서도 렌더·로케일·입력/모달을 확인했다. Svelte 초기 설치의 TypeScript 7/svelte-check 4 peer 충돌을 지원 범위인 6으로 수정했고, 검사 오류·경고 0이었다. Vite 검사를 worker로 분리해 Windows 네이티브 모듈 잠금 뒤 임시 폴더 정리까지 정상 종료했다. 근거는 `review/react-starter-acceptance-2026-10-11.json`·`review/svelte-starter-acceptance-2026-10-11.json`이다. optional typegen·SSR hydration·다른 브라우저는 이 명령의 검증 범위 밖이다.
 
+**SvelteKit 빈 폴더 시작 안내.** `docs/getting-started-sveltekit.md`의 18파일을 추출해 public npm의 core·svelte·vite·typegen alpha.4와 Vite 8.3.4를 독립 설치했다. `verify:starter:sveltekit`이 문서의 check·build·verify:ssr를 실행했다. 동시 ko/en 요청·EN 정규화·en_US/fr fallback·no-store·boot 일치와 연결 정리를 확인했고, 실제 Chromium dev에서 파일 편집·ja 추가·ICU last-good·복구·파일 편집 중 포커스·공유 layout·종료/재진입을 확인했다. production preview도 hydration·URL 로케일·공유 layout·재진입을 통과했고, 실제 `node build/index.js` 서버도 동시 SSR 검사를 통과했다. 진단 오류·경고와 브라우저 runtime/hydration 경고는 0이었다. origin 끝 slash가 중복 경로를 만들던 검증 오류를 문서 명령에서 정규화하고 trailing slash 입력으로 재확인했다. 근거는 `review/sveltekit-starter-acceptance-2026-10-11.json`이다. 호스팅 배포와 문서 공개 전달은 하지 않았다.
+
 판정 반영은 6·27행에 시작 안내, 9행에 React 수명, 21·43행에 진단 자료, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
 

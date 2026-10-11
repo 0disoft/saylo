@@ -1,0 +1,30 @@
+{
+  "observedOn": "2026-10-11",
+  "document": "docs/getting-started-sveltekit.md",
+  "documentSha256": "800e91c86a1114200d9353f09147636b23e694e3e7c98ca09c40ffee9ea8ffd5",
+  "command": "npm run verify:starter:sveltekit",
+  "exitCode": 0,
+  "standaloneFiles": 18,
+  "installed": {
+    "@0disoft/saylo-core": "0.1.0-alpha.4",
+    "@0disoft/saylo-svelte": "0.1.0-alpha.4",
+    "@0disoft/saylo-vite": "0.1.0-alpha.4",
+    "@0disoft/saylo-typegen": "0.1.0-alpha.4",
+    "vite": "8.3.4"
+  },
+  "checks": {
+    "publicRegistry": "Document blocks extracted outside the repository; installed packages resolve to public npm and are not workspace links",
+    "documentCheckAndBuild": "Typegen, SvelteKit sync, Svelte diagnostics with zero errors and warnings, client/SSR build and Node adapter",
+    "standaloneSSRCommand": "Concurrent ko/en HTTP, matching boot data, no-store, canonical EN and base fallback for malformed en_US and unavailable fr",
+    "lifecycle": "Owned listener cleanup, idempotent stop and cancellation before late source attachment",
+    "devChromium": ["hydration", "locale-url", "live-edit", "new-locale", "invalid-last-good", "repair", "focus-preserved", "shared-layout", "exit-reentry"],
+    "productionChromium": ["hydration", "locale-url", "shared-layout", "exit-reentry"],
+    "productionHTTP": "SSR command accepts preview origins with a trailing slash",
+    "nodeAdapter": "Actual node build/index.js process with HOST, PORT and ORIGIN passes the same concurrent production SSR and boot assertions"
+  },
+  "originFix": "Initial preview verification produced 500/Invalid URL from a duplicated slash. The guide's verify-ssr.mjs normalizes its argument with new URL(origin).origin; the verifier explicitly exercises a trailing slash afterward.",
+  "browser": "HeadlessChrome/154.0.0.0 on Windows",
+  "runtimeErrorsAndHydrationWarnings": [],
+  "cleanup": "The command exited after closing browser, Vite, Node adapter and worker processes and removing the temporary consumer",
+  "limits": ["No browser matrix or hosting deployment", "Focus checks apply to file edits; route navigation uses the router's focus policy", "Source-derived layout example uses published APIs; no unpublished support API", "The guide is a local repository artifact; public documentation hosting and issue contact remain separate work", "No push or publish"]
+}
