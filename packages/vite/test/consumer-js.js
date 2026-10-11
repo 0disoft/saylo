@@ -1,5 +1,5 @@
 import saylo from '@0disoft/saylo-vite';
-import { connectDev, createStaticCatalogSource } from '@0disoft/saylo-vite/client';
+import { connectDev, createStaticCatalogSource, createSupportReport, createSupportRecorder } from '@0disoft/saylo-vite/client';
 import { createI18n, createStore } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
@@ -18,6 +18,11 @@ const stop = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnos
   }
 });
 stop();
+const recorder = createSupportRecorder({ runtime: 'browser' });
+connectDev(store, { onDiagnostic: recorder.onDiagnostic, onSyncState: recorder.onSyncState });
+// @ts-expect-error checkJs rejects arbitrary environment text
+createSupportReport({ environment: { runtime: 'user-agent' } });
+JSON.stringify(recorder.getReport());
 const lazy = createI18n({ catalogSource, locale: lazyLocale, initialNamespaces, initialCatalogs: lazyCatalogs });
 connectDev(lazy, { catalogSource, onSyncState: state => console.log(state.status) });
 // @ts-expect-error checkJs also requires the lazy source handle

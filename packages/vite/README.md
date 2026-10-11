@@ -96,6 +96,8 @@ connectDev(i18n, {
 
 ## 동작 범위
 
+문의용 자료는 `createSupportRecorder()`의 `onDiagnostic`·`onSyncState`를 연결하고 `getReport()`를 JSON으로 만들어 검토한다. 보고서는 최근 32개 진단 이벤트의 오류 코드·숫자 위치·연결 상태와 허용한 환경 버전만 담으며, 오류 문구·파일 이름·번역 키·요청 ID는 제외한다. 자동 수집·전송은 하지 않는다. `clear()`로 기록과 상태를 비운다. 이 API도 로컬 미게시이며 현재 게시본 alpha.4에는 없다. 자세한 계약과 사용법은 [문의용 진단 자료](https://github.com/0disoft/saylo/blob/main/docs/support-report.md)에 있다.
+
 플러그인은 파일을 감시해 정상 카탈로그만 게시하고, 클라이언트는 snapshot을 받아 앱에 전달한다. 기준 schema가 바뀌어 기존 번역이 부적합해지면 plugin이 그 파일의 last-good 번역에서 부적합 메시지만 제거해 게시하고, 빠진 메시지는 기준 로케일 값으로 fallback한다. 잘못된 번역 편집은 그 파일의 last-good을 유지하고 다른 파일 변경은 계속 반영한다. last-good이 없는 새 번역 파일은 게시하지 않고, 파일을 삭제하면 그 last-good도 지운다. 기준이나 번역이 복구되면 자동 재검증해 복원한다. 코어 `createStore`·`replaceCatalogs`는 자동 격리를 하지 않고, startup·build는 전체 카탈로그를 엄격 검증한다. 격리는 이 plugin에서만 한다. production에서는 `astRuntime`이 켜져 있으면 Saylo AST 경계의 parser 런타임이 빠지고, 앱이 직접 `parseCatalog`를 쓰면 parser가 그대로 포함된다. 코어와 store는 DOM을 직접 다루지 않으므로 화면 갱신은 앱이 snapshot을 렌더해 처리한다. Vite는 앱 모듈을 교체하지 않는다.
 
 SSR은 `@0disoft/saylo-vite/server`와 `virtual:saylo/server`를 쓴다. 예제는 저장소의 [SSR 예제](https://github.com/0disoft/saylo/tree/main/examples/ssr)에 있다.

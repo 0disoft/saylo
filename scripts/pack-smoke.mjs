@@ -165,6 +165,10 @@ try {
         await cp(path.join(fixtures, 'svelte-smoke.mjs'), path.join(app, 'svelte-smoke.mjs'));
       }
     }
+    if (!fromRegistry) {
+      await cp(path.join(fixtures, 'support-report.mjs'), path.join(app, `src/support-report.${language}`));
+      await cp(path.join(fixtures, 'support-report.mjs'), path.join(app, 'support-report.mjs'));
+    }
     console.log((await npm(['run', 'typegen'], app)).trim());
     assert.match(await readFile(path.join(app, 'generated.d.ts'), 'utf8'), /"demo:items": \{ "count": number;/);
     await npm(['run', 'typecheck'], app);
@@ -179,6 +183,8 @@ try {
     }
     const smoke = await exec(process.execPath, ['smoke.mjs'], { cwd: app, windowsHide: true, env: childEnv });
     console.log(smoke.stdout.trim());
+    if (!fromRegistry) console.log((await exec(process.execPath, ['support-report.mjs'],
+      { cwd: app, windowsHide: true, env: childEnv })).stdout.trim());
     console.log((await npm(['run', 'build'], app)).trim());
     const bundle = JSON.parse(await readFile(path.join(app, 'dist/.vite/manifest.json'), 'utf8'));
     assert.ok(Object.values(bundle).some(entry => entry.isDynamicEntry), 'Lazy translation chunk was not emitted.');

@@ -2,6 +2,8 @@ import type { I18n, ParsedCatalog, Schema, Store } from '@0disoft/saylo-core';
 import { EagerSync } from './dev-sync.js';
 import type { DevSyncState } from './dev-sync.js';
 export type { DevSyncState } from './dev-sync.js';
+export { createSupportReport, createSupportRecorder } from './support-report.js';
+export type { SupportEnvironment, SupportDiagnostic, SupportEvent, SupportReport, SupportReportOptions, SupportRecorder } from './support-report.js';
 import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from './types.js';
 import type { EagerCatalogEvent, LiveDiagnostic } from './types.js';
 import { freezeCatalogs } from './freeze.js';

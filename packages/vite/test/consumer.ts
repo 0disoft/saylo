@@ -1,5 +1,5 @@
 import saylo from '@0disoft/saylo-vite';
-import { connectDev, createStaticCatalogSource } from '@0disoft/saylo-vite/client';
+import { connectDev, createStaticCatalogSource, createSupportReport, createSupportRecorder } from '@0disoft/saylo-vite/client';
 import type { DevSyncState } from '@0disoft/saylo-vite/client';
 import { createI18n, createStore } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLocale, initialNamespaces } from 'virtual:saylo/lazy';
@@ -18,6 +18,14 @@ const onSyncState = (state: DevSyncState) => {
 };
 const stop: () => void = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.message), onSyncState });
 stop();
+const recorder = createSupportRecorder({ runtime: 'browser', sayloVite: '0.1.0-alpha.4' });
+connectDev(store, { onDiagnostic: recorder.onDiagnostic, onSyncState: recorder.onSyncState });
+const report = createSupportReport({ environment: { runtime: 'node' } });
+// @ts-expect-error support report is immutable
+report.events.push({});
+// @ts-expect-error arbitrary runtime metadata is not accepted
+createSupportReport({ environment: { token: 'hidden' } });
+JSON.stringify(recorder.getReport());
 
 const lazy = createI18n({ catalogSource, locale: lazyLocale, initialNamespaces, initialCatalogs: lazyCatalogs });
 const disconnect: () => void = connectDev(lazy, { catalogSource, onSyncState });

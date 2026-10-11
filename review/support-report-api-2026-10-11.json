@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-11",
+  "scope": "Local unpublished support report API and recorder",
+  "schemaVersion": "saylo.support/v1",
+  "checks": {
+    "node --test packages/vite/test/support-report.test.mjs": "4 passed",
+    "npm run typecheck:consumers --workspace @0disoft/saylo-vite": "exit 0, TS and checkJs",
+    "npm run check": "exit 0, workspace tests and consumer typechecks",
+    "npm run verify:pack": "exit 0; five local tarballs independently installed, including new support-report runtime and type checks in JS and TS consumers"
+  },
+  "evidence": [
+    "Real parser failure containing synthetic private text in message/key/argument/source path is projected to allowed code, numeric source alias and position",
+    "Arbitrary environment fields, unknown codes, malformed numeric positions, arbitrary prerelease/build labels and trailing-newline versions are excluded",
+    "Reports keep newest 32 events, first 64 rows per event and report omitted counts",
+    "Recorder copies allowed values at observation time; returned reports are deeply frozen and prior snapshots survive later recording and clear",
+    "Recovery preserves historical evidence until explicit clear"
+  ],
+  "limits": [
+    "Environment versions are caller supplied; package version alone does not identify uncommitted or unpublished changes",
+    "Report intentionally omits raw messages, file/key/argument names, locales/namespaces and request identifiers; reproduction still requires synthetic inputs and steps",
+    "Recorder retains diagnostic event order and only the latest synchronization state; no state timeline or timestamps",
+    "No remote support submission or registry release was performed"
+  ],
+  "pushedOrPublished": false
+}
