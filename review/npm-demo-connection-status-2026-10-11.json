@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-11",
+  "scope": "npm example's socket-status display; no library API change",
+  "environment": "Codex in-app browser, installed Saylo alpha.4 packages and Vite 8.3.3",
+  "before": {
+    "reproduction": "Stop Vite dev server while the confirmation dialog is open",
+    "statusAfterDisconnect": "Connected"
+  },
+  "after": {
+    "statusAfterDisconnect": "Disconnected. Waiting for the development server; last rendered translations remain visible.",
+    "pageStatusMatchesDialogStatus": true,
+    "noteAfterDisconnect": "Keep this disconnected draft",
+    "headingAfterDisconnect": "Saylo from npm",
+    "dialogOpenAfterDisconnect": true,
+    "focusedElementAfterDisconnect": "dialog-note",
+    "serverRestart": {
+      "behavior": "Vite reloads the entire page on server recovery",
+      "status": "Connected",
+      "note": "",
+      "dialogOpen": false
+    }
+  },
+  "regression": {
+    "command": "npm run verify:demo:npm",
+    "passed": 3,
+    "failed": 0,
+    "scope": "Production bundle: cached/discarded page lifecycles and missing-message repair. Socket behavior above was checked in a live browser."
+  },
+  "limits": [
+    "The socket-reconnect waiting branch was not independently observed; a complete Vite restart reloads the page.",
+    "Internal snapshot retry attempts and exhausted-resync status still need distinct library signals and UI handling.",
+    "Catalog edits preserve DOM state; server restarts do not promise draft persistence.",
+    "No package version bump, publish, or push."
+  ]
+}

@@ -14,6 +14,8 @@ const listen = (element, event, callback) => element.addEventListener(event, cal
 let localeList = '';
 let diagnosticMessage = '';
 let renderMessage = '';
+let connectionMessage = import.meta.hot ? 'Connecting to development server' : 'Production catalogs';
+let reconnecting = false;
 
 function renderStatus(message) {
   status.textContent = message;
@@ -23,8 +25,8 @@ function renderStatus(message) {
 function refreshStatus() {
   const message = diagnosticMessage || renderMessage;
   renderStatus(message
-    ? `${message}\nFix the locale file and save again. The last valid translations remain visible.`
-    : import.meta.hot ? 'Connected' : 'Production catalogs');
+    ? `${connectionMessage}\n${message}\nFix the reported issue and save again. The last rendered translations remain visible.`
+    : connectionMessage);
 }
 
 function render(snapshot) {
@@ -51,20 +53,42 @@ function render(snapshot) {
 
 render(store.getSnapshot());
 const unsubscribe = store.subscribe(render);
-renderStatus(import.meta.hot ? 'Live catalog updates' : 'Production catalogs');
+const onSocketDisconnect = () => {
+  reconnecting = true;
+  connectionMessage = 'Disconnected. Waiting for the development server; last rendered translations remain visible.';
+  refreshStatus();
+};
+const onSocketConnect = () => {
+  if (!reconnecting) return;
+  reconnecting = false;
+  connectionMessage = 'Reconnecting. Waiting for the current catalogs.';
+  refreshStatus();
+};
+if (import.meta.hot) {
+  // Observe the shared Vite socket without closing or replacing it.
+  import.meta.hot.on('vite:ws:disconnect', onSocketDisconnect);
+  import.meta.hot.on('vite:ws:connect', onSocketConnect);
+}
 const disconnect = import.meta.hot ? connectDev(store, {
   hot: import.meta.hot,
   onDiagnostic: diagnostic => {
     diagnosticMessage = diagnostic.message || '';
     refreshStatus();
   },
-  onUpdate: refreshStatus,
+  onUpdate: () => { connectionMessage = 'Connected'; refreshStatus(); },
 }) : () => {};
+refreshStatus();
 listen(localeSelect, 'change', () => store.setLocale(localeSelect.value));
 listen(nameInput, 'input', () => render(store.getSnapshot()));
 listen(document.getElementById('open-dialog'), 'click', () => dialog.showModal());
 listen(document.getElementById('close-dialog'), 'click', () => dialog.close());
 
-function cleanup() { disconnect(); controls.abort(); unsubscribe(); store.dispose(); }
+function cleanup() {
+  if (import.meta.hot) {
+    import.meta.hot.off('vite:ws:disconnect', onSocketDisconnect);
+    import.meta.hot.off('vite:ws:connect', onSocketConnect);
+  }
+  disconnect(); controls.abort(); unsubscribe(); store.dispose();
+}
 listen(window, 'pagehide', event => { if (!event.persisted) cleanup(); });
 if (import.meta.hot) import.meta.hot.dispose(cleanup);
