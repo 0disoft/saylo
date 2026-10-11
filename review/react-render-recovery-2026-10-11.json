@@ -1,0 +1,24 @@
+{
+  "observedOn": "2026-10-11",
+  "scope": "React demo rendering recovery for empty catalogs and removed locale/namespace files",
+  "before": {
+    "observedFailure": "Accepted empty ko/demo.json causes UnknownMessageError for demo:heading during rendering; React removes App",
+    "source": "examples/react/main.tsx",
+    "observation": "Actual Chromium in a temporary copied demo before the rendering guard was added"
+  },
+  "after": {
+    "recoveryCommand": "npm run verify:demo:react:recovery",
+    "recoveryExitCode": 0,
+    "checks": ["locale-removal", "locale-restoration", "empty-base", "interactive-fallback", "base-restoration", "namespace-removal", "namespace-restoration", "cold-empty-view", "cold-interaction", "cold-restoration"],
+    "browserRuntimeErrorsAndWarnings": [],
+    "productionCommand": "npm run verify:demo:react",
+    "productionExitCode": 0,
+    "productionChecks": ["TypeScript", "Vite production build", "cached history lifecycle regression"],
+    "lifecycleTestsPassed": 1
+  },
+  "preserved": ["Input DOM identity", "Input values and draft", "Open modal and confirmation input", "Focus", "Previously generated support report"],
+  "behavior": ["Full view translation precedes rendering", "Only a committed successful view becomes the fallback", "Fallback reuses the previous immutable translator with the current count", "Empty first startup exposes setup instructions with working controls", "Catalog repair clears rendering diagnostics without remounting inputs"],
+  "environment": { "os": "Windows", "browser": "HeadlessChrome/154.0.0.0", "vite": "8.3.2" },
+  "cleanup": "Temporary copied catalogs only; browser, Vite server and bounded temporary tree removed",
+  "limits": ["React demo only", "No claim about actual browser BFCache adoption", "No package version bump, publication or push"]
+}

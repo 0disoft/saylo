@@ -38,5 +38,7 @@
 
 **SvelteKit 빈 폴더 시작 안내.** `docs/getting-started-sveltekit.md`의 18파일을 추출해 public npm의 core·svelte·vite·typegen alpha.4와 Vite 8.3.4를 독립 설치했다. `verify:starter:sveltekit`이 문서의 check·build·verify:ssr를 실행했다. 동시 ko/en 요청·EN 정규화·en_US/fr fallback·no-store·boot 일치와 연결 정리를 확인했고, 실제 Chromium dev에서 파일 편집·ja 추가·ICU last-good·복구·파일 편집 중 포커스·공유 layout·종료/재진입을 확인했다. production preview도 hydration·URL 로케일·공유 layout·재진입을 통과했고, 실제 `node build/index.js` 서버도 동시 SSR 검사를 통과했다. 진단 오류·경고와 브라우저 runtime/hydration 경고는 0이었다. origin 끝 slash가 중복 경로를 만들던 검증 오류를 문서 명령에서 정규화하고 trailing slash 입력으로 재확인했다. 근거는 `review/sveltekit-starter-acceptance-2026-10-11.json`이다. 호스팅 배포와 문서 공개 전달은 하지 않았다.
 
-판정 반영은 6·27행에 시작 안내, 9행에 React 수명, 21·43행에 진단 자료, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
+**React 빈 카탈로그와 로케일 삭제 복구.** 빈 기준 카탈로그가 허용된 뒤 `UnknownMessageError`가 React 렌더를 벗어나 App이 사라지는 것을 수정 전 브라우저에서 재현했다. 전체 문구를 먼저 계산하고 마지막으로 커밋된 정상 snapshot을 기억하도록 고쳤다. 오류 중에도 정상 snapshot의 번역으로 현재 수량을 다시 계산하며, 처음부터 번역이 없으면 필요한 파일·키를 안내하는 입력 화면을 제공한다. `verify:demo:react:recovery`는 임시 예제와 실제 Chromium에서 로케일 삭제·복원, 빈 기준 카탈로그, 수량 변경, 기준 복구, namespace 삭제·복원의 7단계와 빈 카탈로그 첫 실행·입력·복구의 3단계를 통과했다. 입력 DOM·초안·열린 모달·확인 입력·포커스·생성된 문의 자료가 유지되고 브라우저 오류·경고는 0이었다. 파일 복원 후 수정 안내는 해제됐다. `verify:demo:react` 타입·생산 빌드와 cached 수명 검사 1개도 통과했다. 근거는 `review/react-render-recovery-2026-10-11.json`이다. 원본 카탈로그를 변경하지 않고 검사 서버·브라우저·임시 예제를 정리했다. 다른 프레임워크·게시본·실제 BFCache 채택은 이 검사의 범위 밖이다.
+
+판정 반영은 6·27행에 시작 안내, 7행에 React 빈 카탈로그 복구, 9행에 React 수명, 21·43행에 진단 자료, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
 

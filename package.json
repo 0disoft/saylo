@@ -43,7 +43,8 @@
     "verify:starter:svelte": "node scripts/verify-framework-starter.mjs --framework svelte",
     "verify:starter:sveltekit": "node scripts/verify-framework-starter.mjs --framework sveltekit",
     "verify:demo:vanilla": "vite build --config examples/vanilla/vite.config.mjs && node --test scripts/test/vanilla-demo-lifecycle.test.mjs",
-    "verify:demo:react": "tsc -p examples/react/tsconfig.json && vite build --config examples/react/vite.config.mjs && node --experimental-vm-modules --test scripts/test/react-demo-lifecycle.test.mjs"
+    "verify:demo:react": "tsc -p examples/react/tsconfig.json && vite build --config examples/react/vite.config.mjs && node --experimental-vm-modules --test scripts/test/react-demo-lifecycle.test.mjs",
+    "verify:demo:react:recovery": "node scripts/verify-react-recovery.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "7",
