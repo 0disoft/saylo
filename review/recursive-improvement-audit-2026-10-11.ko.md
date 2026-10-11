@@ -123,6 +123,8 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
+2026-10-12 최신 후보: `7518290`를 동결한 alpha.5 사본에서 입력 983개 대조·전체 261개 테스트·독립 JS/TS 소비·게시 계획 dry run·SvelteKit SSR/Chromium과 모달 이동 포커스를 통과했다. 진단 관측자 예외 격리 회귀 5개와 동봉 계약도 포함한다. SvelteKit 뒤 입력 불변·다섯 tarball 재pack SHA-512 일치·기존 승격 패치 적용 가능 검사를 확인했으며 원본 버전은 alpha.4다(`review/release-alpha5-diagnostic-candidate-acceptance-2026-10-12.json`). 원격 CI/OIDC·실제 게시·registry 인수·실제 AT와 npm 제목 대비 incomplete2건은 계속 남아 있다.
+
 2026-10-12 진단 관측자 후속: onDiagnostic의 동기 예외가 eager 초기 binding·커밋 revision 처리와 공유 진단 fan-out을 중단하는 문제, lazy 외부 source의 진단 예외·stop 뒤 예약 콜백을 5회귀 실패로 재현했다. 공통 진단 전달 보호와 lazy binding 검사를 적용해 focused54·Vite 전체125·소비 타입·경계7·다섯 독립 JS/TS tarball을 통과했다(`review/diagnostic-observer-isolation-acceptance-2026-10-12.json`). 콜백 자신의 오류를 재귀 보고하거나 원문을 자동 로그로 남기지 않는다. async Promise rejection·실브라우저 fault 주입은 별도 범위이며, 기존 722e497 후보는 수정 전 이력이라 최종 후보를 다시 동결해야 한다.
 
 2026-10-12 대비 incomplete 후속: 선택형 확대 검사에 진단 보조 모듈을 연결했다. 원래 axe 결과를 보존한 채 텍스트 줄의 기하·아홉 지점 hit-test·불투명 단색 조상 배경 대비를 기록하고, 모달 scrollTop=0의 별도 대비 재검사 뒤 원래 위치를 복원한다. 7상태를 검사해 400% 영어5건은 스크롤 복귀 뒤 visible 샘플·재검사 통과, npm 한국어2건은 visible 샘플·대비13.69:1이나 axe incomplete 유지로 구분했다(`review/demo-contrast-review-acceptance-2026-10-12.json`). 테스트 도구와 설명만 바꿨으며 생산 CSS·모달 동작·게시 상태는 그대로다.
@@ -131,7 +133,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 2026-10-12 SvelteKit 키보드 후속: 열린 공통 layout 모달에서 링크를 Enter로 실행하면 페이지는 이동하지만 포커스가 body로 빠지는 문제를 재현했다. 모달 안 링크에만 SvelteKit 3의 `data-sveltekit-reset="false"`를 적용하고 시작 안내·alpha.5 소비 fixture를 맞췄다. IAB의 Tab/Enter 입력으로 이동 뒤 링크 포커스·입력 3개·열린 모달 보존과 닫기 뒤 opener 복귀를 확인했다. 독립 설치한 다섯 tarball의 타입·SSR·Chromium 인수에도 `modal-navigation-focus`를 추가해 통과했다(`review/sveltekit-keyboard-navigation-focus-acceptance-2026-10-12.json`). 실제 보조 기술·일반 확대·전체 포커스 순환 검증은 계속 남아 있다.
 
-2026-10-12 최신 후보: `722e497`를 동결한 alpha.5 사본에서 입력 977개 대조·전체 256개 테스트·JS/TS 소비와 SvelteKit SSR/Chromium·모달 이동 포커스 검사를 통과했다. SvelteKit 뒤 입력 불변과 다섯 tarball 재pack integrity도 확인했다. 기존 8파일 버전 승격 패치는 `git apply --check`만 했으며 원본 버전은 alpha.4다(`review/release-alpha5-focus-candidate-acceptance-2026-10-12.json`). 앞선 `b39b3fd` 후보의 이력은 `review/release-alpha5-candidate-refresh-2026-10-12.json`에 남긴다. 로컬 검토 근거를 마련했지만 CI/OIDC·실제 게시·새 registry 인수·보조 기술 실사용은 계속 남아 있다.
+2026-10-12 이전 후보: `722e497`를 동결한 alpha.5 사본에서 입력 977개 대조·전체 256개 테스트·JS/TS 소비와 SvelteKit SSR/Chromium·모달 이동 포커스 검사를 통과했다. SvelteKit 뒤 입력 불변과 다섯 tarball 재pack integrity도 확인했다. 기존 8파일 버전 승격 패치는 `git apply --check`만 했으며 원본 버전은 alpha.4다(`review/release-alpha5-focus-candidate-acceptance-2026-10-12.json`). 앞선 `b39b3fd` 후보의 이력은 `review/release-alpha5-candidate-refresh-2026-10-12.json`에 남긴다. 로컬 검토 근거를 마련했지만 CI/OIDC·실제 게시·새 registry 인수·보조 기술 실사용은 계속 남아 있다.
 
 2026-10-12 registry 검사 후속: alpha.5 이후에는 문의 진단 API·동기화 상태·동봉 문서·CLI 도움말을 필수로 검사하도록 바꿨다. 고정한 새 SvelteKit 예제는 로컬 tarball의 상태 관측·보고서 생성/초기화와 실제 Chromium 인수를 통과했다. 로컬 독립 JS/TS와 기존 승인 alpha.4 registry 소비도 통과했다(`review/registry-consumer-contract-acceptance-2026-10-12.json`). 앞선 문서 후속의 "새 API를 건너뛰는 경로"는 준비 코드에서 해결했으며, 새 버전의 실제 게시·CI 승인 manifest·registry 인수는 여전히 남아 있다. alpha.5 승인 JSON은 만들어 넣지 않았다.
 
