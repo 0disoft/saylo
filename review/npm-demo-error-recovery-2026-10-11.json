@@ -1,0 +1,118 @@
+{
+  "observedAt": "2026-10-11T09:28:03.692Z",
+  "parentRevision": "a3b64e5fed7a139da71a8a29a3643b30c319173f",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "browser": "Codex in-app browser",
+    "vite": "8.3.3",
+    "saylo": "0.1.0-alpha.4"
+  },
+  "scenario": [
+    "open dialog with draft input",
+    "break en/demo.json",
+    "save unrelated valid ko/demo.json",
+    "repair en/demo.json"
+  ],
+  "before": {
+    "before": {
+      "dialogNote": "Keep dialog",
+      "focused": "close-dialog",
+      "heading": "Saylo from npm",
+      "name": "Recovery",
+      "note": "Keep my work",
+      "open": true,
+      "status": "Connected"
+    },
+    "error": {
+      "dialogNote": "Keep dialog",
+      "focused": "close-dialog",
+      "heading": "Saylo from npm",
+      "name": "Recovery",
+      "note": "Keep my work",
+      "open": true,
+      "status": "en/demo.json: Invalid JSON: Unexpected end of JSON input"
+    },
+    "afterUnrelatedSave": {
+      "dialogNote": "Keep dialog",
+      "focused": "close-dialog",
+      "heading": "Saylo from npm",
+      "name": "Recovery",
+      "note": "Keep my work",
+      "open": true,
+      "status": "Connected"
+    }
+  },
+  "after": {
+    "initial": {
+      "dialogNote": "Keep dialogㄱ",
+      "dialogStatus": "Connected",
+      "focused": "close-dialog",
+      "heading": "Saylo from npm",
+      "name": "Recovery",
+      "note": "Keep my workㅜ",
+      "open": true,
+      "status": "Connected"
+    },
+    "error": {
+      "dialogNote": "Keep dialogㄱ",
+      "dialogStatus": "en/demo.json: Invalid JSON: Unexpected end of JSON input\nFix the locale file and save again. The last valid translations remain visible.",
+      "focused": "close-dialog",
+      "heading": "Saylo from npm",
+      "name": "Recovery",
+      "note": "Keep my workㅜ",
+      "open": true,
+      "status": "en/demo.json: Invalid JSON: Unexpected end of JSON input\nFix the locale file and save again. The last valid translations remain visible."
+    },
+    "afterUnrelatedSave": {
+      "dialogNote": "Keep dialogㄱ",
+      "dialogStatus": "en/demo.json: Invalid JSON: Unexpected end of JSON input\nFix the locale file and save again. The last valid translations remain visible.",
+      "focused": "close-dialog",
+      "heading": "Saylo from npm",
+      "name": "Recovery",
+      "note": "Keep my workㅜ",
+      "open": true,
+      "status": "en/demo.json: Invalid JSON: Unexpected end of JSON input\nFix the locale file and save again. The last valid translations remain visible."
+    },
+    "recovered": {
+      "dialogNote": "Keep dialogㄱ",
+      "dialogStatus": "Connected",
+      "focused": "close-dialog",
+      "heading": "Saylo from npm",
+      "name": "Recovery",
+      "note": "Keep my workㅜ",
+      "open": true,
+      "status": "Connected"
+    },
+    "logs": []
+  },
+  "sourceHashes": {
+    "examples/npm/main.js": "2fa1a29b2158c6fefe02b950df965fe872a1688b23dc231435019f209c1a407e",
+    "examples/npm/index.html": "df55847a12839eabbd89794dab46d7363e1f251e26eeb0e2c0c75e6819c5c5d1",
+    "examples/npm/package-lock.json": "90cbabe69508f2020f0e4bcf4b0dcb893497a37b92668b01597ae28e4fed0606"
+  },
+  "build": {
+    "command": "npm run build",
+    "cwd": "examples/npm",
+    "exitCode": 0,
+    "modules": 45
+  },
+  "checks": {
+    "errorReproducedBeforeFix": true,
+    "retainedUntilExplicitDiagnosticClear": true,
+    "visibleInsideDialog": true,
+    "correctionInstructionVisible": true,
+    "lastGoodTextAndInputAndDialogAndFocusPreserved": true,
+    "consoleErrorsAndWarnings": 0
+  },
+  "cleanup": {
+    "bothCatalogsRestored": true,
+    "ownedTabClosed": true,
+    "ownedDevServerStopped": true
+  },
+  "limits": [
+    "Example application change; no library API or package version change.",
+    "A developer status indicator is not a persistent draft store.",
+    "No general performance or assistive-technology audit is claimed."
+  ]
+}

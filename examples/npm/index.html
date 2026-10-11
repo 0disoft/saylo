@@ -28,8 +28,8 @@
         <p id="status" class="status" role="status"></p>
       </section>
     </main>
-    <dialog id="confirmation">
-      <h2 data-i18n="demo:dialogTitle"></h2>
+    <dialog id="confirmation" aria-labelledby="dialog-title">
+      <h2 id="dialog-title" data-i18n="demo:dialogTitle"></h2>
       <label>
         <span data-i18n="demo:dialogNoteLabel"></span>
         <input id="dialog-note" autocomplete="off">
@@ -37,6 +37,7 @@
       <div class="controls">
         <button id="close-dialog" type="button" class="secondary" data-i18n="demo:closeDialog"></button>
       </div>
+      <p id="dialog-status" class="status" role="status"></p>
     </dialog>
     <script type="module" src="/main.js"></script>
   </body>

@@ -7,10 +7,17 @@ const localeSelect = document.getElementById('locale');
 const nameInput = document.getElementById('name');
 const dialog = document.getElementById('confirmation');
 const status = document.getElementById('status');
+const dialogStatus = document.getElementById('dialog-status');
 const labels = [...document.querySelectorAll('[data-i18n]')];
 const controls = new AbortController();
 const listen = (element, event, callback) => element.addEventListener(event, callback, { signal: controls.signal });
 let localeList = '';
+let diagnosticMessage = '';
+
+function renderStatus(message) {
+  status.textContent = message;
+  dialogStatus.textContent = message;
+}
 
 function render(snapshot) {
   // Update text without replacing input controls or the open dialog.
@@ -27,12 +34,17 @@ function render(snapshot) {
 
 render(store.getSnapshot());
 const unsubscribe = store.subscribe(render);
+renderStatus(import.meta.hot ? 'Live catalog updates' : 'Production catalogs');
 const disconnect = import.meta.hot ? connectDev(store, {
   hot: import.meta.hot,
-  onDiagnostic: diagnostic => { status.textContent = diagnostic.message || 'Connected'; },
-  onUpdate: () => { status.textContent = 'Connected'; },
+  onDiagnostic: diagnostic => {
+    diagnosticMessage = diagnostic.message || '';
+    renderStatus(diagnosticMessage
+      ? `${diagnosticMessage}\nFix the locale file and save again. The last valid translations remain visible.`
+      : 'Connected');
+  },
+  onUpdate: () => { if (!diagnosticMessage) renderStatus('Connected'); },
 }) : () => {};
-status.textContent = import.meta.hot ? 'Live catalog updates' : 'Production catalogs';
 listen(localeSelect, 'change', () => store.setLocale(localeSelect.value));
 listen(nameInput, 'input', () => render(store.getSnapshot()));
 listen(document.getElementById('open-dialog'), 'click', () => dialog.showModal());
