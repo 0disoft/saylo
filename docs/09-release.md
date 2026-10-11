@@ -6,7 +6,7 @@ Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버�
 
 현행 게시 버전은 `0.1.0-alpha.4`다. 2026-10-11 다섯 패키지의 CI OIDC 인증·게시와 승인 tarball SHA-512 대조, 외부 JS/TS·selector SSR·SvelteKit Chromium 소비를 통과했다. 변경·검증은 [릴리스 기록](../releases/0.1.0-alpha.4.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.4.json)에 있다. 이전 릴리스와 아래의 게시·인증 결과는 당시 기록으로 유지한다.
 
-다음 배포 후보의 변경 범위·승격·게시·이전 버전 복귀 절차는 [alpha.5 계획](../releases/0.1.0-alpha.5-plan.md)에 있다. 원본 버전은 alpha.4를 유지하며 alpha.5는 임시 후보에서만 검증했다. 2026-10-12 [문서 검사](../review/release-alpha5-documentation-acceptance-2026-10-12.json)는 후보 안내를 반영한 최신 소스의 로컬 pack이며, 앞선 alpha.5 후보와 registry alpha.4 실물을 구분한다. registry 소비 경로에서 새 동기화 상태·문의 진단 API를 확인하는 작업은 게시 전에 추가해야 한다.
+다음 배포 후보의 변경 범위·승격·게시·이전 버전 복귀 절차는 [alpha.5 계획](../releases/0.1.0-alpha.5-plan.md)에 있다. 원본 버전은 alpha.4를 유지하며 alpha.5는 임시 후보에서만 검증했다. 2026-10-12 [문서 검사](../review/release-alpha5-documentation-acceptance-2026-10-12.json)는 후보 안내를 반영한 최신 소스의 로컬 pack이며,앞선 alpha.5 후보와 registry alpha.4 실물을 구분한다. registry 검사도 alpha.5 이후에는 새 동기화 상태·문의 진단 API와 동봉 문서를 필수로 확인한다. 새 SvelteKit 검사는 고정한 `sveltekit-registry-alpha5` 예제를 사용하고 기존 alpha.1~4의 검사 경로는 유지한다([준비 검증](../review/registry-consumer-contract-acceptance-2026-10-12.json)). alpha.5의 실제 게시와 CI 승인 manifest를 확보한 뒤 `verify:registry:alpha5`·`verify:registry:sveltekit:alpha5`를 실행한다.
 
 `0.1.0-alpha.3`부터 완역 검사, `alpha.4`부터 React·Svelte selector를 포함한다. 아래 로컬 명령과 workflow 기본 버전은 alpha.4 기준이다. 로컬 `.release/npm/` 후보는 gitignore 대상이고, 승인 기록은 성공한 CI artifact에서 가져온다. 현행 소비 명령은 `npm run verify:registry:alpha4`·`npm run verify:registry:sveltekit:alpha4`다.
 

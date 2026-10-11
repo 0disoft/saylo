@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "saylo.sveltekit-registry-fixture/v1",
+  "sourceRevision": "8cf7b5b",
+  "sourceDirectory": "examples/sveltekit",
+  "purpose": "Frozen consumer for releases with development-state and support-report APIs; old releases keep their original fixture.",
+  "checks": [
+    "concurrent SSR and boot",
+    "development synchronization observations",
+    "locale switching",
+    "support report generation and clear",
+    "shared-layout inputs and modal",
+    "cleanup and re-entry"
+  ],
+  "runtimePackages": "Requested approved registry tarballs must match releases/<version>.json; local --consumer-fixture support is preparation only.",
+  "toolVersions": "Declared major ranges; no copied node_modules, build output or lockfile"
+}

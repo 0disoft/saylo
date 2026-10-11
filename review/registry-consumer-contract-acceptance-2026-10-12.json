@@ -1,0 +1,83 @@
+{
+  "schema": "saylo.registry-consumer-contract-acceptance/v1",
+  "observedAt": "2026-10-11T16:32:54.330Z",
+  "baseCommit": "8cf7b5b",
+  "node": "v24.18.0",
+  "registryPolicy": {
+    "legacy": [
+      "0.1.0-alpha.1",
+      "0.1.0-alpha.2",
+      "0.1.0-alpha.3",
+      "0.1.0-alpha.4"
+    ],
+    "newContract": "Other approved releases require support reports, synchronization observations, CLI help and bundled documents."
+  },
+  "checks": [
+    {
+      "command": "npm run verify:pack",
+      "exitCode": 0,
+      "log": ".release/registry-contract-8cf7b5b/local-pack.log",
+      "logSha256": "de613f0ef21a4d930323f46d7c066997212ffefa26aaf82cffaa3398f73fe28f"
+    },
+    {
+      "command": "npm exec -- node scripts/pack-sveltekit.mjs --consumer-fixture support",
+      "exitCode": 0,
+      "log": ".release/registry-contract-8cf7b5b/sveltekit-support.log",
+      "logSha256": "0df86cb0e394f4ccf089be0fd78bb7c84af7d8b1de23ebc4f3fa048c960e3456"
+    },
+    {
+      "command": "npm run verify:registry:alpha4",
+      "exitCode": 0,
+      "log": ".release/registry-contract-8cf7b5b/registry-alpha4.log",
+      "logSha256": "ee841a28ff37f6a5ca0550cfeee7dd72cc00b1737cbcc9ee9b94b5b4baf02435"
+    }
+  ],
+  "helperTests": {
+    "command": "node --test scripts/test/registry-consumer-contract.test.mjs scripts/test/registry-release.test.mjs",
+    "exitCode": 0,
+    "passed": 3
+  },
+  "sourceHashes": {
+    "scripts/registry-consumer-contract.mjs": "f53204796b86ec1daad07db535511bd63ebd220b0a4c5e65d3badf1fc972996c",
+    "scripts/test/registry-consumer-contract.test.mjs": "05973a7ea0ef1caf8bd95690d26115c953fd3843cd729e4e7fe2df7becbbd746",
+    "scripts/pack-smoke.mjs": "3deda298812574467d573f9c7288107024ecce4e3546cbfaca007626890d7331",
+    "scripts/pack-sveltekit.mjs": "a92e473fe065a26807f5e83dd5c9f3631886d41f417f7b155fd597a066f3e48a",
+    "scripts/pack-fixtures/support-report.mjs": "9417a6c1321073eeccdcafa57b08d6f69930ee72e9441f64b5524d2b85cd098a",
+    "scripts/pack-fixtures/sync-state.mjs": "d9e3e5b1ffc2da1fc23fddcb032961e1f67a92e974d6a4ac4eb7b635de0b53e1",
+    "package.json": "a6e2041d9e26a2948eb8f67d6fdb64fc0653fdfc5ad37798766ae428fa0c8801",
+    "docs/09-release.md": "85b4b4fe58be7500d5c6da87b610ef4e958b30af69c6073e14d812c535c9dd21",
+    "releases/0.1.0-alpha.5-plan.md": "2b5f620a1b6df25212fc8dfa6db297c0f1b1928504710e37ad14e4c1d872df0b",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/.npmrc": "0ed44e7d606cd7a9eba915a10f13a13a09ea85e4b2bb4415bb0c481dbdcded51",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/fixture.json": "c083bb48f3c09bc936a1582afd1d86f89dfd311ab51ef12b6411ecb00819bd0e",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/locales/en/demo.json": "be95e4615057b862d98b6f9aabf0e833f48a48a0e3f8e3d15c2e9ba070e01391",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/locales/ko/demo.json": "1d6f072fa90f1836934a2295a2bfc062087b2a2a430efceb5c0fc62a474ea9d2",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/package.json": "9155e20939d0cc372ab9185dbddad074276bb38fc1c02563275ff38faea83b90",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/app.d.ts": "078c1fb36503b5b5c73b694d6b27f6937157d0ee850adf970283ee883138c63f",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/app.html": "49d8548234dc55164af8cc5e71bc2114a8b5b4a59d977a840bb51c219235ee3f",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/hooks.server.ts": "6328889faa86402d7023ada517d1056cc694c419424e210c7e28642193b790dc",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/client-connection.ts": "3349d55ff05a1be3997aba05dd2875bf8369d271e001ba9e2456e89f102d6d49",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/demo-messages.ts": "197d9379e071eda5fb4f1ad2d60b9a86570e5cd200b9c4c286c8248a7105fca1",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/dev-status.ts": "960d01bdc6ca90de3a241fb1e9d2fe461783044dfb559cf045a1c66809dfe695",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/generated.d.ts": "6fa6b8738e09e9da1446d683f96d46465d36fbea9aa13330685b04e1e0658a0a",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/i18n.ts": "3a4b3bcfa7fb549c3870e1afb5e054dd7e3d9186056783f6ac0cd56a5074c334",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/style.css": "f76cbd72253a472cfae5819755689cc989c11714fd44f46697675d67c7ef377c",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/SupportPanel.svelte": "3acb585c4686b831e9d0e0a5cb5a5a3bc7619761aa726afd7bca87ee16f87bbb",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/Workbench.svelte": "020d46f73382b8de201a9ee0bac3ffcb1fc78d8861ca2dfb290d6c9eea4d11b1",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/routes/(saylo)/+layout.server.ts": "195f89472ff61ca3324ef908823390626b9cdf34ceafeeeb4392f60003bb972f",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/routes/(saylo)/+layout.svelte": "ecd6eb4954b825492d0c75c3d57c02151809712242c72eda498554827bf71d52",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/routes/(saylo)/+page.svelte": "720b9a6d2c6cba620600c94521b9abe3318b0d4d227f586d83a25a1200d80fa0",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/routes/(saylo)/about/+page.svelte": "455aef36c519c733cb6b5e30017b146c1891a36fb2ca0f3c4b7043a110b27e02",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/routes/plain/+page.svelte": "23045fe655aeb8b23ff3a08f1fe93885629ab7ba041d7c91caabd1cbb36acc0e",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/tsconfig.json": "42e1c04c63530b0155308c64b8c60f614a6bd079bdf0002cfc5f10c7ba0ba078",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/verify-ssr.mjs": "cb805d6126b2e28dc22fb11beaceafed17c7b284c601b0f2d4ac3742b36e46f9",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/vite.config.mjs": "156dee145b5604728f73786ef6d1da58778514d83e8ed17b754fad5eba784a5d"
+  },
+  "initialProbeCorrection": "The first new eager probe expected a stopped callback after disconnect. Source contract suppresses observations after release; corrected probe requires no additional callbacks and retained last report observation.",
+  "limits": [
+    "No original version bump, push, publication or workflow dispatch.",
+    "New consumer ran against local unpublished tarballs with unchanged alpha.4 metadata. It is not registry alpha.5 acceptance.",
+    "Registry alpha.4 verification used existing CI-approved integrity.",
+    "Registry alpha.5 commands require a future CI-approved releases/0.1.0-alpha.5.json; no approval manifest was fabricated.",
+    "SvelteKit production browser exercised reports; lazy synchronization observations were tested through its dev SSR connection harness, not the production browser."
+  ]
+}

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { checkRelease, packageIds, releaseInput } from './release-check.mjs';
 import { approvedRegistryRelease, verifyRegistryVersion } from './registry-release.mjs';
 import { packageDocPaths, verifyPackageDocs } from './build-package-docs.mjs';
+import { registryConsumerContract } from './registry-consumer-contract.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const fixtures = fileURLToPath(new URL('./pack-fixtures/', import.meta.url));
@@ -24,6 +25,7 @@ const fromRegistry = values.registry;
 assert.ok(!(saveRelease && fromRegistry), 'Registry verification cannot replace local release artifacts.');
 assert.ok(fromRegistry || !values['registry-version'], '--registry-version requires --registry.');
 const bootstrap = fromRegistry ? await approvedRegistryRelease(values['registry-version']) : [];
+const supportChecks = !fromRegistry || registryConsumerContract(values['registry-version']).support;
 // Historical registry checks use their approved package set, excluding unpublished additions.
 const names = fromRegistry ? bootstrap.map(pack => pack.name) : Object.keys(packages);
 const hasSvelte = names.includes('@0disoft/saylo-svelte');
@@ -89,7 +91,7 @@ try {
     const files = new Set(pack.files.map(file => file.path));
     assert.ok(files.has('README.md'), `${pack.name} is missing its README`);
     assert.ok(files.has('LICENSE') && files.has('NOTICE'), `${pack.name} needs license files`);
-    const docs = new Set(pack.name === '@0disoft/saylo-vite' && (!fromRegistry || files.has('docs/manifest.json'))
+    const docs = new Set(pack.name === '@0disoft/saylo-vite' && (supportChecks || files.has('docs/manifest.json'))
       ? packageDocPaths.map(file => `docs/${file}`) : []);
     for (const file of docs) assert.ok(files.has(file), `${pack.name} missing bundled document ${file}`);
     assert.ok([...files].every(file => file.startsWith('dist/') || docs.has(file)
@@ -159,7 +161,7 @@ try {
       assert.equal(await readFile(path.join(installed, 'LICENSE'), 'utf8'), license);
       assert.equal(await readFile(path.join(installed, 'NOTICE'), 'utf8'), notice);
     }
-    if (!fromRegistry && language === 'js') {
+    if (supportChecks && language === 'js') {
       const cli = path.join(app, 'node_modules/@0disoft/saylo-typegen/dist/cli.js');
       const help = await exec(process.execPath, [cli, '-h'], { cwd: app, env: childEnv, windowsHide: true });
       assert.equal(help.stderr, '');
@@ -189,9 +191,10 @@ try {
         await cp(path.join(fixtures, 'svelte-smoke.mjs'), path.join(app, 'svelte-smoke.mjs'));
       }
     }
-    if (!fromRegistry) {
+    if (supportChecks) {
       await cp(path.join(fixtures, 'support-report.mjs'), path.join(app, `src/support-report.${language}`));
       await cp(path.join(fixtures, 'support-report.mjs'), path.join(app, 'support-report.mjs'));
+      await cp(path.join(fixtures, 'sync-state.mjs'), path.join(app, 'sync-state.mjs'));
     }
     console.log((await npm(['run', 'typegen'], app)).trim());
     assert.match(await readFile(path.join(app, 'generated.d.ts'), 'utf8'), /"demo:items": \{ "count": number;/);
@@ -207,7 +210,9 @@ try {
     }
     const smoke = await exec(process.execPath, ['smoke.mjs'], { cwd: app, windowsHide: true, env: childEnv });
     console.log(smoke.stdout.trim());
-    if (!fromRegistry) console.log((await exec(process.execPath, ['support-report.mjs'],
+    if (supportChecks) console.log((await exec(process.execPath, ['support-report.mjs'],
+      { cwd: app, windowsHide: true, env: childEnv })).stdout.trim());
+    if (supportChecks) console.log((await exec(process.execPath, ['sync-state.mjs'],
       { cwd: app, windowsHide: true, env: childEnv })).stdout.trim());
     console.log((await npm(['run', 'build'], app)).trim());
     const bundle = JSON.parse(await readFile(path.join(app, 'dist/.vite/manifest.json'), 'utf8'));

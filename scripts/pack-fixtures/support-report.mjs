@@ -1,4 +1,5 @@
-import { createSupportReport, createSupportRecorder } from '@0disoft/saylo-vite/client';
+import { createSupportReport, createSupportRecorder, connectDev } from '@0disoft/saylo-vite/client';
+import { createStore } from '@0disoft/saylo-core';
 
 const recorder = createSupportRecorder({ runtime: 'node', node: '24.18.0' });
 recorder.onDiagnostic({ message: 'PRIVATE_FIXTURE', operation: 'handshake', diagnostics: [] });
@@ -14,5 +15,12 @@ export function checkSupportTypes() {
   report.events.push({});
   // @ts-expect-error arbitrary environment fields are not accepted
   createSupportReport({ environment: { token: 'PRIVATE_FIXTURE' } });
+  const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [] });
+  const stop = connectDev(store, { onSyncState: state => {
+    recorder.onSyncState(state);
+    // @ts-expect-error synchronization states are immutable
+    state.status = 'failed';
+  } });
+  stop(); store.dispose();
 }
 console.log('[pack] Support report exports, sanitized observations and clear passed.');
