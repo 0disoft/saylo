@@ -1,0 +1,159 @@
+{
+  "observedOn": "2026-10-12",
+  "baseCommit": "a16b811",
+  "updates": [
+    {
+      "file": "package-lock.json",
+      "changes": [
+        {
+          "package": "@formatjs/icu-messageformat-parser",
+          "from": "3.5.20",
+          "to": "3.5.21"
+        },
+        {
+          "package": "@types/node",
+          "from": "24.19.1",
+          "to": "24.19.2"
+        },
+        {
+          "package": "intl-messageformat",
+          "from": "12.1.2",
+          "to": "12.1.3"
+        },
+        {
+          "package": "vite",
+          "from": "8.3.2",
+          "to": "8.3.4"
+        }
+      ]
+    },
+    {
+      "file": "examples/npm/package-lock.json",
+      "changes": [
+        {
+          "package": "vite",
+          "from": "8.3.3",
+          "to": "8.3.4"
+        }
+      ]
+    },
+    {
+      "file": "examples/sveltekit/package-lock.json",
+      "changes": [
+        {
+          "package": "@types/node",
+          "from": "24.19.1",
+          "to": "24.19.2"
+        }
+      ]
+    }
+  ],
+  "audits": [
+    {
+      "directory": ".",
+      "exitCode": 0,
+      "report": {
+        "auditReportVersion": 2,
+        "vulnerabilities": {},
+        "metadata": {
+          "vulnerabilities": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "dependencies": {
+            "prod": 51,
+            "dev": 70,
+            "optional": 47,
+            "peer": 0,
+            "peerOptional": 0,
+            "total": 147
+          }
+        }
+      }
+    },
+    {
+      "directory": "examples/npm",
+      "exitCode": 0,
+      "report": {
+        "auditReportVersion": 2,
+        "vulnerabilities": {},
+        "metadata": {
+          "vulnerabilities": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "dependencies": {
+            "prod": 7,
+            "dev": 42,
+            "optional": 27,
+            "peer": 0,
+            "peerOptional": 0,
+            "total": 48
+          }
+        }
+      }
+    },
+    {
+      "directory": "examples/sveltekit",
+      "exitCode": 0,
+      "report": {
+        "auditReportVersion": 2,
+        "vulnerabilities": {},
+        "metadata": {
+          "vulnerabilities": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "dependencies": {
+            "prod": 27,
+            "dev": 64,
+            "optional": 27,
+            "peer": 0,
+            "peerOptional": 0,
+            "total": 90
+          }
+        }
+      }
+    }
+  ],
+  "remoteObservation": {
+    "dashboard": "https://github.com/0disoft/saylo/issues/1",
+    "sameMajorAwaitingApproval": [
+      "@types/node",
+      "vite"
+    ],
+    "repositoryConfigFound": false,
+    "bot": "Renovate"
+  },
+  "limits": [
+    "npm audit reports registry-known dependency advisories at observation time; no source security scan",
+    "No major upgrade; SvelteKit TypeScript6 retained; no package manifest or release version changed",
+    "No push, publish, issue edit or bot activation"
+  ],
+  "verification": [
+    {
+      "command": "npm run check",
+      "result": "passed after root four patch refresh"
+    },
+    {
+      "command": "npm run verify:demo:npm",
+      "result": "passed; npm example production build and 3 lifecycle regressions"
+    },
+    {
+      "command": "npm run build:sveltekit && npm run verify:sveltekit",
+      "result": "passed; svelte-check 0 errors/warnings, production client/SSR build, concurrent ko/en SSR, matching boot/fallback and listener lifecycle"
+    }
+  ]
+}
