@@ -104,6 +104,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 75. [alpha.4 릴리스](../releases/0.1.0-alpha.4.md) — CI·OIDC 게시·승인 integrity·registry JS/TS 및 SvelteKit 소비 인수
 
 개발 클라이언트의 handshake 상태 계약은 [dev-sync-state.md](dev-sync-state.md)에 있다.
+빈 폴더에서 npm 게시본으로 시작하는 React 안내는 [getting-started-react.md](getting-started-react.md)에 있다.
 문의용 진단 JSON의 수집·검토·초기화와 제출 절차는 [support-report.md](support-report.md)에 있다. 두 API 모두 현재 로컬 미게시 변경이다.
 
 검증과 로드맵의 기존 상세 이력은 [06-validation-history.md](06-validation-history.md)에 보존한다.

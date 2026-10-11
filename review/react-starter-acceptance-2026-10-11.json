@@ -1,0 +1,30 @@
+{
+  "observedOn": "2026-10-11",
+  "document": "docs/getting-started-react.md",
+  "testedDocumentSha256": "954356d41a21589ea80dc20ef6f07f046a479bc71f7dbcce3fc123870cfc86c9",
+  "laterProseOnlyChange": "Removed the unverified transformer implementation name; executable code blocks unchanged",
+  "command": "npm run verify:starter:react",
+  "exitCode": 0,
+  "standaloneFiles": 7,
+  "installed": {
+    "@0disoft/saylo-core": "0.1.0-alpha.4",
+    "@0disoft/saylo-react": "0.1.0-alpha.4",
+    "@0disoft/saylo-vite": "0.1.0-alpha.4",
+    "vite": "8.3.4"
+  },
+  "developmentChromium": {
+    "checks": ["English first render", "ko/en selection", "English JSON edit", "ja locale addition and selection", "invalid ICU retains last good translation and reports error", "file repair clears diagnostic", "input DOM identity, controlled state, native dialog and focus preservation"],
+    "runtimeErrors": []
+  },
+  "productionChromium": {
+    "checks": ["document tsc and Vite build", "English first render", "ko/en selection", "input state and native dialog behavior"],
+    "runtimeErrors": []
+  },
+  "environment": { "node": "24.18.0", "browser": "HeadlessChrome/154.0.0.0", "platform": "Windows" },
+  "verificationToolFixes": [
+    "Exclude Chromium profiles from the Vite watcher",
+    "Run Vite in a worker process so Windows releases loaded native modules before deleting the consumer"
+  ],
+  "cleanup": "Final command exited successfully after browser/server/worker shutdown and temporary consumer removal; two earlier interrupted consumers were removed by deleting their single remaining native module and empty directories",
+  "limits": ["No SSR hydration or cross-browser matrix", "Optional typegen procedure is not part of this command", "Published APIs only; no unpublished diagnostic API", "No push or publish"]
+}
