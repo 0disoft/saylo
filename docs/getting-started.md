@@ -63,11 +63,11 @@ export default defineConfig({
   </head>
   <body>
     <h1 data-i18n="demo:heading"></h1>
-    <select id="locale" aria-label="Locale"></select>
+    <select id="locale" aria-label="Locale" lang="en"></select>
     <p data-i18n="demo:greeting"></p>
     <label for="name" data-i18n="demo:nameLabel"></label>
     <input id="name" value="Saylo" autocomplete="off" />
-    <p id="status" role="status"></p>
+    <p id="status" role="status" lang="ko"></p>
     <script type="module" src="/main.js"></script>
   </body>
 </html>
@@ -113,7 +113,11 @@ function render(snapshot) {
     // 로케일 목록이 실제로 바뀔 때만 options를 갈아 끼운다.
     if (nextList !== localeList) {
       localeList = nextList;
-      localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => new Option(locale, locale)));
+      localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => {
+        const option = new Option(locale, locale);
+        option.lang = locale;
+        return option;
+      }));
     }
     localeSelect.value = snapshot.locale;
     document.documentElement.lang = snapshot.locale;

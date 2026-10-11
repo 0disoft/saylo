@@ -36,7 +36,11 @@ function render(snapshot) {
     for (const [node, text] of translations) node.textContent = text;
     const nextList = snapshot.availableLocales.join(',');
     if (nextList !== localeList) {
-      localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => new Option(locale, locale)));
+      localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => {
+        const option = new Option(locale, locale);
+        option.lang = locale;
+        return option;
+      }));
       localeList = nextList;
     }
     localeSelect.value = snapshot.locale;

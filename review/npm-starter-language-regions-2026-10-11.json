@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-11",
+  "baselineCommit": "cdd2d59",
+  "changes": "English Locale accessible name remains en; each locale option is tagged with its locale; npm demo English status stays en and vanilla starter Korean status stays ko independently of translated content",
+  "verification": {
+    "npmDemo": { "command": "npm run verify:demo:npm", "exitCode": 0, "buildModules": 45, "tests": 3, "method": "Production bundle executed in jsdom; checks ko/en switching, fixed English regions, input preservation, page cleanup and render recovery" },
+    "vanillaStarter": {
+      "command": "npm run verify:starter", "exitCode": 0, "files": 6,
+      "documentSha256": "c2319861e00af04c32b1b02c022bad162b1832138ec587e87b1a249940940d1b",
+      "installed": { "@0disoft/saylo-core": "0.1.0-alpha.4", "@0disoft/saylo-vite": "0.1.0-alpha.4", "vite": "8.3.4" },
+      "method": "Extracted document code to a temporary folder outside the repository; public registry install, production build, jsdom language and input checks, typegen and TS/checkJs invalid-key/argument assertions",
+      "cleanup": "Independent temporary folder removed"
+    }
+  },
+  "limits": ["No new actual-browser or screen-reader check in this slice", "No public API, version, push or publication changes"]
+}

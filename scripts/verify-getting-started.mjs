@@ -47,6 +47,11 @@ try {
     const { document, Event } = dom.window;
     assert.equal(document.querySelector('h1').textContent, 'Saylo from npm');
     assert.equal(document.querySelector('#status').textContent, '운영 카탈로그');
+    const language = selector => document.querySelector(selector).closest('[lang]').lang;
+    assert.equal(language('h1'), 'en');
+    assert.equal(language('#status'), 'ko');
+    assert.equal(language('#locale'), 'en');
+    for (const option of document.querySelector('#locale').options) assert.equal(option.lang, option.value);
     const name = document.querySelector('#name');
     name.value = 'First user';
     name.dispatchEvent(new Event('input', { bubbles: true }));
@@ -57,6 +62,9 @@ try {
     assert.equal(document.querySelector('h1').textContent, 'npm에서 받은 Saylo');
     assert.ok(document.querySelector('[data-i18n="demo:greeting"]').textContent.includes('First user'));
     assert.equal(name.value, 'First user');
+    assert.equal(language('h1'), 'ko');
+    assert.equal(language('#status'), 'ko');
+    assert.equal(language('#locale'), 'en');
   } finally { dom.window.close(); }
   await npm(['exec', '--yes', '--package=@0disoft/saylo-typegen@alpha', '--', 'saylo-typegen', '--locales-dir', 'locales', '--base-locale', 'ko', '--out-file', 'generated.d.ts']);
   assert.match(await readFile(path.join(root, 'generated.d.ts'), 'utf8'), /AppSchema/);
@@ -76,7 +84,7 @@ try {
     documentSha256: createHash('sha256').update(doc).digest('hex'),
     files: files.length,
     installed: Object.fromEntries(['@0disoft/saylo-core', '@0disoft/saylo-vite', 'vite'].map(name => [name, lock.packages[`node_modules/${name}`].version])),
-    verified: ['public-registry installation', 'production build', 'English first render', 'locale selection', 'input interpolation and preservation', 'typegen CLI', 'TS and checkJs schema examples reject invalid keys and missing arguments'],
+    verified: ['public-registry installation', 'production build', 'English first render', 'locale selection', 'translated and fixed language regions', 'input interpolation and preservation', 'typegen CLI', 'TS and checkJs schema examples reject invalid keys and missing arguments'],
     limits: ['Live dev updates and actual browser rendering need separate verification.']
   }, null, 2));
 } finally {

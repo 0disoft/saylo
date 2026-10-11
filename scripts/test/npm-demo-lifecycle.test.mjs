@@ -29,10 +29,17 @@ test('cached page retains input and live locale controls after history return', 
   select.dispatchEvent(new window.Event('change', { bubbles: true }));
   assert.equal(document.documentElement.lang, 'ko');
   assert.equal(document.querySelector('h1').textContent, 'npm으로 설치해 쓰는 Saylo');
+  const language = selector => document.querySelector(selector).closest('[lang]').lang;
+  for (const selector of ['h1', '#name', '#dialog-title']) assert.equal(language(selector), 'ko', selector);
+  for (const selector of ['#locale', '#status', '#dialog-status']) assert.equal(language(selector), 'en', selector);
+  for (const option of select.options) assert.equal(option.lang, option.value);
   assert.equal(name.value, 'Returning user');
   name.value = 'Back again';
   name.dispatchEvent(new window.Event('input', { bubbles: true }));
   assert.ok(document.querySelector('[data-i18n="demo:greeting"]').textContent.includes('Back again'));
+  select.value = 'en';
+  select.dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal(language('h1'), 'en');
 });
 
 test('discarded page releases its handlers and repeated cleanup stays safe', t => {
