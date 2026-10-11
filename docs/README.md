@@ -8,6 +8,8 @@
 
 의존성의 패치 갱신·Renovate 승인·릴리스 audit 절차는 [의존성 갱신](dependency-updates.md)에 있다.
 
+개발 예제의 모달·언어별 자동 접근성 검사는 [데모 접근성 검사](demo-accessibility.md)에 있다.
+
 ## 읽는 순서
 
 빈 폴더에서 게시 패키지를 설치해 시작하는 절차는 [getting-started.md](getting-started.md)에 있다.

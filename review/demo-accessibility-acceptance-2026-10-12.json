@@ -1,0 +1,523 @@
+{
+  "observedOn": "2026-10-12",
+  "baseCommit": "9cb1816",
+  "before": [
+    {
+      "framework": "vanilla",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25
+        }
+      ]
+    },
+    {
+      "framework": "react",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25
+        }
+      ]
+    },
+    {
+      "framework": "svelte",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25
+        }
+      ]
+    },
+    {
+      "framework": "npm",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 35
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [
+            {
+              "id": "color-contrast",
+              "impact": "serious",
+              "help": "Elements must meet minimum color contrast ratio thresholds",
+              "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+              "nodes": [
+                {
+                  "target": [
+                    "#close-dialog"
+                  ],
+                  "html": "<button id=\"close-dialog\" type=\"button\" class=\"secondary\" data-i18n=\"demo:closeDialog\">닫기</button>",
+                  "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #2f7a63, background color: #e8f1ec, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            }
+          ],
+          "incomplete": [],
+          "passedRuleCount": 25
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 35
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [
+            {
+              "id": "color-contrast",
+              "impact": "serious",
+              "help": "Elements must meet minimum color contrast ratio thresholds",
+              "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+              "nodes": [
+                {
+                  "target": [
+                    "#close-dialog"
+                  ],
+                  "html": "<button id=\"close-dialog\" type=\"button\" class=\"secondary\" data-i18n=\"demo:closeDialog\">Close</button>",
+                  "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #2f7a63, background color: #e8f1ec, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            }
+          ],
+          "incomplete": [],
+          "passedRuleCount": 25
+        }
+      ]
+    },
+    {
+      "framework": "sveltekit",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 39
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 26
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 39
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 26
+        }
+      ]
+    }
+  ],
+  "after": [
+    {
+      "framework": "vanilla",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38,
+          "secondaryColors": null
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25,
+          "secondaryColors": null
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38,
+          "secondaryColors": null
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25,
+          "secondaryColors": null
+        }
+      ]
+    },
+    {
+      "framework": "react",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38,
+          "secondaryColors": null
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25,
+          "secondaryColors": null
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38,
+          "secondaryColors": null
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25,
+          "secondaryColors": null
+        }
+      ]
+    },
+    {
+      "framework": "svelte",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38,
+          "secondaryColors": null
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25,
+          "secondaryColors": null
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 38,
+          "secondaryColors": null
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25,
+          "secondaryColors": null
+        }
+      ]
+    },
+    {
+      "framework": "npm",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 35,
+          "secondaryColors": {
+            "foreground": "rgb(36, 97, 78)",
+            "background": "rgb(232, 241, 236)"
+          }
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25,
+          "secondaryColors": {
+            "foreground": "rgb(36, 97, 78)",
+            "background": "rgb(232, 241, 236)"
+          }
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 35,
+          "secondaryColors": {
+            "foreground": "rgb(36, 97, 78)",
+            "background": "rgb(232, 241, 236)"
+          }
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 25,
+          "secondaryColors": {
+            "foreground": "rgb(36, 97, 78)",
+            "background": "rgb(232, 241, 236)"
+          }
+        }
+      ]
+    },
+    {
+      "framework": "sveltekit",
+      "axeVersion": "4.14.0",
+      "viewport": {
+        "width": 1182,
+        "height": 804
+      },
+      "states": [
+        {
+          "locale": "ko",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 39,
+          "secondaryColors": null
+        },
+        {
+          "locale": "ko",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 26,
+          "secondaryColors": null
+        },
+        {
+          "locale": "en",
+          "dialog": false,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 39,
+          "secondaryColors": null
+        },
+        {
+          "locale": "en",
+          "dialog": true,
+          "violations": [],
+          "incomplete": [],
+          "passedRuleCount": 26,
+          "secondaryColors": null
+        }
+      ]
+    }
+  ],
+  "scope": "Rendered demo ko/en pages and open/closed dialogs with visible support panel; automated axe checks only",
+  "limits": [
+    "No screen-reader speech observation, browser zoom or keyboard-only certification",
+    "Dev rendering only; installed npm demo uses its existing published dependencies"
+  ],
+  "initialCommandExit": 1,
+  "cleanupAfterBaseline": {
+    "browserProfilesRemaining": 0,
+    "temporarySvelteKitCopyRemoved": true
+  },
+  "state": "local fix and automated rendered demo checks verified",
+  "verification": [
+    {
+      "command": "node scripts/verify-demo-accessibility.mjs (before)",
+      "exitCode": 1,
+      "result": "2 color contrast violations in npm ko/en open dialogs; other 18 states no violations"
+    },
+    {
+      "command": "npm run verify:demo:a11y (after)",
+      "exitCode": 0,
+      "result": "20 ko/en dialog states, 0 violations and 0 incomplete rules"
+    },
+    {
+      "command": "npm run verify:boundaries",
+      "exitCode": 0,
+      "result": "source boundaries unchanged; 7 regressions passed"
+    },
+    {
+      "command": "npm run verify:demo:npm",
+      "exitCode": 0,
+      "result": "production CSS/client build and 3 lifecycle regressions passed"
+    }
+  ],
+  "secondaryButtonContrast": {
+    "before": 4.46,
+    "after": 6.295377019236906,
+    "afterColorsFromChromium": {
+      "foreground": [
+        36,
+        97,
+        78
+      ],
+      "background": [
+        232,
+        241,
+        236
+      ]
+    },
+    "minimumForReportedRule": 4.5
+  },
+  "dependency": {
+    "name": "axe-core",
+    "version": "4.14.0",
+    "range": "4",
+    "developmentOnly": true
+  },
+  "optionalCommand": "npm run verify:demo:a11y",
+  "packageAndCiLimits": [
+    "No CI job or general check change",
+    "No runtime dependencies, version bump, push or publication",
+    "npm example rendered against its installed alpha.4 libraries; other examples latest local libraries"
+  ],
+  "sourceHashes": {
+    "scripts/demo-accessibility-browser.mjs": "7caab23f566ed5fd247acc3832b96360f746c3758d78fbdedfeecc27211ecd46",
+    "scripts/verify-demo-accessibility.mjs": "4611f0e8a32521aaaedda9604c94e966e8fcb80a720da6998b6a55550f5e6510",
+    "examples/npm/style.css": "861b5599834a9c61411993fd7af91c0efee3a55f06cde8bca909d6624caef1fa"
+  },
+  "cleanupAfterFinal": {
+    "browserProfilesRemaining": 0,
+    "temporarySvelteKitCopiesRemaining": 0
+  }
+}

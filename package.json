@@ -50,7 +50,8 @@
     "build:docs": "node scripts/build-package-docs.mjs",
     "verify:docs": "node scripts/build-package-docs.mjs --check",
     "verify:boundaries": "node scripts/check-package-boundaries.mjs && node --test scripts/test/package-boundaries.test.mjs",
-    "audit:dependencies": "node scripts/audit-dependencies.mjs"
+    "audit:dependencies": "node scripts/audit-dependencies.mjs",
+    "verify:demo:a11y": "npm run build && node scripts/verify-demo-accessibility.mjs"
   },
   "devDependencies": {
     "@babel/parser": "8",
@@ -58,6 +59,7 @@
     "@types/node": "24",
     "@types/react": "19",
     "@types/react-dom": "19",
+    "axe-core": "4",
     "jsdom": "30",
     "react": "19",
     "react-dom": "19",

@@ -60,7 +60,7 @@ button {
   cursor: pointer;
 }
 
-button.secondary { color: #2f7a63; background: #e8f1ec; }
+button.secondary { color: #24614e; background: #e8f1ec; }
 button:focus-visible { outline: 3px solid #2f7a63; outline-offset: 2px; }
 
 .hint { margin: 12px 0 0; font-size: 12px; line-height: 1.65; color: #586c61; }
