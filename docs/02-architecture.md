@@ -101,6 +101,31 @@ React 훅 밖에서 일반 `t(...)`로 얻은 결과 문자열은 자동으로 �
 
 remount 방지는 Saylo가 소유한 provider identity와 root key를 유지하는 범위에 한정된다. 소비자가 locale을 React key로 써서 화면을 다시 만들거나 리렌더 구조를 바꾸면 보장 범위 밖이다. 문구 길이 변화로 생기는 text reflow 때문에 스크롤 위치가 밀리는 것과, full reload로 입력값이 사라지는 상태 손실은 다른 문제다. Saylo가 줄이는 것은 후자이고, 전자는 레이아웃 설계로 다룬다.
 
+## 패키지 경계 검사
+
+`scripts/check-package-boundaries.mjs`는 `packages/*/package.json`과 `packages/*/src` 소스를 읽어 패키지 의존 방향과 공개 엔트리를 검사한다. 결과는 요약 JSON으로 출력하고, 위반이 있으면 exit 1로 끝난다.
+
+| 패키지 | 의존할 수 있는 Saylo 패키지 |
+| --- | --- |
+| core | 없음 |
+| react·svelte·typegen | core |
+| vite | core, typegen |
+
+- 선언: `dependencies`·`peerDependencies`에 위 방향을 어기는 Saylo 패키지가 있으면 `DIRECTION`이다.
+- 공개 엔트리: 하위 경로 import는 대상 패키지 `exports`에 있는 엔트리만 쓴다. 없는 subpath는 `PRIVATE_EXPORT`, 실행 import인데 런타임 export가 없으면 `NO_RUNTIME_EXPORT`다. 선언하지 않은 외부 패키지 import는 `UNDECLARED`다.
+- 상대 경로: `../../core/src/index.js`처럼 다른 패키지 소스로 나가는 상대 import로 공개 경계를 우회하지 못한다(`PRIVATE_PATH`). 없는 로컬 소스는 `MISSING_SOURCE`다.
+- 브라우저 그래프: core·react·svelte 전체 소스와 Vite `./client` 엔트리를 루트로 실행 import·re-export·동적 import를 따라간다. 도달한 파일이 Node builtin을 실행 시점에 쓰면 `BROWSER_NODE`다. type-only 참조와 `.d.ts`는 경계와 선언을 검사하되 이 런타임 그래프에서는 제외한다.
+
+소스는 AST로 파싱해 리터럴 경로의 import·export·동적 import·`require`와 TS 타입 import를 참조로 읽는다. 주석과 문자열 안의 import 문은 세지 않는다. 모듈 경로가 리터럴이 아닌 computed import는 경계를 판정할 수 없으므로 `COMPUTED_IMPORT`로 실패시킨다.
+
+`npm run verify:boundaries`가 이 검사와 회귀 case 7개를 실행한다. 이 명령은 `npm run check`의 첫 단계이고, 기존 release workflow도 `npm run check`를 부르므로 릴리스 경로에 함께 들어간다. 새 CI job이나 워크플로는 추가하지 않았다.
+
+파서는 devDependency `@babel/parser` 8을 쓴다. 메이저 범위만 고정해 같은 메이저 업데이트는 따라가고, 배포 패키지의 실행 의존성은 바뀌지 않는다.
+
+이 검사는 저장소 안 소스의 정적 참조만 본다. `node_modules` 코드, 임의 `eval`, 문자열에서 생성되는 virtual module 코드, 외부 패키지가 끌고 오는 transitive runtime은 여기서 검증하지 않는다. 그 영역은 기존 production bundle·pack 검증이 보완한다.
+
+2026-10-12 로컬 결과는 패키지 5개, 소스 54개, 참조 240개, 브라우저 도달 파일 36개, 위반 0개다. 전체 `npm run check`도 통과했고, core에 임시 `node:fs` import를 넣으면 실제 CLI가 exit 1로 거부하는 것을 확인한 뒤 원본을 복원했다. [실행 근거](../review/package-boundaries-acceptance-2026-10-12.json)에 범위와 한계를 기록했다.
+
 ## 오류 처리 원칙
 
 파싱·검증 실패는 카탈로그를 오염시키지 않는다. 실패 시 유지·복구·진단 규칙은 [04-live-update-and-types.md](04-live-update-and-types.md)를 따른다.

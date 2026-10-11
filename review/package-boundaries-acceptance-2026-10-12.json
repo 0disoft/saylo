@@ -1,0 +1,45 @@
+{
+  "observedOn": "2026-10-12",
+  "baseCommit": "ccff67a",
+  "scope": "Package source imports and manifest dependencies; static development guard",
+  "implementation": "scripts/check-package-boundaries.mjs",
+  "regressionTests": "scripts/test/package-boundaries.test.mjs",
+  "checks": {
+    "violations": [],
+    "packages": 5,
+    "files": 54,
+    "references": 240,
+    "browserFiles": 36
+  },
+  "verification": [
+    {
+      "command": "npm run verify:boundaries",
+      "result": "passed; 7 focused regressions including TS-only imports, public exports, JSX resolution, Node traversal and invalid source"
+    },
+    {
+      "command": "npm run check",
+      "result": "passed; package builds, package tests, JS/TS consumers, React consumer and release/registry helper regressions"
+    },
+    {
+      "command": "node scripts/check-package-boundaries.mjs (temporary browser node:fs import)",
+      "exitCode": 1,
+      "diagnostic": "packages/core/src/index.ts:4:1 [BROWSER_NODE] node:fs is reachable from browser source packages/core/src/index.ts",
+      "result": "rejected; exact original source restored in finally"
+    }
+  ],
+  "integration": {
+    "command": "npm run verify:boundaries",
+    "runBy": "npm run check",
+    "workflow": ".github/workflows/release.yml existing check step",
+    "newCiJobs": 0,
+    "shippingDependenciesChanged": false,
+    "developmentParserRange": "8"
+  },
+  "sourceRestoredSha256": "1463dd264287f55ce5ea59adc6fb055b7374bb97de1c787130f1f37a7aae77c5",
+  "limits": [
+    "No scan of third-party node_modules or dependency runtime transitive edges",
+    "Generated virtual module strings, eval and custom loader execution are not interpreted",
+    "Source supports the repository TS/TSX files and current import export conditions; production bundle/pack checks still cover generated modules",
+    "No version bump, push, publish or CI dispatch"
+  ]
+}

@@ -30,7 +30,7 @@
     "verify:sveltekit": "npm --prefix examples/sveltekit run verify:ssr",
     "verify:pack:sveltekit": "npm run build && node scripts/pack-sveltekit.mjs",
     "test": "npm run build && npm run test --workspaces",
-    "check": "npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json && node --test scripts/test/verify-oidc.test.mjs scripts/test/registry-release.test.mjs",
+    "check": "npm run verify:boundaries && npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json && node --test scripts/test/verify-oidc.test.mjs scripts/test/registry-release.test.mjs",
     "release:check": "node scripts/release-check.mjs",
     "release:pack": "npm run build && node scripts/pack-smoke.mjs --save-release",
     "release:publish": "node scripts/release-publish.mjs",
@@ -48,9 +48,11 @@
     "verify:demo:svelte:recovery": "node scripts/verify-demo-recovery.mjs --framework svelte",
     "verify:demo:sveltekit:recovery": "node scripts/verify-sveltekit-recovery.mjs",
     "build:docs": "node scripts/build-package-docs.mjs",
-    "verify:docs": "node scripts/build-package-docs.mjs --check"
+    "verify:docs": "node scripts/build-package-docs.mjs --check",
+    "verify:boundaries": "node scripts/check-package-boundaries.mjs && node --test scripts/test/package-boundaries.test.mjs"
   },
   "devDependencies": {
+    "@babel/parser": "8",
     "@sveltejs/vite-plugin-svelte": "7",
     "@types/node": "24",
     "@types/react": "19",
