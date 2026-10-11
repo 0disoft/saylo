@@ -1,0 +1,57 @@
+{
+  "observedOn": "2026-10-12",
+  "baseCommit": "f588cae",
+  "baseline": {
+    "regressions": {
+      "tests": 2,
+      "passed": 0,
+      "failed": 2
+    },
+    "invalidOutputAndMissingInput": {
+      "exitCode": 1,
+      "stderr": "[saylo:typegen] ENOENT: no such file or directory, realpath 'C:\\Users\\cherr\\Documents\\workspace\\zerodi-wd1\\projects\\hobby\\opensource\\saylo\\.typegen-invalid-missing-folder'",
+      "finding": "Output suffix checked only after catalog disk scan; filesystem error masks invalid --out-file argument"
+    }
+  },
+  "state": "local implementation and independent tarballs verified; unpublished",
+  "after": {
+    "invalidOutputAndMissingInput": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "[saylo:typegen] --out-file must end in .d.ts.\nRun saylo-typegen --help for options and an example."
+    },
+    "verification": [
+      {
+        "command": "npm run build --workspace=@0disoft/saylo-typegen",
+        "result": "passed"
+      },
+      {
+        "command": "npm run test --workspace=@0disoft/saylo-typegen",
+        "result": "11 passed, including 2 new subprocess regression cases"
+      },
+      {
+        "command": "npm run typecheck:consumers --workspace=@0disoft/saylo-typegen",
+        "result": "passed"
+      },
+      {
+        "command": "npm run verify:boundaries",
+        "result": "0 source violations; 7 guard regressions passed"
+      },
+      {
+        "command": "npm run verify:pack",
+        "result": "passed after final README update; 5 packages installed independently in JS and TS apps, installed typegen -h, declared option/example output, README snippets, docs bundle, lazy production build and SSR verified"
+      }
+    ],
+    "unchangedContracts": [
+      "Existing writeGenerated .d.ts restriction remains",
+      "Fresh whole-catalog validation and atomic write preserve last-good output on catalog errors",
+      "No new public runtime API or dependency"
+    ]
+  },
+  "limits": [
+    "Local unpublished CLI changes; public alpha.4 not updated",
+    "No push, publish or remote CI run",
+    "Filesystem and catalog failures still report their original diagnostic, without mislabeling them as option errors"
+  ],
+  "sourceSha256": "abc9c4b3b65c74435b5e74383f76050d50040120bf4de0656de9eee9acee681b"
+}

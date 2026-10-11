@@ -95,3 +95,44 @@ test('CLI validates fresh disk catalogs before changing output', async t => {
   assert.equal(run().status, 1);
   assert.equal(await readFile(out, 'utf8'), before);
 });
+
+test('CLI help works without reading catalogs or writing an output', async t => {
+  const root = await directory(t);
+  const cli = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
+  for (const help of ['--help', '-h']) {
+    const result = spawnSync(process.execPath, [cli, help, '--locales-dir', path.join(root, 'missing')], { encoding: 'utf8', windowsHide: true });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stderr, '');
+    assert.match(result.stdout, /--out-file.*\.d\.ts/);
+    assert.match(result.stdout, /--help, -h/);
+    assert.match(result.stdout, /Example:/);
+    assert.deepEqual(await readdir(root), []);
+  }
+});
+
+test('CLI validates options before disk reads and preserves existing files on usage errors', async t => {
+  const root = await directory(t);
+  const missing = path.join(root, 'missing');
+  const output = path.join(root, 'generated.d.ts');
+  const catalog = path.join(root, 'demo.json');
+  await writeFile(output, 'Existing declaration');
+  await writeFile(catalog, '{"title":"Untouched"}');
+  const cli = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
+  const cases = [
+    { args: [], message: /required/ },
+    { args: ['--unknown'], message: /Unknown option/ },
+    { args: ['--locales-dir', missing, '--base-locale', 'ko', '--out-file', catalog], message: /--out-file must end in \.d\.ts/ },
+    { args: ['--locales-dir', missing, '--base-locale', 'not_a_locale', '--out-file', output], message: /--base-locale.*BCP.?47/ },
+  ];
+  for (const { args, message } of cases) {
+    const result = spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8', windowsHide: true });
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, '');
+    assert.match(result.stderr, message);
+    assert.match(result.stderr, /saylo-typegen --help/);
+    assert.doesNotMatch(result.stderr, /ENOENT|at file:\/\//);
+    assert.equal(await readFile(output, 'utf8'), 'Existing declaration');
+    assert.equal(await readFile(catalog, 'utf8'), '{"title":"Untouched"}');
+    assert.deepEqual((await readdir(root)).sort(), ['demo.json', 'generated.d.ts']);
+  }
+});

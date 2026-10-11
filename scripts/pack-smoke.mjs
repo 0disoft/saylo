@@ -159,6 +159,14 @@ try {
       assert.equal(await readFile(path.join(installed, 'LICENSE'), 'utf8'), license);
       assert.equal(await readFile(path.join(installed, 'NOTICE'), 'utf8'), notice);
     }
+    if (!fromRegistry && language === 'js') {
+      const cli = path.join(app, 'node_modules/@0disoft/saylo-typegen/dist/cli.js');
+      const help = await exec(process.execPath, [cli, '-h'], { cwd: app, env: childEnv, windowsHide: true });
+      assert.equal(help.stderr, '');
+      assert.match(help.stdout, /--help, -h/);
+      assert.match(help.stdout, /Example:/);
+      console.log('[pack] Installed typegen CLI help alias and option example passed.');
+    }
     if (hasSvelte) await cp(path.join(repository, 'packages/svelte/test/consumer-js.js'), path.join(app, 'src/consumer-svelte.js'));
     const hasSvelteSelectors = hasSvelte && (await readFile(path.join(app, 'node_modules/@0disoft/saylo-svelte/dist/index.d.ts'), 'utf8'))
       .includes('selectSvelteStore');

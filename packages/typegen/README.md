@@ -61,6 +61,26 @@ store.dispose();
 
 JS 프로젝트에서는 JSDoc `/** @type {import('@0disoft/saylo-core').Store<import('./generated.js').AppSchema>} */`로 같은 키·인자 검사를 연결한다.
 
+`--help`와 `-h`는 옵션과 예시를 stdout에 출력하고 exit 0으로 끝난다. 도움말은 카탈로그를 읽지 않고 출력 파일도 쓰지 않는다.
+
+```text
+Usage: saylo-typegen --locales-dir <directory> --base-locale <locale> --out-file <file.d.ts>
+
+Required options:
+  --locales-dir <directory>  Directory containing locale/namespace.json catalogs.
+  --base-locale <locale>     Base BCP 47 locale, for example ko or en-US.
+  --out-file <file.d.ts>     Generated declaration file; must end in .d.ts.
+
+  --help, -h                Show this help without reading or writing files.
+
+Example:
+  saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
+
+All catalogs are validated before writing. Invalid catalogs leave existing output unchanged.
+```
+
+필수 옵션이 빠졌거나, 모르는 옵션이거나, `--base-locale`이 BCP 47 형식이 아니거나, `--out-file`이 `.d.ts`로 끝나지 않으면 사용 오류다. 메시지와 `Run saylo-typegen --help for options and an example.` 힌트를 stderr에 쓰고 exit 1로 끝나며 stdout은 비어 있다. `--out-file` 확장자와 `--base-locale` 검사는 카탈로그를 디스크에서 읽기 전에 돌아서 잘못된 옵션이 파일 IO 전에 걸린다. 옵션을 고쳐 같은 명령을 다시 실행하면 된다. 출력 파일이 `.d.ts`만 되는 제한과 마지막 정상 출력 유지·원자적 교체 계약은 그대로다. 이 도움말과 조기 검사는 로컬 미게시 변경이고 `0.1.0-alpha.4` 게시본에는 없다.
+
 ## 빌드 순서
 
 순서는 typegen → tsc → vite다. Vite build는 소비자 TS 타입 검사를 하지 않으므로 tsc를 먼저 돌린다. Vite 플러그인에 `typegen: { outFile: 'generated.d.ts' }`를 주면 dev에서 초기 생성 뒤 배경으로 갱신하고, 문구만 바뀌면 선언을 다시 쓰지 않는다.
