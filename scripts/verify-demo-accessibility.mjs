@@ -11,6 +11,7 @@ const repository = fileURLToPath(new URL('..', import.meta.url));
 await mkdir(path.join(repository, '.release'), { recursive: true });
 const axe = await readFile(fileURLToPath(import.meta.resolve('axe-core/axe.min.js')), 'utf8');
 const probe = await readFile(new URL('./demo-accessibility-browser.mjs', import.meta.url), 'utf8');
+const contrastReview = await readFile(new URL('./demo-contrast-review.mjs', import.meta.url), 'utf8');
 const exec = promisify(execFile);
 const reports = [];
 const originalCwd = process.cwd();
@@ -67,9 +68,9 @@ try {
           { tag: 'script', attrs: { type: 'module', src: '/__saylo_a11y.mjs' }, injectTo: 'head' },
         ] } : {}),
         configureServer: instance => { instance.middlewares.use((req, res, next) => {
-          if (req.url === '/__saylo_axe.js' || req.url === '/__saylo_a11y.mjs') {
+          if (req.url === '/__saylo_axe.js' || req.url === '/__saylo_a11y.mjs' || req.url === '/__saylo_contrast.mjs') {
             res.setHeader('Content-Type', 'text/javascript');
-            res.end(req.url.endsWith('.js') ? axe : probe); return;
+            res.end(req.url.endsWith('.js') ? axe : req.url === '/__saylo_contrast.mjs' ? contrastReview : probe); return;
           }
           if (req.url !== '/__saylo_a11y_result') { next(); return; }
           if (req.method !== 'POST') { res.writeHead(405).end(); return; }

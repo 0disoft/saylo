@@ -1,0 +1,1379 @@
+{
+  "schema": "saylo.demo-contrast-review-acceptance/v1",
+  "observedAt": "2026-10-11T17:40:01.015Z",
+  "sourceCommit": "457be8af52c19a926ad0e797a8b1df6a9d1d4961",
+  "sourceHashes": {
+    "scripts/demo-contrast-review.mjs": "5eae3582d059b2f6325718d1bd9edfe722e970058c23e3f59036e625a6bb4608",
+    "scripts/demo-accessibility-browser.mjs": "62fb8d89d2a3f80023e090f3c4f4beaf976a60917b4227ff82449aa980ba236a",
+    "scripts/verify-demo-accessibility.mjs": "2df19ec1b7b87714a667c846666c3a158a5b1739ba27208690fe35d09e6895ea"
+  },
+  "originalObservation": "review/demo-page-zoom-acceptance-2026-10-12.json",
+  "primaryStates": 28,
+  "followupScans": 7,
+  "primaryViolations": 0,
+  "scrollRecoveredStates": 5,
+  "visibleButAxeUnresolvedStates": 2,
+  "runs": [
+    {
+      "zoom": 1,
+      "command": "node scripts/verify-demo-accessibility.mjs --framework npm --zoom 1",
+      "exitCode": 0,
+      "states": 4,
+      "artifact": {
+        "path": ".release/contrast-review-DK3Ldq/zoom-1.json",
+        "sha256": "5861a01e2fdaf8a13b16a2096c819058e76ffa6d536d0c1dc611d59c2956510b"
+      },
+      "log": {
+        "path": ".release/contrast-review-DK3Ldq/zoom-1.log",
+        "sha256": "68f7411ab385452c1ca9f025b35032212b4cddec1cec066a14651572993c42f2"
+      }
+    },
+    {
+      "zoom": 2,
+      "command": "node scripts/verify-demo-accessibility.mjs --framework npm --zoom 2",
+      "exitCode": 0,
+      "states": 4,
+      "artifact": {
+        "path": ".release/contrast-review-DK3Ldq/zoom-2.json",
+        "sha256": "122faf502846e95f22e956d9d76836633d9ac2fd3d23568f58f6f33b8c5de761"
+      },
+      "log": {
+        "path": ".release/contrast-review-DK3Ldq/zoom-2.log",
+        "sha256": "d0602e6c1be05c5d1a8b361de90c0ebc741b81ef1991b48724394a4cebb76807"
+      }
+    },
+    {
+      "zoom": 4,
+      "command": "node scripts/verify-demo-accessibility.mjs --zoom 4",
+      "exitCode": 0,
+      "states": 20,
+      "artifact": {
+        "path": ".release/contrast-review-DK3Ldq/zoom-4.json",
+        "sha256": "c568eece45a339b7618decb78f9675bdfef7ac36afa6824723bcb784e1073fd0"
+      },
+      "log": {
+        "path": ".release/contrast-review-DK3Ldq/zoom-4.log",
+        "sha256": "ca6c1b9c2a857efc54d0f1c1013b797073a411b5ba5e3d5cc825fbd1d937c486"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "zoom": 1,
+      "framework": "npm",
+      "locale": "ko",
+      "finding": "Text samples were visible and computed contrast passed; axe still returned incomplete.",
+      "before": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 307,
+          "scrollHeight": 307,
+          "colors": {
+            "foreground": "rgb(35, 48, 46)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 13.692402112368148,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            435,
+            354.5,
+            827,
+            418.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                435,
+                354.5,
+                822.921875,
+                386.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            },
+            {
+              "bounds": [
+                435,
+                386.5,
+                563.4375,
+                418.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 307,
+          "scrollHeight": 307,
+          "colors": {
+            "foreground": "rgb(35, 48, 46)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 13.692402112368148,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            435,
+            354.5,
+            827,
+            418.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                435,
+                354.5,
+                822.921875,
+                386.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            },
+            {
+              "bounds": [
+                435,
+                386.5,
+                563.4375,
+                418.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "originalIncomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "target": [
+                "#dialog-title"
+              ],
+              "html": "<h2 id=\"dialog-title\" data-i18n=\"demo:dialogTitle\">Zoom preview님, 입력한 내용을 확인해 주세요</h2>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+            }
+          ]
+        }
+      ],
+      "topScan": {
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+            "nodes": [
+              {
+                "target": [
+                  "#dialog-title"
+                ],
+                "html": "<h2 id=\"dialog-title\" data-i18n=\"demo:dialogTitle\">Zoom preview님, 입력한 내용을 확인해 주세요</h2>",
+                "summary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+              }
+            ]
+          }
+        ]
+      },
+      "originalResultsPreserved": true
+    },
+    {
+      "zoom": 2,
+      "framework": "npm",
+      "locale": "ko",
+      "finding": "Text samples were visible and computed contrast passed; axe still returned incomplete.",
+      "before": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 307,
+          "scrollHeight": 307,
+          "colors": {
+            "foreground": "rgb(35, 48, 46)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 13.692402112368148,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            115.75,
+            122.5,
+            507.75,
+            186.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                115.75,
+                122.5,
+                503.6640625,
+                154.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            },
+            {
+              "bounds": [
+                115.75,
+                154.5,
+                244.1875,
+                186.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 307,
+          "scrollHeight": 307,
+          "colors": {
+            "foreground": "rgb(35, 48, 46)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 13.692402112368148,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            115.75,
+            122.5,
+            507.75,
+            186.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                115.75,
+                122.5,
+                503.6640625,
+                154.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            },
+            {
+              "bounds": [
+                115.75,
+                154.5,
+                244.1875,
+                186.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "originalIncomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "target": [
+                "#dialog-title"
+              ],
+              "html": "<h2 id=\"dialog-title\" data-i18n=\"demo:dialogTitle\">Zoom preview님, 입력한 내용을 확인해 주세요</h2>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+            }
+          ]
+        }
+      ],
+      "topScan": {
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+            "nodes": [
+              {
+                "target": [
+                  "#dialog-title"
+                ],
+                "html": "<h2 id=\"dialog-title\" data-i18n=\"demo:dialogTitle\">Zoom preview님, 입력한 내용을 확인해 주세요</h2>",
+                "summary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+              }
+            ]
+          }
+        ]
+      },
+      "originalResultsPreserved": true
+    },
+    {
+      "zoom": 4,
+      "framework": "vanilla",
+      "locale": "en",
+      "finding": "Scroll-clipped text became visible; separate top-view axe scan passed.",
+      "before": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 104.25,
+          "clientHeight": 194,
+          "scrollHeight": 347,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            -55.25,
+            259,
+            -31.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                -55.25,
+                205.31640625,
+                -31.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        },
+        {
+          "selector": "span[data-message=\"demo:dialogNote\"]",
+          "scrollTop": 104.25,
+          "clientHeight": 194,
+          "scrollHeight": 347,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "SPAN",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "LABEL",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            -7.5,
+            259,
+            10
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                -7.5,
+                163.0390625,
+                10
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 347,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            49,
+            259,
+            72.75
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                49,
+                205.31640625,
+                72.75
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        },
+        {
+          "selector": "span[data-message=\"demo:dialogNote\"]",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 347,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "SPAN",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "LABEL",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            96.75,
+            259,
+            114.25
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                96.75,
+                163.0390625,
+                114.25
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "originalIncomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "target": [
+                "#dialog-title"
+              ],
+              "html": "<h2 id=\"dialog-title\" data-message=\"demo:dialogTitle\">Review your input</h2>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            },
+            {
+              "target": [
+                "span[data-message=\"demo:dialogNote\"]"
+              ],
+              "html": "<span data-message=\"demo:dialogNote\">Confirmation note</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            }
+          ]
+        }
+      ],
+      "topScan": {
+        "violations": [],
+        "incomplete": []
+      },
+      "originalResultsPreserved": true
+    },
+    {
+      "zoom": 4,
+      "framework": "react",
+      "locale": "en",
+      "finding": "Scroll-clipped text became visible; separate top-view axe scan passed.",
+      "before": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 104.25,
+          "clientHeight": 194,
+          "scrollHeight": 347,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            -55.25,
+            259,
+            -31.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                -55.25,
+                205.31640625,
+                -31.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        },
+        {
+          "selector": "form[method=\"dialog\"] > label",
+          "scrollTop": 104.25,
+          "clientHeight": 194,
+          "scrollHeight": 347,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "LABEL",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            -7.5,
+            259,
+            60.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                -7.5,
+                163.0390625,
+                10
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 347,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            49,
+            259,
+            72.75
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                49,
+                205.31640625,
+                72.75
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        },
+        {
+          "selector": "form[method=\"dialog\"] > label",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 347,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "LABEL",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            96.75,
+            259,
+            164.75
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                96.75,
+                163.0390625,
+                114.25
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "originalIncomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "target": [
+                "#dialog-title"
+              ],
+              "html": "<h2 id=\"dialog-title\">Review your input</h2>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            },
+            {
+              "target": [
+                "form[method=\"dialog\"] > label"
+              ],
+              "html": "<label>Confirmation note<input id=\"confirmation-note\" autocomplete=\"off\" value=\"Zoom confirmation\"></label>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            }
+          ]
+        }
+      ],
+      "topScan": {
+        "violations": [],
+        "incomplete": []
+      },
+      "originalResultsPreserved": true
+    },
+    {
+      "zoom": 4,
+      "framework": "svelte",
+      "locale": "en",
+      "finding": "Scroll-clipped text became visible; separate top-view axe scan passed.",
+      "before": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 99.25,
+          "clientHeight": 194,
+          "scrollHeight": 293,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            -50.25,
+            259,
+            -26.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                -50.25,
+                205.31640625,
+                -26.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        },
+        {
+          "selector": "form[method=\"dialog\"] > label",
+          "scrollTop": 99.25,
+          "clientHeight": 194,
+          "scrollHeight": 293,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "LABEL",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            -2.5,
+            259,
+            65.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                -2.5,
+                163.0390625,
+                15
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 293,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            49,
+            259,
+            72.75
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                49,
+                205.31640625,
+                72.75
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        },
+        {
+          "selector": "form[method=\"dialog\"] > label",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 293,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "LABEL",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            96.75,
+            259,
+            164.75
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                96.75,
+                163.0390625,
+                114.25
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "originalIncomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "target": [
+                "#dialog-title"
+              ],
+              "html": "<h2 id=\"dialog-title\">Review your input</h2>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            },
+            {
+              "target": [
+                "form[method=\"dialog\"] > label"
+              ],
+              "html": "<label>Confirmation note<input id=\"confirmation-note\" autocomplete=\"off\"></label>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            }
+          ]
+        }
+      ],
+      "topScan": {
+        "violations": [],
+        "incomplete": []
+      },
+      "originalResultsPreserved": true
+    },
+    {
+      "zoom": 4,
+      "framework": "npm",
+      "locale": "en",
+      "finding": "Scroll-clipped text became visible; separate top-view axe scan passed.",
+      "before": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 113.75,
+          "clientHeight": 194,
+          "scrollHeight": 308,
+          "colors": {
+            "foreground": "rgb(35, 48, 46)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 13.692402112368148,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            43,
+            -50.83203125,
+            265,
+            12.66796875
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                43,
+                -50.83203125,
+                245.828125,
+                -19.08203125
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            },
+            {
+              "bounds": [
+                43,
+                -19.08203125,
+                207.3203125,
+                12.66796875
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 308,
+          "colors": {
+            "foreground": "rgb(35, 48, 46)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 13.692402112368148,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            43,
+            62.91796875,
+            265,
+            126.41796875
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                43,
+                62.91796875,
+                245.828125,
+                94.66796875
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            },
+            {
+              "bounds": [
+                43,
+                94.66796875,
+                207.3203125,
+                126.41796875
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "originalIncomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "target": [
+                "#dialog-title"
+              ],
+              "html": "<h2 id=\"dialog-title\" data-i18n=\"demo:dialogTitle\">Check your input, Zoom preview</h2>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            }
+          ]
+        }
+      ],
+      "topScan": {
+        "violations": [],
+        "incomplete": []
+      },
+      "originalResultsPreserved": true
+    },
+    {
+      "zoom": 4,
+      "framework": "sveltekit",
+      "locale": "en",
+      "finding": "Scroll-clipped text became visible; separate top-view axe scan passed.",
+      "before": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 104.25,
+          "clientHeight": 194,
+          "scrollHeight": 331,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            -55.25,
+            259,
+            -31.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                -55.25,
+                205.31640625,
+                -31.5
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        },
+        {
+          "selector": "form[method=\"dialog\"] > label",
+          "scrollTop": 104.25,
+          "clientHeight": 194,
+          "scrollHeight": 331,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "LABEL",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            -7.5,
+            259,
+            60.5
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                -7.5,
+                163.0390625,
+                10
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 0,
+              "hitTextOwner": 0
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "selector": "#dialog-title",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 331,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "H2",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            49,
+            259,
+            72.75
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                49,
+                205.31640625,
+                72.75
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        },
+        {
+          "selector": "form[method=\"dialog\"] > label",
+          "scrollTop": 0,
+          "clientHeight": 194,
+          "scrollHeight": 331,
+          "colors": {
+            "foreground": "rgb(33, 53, 50)",
+            "ancestors": [
+              {
+                "tag": "LABEL",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "FORM",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "tag": "DIALOG",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "ratio": 12.963237567097758,
+            "minimumCompared": 4.5
+          },
+          "targetBounds": [
+            49,
+            96.75,
+            259,
+            164.75
+          ],
+          "textLines": [
+            {
+              "bounds": [
+                49,
+                96.75,
+                163.0390625,
+                114.25
+              ],
+              "sampledPoints": 9,
+              "insideVisibleDialog": 9,
+              "hitTextOwner": 9
+            }
+          ]
+        }
+      ],
+      "originalIncomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "target": [
+                "#dialog-title"
+              ],
+              "html": "<h2 id=\"dialog-title\">Review your input</h2>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            },
+            {
+              "target": [
+                "form[method=\"dialog\"] > label"
+              ],
+              "html": "<label>Confirmation note<input id=\"confirmation-note\" autocomplete=\"off\"></label>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            }
+          ]
+        }
+      ],
+      "topScan": {
+        "violations": [],
+        "incomplete": []
+      },
+      "originalResultsPreserved": true
+    }
+  ],
+  "legacyInvocation": {
+    "command": "node scripts/verify-demo-accessibility.mjs --framework vanilla",
+    "exitCode": 0,
+    "states": 4
+  },
+  "method": "Keep original axe incomplete results. Inspect text line bounds, nine hit-test samples per line and opaque ancestor colors; rescan contrast at modal scrollTop=0, then restore the original scroll position.",
+  "contrastReference": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+  "classification": "Five 400% English cases were scroll clipping; the two npm ko headings were visible at sampled points with a computed contrast ratio of 13.692402112368148 against an opaque white dialog. No layout defect was reproduced by these checks; the two axe incomplete results remain explicit.",
+  "changes": "Added diagnostics to the optional development accessibility runner only. No production CSS or modal behavior was changed to silence axe.",
+  "cleanup": "Successful runners awaited owned Chromium termination, Vite close and validated temporary profile/clone removal.",
+  "limits": [
+    "DOM samples and computed solid-color contrast do not prove every painted pixel is unobscured or certify accessibility.",
+    "The two npm heading incomplete results remain available for visual/assistive-technology review; no screen-reader speech was observed.",
+    "No package runtime change, version bump, push, new CI job or publication."
+  ]
+}

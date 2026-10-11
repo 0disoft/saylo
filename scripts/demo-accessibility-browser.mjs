@@ -1,3 +1,4 @@
+import { reviewContrast } from '/__saylo_contrast.mjs';
 const states = [];
 const zoomChecks = new URL(location.href).searchParams.has('saylo-zoom');
 const check = (condition, message) => { if (!condition) throw new Error(message); };
@@ -15,7 +16,9 @@ async function scan(locale, dialog) {
   const result = await axe.run(document, { runOnly: { type: 'tag',
     values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] } });
   const secondary = node('#close-dialog.secondary');
+  const contrastReview = zoomChecks && dialog ? await reviewContrast(result, summarize) : null;
   states.push({ locale, dialog, violations: result.violations.map(summarize),
+    ...(contrastReview ? { contrastReview } : {}),
     ...(zoomChecks ? { metrics: { innerWidth, innerHeight, devicePixelRatio, visualScale: visualViewport.scale,
       rootClientWidth: document.documentElement.clientWidth, rootScrollWidth: document.documentElement.scrollWidth,
       dialogClientWidth: node('#confirmation').clientWidth, dialogScrollWidth: node('#confirmation').scrollWidth } } : {}),
