@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { createServer } from 'vite';
+import { createKeyboardDriver } from './demo-keyboard-driver.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 await mkdir(path.join(repository, '.release'), { recursive: true });
@@ -15,11 +16,12 @@ const contrastReview = await readFile(new URL('./demo-contrast-review.mjs', impo
 const exec = promisify(execFile);
 const reports = [];
 const originalCwd = process.cwd();
-const { values } = parseArgs({ options: { framework: { type: 'string' }, zoom: { type: 'string' } } });
+const { values } = parseArgs({ options: { framework: { type: 'string' }, zoom: { type: 'string' }, keyboard: { type: 'boolean' } } });
+const keyboardChecks = values.keyboard === true;
 const zoomChecks = values.zoom !== undefined;
 const zoom = Number(values.zoom ?? 1);
 assert.ok([1, 2, 4].includes(zoom), 'Supported zoom factors: 1, 2, 4');
-const reportPath = `.release/accessibility${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
+const reportPath = `.release/accessibility${keyboardChecks ? '-keyboard' : ''}${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
 const frameworks = values.framework ? [values.framework] : ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'];
 assert.ok(frameworks.every(name => ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'].includes(name)));
 let activeReject;
@@ -29,7 +31,7 @@ try {
   for (const framework of frameworks) {
     const example = path.join(repository, 'examples', framework);
     const profile = await mkdtemp(path.join(os.tmpdir(), 'saylo-a11y-browser-'));
-    let app = example, clone, server, browser, timer;
+    let app = example, clone, server, browser, timer, keyboardDriver;
     async function stopBrowser() {
       if (!browser?.pid || browser.exitCode !== null || browser.signalCode !== null) return;
       const ended = new Promise(resolve => browser.once('exit', resolve));
@@ -68,6 +70,17 @@ try {
           { tag: 'script', attrs: { type: 'module', src: '/__saylo_a11y.mjs' }, injectTo: 'head' },
         ] } : {}),
         configureServer: instance => { instance.middlewares.use((req, res, next) => {
+          if (keyboardChecks && req.url === '/__saylo_a11y_key') {
+            if (req.method !== 'POST') { res.writeHead(405).end(); return; }
+            let body = '';
+            req.on('data', chunk => { body += chunk; if (body.length > 32) req.destroy(); });
+            req.on('error', activeReject);
+            req.on('end', async () => {
+              try { await (await keyboardDriver).press(body); res.end('ok'); }
+              catch (error) { activeReject?.(error); res.writeHead(500).end('Keyboard probe failed'); }
+            });
+            return;
+          }
           if (req.url === '/__saylo_axe.js' || req.url === '/__saylo_a11y.mjs' || req.url === '/__saylo_contrast.mjs') {
             res.setHeader('Content-Type', 'text/javascript');
             res.end(req.url.endsWith('.js') ? axe : req.url === '/__saylo_contrast.mjs' ? contrastReview : probe); return;
@@ -100,17 +113,28 @@ try {
       }
       const target = new URL(server.resolvedUrls.local[0]);
       if (zoomChecks) target.searchParams.set('saylo-zoom', String(zoom));
+      if (keyboardChecks) target.searchParams.set('saylo-keyboard', '1');
       browser = spawn(executable, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+        ...(keyboardChecks ? ['--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0'] : []),
         '--disable-background-networking', ...(zoomChecks ? ['--window-size=1280,1024', '--force-device-scale-factor=1']
           : ['--window-size=1200,900']), `--user-data-dir=${profile}`, target.href],
       { windowsHide: true, stdio: 'ignore' });
       browser.once('error', activeReject);
       browser.once('exit', code => activeReject?.(new Error(`Chromium exited before accessibility result (${code})`)));
+      if (keyboardChecks) {
+        keyboardDriver = createKeyboardDriver(profile, target.href);
+        void keyboardDriver.catch(error => activeReject?.(error));
+      }
       timer = setTimeout(() => activeReject?.(new Error(`${framework} accessibility probe timed out`)), 90000);
       const report = await completed;
       reports.push({ framework, ...report });
       assert.equal(report.ok, true, report.error);
       assert.equal(report.states.length, 4);
+      if (keyboardChecks) {
+        assert.equal(report.keyboard.length, 2, 'Both modal languages need keyboard checks');
+        assert.ok(report.keyboard.every(flow => flow.escapeRestored && flow.enterClosed && flow.inputsPreserved),
+          'Keyboard activation, dismissal and preserved inputs must all pass');
+      }
       assert.equal(report.states.flatMap(state => state.violations).length, 0,
         `Accessibility violations found; inspect ${reportPath}`);
       if (zoomChecks) for (const state of report.states) {
@@ -126,6 +150,7 @@ try {
       console.log(`[a11y] ${framework}${zoomChecks ? ` ${zoom * 100}% page zoom` : ''}: ${report.states.reduce((sum, state) => sum + state.violations.length, 0)} violations across four locale/dialog states`);
     } finally {
       clearTimeout(timer); activeReject = undefined;
+      if (keyboardDriver) (await keyboardDriver.catch(() => undefined))?.close();
       await stopBrowser(); await server?.close(); process.chdir(originalCwd);
       assert.equal(path.dirname(path.resolve(profile)), path.resolve(os.tmpdir()));
       assert.ok(path.basename(profile).startsWith('saylo-a11y-browser-'));
@@ -140,9 +165,10 @@ try {
 } finally {
   process.removeListener('SIGINT', interrupt); process.removeListener('SIGTERM', interrupt);
   process.chdir(originalCwd);
-  await writeFile(path.join(repository, reportPath), JSON.stringify({ reports, requestedPageZoom: zoomChecks ? zoom : null,
+  await writeFile(path.join(repository, reportPath), JSON.stringify({ reports, keyboardChecks, requestedPageZoom: zoomChecks ? zoom : null,
     runComplete: reports.length === frameworks.length && reports.every(report => report.checksPassed),
-    scope: zoomChecks ? 'Chromium page zoom, reflow, input preservation, modal focus/close reachability and axe checks across ko/en demos'
+    scope: keyboardChecks ? 'Chromium Tab/Shift+Tab modal traversal, Escape/Enter activation and opener restoration across ko/en demos; axe checks'
+      : zoomChecks ? 'Chromium page zoom, reflow, input preservation, modal focus/close reachability and axe checks across ko/en demos'
       : 'Rendered demo ko/en pages and open/closed dialogs with visible support panel; automated axe checks only',
     limits: ['No screen-reader speech observation or keyboard-only certification', ...(!zoomChecks ? ['No browser zoom observation'] : []),
       'Headless Chromium only; dev rendering; installed npm demo uses its existing published dependencies'],

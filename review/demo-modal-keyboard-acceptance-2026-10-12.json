@@ -1,0 +1,794 @@
+{
+  "schema": "saylo.demo-modal-keyboard-acceptance/v1",
+  "observedAt": "2026-10-11T18:19:39.955Z",
+  "baseCommit": "06c994af34661adcc18204c0848e21eae7f0e94a",
+  "sourceHashes": {
+    "scripts/demo-keyboard-driver.mjs": "dd8ca532f850849f446570d8da0584bb30f810888d69f8471c2381a5c9e0a782",
+    "scripts/demo-accessibility-browser.mjs": "e3157ecce470bacaa90b467acc6ee26e3ac5f5f79da9a2ebbb2b181580dd18a1",
+    "scripts/verify-demo-accessibility.mjs": "f9c47ad965c08fb9fdcb0074080e7ea0c50f5582e225f1026de736f08a3be5c3"
+  },
+  "method": "Input.dispatchKeyEvent on the page belonging to a newly created disposable Chromium profile. The browser navigates its own focus order; no synthetic DOM KeyboardEvent or per-key focus() substitutes. Initial opener focus, locale selection and fixture input filling remain programmatic.",
+  "protocolReference": "https://chromedevtools.github.io/devtools-protocol/tot/Input/#method-dispatchKeyEvent",
+  "states": 40,
+  "keyboardFlows": 20,
+  "violations": 0,
+  "runs": [
+    {
+      "pageZoom": 1,
+      "command": "node scripts/verify-demo-accessibility.mjs --keyboard",
+      "exitCode": 0,
+      "artifact": {
+        "path": ".release/accessibility-keyboard-report.json",
+        "sha256": "f94976fdc50becc33c2aee0966d3ae3bdcacc130ff2632ef325d099b1fcd2adf"
+      },
+      "log": {
+        "path": ".release/modal-keyboard.log",
+        "sha256": "ce44a7a108743205c7b41c0455bce347329a012719e9b6ca36ff4bc5288ff23a"
+      },
+      "frameworks": [
+        {
+          "framework": "vanilla",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "paths": {
+                "Tab": [
+                  "button[1]",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation-note",
+                  "button[1]",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation-note"
+                ],
+                "ShiftTab": [
+                  "body-boundary(pageFocus=false)",
+                  "button[1]",
+                  "confirmation-note",
+                  "button[1]",
+                  "confirmation-note",
+                  "body-boundary(pageFocus=true)"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "paths": {
+                "Tab": [
+                  "button[1]",
+                  "confirmation-note",
+                  "button[1]",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation-note",
+                  "button[1]"
+                ],
+                "ShiftTab": [
+                  "confirmation-note",
+                  "button[1]",
+                  "confirmation-note",
+                  "body-boundary(pageFocus=true)",
+                  "button[1]",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "react",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "paths": {
+                "Tab": [
+                  "button[1]",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation-note",
+                  "button[1]",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation-note"
+                ],
+                "ShiftTab": [
+                  "body-boundary(pageFocus=false)",
+                  "button[1]",
+                  "confirmation-note",
+                  "button[1]",
+                  "confirmation-note",
+                  "body-boundary(pageFocus=true)"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "paths": {
+                "Tab": [
+                  "button[1]",
+                  "confirmation-note",
+                  "button[1]",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation-note",
+                  "button[1]"
+                ],
+                "ShiftTab": [
+                  "confirmation-note",
+                  "button[1]",
+                  "confirmation-note",
+                  "body-boundary(pageFocus=true)",
+                  "button[1]",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "svelte",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "close-dialog"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation-note",
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation-note"
+                ],
+                "ShiftTab": [
+                  "body-boundary(pageFocus=false)",
+                  "close-dialog",
+                  "confirmation-note",
+                  "close-dialog",
+                  "confirmation-note",
+                  "body-boundary(pageFocus=true)"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "close-dialog"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "confirmation-note",
+                  "close-dialog",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation-note",
+                  "close-dialog"
+                ],
+                "ShiftTab": [
+                  "confirmation-note",
+                  "close-dialog",
+                  "confirmation-note",
+                  "body-boundary(pageFocus=true)",
+                  "close-dialog",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "npm",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "dialog-note",
+                "close-dialog"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "body-boundary(pageFocus=true)",
+                  "dialog-note",
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)",
+                  "dialog-note"
+                ],
+                "ShiftTab": [
+                  "body-boundary(pageFocus=false)",
+                  "close-dialog",
+                  "dialog-note",
+                  "close-dialog",
+                  "dialog-note",
+                  "body-boundary(pageFocus=false)"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "dialog-note",
+                "close-dialog"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "body-boundary(pageFocus=true)",
+                  "dialog-note",
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)",
+                  "dialog-note"
+                ],
+                "ShiftTab": [
+                  "body-boundary(pageFocus=false)",
+                  "close-dialog",
+                  "dialog-note",
+                  "close-dialog",
+                  "dialog-note",
+                  "body-boundary(pageFocus=false)"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "sveltekit",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "close-dialog",
+                "dialog-about"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "dialog-about",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation-note",
+                  "close-dialog",
+                  "dialog-about",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation-note"
+                ],
+                "ShiftTab": [
+                  "body-boundary(pageFocus=false)",
+                  "dialog-about",
+                  "close-dialog",
+                  "confirmation-note",
+                  "dialog-about",
+                  "close-dialog",
+                  "confirmation-note",
+                  "body-boundary(pageFocus=true)"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "close-dialog",
+                "dialog-about"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "dialog-about",
+                  "confirmation-note",
+                  "close-dialog",
+                  "dialog-about",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation-note",
+                  "close-dialog"
+                ],
+                "ShiftTab": [
+                  "confirmation-note",
+                  "dialog-about",
+                  "close-dialog",
+                  "confirmation-note",
+                  "body-boundary(pageFocus=true)",
+                  "dialog-about",
+                  "close-dialog",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pageZoom": 4,
+      "command": "node scripts/verify-demo-accessibility.mjs --keyboard --zoom 4",
+      "exitCode": 0,
+      "artifact": {
+        "path": ".release/accessibility-keyboard-zoom-4-report.json",
+        "sha256": "3702c9b5601fdff33efba860befef69541afafc6f4bf475739f3b2638a3b5d6e"
+      },
+      "log": {
+        "path": ".release/modal-keyboard-zoom4.log",
+        "sha256": "878d95962fb3d5bed988e7cfd24f72e106bf6f81542136c7fb22515554fc1b7a"
+      },
+      "frameworks": [
+        {
+          "framework": "vanilla",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "paths": {
+                "Tab": [
+                  "button[1]",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation",
+                  "confirmation-note",
+                  "button[1]",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "button[1]",
+                  "confirmation-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "button[1]",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "paths": {
+                "Tab": [
+                  "button[1]",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation",
+                  "confirmation-note",
+                  "button[1]",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "button[1]",
+                  "confirmation-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "button[1]",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "react",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "paths": {
+                "Tab": [
+                  "button[1]",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation",
+                  "confirmation-note",
+                  "button[1]",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "button[1]",
+                  "confirmation-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "button[1]",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "paths": {
+                "Tab": [
+                  "button[1]",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation",
+                  "confirmation-note",
+                  "button[1]",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "button[1]",
+                  "confirmation-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "button[1]",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "svelte",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "close-dialog"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation",
+                  "confirmation-note",
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "close-dialog",
+                  "confirmation-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "close-dialog",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "close-dialog"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation",
+                  "confirmation-note",
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "close-dialog",
+                  "confirmation-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "close-dialog",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "npm",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "dialog-note",
+                "close-dialog"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation",
+                  "dialog-note",
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "close-dialog",
+                  "dialog-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "close-dialog",
+                  "dialog-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "dialog-note",
+                "close-dialog"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation",
+                  "dialog-note",
+                  "close-dialog",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "close-dialog",
+                  "dialog-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "close-dialog",
+                  "dialog-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "sveltekit",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "keyboard": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "close-dialog",
+                "dialog-about"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "dialog-about",
+                  "body-boundary(pageFocus=true)",
+                  "confirmation",
+                  "confirmation-note",
+                  "close-dialog",
+                  "dialog-about",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "dialog-about",
+                  "close-dialog",
+                  "confirmation-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "dialog-about",
+                  "close-dialog",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "close-dialog",
+                "dialog-about"
+              ],
+              "paths": {
+                "Tab": [
+                  "close-dialog",
+                  "dialog-about",
+                  "body-boundary(pageFocus=false)",
+                  "confirmation",
+                  "confirmation-note",
+                  "close-dialog",
+                  "dialog-about",
+                  "body-boundary(pageFocus=false)"
+                ],
+                "ShiftTab": [
+                  "dialog-about",
+                  "close-dialog",
+                  "confirmation-note",
+                  "confirmation",
+                  "body-boundary(pageFocus=false)",
+                  "dialog-about",
+                  "close-dialog",
+                  "confirmation-note"
+                ]
+              },
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Modal segment only; not a complete keyboard-only first-use certification.",
+    "Native dialog body-boundary observations are retained, including document.hasFocus; no claim of an absolute page/chrome focus trap. All modal controls were reached in both directions and no background form control received focus.",
+    "No Narrator/NVDA speech observation, OS text scaling, other browsers or low-spec hardware checks.",
+    "Five 400% axe incomplete states remain recorded; previous npm heading contrast cases are not declared resolved by this run.",
+    "QA tools only. Product/package inputs are unchanged from the 0b85c93 release candidate; this optional QA addition is not in that frozen snapshot. No version bump, push or publication."
+  ]
+}
