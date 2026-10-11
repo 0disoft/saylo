@@ -6,6 +6,8 @@
 
 ## 읽는 순서
 
+빈 폴더에서 게시 패키지를 설치해 시작하는 절차는 [getting-started.md](getting-started.md)에 있다.
+
 Svelte 어댑터와 데모의 현행 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 정리했다. 기존 성능 측정 기록은 그대로 유지한다.
 SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-sveltekit-example.md](39-sveltekit-example.md)에 정리했다.
 

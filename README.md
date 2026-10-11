@@ -268,6 +268,7 @@ npm run release:pack
 | 문서 | 내용 |
 | --- | --- |
 | [docs/README.md](docs/README.md) | 문서 읽는 순서, 상태 표기 규칙, 설계 초안과 현행 코드 구분 |
+| [docs/getting-started.md](docs/getting-started.md) | 빈 폴더에서 게시 패키지로 시작하는 파일 6개, 라이브 수정 확인, 빌드, 선택 typegen |
 | [docs/01-product-and-scope.md](docs/01-product-and-scope.md) | 문제 정의, 목표, 범위, 비목표, DOM 보존 범위, 용어 |
 | [docs/02-architecture.md](docs/02-architecture.md) | 개발 파이프라인, 코어/어댑터 경계, store 모델, 소유권 |
 | [docs/03-catalog-and-api.md](docs/03-catalog-and-api.md) | 카탈로그 파일, ID/namespace, ICU 정책, argument 계약, 공개 API와 예제 |

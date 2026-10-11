@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-11",
+  "document": "docs/getting-started.md",
+  "documentSha256": "56855f7db95e641d3d744ab6b1b224f74de38737f87084f095d2f3bc972612a3",
+  "automated": {
+    "command": "npm run verify:starter",
+    "exitCode": 0,
+    "filesExtracted": 6,
+    "location": "A fresh temporary directory outside the repository",
+    "packages": {
+      "@0disoft/saylo-core": "0.1.0-alpha.4",
+      "@0disoft/saylo-vite": "0.1.0-alpha.4",
+      "vite": "8.3.4"
+    },
+    "verified": [
+      "Installation resolves all starter dependencies from the public npm registry",
+      "Vite production build",
+      "Production bundle in jsdom: English first render, input interpolation, Korean selection and retained name",
+      "Published typegen CLI generates AppSchema",
+      "Exact TS and checkJs schema snippets compile; unknown keys and missing required arguments are rejected"
+    ],
+    "temporaryDirectoryRemoved": true
+  },
+  "liveBrowser": {
+    "environment": "Codex in-app browser, external temporary starter app, Vite 8.3.4 dev server on 127.0.0.1:5188",
+    "firstHeading": "Saylo from npm",
+    "savedEnglishGreeting": "Hello First user, live edit verified.",
+    "inputAfterSave": "First user",
+    "selectedLocaleAfterSave": "en",
+    "focusedElementAfterSave": "name",
+    "addedLocale": "ja",
+    "availableLocalesAfterAdd": ["en", "ja", "ko"],
+    "selectedJapaneseGreeting": "こんにちは First user、ライブ更新を確認しました。",
+    "consoleWarningsAndErrors": [],
+    "tabClosed": true,
+    "serverStopped": true
+  },
+  "limits": [
+    "No React, Svelte, or SvelteKit first-use claim follows from this vanilla starter check.",
+    "Actual production preview in a browser was not separately run; production behavior was checked in jsdom.",
+    "An earlier interactive-run temporary directory remains: C:/Users/cherr/AppData/Local/Temp/saylo-starter-Ji5Wn6. Automatic approval review rejected its recursive deletion without a detailed reason.",
+    "No package version bump, publish, remote push, or repository visibility change."
+  ],
+  "nextObservedDefect": {
+    "scope": "examples/npm connection-status display",
+    "reproduction": "Stop the running Vite dev server while the confirmation dialog is open",
+    "observedStatusAfterDisconnect": "Connected",
+    "fixed": false
+  }
+}
