@@ -266,7 +266,7 @@ recorder 수명은 프레임워크에 맞춘다. React는 `useState` lazy initia
 
 환경 메타데이터는 Vite `define`으로 주입한다. vanilla는 자체 Vite 설정에서 core·vite 버전을 읽고, React·Svelte는 `examples/shared/support-environment.mjs`에서 core·vite와 해당 adapter 버전을 읽는다. 개발·빌드 Node 버전도 함께 주입한다. SvelteKit은 독립 설치한 consumer라 `node_modules`에 설치된 패키지 `package.json`에서 버전을 읽는다.
 
-`npm run verify:pack:sveltekit`은 독립 설치한 production 빌드를 Chromium에서 확인하며, support-check 단계는 기본 local 모드에서만 돈다. 등록 패키지 검증(`--registry-version`)은 이 단계를 건너뛴다.
+`npm run verify:pack:sveltekit`은 두 모드를 나눈다. local 모드는 `examples/sveltekit`을 consumer로 복사해 support-check까지 돌린다. `--registry-version` 모드는 승인 릴리스 tarball 5개의 SHA-512를 `releases/<version>.json`과 대조하고, consumer로는 `scripts/pack-fixtures/sveltekit-registry`를 쓴다. 이 fixture는 source 리비전 `d26506ff78076b282033895f3966fb97dc86306c` 시점의 20개 파일 snapshot(`fixture.json`이 metadata)이고 게시된 계약만 쓰므로 새 API가 없어 support-check를 건너뛴다.
 
 확인 범위는 이 네 예제다. 다른 예제가 지원한다고 이 문서는 단정하지 않는다.
 

@@ -43,13 +43,23 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 
 ## 실패와 복구
 
-- JSON이나 ICU가 깨진 파일은 그 카탈로그의 마지막 정상값(last-known-good)을 유지한다. 파일명, 키, 가능하면 줄 번호를 담은 진단을 낸다.
+- JSON이나 ICU가 깨진 파일은 그 카탈로그의 마지막 정상값(last-known-good)을 유지한다. 개발자용 진단(`LiveDiagnostic`)에는 파일명, 키, 가능하면 줄 번호를 담는다. 문의용으로 내보내는 보고서는 이 값을 그대로 쓰지 않고 허용 목록으로 투영한다([support-report.md](support-report.md)).
 - 서버가 판정한 missing(파일 없음)과 조회 실패(failed)를 구분한다. failed면 이전 UI를 유지하고 그 호출의 Promise를 `CatalogLoadError`로 reject한다.
 - 처음 마주친 오류는 명시적 진단으로 보여준다. 값을 그대로 노출하는 가짜 카탈로그를 만들지 않는다.
 - 기준 로케일 카탈로그가 잘못되면 개발에서는 변경을 거부하고 기준의 마지막 정상값과 그때의 schema를 유지한다. 처음부터 기준 카탈로그가 유효하지 않으면 명시적 치명 오류로 멈춘다.
 - 새 secondary 파일에 문법·스키마 오류가 있으면 그 파일의 마지막 정상값을 유지하되, 기준 schema와 호환되는 항목만 사용한다.
 - secondary 카탈로그 조회 결과가 missing이면 baseline 카탈로그로 fallback한다. 정상 present 결과는 번역을 사용한다. baseline namespace 자체가 로드되지 않았으면 `NamespaceNotLoadedError`다.
 - queue가 폭주하면 bounded buffer로 정리하고 resync한다. 규칙은 [08-update-protocol.md](08-update-protocol.md)를 따른다.
+
+## 개발 서버 handshake 상태와 진단 표시
+
+`DevSyncState`(`onSyncState`), `LiveDiagnostic.operation`, 문의용 진단 보고서 API는 로컬 작업트리의 미게시 변경이다. 현재 게시본 `0.1.0-alpha.4`에는 없다. 타입과 의미는 [dev-sync-state.md](dev-sync-state.md)를 따르고, 보고서 계약은 [support-report.md](support-report.md)에 있으므로 여기서 반복하지 않는다.
+
+handshake는 snapshot 요청마다 기본 타임아웃 5000ms(`requestTimeoutMs`)로 최대 3회 시도한다. `connecting`은 첫 시도(attempt 1), `retrying`은 재시도(2·3), `failed`는 시도를 소진하거나 첫 전송이 던졌을 때다. `connected`는 클라이언트가 서버 snapshot(manifest)을 수락했다는 뜻이고, 화면에 번역이 그려졌다는 보장은 아니다. `disconnected`는 소켓이 끊긴 상태다.
+
+로케일 파일 진단(`LiveDiagnostic`)은 `onSyncState`와 별개로 유지된다. 원인 파일이 다시 유효해질 때 해제되고, 다른 정상 파일을 저장해도 덮이지 않는다. `LiveDiagnostic.operation`은 개발 클라이언트가 낸 진단에만 있고(`handshake`는 동기화 처리 오류, `observer`는 상태 관측 콜백·eager `onUpdate` 콜백 오류), 서버가 보내는 카탈로그 진단에는 없다. lazy 경로의 `onUpdate` 예외는 아직 `observer`로 분류되지 않는다.
+
+예제 UI(vanilla·React·Svelte·SvelteKit)는 연결 문구를 `role="status"`, 오류 문구를 `role="alert"`로 두고, 열어 둔 dialog 안에도 같은 상태 안내를 둔다. `handshake` 문구만 `connected`에서 해제하고 카탈로그 진단은 파일이 복구될 때까지 유지한다. 렌더 오류 뒤 마지막 정상 화면을 유지하는 검증은 npm·vanilla 예제에서 수행했다.
 
 ## 삭제와 배치
 
@@ -67,7 +77,7 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 - 부적합해진 기존 secondary 메시지는 개발 중 quarantine(격리)하고 진단을 낸다. 그 메시지는 base 값으로 fallback해 화면이 깨지지 않게 한다.
 - base 변경과 locale 카탈로그는 후보 트랜잭션에서 함께 검증한다. 기준 schema와 각 locale schema가 맞는 조합만 커밋한다.
 - 위 quarantine는 Vite plugin의 `LiveRegistry`에 구현했다. plugin은 raw desired와 파일별 last-good 번역을 함께 유지한다. 기준 schema가 바뀌면 직전 정상 번역에서 새 schema에 맞지 않는 메시지만 제거한 immutable catalog를 게시하고, 남은 번역과 locale은 유지하며 빠진 메시지는 base 값으로 fallback한다.
-- 잘못된 secondary 편집은 그 파일의 last-good 번역을 유지하고 다른 파일의 정상 편집은 그대로 게시한다. last-good이 없는 새 secondary는 게시하지 않는다. 파일을 삭제하면 그 last-good도 지운다. 기준이나 번역이 다시 유효해지면 raw 번역을 자동 재검증해 복원하고 해당 진단을 해제한다.
+- 잘못된 secondary 편집은 그 파일의 last-good 번역을 유지하고 다른 파일의 정상 편집은 그대로 게시한다. last-good이 없는 새 secondary는 게시하지 않는다. 파일을 삭제하면 그 last-good도 지운다. 기준이나 번역이 다시 유효해지면 raw 번역을 자동 재검증해 복원하고 해당 진단을 해제한다. 다른 파일을 정상 저장해도 그 진단은 덮이지 않는다.
 - startup과 build는 그대로 전체 카탈로그를 엄격 검증한다. 코어 공개 API의 `createStore.replaceCatalogs`에는 자동 격리를 넣지 않았고, 사용자 정의 `CatalogSource`가 부적합 payload를 넘기면 코어는 그대로 거부한다. 격리는 plugin 계층에서만 한다.
 - quarantine 동작은 2026-10-07(KST) 브라우저에서 실제 watcher·WS 자동 갱신으로 확인했다(자세한 기록은 [06-validation-and-roadmap.md](06-validation-and-roadmap.md)). 더 좁은 번역 키만 격리되고 나머지 키와 로케일은 유지됐고, 그 파일을 고치면 자동 복원·진단 해제, 다시 부적합해지면 마지막 정상값 유지, 다른 파일 수정 비차단을 관측했다. 이 편집은 schema-breaking이라 입력·dialog 상태 보존은 관측 사례이며 일반 보장이 아니다.
 
@@ -121,6 +131,18 @@ schema-breaking 편집은 기존 호출부가 `InvalidArgumentError`를 낼 수 
 - build는 typegen 완료를 기다린다. 초기 schema readiness는 dev serve 시작 시점에 typegen을 먼저 끝내 소비자보다 앞서도록 한다.
 
 현재 구현은 `@0disoft/saylo-typegen`의 선언 renderer·CLI·worker와 `@0disoft/saylo-vite`의 `typegen.outFile` 옵션이다. Vite는 accepted baseline schema를 전달하며 라이브 snapshot을 전송한 뒤 배경 생성을 요청한다. 대기 중인 작업은 최신 generation으로 합치고, 오래된 결과는 원자적 파일 교체 전에 다시 확인한다. 초기 생성 실패는 startup을 중단하고 라이브 생성 실패는 서버 로그에 남긴다. CLI는 디스크 카탈로그 전체의 strict 검증을 완료한 뒤 선언을 생성한다. React 데모의 build 순서는 generate → consumer tsc → Vite build다. `.d.ts`와 해당 generator의 임시 파일만 watch/HMR에서 제외하며, 무관한 타입 파일은 그대로 감시한다.
+
+## 문의용 진단 보고서
+
+`createSupportReport`·`createSupportRecorder`는 로컬 미게시 API이고 `0.1.0-alpha.4` 게시본에는 없다. 계약과 예제 UI 흐름은 [support-report.md](support-report.md)에 있으므로 여기서 반복하지 않는다.
+
+요지만 적으면, 수집은 순수 메모리이고 최근 32개 이벤트와 이벤트당 앞 64개 진단 행만 남기며 버린 양은 `omittedEvents`·`omittedDiagnostics`로 표시한다. 사람이 읽는 문구·파일 이름·로케일·키·인자·요청 ID·URL·스택·환경변수는 담지 않고, 진단 코드는 허용 목록(모르면 `UNKNOWN`), 출처는 이벤트 안 숫자 별칭, 위치는 숫자 좌표만 싣는다. 저장·전송은 라이브러리가 하지 않고, 사용자가 `getReport()`를 검토한 뒤 직접 복사하거나 보낸다. `clear()`로 누적 기록을 비우며, 복구 뒤에도 이력은 남는다. 원문을 담지 않으므로 재현은 합성 번역으로 별도 제공한다.
+
+## 예제 앱 수명과 BFCache
+
+npm·vanilla·React·Svelte 예제는 `pagehide`의 `persisted`가 true면 정리하지 않고, false일 때만 root 해제·dispose한다. 그래야 뒤로가기 캐시로 돌아왔을 때 라이브 연결과 화면 상태가 살아 있다. React 예제는 production ESM 번들 모델에서 cached 이탈 뒤 복귀해 입력·모달·진단 자료가 유지되고 최종 이탈에서만 root가 해제되는지 확인했다(모델 검증 커밋 `f58f5f3`, `npm run verify:demo:react`).
+
+이 검증은 model DOM 이벤트 기준이고, 실제 in-app browser가 이 페이지를 BFCache에 넣는다는 관측은 아니다. 실제 브라우저가 캐시를 쓰지 않으면 페이지는 새로 로드되고, 새로고침 뒤 입력 초안·열린 모달의 영속 저장은 예제가 보장하지 않는다.
 
 ## 캐시
 

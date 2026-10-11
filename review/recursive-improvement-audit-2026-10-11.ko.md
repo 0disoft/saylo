@@ -79,7 +79,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 65 | 외부 장애 대응 정책 — "타임아웃·재시도·호출 제한·장애 전파 차단을 공통으로 제공해, 외부 서비스 장애를 일관되게 처리할까?" | 부분(L0) | 공통 정책은 Vite dev 연결 한정(timeout·3회·supersede·last-good·CatalogLoadError)이고 그 상태를 `onSyncState`로 노출한다(`b534b4f`). 운영 외부 호출은 L1 CatalogSource가 하고 재시도 정책은 미강제. |
 | 66 | 데이터 변경과 마이그레이션 — "스키마와 데이터 변경을 버전으로 관리하고, 중단 후 재개와 실패 시 복구를 지원하는 기반을 만들까?" | 부분(L0) | namespaceSchemaFingerprint(`core/schema.ts`), catalogVersion·tombstone(`vite/catalog-registry.ts`), quarantine(`translation-quarantine.ts`), gap 복구(`docs/08`). 마이그레이션 도구는 없음. |
 | 67 | 인프라를 코드로 관리 — "서버·네트워크·저장소·권한 설정을 코드로 선언해, 환경을 재구축하고 변경 이력을 추적할 수 있게 할까?" | 비적용(L2) | 관리할 서버·네트워크 없음. 유일한 선언은 `release.yml`이고 Trusted Publisher 등록값은 `docs/09` 표 기록(코드 재현 불가). |
-| 68 | 배포 전 검증 환경 — "운영 환경의 주요 조건을 재현하는 검증 환경을 만들고, 필요한 변경은 임시 환경에서 확인할 수 있게 할까?" | 부분(L2) | staging 없음. `pack-smoke.mjs`(저장소 밖 설치·JS/TS·SSR·lazy), `pack-sveltekit.mjs`(독립 앱+Chromium), 게시 후 `verify:registry:*`. 다음: 실행. |
+| 68 | 배포 전 검증 환경 — "운영 환경의 주요 조건을 재현하는 검증 환경을 만들고, 필요한 변경은 임시 환경에서 확인할 수 있게 할까?" | 부분(L2) | staging 없음. `pack-smoke.mjs`(저장소 밖 설치·JS/TS·SSR·lazy), `pack-sveltekit.mjs`(독립 앱+Chromium), 게시 후 `verify:registry:*`. SvelteKit은 게시본 전용 fixture로 alpha.2·3·4와 최신 로컬 예제를 각각 검증했다(`ca3e946`, `review/sveltekit-registry-fixture-2026-10-11.json`). |
 | 69 | 릴리스와 롤백 자동화 — "검증된 산출물로 배포하고, 배포 후 상태 확인과 이전 버전 복귀까지 연결하는 릴리스 체계를 구축할까?" | 부분(L2) | 게시는 검증→pack→dry run→OIDC 순서, `publish` 기본 false. 배포 후 확인은 `verify:registry:alpha4` 수동 실행. 복귀는 unpublish 대신 새 패치 정책. 런타임 롤백은 L1. |
 | 70 | 기능 활성화 제어 — "배포와 기능 공개를 분리하고, 일부 대상에게 먼저 적용하거나 문제가 생기면 즉시 끌 수 있는 기반을 만들까?" | 부분(L0+L2) | 플래그 `astRuntime`·`requireCompleteTranslations`, dist-tag `alpha`/`next`/`latest` 분리. 원격 플래그·점진 배포·kill switch 없음. |
 | 71 | 백업과 복구 자동화 — "백업 생성·보관·복원 검증을 자동화하고, 장애 때 정해진 절차로 복구할 수 있는 기반을 구축할까?" | 비적용(L1+L2) | 백업 대상 데이터 없음(48행). 자동 보관은 CI artifact 7일과 `releases/*.json`. tarball SHA-512 대조가 복원 검증 일부. |
@@ -103,9 +103,11 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 ## 실제 효용 우선 Top 3
 
-1. 오류·상태 표시 계약을 기존 설계 문서와 맞춘다(3·7·21행). React cached 수명 수정은 생산 번들 회귀 검사로 끝냈고 실제 BFCache 채택 한계도 기록했다. 다음은 전용 계약 문서와 기존 `docs/04`의 동작 설명을 대조한다.
+1. lazy 갱신 observer 오류 처리를 정리한다(7·21·62행). 코드 대조에서 lazy `onUpdate` 예외가 eager와 달리 `observer`로 분류되지 않음을 확인했다. 실제 갱신이 커밋된 뒤 콜백 실패가 어떤 결과를 만드는지 재현하고, 후속 갱신을 방해하지 않도록 고친다.
 2. 프레임워크별 첫사용 안내를 보완한다(6·27행). vanilla 시작 문서 검증은 있지만 독립 React·Svelte 시작 안내는 남아 있다. 게시본과 로컬 미게시 API의 차이를 설치 경로에서도 표시한다.
-3. 게시본 SvelteKit 검증의 예제 경계를 확인한다(25·68·69행). 현재 예제는 미게시 상태·진단 API를 import하므로 기존 registry 버전 검증은 별도 호환 fixture가 필요하다. 신규 로컬 pack 검사와 이전 게시본 검사를 섞지 않는다.
+3. 문의·보안 안내의 실제 접근 경로를 확인한다(45·73행). 패키지의 bugs 링크와 저장소 이슈 정책을 확인하고, 비공개로 제보할 경로가 준비됐는지 점검한다. 원격 변경은 사용자 승인 범위에서만 한다.
+
+기존 `docs/04`에는 동기화 상태·진단 유지·문의 자료·BFCache 범위와 로컬 미게시 표시를 반영했다. 게시본 SvelteKit은 최신 예제의 미게시 API 때문에 생긴 타입 오류 8건을 재현한 뒤 `ca3e946`의 전용 fixture로 분리했다. alpha.2·3·4 및 최신 로컬 pack 검사가 모두 통과했다. 실행 범위는 분리 기록과 JSON 근거를 따른다.
 
 이전 판 Top 3의 시작 안내 항목은 `docs/getting-started.md`+`verify:starter`+실브라우저 확인으로 실행 근거가 생겨 목록에서 내렸다. 다만 나머지 예제 4종의 시작 경로와 프레임워크별 안내는 남아 있어 6·27행을 닫지 않는다.
 
@@ -119,7 +121,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
-상태 UI는 vanilla·React·Svelte·SvelteKit까지 실브라우저 실패·복구 검사를 마쳤다. SvelteKit setup 오류도 수정해 원래 명령이 통과했다. 문의용 진단 API·문서와 vanilla 수집 UI도 구현·검증했다. 진단 수집 UI는 React·Svelte·SvelteKit에도 적용·검증했다. React cached 수명도 재현·수정했다. 다음은 기존 동작 문서·프레임워크별 시작 안내·게시본 검증 예제 경계다. 표시 계약 문서화를 작은 커밋으로 진행하고, 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
+상태 UI·진단 수집 UI·React cached 수명은 분리 실행 기록의 범위까지 확인했고, 기존 동작 문서와 게시본 검증 예제 경계도 정리했다. 다음은 lazy observer 실패 재현·수정과 프레임워크별 시작 안내다. 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
 
 ---
 작성 2026-10-11(KST). 기준 HEAD `c92515d`. 시작 안내 `d424345`, 연결 종료 표시 `5db3517`, 동기화 API `b534b4f`, 계약 문서·기록 `b8540cb`, handshake 진단 분리 `928377e`, vanilla·React 상태 UI `c92515d`가 커밋돼 있다. 실행 검증 표시는 연결한 실제 관측 기록의 범위에 한정한다. 이번 판에서 검증된 source 변화는 커밋된 `packages/vite` 개발 클라이언트(alpha 미게시)와 vanilla·React·npm 예제·시작 문서이고, 패키지 버전·registry 상태는 그대로다.

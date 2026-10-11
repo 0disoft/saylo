@@ -26,5 +26,9 @@
 
 **React cached pagehide 수명.** 수정 전 생산 ESM 번들에서 입력·모달·진단 자료를 만든 뒤 `pagehide.persisted=true`를 보내면 root가 해제돼 원래 input 대신 `null`이 나오는 것을 재현했다. 수정 후 `verify:demo:react`는 같은 번들의 두 번 캐시 이탈·복귀에서 DOM 정체성·제어된 입력값·열린 모달·자료 문자열을 유지하고, 수량 입력·실제 lazy 영어 청크 로드·진단 초기화도 작동하며 최종 `persisted=false` 이탈 때만 root가 제거됨을 확인한다(타입·생산 빌드·회귀 1검사 exit 0). jsdom은 모달 API를 최소 모델로 대체하므로 native 포커스 복귀를 주장하지 않는다. 실제 production preview 브라우저도 이탈·뒤로가기를 수행했으나 `pageshow.persisted=false`로 새로 로드해 초안이 초기화됐다. 그 복귀 후 영어 전환은 정상 동작했다. 실제 BFCache 채택은 이 환경에서 확인하지 못했다. 서버·탭은 종료했고 근거는 `review/react-demo-history-lifecycle-2026-10-11.json`이다.
 
-판정 반영은 9행에 React 수명 근거와 21·43행에 진단 자료 근거를 추가한다. 이 검증들은 예제 UI·문서 변경과 커밋된 라이브러리 소스 변경(alpha 미게시)이고 패키지 버전·registry 상태는 그대로다.
+**SvelteKit 게시본 검증 예제 분리(`ca3e946`).** 현재 예제의 미게시 API가 alpha.4에 없어 registry 검사에서 타입 오류 8건이 발생했다. `scripts/pack-fixtures/sveltekit-registry`에 게시 시점 소스 리비전 `d26506ff78076b282033895f3966fb97dc86306c`의 입력 20개를 보존하고 원본과 바이트 일치를 확인했다. `verify:registry:sveltekit`(alpha.2)·`verify:registry:sveltekit:alpha3`·`verify:registry:sveltekit:alpha4`가 모두 승인 tarball 5개 SHA-512 대조·독립 설치·타입·생산 빌드·SSR·운영 Chromium 검사를 통과했다. 최신 로컬 입력으로 실행한 `verify:pack:sveltekit`도 진단 자료 생성·입력값 제외·초기화·입력 보존까지 통과했다. 근거는 `review/sveltekit-registry-fixture-2026-10-11.json`이다. 검사 프로세스는 종료됐고 버전 변경·게시·푸시는 하지 않았다.
+
+**기존 설계 문서 대조.** `docs/04-live-update-and-types.md`에 개발 동기화·진단 유지·문의 자료·BFCache 검증 범위를 추가하고 전용 계약 문서로 연결했다. `docs/support-report.md`에는 registry fixture와 최신 로컬 consumer의 차이를 표시했다. 대조 중 lazy `onUpdate` 예외가 eager와 같은 `observer` 분류로 처리되지 않는 차이를 확인해 다음 수정 대상으로 남겼다. 이 항목은 정적 코드 관측이며 아직 런타임 결함 재현은 아니다.
+
+판정 반영은 9행에 React 수명 근거와 21·43행에 진단 자료 근거, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
 
