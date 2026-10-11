@@ -66,6 +66,23 @@ npm run release:pack
 
 게시 스크립트는 `--provenance=${NPM_CONFIG_PROVENANCE}`를 명시적으로 넘기고, 워크플로는 이 값을 `github.event.repository.private`으로 정한다. 현재 `0disoft/saylo`는 PRIVATE라 provenance를 끄고 게시한다. npm 공식 문서는 private 저장소의 provenance를 지원하지 않는다. 저장소를 공개로 바꾸면 자동으로 켜진다. 이 절차는 저장소 visibility를 바꾸지 않는다.
 
+## 로컬 배포 후보
+
+원본 버전을 올리지 않고 다음 버전을 검토하려면 먼저 관련 변경을 커밋한 뒤 아래 명령을 실행한다.
+
+```sh
+npm run release:candidate -- --version 0.1.0-alpha.5
+npm run release:candidate:verify -- --candidate .release/candidate-0.1.0-alpha.5-<생성된 suffix>
+```
+
+첫 명령은 커밋된 HEAD를 `.release/candidate-<버전>-<suffix>/source.zip`으로 보관하고 `source/`에 푼다. 그 사본의 다섯 package.json과 내부 의존성, lockfile의 workspace 항목만 제안 버전으로 바꾼다. 원본 package.json·lockfile과 기존 `.release/npm`은 유지한다. 추적된 미커밋 변경이나 Git symlink가 있으면 생성하지 않는다. 추적하지 않는 파일은 후보에 포함하지 않는다. 현재 명령은 `alpha` dist-tag 후보를 준비한다.
+
+검증 명령은 원본 커밋의 모든 입력을 Git 객체와 대조해 위 버전 변경 외의 차이를 거부한다. 사본에서 `npm ci --ignore-scripts`, 전체 `check`, `release:check`, JS·TS 독립 tarball 소비, 게시 계획 dry run을 실행한다. 시작과 종료 때 입력을 대조하고, 실제 tarball SHA-512도 manifest와 맞는지 검사한다. 새로운 `validation-<suffix>/`에 다섯 tgz·manifest·입력 SHA-256·명령별 로그·validation.json을 저장한다. 실패하면 failure.json과 해당 로그를 남기며 성공 상태로 표시하지 않는다. 검증은 새 결과 폴더를 쓰므로 이전 결과를 유지한다.
+
+이 결과는 로컬 후보의 근거다. `source.zip`은 버전 변경 전 커밋 원본이고 tarball은 제안 버전이며, 게시 완료나 registry 인수 결과를 뜻하지 않는다. 원본 버전 승격·푸시·workflow dispatch·OIDC·게시는 별도 단계다. 게시 전에는 README의 공개·미게시 표시와 릴리스 문서를 최종 버전에 맞추고 최종 커밋에서 artifact를 다시 만든다. SvelteKit 브라우저·보조 기술 검증은 이 명령에 포함하지 않는다.
+
+2026-10-12의 로컬 실행에서는 `5d90701`의 입력 937개를 대조한 alpha.5 후보로 위 검사를 통과했다. 다섯 tarball·입력과 로그 해시·도구 회귀 2건의 결과는 [후보 검증 기록](../review/release-candidate-acceptance-2026-10-12.json)에 있다. 이 후보의 제품 소스 기준은 `5d90701`이고, 그 뒤 추가한 후보 도구 자체는 별도 회귀로 검사했다. 공개 전달은 아직 완료하지 않았다.
+
 ## Trusted Publisher
 
 패키지마다 하나씩 등록한다. 등록 값은 모든 패키지에 동일하게 적용한다. 기존 네 패키지와 Svelte 모두 등록 완료이다. Svelte의 2026-10-09 저장·조회 결과는 아래 등록 기록에 있고, 같은 날 CI에서 다섯 패키지 모두 실제 OIDC 교환을 확인했다.

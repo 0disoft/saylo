@@ -1,0 +1,141 @@
+{
+  "schema": "saylo.release-candidate-acceptance/v1",
+  "observedAt": "2026-10-11T16:06:29.871Z",
+  "sourceCommit": "5d9070152521ba8a6aded169334f56bda10fe5f0",
+  "proposedVersion": "0.1.0-alpha.5",
+  "tag": "alpha",
+  "state": "local candidate validated; not published",
+  "candidateDirectory": ".release/candidate-0.1.0-alpha.5-I7IHSK",
+  "validationDirectory": ".release/candidate-0.1.0-alpha.5-I7IHSK/validation-LWj6DK",
+  "validationSha256": "12bda8462d5b32285b36cabd9457dace3a01a03388bb696860d9747eb984b968",
+  "sourceArchiveSha256": "02e9cd01447e61efe9a84dd60837dd91dbd4092dc3664b6c1a4d51c096e103a9",
+  "frozenInputs": 937,
+  "inputInventorySha256": "5832e71314099f88ff955005a25cb73e91a39f38230d685dc8a8b6788faf0300",
+  "checks": [
+    {
+      "name": "install",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "durationMs": 7183
+    },
+    {
+      "name": "check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "durationMs": 26656
+    },
+    {
+      "name": "release-metadata",
+      "command": [
+        "npm",
+        "run",
+        "release:check",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 669
+    },
+    {
+      "name": "pack",
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/pack-smoke.mjs",
+        "--save-release"
+      ],
+      "exitCode": 0,
+      "durationMs": 35579
+    },
+    {
+      "name": "publish-plan",
+      "command": [
+        "npm",
+        "run",
+        "release:publish",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 722
+    }
+  ],
+  "logSha256": {
+    "install": "6cdd1ebd6e53887d2b7882cfd8f4606caaa9d88c5ff5d71f09a65d8123c4294f",
+    "check": "30cdfdde444670185b6e4a565fb133a0ef8f9541db9654a9a897f2b911adc059",
+    "release-metadata": "796254fc2234c914d050573a82d69453d67e2d6d03d4101db61671a1e4d9929e",
+    "pack": "3ef4453684d60498ba79c2ec8e3c45a0b9071f109454aae1f88ec753b8c9b1f0",
+    "publish-plan": "b9420aaaf09a064773ba50e203d3b90de6b2d75c5b95a98bd96bb4f70de17b3c"
+  },
+  "artifacts": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-mtNlYMeKvfqujX3js7BB37CxYUb9JRXqRPQiF/KbmI1rnzrCs7c6xFyIVnZnku16jfODNZi3EGMrM33CG1Wqjg=="
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-yOxyKyLF+xEOBsLetjB0/I/t16P3lr6MoErsMZ0B59LnIOpRMcWedyGzfMKH+bTvsRNl7GoBLG595T7opAMYzw=="
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-bXC6JcvJY7BbFgvbSKReV4m758nqv2huEheySg4KOc9tEGVZXci79M1YPC8mlJlbTubI4CqUNKyKRmj1TfS89A=="
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-GUT5dAbNqx54zkOYUPE/eOz/e2/0/Jh9sa8YwoBTuDeWmuSO4Ddphk7aK56Ln2DixZWDUd1i5sigLL+aruXW7A=="
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-bmXiwrF3jWTVMWb0n6/ROlk4IlftCIYfDcQhmkbs2pF4ERf5aOwIhGAHNWVgFKZD4aqFhxvemg941ZiK6YNHeA=="
+    }
+  ],
+  "toolingSha256": {
+    "scripts/prepare-release-candidate.mjs": "d51ab545a8d435b4909c5f63a3ce72cbaae5a1a7b25e79df5a08082daab63521",
+    "scripts/release-candidate-source.mjs": "69931055f7faa951512713002a5342032fb8ac65b5490fb4f151559601c59e5a",
+    "scripts/verify-release-candidate.mjs": "830c735f7ce520d7f494e8385f56ce2d34a1330129140528d65d3755240ca127",
+    "scripts/test/release-candidate.test.mjs": "cc1072a9aa7bafec3b877d7797379943d517fdb13b330646766498306a50e3d2"
+  },
+  "toolingRegression": {
+    "command": "node --test scripts/test/release-candidate.test.mjs",
+    "exitCode": 0,
+    "passed": 2,
+    "scenarios": [
+      "Reject changed code, non-version metadata edits and missing source files.",
+      "Clear stale success status when candidate revalidation fails."
+    ]
+  },
+  "limits": [
+    "No source version bump, push, OIDC exchange or workflow dispatch.",
+    "source.zip is the original Git archive; candidate package manifests and lock entries use the proposed version.",
+    "Existing publication labels describe alpha.4. Final release documentation must be updated before publication.",
+    "This is local JS/TS tarball consumption, not registry or SvelteKit browser acceptance."
+  ]
+}
