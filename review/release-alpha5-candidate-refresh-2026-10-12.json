@@ -1,0 +1,202 @@
+{
+  "schema": "saylo.release-candidate-refresh/v1",
+  "observedAt": "2026-10-11T16:42:13.474Z",
+  "sourceCommit": "b39b3fd2d07f694270746ae0cde1a1bb9b168e97",
+  "proposedVersion": "0.1.0-alpha.5",
+  "tag": "alpha",
+  "node": "v24.18.0",
+  "candidateDirectory": ".release/candidate-0.1.0-alpha.5-6xvsAJ",
+  "validationDirectory": ".release/candidate-0.1.0-alpha.5-6xvsAJ/validation-2BBgDC",
+  "validationSha256": "2aca345b8e4222bbff455a07ac89b0602962a01c7cba8a1ac939ab50dcadc99a",
+  "sourceArchiveSha256": "cac01ab6bdf30654728d6fb502ebac6c46ddf234883c500fbf52b5750c5ddfbe",
+  "frozenInputs": 973,
+  "inputInventorySha256": "8d64e01ba7f81879ebd39ca8beae258280e0bf529a6b08481635ea8c58b569a3",
+  "checks": [
+    {
+      "name": "install",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "durationMs": 6517
+    },
+    {
+      "name": "check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "durationMs": 30105
+    },
+    {
+      "name": "release-metadata",
+      "command": [
+        "npm",
+        "run",
+        "release:check",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 706
+    },
+    {
+      "name": "pack",
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/pack-smoke.mjs",
+        "--save-release"
+      ],
+      "exitCode": 0,
+      "durationMs": 39412
+    },
+    {
+      "name": "publish-plan",
+      "command": [
+        "npm",
+        "run",
+        "release:publish",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 692
+    }
+  ],
+  "checkTests": {
+    "groups": [
+      7,
+      82,
+      14,
+      14,
+      11,
+      120,
+      8
+    ],
+    "total": 256,
+    "failed": 0
+  },
+  "logSha256": {
+    "install": "fb8477cc43204ee439c8b21f74793c3600403ad1f92804aa9d909331c76722f2",
+    "check": "84089af8eb35d250c037576524095792a051aac0857fc7786bd1f78bd395a3dc",
+    "release-metadata": "796254fc2234c914d050573a82d69453d67e2d6d03d4101db61671a1e4d9929e",
+    "pack": "be2239ed19a6bdb69c36db5b14f4c1b56dde22c1212b9cd23c439864b2f89327",
+    "publish-plan": "b9420aaaf09a064773ba50e203d3b90de6b2d75c5b95a98bd96bb4f70de17b3c"
+  },
+  "artifacts": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-Ey6wBIzfa1WJGrSYsm1PivOm2bc89tzNtIy3n6Ao6G/n0Zx4uBdkA4OPxdy0D5ipsf630YPj+2m+Pku9TPbFEg=="
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-ynW9Yl4pKgaD7SSFdV2GPUObNOAlT2Ff/GH5zNLbcGzjnK3nb9BcHColc/J8zV+FZgCrr7jbmEZGJjttCZDm7Q=="
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-gKfPS8+IUPnl8xIoxRMe1QgjAY1+qVSzgxdBcjHNRaPgle8/B6gqUKFzHL5Vz2Bqd9HdCnXB7QWv4oeBFCVBGw=="
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-yUADQ7BkF60N27h992ptliwLlmRMym2vnx0FbCKYUJLKYdAK4YGqVUbBm4kuS4rol4kBlGutOBlCeuPqsxXm8w=="
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-PoCFQWtX889b3mmK2bo+OjIKf+PAj8v0o1N/A86jtbM0b1euEBt8bkL8yb419qI4wPBlbpcv/ayjWjCldf/xYQ=="
+    }
+  ],
+  "sveltekit": {
+    "command": "npm exec -- node scripts/pack-sveltekit.mjs --consumer-fixture support",
+    "exitCode": 0,
+    "logSha256": "6618126cee2335af89a0d4d7756c59171637abd3a8b0e176b9ec1c1dc50d9cce",
+    "sourceUnchangedAfterAcceptance": true,
+    "repackedArtifactsMatchVerifiedIntegrity": true,
+    "scope": [
+      "independent alpha.5 install",
+      "svelte-check and client/SSR builds",
+      "concurrent ko/en SSR and boot",
+      "lazy development sync callback plus support recorder",
+      "listener cleanup and late cancellation",
+      "production Chromium hydration, language switching, report generation/reset and shared-layout inputs"
+    ]
+  },
+  "versionPromotion": {
+    "patch": ".release/candidate-0.1.0-alpha.5-6xvsAJ/version-promotion.patch",
+    "patchSha256": "0ca36b0b3e342b7c97c27429663f1b94638120b5fe3bfcb77726e346d6f35707",
+    "files": [
+      {
+        "file": "packages/core/package.json",
+        "beforeSha256": "72ed6b36298082337ec72babdd9fcbc053c2b1d902c14edfc85ae02e4c6cc5dd",
+        "afterSha256": "f274e16b7554d37e5c0ac95dbdd9c39d79cde708f37d3853c9b133b3d68d6755"
+      },
+      {
+        "file": "packages/react/package.json",
+        "beforeSha256": "c3dd61ef70fe5e4ff1ef1fd11d64f369d6d5de9c16d55442862a527ca026f445",
+        "afterSha256": "43fa47b3a0a62a61f774694f201ee995a05fc75c7cec6fbf59b1246cfc8f8464"
+      },
+      {
+        "file": "packages/svelte/package.json",
+        "beforeSha256": "d65751d9ba1e6c72e931c1c626209b0823634dc8d4533981acacb4c46e54218a",
+        "afterSha256": "9e510eb14857d293ce7d09b89754af0a82583b5067df1d0270d6d3c907b431e7"
+      },
+      {
+        "file": "packages/typegen/package.json",
+        "beforeSha256": "06bc7954a35422dad66f370381ee68b1db9656601edd8ec55a85e0e708fdd074",
+        "afterSha256": "02cb7f6a5a203522e3ae61d57f55174ad2577333b3bea844e536ea39eb77d282"
+      },
+      {
+        "file": "packages/vite/package.json",
+        "beforeSha256": "01be494f3430054006e7a15ee57d47c37345f34199fb047115eb8132730a6c6e",
+        "afterSha256": "520a5405ba4f55a0a91213fe0e2a39d28ecc56b554ebaa626ed3c8edf0875796"
+      },
+      {
+        "file": "package-lock.json",
+        "beforeSha256": "002442d4941470d554e0337539980f6b5dfd9997f46fefef301f4303a423430b",
+        "afterSha256": "e4c2527567a80674ba6d6f666cfee6149ac4cb16365183883bc41440d41383af"
+      },
+      {
+        "file": "examples/sveltekit/package-lock.json",
+        "beforeSha256": "455d7459e2ab74f255054bf2701dde9dc6bdf9ab866016ca4c999fc6ef570b2b",
+        "afterSha256": "eb13a5b59daffaf3fbea61644c99e791c3493a0027b57d3687e7214305fc80cc"
+      },
+      {
+        "file": ".github/workflows/release.yml",
+        "beforeSha256": "e2db0425ec21de0e739563760e27bb58fbbf6ac5a7d5b207e2483445458dc592",
+        "afterSha256": "fa94f8e08649d1f82f8cb2072a4753d99135d0c7f0a86116902f13bd266a2094"
+      }
+    ],
+    "applyCheck": "git apply --check passed; patch not applied"
+  },
+  "state": "Local alpha.5 candidate ready for release review; no publication",
+  "limits": [
+    "Original manifests and workflow defaults remain alpha.4.",
+    "All tarballs and integrity here are local candidates, not approved CI artifacts or registry alpha.5.",
+    "Publication metadata/docs will be finalized in the approved promotion commit; the workflow rebuilds and publishes its own artifacts.",
+    "CI/OIDC, registry alpha.5 acceptance, Renovate activation and manual screen-reader acceptance remain unverified."
+  ]
+}

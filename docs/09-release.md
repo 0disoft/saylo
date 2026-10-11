@@ -70,6 +70,8 @@ npm run release:pack
 
 ## 로컬 배포 후보
 
+최신 후보는 `b39b3fd`의 입력 973개를 대조하고 전체 256개 테스트·다섯 tarball·SvelteKit SSR/Chromium 소비를 통과했다. 버전 승격 패치는 원본에 적용하지 않았다. [후보 갱신 기록](../review/release-alpha5-candidate-refresh-2026-10-12.json)에 후보 파일과 해시를 남겼다. 아래 `5d90701` 기록은 첫 실행 이력이다.
+
 원본 버전을 올리지 않고 다음 버전을 검토하려면 먼저 관련 변경을 커밋한 뒤 아래 명령을 실행한다.
 
 ```sh

@@ -123,6 +123,8 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
+2026-10-12 최신 후보: `b39b3fd`를 동결한 alpha.5 사본에서 입력 973개 대조·전체 256개 테스트·JS/TS 소비와 SvelteKit SSR/Chromium 검사를 통과했다. SvelteKit 뒤 입력 불변과 다섯 tarball 재pack integrity도 확인했다. 8파일 버전 승격 패치는 `git apply --check`만 했으며 원본 버전은 alpha.4다(`review/release-alpha5-candidate-refresh-2026-10-12.json`). 로컬 검토 근거를 마련했지만 CI/OIDC·실제 게시·새 registry 인수·보조 기술 실사용은 계속 남아 있다.
+
 2026-10-12 registry 검사 후속: alpha.5 이후에는 문의 진단 API·동기화 상태·동봉 문서·CLI 도움말을 필수로 검사하도록 바꿨다. 고정한 새 SvelteKit 예제는 로컬 tarball의 상태 관측·보고서 생성/초기화와 실제 Chromium 인수를 통과했다. 로컬 독립 JS/TS와 기존 승인 alpha.4 registry 소비도 통과했다(`review/registry-consumer-contract-acceptance-2026-10-12.json`). 앞선 문서 후속의 "새 API를 건너뛰는 경로"는 준비 코드에서 해결했으며, 새 버전의 실제 게시·CI 승인 manifest·registry 인수는 여전히 남아 있다. alpha.5 승인 JSON은 만들어 넣지 않았다.
 
 2026-10-12 문서 후속: alpha.5의 변경 범위와 남은 승격·게시·복귀 절차를 `releases/0.1.0-alpha.5-plan.md`에 정리하고, API 안내를 checkout·후보 tarball·기존 alpha.4로 구분했다. 동봉 15파일과 최신 소스의 독립 JS/TS pack은 통과했다(`review/release-alpha5-documentation-acceptance-2026-10-12.json`). 공개 registry에서 alpha.5 미게시·다섯 alpha 태그의 alpha.4를 다시 확인했다(`review/release-alpha5-registry-preflight-2026-10-12.json`). registry 경로는 아직 support-report fixture를 건너뛰고 SvelteKit은 alpha.4 계약 전용 fixture를 쓰므로, 새 API의 registry 인수도 남은 작업이다. 승인 CI manifest를 로컬 후보 JSON으로 대체하지 않는다.
