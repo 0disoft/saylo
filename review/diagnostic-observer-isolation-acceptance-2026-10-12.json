@@ -1,0 +1,101 @@
+{
+  "schema": "saylo.diagnostic-observer-isolation-acceptance/v1",
+  "observedAt": "2026-10-11T17:50:50.933Z",
+  "sourceCommit": "ddf9aa6474766ad7862df0964fe1bef05d4f2f93",
+  "sourceHashes": {
+    "packages/vite/src/diagnostic-observers.ts": "45e4b4c27e1834263cf7f95221bcc381a4c897de22f142999c47e670657d2174",
+    "packages/vite/src/client.ts": "50798bbf2719294d36cb39d1969964566e0e2ee46e98d661cbc1e16d976badf2",
+    "packages/vite/src/catalog-source.ts": "9d121d12d5a00f2c3c7d94c75b03d57ee8221b0f69956b90029100d3926ddc9c",
+    "packages/vite/src/lazy-connection.ts": "e80ec5467a7467007d609195b3223f2f20f608d922b1d6ba233ae9abad40224e",
+    "packages/vite/test/client.test.mjs": "eaf9484a5f50f6eedc654b428735dd754f3aea570ef1214770bf24a6be35611c",
+    "packages/vite/test/lazy.test.mjs": "4263a41ca60379e3674ed9b3d3f5122c1484700ab7cb34d06e4161d06f83459a",
+    "docs/dev-sync-state.md": "1e8387ebbe1109c94fc68ae1bb857a7abbcbe5c68d9ce673dba0523702ffa70b",
+    "packages/vite/README.md": "10d2ed430bd6ea6d38b4e9a6bc2bef6b10ff16178d80bcb4f15dcc2e5fd8af42"
+  },
+  "artifacts": {
+    "before": {
+      "path": ".release/diagnostic-observers-Pqxs5Q/before.log",
+      "sha256": "b700805c95b988d75fca92902e7372a7f57337fe50f87ed29e90702ae439593d"
+    },
+    "focused": {
+      "path": ".release/diagnostic-observers-Pqxs5Q/focused.log",
+      "sha256": "c1166e4724e3c339a50928416206bd53ab6d256417a75b00d6c1528e22ec1664"
+    },
+    "viteSuite": {
+      "path": ".release/diagnostic-observers-Pqxs5Q/viteSuite.log",
+      "sha256": "63077e67384cfdd9211866d1303cdead8ed7ace4ae48ceee7fb914dc429cc556"
+    },
+    "pack": {
+      "path": ".release/diagnostic-observers-Pqxs5Q/pack.log",
+      "sha256": "3478b18f22bd94b92d41bb8c6fe3b0ca9ec5f4a5f2c778e49966096a81d9509a"
+    }
+  },
+  "reproduced": [
+    "Eager initial onUpdate plus throwing onDiagnostic released the binding instead of accepting the committed snapshot.",
+    "A store subscriber error plus throwing onDiagnostic interrupted revision adoption.",
+    "One throwing eager diagnostic view interrupted another store on the same hot context.",
+    "One throwing DevCatalogSource diagnostic listener hid the event from later listeners and the recorder.",
+    "A custom lazy source diagnostic escaped the bridge; a queued callback lacked a stop-binding guard."
+  ],
+  "change": "A shared internal synchronous diagnostic delivery guard isolates listener exceptions. Source fan-out continues for still-subscribed listeners; eager revision acceptance and lazy binding lifetime are preserved. No recursive diagnostic or automatic console logging.",
+  "checks": [
+    {
+      "command": "node --test --test-name-pattern 'throwing eager|one throwing|custom lazy diagnostic' packages/vite/test/client.test.mjs packages/vite/test/lazy.test.mjs",
+      "phase": "before fix",
+      "exitCode": 1,
+      "tests": 5,
+      "failed": 5
+    },
+    {
+      "command": "npm run build --workspace=@0disoft/saylo-vite",
+      "exitCode": 0
+    },
+    {
+      "command": "node --test packages/vite/test/client.test.mjs packages/vite/test/lazy.test.mjs packages/vite/test/sync-state.test.mjs packages/vite/test/support-report.test.mjs",
+      "exitCode": 0,
+      "tests": 54,
+      "failed": 0
+    },
+    {
+      "command": "npm run test --workspace=@0disoft/saylo-vite",
+      "exitCode": 0,
+      "tests": 125,
+      "failed": 0
+    },
+    {
+      "command": "npm run typecheck:consumers --workspace=@0disoft/saylo-vite",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run verify:boundaries",
+      "exitCode": 0,
+      "sourceFiles": 55,
+      "references": 244,
+      "browserFiles": 37,
+      "violations": 0,
+      "tests": 7
+    },
+    {
+      "command": "npm run build:docs",
+      "exitCode": 0,
+      "files": 15,
+      "codeBlocksPreserved": true
+    },
+    {
+      "command": "npm exec -- node scripts/pack-smoke.mjs",
+      "exitCode": 0,
+      "packages": 5,
+      "languages": [
+        "js",
+        "ts"
+      ]
+    }
+  ],
+  "limits": [
+    "The fault regressions use EventEmitter hot-context fixtures and a custom source callback; no live browser fault injection in this slice.",
+    "Only synchronous callback exceptions are isolated; rejected Promises from async diagnostic handlers remain caller-owned.",
+    "No public API field or export added. No request IDs were added to support reports.",
+    "The existing alpha.5 candidate freezes older 722e497; it must be refreshed for this runtime/doc change.",
+    "No version bump, push, npm publication or CI dispatch."
+  ]
+}

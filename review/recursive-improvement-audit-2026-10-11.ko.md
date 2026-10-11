@@ -123,6 +123,8 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
+2026-10-12 진단 관측자 후속: onDiagnostic의 동기 예외가 eager 초기 binding·커밋 revision 처리와 공유 진단 fan-out을 중단하는 문제, lazy 외부 source의 진단 예외·stop 뒤 예약 콜백을 5회귀 실패로 재현했다. 공통 진단 전달 보호와 lazy binding 검사를 적용해 focused54·Vite 전체125·소비 타입·경계7·다섯 독립 JS/TS tarball을 통과했다(`review/diagnostic-observer-isolation-acceptance-2026-10-12.json`). 콜백 자신의 오류를 재귀 보고하거나 원문을 자동 로그로 남기지 않는다. async Promise rejection·실브라우저 fault 주입은 별도 범위이며, 기존 722e497 후보는 수정 전 이력이라 최종 후보를 다시 동결해야 한다.
+
 2026-10-12 대비 incomplete 후속: 선택형 확대 검사에 진단 보조 모듈을 연결했다. 원래 axe 결과를 보존한 채 텍스트 줄의 기하·아홉 지점 hit-test·불투명 단색 조상 배경 대비를 기록하고, 모달 scrollTop=0의 별도 대비 재검사 뒤 원래 위치를 복원한다. 7상태를 검사해 400% 영어5건은 스크롤 복귀 뒤 visible 샘플·재검사 통과, npm 한국어2건은 visible 샘플·대비13.69:1이나 axe incomplete 유지로 구분했다(`review/demo-contrast-review-acceptance-2026-10-12.json`). 테스트 도구와 설명만 바꿨으며 생산 CSS·모달 동작·게시 상태는 그대로다.
 
 2026-10-12 일반 페이지 확대 후속: 선택형 접근성 명령에 `--zoom 1|2|4`를 추가했다. 새 임시 프로필의 Chromium 기본 페이지 확대를 적용하고 DPR·CSS 폭·visualViewport 배율로 확대가 실제 적용됐는지 검사한다. 다섯 예제×두 언어×모달 닫힘/열림×세 배율의 60상태에서 가로 넘침·입력 보존·모달 초기 포커스·닫기 접근·opener 복귀와 axe 위반0을 확인했다. 대비 incomplete7상태는 남아 별도 확인한다(`review/demo-page-zoom-acceptance-2026-10-12.json`). 생산 코드·새 CI job·게시 상태는 바꾸지 않았다.

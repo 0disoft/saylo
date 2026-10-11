@@ -8,6 +8,7 @@ import type { CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, M
 import { applyCatalogPatch } from './catalog-patch.js';
 import { decodeCatalogResult } from './catalog-wire.js';
 import type { PresentCatalog } from './catalog-patch.js';
+import { deliverDiagnostic } from './diagnostic-observers.js';
 
 type HotContext = NonNullable<ImportMeta['hot']>;
 
@@ -56,7 +57,12 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   const diagnostics = new Set<(diagnostic: LiveDiagnostic) => void>();
   const syncListeners = new Set<(state: DevSyncState) => void>();
   let syncState: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: 3 });
-  const notify = (diagnostic: LiveDiagnostic) => { for (const listener of [...diagnostics]) listener(diagnostic); };
+  const notify = (diagnostic: LiveDiagnostic) => {
+    for (const listener of [...diagnostics]) {
+      if (disposed || !diagnostics.has(listener)) continue;
+      deliverDiagnostic(listener, diagnostic);
+    }
+  };
   const report = (error: unknown, operation: 'handshake' | 'observer' = 'handshake') => notify({ message: error instanceof Error ? error.message : String(error), diagnostics: [], operation });
   const observeState = (state: DevSyncState) => {
     syncState = state;

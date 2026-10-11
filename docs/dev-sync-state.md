@@ -58,4 +58,6 @@ eager 경로는 production에 hot context가 없으면 `connectDev`가 noop을 �
 
 `LiveDiagnostic`에는 `operation?: 'handshake' | 'observer'`가 있다. `handshake`는 동기화 처리 오류, `observer`는 상태 관측 콜백·eager 갱신 구독자·eager/lazy `onUpdate` 콜백의 오류다. lazy bridge는 `source.getCatalogs()`를 콜백 보호 밖에서 읽고 `onUpdate`만 감싸므로, 최초 `onUpdate`가 던져도 binding이 유지되고 완료된 로케일 전환을 reject하지 않는다. 그 오류를 보고하는 `onDiagnostic`이 던져도 갱신은 이어진다. lazy instance의 다른 직접 구독자(`I18n.subscribe`) 오류는 기존 코어 경로로 전달된다. eager store 갱신에서 발생한 구독자 `AggregateError`는 bridge가 `observer`로 분류한다. 서버가 보내는 카탈로그 진단에는 이 필드가 없다. 예제 UI는 `handshake` 문구만 `connected`에서 해제하고 카탈로그 진단은 따로 유지한다.
 
+현재 checkout에서는 `onDiagnostic`의 동기 예외가 동기화를 중단하지 않도록 격리한다. eager의 첫 갱신·store 구독자 오류 보고 중 진단 콜백이 던져도 이미 커밋한 revision과 binding을 유지한다. 같은 소켓의 다른 eager store와 `DevCatalogSource.subscribeDiagnostic`의 다른 구독자도 원래 진단을 계속 받는다. lazy bridge는 외부 source가 stop 뒤 이미 예약된 진단 콜백을 호출해도 해제된 binding에서는 무시한다. 진단 콜백 자신의 오류를 같은 콜백으로 다시 보고하거나 콘솔에 자동 출력하지 않는다. async 콜백의 rejected Promise는 이 동기 예외 보호 범위 밖이므로 소비자가 처리해야 한다. 이 격리는 게시본 alpha.4 이후 변경이며 최종 릴리스 후보에 포함해 검증해야 한다.
+
 재시도 정책은 바뀌지 않았다. 요청당 기본 타임아웃 5000ms(`requestTimeoutMs`), 최대 3회 시도, 새 소켓 연결이나 응답 갭에서 재시도한다. 수동 재시도 API는 없다.

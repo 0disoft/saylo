@@ -86,6 +86,37 @@ test('initial lazy update and diagnostic observer failures retain the binding an
   assert.equal(updates, count, 'No update callbacks after bridge stop');
 });
 
+test('one throwing source diagnostic listener does not hide diagnostics from the lazy bridge or recorder', async t => {
+  const f = fixture(t);
+  const recorder = createSupportRecorder();
+  f.source.subscribeDiagnostic(() => { throw new Error('one diagnostic listener failed'); });
+  const seen = [];
+  connectDev(f.instance, { catalogSource: f.source, onDiagnostic: diagnostic => { seen.push(diagnostic); recorder.onDiagnostic(diagnostic); } });
+  const diagnostic = { message: 'invalid catalog', diagnostics: [] };
+  assert.doesNotThrow(() => f.hot.emit(DIAGNOSTIC_EVENT, diagnostic));
+  assert.deepEqual(seen, [diagnostic]);
+  assert.equal(recorder.getReport().events.length, 1);
+  await assert.doesNotReject(f.instance.setLocale('en'));
+  assert.equal(f.instance.t('demo:title'), 'English');
+});
+
+test('custom lazy diagnostic delivery is passive and queued diagnostics are ignored after stop', t => {
+  const f = fixture(t);
+  let queued;
+  const source = { ...f.source, subscribeDiagnostic: listener => {
+    queued = listener; return f.source.subscribeDiagnostic(listener);
+  } };
+  let calls = 0;
+  const stop = connectDev(f.instance, { catalogSource: source,
+    onDiagnostic: () => { calls++; throw new Error('diagnostic view failed'); }
+  });
+  assert.doesNotThrow(() => queued({ message: 'current diagnostic', diagnostics: [] }));
+  assert.equal(calls, 1);
+  stop();
+  assert.doesNotThrow(() => queued({ message: 'late diagnostic', diagnostics: [] }));
+  assert.equal(calls, 1, 'Queued callbacks must respect the released binding');
+});
+
 test('lazy update failures are observer diagnostics while locale and manifest changes commit and recover', async t => {
   const f = fixture(t);
   const recorder = createSupportRecorder();

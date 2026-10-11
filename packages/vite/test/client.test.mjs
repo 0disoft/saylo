@@ -169,6 +169,49 @@ test('subscriber failure reports committed update without replaying it', t => {
   assert.equal(store.t('demo:hello'), '새 문구');
 });
 
+for (const observer of ['update', 'subscriber']) test(`throwing eager ${observer} and diagnostic views retain the committed revision and binding`, t => {
+  const { hot, store, requests } = fixture(t);
+  const diagnostics = [];
+  const states = [];
+  const fail = () => { throw new Error(`${observer} view failed`); };
+  if (observer === 'subscriber') store.subscribe(fail);
+  let stop;
+  assert.doesNotThrow(() => {
+    stop = connectDev(store, { hot, ...(observer === 'update' ? { onUpdate: fail } : {}),
+      onSyncState: state => states.push(state.status),
+      onDiagnostic: diagnostic => { diagnostics.push(diagnostic); throw new Error('diagnostic view failed'); }
+    });
+  });
+  t.after(stop);
+  assert.equal(hot.listenerCount(SNAPSHOT_EVENT), 1);
+  assert.equal(states.at(-1), 'connected');
+  assert.doesNotThrow(() => hot.emit(SNAPSHOT_EVENT, payload(1, 'committed')));
+  assert.equal(store.t('demo:hello'), 'committed');
+  const count = diagnostics.length;
+  hot.emit(SNAPSHOT_EVENT, payload(1, 'replayed'));
+  assert.equal(store.t('demo:hello'), 'committed');
+  assert.equal(diagnostics.length, count);
+  assert.equal(requests.length, 1, 'Passive failures must not request another snapshot');
+  assert.ok(diagnostics.every(diagnostic => diagnostic.operation === 'observer'));
+});
+
+test('one throwing eager diagnostic view does not interrupt another store on the shared socket', t => {
+  const { hot, store } = fixture(t);
+  const other = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [catalog('other')] });
+  t.after(() => other.dispose());
+  hot.send = (_, request) => hot.emit(SNAPSHOT_EVENT, reply(request, 0, 'initial'));
+  const seen = [];
+  const stop = connectDev(store, { hot, onDiagnostic: () => { throw new Error('diagnostic view failed'); } });
+  const otherStop = connectDev(other, { hot, onDiagnostic: diagnostic => seen.push(diagnostic) });
+  t.after(stop); t.after(otherStop);
+  const diagnostic = { message: 'invalid catalog', diagnostics: [] };
+  assert.doesNotThrow(() => hot.emit(DIAGNOSTIC_EVENT, diagnostic));
+  assert.deepEqual(seen, [diagnostic]);
+  assert.doesNotThrow(() => hot.emit(SNAPSHOT_EVENT, payload(1, 'recovered')));
+  assert.equal(store.t('demo:hello'), 'recovered');
+  assert.equal(other.t('demo:hello'), 'recovered');
+});
+
 test('without Vite hot context connectDev is a production no-op', t => {
   const { store } = fixture(t);
   const stop = connectDev(store);
