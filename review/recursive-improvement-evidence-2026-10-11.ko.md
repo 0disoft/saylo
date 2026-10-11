@@ -46,5 +46,7 @@
 
 **React 독립 시작 안내의 렌더 복구.** `docs/getting-started-react.md`에 전체 문구를 먼저 계산하는 `demo-messages.ts`를 추가해 입력 파일이 8개가 됐다. `verify:starter:react`가 문서 코드 블록을 저장소 밖에 추출하고 core·react·vite alpha.4와 Vite 8.3.4를 public registry에서 설치했다. dev 11단계는 기존 편집·ja 추가·ICU 오류 외에도 기준 greeting 삭제, 오류 중 새 이름 보간, 기준 파일 `{}`, 파일 복원을 확인한다. 새 개발 서버와 문서에서 ko/en을 처음부터 `{}`로 시작하는 3단계도 수정 안내·입력·모달·복구를 통과했다. 생산 타입·빌드와 실제 운영 미리보기 3단계도 통과했다. 전 단계 브라우저 오류·경고 0이고 입력 DOM·메모·모달·포커스가 유지됐다. worker·브라우저·서버·독립 임시 폴더는 정리됐다. 근거는 `review/react-starter-render-recovery-2026-10-11.json`이며, 이전 7파일 검증 기록은 당시 입력의 이력으로 보존한다. Svelte·SvelteKit 시작 안내의 같은 처리는 아직 남았고, 미게시 API·푸시·게시는 포함하지 않는다.
 
-판정 반영은 6·27행에 시작 안내, 7행에 React·Svelte·SvelteKit 예제와 React 시작 안내의 빈 카탈로그 복구, 9행에 React 수명, 21·43행에 진단 자료, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
+**Svelte 독립 시작 안내의 렌더 복구.** `docs/getting-started-svelte.md`에 `demo-messages.ts`를 추가해 10파일로 만들고 컴포넌트별로 마지막 정상 snapshot을 기억한다. `verify:starter:svelte`가 문서 코드 블록을 저장소 밖에 추출하고 core·svelte·vite alpha.4와 Vite 8.3.4를 public registry에서 설치했다. dev 11단계는 정상 편집·ja 추가·ICU 오류 외에도 greeting 키 삭제, 오류 중 새 이름 보간, 기준 `{}`와 복원을 확인했다. 새 서버·새 문서의 빈 ko/en 첫 실행 3단계와 정상 카탈로그의 생산 미리보기 3단계도 통과했다. 입력 DOM·메모·모달·포커스가 유지되고 브라우저 오류·경고는 0이었다. 문서의 svelte-check 오류/경고 0과 생산 빌드도 통과했다. helper가 생성 타입을 읽을 수 있도록 선택적 typegen 안내에는 `AppSchema` 재export를 명시했지만, 선택적 typegen 실행은 이번 명령에 포함하지 않았다. worker·서버·브라우저·독립 임시 폴더는 정리됐다. 근거는 `review/svelte-starter-render-recovery-2026-10-11.json`이다. 기존 9파일 검증 기록은 이력으로 남기고 SvelteKit 시작 안내의 복구는 별도 작업으로 둔다.
+
+판정 반영은 6·27행에 시작 안내, 7행에 세 프레임워크 예제와 React·Svelte 시작 안내의 빈 카탈로그 복구, 9행에 React 수명, 21·43행에 진단 자료, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
 

@@ -1,0 +1,21 @@
+{
+  "observedOn": "2026-10-11",
+  "document": "docs/getting-started-svelte.md",
+  "documentSha256": "fe97f819dd73e5e768ba264c9d58897dd75983877432ba2e0807dee2f06d657e",
+  "command": "npm run verify:starter:svelte",
+  "exitCode": 0,
+  "standaloneFiles": 10,
+  "installation": "Document code blocks extracted outside the repository; public registry dependencies verified in package-lock and no symlinks",
+  "installed": { "@0disoft/saylo-core": "0.1.0-alpha.4", "@0disoft/saylo-svelte": "0.1.0-alpha.4", "@0disoft/saylo-vite": "0.1.0-alpha.4", "vite": "8.3.4" },
+  "developmentChromium": {
+    "checks": ["first-render", "locale-switch", "live-edit", "new-locale", "invalid-last-good", "repair", "key-removal", "current-input-fallback", "empty-base", "base-recovery", "input-dialog-focus-preserved"],
+    "runtimeErrorsAndWarnings": []
+  },
+  "coldChromium": { "checks": ["cold-empty-view", "cold-interaction", "cold-restoration"], "runtimeErrorsAndWarnings": [] },
+  "productionChromium": { "checks": ["first-render", "locale-switch", "input-dialog-focus-preserved"], "runtimeErrorsAndWarnings": [] },
+  "build": { "result": "Svelte component and TypeScript check plus Vite production build passed", "componentErrors": 0, "componentWarnings": 0 },
+  "implementation": ["Complete typed view projection before component rendering", "Per-component committed snapshot fallback", "Previous immutable translator interpolates current name during key deletion", "First empty catalogs render an explicit setup view", "Correction hint visible in the open modal"],
+  "environment": { "os": "Windows", "node": "24.18.0", "browser": "HeadlessChrome/154.0.0.0" },
+  "cleanup": "Worker, browser, Vite servers and bounded independent consumer removed",
+  "limits": ["Svelte guide only; SvelteKit guide recovery remains pending", "Production preview uses repaired catalogs", "Optional typegen procedure is not part of this command", "No SSR or browser matrix", "No unpublished API, package version bump, push or publication"]
+}
