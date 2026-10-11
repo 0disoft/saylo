@@ -24,8 +24,15 @@
   ],
   "cleanup": {
     "localDevServer": "stopped; port 5291 listener absent at the cleanup observation",
-    "narrator": "still running at the latest process observation; local user asked to exit via Caps Lock + Esc",
-    "userReply": "pending at record time"
+    "narrator": "owned Narrator PID 34296 absent after user exit confirmation",
+    "userReply": "user confirmed Narrator was exited",
+    "verifiedAt": "2026-10-11T19:05:36Z",
+    "verification": {
+      "command": "[bool](Get-Process -Id 34296 -ErrorAction SilentlyContinue)",
+      "output": "False",
+      "exitCode": 0,
+      "scope": "Previously launched owned PID only; no new screen-reader test."
+    }
   },
   "limits": [
     "No screen-reader speech, speech recap, announcement or pronunciation was observed.",
