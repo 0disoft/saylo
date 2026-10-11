@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onDestroy, onMount, untrack } from 'svelte';
   import { decodeBootSnapshot } from '@0disoft/saylo-core';
+  import type { StoreSnapshot } from '@0disoft/saylo-core';
+  import type { AppSchema } from '#lib/generated.d.ts';
   import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
   import { createSupportRecorder } from '@0disoft/saylo-vite/client';
   import { goto } from '$app/navigation';
@@ -12,12 +14,21 @@
   import SupportPanel from '#lib/SupportPanel.svelte';
   import '#lib/style.css';
   import { formatDevSyncState } from '#lib/dev-status.ts';
+  import { projectDemoMessages, setDemoView } from '#lib/demo-messages.ts';
 
   let { data, children }: LayoutProps = $props();
   const boot = untrack(() => decodeBootSnapshot(data.sayloBoot));
   const { instance, attachSource } = createBootInstance(boot);
   const i18n = setSayloContext(instance);
   const support = createSupportRecorder(__SAYLO_SUPPORT_ENV__);
+  const lastRendered: { current: StoreSnapshot<AppSchema> | undefined } = { current: undefined };
+  const presentation = $derived(projectDemoMessages($i18n, lastRendered.current));
+  const text = $derived(presentation.messages);
+  setDemoView({ get current() { return presentation; } });
+  $effect(() => { if (presentation.accepted) lastRendered.current = presentation.accepted; });
+  $effect(() => {
+    if (presentation.error) support.onDiagnostic({ message: presentation.error, diagnostics: [], operation: 'observer' });
+  });
   let ready = $state(false);
   let diagnostic = $state.raw<LiveDiagnostic>({ message: '', diagnostics: [] });
   let handshakeMessage = $state('');
@@ -37,7 +48,9 @@
     transitionError = '';
     const url = new URL(page.url.href);
     url.searchParams.set('locale', locale);
-    try { await goto(url, { reset: false }); }
+    // A removed locale can fall back while its old query remains in the URL.
+    // Refetch even for that same URL when the locale is added back and selected.
+    try { await goto(url, { reset: false, refreshAll: true }); }
     catch (error) {
       if (generation === navigationGeneration) {
         pendingLocale = undefined;
@@ -91,13 +104,14 @@
     </label>
   </header>
   <nav class="demo-nav" aria-label="예제 페이지">
-    <a id="home-link" href="/?locale={$i18n.locale}" aria-current={page.url.pathname === '/' ? 'page' : undefined}>{$i18n.t('demo:home')}</a>
-    <a id="about-link" href="/about?locale={$i18n.locale}" aria-current={page.url.pathname === '/about' ? 'page' : undefined}>{$i18n.t('demo:about')}</a>
+    <a id="home-link" href="/?locale={$i18n.locale}" aria-current={page.url.pathname === '/' ? 'page' : undefined}>{text.home}</a>
+    <a id="about-link" href="/about?locale={$i18n.locale}" aria-current={page.url.pathname === '/about' ? 'page' : undefined}>{text.about}</a>
     <a id="leave-link" href="/plain?locale={$i18n.locale}">번역 화면 나가기</a>
   </nav>
   <p id="transition-error" role="alert">{transitionError}</p>
+  <p id="render-error" class="hint" role="alert">{presentation.error}</p>
   {@render children()}
-  <Workbench connection={connectionStatus} {details} />
+  <Workbench connection={connectionStatus} {details} messages={text} renderError={presentation.error} />
   <p id="status" class="hint" role="status">{connectionStatus}</p>
   <pre id="error" role="alert">{details}</pre>
   <SupportPanel recorder={support} {syncState} />

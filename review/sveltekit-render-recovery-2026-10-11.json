@@ -1,0 +1,35 @@
+{
+  "observedOn": "2026-10-11",
+  "scope": "SvelteKit demo empty-catalog SSR, hydrated view recovery and locale restoration",
+  "before": {
+    "emptyCatalogCommand": "node scripts/verify-sveltekit-recovery.mjs",
+    "emptyCatalogExitCode": 1,
+    "emptyCatalogFailure": "UnknownMessageError for demo:home in shared layout; GET /?locale=ko returns HTTP 500 without setup hint",
+    "restoredLocaleFailure": "After removing and restoring en, its unchanged URL is reused without rerunning layout load; locale-restoration times out after locale-removal passes",
+    "restoredLocaleBrowserErrors": []
+  },
+  "after": {
+    "recoveryCommand": "node scripts/verify-sveltekit-recovery.mjs",
+    "recoveryExitCode": 0,
+    "browserChecks": ["locale-removal", "locale-restoration", "empty-base", "navigation-during-error", "base-restoration", "namespace-removal", "namespace-restoration", "cold-empty-hydration", "cold-interaction", "cold-restoration"],
+    "browserRuntimeAndHydrationErrorsAndWarnings": [],
+    "ssrChecks": {
+      "requests": 12,
+      "conditions": ["normal catalogs", "empty catalogs on a new development server", "repaired catalogs"],
+      "routes": ["/?locale=ko", "/?locale=en", "/about?locale=ko", "/about?locale=en"],
+      "assertions": ["HTTP 200", "cache-control no-store", "request locale in HTML", "correct page heading or explicit setup view", "missing-key correction hint on empty catalogs"]
+    },
+    "buildCommand": "npm --prefix examples/sveltekit run build",
+    "buildExitCode": 0,
+    "componentErrors": 0,
+    "componentWarnings": 0,
+    "ssrRegressionCommand": "npm run verify:sveltekit",
+    "ssrRegressionExitCode": 0,
+    "ssrRegressionChecks": ["concurrent ko/en SSR", "matching serialized boot data", "canonical locale and base fallback", "owned listener cleanup", "idempotent stop", "late source cancellation"]
+  },
+  "preserved": ["Input DOM identity and values", "Draft", "Open modal and confirmation input", "Generated support report", "Focus during catalog updates"],
+  "implementation": ["Complete view projection shared by layout, route pages and workbench", "Per-layout last committed snapshot; no cross-request fallback cache", "Correction hints in both layout and open dialog", "Client rendering faults enter support recorder", "Locale selection refetches layout data using goto refreshAll even if its URL is unchanged"],
+  "environment": { "os": "Windows", "node": "24.18.0", "browser": "HeadlessChrome/154.0.0.0", "vite": "8.3.4" },
+  "cleanup": "Only copied inputs in a bounded temporary example tree modified; Vite servers, browser and temporary tree removed; enclosing node_modules neither copied nor deleted",
+  "limits": ["Fault injection and hydration tested on the development server", "Production build uses normal catalogs; empty-catalog production behavior not claimed", "Default page navigation may reset focus; catalog-update focus preservation is verified", "No package version bump, publication or push", "Standalone getting-started guides still need the same rendering recovery pattern"]
+}
