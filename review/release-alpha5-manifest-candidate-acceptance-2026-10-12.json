@@ -1,0 +1,158 @@
+{
+  "schema": "saylo.release-candidate-refresh/v1",
+  "observedAt": "2026-10-11T18:11:35.178Z",
+  "sourceCommit": "0b85c933f0311abfb7fa7aaa86fd1c835a524d58",
+  "proposedVersion": "0.1.0-alpha.5",
+  "tag": "alpha",
+  "node": "v24.18.0",
+  "candidateDirectory": ".release/candidate-0.1.0-alpha.5-j7YHBb",
+  "validationDirectory": ".release/candidate-0.1.0-alpha.5-j7YHBb/validation-YU9q6b",
+  "validationSha256": "0a710d36970d678cee1c883fad6bc6e4684e2f0019cfe0ccd5822b013dca9ed3",
+  "sourceArchiveSha256": "3b099f017623d15cd749ed5123e740c59f881aed3a2b0717ed438fcac0d7e481",
+  "frozenInputs": 985,
+  "inputInventorySha256": "03418eb419621b2515dd1467d159531549a2d5d6e6aa25472a721824a67a1b4c",
+  "checks": [
+    {
+      "name": "install",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "durationMs": 6953
+    },
+    {
+      "name": "check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "durationMs": 31501
+    },
+    {
+      "name": "release-metadata",
+      "command": [
+        "npm",
+        "run",
+        "release:check",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 715
+    },
+    {
+      "name": "pack",
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/pack-smoke.mjs",
+        "--save-release"
+      ],
+      "exitCode": 0,
+      "durationMs": 43612
+    },
+    {
+      "name": "publish-plan",
+      "command": [
+        "npm",
+        "run",
+        "release:publish",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 736
+    }
+  ],
+  "checkTests": {
+    "groups": [
+      7,
+      82,
+      14,
+      14,
+      11,
+      131,
+      8
+    ],
+    "total": 267,
+    "failed": 0
+  },
+  "logSha256": {
+    "install": "6cdd1ebd6e53887d2b7882cfd8f4606caaa9d88c5ff5d71f09a65d8123c4294f",
+    "check": "3ace896b5e1e4083afe48f58831c6e1bfc87a4d47eaecabe281a2ee01da22807",
+    "release-metadata": "796254fc2234c914d050573a82d69453d67e2d6d03d4101db61671a1e4d9929e",
+    "pack": "641044ef6d8bb99434dab09fff9115d8d21118ed80305453f31fefcc53a15791",
+    "publish-plan": "b9420aaaf09a064773ba50e203d3b90de6b2d75c5b95a98bd96bb4f70de17b3c"
+  },
+  "artifacts": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-Ey6wBIzfa1WJGrSYsm1PivOm2bc89tzNtIy3n6Ao6G/n0Zx4uBdkA4OPxdy0D5ipsf630YPj+2m+Pku9TPbFEg=="
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-ynW9Yl4pKgaD7SSFdV2GPUObNOAlT2Ff/GH5zNLbcGzjnK3nb9BcHColc/J8zV+FZgCrr7jbmEZGJjttCZDm7Q=="
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-gKfPS8+IUPnl8xIoxRMe1QgjAY1+qVSzgxdBcjHNRaPgle8/B6gqUKFzHL5Vz2Bqd9HdCnXB7QWv4oeBFCVBGw=="
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-yUADQ7BkF60N27h992ptliwLlmRMym2vnx0FbCKYUJLKYdAK4YGqVUbBm4kuS4rol4kBlGutOBlCeuPqsxXm8w=="
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-soe1H5j2EAuamcP46k2Q5cVoorYcBX8oH+aNcficGlLLQZMcNE9M79BK5azhTEcZrqmcL0BFhHMfrayNbjsHng=="
+    }
+  ],
+  "sveltekit": {
+    "command": "npm exec -- node scripts/pack-sveltekit.mjs --consumer-fixture support",
+    "exitCode": 0,
+    "logSha256": "a369e568a1139e5fede28d408b6d73a1db77124282704d0264a6c6f946f9399d",
+    "sourceUnchangedAfterAcceptance": true,
+    "repackedArtifactsMatchVerifiedIntegrity": true,
+    "scope": [
+      "Independent alpha.5 install, typecheck, client/SSR builds",
+      "Concurrent ko/en SSR and boot, lazy development lifecycle",
+      "Chromium hydration, locale switching, support report generation/reset, shared-layout values, modal-navigation-focus and exit/re-entry"
+    ]
+  },
+  "versionPromotion": {
+    "patch": ".release/candidate-0.1.0-alpha.5-6xvsAJ/version-promotion.patch",
+    "patchSha256": "0ca36b0b3e342b7c97c27429663f1b94638120b5fe3bfcb77726e346d6f35707",
+    "applicabilityExitCode": 0,
+    "applied": false
+  },
+  "originalVersion": "0.1.0-alpha.4",
+  "state": "Local candidate validated; not published",
+  "limits": [
+    "Candidate freezes 0b85c93; this acceptance record and release-plan update are later evidence only.",
+    "No source version bump, push, workflow/OIDC dispatch, npm publication or new registry acceptance.",
+    "Accessibility evidence remains scoped to the separate browser records; real assistive-technology speech and two axe incomplete heading cases remain unverified."
+  ]
+}

@@ -85,7 +85,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 71 | 백업과 복구 자동화 — "백업 생성·보관·복원 검증을 자동화하고, 장애 때 정해진 절차로 복구할 수 있는 기반을 구축할까?" | 비적용(L1+L2) | 백업 대상 데이터 없음(48행). 자동 보관은 CI artifact 7일과 `releases/*.json`. tarball SHA-512 대조가 복원 검증 일부. |
 | 72 | 운영 절차의 실행 도구화 — "장애 대응과 정기 관리 절차를 문서와 실행 도구로 함께 만들어, 담당자가 바뀌어도 운영할 수 있게 할까?" | 적용(L2) | `docs/09-release.md` runbook과 `scripts/release-check.mjs`·`release-publish.mjs`·`verify-oidc.mjs`·`registry-release.mjs`. CLI 재현 명령까지 기재. |
 | 73 | 보안 검증 파이프라인 — "비밀정보 유출·취약 의존성·위험한 권한 변경을 개발과 배포 과정에서 잡아내는 기반을 구축할까?" | 부분(L2) | OIDC·SHA-512 게시 검증, SECURITY.md와 별개로 `audit:dependencies`를 기존 release job의 npm ci 다음에 연결했다. 루트·npm 예제·SvelteKit의 개발 포함 advisory 조회는 모두 0건. wrapper의 실패 exit코드 전파·allow-scripts 환경 호환 처리를 확인했다(`review/dependency-policy-acceptance-2026-10-12.json`). 로컬 미게시·CI 미실행이며 코드 취약점·비밀 유출·권한 변경 스캔 전체를 수행했다는 뜻이 아니다.
-| 74 | 코드와 문서의 동기화 — "API 명세·설정 항목·개발 명령을 실제 코드에서 추출하고, 변경 때 관련 문서도 함께 갱신되는 구조를 만들까?" | 부분(L0+L2) | typegen이 기준 스키마에서 `.d.ts` 추출(`typegen/generator.ts`)하고 fixture가 검증. 나머지는 수동: `docs/README.md` 우선순위 규칙, `docs/06` 사람이 링크·예제 확인. CI 문서 검증 없음. |
+| 74 | 코드와 문서의 동기화 — "API 명세·설정 항목·개발 명령을 실제 코드에서 추출하고, 변경 때 관련 문서도 함께 갱신되는 구조를 만들까?" | 부분(L0+L2) | typegen이 기준 스키마에서 `.d.ts`를 추출하고 fixture가 검증한다. Vite 빌드는 `build-package-docs.mjs`로 시작 안내·API README·계약을 동봉하고 내용·내부 링크를 검증한다. 릴리스 workflow의 `npm run check`도 이 빌드를 실행한다. API 설명을 소스 선언에서 자동 추출하는 기능과 동봉 대상 밖 설계문서의 자동 동기화는 없다. |
 
 ## 실행검증 완료
 
@@ -93,7 +93,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 ## 집계
 
-적용 15 (8,11,13,19,24,26,35,50,52,54,55,57,58,62,72) · 부분 34 (3,5,6,7,9,10,12,15,17,18,20,21,23,25,27,28,34,39,43,44,47,49,51,53,56,59,60,61,65,66,68,69,70,74) · 보완 4 (4,45,63,73) · 비적용 19 (14,16,22,29,30,31,32,33,36,37,38,40,41,42,46,48,64,67,71). 합계 72다. 이전 판의 부분 30·보완 7·비적용 20은 표와 어긋나 바로잡았다. 9행과 61행은 부분이다. 비적용 19개 중 14개는 SaaS 계열이고 5개(46,48,64,67,71)는 운영·인프라 계열이다.
+적용 16 (8,11,13,19,24,26,35,50,52,53,54,55,57,58,62,72) · 부분 35 (3,5,6,7,9,10,12,15,17,18,20,21,23,25,27,28,34,39,43,44,45,47,49,51,56,59,60,61,65,66,68,69,70,73,74) · 보완 2 (4,63) · 비적용 19 (14,16,22,29,30,31,32,33,36,37,38,40,41,42,46,48,64,67,71). 합계 72다. 현재 표의 판정과 coverage JSON을 대조해 집계를 맞췄다. 이 집계는 고려 사항별 적용 범위이며, 목표 완료 여부는 아니다. 비적용 19개 중 14개는 SaaS 계열이고 5개(46,48,64,67,71)는 운영·인프라 계열이다.
 
 ## 미검증 — 이번 감사에서 재실행하지 않음
 
@@ -123,9 +123,11 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
-2026-10-12 manifest 관측자 후속: 구독자 예외가 후속 번역 갱신을 가리거나 초기 카탈로그 요청을 타임아웃시키고, 알림 도중 폐기된 source가 다음 구독자를 호출하는 문제를 3회귀 실패로 재현했다. 알림별 예외 격리와 구독 해제·폐기 검사를 적용했다. 읽을 수 없는 예외 메시지도 갱신을 막지 않도록 보호했고 해당 3회귀도 수정 전 실패를 확인했다. 수정 후 Vite 전체131·소비 타입·동봉 문서 검사를 통과했다(`review/manifest-observer-isolation-acceptance-2026-10-12.json`). 아래 `7518290` 후보는 이번 수정 전 이력이라 다시 동결해야 한다. 비동기 Promise rejection·실브라우저 fault 주입은 아직 검증하지 않았다.
+2026-10-12 최신 후보: `0b85c93`를 동결한 alpha.5 사본에서 입력985개·전체267 테스트·독립 JS/TS 소비·게시 계획 dry run·SvelteKit SSR/Chromium과 모달 이동 포커스를 확인했다. 검사 뒤 소스 입력 불변과 재pack 다섯 tarball SHA-512 일치·승격 패치 적용 가능 검사도 통과했다(`review/release-alpha5-manifest-candidate-acceptance-2026-10-12.json`). 원본 버전은 alpha.4이며, 원격 CI/OIDC·게시·registry 인수·실제 AT와 npm 제목 대비 incomplete2건은 남아 있다.
 
-2026-10-12 최신 후보: `7518290`를 동결한 alpha.5 사본에서 입력 983개 대조·전체 261개 테스트·독립 JS/TS 소비·게시 계획 dry run·SvelteKit SSR/Chromium과 모달 이동 포커스를 통과했다. 진단 관측자 예외 격리 회귀 5개와 동봉 계약도 포함한다. SvelteKit 뒤 입력 불변·다섯 tarball 재pack SHA-512 일치·기존 승격 패치 적용 가능 검사를 확인했으며 원본 버전은 alpha.4다(`review/release-alpha5-diagnostic-candidate-acceptance-2026-10-12.json`). 원격 CI/OIDC·실제 게시·registry 인수·실제 AT와 npm 제목 대비 incomplete2건은 계속 남아 있다.
+2026-10-12 manifest 관측자 후속: 구독자 예외가 후속 번역 갱신을 가리거나 초기 카탈로그 요청을 타임아웃시키고, 알림 도중 폐기된 source가 다음 구독자를 호출하는 문제를 3회귀 실패로 재현했다. 알림별 예외 격리와 구독 해제·폐기 검사를 적용했다. 읽을 수 없는 예외 메시지도 갱신을 막지 않도록 보호했고 해당 3회귀도 수정 전 실패를 확인했다. 수정 후 Vite 전체131·소비 타입·동봉 문서 검사를 통과했다(`review/manifest-observer-isolation-acceptance-2026-10-12.json`). 위 `0b85c93` 후보에 이 수정과 동봉 계약을 포함해 검증했다. 비동기 Promise rejection·실브라우저 fault 주입은 아직 검증하지 않았다.
+
+2026-10-12 이전 후보: `7518290`를 동결한 alpha.5 사본에서 입력 983개 대조·전체 261개 테스트·독립 JS/TS 소비·게시 계획 dry run·SvelteKit SSR/Chromium과 모달 이동 포커스를 통과했다. 진단 관측자 예외 격리 회귀 5개와 동봉 계약도 포함한다. SvelteKit 뒤 입력 불변·다섯 tarball 재pack SHA-512 일치·기존 승격 패치 적용 가능 검사를 확인했으며 원본 버전은 alpha.4다(`review/release-alpha5-diagnostic-candidate-acceptance-2026-10-12.json`). 원격 CI/OIDC·실제 게시·registry 인수·실제 AT와 npm 제목 대비 incomplete2건은 계속 남아 있다.
 
 2026-10-12 진단 관측자 후속: onDiagnostic의 동기 예외가 eager 초기 binding·커밋 revision 처리와 공유 진단 fan-out을 중단하는 문제, lazy 외부 source의 진단 예외·stop 뒤 예약 콜백을 5회귀 실패로 재현했다. 공통 진단 전달 보호와 lazy binding 검사를 적용해 focused54·Vite 전체125·소비 타입·경계7·다섯 독립 JS/TS tarball을 통과했다(`review/diagnostic-observer-isolation-acceptance-2026-10-12.json`). 콜백 자신의 오류를 재귀 보고하거나 원문을 자동 로그로 남기지 않는다. async Promise rejection·실브라우저 fault 주입은 별도 범위이며, 기존 722e497 후보는 수정 전 이력이라 최종 후보를 다시 동결해야 한다.
 
