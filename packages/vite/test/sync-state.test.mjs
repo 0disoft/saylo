@@ -36,6 +36,7 @@ test('eager timeouts expose attempts and final failure, then reconnect recovers 
   assert.equal(requests.length, 3);
   assert.equal(store.t('demo:hello'), 'last good');
   assert.match(diagnostics[0].message, /after 3 attempts/);
+  assert.equal(diagnostics[0].operation, 'handshake');
   for (const state of states) {
     assert.ok(Object.isFrozen(state));
     assert.equal(state.maxAttempts, 3);
@@ -60,7 +61,7 @@ test('state and diagnostic observer exceptions do not prevent an eager handshake
   hot.send = (_, request) => hot.emit(SNAPSHOT_EVENT, reply(request));
   assert.doesNotThrow(() => connectDev(store, { hot,
     onSyncState: state => { states.push(state); throw new Error('status view failed'); },
-    onDiagnostic: () => { reports++; throw new Error('diagnostic view failed'); }
+    onDiagnostic: diagnostic => { assert.equal(diagnostic.operation, 'observer'); reports++; throw new Error('diagnostic view failed'); }
   }));
   assert.deepEqual(view(states), [['connecting', 1], ['connected', 0]]);
   assert.equal(reports, 2);

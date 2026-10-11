@@ -13,7 +13,7 @@ interface SyncOptions {
   readonly scope: () => Pick<EagerSnapshotRequest, 'locale' | 'namespaces'>;
   readonly send: (request: EagerSnapshotRequest) => void;
   readonly commit: (event: EagerCatalogEvent) => boolean;
-  readonly report: (error: unknown) => void;
+  readonly report: (error: unknown, operation?: 'handshake' | 'observer') => void;
   readonly onState?: (state: DevSyncState) => void;
 }
 
@@ -66,7 +66,7 @@ export class EagerSync {
     try { this.options.onState?.(this.state); }
     catch (error) {
       // Observers must not prevent a handshake, timer cleanup, or another attempt.
-      try { this.options.report(error); } catch { /* diagnostic observers are passive too */ }
+      try { this.options.report(error, 'observer'); } catch { /* diagnostic observers are passive too */ }
     }
   }
 

@@ -16,13 +16,13 @@ export function connectLazyDev<S extends Schema>(instance: I18n<S>, options: Con
   if (existing) return existing;
   const source = options.catalogSource;
   const cleanups: Array<() => void> = [];
-  const report = (error: unknown) => {
-    if (bindings.get(instance) === stop) options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [] });
+  const report = (error: unknown, operation?: 'observer') => {
+    if (bindings.get(instance) === stop) options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [], ...(operation ? { operation } : {}) });
   };
   const update = () => { if (bindings.get(instance) === stop) options.onUpdate?.(source.getCatalogs()); };
   const observeState = (state: DevSyncState) => {
     if (bindings.get(instance) !== stop) return;
-    try { options.onSyncState?.(state); } catch (error) { try { report(error); } catch { /* observers are passive */ } }
+    try { options.onSyncState?.(state); } catch (error) { try { report(error, 'observer'); } catch { /* observers are passive */ } }
   };
   const stop = () => {
     if (bindings.get(instance) !== stop) return;

@@ -62,6 +62,8 @@ export function isSnapshotRequest(value: unknown): value is EagerSnapshotRequest
 export interface LiveDiagnostic {
   readonly message: string;
   readonly diagnostics: readonly CatalogDiagnostic[];
+  /** Local client operation; server catalog diagnostics leave this unset. */
+  readonly operation?: 'handshake' | 'observer';
   readonly request?: EagerSnapshotRequest;
 }
 

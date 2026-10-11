@@ -43,8 +43,8 @@ export function connectDev<S extends Schema>(store: Store<S> | I18n<S>, options:
   const timeoutMs = eagerOptions.requestTimeoutMs ?? 5000;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('requestTimeoutMs must be a positive timer duration.');
   let unwatchDispose = noop;
-  const report = (error: unknown) => {
-    if (bindings.get(store) === stop) options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [] });
+  const report = (error: unknown, operation: 'handshake' | 'observer' = 'handshake') => {
+    if (bindings.get(store) === stop) options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [], operation });
   };
   const sync = new EagerSync({ timeoutMs,
     scope: () => ({ locale: store.getSnapshot().locale, namespaces: [...store.getSnapshot().loadedNamespaces] }),
@@ -55,12 +55,12 @@ export function connectDev<S extends Schema>(store: Store<S> | I18n<S>, options:
       if (payload.baseLocale !== store.getSnapshot().baseLocale) { report(new Error('Plugin and store baseLocale differ.')); return false; }
       try { store.replaceCatalogs(freezeCatalogs(payload.catalogs)); }
       catch (error) {
-        report(error);
+        report(error, error instanceof AggregateError ? 'observer' : 'handshake');
         // Subscriber errors happen after commit. Do not replay the committed revision.
         if (!(error instanceof AggregateError)) return false;
       }
       if (bindings.get(store) === stop) {
-        try { options.onUpdate?.(payload.catalogs); } catch (error) { report(error); }
+        try { options.onUpdate?.(payload.catalogs); } catch (error) { report(error, 'observer'); }
       }
       return true;
     },

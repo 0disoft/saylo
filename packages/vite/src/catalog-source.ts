@@ -57,12 +57,12 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   const syncListeners = new Set<(state: DevSyncState) => void>();
   let syncState: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: 3 });
   const notify = (diagnostic: LiveDiagnostic) => { for (const listener of [...diagnostics]) listener(diagnostic); };
-  const report = (error: unknown) => notify({ message: error instanceof Error ? error.message : String(error), diagnostics: [] });
+  const report = (error: unknown, operation: 'handshake' | 'observer' = 'handshake') => notify({ message: error instanceof Error ? error.message : String(error), diagnostics: [], operation });
   const observeState = (state: DevSyncState) => {
     syncState = state;
     for (const listener of [...syncListeners]) {
       if (disposed || !syncListeners.has(listener)) continue;
-      try { listener(state); } catch (error) { try { report(error); } catch { /* observer errors do not block other listeners */ } }
+      try { listener(state); } catch (error) { try { report(error, 'observer'); } catch { /* observer errors do not block other listeners */ } }
     }
   };
   function failPending(error: unknown) {
@@ -123,7 +123,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
       onState: observeState,
       scope: () => ({ locale: manifest.baseLocale, namespaces: [] }),
       send: request => hot!.send(MANIFEST_REQUEST_EVENT, request),
-      report: error => { failPending(error); report(error); },
+      report: (error, operation = 'handshake') => { if (operation === 'handshake') failPending(error); report(error, operation); },
       commit: envelope => {
         try {
           const next = validateCatalogManifest((envelope as EagerCatalogEvent & { manifest: CatalogManifest }).manifest);
