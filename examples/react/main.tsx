@@ -1,16 +1,16 @@
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { connectDev } from '@0disoft/saylo-vite/client';
-import type { LiveDiagnostic } from '@0disoft/saylo-vite/client';
+import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
 import type { ParsedCatalog } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs } from 'virtual:saylo/lazy';
 import { SayloProvider, store, useI18n } from './i18n';
 import '../vanilla/style.css';
+import { formatDevSyncState } from '../shared/dev-status';
 
-function CatalogPanel() {
-  const [catalogs, setCatalogs] = useState<readonly ParsedCatalog[]>(initialCatalogs.flatMap(o => o.status === 'present' ? [o.catalog] : []));
-  const [diagnostic, setDiagnostic] = useState<LiveDiagnostic>({ message: '', diagnostics: [] });
-  useEffect(() => connectDev(store, { catalogSource, onUpdate: setCatalogs, onDiagnostic: setDiagnostic }), []);
+function CatalogPanel({ catalogs, diagnostic, handshakeMessage, connection }: {
+  catalogs: readonly ParsedCatalog[]; diagnostic: LiveDiagnostic; handshakeMessage: string; connection: string;
+}) {
   const source = (locale: string) => {
     const catalog = catalogs.find(c => c.locale === locale && c.namespace === 'demo');
     return catalog ? JSON.stringify(Object.fromEntries(Object.entries(catalog.messages).map(([key, message]) => [key, message.source])), null, 2) : '아직 로드하지 않았습니다.';
@@ -23,14 +23,22 @@ function CatalogPanel() {
     <p className="hint">vanilla 데모와 같은 번역 파일을 사용합니다. <code>examples/vanilla/locales/ko/demo.json</code>을 수정하고 저장하세요.</p>
     <label>기준 문구 · 한국어<textarea className="code" rows={12} spellCheck={false} aria-label="한국어 카탈로그" readOnly value={source('ko')} /></label>
     <label>번역 문구 · English<textarea className="code" rows={12} spellCheck={false} aria-label="영어 카탈로그" readOnly value={source('en')} /></label>
-    <p className="hint" role="status">{diagnostic.message ? '갱신 중 오류가 발생했습니다. 아래 진단을 확인하세요.'
-      : import.meta.hot ? '파일을 저장하면 React 화면에 자동 반영됩니다.' : '빌드된 카탈로그를 사용합니다.'}</p>
-    <pre id="error" role="alert">{details}</pre>
+    <p id="status" className="hint" role="status">{connection}</p>
+    <pre id="error" role="alert">{[details, handshakeMessage].filter(Boolean).join('\n')}</pre>
     <p className="footnote">로케일·namespace 파일 추가와 삭제도 반영합니다. 번역 파일 오류는 마지막 정상 상태를 유지합니다.</p>
   </section>;
 }
 
 function App() {
+  const [catalogs, setCatalogs] = useState<readonly ParsedCatalog[]>(initialCatalogs.flatMap(o => o.status === 'present' ? [o.catalog] : []));
+  const [diagnostic, setDiagnostic] = useState<LiveDiagnostic>({ message: '', diagnostics: [] });
+  const [handshakeMessage, setHandshakeMessage] = useState('');
+  const [syncState, setSyncState] = useState<DevSyncState>();
+  useEffect(() => connectDev(store, { catalogSource, onUpdate: setCatalogs,
+    onDiagnostic: value => { if (value.operation === 'handshake') setHandshakeMessage(value.message); else setDiagnostic(value); },
+    onSyncState: value => { setSyncState(value); if (value.status === 'connected') setHandshakeMessage(''); }
+  }), []);
+  const connection = import.meta.hot ? formatDevSyncState(syncState) : '빌드된 카탈로그를 사용합니다.';
   const snapshot = useI18n();
   const { t, locale, setLocale } = snapshot;
   const [name, setName] = useState('');
@@ -100,14 +108,15 @@ function App() {
               {pendingNamespace === namespace ? '불러오는 중' : `${namespace} 불러오기`}
             </button>)}
         </section>
-        <CatalogPanel />
+        <CatalogPanel catalogs={catalogs} diagnostic={diagnostic} handshakeMessage={handshakeMessage} connection={connection} />
       </div>
     </main>
-    <dialog id="confirmation" ref={dialog} onClose={() => setOpen(false)}>
+    <dialog id="confirmation" ref={dialog} onClose={() => setOpen(false)} aria-labelledby="dialog-title">
       <form method="dialog">
-        <h2>{t('demo:dialogTitle')}</h2>
+        <h2 id="dialog-title">{t('demo:dialogTitle')}</h2>
         <label>{t('demo:dialogNote')}<input id="confirmation-note" autoComplete="off" value={confirmation} onChange={event => setConfirmation(event.target.value)} /></label>
         <button>{t('demo:closeDialog')}</button>
+        <p id="dialog-status" className="hint" role="status">{connection}{diagnostic.message && `\n${diagnostic.message}`}{handshakeMessage && `\n${handshakeMessage}`}</p>
         <p className="hint">번역 파일을 저장해도 이 창은 열린 채 유지됩니다.</p>
       </form>
     </dialog>

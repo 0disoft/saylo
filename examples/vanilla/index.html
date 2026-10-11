@@ -41,12 +41,13 @@
         </section>
       </div>
     </main>
-    <dialog id="confirmation">
+    <dialog id="confirmation" aria-labelledby="dialog-title">
       <form method="dialog">
-        <h2 data-message="demo:dialogTitle"></h2>
+        <h2 id="dialog-title" data-message="demo:dialogTitle"></h2>
         <label><span data-message="demo:dialogNote"></span><input id="confirmation-note" autocomplete="off"></label>
         <button data-message="demo:closeDialog"></button>
         <p class="hint">번역 파일을 저장해도 이 창은 열린 채 유지됩니다.</p>
+        <p id="dialog-status" class="hint" role="status"></p>
       </form>
     </dialog>
     <script type="module" src="/main.js"></script>

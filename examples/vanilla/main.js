@@ -1,6 +1,7 @@
 import { createStore } from '@0disoft/saylo-core';
 import { connectDev } from '@0disoft/saylo-vite/client';
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
+import { formatDevSyncState } from '../shared/dev-status.js';
 
 const element = id => document.getElementById(id);
 const editors = { ko: element('ko-editor'), en: element('en-editor') };
@@ -13,24 +14,43 @@ const localeSelect = element('locale');
 const count = element('count');
 const error = element('error');
 let localeList = '';
+let diagnosticMessage = '';
+let handshakeMessage = '';
+let renderMessage = '';
+let syncState;
+
+function refreshStatus() {
+  const details = [diagnosticMessage, handshakeMessage, renderMessage].filter(Boolean).join('\n');
+  error.textContent = details;
+  const connection = import.meta.hot ? formatDevSyncState(syncState) : '빌드된 카탈로그를 사용합니다.';
+  element('status').textContent = connection + (details ? '\n아래 진단을 확인하고 문제를 수정하세요. 마지막 화면은 유지됩니다.' : '');
+  element('dialog-status').textContent = connection + (details ? `\n${details}\n문제를 수정하고 다시 저장하세요.` : '');
+}
 
 function render(snapshot) {
-  // Compute everything before touching DOM; preserve form controls and dialog identity.
-  const text = textNodes.map(node => [node, snapshot.t(node.dataset.message)]);
-  const attributes = placeholders.map(node => [node, snapshot.t(node.dataset.placeholder)]);
-  const summary = snapshot.t('demo:summary', { count: Number(count.value) });
-  for (const [node, value] of text) node.textContent = value;
-  for (const [node, value] of attributes) node.placeholder = value;
-  element('summary').textContent = summary;
-  element('revision').textContent = `revision ${snapshot.stateRevision}`;
-  element('namespaces').textContent = snapshot.availableNamespaces.join(', ');
-  document.documentElement.lang = snapshot.locale;
-  const nextList = snapshot.availableLocales.join(',');
-  if (nextList !== localeList) {
-    localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => new Option({ ko: '한국어', en: 'English' }[locale] ?? locale, locale)));
-    localeList = nextList;
+  try {
+    // Compute everything before touching DOM; preserve form controls and dialog identity.
+    const text = textNodes.map(node => [node, snapshot.t(node.dataset.message)]);
+    const attributes = placeholders.map(node => [node, snapshot.t(node.dataset.placeholder)]);
+    const summary = snapshot.t('demo:summary', { count: Number(count.value) });
+    for (const [node, value] of text) node.textContent = value;
+    for (const [node, value] of attributes) node.placeholder = value;
+    element('summary').textContent = summary;
+    element('revision').textContent = `revision ${snapshot.stateRevision}`;
+    element('namespaces').textContent = snapshot.availableNamespaces.join(', ');
+    document.documentElement.lang = snapshot.locale;
+    const nextList = snapshot.availableLocales.join(',');
+    if (nextList !== localeList) {
+      localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => new Option({ ko: '한국어', en: 'English' }[locale] ?? locale, locale)));
+      localeList = nextList;
+    }
+    localeSelect.value = snapshot.locale;
+  } catch (error) {
+    renderMessage = error instanceof Error ? error.message : String(error);
+    refreshStatus();
+    return;
   }
-  localeSelect.value = snapshot.locale;
+  if (renderMessage) { renderMessage = ''; refreshStatus(); }
 }
 
 function showCatalogs(catalogs) {
@@ -46,20 +66,22 @@ const unsubscribe = store.subscribe(render);
 render(store.getSnapshot());
 showCatalogs(initialCatalogs);
 const disconnect = connectDev(store, {
+  hot: import.meta.hot,
   onUpdate: catalogs => {
     showCatalogs(catalogs);
-    if (!error.textContent) element('status').textContent = '정상 카탈로그가 연결되어 있습니다. 파일을 저장하면 자동 반영됩니다.';
+    refreshStatus();
   },
   onDiagnostic: diagnostic => {
-    error.textContent = diagnostic.diagnostics.length
+    const details = diagnostic.diagnostics.length
       ? diagnostic.diagnostics.map(d => `${d.sourceName}${d.id ? ` [${d.id}]` : ''}: ${d.message}`).join('\n')
       : diagnostic.message;
-    element('status').textContent = diagnostic.message
-      ? '갱신 중 오류가 발생했습니다. 아래 진단을 확인하세요.'
-      : '오류가 해결되어 정상 카탈로그를 사용합니다.';
+    if (diagnostic.operation === 'handshake') handshakeMessage = details;
+    else diagnosticMessage = details;
+    refreshStatus();
   },
+  onSyncState: state => { syncState = state; if (state.status === 'connected') handshakeMessage = ''; refreshStatus(); },
 });
-if (!import.meta.hot) element('status').textContent = '빌드된 카탈로그를 사용합니다. 파일 자동 반영은 개발 서버에서 동작합니다.';
+refreshStatus();
 on(localeSelect, 'change', () => store.setLocale(localeSelect.value));
 on(count, 'input', () => render(store.getSnapshot()));
 on(element('order-form'), 'submit', event => {
@@ -67,5 +89,5 @@ on(element('order-form'), 'submit', event => {
   element('confirmation').showModal();
 });
 function cleanup() { disconnect(); controls.abort(); unsubscribe(); store.dispose(); }
-on(window, 'pagehide', cleanup);
+on(window, 'pagehide', event => { if (!event.persisted) cleanup(); });
 if (import.meta.hot) import.meta.hot.dispose(cleanup);

@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-11",
+  "transportCommits": ["b534b4f", "928377e"],
+  "scope": "Vanilla eager and React lazy example status UI",
+  "liveFixture": {
+    "environment": "Codex in-app browser and real Vite 8.3.2 server on loopback port 5196",
+    "method": "Suppress server snapshot/manifest replies; later allow replies and save a real base-catalog edit to trigger recovery",
+    "timeoutPolicy": "Unmodified 5000ms per handshake attempt, maximum three attempts",
+    "vanilla": {
+      "connectingStatus": "문구를 동기화하는 중입니다 (1/3).",
+      "retryingStatusObserved": "문구 동기화를 재시도합니다 (3/3).",
+      "failedStatusPrefix": "문구 동기화에 실패했습니다 (3/3).",
+      "retainedThroughFailureAndRecovery": {
+        "name": "Keep my form",
+        "confirmationNote": "Keep my modal",
+        "dialogOpen": true,
+        "focusedElement": "confirmation-note"
+      },
+      "recoveredHeading": "번역을 바꿔도, 입력은 그대로 · 연결 복구",
+      "errorAfterRecovery": ""
+    },
+    "react": {
+      "connectingStatus": "문구를 동기화하는 중입니다 (1/3).",
+      "retryingStatusObserved": "문구 동기화를 재시도합니다 (2/3).",
+      "failedStatusPrefix": "문구 동기화에 실패했습니다 (3/3).",
+      "retainedThroughFailureAndRecovery": {
+        "name": "React draft",
+        "confirmationNote": "React modal draft",
+        "dialogOpen": true,
+        "focusedElement": "confirmation-note"
+      },
+      "recoveredHeading": "번역을 바꿔도, 입력은 그대로 · 연결 복구",
+      "errorAfterRecovery": "",
+      "consoleWarningsAndErrorsAtRecovery": [],
+      "catalogDiagnostic": {
+        "method": "Break en/demo.json, then save a different valid ko/demo.json edit while the socket is healthy",
+        "retainedErrorPrefix": "en/demo.json: Invalid JSON:",
+        "visibleInsideOpenDialog": true,
+        "errorAfterRestoringEn": "",
+        "inputDialogAndFocusPreserved": true
+      }
+    },
+    "tabsClosed": true,
+    "serversStopped": true,
+    "catalogFilesRestoredByteForByte": true
+  },
+  "localChecks": [
+    "tsc -p examples/react/tsconfig.json",
+    "Vite production builds of Vanilla and React",
+    "node --test scripts/test/vanilla-demo-lifecycle.test.mjs: two passed"
+  ],
+  "regressionCases": [
+    "Vanilla production bundle: cached history page retains form input and working locale controls",
+    "Vanilla production bundle: missing message retains DOM and clears page/dialog guidance after repair"
+  ],
+  "limits": [
+    "The final connected caption describes server connection rather than completed pair loading; that wording was changed after the browser checks without changing state handling.",
+    "Vanilla retrying was observed in an earlier request-suppression run; failure-to-recovery acceptance used reply suppression so the real server retains its client registration.",
+    "Svelte/SvelteKit UI application and browser acceptance remain pending.",
+    "No claim of browser BFCache admission follows from the jsdom lifecycle test.",
+    "The standalone npm example still uses published alpha.4, which has no onSyncState API.",
+    "No version bump, publish, or remote push."
+  ]
+}
