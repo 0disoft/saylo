@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-11",
+  "scope": "SvelteKit example synchronization state UI",
+  "localChecks": {
+    "npm --prefix examples/sveltekit run build": "exit 0; svelte-check 0 errors, 0 warnings",
+    "npm --prefix examples/sveltekit run verify:ssr": "exit 0; concurrent request isolation, boot agreement, locale fallback, listener cleanup, late cancellation",
+    "npm run verify:pack:sveltekit": "exit 0; five tarballs independently installed outside repository, typecheck, dev SSR lifecycle, production HTTP and Chromium hydration/ko-en-ko/shared-layout/exit-reentry"
+  },
+  "browser": {
+    "environment": "Codex in-app browser, real SvelteKit SSR and Vite 8.3.4 on loopback port 5196",
+    "method": "Suppress snapshot replies, retain original three 5000ms handshake attempts; enable replies and save a real ko/demo.json edit",
+    "observedStates": [
+      "connecting 1/3",
+      "retrying 3/3",
+      "failed 3/3",
+      "connected"
+    ],
+    "failureGuidanceVisibleInsideDialog": true,
+    "retainedThroughFailureAndRecovery": {
+      "name": "Kit draft",
+      "confirmationNote": "Kit modal draft",
+      "dialogOpen": true,
+      "focusedElement": "confirmation-note"
+    },
+    "recoveredHeading": "번역을 바꿔도, 입력은 그대로 · 연결 복구",
+    "errorAfterRecovery": "",
+    "consoleWarningsAndErrorsAtRecovery": [],
+    "catalogDiagnostic": {
+      "method": "Write invalid en/demo.json, save an unrelated valid ko/demo.json update, then restore en/demo.json",
+      "retainedErrorPrefix": "en/demo.json: Invalid JSON:",
+      "visibleInsideDialog": true,
+      "unrelatedKoEditRendered": true,
+      "errorAfterRestoringEn": "",
+      "inputDialogAndFocusPreserved": true
+    },
+    "tabClosed": true,
+    "serverExited": 0,
+    "catalogDiffAfterCleanup": "none"
+  },
+  "limits": [
+    "Status captions are held inside the standalone example so copying it does not introduce an external source dependency.",
+    "Network handshake timeout was exercised; server restart and browser reload do not promise persisted form drafts.",
+    "This is local unpublished API verification; no registry release was performed."
+  ],
+  "pushedOrPublished": false
+}

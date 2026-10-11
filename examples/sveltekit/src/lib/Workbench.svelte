@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getI18n } from './i18n';
+  let { connection = '', details = '' }: { connection?: string; details?: string } = $props();
   const i18n = getI18n();
   let name = $state('');
   let note = $state('');
@@ -21,11 +22,12 @@
     <button id="open-dialog" type="submit">{$i18n.t('demo:openDialog')}</button>
   </form>
 </section>
-<dialog id="confirmation" bind:this={dialog} onclose={() => { open = false; }}>
+<dialog id="confirmation" aria-labelledby="dialog-title" bind:this={dialog} onclose={() => { open = false; }}>
   <form method="dialog">
-    <h2>{$i18n.t('demo:dialogTitle')}</h2>
+    <h2 id="dialog-title">{$i18n.t('demo:dialogTitle')}</h2>
     <label>{$i18n.t('demo:dialogNote')}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
     <button id="close-dialog">{$i18n.t('demo:closeDialog')}</button>
     <a id="dialog-about" href="/about?locale={$i18n.locale}">{$i18n.t('demo:about')}</a>
+    <p id="dialog-status" class="hint" role="status">{connection}{details && `\n${details}`}</p>
   </form>
 </dialog>

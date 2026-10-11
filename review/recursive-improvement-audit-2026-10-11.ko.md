@@ -14,7 +14,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 | 줄 | 고려사항(원문) | 판정 | 근거 · 다음 검증 |
 | --- | --- | --- | --- |
-| 3 | 사용자 목적 달성 — "사용자가 이 프로젝트를 켜서 원하는 결과를 얻기까지 직접 따라가 보고, 중간에 막히는 부분을 찾아줄래?" | 부분(L0+L1) | npm 예제 첫사용·오류복구는 `1336aa5`+`review/npm-demo-error-recovery-2026-10-11.json`, 렌더 오류 복구는 `8febdda`+`review/npm-demo-render-error-recovery-2026-10-11.json`으로 실행검증완료. 시작 문서 경로는 `verify:starter`와 실브라우저로 확인(근거 `review/getting-started-acceptance-2026-10-11.json`). vanilla·React는 상태 표시·복구까지 실브라우저 확인(`c92515d`, `review/dev-sync-ui-acceptance-2026-10-11.json`). 다음: Svelte·SvelteKit 첫성공 재현. |
+| 3 | 사용자 목적 달성 — "사용자가 이 프로젝트를 켜서 원하는 결과를 얻기까지 직접 따라가 보고, 중간에 막히는 부분을 찾아줄래?" | 부분(L0+L1) | npm 예제 첫사용·오류복구는 `1336aa5`+`review/npm-demo-error-recovery-2026-10-11.json`, 렌더 오류 복구는 `8febdda`+`review/npm-demo-render-error-recovery-2026-10-11.json`으로 실행검증완료. 시작 문서 경로는 `verify:starter`와 실브라우저로 확인(근거 `review/getting-started-acceptance-2026-10-11.json`). vanilla·React는 상태 표시·복구까지 실브라우저 확인(`c92515d`, `review/dev-sync-ui-acceptance-2026-10-11.json`). Svelte·SvelteKit도 실제 연결 실패·복구를 확인했다(별도 실행 기록). 다음: 프레임워크별 첫사용 안내. |
 | 4 | 미완성 기능 찾기 — "겉으로는 완성돼 보이지만 실제로는 임시 데이터, 빈 구현, 수동 작업에 기대고 있는 부분이 있어?" | 보완(L0) | `docs/53`가 게시·부분·남음을 구분, `docs/06` 로케일 large 안정성, `docs/07` 미해결. 다음: 실행 재확인. |
 | 5 | 기능 사이 연결 — "각 기능은 작동하는데 함께 사용할 때 끊기는 흐름이 있는지 확인해줄래?" | 부분(L0+L1) | `core/catalog.ts`→`vite/catalog-patch.ts`→`vite/client.ts`→`react|svelte/index.ts`. eager·lazy 분리(`client.ts`/`lazy-connection.ts`). 다음: 조합 실행. |
 | 6 | 첫 사용 경험 — "처음 온 사람이 설명을 따로 듣지 않고 첫 번째 성과를 얻을 수 있도록 무엇을 바꾸면 좋을까?" | 부분(L0) | 루트 `README.md` 로컬 실행, `examples/npm/README.md` 설치본 흐름, `docs/getting-started.md`(파일 6개, 공개 npm 설치). 저장소 밖 빈 임시 폴더 복사 뒤 `verify:starter`가 설치·생산 build·DOM 렌더·typegen·TS/checkJs 오류 거부까지 확인했다. 스캐폴드와 프레임워크별 시작 문서는 없음. 다음: 나머지 예제 시작 경로. |
@@ -23,7 +23,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 9 | 작업 중단과 복귀 — "새로고침하거나 앱을 닫았다 돌아와도 진행하던 작업을 이어갈 수 있어야 할 부분은 어디야?" | 부분(L1+L2) | npm 예제가 cached pagehide에서 핸들러를 제거하는 문제를 운영 번들+jsdom으로 재현·수정했다. `verify:demo:npm` 수명 회귀 2개 통과, 근거 `review/npm-demo-history-lifecycle-2026-10-11.json`. 실제 BFCache 채택은 미검증. 재시작·새로고침 뒤 초안 저장은 소비 앱 책임이다. |
 | 10 | 취소와 되돌리기 — "실수하기 쉬운 행동 중 취소하거나 되돌릴 수 없어 곤란해지는 부분을 찾아줄래?" | 부분(L0) | `client.ts` idempotent disposer, `store.dispose()`, typegen `generator.ts` 취소·race. 다음: late 응답 폐기 실행. |
 | 11 | 중복과 동시 작업 — "버튼을 두 번 누르거나 여러 창과 여러 사용자가 동시에 작업하면 결과가 꼬이는 부분이 있어?" | 적용(L0) | `client.ts` bindings WeakMap 단일 binding, `vite/types.ts` requestId·generation. 다중 사용자 없음(14행). 다음: 동시요청 실행. |
-| 12 | 느린 응답과 연결 끊김 — "네트워크나 외부 서비스가 느려지거나 끊겼을 때 사용자가 기다림, 재시도, 실패를 구분할 수 있어?" | 부분(L0+L1) | `client.ts` timeout 5000ms·3회, RangeError, SupersededRequestError, CatalogLoadError. 이제 `onSyncState`가 재시도·최종 실패를 신호한다(`connecting`·`retrying`·`failed`와 `attempt`/`maxAttempts`, `b534b4f`, 계약 `docs/dev-sync-state.md`). 표시 구분은 L1. vanilla·React는 실제 Vite 응답 차단으로 `connecting` 1/3, `retrying`(Vanilla 3/3, React 2/3), `failed` 3/3을 표시하고 응답 복구 뒤 정상 연결로 돌아오며 이름·확인 메모·모달·포커스가 유지됐다(`c92515d`, `review/dev-sync-ui-acceptance-2026-10-11.json`). npm 예제의 서버 정지 표시는 그대로다(`5db3517`, `review/npm-demo-connection-status-2026-10-11.json`). 다음: Svelte·SvelteKit에 같은 표시를 적용. |
+| 12 | 느린 응답과 연결 끊김 — "네트워크나 외부 서비스가 느려지거나 끊겼을 때 사용자가 기다림, 재시도, 실패를 구분할 수 있어?" | 부분(L0+L1) | `client.ts` timeout 5000ms·3회, RangeError, SupersededRequestError, CatalogLoadError. 이제 `onSyncState`가 재시도·최종 실패를 신호한다(`connecting`·`retrying`·`failed`와 `attempt`/`maxAttempts`, `b534b4f`, 계약 `docs/dev-sync-state.md`). 표시 구분은 L1. vanilla·React는 실제 Vite 응답 차단으로 `connecting` 1/3, `retrying`(Vanilla 3/3, React 2/3), `failed` 3/3을 표시하고 응답 복구 뒤 정상 연결로 돌아오며 이름·확인 메모·모달·포커스가 유지됐다(`c92515d`, `review/dev-sync-ui-acceptance-2026-10-11.json`). npm 예제의 서버 정지 표시는 그대로다(`5db3517`, `review/npm-demo-connection-status-2026-10-11.json`). Svelte·SvelteKit에도 같은 표시와 모달 안내를 적용하고 실제 실패·복구 중 입력·모달·포커스 유지를 확인했다(`review/dev-sync-ui-svelte-2026-10-11.json`·`review/dev-sync-ui-sveltekit-2026-10-11.json`). 서버 재시작 뒤 초안 복원은 별도 소비 앱 책임이다. |
 | 13 | 데이터 정확성 — "저장된 값과 화면에 보이는 값이 어긋나거나, 계산·날짜·단위 때문에 잘못된 결과가 나올 수 있는 곳이 있어?" | 적용(L0) | `docs/07` timeZone 고정·불일치 생성 오류, `vite/types.ts` getCanonicalLocales, `core/schema.ts` fingerprint, `docs/63`·`64`. |
 | 14 | 권한 경계 — "다른 사용자나 다른 조직의 정보를 보거나 바꾸는 일이 가능한지, 실제 접근 경로를 기준으로 확인해줄래?" | 비적용(L1+L2) | 계정·조직·API·DB 없음. 실제 경계는 npm OIDC 게시·git push. repo PRIVATE, visibility 변경은 scope 밖. |
 | 15 | 민감한 정보 처리 — "비밀번호, 토큰, 개인정보가 화면·로그·오류 메시지·저장소에 불필요하게 남는 곳이 있어?" | 부분(L0+L2) | 런타임 자격증명 없음, `verify-oidc.mjs` 토큰 미저장, `.release/` gitignore, 진단은 키·위치만. L1 로그는 미통제. |
@@ -103,7 +103,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 ## 실제 효용 우선 Top 3
 
-1. Svelte·SvelteKit에 상태 UI를 적용한다(12행). vanilla·React는 `c92515d`로 실브라우저 확인을 마쳤고, 남은 두 예제에 같은 재시도·복구·진단 유지 표시를 붙인다.
+1. SvelteKit setup 명령의 npm 12 상속 설정 오류를 고친다(27·51행). 두 Svelte 예제의 상태 UI와 실브라우저 복구 검사는 끝났지만, 첫 설치 명령은 직접 `npm ci`로 우회해야 했다.
 2. 오류·상태 표시 계약을 `docs/04` 계열에 남긴다. npm 예제의 규칙(진단 유지·수정 안내·명시적 해제·모달 내 안내·렌더 오류와 진단 분리)에 더해, 수송 실패와 callback 실패의 분리(`LiveDiagnostic.operation`, `928377e`)와 handshake 문구만 `connected`에서 해제하는 규칙을 적는다(3·7·21행).
 3. 오류 신고용 진단 자료를 수집한다(번들·절차, 미완료). `LiveDiagnostic`에 파일·키·위치 좌표와 `operation`이 있으므로 환경 정보(Node·Vite·패키지 버전)와 붙여넣기 수단만 더하면 21·43행이 닫힌다. 서버·계정이 필요 없다.
 
@@ -119,7 +119,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
-상태 UI는 vanilla·React(`c92515d`)까지 실브라우저로 확인했으니, 다음은 Svelte·SvelteKit에 같은 재시도·복구·진단 유지 표시를 적용하는 것과 오류 신고용 진단 자료(번들·절차) 수집이다. 표시 계약 문서화를 작은 커밋으로 진행하고, 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
+상태 UI는 vanilla·React·Svelte·SvelteKit까지 실브라우저 실패·복구 검사를 마쳤다. 다음은 발견한 SvelteKit setup 오류 수정과 오류 신고용 진단 자료(번들·절차) 수집이다. 표시 계약 문서화를 작은 커밋으로 진행하고, 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
 
 ---
 작성 2026-10-11(KST). 기준 HEAD `c92515d`. 시작 안내 `d424345`, 연결 종료 표시 `5db3517`, 동기화 API `b534b4f`, 계약 문서·기록 `b8540cb`, handshake 진단 분리 `928377e`, vanilla·React 상태 UI `c92515d`가 커밋돼 있다. 실행 검증 표시는 연결한 실제 관측 기록의 범위에 한정한다. 이번 판에서 검증된 source 변화는 커밋된 `packages/vite` 개발 클라이언트(alpha 미게시)와 vanilla·React·npm 예제·시작 문서이고, 패키지 버전·registry 상태는 그대로다.

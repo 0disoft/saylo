@@ -14,5 +14,7 @@
 
 **개발 동기화 UI(`c92515d`).** vanilla eager와 React lazy 예제에서 실제 Vite 응답을 차단해 브라우저 상 `connecting`(1/3)·`retrying`(Vanilla 3/3, React 2/3)·`failed`(3/3)를 관측하고, 응답 복구 뒤 정상 연결로 돌아오는 것을 확인했다. 이름·확인 메모·열린 모달·포커스(`confirmation-note`)는 실패와 복구 전 구간에서 유지됐다. React는 `en/demo.json`을 깨뜨린 뒤 다른 `ko` 파일을 정상 저장해도 파일 진단이 유지되고 `en` 복원 때만 해제됐다. 수송 실패와 callback 실패는 `LiveDiagnostic.operation`(`928377e`)으로 구분하고 UI는 `handshake` 문구만 `connected`에서 해제하며 catalog 진단은 유지한다. 로컬 검사는 React `tsc`, vanilla·React 생산 빌드, `node --test scripts/test/vanilla-demo-lifecycle.test.mjs` 2개 통과이고 기록은 `review/dev-sync-ui-acceptance-2026-10-11.json`이다. Svelte·SvelteKit 적용과 브라우저 확인은 남아 있다.
 
-판정 반영은 3·6·7·12·27·51·58행이고 `b534b4f`·`928377e`·`c92515d` 검증은 3·7·12·62·65행 근거를 갱신한다(판정 등급은 그대로). 이 검증들은 예제 UI·문서 변경과 커밋된 라이브러리 소스 변경(alpha 미게시)이고 패키지 버전·registry 상태는 그대로다.
+**Svelte·SvelteKit 상태 UI.** Svelte `b5dbb17`과 SvelteKit 예제도 실제 Vite 응답을 차단해 연결 시도·재시도·3회 소진 실패를 확인하고, 응답 허용 뒤 실제 한국어 파일 저장으로 복구했다. 이름·확인 메모·모달·포커스(`confirmation-note`)가 전 구간 유지됐으며 실패 안내를 모달에서도 확인했다. 복구 뒤 오류는 비었고 콘솔 경고·오류는 0이었다. SvelteKit은 영어 JSON 파손 뒤 다른 한국어 파일을 저장해도 영어 진단이 유지되고 영어 파일 복원 때만 해제됨을 확인했다. Svelte `tsc`·`svelte-check`(오류·경고 0)·157모듈 생산 빌드와 SvelteKit 검사·생산 빌드·`verify:ssr`가 통과했다. 근거는 `review/dev-sync-ui-svelte-2026-10-11.json`·`review/dev-sync-ui-sveltekit-2026-10-11.json`이다. Svelte cached `pagehide` 정리는 수정했지만 실제 브라우저 BFCache 채택은 확인하지 않았다. 검사 서버·탭은 종료했고 편집한 카탈로그는 복원했다. SvelteKit 설치는 기존 setup 명령이 npm 12 상속 설정에 막혀 빌드와 `npm ci`를 직접 실행했다. 이 설치 명령 문제는 별도 수정 대상이다.
+
+판정 반영은 3·6·7·12·27·51·58행이고 동기화 검증은 3·7·12·62·65행 근거를 갱신한다(판정 등급은 그대로). 이 검증들은 예제 UI·문서 변경과 커밋된 라이브러리 소스 변경(alpha 미게시)이고 패키지 버전·registry 상태는 그대로다.
 

@@ -1,5 +1,5 @@
 import { connectDev, createDevCatalogSource } from '@0disoft/saylo-vite/client';
-import type { LiveDiagnostic } from '@0disoft/saylo-vite/client';
+import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
 import type { BootSnapshot, CatalogSource, I18n } from '@0disoft/saylo-core';
 import type { AppSchema } from './generated';
 
@@ -9,6 +9,7 @@ export function connectBootClient(options: {
   attachSource: (source: CatalogSource) => void;
   hot?: NonNullable<ImportMeta['hot']>;
   onDiagnostic?: (value: LiveDiagnostic) => void;
+  onSyncState?: (value: DevSyncState) => void;
 }) {
   let active = true;
   let disconnect: (() => void) | undefined;
@@ -19,7 +20,8 @@ export function connectBootClient(options: {
     if (!active) return false;
     options.attachSource(catalogSource);
     disconnect = connectDev(options.instance, { catalogSource,
-      ...(options.onDiagnostic ? { onDiagnostic: options.onDiagnostic } : {}) });
+      ...(options.onDiagnostic ? { onDiagnostic: options.onDiagnostic } : {}),
+      ...(options.onSyncState ? { onSyncState: options.onSyncState } : {}) });
     await options.instance.refresh();
     return active;
   });

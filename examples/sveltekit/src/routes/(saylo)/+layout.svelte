@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount, untrack } from 'svelte';
   import { decodeBootSnapshot } from '@0disoft/saylo-core';
-  import type { LiveDiagnostic } from '@0disoft/saylo-vite/client';
+  import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import type { LayoutProps } from './$types';
@@ -9,13 +9,20 @@
   import { connectBootClient } from '#lib/client-connection.ts';
   import Workbench from '#lib/Workbench.svelte';
   import '#lib/style.css';
+  import { formatDevSyncState } from '#lib/dev-status.ts';
 
   let { data, children }: LayoutProps = $props();
   const boot = untrack(() => decodeBootSnapshot(data.sayloBoot));
   const { instance, attachSource } = createBootInstance(boot);
   const i18n = setSayloContext(instance);
   let ready = $state(false);
-  let diagnostic = $state<LiveDiagnostic>({ message: '', diagnostics: [] });
+  let diagnostic = $state.raw<LiveDiagnostic>({ message: '', diagnostics: [] });
+  let handshakeMessage = $state('');
+  let syncState = $state.raw<DevSyncState>();
+  const connectionStatus = $derived(import.meta.hot ? formatDevSyncState(syncState) : '빌드된 카탈로그를 사용합니다.');
+  const details = $derived([diagnostic.diagnostics.length
+    ? diagnostic.diagnostics.map(value => `${value.sourceName}: ${value.message}`).join('\n') : diagnostic.message,
+    handshakeMessage].filter(Boolean).join('\n'));
   let pendingLocale = $state<string>();
   let transitionError = $state('');
   let navigationGeneration = 0;
@@ -39,7 +46,9 @@
   onMount(() => {
     let active = true;
     const connection = connectBootClient({ boot, instance, attachSource, hot: import.meta.hot,
-      onDiagnostic: value => { diagnostic = value; } });
+      onDiagnostic: value => { if (value.operation === 'handshake') handshakeMessage = value.message; else diagnostic = value; },
+      onSyncState: value => { syncState = value; if (value.status === 'connected') handshakeMessage = ''; }
+    });
     void connection.ready.then(connected => {
       if (active && connected) ready = true;
     }).catch(error => {
@@ -85,10 +94,7 @@
   </nav>
   <p id="transition-error" role="alert">{transitionError}</p>
   {@render children()}
-  <Workbench />
-  <p id="status" class="hint" role="status">{diagnostic.message ? '번역 연결을 확인해 주세요.'
-    : ready ? import.meta.hot ? '번역 파일을 저장하면 화면에 반영됩니다.' : '빌드된 번역을 사용합니다.'
-    : '서버에서 준비한 번역을 표시합니다.'}</p>
-  <pre id="error" role="alert">{diagnostic.diagnostics.length
-    ? diagnostic.diagnostics.map(value => `${value.sourceName}: ${value.message}`).join('\n') : diagnostic.message}</pre>
+  <Workbench connection={connectionStatus} {details} />
+  <p id="status" class="hint" role="status">{connectionStatus}</p>
+  <pre id="error" role="alert">{details}</pre>
 </main>
