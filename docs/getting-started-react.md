@@ -167,11 +167,11 @@ function App() {
   const closeDialog = () => dialogRef.current?.close();
 
   return (
-    <>
+    <main lang={presentation.locale}>
       <h1 id="heading">{text.heading}</h1>
-      <select id="locale" aria-label="Locale" value={snapshot.locale}
+      <select id="locale" aria-label="Locale" lang="en" value={snapshot.locale}
         onChange={event => snapshot.setLocale(event.target.value)}>
-        {snapshot.availableLocales.map(locale => <option key={locale} value={locale}>{locale}</option>)}
+        {snapshot.availableLocales.map(locale => <option key={locale} value={locale} lang={locale}>{locale}</option>)}
       </select>
       <p id="greeting">{text.greeting}</p>
       <label htmlFor="name">{text.nameLabel}</label>
@@ -179,17 +179,17 @@ function App() {
       <label htmlFor="note">{text.noteLabel}</label>
       <textarea id="note" value={note} onChange={event => setNote(event.target.value)} />
       <button id="open-dialog" type="button" onClick={openDialog}>{text.openDialog}</button>
-      <p id="error" role="alert">{diagnostic}</p>
-      <p id="render-error" role="alert">{presentation.error}</p>
+      <p id="error" role="alert" lang="en">{diagnostic}</p>
+      <p id="render-error" role="alert" lang="ko">{presentation.error}</p>
       <dialog ref={dialogRef} id="confirmation" aria-labelledby="dialog-title">
         <h2 id="dialog-title">{text.dialogTitle}</h2>
-        <p id="dialog-status" role="status">{diagnostic}</p>
-        <p id="dialog-render-error" role="alert">{presentation.error}</p>
+        <p id="dialog-status" role="status" lang="en">{diagnostic}</p>
+        <p id="dialog-render-error" role="alert" lang="ko">{presentation.error}</p>
         <label htmlFor="dialog-note">{text.noteLabel}</label>
         <textarea id="dialog-note" value={note} onChange={event => setNote(event.target.value)} />
         <button id="close-dialog" type="button" onClick={closeDialog}>{text.closeDialog}</button>
       </dialog>
-    </>
+    </main>
   );
 }
 
@@ -235,7 +235,7 @@ function read(snapshot: StoreSnapshot<AppSchema>, name: string) {
 }
 
 export function projectMessages(snapshot: StoreSnapshot<AppSchema>, previous: StoreSnapshot<AppSchema> | undefined, name: string) {
-  try { return { messages: read(snapshot, name), accepted: snapshot, error: '' }; }
+  try { return { messages: read(snapshot, name), locale: snapshot.locale, accepted: snapshot, error: '' }; }
   catch (error) {
     let messages = {
       heading: '번역을 준비하세요.', greeting: `이름: ${name}`,
@@ -243,9 +243,10 @@ export function projectMessages(snapshot: StoreSnapshot<AppSchema>, previous: St
     };
     // Snapshot translators are immutable. Reformat the previous translation
     // with the current input instead of freezing the previous greeting.
-    if (previous) { try { messages = read(previous, name); } catch { /* Keep the setup view. */ } }
+    let locale = 'ko';
+    if (previous) { try { messages = read(previous, name); locale = previous.locale; } catch { /* Keep the setup view. */ } }
     const message = error instanceof Error ? error.message : String(error);
-    return { messages, accepted: undefined,
+    return { messages, locale, accepted: undefined,
       error: `${message}\nlocales/ko/demo.json의 키·인자를 확인하고 저장하세요. 입력은 유지됩니다.` };
   }
 }

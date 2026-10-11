@@ -213,7 +213,7 @@ function read(snapshot: StoreSnapshot<AppSchema>) {
 export type DemoMessages = ReturnType<typeof read>;
 
 export function projectDemoMessages(snapshot: StoreSnapshot<AppSchema>, previous: StoreSnapshot<AppSchema> | undefined) {
-  try { return { messages: read(snapshot), accepted: snapshot, error: '' }; }
+  try { return { messages: read(snapshot), locale: snapshot.locale, accepted: snapshot, error: '' }; }
   catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     let messages: DemoMessages = {
@@ -223,8 +223,9 @@ export function projectDemoMessages(snapshot: StoreSnapshot<AppSchema>, previous
       formTitle: '입력 미리보기', name: '이름', note: '메모', openDialog: '확인 창 열기',
       dialogTitle: '입력 확인', dialogNote: '확인 메모', closeDialog: '닫기',
     };
-    if (previous) { try { messages = read(previous); } catch { /* Keep the explicit setup view. */ } }
-    return { messages, accepted: undefined,
+    let locale = 'ko';
+    if (previous) { try { messages = read(previous); locale = previous.locale; } catch { /* Keep the explicit setup view. */ } }
+    return { messages, locale, accepted: undefined,
       error: `${message}\n로케일 파일의 키·인자를 확인하고 다시 저장하세요. 입력은 유지됩니다.` };
   }
 }
@@ -261,7 +262,7 @@ layout이 필요한 문구를 모두 계산해 페이지와 입력 화면에 공
 </script>
 
 <section class="panel preview">
-  <div class="panel-header"><h2>{messages.formTitle}</h2><span id="revision" class="badge">revision {$i18n.stateRevision}</span></div>
+  <div class="panel-header"><h2>{messages.formTitle}</h2><span id="revision" class="badge" lang="en">revision {$i18n.stateRevision}</span></div>
   <form onsubmit={event => { event.preventDefault(); open = true; }}>
     <label>{messages.name}<input id="name" autocomplete="off" bind:value={name} /></label>
     <label>{messages.note}<textarea id="note" rows="3" bind:value={note}></textarea></label>
@@ -274,8 +275,8 @@ layout이 필요한 문구를 모두 계산해 페이지와 입력 화면에 공
     <label>{messages.dialogNote}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
     <button id="close-dialog">{messages.closeDialog}</button>
     <a id="dialog-about" href="/about?locale={$i18n.locale}">{messages.about}</a>
-    <p id="dialog-render-error" class="hint" role="alert">{renderError}</p>
-    <p id="dialog-status" class="hint" role="status">{connection}{details && `\n${details}`}</p>
+    <p id="dialog-render-error" class="hint" role="alert" lang="ko">{renderError}</p>
+    <p id="dialog-status" class="hint" role="status" lang="ko">{connection}{details && `\n${details}`}</p>
   </form>
 </dialog>
 ```
@@ -283,11 +284,11 @@ layout이 필요한 문구를 모두 계산해 페이지와 입력 화면에 공
 ### src/lib/style.css
 
 ```css
-:root { font-family: system-ui, -apple-system, "Malgun Gothic", sans-serif; color: #213532; background: #f4f6f3; font-synthesis: none; }
+:root { font-family: system-ui, -apple-system, "Malgun Gothic", sans-serif; color: #213532; background: #f4f6f3; font-synthesis: none; overflow-wrap: anywhere; }
 * { box-sizing: border-box; }
 body { margin: 0; }
 main { max-width: 1120px; margin: auto; padding: 28px 32px 56px; }
-header, .panel-header, .actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+header, .panel-header, .actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
 .brand { color: #1c4941; font-size: 26px; font-weight: 750; text-decoration: none; }
 .brand span { font-size: 13px; font-weight: 400; color: #657773; margin-left: 12px; }
 .locale-control { display: flex; align-items: center; gap: 12px; font-size: 13px; }
@@ -296,8 +297,8 @@ header, .panel-header, .actions { display: flex; align-items: center; justify-co
 h1 { font-size: clamp(27px, 3vw, 40px); letter-spacing: -.045em; margin: 10px 0 14px; }
 .intro > p:last-child { color: #657773; max-width: 700px; line-height: 1.7; }
 h2 { font-size: 18px; margin: 0; }
-.layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start; }
-.panel { background: #fff; border-radius: 16px; padding: 26px; box-shadow: 0 4px 24px #21353206; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: start; }
+.panel { min-width: 0; background: #fff; border-radius: 16px; padding: 26px; box-shadow: 0 4px 24px #21353206; }
 .panel-header { margin-bottom: 24px; }
 .badge { color: #526a61; background: #edf3ec; font-size: 11px; padding: 6px 10px; border-radius: 20px; white-space: nowrap; }
 label { display: grid; gap: 9px; font-size: 13px; font-weight: 550; }
@@ -309,7 +310,7 @@ select { width: auto; background: #fff; }
 input::placeholder, textarea::placeholder { color: #89968e; }
 #count { max-width: 100px; }
 .summary { min-height: 44px; padding: 12px 14px; border-radius: 8px; background: #f0f5ee; font-size: 14px; }
-button { cursor: pointer; font: inherit; font-size: 13px; font-weight: 650; background: #255b4e; color: #fff; border: 0; border-radius: 8px; padding: 12px 18px; }
+button { max-width: 100%; cursor: pointer; font: inherit; font-size: 13px; font-weight: 650; background: #255b4e; color: #fff; border: 0; border-radius: 8px; padding: 12px 18px; }
 button:hover { background: #1b483d; }
 button:focus-visible { outline: 3px solid #8bbbad; outline-offset: 3px; }
 .secondary { color: #476659; background: #edf3ec; }
@@ -431,30 +432,30 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
 </script>
 
 <svelte:head><title>Saylo · SvelteKit SSR demo</title></svelte:head>
-<main data-ready={ready} id="saylo-layout">
-  <header>
-    <a class="brand" href="/?locale={$i18n.locale}">Saylo <span>SvelteKit 3 · SSR</span></a>
+<main data-ready={ready} id="saylo-layout" lang={presentation.locale}>
+  <header lang="ko">
+    <a class="brand" href="/?locale={$i18n.locale}">Saylo <span lang="en">SvelteKit 3 · SSR</span></a>
     <label class="locale-control">화면 언어
       <select id="locale" value={pendingLocale ?? $i18n.locale} onchange={event => { void selectLocale(event.currentTarget.value); }}>
         {#each $i18n.availableLocales as locale (locale)}
-          <option value={locale}>{locale === 'ko' ? '한국어' : locale === 'en' ? 'English' : locale}</option>
+          <option value={locale} lang={locale}>{locale === 'ko' ? '한국어' : locale === 'en' ? 'English' : locale}</option>
         {/each}
       </select>
     </label>
   </header>
-  <nav class="demo-nav" aria-label="예제 페이지">
-    <a id="home-link" href="/?locale={$i18n.locale}" aria-current={page.url.pathname === '/' ? 'page' : undefined}>{text.home}</a>
-    <a id="about-link" href="/about?locale={$i18n.locale}" aria-current={page.url.pathname === '/about' ? 'page' : undefined}>{text.about}</a>
+  <nav class="demo-nav" aria-label="예제 페이지" lang="ko">
+    <a id="home-link" lang={presentation.locale} href="/?locale={$i18n.locale}" aria-current={page.url.pathname === '/' ? 'page' : undefined}>{text.home}</a>
+    <a id="about-link" lang={presentation.locale} href="/about?locale={$i18n.locale}" aria-current={page.url.pathname === '/about' ? 'page' : undefined}>{text.about}</a>
     <a id="leave-link" href="/plain?locale={$i18n.locale}">번역 화면 나가기</a>
   </nav>
-  <p id="transition-error" role="alert">{transitionError}</p>
-  <p id="render-error" class="hint" role="alert">{presentation.error}</p>
+  <p id="transition-error" role="alert" lang="ko">{transitionError}</p>
+  <p id="render-error" class="hint" role="alert" lang="ko">{presentation.error}</p>
   {@render children()}
   <Workbench messages={text} renderError={presentation.error} {details} />
-  <p id="status" class="hint" role="status">{diagnostic.message ? '번역 연결을 확인해 주세요.'
+  <p id="status" class="hint" role="status" lang="ko">{diagnostic.message ? '번역 연결을 확인해 주세요.'
     : ready ? import.meta.hot ? '번역 파일을 저장하면 화면에 반영됩니다.' : '빌드된 번역을 사용합니다.'
     : '서버에서 준비한 번역을 표시합니다.'}</p>
-  <pre id="error" role="alert">{diagnostic.diagnostics.length
+  <pre id="error" role="alert" lang="ko">{diagnostic.diagnostics.length
     ? diagnostic.diagnostics.map(value => `${value.sourceName}: ${value.message}`).join('\n') : diagnostic.message}</pre>
 </main>
 ```
@@ -469,10 +470,10 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
 </script>
 
 <section class="intro">
-  <p class="eyebrow">SVELTEKIT LIVE CATALOG PREVIEW</p>
+  <p class="eyebrow" lang="en">SVELTEKIT LIVE CATALOG PREVIEW</p>
   <h1>{text.heading}</h1>
   <p>{text.description}</p>
-  <p class="hint">입력과 확인 창은 공통 layout에 두어 페이지를 이동해도 유지합니다.</p>
+  <p class="hint" lang="ko">입력과 확인 창은 공통 layout에 두어 페이지를 이동해도 유지합니다.</p>
 </section>
 ```
 
@@ -486,7 +487,7 @@ export const load: LayoutServerLoad = async ({ locals, url, setHeaders }) => {
 </script>
 
 <section class="intro">
-  <p class="eyebrow">SHARED LAYOUT</p>
+  <p class="eyebrow" lang="en">SHARED LAYOUT</p>
   <h1>{text.aboutHeading}</h1>
   <p>{text.aboutBody}</p>
 </section>

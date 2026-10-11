@@ -26,6 +26,15 @@ if (parameters.has('starter-check')) {
     check(node, `Missing ${selector}`);
     return node;
   };
+  const checkLanguages = translatedLocale => {
+    const language = selector => element(selector).closest('[lang]')?.getAttribute('lang');
+    for (const selector of ['#heading', '#greeting', '#name', '#dialog-title']) {
+      check(language(selector) === translatedLocale, `${selector} has wrong rendered language`);
+    }
+    for (const selector of ['#locale', '#error', '#dialog-status']) check(language(selector) === 'en', `${selector} has wrong fixed English language`);
+    for (const selector of ['#render-error', '#dialog-render-error']) check(language(selector) === 'ko', `${selector} has wrong correction language`);
+    for (const option of element('#locale').options) check(option.lang === option.value, 'Locale option has wrong language');
+  };
   const fill = (selector, value) => {
     // React tracks a controlled field's own setter; use the native setter as a user input would.
     const node = element(selector);
@@ -39,6 +48,7 @@ if (parameters.has('starter-check')) {
     element('#locale').dispatchEvent(new Event('change', { bubbles: true }));
     await wait(() => document.documentElement.lang === locale && element('#heading').textContent === heading,
       `Locale ${locale} did not render`);
+    checkLanguages(locale);
   };
   const action = async value => {
     const response = await fetch('/__saylo_starter_action', { method: 'POST', body: value });
@@ -51,6 +61,7 @@ if (parameters.has('starter-check')) {
       if (cold) {
         await wait(() => document.querySelector('#heading')?.textContent === '번역을 준비하세요.', 'Cold empty catalog did not show setup view');
         check(element('#render-error').textContent.includes('demo:heading'), 'Cold setup has no correction hint');
+        checkLanguages('ko');
         checks.push('cold-empty-view');
         fill('#name', 'Cold user'); fill('#note', 'Cold draft');
         element('#open-dialog').click();
@@ -61,6 +72,7 @@ if (parameters.has('starter-check')) {
         checks.push('cold-interaction');
         await action('restore-all');
         await wait(() => element('#render-error').textContent === '' && element('#heading').textContent === `Saylo ${title} starter`, 'Cold catalog repair did not recover');
+        checkLanguages('en');
         check(element('#greeting').textContent === 'Updated Cold user', 'Cold repair lost current interpolation');
         check(element('#name') === name && name.value === 'Cold user', 'Cold repair replaced name input');
         check(element('#note') === note && note.value === 'Cold dialog draft', 'Cold repair replaced draft');
@@ -71,6 +83,7 @@ if (parameters.has('starter-check')) {
         return;
       }
       await wait(() => document.querySelector('#heading')?.textContent === `Saylo ${title} starter`, 'Initial English render failed');
+      checkLanguages('en');
       checks.push('first-render');
       fill('#name', 'First user');
       await wait(() => element('#greeting').textContent.includes('First user'), 'Controlled name did not interpolate');
@@ -125,6 +138,12 @@ if (parameters.has('starter-check')) {
           await action('empty-base');
           await wait(() => element('#render-error').textContent.includes('demo:heading'), 'Empty base has no rendering diagnostic');
           check(element('#heading').textContent === `Saylo ${title} starter`, 'Empty base discarded the last good heading');
+          element('#locale').value = 'ko'; element('#locale').dispatchEvent(new Event('change', { bubbles: true }));
+          await wait(() => document.documentElement.lang === 'ko', 'Empty base locale selection failed');
+          checkLanguages('en');
+          element('#locale').value = 'en'; element('#locale').dispatchEvent(new Event('change', { bubbles: true }));
+          await wait(() => document.documentElement.lang === 'en', 'Empty base locale restoration failed');
+          checkLanguages('en');
           preserved(); checks.push('empty-base');
           await action('restore-base');
           await wait(() => element('#render-error').textContent === '' && element('#error').textContent === '', 'Base repair did not clear diagnostics');

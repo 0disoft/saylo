@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-11",
+  "baselineCommit": "ba90ce5",
+  "changes": [
+    "Three framework guides carry the actually displayed locale with their message projection and use it on the main region",
+    "Fixed English Locale controls and diagnostics, Korean correction guidance and SvelteKit navigation/status have explicit languages",
+    "Locale options carry their own locale",
+    "SvelteKit guide includes the narrow-layout CSS correction already made in the repository example"
+  ],
+  "installation": "Document code blocks extracted to independent temporary folders outside the repository and installed from the public npm registry; no workspace links or unpublished API calls",
+  "verification": {
+    "react": {
+      "command": "npm run verify:starter:react", "exitCode": 0, "files": 8,
+      "documentSha256": "9cdb90659f3ca03094abb28d460e39dfa0473cf7823a9a35e188414b732fe18d",
+      "installed": { "@0disoft/saylo-core": "0.1.0-alpha.4", "@0disoft/saylo-react": "0.1.0-alpha.4", "@0disoft/saylo-vite": "0.1.0-alpha.4", "vite": "8.3.4" },
+      "browserStages": { "dev": 11, "cold": 3, "production": 3 }, "browserErrors": 0, "productionModules": 57
+    },
+    "svelte": {
+      "command": "npm run verify:starter:svelte", "exitCode": 0, "files": 10,
+      "documentSha256": "c569da3240e18ba0008802370b19fc888d94275a6ba2c0b208c0c38b7b501ebe",
+      "installed": { "@0disoft/saylo-core": "0.1.0-alpha.4", "@0disoft/saylo-svelte": "0.1.0-alpha.4", "@0disoft/saylo-vite": "0.1.0-alpha.4", "vite": "8.3.4" },
+      "browserStages": { "dev": 11, "cold": 3, "production": 3 }, "browserErrors": 0, "productionModules": 154, "svelteCheckErrors": 0, "svelteCheckWarnings": 0
+    },
+    "sveltekit": {
+      "command": "npm run verify:starter:sveltekit", "exitCode": 0, "files": 19,
+      "documentSha256": "5606fb7524d8ebc7bc54fef09ecfa6e4d162a1aa9023e9587d878cba93fea08d",
+      "installed": { "@0disoft/saylo-core": "0.1.0-alpha.4", "@0disoft/saylo-svelte": "0.1.0-alpha.4", "@0disoft/saylo-vite": "0.1.0-alpha.4", "@0disoft/saylo-typegen": "0.1.0-alpha.4", "vite": "8.3.4" },
+      "browserStages": { "dev": 15, "cold": 3, "production": 4 }, "browserErrors": 0, "svelteCheckErrors": 0, "svelteCheckWarnings": 0,
+      "emptySSR": "Four ko/en home/about HTML requests and four boot requests return 200; HTML remains request-localized while setup text and fixed Korean regions are tagged ko; boot locale matches request",
+      "existingSSRChecks": ["concurrent ko/en and boot identity", "canonical locale and base fallback", "no-store", "production preview", "direct adapter-node HTTP server"]
+    },
+    "languageAssertions": ["ko/en/ja successful switching", "failed ko selection retains en on the last good English view", "initial Korean setup is tagged ko even when html selects en", "restoration, controlled input and native modal focus remain functional"],
+    "browser": "HeadlessChrome/154.0.0.0 on Windows",
+    "packageDocs": {
+      "commands": ["npm run build:docs", "npm run verify:docs", "npm run verify:pack"], "exitCodes": [0, 0, 0],
+      "documents": 11, "files": 13, "bytes": 136789,
+      "viteTarball": { "files": 58, "compressedBytes": 76075 },
+      "verified": "Independent tarball install matches every bundled document and local file link; five-package JS/TS imports, CLI, runtime, SSR, support reports, lazy build and pruned SSR checks pass"
+    },
+    "cleanup": "Starter tools stopped owned servers/browsers/workers and removed temporary consumer folders; pack consumer folders removed; generated package docs remain ignored"
+  },
+  "relatedEvidence": ["review/npm-starter-language-regions-2026-10-11.json", "review/framework-language-regions-2026-10-11.json"],
+  "limits": ["No screen-reader pronunciation, zoom, cross-browser or low-spec verification", "SvelteKit guide CSS is propagated and built; its narrow viewport was not remeasured in this slice", "Bundled docs remain local, not in the public alpha.4 artifact", "No push, publication, version bump or hosted deployment"]
+}

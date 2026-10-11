@@ -6,6 +6,7 @@ import { createServer as reservePort } from 'node:net';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
+import { JSDOM } from 'jsdom';
 
 // Runs only in the temporary consumer worker; the parent owns installation and removal.
 export async function verifySvelteKitStarter({ root, browser, npm, signal }) {
@@ -110,6 +111,12 @@ export async function verifySvelteKitStarter({ root, browser, npm, signal }) {
       const html = await response.text();
       assert.ok(html.includes(`<html lang="${locale}">`));
       assert.ok(html.includes('번역을 준비하세요.') && html.includes('demo:home'), 'Empty SSR has no correction view');
+      const dom = new JSDOM(html);
+      try {
+        for (const selector of ['h1', '#name', '#dialog-title', '#home-link', '#about-link', '#status', '#dialog-status']) {
+          assert.equal(dom.window.document.querySelector(selector)?.closest('[lang]')?.lang, 'ko', `Empty SSR ${page}: ${selector} language`);
+        }
+      } finally { dom.window.close(); }
       const url = new URL(origin + page);
       const dataResponse = await requestFetch(`${origin}${url.pathname.replace(/\/$/, '')}/__data.json${url.search}`);
       assert.equal(dataResponse.status, 200);

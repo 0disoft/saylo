@@ -188,11 +188,12 @@ entry가 mount와 store 수명을 소유한다. 정리할 때 `unmount`가 끝�
   });
 </script>
 
+<main lang={presentation.locale}>
 <h1 id="heading">{text.heading}</h1>
-<select id="locale" aria-label="Locale" value={$i18n.locale}
+<select id="locale" aria-label="Locale" lang="en" value={$i18n.locale}
   onchange={event => store.setLocale(event.currentTarget.value)}>
   {#each $i18n.availableLocales as locale (locale)}
-    <option value={locale}>{locale}</option>
+    <option value={locale} lang={locale}>{locale}</option>
   {/each}
 </select>
 <p id="greeting">{text.greeting}</p>
@@ -201,16 +202,17 @@ entry가 mount와 store 수명을 소유한다. 정리할 때 `unmount`가 끝�
 <label for="note">{text.noteLabel}</label>
 <textarea id="note" bind:value={note}></textarea>
 <button id="open-dialog" type="button" onclick={() => dialog?.showModal()}>{text.openDialog}</button>
-<p id="error" role="alert">{diagnostic}</p>
-<p id="render-error" role="alert">{presentation.error}</p>
+<p id="error" role="alert" lang="en">{diagnostic}</p>
+<p id="render-error" role="alert" lang="ko">{presentation.error}</p>
 <dialog id="confirmation" aria-labelledby="dialog-title" bind:this={dialog}>
   <h2 id="dialog-title">{text.dialogTitle}</h2>
-  <p id="dialog-status" role="status">{diagnostic}</p>
-  <p id="dialog-render-error" role="alert">{presentation.error}</p>
+  <p id="dialog-status" role="status" lang="en">{diagnostic}</p>
+  <p id="dialog-render-error" role="alert" lang="ko">{presentation.error}</p>
   <label for="dialog-note">{text.noteLabel}</label>
   <textarea id="dialog-note" bind:value={note}></textarea>
   <button id="close-dialog" type="button" onclick={() => dialog?.close()}>{text.closeDialog}</button>
 </dialog>
+</main>
 ```
 
 `dialog`은 `HTMLDialogElement | undefined`로 두고 `bind:this`로 받는다. `dialog?.showModal()`·`dialog?.close()`로 native dialog를 다루면 class cast 없이 타입이 맞는다. eager store의 `setLocale`은 `void`라 Promise 처리가 필요 없다.
@@ -233,7 +235,7 @@ function read(snapshot: StoreSnapshot<AppSchema>, name: string) {
 }
 
 export function projectMessages(snapshot: StoreSnapshot<AppSchema>, previous: StoreSnapshot<AppSchema> | undefined, name: string) {
-  try { return { messages: read(snapshot, name), accepted: snapshot, error: '' }; }
+  try { return { messages: read(snapshot, name), locale: snapshot.locale, accepted: snapshot, error: '' }; }
   catch (error) {
     let messages = {
       heading: '번역을 준비하세요.', greeting: `이름: ${name}`,
@@ -241,9 +243,10 @@ export function projectMessages(snapshot: StoreSnapshot<AppSchema>, previous: St
     };
     // Snapshot translators are immutable. Reformat the previous translation
     // with the current input instead of freezing the previous greeting.
-    if (previous) { try { messages = read(previous, name); } catch { /* Keep the setup view. */ } }
+    let locale = 'ko';
+    if (previous) { try { messages = read(previous, name); locale = previous.locale; } catch { /* Keep the setup view. */ } }
     const message = error instanceof Error ? error.message : String(error);
-    return { messages, accepted: undefined,
+    return { messages, locale, accepted: undefined,
       error: `${message}\nlocales/ko/demo.json의 키·인자를 확인하고 저장하세요. 입력은 유지됩니다.` };
   }
 }

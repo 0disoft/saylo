@@ -17,6 +17,16 @@ if (new URL(location.href).searchParams.get('starter-check') === 'sveltekit') {
     }
   };
   const element = selector => { const node = document.querySelector(selector); check(node, `Missing ${selector}`); return node; };
+  const checkLanguages = translatedLocale => {
+    const language = selector => element(selector).closest('[lang]')?.getAttribute('lang');
+    for (const selector of ['h1', '#name', '#dialog-title', '#home-link', '#about-link']) {
+      check(language(selector) === translatedLocale, `${selector} has wrong rendered language`);
+    }
+    for (const selector of ['header', '#locale', 'nav', '#leave-link', '#status', '#dialog-status', '#render-error', '#dialog-render-error']) {
+      check(language(selector) === 'ko', `${selector} has wrong fixed Korean language`);
+    }
+    for (const option of element('#locale').options) check(option.lang === option.value, 'Locale option has wrong language');
+  };
   const fill = (selector, value) => { element(selector).value = value; element(selector).dispatchEvent(new Event('input', { bubbles: true })); };
   const select = async (locale, heading) => {
     element('#locale').value = locale;
@@ -24,6 +34,7 @@ if (new URL(location.href).searchParams.get('starter-check') === 'sveltekit') {
     await wait(() => document.documentElement.lang === locale && document.querySelector('h1')?.textContent === heading,
       `Locale ${locale} did not render`);
     check(new URL(location.href).searchParams.get('locale') === locale, 'Locale URL differs from the committed state');
+    checkLanguages(locale);
   };
   const action = async body => { check((await fetch('/__saylo_starter_action', { method: 'POST', body })).ok, 'Mutation failed'); };
   void (async () => {
@@ -31,6 +42,7 @@ if (new URL(location.href).searchParams.get('starter-check') === 'sveltekit') {
       check(!sessionStorage.getItem('saylo-kit-starter'), 'Document reloaded during navigation or locale editing');
       sessionStorage.setItem('saylo-kit-starter', 'yes');
       await wait(() => document.querySelector('#saylo-layout')?.dataset.ready === 'true', 'Hydration did not connect');
+      checkLanguages('ko');
       if (mode === 'cold') {
         check(element('h1').textContent === '번역을 준비하세요.', 'Cold empty catalog has no setup view');
         check(element('#render-error').textContent.includes('demo:home'), 'Cold setup has no correction hint');
@@ -109,6 +121,12 @@ if (new URL(location.href).searchParams.get('starter-check') === 'sveltekit') {
         await action('empty-base');
         await wait(() => element('#render-error').textContent.includes('demo:home'), 'Empty base has no correction hint');
         check(element('h1').textContent === 'New words. Same input.', 'Empty base discarded last good heading');
+        element('#locale').value = 'ko'; element('#locale').dispatchEvent(new Event('change', { bubbles: true }));
+        await wait(() => document.documentElement.lang === 'ko' && new URL(location.href).searchParams.get('locale') === 'ko', 'Empty base locale navigation failed');
+        checkLanguages('en');
+        element('#locale').value = 'en'; element('#locale').dispatchEvent(new Event('change', { bubbles: true }));
+        await wait(() => document.documentElement.lang === 'en' && new URL(location.href).searchParams.get('locale') === 'en', 'Empty base locale restoration failed');
+        checkLanguages('en');
         focused(); checks.push('empty-base');
         element('#dialog-about').click();
         await wait(() => location.pathname === '/about' && document.querySelector('h1')?.textContent === 'New page. Same input.', 'Catalog error blocked shared-layout navigation');
