@@ -18,7 +18,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 | 4 | 미완성 기능 찾기 — "겉으로는 완성돼 보이지만 실제로는 임시 데이터, 빈 구현, 수동 작업에 기대고 있는 부분이 있어?" | 보완(L0) | `docs/53`가 게시·부분·남음을 구분, `docs/06` 로케일 large 안정성, `docs/07` 미해결. 다음: 실행 재확인. |
 | 5 | 기능 사이 연결 — "각 기능은 작동하는데 함께 사용할 때 끊기는 흐름이 있는지 확인해줄래?" | 부분(L0+L1) | `core/catalog.ts`→`vite/catalog-patch.ts`→`vite/client.ts`→`react|svelte/index.ts`. eager·lazy 분리(`client.ts`/`lazy-connection.ts`). 다음: 조합 실행. |
 | 6 | 첫 사용 경험 — "처음 온 사람이 설명을 따로 듣지 않고 첫 번째 성과를 얻을 수 있도록 무엇을 바꾸면 좋을까?" | 부분(L0) | vanilla·React·Svelte·SvelteKit 시작 안내가 있다. public npm만으로 독립 설치한 문서를 실제 Chromium dev·production에서 확인했다(각 `review/*starter-acceptance-2026-10-11.json`). Svelte는 TypeScript 6 peer 호환, SvelteKit은 요청별 SSR·hydration·Node 운영 서버까지 확인했다. PRIVATE 저장소 밖의 문서 전달 경로는 남아 있다. |
-| 7 | 빈 화면과 예외 상황 — "데이터가 없거나, 결과를 찾지 못하거나, 작업에 실패했을 때도 다음 행동을 알 수 있게 돼 있어?" | 부분(L0+L1) | `docs/01` 원칙4, `vite/translation-quarantine.ts`; npm 예제는 진단 유지·수정 안내·모달 안내(`index.html` aria-labelledby) `1336aa5` 실행검증완료, 렌더 오류는 `8febdda`로 en·ko `heading` 삭제 → `Unknown message "demo:heading"`+수정 안내 → 복원 `Connected`, 모달·입력·포커스·last-rendered 화면 유지, 콘솔 0(`review/npm-demo-render-error-recovery-2026-10-11.json`), `verify:demo:npm` 생산 bundle jsdom 3개 통과. React는 `en` 파일 파손 진단이 다른 `ko` 저장으로는 풀리지 않고 `en` 복원 때만 해제됨을 실브라우저로 확인했고(`c92515d`, `review/dev-sync-ui-acceptance-2026-10-11.json`), 수송 실패와 callback 실패는 `LiveDiagnostic.operation`(`928377e`)으로 구분한다. React 빈 기준 카탈로그는 App 제거를 재현한 뒤 수정해 삭제·복원 7단계와 빈 첫 실행 3단계를 통과했다(`review/react-render-recovery-2026-10-11.json`). 다음: Svelte·SvelteKit의 같은 조건. |
+| 7 | 빈 화면과 예외 상황 — "데이터가 없거나, 결과를 찾지 못하거나, 작업에 실패했을 때도 다음 행동을 알 수 있게 돼 있어?" | 부분(L0+L1) | `docs/01` 원칙4, `vite/translation-quarantine.ts`; npm 예제는 진단 유지·수정 안내·모달 안내(`index.html` aria-labelledby) `1336aa5` 실행검증완료, 렌더 오류는 `8febdda`로 en·ko `heading` 삭제 → `Unknown message "demo:heading"`+수정 안내 → 복원 `Connected`, 모달·입력·포커스·last-rendered 화면 유지, 콘솔 0(`review/npm-demo-render-error-recovery-2026-10-11.json`), `verify:demo:npm` 생산 bundle jsdom 3개 통과. React는 `en` 파일 파손 진단이 다른 `ko` 저장으로는 풀리지 않고 `en` 복원 때만 해제됨을 실브라우저로 확인했고(`c92515d`, `review/dev-sync-ui-acceptance-2026-10-11.json`), 수송 실패와 callback 실패는 `LiveDiagnostic.operation`(`928377e`)으로 구분한다. React 빈 기준 카탈로그는 App 제거를 재현한 뒤 수정해 삭제·복원 7단계와 빈 첫 실행 3단계를 통과했다(`review/react-render-recovery-2026-10-11.json`). Svelte도 같은 렌더 예외를 재현·수정하고 작업 중 7단계·첫 실행 3단계와 타입·컴포넌트·빌드를 통과했다(`review/svelte-render-recovery-2026-10-11.json`). 다음: SvelteKit의 같은 조건과 SSR. |
 | 8 | 입력 실수 대응 — "사용자가 잘못 입력했을 때 문제를 정확히 알려주고, 이미 입력한 내용을 살려서 고칠 수 있어?" | 적용(L0) | `core/translation-errors.ts`·`loading-errors.ts` 6종, `diagnostics.ts` 위치 계산. 폼 UI는 L1. |
 | 9 | 작업 중단과 복귀 — "새로고침하거나 앱을 닫았다 돌아와도 진행하던 작업을 이어갈 수 있어야 할 부분은 어디야?" | 부분(L1+L2) | npm 예제가 cached pagehide에서 핸들러를 제거하는 문제를 운영 번들+jsdom으로 재현·수정했다. `verify:demo:npm` 수명 회귀 2개 통과, 근거 `review/npm-demo-history-lifecycle-2026-10-11.json`. React도 생산 ESM 번들에서 cached 이탈 시 root 해제를 재현·수정하고 `verify:demo:react`로 반복 복귀·입력·모달·진단 자료·lazy 언어 로딩·최종 해제를 확인했다(`review/react-demo-history-lifecycle-2026-10-11.json`). 실제 브라우저는 캐시를 쓰지 않아 새로 로드됐다. 실제 BFCache 채택은 미검증. 재시작·새로고침 뒤 초안 저장은 소비 앱 책임이다. |
 | 10 | 취소와 되돌리기 — "실수하기 쉬운 행동 중 취소하거나 되돌릴 수 없어 곤란해지는 부분을 찾아줄래?" | 부분(L0) | `client.ts` idempotent disposer, `store.dispose()`, typegen `generator.ts` 취소·race. 다음: late 응답 폐기 실행. |
@@ -103,7 +103,7 @@ L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·V
 
 ## 실제 효용 우선 Top 3
 
-1. Svelte·SvelteKit의 빈 카탈로그·누락 로케일 화면을 확인한다(7행). React는 빈 기준 카탈로그가 `UnknownMessageError`로 App을 제거하던 문제를 수정했다. 삭제·복원 7단계와 빈 카탈로그 첫 실행 3단계에서 수정 안내·입력·모달·포커스 유지와 복구를 실브라우저로 확인했다(`review/react-render-recovery-2026-10-11.json`). 나머지 프레임워크의 같은 조건은 아직 미검증이다.
+1. SvelteKit의 빈 카탈로그·누락 로케일 화면과 SSR을 확인한다(7행). React·Svelte는 빈 기준 카탈로그에서 렌더 예외를 재현한 뒤 수정했다. 각각 삭제·복원 7단계와 빈 첫 실행 3단계에서 수정 안내·입력·모달·포커스 유지와 복구를 실브라우저로 확인했다(`review/react-render-recovery-2026-10-11.json`·`review/svelte-render-recovery-2026-10-11.json`). SvelteKit의 같은 조건과 SSR 오류 안내는 아직 미검증이다.
 2. 외부 문의 창구와 비공개 제보 연락처를 정한다(45·73행). PRIVATE 저장소의 bugs 링크가 인증 없이 404인 것을 확인했다(`review/reporting-access-2026-10-11.json`). 기존 비공개 이력 공개는 별도 판단이 필요하다. 대체 연락처는 아직 미정이고 원격 설정은 변경하지 않았다.
 3. 시작 안내의 공개 전달 경로를 정한다(6·27행). vanilla·React·Svelte·SvelteKit 문서는 로컬 저장소에 있고 설치 코드는 public npm만으로 검증했다. PRIVATE 저장소 링크 대신 이용자가 읽을 문서 배포 경로와 SSR·lazy 활용 안내의 충분성을 점검한다.
 
@@ -123,7 +123,7 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
-상태 UI·진단 수집 UI·React cached 수명·lazy observer 오류 처리는 분리 실행 기록의 범위까지 확인했고, 기존 동작 문서와 게시본 검증 예제 경계도 정리했다. React 빈 카탈로그·로케일 삭제 복구도 확인했다. 다음은 Svelte·SvelteKit의 같은 조건, 문의·보안 실제 접근 경로, 시작 안내의 공개 전달이다. 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
+상태 UI·진단 수집 UI·React cached 수명·lazy observer 오류 처리는 분리 실행 기록의 범위까지 확인했고, 기존 동작 문서와 게시본 검증 예제 경계도 정리했다. React·Svelte 빈 카탈로그·로케일 삭제 복구도 확인했다. 다음은 SvelteKit의 같은 조건과 SSR, 문의·보안 실제 접근 경로, 시작 안내의 공개 전달이다. 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
 
 ---
 작성 2026-10-11(KST). 기준 HEAD `c92515d`. 시작 안내 `d424345`, 연결 종료 표시 `5db3517`, 동기화 API `b534b4f`, 계약 문서·기록 `b8540cb`, handshake 진단 분리 `928377e`, vanilla·React 상태 UI `c92515d`가 커밋돼 있다. 실행 검증 표시는 연결한 실제 관측 기록의 범위에 한정한다. 이번 판에서 검증된 source 변화는 커밋된 `packages/vite` 개발 클라이언트(alpha 미게시)와 vanilla·React·npm 예제·시작 문서이고, 패키지 버전·registry 상태는 그대로다.

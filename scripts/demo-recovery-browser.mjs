@@ -21,14 +21,14 @@ const fill = (selector, value) => {
   Object.getOwnPropertyDescriptor(prototype, 'value').set.call(element, value);
   element.dispatchEvent(new Event('input', { bubbles: true }));
 };
-const action = async body => { check((await fetch('/__react_recovery_action', { method: 'POST', body })).ok, 'Mutation failed'); };
+const action = async body => { check((await fetch('/__demo_recovery_action', { method: 'POST', body })).ok, 'Mutation failed'); };
 const locale = async value => {
   node('#locale').value = value; node('#locale').dispatchEvent(new Event('change', { bubbles: true }));
   await wait(() => document.documentElement.lang === value, 'Locale change did not finish');
 };
 void (async () => {
   try {
-    await wait(() => node('#name'), 'React did not mount');
+    await wait(() => node('#name'), 'Demo did not mount');
     if (new URL(location.href).searchParams.has('cold')) {
       await wait(() => node('#render-error')?.textContent.includes('demo:heading'), 'Cold empty catalog has no correction hint');
       check(node('h1').textContent === '번역을 준비하세요.', 'Cold empty catalog pretends to have a translation');
@@ -46,7 +46,7 @@ void (async () => {
       check(node('#confirmation') === dialog && dialog.open, 'Cold repair reset the dialog');
       check(node('#confirmation-note') === field && field.value === 'Cold confirmation' && document.activeElement === field, 'Cold repair reset confirmation/focus');
       checks.push('cold-restoration');
-      await fetch('/__react_recovery_result', { method: 'POST', body: JSON.stringify({ ok: true, checks, errors, browser: navigator.userAgent }) });
+      await fetch('/__demo_recovery_result', { method: 'POST', body: JSON.stringify({ ok: true, checks, errors, browser: navigator.userAgent }) });
       return;
     }
     fill('#name', 'Recovery user'); fill('#note', 'Keep this draft');
@@ -59,7 +59,7 @@ void (async () => {
     const reportText = node('#support-report').value;
     const name = node('#name'); const dialog = node('#confirmation'); const field = node('#confirmation-note');
     const preserved = () => {
-      check(node('#name') === name && name.value === 'Recovery user', 'React input was unmounted or reset');
+      check(node('#name') === name && name.value === 'Recovery user', 'Input was unmounted or reset');
       check(node('#note').value === 'Keep this draft', 'Draft reset');
       check(node('#confirmation') === dialog && dialog.open, 'Dialog reset');
       check(node('#confirmation-note') === field && field.value === 'Keep this confirmation', 'Confirmation reset');
@@ -90,8 +90,8 @@ void (async () => {
     await action('restore-base');
     await wait(() => node('#render-error')?.textContent === '' && node('#error')?.textContent === '', 'Restored namespace did not recover');
     preserved(); checks.push('namespace-restoration');
-    await fetch('/__react_recovery_result', { method: 'POST', body: JSON.stringify({ ok: true, checks, errors, browser: navigator.userAgent }) });
+    await fetch('/__demo_recovery_result', { method: 'POST', body: JSON.stringify({ ok: true, checks, errors, browser: navigator.userAgent }) });
   } catch (error) {
-    await fetch('/__react_recovery_result', { method: 'POST', body: JSON.stringify({ ok: false, error: String(error), checks, errors }) });
+    await fetch('/__demo_recovery_result', { method: 'POST', body: JSON.stringify({ ok: false, error: String(error), checks, errors }) });
   }
 })();

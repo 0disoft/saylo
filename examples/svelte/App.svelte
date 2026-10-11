@@ -24,7 +24,7 @@
 </script>
 
 <main>
-  <Preview {connection} {details} />
+  <Preview {connection} {details} onRenderDiagnostic={message => support.onDiagnostic({ message, diagnostics: [], operation: 'observer' })} />
   <p id="status" class="hint" role="status">{connection}</p>
   <pre id="error" role="alert">{details}</pre>
   <SupportPanel recorder={support} {syncState} />

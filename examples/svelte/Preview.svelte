@@ -1,10 +1,21 @@
 <script lang="ts">
+  import type { StoreSnapshot } from '@0disoft/saylo-core';
+  import type { AppSchema } from './generated';
   import { getI18n } from './i18n';
-  let { connection = '', details = '' }: { connection?: string; details?: string } = $props();
+  import { projectDemoMessages } from './demo-messages';
+  let { connection = '', details = '', onRenderDiagnostic }: { connection?: string; details?: string; onRenderDiagnostic: (message: string) => void } = $props();
   const i18n = getI18n();
   let name = $state('');
   let note = $state('');
   let count = $state(2);
+  const lastRendered: { current: StoreSnapshot<AppSchema> | undefined } = { current: undefined };
+  const presentation = $derived(projectDemoMessages($i18n, lastRendered.current, Number(count)));
+  const text = $derived(presentation.messages);
+  $effect(() => {
+    // Remember only the view that reached the committed component.
+    if (presentation.accepted) lastRendered.current = presentation.accepted;
+  });
+  $effect(() => { if (presentation.error) onRenderDiagnostic(presentation.error); });
   let confirmation = $state('');
   let open = $state(false);
   let dialog = $state<HTMLDialogElement>();
@@ -40,28 +51,30 @@
 </header>
 <section class="intro">
   <p class="eyebrow">SVELTE LIVE CATALOG PREVIEW</p>
-  <h1>{$i18n.t('demo:heading')}</h1>
-  <p>{$i18n.t('demo:description')}</p>
+  <h1>{text.heading}</h1>
+  <p>{text.description}</p>
   {#if pendingLocale}<p role="status">{pendingLocale} 문구를 불러오는 중입니다.</p>{/if}
   <p id="transition-error" role="alert">{transitionError}</p>
+  <p id="render-error" class="hint" role="alert">{presentation.error}</p>
 </section>
 <section class="panel preview">
-  <div class="panel-header"><h2>{$i18n.t('demo:formTitle')}</h2><span id="revision" class="badge">revision {$i18n.stateRevision}</span></div>
+  <div class="panel-header"><h2>{text.formTitle}</h2><span id="revision" class="badge">revision {$i18n.stateRevision}</span></div>
   <form id="order-form" onsubmit={event => { event.preventDefault(); open = true; }}>
-    <label>{$i18n.t('demo:name')}<input id="name" autocomplete="off" placeholder={$i18n.t('demo:namePlaceholder')} bind:value={name} /></label>
-    <label>{$i18n.t('demo:note')}<textarea id="note" rows="4" placeholder={$i18n.t('demo:notePlaceholder')} bind:value={note}></textarea></label>
-    <label>{$i18n.t('demo:count')}<input id="count" type="number" min="0" max="100" bind:value={count} /></label>
-    <p id="summary" class="summary" aria-live="polite">{$i18n.t('demo:summary', { count: Number(count) })}</p>
-    <button id="open-dialog" type="submit">{$i18n.t('demo:openDialog')}</button>
+    <label>{text.name}<input id="name" autocomplete="off" placeholder={text.namePlaceholder} bind:value={name} /></label>
+    <label>{text.note}<textarea id="note" rows="4" placeholder={text.notePlaceholder} bind:value={note}></textarea></label>
+    <label>{text.count}<input id="count" type="number" min="0" max="100" bind:value={count} /></label>
+    <p id="summary" class="summary" aria-live="polite">{text.summary}</p>
+    <button id="open-dialog" type="submit">{text.openDialog}</button>
   </form>
   <p class="hint">입력하고 확인 창을 연 뒤 <code>examples/svelte/locales/ko/demo.json</code>을 수정하고 저장하세요.</p>
   <p class="hint">불러온 namespace: <span id="loaded-namespaces">{$i18n.loadedNamespaces.join(', ')}</span></p>
 </section>
 <dialog id="confirmation" aria-labelledby="dialog-title" bind:this={dialog} onclose={() => { open = false; }}>
   <form method="dialog">
-    <h2 id="dialog-title">{$i18n.t('demo:dialogTitle')}</h2>
-    <label>{$i18n.t('demo:dialogNote')}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
-    <button id="close-dialog">{$i18n.t('demo:closeDialog')}</button>
+    <h2 id="dialog-title">{text.dialogTitle}</h2>
+    <label>{text.dialogNote}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
+    <button id="close-dialog">{text.closeDialog}</button>
+    <p id="dialog-render-error" class="hint" role="alert">{presentation.error}</p>
     <p id="dialog-status" class="hint" role="status">{connection}{details && `\n${details}`}</p>
   </form>
 </dialog>
