@@ -57,7 +57,7 @@ wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08
 
 handshake는 snapshot 요청마다 기본 타임아웃 5000ms(`requestTimeoutMs`)로 최대 3회 시도한다. `connecting`은 첫 시도(attempt 1), `retrying`은 재시도(2·3), `failed`는 시도를 소진하거나 첫 전송이 던졌을 때다. `connected`는 클라이언트가 서버 snapshot(manifest)을 수락했다는 뜻이고, 화면에 번역이 그려졌다는 보장은 아니다. `disconnected`는 소켓이 끊긴 상태다.
 
-로케일 파일 진단(`LiveDiagnostic`)은 `onSyncState`와 별개로 유지된다. 원인 파일이 다시 유효해질 때 해제되고, 다른 정상 파일을 저장해도 덮이지 않는다. `LiveDiagnostic.operation`은 개발 클라이언트가 낸 진단에만 있고(`handshake`는 동기화 처리 오류, `observer`는 상태 관측 콜백·eager `onUpdate` 콜백 오류), 서버가 보내는 카탈로그 진단에는 없다. lazy 경로의 `onUpdate` 예외는 아직 `observer`로 분류되지 않는다.
+로케일 파일 진단(`LiveDiagnostic`)은 `onSyncState`와 별개로 유지된다. 원인 파일이 다시 유효해질 때 해제되고, 다른 정상 파일을 저장해도 덮이지 않는다. `LiveDiagnostic.operation`은 개발 클라이언트가 낸 진단에만 있고(`handshake`는 동기화 처리 오류, `observer`는 상태 관측 콜백·eager 갱신 구독자·eager/lazy `onUpdate` 콜백 오류), 서버가 보내는 카탈로그 진단에는 없다. lazy `onUpdate` 예외와 그 오류를 보고하는 진단 콜백 예외는 연결을 해제하거나 완료된 로케일 전환을 reject하지 않는다. 이후 manifest 편집과 콜백 복구도 회귀 검사로 확인했다. 상세 범위는 [dev-sync-state.md](dev-sync-state.md)를 따른다.
 
 예제 UI(vanilla·React·Svelte·SvelteKit)는 연결 문구를 `role="status"`, 오류 문구를 `role="alert"`로 두고, 열어 둔 dialog 안에도 같은 상태 안내를 둔다. `handshake` 문구만 `connected`에서 해제하고 카탈로그 진단은 파일이 복구될 때까지 유지한다. 렌더 오류 뒤 마지막 정상 화면을 유지하는 검증은 npm·vanilla 예제에서 수행했다.
 

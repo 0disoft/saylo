@@ -28,7 +28,11 @@
 
 **SvelteKit 게시본 검증 예제 분리(`ca3e946`).** 현재 예제의 미게시 API가 alpha.4에 없어 registry 검사에서 타입 오류 8건이 발생했다. `scripts/pack-fixtures/sveltekit-registry`에 게시 시점 소스 리비전 `d26506ff78076b282033895f3966fb97dc86306c`의 입력 20개를 보존하고 원본과 바이트 일치를 확인했다. `verify:registry:sveltekit`(alpha.2)·`verify:registry:sveltekit:alpha3`·`verify:registry:sveltekit:alpha4`가 모두 승인 tarball 5개 SHA-512 대조·독립 설치·타입·생산 빌드·SSR·운영 Chromium 검사를 통과했다. 최신 로컬 입력으로 실행한 `verify:pack:sveltekit`도 진단 자료 생성·입력값 제외·초기화·입력 보존까지 통과했다. 근거는 `review/sveltekit-registry-fixture-2026-10-11.json`이다. 검사 프로세스는 종료됐고 버전 변경·게시·푸시는 하지 않았다.
 
-**기존 설계 문서 대조.** `docs/04-live-update-and-types.md`에 개발 동기화·진단 유지·문의 자료·BFCache 검증 범위를 추가하고 전용 계약 문서로 연결했다. `docs/support-report.md`에는 registry fixture와 최신 로컬 consumer의 차이를 표시했다. 대조 중 lazy `onUpdate` 예외가 eager와 같은 `observer` 분류로 처리되지 않는 차이를 확인해 다음 수정 대상으로 남겼다. 이 항목은 정적 코드 관측이며 아직 런타임 결함 재현은 아니다.
+**기존 설계 문서 대조.** `docs/04-live-update-and-types.md`에 개발 동기화·진단 유지·문의 자료·BFCache 검증 범위를 추가하고 전용 계약 문서로 연결했다. `docs/support-report.md`에는 registry fixture와 최신 로컬 consumer의 차이를 표시했다. 대조 중 lazy `onUpdate` 예외가 eager와 같은 `observer` 분류로 처리되지 않는 정적 차이를 확인했고, 실행 재현은 아래 단락에서 다룬다.
+
+**lazy onUpdate observer 오류 처리(`c8297c8`).** 정적으로 확인했던 차이를 `packages/vite/test/lazy.test.mjs`의 회귀 2건으로 재현했다. 수정 전 최초 `onUpdate`에서 'update view failed'가 연결 밖으로 던져지고, 로케일이 커밋돼도 전환 Promise가 `AggregateError`로 reject돼 두 검사 모두 실패했다. 수정 후 Vite 패키지 빌드·lazy/sync-state/client/support-report 49검사와 consumer `tsc`가 통과했다. 최초 콜백과 진단 콜백이 던져도 binding이 유지되고 `setLocale`·manifest 편집·후속 복구가 성공하며 자료에는 `observer`로 기록된다. `verify:pack`도 독립 JS·TS 앱에서 5 tarball·public import·SSR·lazy 빌드·진단 자료 API를 검증했다. 근거는 `review/lazy-update-observer-2026-10-11.json`이다. 실제 브라우저 오류 주입과 registry 게시는 이번 수정에서 하지 않았다.
+
+**외부 문의 접근 경로.** 인증된 GitHub 조회에서 저장소는 PRIVATE·issues 활성 상태였다. 인증 없는 HTTP 요청은 저장소·issues·새 security advisory 경로 모두 404였다. private vulnerability reporting API도 404지만 이를 설정 비활성으로 단정하지 않는다. 로컬 SECURITY.md와 이슈 템플릿은 없었다. 공개 패키지의 bugs URL을 외부 문의 경로로 사용할 수 없는 상태이며, 대체 창구와 비공개 제보 연락처는 아직 정하지 않았다. 근거는 `review/reporting-access-2026-10-11.json`이다. 원격 설정은 변경하지 않았다.
 
 판정 반영은 9행에 React 수명 근거와 21·43행에 진단 자료 근거, 68행에 게시본 검사 근거를 추가한다. 패키지 버전·registry 상태는 그대로다.
 

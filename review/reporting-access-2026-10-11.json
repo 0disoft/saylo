@@ -1,0 +1,30 @@
+{
+  "observedOn": "2026-10-11",
+  "repository": "0disoft/saylo",
+  "authenticatedRepositoryQuery": {
+    "command": "gh repo view --json nameWithOwner,url,visibility,hasIssuesEnabled",
+    "visibility": "PRIVATE",
+    "hasIssuesEnabled": true
+  },
+  "unauthenticatedRequests": [
+    { "url": "https://github.com/0disoft/saylo", "status": 404 },
+    { "url": "https://github.com/0disoft/saylo/issues", "status": 404 },
+    { "url": "https://github.com/0disoft/saylo/security/advisories/new", "status": 404 }
+  ],
+  "privateVulnerabilityReportingQuery": {
+    "command": "gh api repos/0disoft/saylo/private-vulnerability-reporting",
+    "httpStatus": 404,
+    "enabled": "unverified; a 404 is not proof that a reporting setting is disabled"
+  },
+  "localFiles": {
+    "securityPolicy": "No SECURITY.md found in tracked source inventory",
+    "issueTemplates": "No files under .github other than workflows/release.yml"
+  },
+  "finding": "The GitHub issues URL used by published package bugs metadata cannot currently serve unauthenticated external users",
+  "nextAction": "Choose an externally accessible support destination and a private vulnerability contact; do not infer authorization to expose private repository history",
+  "limits": [
+    "Read-only authenticated metadata and unauthenticated HTTP inspection; no issue was submitted",
+    "No repository visibility or security setting was changed",
+    "A replacement contact has not been configured"
+  ]
+}
