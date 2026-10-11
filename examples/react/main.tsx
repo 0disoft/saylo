@@ -1,12 +1,13 @@
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { connectDev } from '@0disoft/saylo-vite/client';
+import { connectDev, createSupportRecorder } from '@0disoft/saylo-vite/client';
 import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
 import type { ParsedCatalog } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs } from 'virtual:saylo/lazy';
 import { SayloProvider, store, useI18n } from './i18n';
 import '../vanilla/style.css';
 import { formatDevSyncState } from '../shared/dev-status';
+import { SupportPanel } from './SupportPanel';
 
 function CatalogPanel({ catalogs, diagnostic, handshakeMessage, connection }: {
   catalogs: readonly ParsedCatalog[]; diagnostic: LiveDiagnostic; handshakeMessage: string; connection: string;
@@ -30,13 +31,14 @@ function CatalogPanel({ catalogs, diagnostic, handshakeMessage, connection }: {
 }
 
 function App() {
+  const [support] = useState(() => createSupportRecorder(__SAYLO_SUPPORT_ENV__));
   const [catalogs, setCatalogs] = useState<readonly ParsedCatalog[]>(initialCatalogs.flatMap(o => o.status === 'present' ? [o.catalog] : []));
   const [diagnostic, setDiagnostic] = useState<LiveDiagnostic>({ message: '', diagnostics: [] });
   const [handshakeMessage, setHandshakeMessage] = useState('');
   const [syncState, setSyncState] = useState<DevSyncState>();
   useEffect(() => connectDev(store, { catalogSource, onUpdate: setCatalogs,
-    onDiagnostic: value => { if (value.operation === 'handshake') setHandshakeMessage(value.message); else setDiagnostic(value); },
-    onSyncState: value => { setSyncState(value); if (value.status === 'connected') setHandshakeMessage(''); }
+    onDiagnostic: value => { support.onDiagnostic(value); if (value.operation === 'handshake') setHandshakeMessage(value.message); else setDiagnostic(value); },
+    onSyncState: value => { support.onSyncState(value); setSyncState(value); if (value.status === 'connected') setHandshakeMessage(''); }
   }), []);
   const connection = import.meta.hot ? formatDevSyncState(syncState) : '빌드된 카탈로그를 사용합니다.';
   const snapshot = useI18n();
@@ -110,6 +112,7 @@ function App() {
         </section>
         <CatalogPanel catalogs={catalogs} diagnostic={diagnostic} handshakeMessage={handshakeMessage} connection={connection} />
       </div>
+      <SupportPanel recorder={support} syncState={syncState} />
     </main>
     <dialog id="confirmation" ref={dialog} onClose={() => setOpen(false)} aria-labelledby="dialog-title">
       <form method="dialog">
