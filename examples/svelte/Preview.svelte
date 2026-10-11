@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getI18n } from './i18n';
+  let { connection = '', details = '' }: { connection?: string; details?: string } = $props();
   const i18n = getI18n();
   let name = $state('');
   let note = $state('');
@@ -56,10 +57,11 @@
   <p class="hint">입력하고 확인 창을 연 뒤 <code>examples/svelte/locales/ko/demo.json</code>을 수정하고 저장하세요.</p>
   <p class="hint">불러온 namespace: <span id="loaded-namespaces">{$i18n.loadedNamespaces.join(', ')}</span></p>
 </section>
-<dialog id="confirmation" bind:this={dialog} onclose={() => { open = false; }}>
+<dialog id="confirmation" aria-labelledby="dialog-title" bind:this={dialog} onclose={() => { open = false; }}>
   <form method="dialog">
-    <h2>{$i18n.t('demo:dialogTitle')}</h2>
+    <h2 id="dialog-title">{$i18n.t('demo:dialogTitle')}</h2>
     <label>{$i18n.t('demo:dialogNote')}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
     <button id="close-dialog">{$i18n.t('demo:closeDialog')}</button>
+    <p id="dialog-status" class="hint" role="status">{connection}{details && `\n${details}`}</p>
   </form>
 </dialog>

@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-11",
+  "scope": "Svelte example synchronization state UI",
+  "localChecks": {
+    "tsc -p examples/svelte/tsconfig.json": "exit 0",
+    "svelte-check --workspace examples/svelte --tsconfig ./tsconfig.json": "0 errors, 0 warnings",
+    "vite build --config examples/svelte/vite.config.mjs": "exit 0, 157 modules"
+  },
+  "browser": {
+    "environment": "Codex in-app browser, real Vite 8.3.2 on loopback port 5196",
+    "method": "Suppress snapshot replies, keep original three 5000ms handshake attempts; enable replies and save a real ko/demo.json edit",
+    "observedStates": ["connecting 1/3", "retrying 2/3", "retrying 3/3", "failed 3/3", "connected"],
+    "failureGuidanceVisibleInsideDialog": true,
+    "retainedThroughFailureAndRecovery": {
+      "name": "Svelte draft",
+      "confirmationNote": "Svelte modal draft",
+      "dialogOpen": true,
+      "focusedElement": "confirmation-note"
+    },
+    "recoveredHeading": "번역을 바꿔도, 입력은 그대로 · 연결 복구",
+    "errorAfterRecovery": "",
+    "consoleWarningsAndErrors": [],
+    "tabClosed": true,
+    "serverExited": 0,
+    "catalogDiffAfterCleanup": "none"
+  },
+  "limits": [
+    "Cached pagehide now avoids unmounting the app; actual browser BFCache adoption was not tested.",
+    "Catalog diagnostic retention after an unrelated edit was exercised in the SvelteKit acceptance, not this Svelte run."
+  ],
+  "pushedOrPublished": false
+}

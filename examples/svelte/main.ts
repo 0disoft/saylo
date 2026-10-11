@@ -8,8 +8,9 @@ let stopped = false;
 function cleanup() {
   if (stopped) return;
   stopped = true;
-  window.removeEventListener('pagehide', cleanup);
+  window.removeEventListener('pagehide', pagehide);
   void unmount(app).finally(() => store.dispose());
 }
-window.addEventListener('pagehide', cleanup, { once: true });
+const pagehide = (event: PageTransitionEvent) => { if (!event.persisted) cleanup(); };
+window.addEventListener('pagehide', pagehide);
 if (import.meta.hot) import.meta.hot.dispose(cleanup);

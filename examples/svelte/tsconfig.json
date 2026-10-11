@@ -4,5 +4,5 @@
     "lib": ["ES2022", "DOM"], "strict": true, "noEmit": true,
     "types": ["vite/client", "@0disoft/saylo-vite/virtual"]
   },
-  "include": ["*.ts", "generated.d.ts"]
+  "include": ["*.ts", "*.svelte", "generated.d.ts"]
 }
