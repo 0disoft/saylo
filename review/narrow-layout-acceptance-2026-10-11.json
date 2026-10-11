@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-11",
+  "baselineCommit": "679ab32",
+  "method": "Live Codex in-app browser; copied vanilla demo with synthetic valid ko/en catalogs; DOM geometry and keyboard input, not jsdom",
+  "fixture": {
+    "heading": "Translation repeated 24 times without spaces",
+    "formTitle": "Order repeated 40 times without spaces",
+    "name": "Recipient repeated 18 times without spaces",
+    "openDialog": "Confirm repeated 16 times without spaces",
+    "dialogTitle": "Confirmation repeated 18 times without spaces",
+    "originalCatalogsChanged": false
+  },
+  "before": {
+    "viewportCssPixels": 320,
+    "documentScrollWidth": 3074,
+    "panelWidth": 2096.77783203125,
+    "inputWidth": 2052.77783203125
+  },
+  "after": {
+    "narrow": { "viewportCssPixels": 320, "documentScrollWidth": 303, "panelWidth": 267.1111145019531, "inputWidth": 223.11111450195312 },
+    "desktop": { "viewportCssPixels": 1120, "documentScrollWidth": 1103, "panelWidths": [461, 554], "panelScrollWidths": [461, 554] },
+    "longDialog": { "clientWidth": 265, "scrollWidth": 265 },
+    "keyboard": {
+      "actions": "ArrowUp in locale select, Tab through name/note/count/submit, Return to open, type confirmation, Escape to close",
+      "locale": "en",
+      "formValuesPreserved": true,
+      "dialogInitiallyFocused": "confirmation-note",
+      "escapeRestoredFocus": "demo:openDialog"
+    },
+    "liveCatalogEdit": {
+      "newTitle": "Live translation update keeps the confirmation open and its keyboard focus in the same input",
+      "titleUpdated": true,
+      "dialogRemainedOpen": true,
+      "formAndConfirmationValuesPreserved": true,
+      "focusRemained": "confirmation-note"
+    },
+    "consoleWarningsAndErrors": 0,
+    "build": "npx vite build --config examples/vanilla/vite.config.mjs: exit 0, 47 modules"
+  },
+  "changeScope": ["examples/vanilla/style.css (also imported by React and Svelte)", "examples/sveltekit/src/lib/style.css (matching CSS changes)"],
+  "cleanup": "Test tab closed, temporary viewport reset, both servers stopped; automatic approval review rejected recursive fixture removal, leaving ignored .release/layout-fixture-zZ5qXS",
+  "limits": ["Live browser verification covers vanilla only; React, Svelte and SvelteKit rendering not rerun", "320 CSS px viewport is not a browser zoom or assistive technology test", "No low-spec device, full focus-cycle or accessibility conformance claim", "No package API, version, push or publication changes"]
+}
