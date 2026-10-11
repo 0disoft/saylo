@@ -22,7 +22,10 @@ export function connectLazyDev<S extends Schema>(instance: I18n<S>, options: Con
   const update = () => { if (bindings.get(instance) === stop) options.onUpdate?.(source.getCatalogs()); };
   const observeState = (state: DevSyncState) => {
     if (bindings.get(instance) !== stop) return;
-    try { options.onSyncState?.(state); } catch (error) { try { report(error, 'observer'); } catch { /* observers are passive */ } }
+    try {
+      const observation = Object.freeze({ status: state.status, attempt: state.attempt, maxAttempts: state.maxAttempts });
+      options.onSyncState?.(observation);
+    } catch (error) { try { report(error, 'observer'); } catch { /* observers are passive */ } }
   };
   const stop = () => {
     if (bindings.get(instance) !== stop) return;

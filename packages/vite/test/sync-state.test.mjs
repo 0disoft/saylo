@@ -149,6 +149,41 @@ test('legacy lazy sources need not implement synchronization observation', t => 
   stop();
 });
 
+test('custom mutable source states are copied into immutable bridge observations', t => {
+  const registry = new CatalogRegistry('custom', 'ko', [catalog('custom')]);
+  const initial = [registry.load('ko', 'demo')];
+  const mutable = { status: 'connected', attempt: 0, maxAttempts: 3 };
+  let receive;
+  const source = {
+    readManifest: () => registry.manifest(), loadCatalog: (locale, namespace) => Promise.resolve(registry.load(locale, namespace)),
+    getCatalogs: () => initial.map(outcome => outcome.catalog), subscribeManifest: () => () => {}, subscribeDiagnostic: () => () => {},
+    getSyncState: () => mutable, subscribeSyncState: listener => { receive = listener; return () => {}; },
+    connect: () => () => {}, dispose: () => {}
+  };
+  const instance = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['demo'], initialCatalogs: initial });
+  t.after(() => instance.dispose());
+  const states = [];
+  const diagnostics = [];
+  connectDev(instance, { catalogSource: source, onSyncState: state => states.push(state), onDiagnostic: diagnostic => diagnostics.push(diagnostic) });
+  assert.ok(Object.isFrozen(states[0]));
+  assert.notEqual(states[0], mutable);
+  mutable.status = 'retrying';
+  mutable.attempt = 2;
+  receive(mutable);
+  assert.deepEqual(view(states), [['connected', 0], ['retrying', 2]]);
+  assert.ok(Object.isFrozen(states[1]));
+  assert.equal(Object.isFrozen(mutable), false, 'The bridge must not freeze a provider-owned object');
+  const frozenGetters = Object.freeze({ get status() { return mutable.status; }, get attempt() { return mutable.attempt; }, maxAttempts: 3 });
+  receive(frozenGetters);
+  mutable.status = 'disconnected';
+  mutable.attempt = 0;
+  assert.equal(states[2].status, 'retrying', 'Frozen provider getters must not change an earlier observation');
+  assert.equal(states[2].attempt, 2);
+  assert.doesNotThrow(() => receive({ get status() { throw new Error('provider status failed'); }, attempt: 0, maxAttempts: 3 }));
+  assert.equal(diagnostics.at(-1).operation, 'observer');
+  assert.equal(instance.t('demo:hello'), 'custom');
+});
+
 for (const disposeAt of ['idle', 'connecting']) {
   test(`lazy observer disposal during ${disposeAt} does not leave a source binding or late updates`, t => {
     const registry = new CatalogRegistry('dispose', 'ko', [catalog('initial')]);
