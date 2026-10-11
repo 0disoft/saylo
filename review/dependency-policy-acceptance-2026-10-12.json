@@ -1,0 +1,89 @@
+{
+  "observedOn": "2026-10-12",
+  "baseCommit": "ea69df3",
+  "configFile": "renovate.json",
+  "schemaValidation": {
+    "source": "https://docs.renovatebot.com/renovate-schema.json",
+    "sha256": "28bb74b59b1df352e76a8b468d3e41c7089bf359f6c2fc5ec7ebd9d0435d2fc2",
+    "validator": "ajv-cli@5 draft7 --strict=false",
+    "result": "renovate.json valid",
+    "limits": [
+      "JSON schema validation only, not Renovate runtime config evaluation",
+      "Unused schema regex formats were ignored by Ajv; configured data does not use those fields"
+    ]
+  },
+  "policy": {
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "dependencyDashboard": true,
+    "dependencyDashboardApproval": true,
+    "automerge": false,
+    "prConcurrentLimit": 2,
+    "prHourlyLimit": 1,
+    "timezone": "Asia/Seoul",
+    "lockFileMaintenance": {
+      "enabled": true,
+      "dependencyDashboardApproval": false,
+      "schedule": [
+        "* 0-5 1 * *"
+      ]
+    },
+    "packageRules": [
+      {
+        "description": "Keep npm ranges and batch compatible updates monthly",
+        "matchManagers": [
+          "npm"
+        ],
+        "matchUpdateTypes": [
+          "minor",
+          "patch"
+        ],
+        "rangeStrategy": "in-range-only",
+        "groupName": "npm compatible updates",
+        "dependencyDashboardApproval": false,
+        "schedule": [
+          "* 0-5 1 * *"
+        ]
+      },
+      {
+        "description": "Review new major versions before compatibility checks and adoption",
+        "matchUpdateTypes": [
+          "major"
+        ],
+        "dependencyDashboardApproval": true
+      },
+      {
+        "description": "Saylo versions and alpha consumers follow the coordinated release process",
+        "matchPackageNames": [
+          "@0disoft/saylo-*"
+        ],
+        "enabled": false
+      }
+    ]
+  },
+  "auditCommand": {
+    "command": "npm run audit:dependencies",
+    "result": "passed; 0 known advisories in root lock build/runtime dependency tree",
+    "integration": ".github/workflows/release.yml after npm ci in existing job",
+    "initialFailure": "Nested npm audit rejected exported npm_config_allow_scripts with EALLOWSCRIPTS",
+    "fix": "Node wrapper omits only the incompatible env override; no install or scripts are run",
+    "negativeVerification": {
+      "childExitCode": 13,
+      "observedExitCode": 13,
+      "forwardedArguments": [
+        "audit",
+        "--audit-level=low",
+        "--json"
+      ],
+      "allowScriptsEnvRemoved": true
+    },
+    "threshold": "--audit-level=low; explicit workflow command does not inherit a higher threshold"
+  },
+  "independentDependencyRefresh": "review/dependency-refresh-acceptance-2026-10-12.json",
+  "limits": [
+    "Local configuration only; no push, Renovate run, dashboard approval, or remote setting mutation",
+    "Global/inherited Renovate configuration may constrain these local rules; activation unverified",
+    "No new CI job, auto merge or release",
+    "npm audit is known advisory detection, not a source vulnerability scan or proof of no vulnerabilities",
+    "Major upgrades require owner approval and relevant compatibility verification; dashboard approval does not run tests"
+  ]
+}

@@ -49,7 +49,8 @@
     "verify:demo:sveltekit:recovery": "node scripts/verify-sveltekit-recovery.mjs",
     "build:docs": "node scripts/build-package-docs.mjs",
     "verify:docs": "node scripts/build-package-docs.mjs --check",
-    "verify:boundaries": "node scripts/check-package-boundaries.mjs && node --test scripts/test/package-boundaries.test.mjs"
+    "verify:boundaries": "node scripts/check-package-boundaries.mjs && node --test scripts/test/package-boundaries.test.mjs",
+    "audit:dependencies": "node scripts/audit-dependencies.mjs"
   },
   "devDependencies": {
     "@babel/parser": "8",

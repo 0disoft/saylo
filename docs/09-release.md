@@ -177,3 +177,7 @@ CI artifact의 manifest를 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha
 이 pack은 미게시 후속 코드를 `0.1.0-alpha.3` metadata로 묶은 로컬 proof이고 게시된 `alpha.3` artifact가 아니다. selector 공개 API는 현행 소스에 구현돼 있고 로컬 pack으로 검증했지만 게시본에는 없다. 임시 tarball·앱·브라우저·서버는 pack 스크립트가 정리했고, 승인 파일 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)과 `.release/`는 갱신하지 않았다.
 
 원격 검증(릴리스 `version`·CI 승인, `verify_oidc` 토큰 교환, `verify:registry:alpha3` registry 대조)은 이번 로컬 check와 별개다. 현행 head에 대한 외부 CI·OIDC 검증을 실행한 것이 아니다.
+
+## 의존성 취약점 조회
+
+기존 릴리스 작업은 `npm ci` 뒤 `npm run audit:dependencies`로 루트 lock의 개발·실행 의존성에 대한 npm advisory를 조회한다. 조회 실패나 low 이상으로 보고된 취약점은 다음 단계로 넘어가지 않는다. 별도 CI 작업은 추가하지 않았으며 원격 실행은 아직 확인하지 않았다. [의존성 갱신](dependency-updates.md)에 봇 정책·갱신 PR 확인 명령과 조회 범위를 정리했다.

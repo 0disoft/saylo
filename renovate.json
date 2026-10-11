@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "dependencyDashboard": true,
+  "dependencyDashboardApproval": true,
+  "automerge": false,
+  "prConcurrentLimit": 2,
+  "prHourlyLimit": 1,
+  "timezone": "Asia/Seoul",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "dependencyDashboardApproval": false,
+    "schedule": ["* 0-5 1 * *"]
+  },
+  "packageRules": [
+    {
+      "description": "Keep npm ranges and batch compatible updates monthly",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "rangeStrategy": "in-range-only",
+      "groupName": "npm compatible updates",
+      "dependencyDashboardApproval": false,
+      "schedule": ["* 0-5 1 * *"]
+    },
+    {
+      "description": "Review new major versions before compatibility checks and adoption",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Saylo versions and alpha consumers follow the coordinated release process",
+      "matchPackageNames": ["@0disoft/saylo-*"],
+      "enabled": false
+    }
+  ]
+}

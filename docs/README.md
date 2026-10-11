@@ -6,6 +6,8 @@
 
 문의와 기능 제안은 [지원 안내](../SUPPORT.md), 비공개 보안 제보는 [보안 안내](../SECURITY.md)를 따른다.
 
+의존성의 패치 갱신·Renovate 승인·릴리스 audit 절차는 [의존성 갱신](dependency-updates.md)에 있다.
+
 ## 읽는 순서
 
 빈 폴더에서 게시 패키지를 설치해 시작하는 절차는 [getting-started.md](getting-started.md)에 있다.
