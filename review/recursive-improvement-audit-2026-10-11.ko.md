@@ -123,6 +123,8 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
+2026-10-12 문서 후속: alpha.5의 변경 범위와 남은 승격·게시·복귀 절차를 `releases/0.1.0-alpha.5-plan.md`에 정리하고, API 안내를 checkout·후보 tarball·기존 alpha.4로 구분했다. 동봉 15파일과 최신 소스의 독립 JS/TS pack은 통과했다(`review/release-alpha5-documentation-acceptance-2026-10-12.json`). 공개 registry에서 alpha.5 미게시·다섯 alpha 태그의 alpha.4를 다시 확인했다(`review/release-alpha5-registry-preflight-2026-10-12.json`). registry 경로는 아직 support-report fixture를 건너뛰고 SvelteKit은 alpha.4 계약 전용 fixture를 쓰므로, 새 API의 registry 인수도 남은 작업이다. 승인 CI manifest를 로컬 후보 JSON으로 대체하지 않는다.
+
 2026-10-12 후속: 원본 버전과 기존 릴리스 산출물을 유지하는 후보 생성·검증 명령을 추가했다. `5d90701`의 입력 937개와 버전 변경만 허용한 alpha.5 임시 사본에서 전체 check·다섯 tarball 독립 JS/TS 소비·게시 계획 dry run을 통과했다. 도구 회귀 2건과 근거는 `review/release-candidate-acceptance-2026-10-12.json`에 있다. 최종 버전 승격·공개/미게시 문서 정리·원격 게시·registry 인수는 남아 있으므로 24·68행과 문의/동봉 문서의 공개 전달 상태는 부분으로 유지한다.
 
 상태 UI·진단 수집 UI·React cached 수명·lazy observer 오류 처리는 분리 실행 기록의 범위까지 확인했고, 기존 동작 문서와 게시본 검증 예제 경계도 정리했다. 세 프레임워크 예제와 독립 시작 안내의 빈 카탈로그 복구, 문서 동봉 tarball의 독립 설치도 확인했다. vanilla의 키보드·좁은 화면·긴 문구는 확인하고 넘침을 수정했다. 다음은 확대·보조 기술, 문의 수신과 승인 릴리스의 문서·연락처 공개 전달이다. 문의·보안 안내의 로컬 문서와 메타데이터는 독립 tarball 검사까지 완료했다. 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.

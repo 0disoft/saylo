@@ -1,0 +1,53 @@
+{
+  "schema": "saylo.release-documentation-acceptance/v1",
+  "observedAt": "2026-10-11T16:21:47.321Z",
+  "baseCommit": "b5302e0",
+  "sourceVersions": "0.1.0-alpha.4",
+  "proposedVersion": "0.1.0-alpha.5",
+  "sources": {
+    "README.md": "77c0c02fbdbb844b2bf127caead94a552624d6fb496878bf2d8874f11fb69796",
+    "SUPPORT.md": "94d79e2e61eea9ec5657827ff10b982c5fc147a2fccd1e1f3dc328ecdf6b0e32",
+    "docs/README.md": "0df9bdd04514c8101d4525f6ce623b34f63185a312bf185faf1d3142939ca2ec",
+    "docs/dev-sync-state.md": "bcbff7a9202daa4daed9db12f2e355688c6472b778f1f44e4a34a54c6128b47b",
+    "docs/support-report.md": "9fccee4c9126e06a4060cd32cfa7f5534e1b465dab5e0f5a4f33f50082352c69",
+    "scripts/build-package-docs.mjs": "a4af6700d9118c8c9ce0cc26f775a2fb2ce06b33f60b8f1e67a77a1c64d7b6e4",
+    "packages/core/README.md": "e99ec085942f3cbe862c17a58b06fbe2afc0af51b718bda3fe93ee2a88fbd697",
+    "packages/react/README.md": "234a601310f9df6d8731ef87f2fe370b6dcd613269ead9f265e94114ecb31ead",
+    "packages/svelte/README.md": "aa7184f57bff9872e4f0aee86865673c1a3a88b000e4ed2741ced97b797380ee",
+    "packages/typegen/README.md": "0e6fab039d5d100b321493d6e6390fc19f439e4931afb69f17c69c05081d37af",
+    "packages/vite/README.md": "3548b89c298d3769ce7d6366073c5422f826b40b45b193aa93cd84b7fc841af6",
+    "docs/09-release.md": "229ebc1aab71c7f77024fdeb422930b406caf08d88c22b29177e94bd8ed6c477",
+    "releases/0.1.0-alpha.5-plan.md": "cb4aba1bfe209724fe5578970219b33ea76767d7e7daf71942c3cbb7c7655f00"
+  },
+  "checks": [
+    {
+      "command": "npm run build:docs",
+      "exitCode": 0,
+      "documents": 13,
+      "files": 15,
+      "bytes": 148916
+    },
+    {
+      "command": "npm run verify:docs",
+      "exitCode": 0,
+      "coverage": "Content hashes, code blocks and bundled local file links."
+    },
+    {
+      "command": "npm run verify:pack",
+      "exitCode": 0,
+      "coverage": "Five local tarballs consumed independently in JS/TS, installed document content and links, shipped README snippets, runtime and selector SSR, CLI help, complete-translation recovery and SSR without development dependencies."
+    }
+  ],
+  "bundledManifestSha256": "064db0b0ca0186cb2f12899f35f9b01a5c8186b3387121ee438bb6110ca33cc8",
+  "registryPreflight": "review/release-alpha5-registry-preflight-2026-10-12.json",
+  "limits": [
+    "This command packed current unpublished source using unchanged alpha.4 metadata, not approved registry alpha.4 artifacts.",
+    "No original version bump, publication, workflow dispatch or new performance/a11y measurements.",
+    "The earlier alpha.5 candidate validation froze product source at 5d90701. It does not include these documentation edits. A final candidate must be frozen and validated again."
+  ],
+  "releasePlan": {
+    "file": "releases/0.1.0-alpha.5-plan.md",
+    "localLinkTargetsChecked": 25,
+    "status": "Prepared for review; candidate and publication states kept separate."
+  }
+}

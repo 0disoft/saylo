@@ -1,0 +1,56 @@
+{
+  "schema": "saylo.registry-preflight/v1",
+  "observedAt": "2026-10-11T16:11:21.685Z",
+  "source": "https://registry.npmjs.org/",
+  "packages": [
+    {
+      "name": "@0disoft/saylo-core",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "proposedVersion": "0.1.0-alpha.5",
+      "proposedVersionExists": false
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "proposedVersion": "0.1.0-alpha.5",
+      "proposedVersionExists": false
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "proposedVersion": "0.1.0-alpha.5",
+      "proposedVersionExists": false
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "proposedVersion": "0.1.0-alpha.5",
+      "proposedVersionExists": false
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "distTags": {
+        "latest": "0.0.0-stage",
+        "alpha": "0.1.0-alpha.4"
+      },
+      "proposedVersion": "0.1.0-alpha.5",
+      "proposedVersionExists": false
+    }
+  ],
+  "limits": [
+    "Read-only metadata observation; no registry writes.",
+    "This is availability preflight, not candidate publication or integrity acceptance."
+  ]
+}

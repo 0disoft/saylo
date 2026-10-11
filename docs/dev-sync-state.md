@@ -4,7 +4,7 @@
 
 [`@0disoft/saylo-vite/client`](../packages/vite/README.md)의 `connectDev`가 개발 서버와의 handshake 상태를 `onSyncState(state)`로 알린다. eager 경로(`ConnectDevOptions`)와 lazy 경로(`ConnectLazyDevOptions`)가 같은 `DevSyncState`를 쓴다.
 
-이 문서는 로컬 작업트리의 미게시 변경을 설명한다. 현재 게시본은 `0.1.0-alpha.4`이고 이 API는 그 게시본에 포함되지 않는다.
+이 API는 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에서 제공한다. 현재 npm 게시본 `0.1.0-alpha.4`에는 포함되지 않는다. 후보는 아직 npm에 게시하지 않았다.
 
 ## 타입
 

@@ -4,7 +4,7 @@
 
 이 문서는 Saylo를 쓰는 앱이 문제를 신고할 때 첨부할 수 있는 진단 JSON 보고서의 계약을 설명한다. 구현은 `packages/vite/src/support-report.ts`에 있고 `@0disoft/saylo-vite/client`에서 export한다.
 
-이 API는 로컬 작업트리에만 있다. 현재 게시본 `0.1.0-alpha.4`에는 `createSupportReport`와 `createSupportRecorder`가 없다. 게시 여부와 시점은 릴리스 기록을 따르고, 이 문서는 게시본에 이미 있다고 주장하지 않는다.
+`createSupportReport`와 `createSupportRecorder`는 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에서 제공한다. 현재 npm 게시본 `0.1.0-alpha.4`에는 없다. 후보는 아직 npm에 게시하지 않았다.
 
 ## 설계 원칙
 
