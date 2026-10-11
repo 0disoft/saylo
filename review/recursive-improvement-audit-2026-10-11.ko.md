@@ -1,0 +1,124 @@
+# 재귀 개선 감사 — goal-objective.md 고려사항 전량 매핑 (2026-10-11, 진행 중)
+
+**진행 중 감사다. 최종 완료 판정이 아니다.** 실행 근거는 `1336aa5`의 npm 예제 오류 안내 실브라우저 검증과 `c3d4036`의 production 번들 페이지 캐시 수명 모델 검사다. 나머지 판정은 정적 근거다. 기준은 `projects/hobby/opensource/saylo`, `c3d4036`이다. goal file 3~74행의 고려사항 72개를 전량 매핑한다.
+
+판정: 적용=제공 경로 있음 / 부분=계층 일부만 / 보완=저장소가 고칠 수 있음 / 비적용=경계 밖. 경계: L0 Saylo(5패키지), L1 소비 앱, L2 저장소·릴리스. 근거는 좁게 읽은 소스·문서이고, 실행 검증은 표시한 1건 외에 없다.
+
+## 공통 책임 경계와 비적용 이유
+
+L0는 카탈로그 parse·validate·불변 snapshot·어댑터·타입 생성·Vite dev 연결만 소유한다(`docs/07` 제품 형태, `package.json` workspaces). 서버·계정·조직·DB·과금·운영 콘솔이 없으므로 SaaS 계열 14개(14,16,22,29,30,31,32,33,36,37,38,40,41,42)는 소비 제품 담당이다. 나머지 5개(46,48,64,67,71)는 운영·인프라 계열이고 데이터 저장소·운영자 부재에서 나온다. 저장소는 `gh` 기준 PRIVATE이고 npm 5패키지는 public이므로, 공개 사용자 첫 접점은 npm 설치이며 clone·GitHub 링크 접근을 전제하지 않는다. visibility 변경은 이번 scope에서 실행하지 않는다.
+
+## 매핑 (goal-objective.md 3~74행)
+
+원문은 각 줄 전체를 그대로 옮겼다. 경로는 저장소 루트 기준이다.
+
+| 줄 | 고려사항(원문) | 판정 | 근거 · 다음 검증 |
+| --- | --- | --- | --- |
+| 3 | 사용자 목적 달성 — "사용자가 이 프로젝트를 켜서 원하는 결과를 얻기까지 직접 따라가 보고, 중간에 막히는 부분을 찾아줄래?" | 부분(L0+L1) | npm 예제 첫사용·오류복구는 `1336aa5`+`review/npm-demo-error-recovery-2026-10-11.json`으로 실행검증완료. 다음: 나머지 4예제 첫성공 재현. |
+| 4 | 미완성 기능 찾기 — "겉으로는 완성돼 보이지만 실제로는 임시 데이터, 빈 구현, 수동 작업에 기대고 있는 부분이 있어?" | 보완(L0) | `docs/53`가 게시·부분·남음을 구분, `docs/06` 로케일 large 안정성, `docs/07` 미해결. 다음: 실행 재확인. |
+| 5 | 기능 사이 연결 — "각 기능은 작동하는데 함께 사용할 때 끊기는 흐름이 있는지 확인해줄래?" | 부분(L0+L1) | `core/catalog.ts`→`vite/catalog-patch.ts`→`vite/client.ts`→`react|svelte/index.ts`. eager·lazy 분리(`client.ts`/`lazy-connection.ts`). 다음: 조합 실행. |
+| 6 | 첫 사용 경험 — "처음 온 사람이 설명을 따로 듣지 않고 첫 번째 성과를 얻을 수 있도록 무엇을 바꾸면 좋을까?" | 부분(L0) | 루트 `README.md` 로컬 실행, `examples/npm/README.md` 설치본 흐름. 단일 시작 문서·스캐폴드 없음. 다음: 클린 설치 첫성공. |
+| 7 | 빈 화면과 예외 상황 — "데이터가 없거나, 결과를 찾지 못하거나, 작업에 실패했을 때도 다음 행동을 알 수 있게 돼 있어?" | 부분(L0+L1) | `docs/01` 원칙4, `vite/translation-quarantine.ts`; npm 예제는 진단 유지·수정 안내·모달 안내(`index.html` aria-labelledby) 1336aa5 실행검증완료. 다음: 빈 카탈로그·누락 로케일. |
+| 8 | 입력 실수 대응 — "사용자가 잘못 입력했을 때 문제를 정확히 알려주고, 이미 입력한 내용을 살려서 고칠 수 있어?" | 적용(L0) | `core/translation-errors.ts`·`loading-errors.ts` 6종, `diagnostics.ts` 위치 계산. 폼 UI는 L1. |
+| 9 | 작업 중단과 복귀 — "새로고침하거나 앱을 닫았다 돌아와도 진행하던 작업을 이어갈 수 있어야 할 부분은 어디야?" | 부분(L1+L2) | npm 예제가 cached pagehide에서 핸들러를 제거하는 문제를 운영 번들+jsdom으로 재현·수정했다. `verify:demo:npm` 수명 회귀 2개 통과, 근거 `review/npm-demo-history-lifecycle-2026-10-11.json`. 실제 BFCache 채택은 미검증. 재시작·새로고침 뒤 초안 저장은 소비 앱 책임이다. |
+| 10 | 취소와 되돌리기 — "실수하기 쉬운 행동 중 취소하거나 되돌릴 수 없어 곤란해지는 부분을 찾아줄래?" | 부분(L0) | `client.ts` idempotent disposer, `store.dispose()`, typegen `generator.ts` 취소·race. 다음: late 응답 폐기 실행. |
+| 11 | 중복과 동시 작업 — "버튼을 두 번 누르거나 여러 창과 여러 사용자가 동시에 작업하면 결과가 꼬이는 부분이 있어?" | 적용(L0) | `client.ts` bindings WeakMap 단일 binding, `vite/types.ts` requestId·generation. 다중 사용자 없음(14행). 다음: 동시요청 실행. |
+| 12 | 느린 응답과 연결 끊김 — "네트워크나 외부 서비스가 느려지거나 끊겼을 때 사용자가 기다림, 재시도, 실패를 구분할 수 있어?" | 부분(L0+L1) | `client.ts` timeout 5000ms·3회, RangeError, SupersededRequestError, CatalogLoadError. 표시 구분은 L1. 다음: 지연 주입. |
+| 13 | 데이터 정확성 — "저장된 값과 화면에 보이는 값이 어긋나거나, 계산·날짜·단위 때문에 잘못된 결과가 나올 수 있는 곳이 있어?" | 적용(L0) | `docs/07` timeZone 고정·불일치 생성 오류, `vite/types.ts` getCanonicalLocales, `core/schema.ts` fingerprint, `docs/63`·`64`. |
+| 14 | 권한 경계 — "다른 사용자나 다른 조직의 정보를 보거나 바꾸는 일이 가능한지, 실제 접근 경로를 기준으로 확인해줄래?" | 비적용(L1+L2) | 계정·조직·API·DB 없음. 실제 경계는 npm OIDC 게시·git push. repo PRIVATE, visibility 변경은 scope 밖. |
+| 15 | 민감한 정보 처리 — "비밀번호, 토큰, 개인정보가 화면·로그·오류 메시지·저장소에 불필요하게 남는 곳이 있어?" | 부분(L0+L2) | 런타임 자격증명 없음, `verify-oidc.mjs` 토큰 미저장, `.release/` gitignore, 진단은 키·위치만. L1 로그는 미통제. |
+| 16 | 데이터의 전체 수명 — "사용자가 데이터를 가져오고, 내보내고, 삭제하고, 탈퇴하는 과정까지 필요한 기능이 갖춰져 있어?" | 비적용(L1) | 데이터는 소비 앱 로케일 JSON. 추가·수정·삭제 수렴·tombstone만 지원(`vite/catalog-registry.ts`). JSON이 교환 형식(35행). |
+| 17 | 접근성 — "키보드만 사용하거나 화면을 확대하거나 보조 기술을 쓰는 사람도 핵심 작업을 끝낼 수 있어?" | 부분(L0+L1) | DOM 미생성(`docs/01` 비목표). 예제에 aria-label·role=status·role=alert·aria-live, `1336aa5`가 dialog aria-labelledby 추가. 다음: 키보드·확대·AT 재현. |
+| 18 | 실제 사용 환경 — "작은 화면, 긴 텍스트, 다른 언어, 낮은 사양처럼 실제 사용에서 흔한 조건에서도 화면과 기능이 유지돼?" | 부분(L0+L1) | ko/en 예제 5종, `docs/63`·`64` 시간대. 긴 문구 레이아웃은 `docs/01`이 영향 인정. 다음: 작은 화면·저사양 관측. |
+| 19 | 성능 병목 — "사용자가 가장 자주 하는 작업 중 느린 부분을 측정하고, 효과가 큰 개선부터 골라줄래?" | 적용(L0) | `npm run bench:live`, `benchmarks/results/`, 목표 `docs/06`(100ms/250ms), 최신 `docs/75`. 로컬 warmed 한정. 다음: 재측정. |
+| 20 | 운영 비용 — "사용량이 늘 때 서버·외부 API·저장 공간 비용을 크게 늘리는 구조가 어디고, 먼저 줄일 수 있는 낭비는 뭐야?" | 부분(L0+L2) | 서버·API·스토리지 비용 없음. 실체는 런타임(`docs/73`·`docs/65` parser 제거)과 CI(`release.yml`). CI run 38088660390 jobs 합계 ~81초, `npm ci` 3초. 다음: 자동화 확장 전 효용 측정. |
+| 21 | 문제 발견과 추적 — "사용자가 오류를 신고하면 어떤 작업에서 왜 실패했는지 운영자가 찾을 수 있어?" | 보완(L0+L1) | `LiveDiagnostic`에 message+diagnostics+request 좌표(`vite/types.ts`), 서버는 `vite/index.ts` logger.warn 3곳. 묶음·상관 로그 없음(43행). |
+| 22 | 운영자의 일상 업무 — "문의 처리, 잘못된 데이터 수정, 계정 관리처럼 운영에 필요한 일을 매번 개발자에게 부탁해야 하는 부분이 있어?" | 비적용(L1+L2) | 운영자·문의·계정 개념 없음. 유지보수 운영은 `docs/09` 절차·이슈 트래커가 담당. |
+| 23 | 장애 복구 — "서비스가 멈추거나 데이터가 손상됐을 때 복구 방법이 준비돼 있고, 실제로 복구 가능한지도 확인할 수 있어?" | 부분(L0+L2) | last-good 유지(`docs/01` 원칙4), resync(`docs/04`), 게시 실패 시 새 패치 정책·SHA-512 대조(`docs/09`, `scripts/registry-release.mjs`). 다음: 복구 리허설. |
+| 24 | 설치·업데이트·배포 — "새 환경에서 실행하고 새 버전으로 바꾸는 과정에 빠진 설정이나 수동 단계가 있고, 실패하면 이전 상태로 돌아갈 수 있어?" | 적용(L2) | `docs/09-release.md` runbook, `scripts/release-*.mjs`·`verify-oidc.mjs`·`pack-smoke.mjs`, `release.yml`, `verify:registry:alpha4`. 게시는 비원자적. 다음: 실행. |
+| 25 | 사용자에게 한 약속 — "소개 문구, 도움말, 요금제 설명이 현재 기능과 일치하는지 확인하고, 과장되거나 빠진 내용을 찾아줄래?" | 부분(L2) | `docs/README.md` 우선순위 규칙, `docs/06` "실행하지 않은 검사는 pass 아님", `docs/77` 미게시 코드 구분. repo PRIVATE·npm public 접점 주의. 다음: 링크·예제 자동검사(74행). |
+| 26 | 다음 작업의 우선순위 — "지금까지 확인한 문제와 사용자 의견을 기준으로, 다음에 할 일 세 가지와 당분간 하지 않을 일을 이유와 함께 골라줄래?" | 적용(L0+L2) | `docs/06` 로드맵, `docs/07` 미해결. 이 감사 6절 Top3·제외. |
+| 27 | 첫 실행 안내 — "처음 사용하는 사람이 설정부터 첫 작업 완료까지 따라갈 수 있는 시작 안내를 만들까?" | 부분(L0) | `README.md` 로컬 실행, 예제별 README, `npm run setup:sveltekit`. 단일 시작 문서 없음. 다음: 설치 경로 기준 안내 정리. |
+| 28 | 체험 공간 — "설치나 가입 전에 핵심 기능을 써볼 수 있는 데모와 샘플 데이터를 추가할까?" | 부분(L0) | 호스팅 데모 없음. 실제 체험 접점은 npm 설치 후 예제 5종(`examples/*`)과 `scripts/pack-smoke.mjs` 독립 설치 검증(`docs/77`). |
+| 29 | 작업 템플릿 — "자주 하는 작업을 빈 화면부터 시작하지 않도록 기본 템플릿과 예제를 제공할까?" | 비적용(L1) | "작업" 도메인 없음. 대안은 예제 카탈로그(`examples/*/locales/`)·pack fixture·typegen `.d.ts`. 소비 제품 담당. |
+| 30 | 통합 검색 — "프로젝트 안의 데이터, 기능, 설정을 한곳에서 찾아 바로 이동하는 검색을 만들까?" | 비적용(L1) | 프로젝트·설정 화면 없음. 인접 실체는 typegen 타입과 키·namespace 오류 메시지(`core/translation-errors.ts`)뿐. |
+| 31 | 일괄 처리 — "여러 항목을 선택해 수정·이동·내보내기 같은 반복 작업을 한 번에 처리하게 할까?" | 비적용(L1) | 선택·수정 UI 없음. 파일 일괄 처리는 편집기·스크립트 몫이고 Saylo는 watch로 수렴. typegen이 로케일 디렉터리 일괄 처리(`typegen/catalog-files.ts`). |
+| 32 | 자동 저장과 이어하기 — "작업을 자동으로 저장하고, 다음에 돌아왔을 때 중단한 지점부터 이어가는 기능을 넣을까?" | 비적용(L1) | 편집 세션·초안 없음. 저장 주체는 에디터. `client.ts` 재연결은 화면 복원이 아님(9행). |
+| 33 | 변경 이력과 되돌리기 — "무엇이 바뀌었는지 비교하고 원하는 시점으로 되돌리는 기능을 구축할까?" | 비적용(L1) | 사용자향 이력 없음. 내부 registry revision·catalogVersion(`docs/01`·`docs/08`)은 전송용. 이력은 git·에디터 담당. |
+| 34 | 실행 전 미리보기 — "큰 변경을 적용하기 전에 예상 결과와 영향 범위를 보여주는 미리보기를 추가할까?" | 부분(L0) | 적용 전 검증: `requireCompleteTranslations`(`vite/complete-translations.ts`, `docs/42`), quarantine 진단, typegen 선행. diff dry run UI는 없음. |
+| 35 | 가져오기와 내보내기 — "사용자가 기존 데이터를 가져오고 작업 결과를 다른 도구에서 쓸 수 있도록 파일 입출력을 만들까?" | 적용(L0) | 열린 JSON 형식 `<localesDir>/<locale>/<namespace>.json`, `typegen/cli.ts` 파일→`.d.ts`. 외부 형식 변환기는 없음(미검증). |
+| 36 | 공유와 공동 작업 — "작업 결과를 링크로 공유하고, 다른 사람과 함께 수정하거나 의견을 남길 수 있게 할까?" | 비적용(L1) | 링크·공동편집·댓글 없음. 협업은 git PR. 서버 저장소 없음. |
+| 37 | 개인별 작업 공간 — "자주 쓰는 기능, 저장한 조건, 화면 배치를 개인별로 설정하고 다시 불러오게 할까?" | 비적용(L1) | 계정·워크스페이스 없음. 인접 옵션은 `createI18n`·`createStore`의 locale·timeZone·namespace뿐. |
+| 38 | 알림과 작업함 — "처리가 끝났거나 사용자의 행동이 필요할 때 알려주고, 할 일을 모아 보여주는 작업함을 만들까?" | 비적용(L1) | 작업함 없음. typegen worker는 로그·파일만(`typegen/worker.ts`). 알림면은 Vite dev 콘솔 경고. |
+| 39 | 반복 작업 자동화 — "사용자가 여러 단계를 묶어 저장하고, 정해진 시간이나 조건에 따라 자동 실행하게 할까?" | 부분(L0+L1) | 저장→watch→parse→patch 파이프라인(`vite/index.ts`)은 자동. 스케줄러·워크플로 빌더 없음. |
+| 40 | 역할과 권한 관리 — "관리자·편집자·조회자처럼 역할을 나누고, 팀이나 조직별로 접근 권한을 관리하게 할까?" | 비적용(L1+L2) | 역할 모델 없음(14행). 저장소 쪽은 npm 게시 권한·GitHub environment(npm-release). |
+| 41 | 검토와 승인 흐름 — "중요한 변경을 초안 작성, 검토, 승인, 반영 단계로 처리하는 기능을 추가할까?" | 비적용(L1+L2) | 제품 승인 워크플로 없음. 릴리스는 수동 dispatch·`publish` 기본 false·Trusted Publisher(`docs/09`). |
+| 42 | 운영자 관리 화면 — "계정, 데이터, 작업 상태를 운영자가 직접 관리할 수 있는 관리 화면을 구축할까?" | 비적용(L1) | 관리 화면 없음. 운영 접점은 Vite dev 콘솔·CLI 로그뿐. |
+| 43 | 문의용 진단 자료 — "사용자가 문제를 겪으면 민감한 정보를 제외한 실행 환경과 오류 기록을 한 번에 모아 보내게 할까?" | 보완(L0+L1) | 진단은 구조화됨(`LiveDiagnostic`·`SourcePosition`). 없는 것: 번들/복사, 환경 정보(Node·Vite·패키지 버전), 신고 절차 문서. 다음: 절차·번들 설계. |
+| 44 | 제품 안의 도움말 — "사용 중인 기능 옆에서 설명과 예제를 보고 바로 따라 할 수 있는 도움말을 추가할까?" | 부분(L0) | 문서형은 `packages/*/README.md`·`docs/03`·`docs/08`. 인라인 도움말 없음. JSDoc·타입 힌트가 일부 대체. |
+| 45 | 의견 수집 창구 — "불편 신고와 기능 제안을 제품 안에서 받고, 처리 상태도 사용자에게 보여줄까?" | 보완(L2) | 제품 내 창구 없음. repo가 PRIVATE라 공개 npm 사용자는 GitHub Issues 접근이 어렵고, 루트에 `CONTRIBUTING.md`·`SECURITY.md`·`CODE_OF_CONDUCT.md`도 없다. 다음: 창구 확인(visibility 변경은 scope 밖). |
+| 46 | 사용 현황 대시보드 — "어떤 기능이 쓰이고 어디서 사용을 포기하는지 볼 수 있도록 필요한 지표를 수집하고 보여줄까?" | 비적용(L1) | 텔레메트리 없음. 대체 지표는 npm 다운로드·CI 테스트 수. 계측은 프라이버시·번들 비용. |
+| 47 | 오래 걸리는 작업 관리 — "시간이 걸리는 작업을 백그라운드에서 실행하고, 진행률·취소·재시도를 제공하는 작업 큐를 만들까?" | 부분(L0+L1) | typegen worker·generation 취소·race(`typegen/worker.ts`, `generator-race.test.mjs`). 진행률·재시도 큐 없음. 다음: 대형 카탈로그 관측. |
+| 48 | 백업과 복원 — "데이터를 자동으로 백업하고, 사용자가 필요한 백업을 골라 복원하는 기능을 구축할까?" | 비적용(L1+L2) | 백업 대상 저장소 없음. 카탈로그는 소비 앱 git. 인접: CI artifact 7일·`releases/*.json` 승인 기록. |
+| 49 | 외부 서비스 연동 — "다른 도구와 데이터를 주고받도록 API와 웹훅을 제공하고, 자주 쓰는 서비스의 연동 기능을 추가할까?" | 부분(L0) | 교환면은 JSON·typegen CLI·공개 타입·subpath(`saylo-core/runtime`, `saylo-vite/client`). 웹훅·REST·외부 i18n 플랫폼 커넥터 없음. |
+| 50 | 확장 기능 구조 — "새 기능을 본체에 계속 붙이지 않아도 되도록 플러그인이나 확장 모듈을 연결하는 구조를 만들까?" | 적용(L0) | 코어 프레임워크 중립(`docs/01` 원칙2), 어댑터 분리(`packages/react`·`svelte`), Node 전용 `vite`·`typegen`, `exports` subpath. Vue는 후속(`docs/07`). |
+| 51 | 재현 가능한 개발 환경 — "새 컴퓨터에서도 같은 환경으로 개발을 시작할 수 있도록 도구 설치, 버전 관리, 초기 설정을 자동화할까?" | 부분(L2) | `engines.node` 24.x, `package-lock.json`, workspaces, `docs/09` 검증 버전. `.nvmrc`·`devcontainer`·도구 자동설치 없음. 다음: 클린 설치 재현. |
+| 52 | 공통 개발 명령 — "실행·빌드·검증·정리를 일관된 명령으로 묶어, 개발자마다 다른 절차를 쓰지 않도록 할까?" | 적용(L2) | `package.json` scripts(`build`·`test`·`check`·`verify:*`·`release:*`), `docs/06` 빌드 순서(typegen→tsc→vite build). |
+| 53 | 모듈 경계와 의존 규칙 — "각 모듈의 책임과 의존 방향을 정하고, 경계를 넘는 코드가 들어오면 자동으로 알려주는 기반을 만들까?" | 부분(L0+L2) | 책임 분리는 실재(workspaces·exports·peer react19/svelte5/vite8). 위반 자동 감지 없음(ESLint·import 규칙 부재, `release-check.mjs`는 metadata만). 다음: 최소 규칙. |
+| 54 | 설계 결정 기록 — "중요한 설계의 선택 이유와 포기한 대안을 남겨, 다음 개발자도 판단을 이어갈 수 있는 기록 체계를 만들까?" | 적용(L0) | `docs/07-decisions.md`, `docs/76` 결정·재검토 조건, 원복 기록(`docs/33`·`37`·`40`·`41`), `docs/README.md` 상태 표기. |
+| 55 | 인터페이스 계약 — "API와 모듈 사이의 입출력을 명세로 관리하고, 타입·문서·호환성 검증이 함께 따라오는 구조를 구축할까?" | 적용(L0+L2) | typegen `.d.ts` + 소비 fixture(`packages/*/test/consumer.ts`)·`pack-smoke.mjs`, wire 계약 `docs/08`, `release-check.mjs` 내부 의존 정확 일치. |
+| 56 | 설정과 비밀정보 관리 — "환경별 설정을 검증하고 비밀정보를 안전하게 주입하도록, 설정 로딩과 배포 방식을 통일할까?" | 부분(L0+L2) | `SayloViteOptions` 검증(`vite/types.ts`), requestTimeoutMs RangeError, timeZone 불일치 생성 오류(`docs/07`), 게시 비밀은 OIDC. L1 환경별 설정은 미검증. |
+| 57 | 개발용 데이터 기반 — "대표적인 정상·오류·경계 상황을 재현하는 샘플 데이터와 초기화 도구를 만들어 개발 시간을 줄일까?" | 적용(L0+L2) | 정상 `examples/*/locales`, 오류·경계 케이스(`core/test`·`vite/test/patch.test.mjs`·`plugin.test.mjs`), 완역 fixture, 벤치 fixture, `setup:sveltekit`. |
+| 58 | 핵심 회귀 검증 기반 — "핵심 동작을 빠르게 검증하고, 발견한 버그를 재현 사례로 남길 수 있는 테스트 구조를 구축할까?" | 적용(L0+L2) | `packages/*/test` node:test, `npm test`·`check`, CI alpha.4 229 tests(`README.md`), 실패 재현 관례(`docs/59`~`62`·`docs/74`). 다음: 실행. |
+| 59 | 변경 범위에 맞춘 CI — "바뀐 영역에 필요한 검증만 실행하고 캐시를 재사용하도록, CI 시간과 비용을 줄이는 기반을 만들까?" | 부분(L2) | `release.yml`은 workflow_dispatch 전용 단일 job이고 docs push 자동 CI가 없다. run 38088660390 jobs 합계 ~81초·`npm ci` 3초, all-5 게시는 whole pack/check가 필요하다. cache off·paths 부재를 그 자체 결함으로 보지 않는다. 다음: 필요성·효용 측정. |
+| 60 | 의존성 업데이트 체계 — "같은 메이저 버전의 안정 업데이트는 자동으로 따라가고, 새 메이저 버전은 호환성 검증 후 올리는 체계를 만들까?" | 부분(L2) | devDeps major 범위·Node 24.x. `gh issue view 1`에서 Renovate가 의존성을 감지하고 동일 메이저·새 메이저 갱신을 승인 대기로 표시함을 확인했다. 추적된 로컬 설정은 없으며 원격·상속 승인 정책은 미확인이다. |
+| 61 | 코드 품질 자동화 — "포맷·정적 분석·금지 패턴·파일 크기 기준을 자동으로 적용해 리뷰에서 반복하는 지적을 줄일까?" | 부분(L0+L2) | TypeScript·소비 타입·핵심 단위 검사가 있다. 40KB는 리팩토링 후보 기준이며 일괄 실패 게이트가 아니다. 초과 test·bench 문서는 가독성 개선 후보로 두고 실제 사용자 막힘부터 고친다. |
+| 62 | 공통 오류 처리 — "오류 분류, 사용자 메시지, 원인 기록, 재시도 가능 여부를 일관되게 다루는 기반을 구축할까?" | 적용(L0) | 6개 오류 클래스(`translation-errors.ts`·`loading-errors.ts`), CatalogDiagnostic+SourcePosition, 3회 재시도·supersede·last-good, CatalogError 메시지 형식. retryable 필드는 없음. |
+| 63 | 구조화된 로그 — "요청과 작업에 식별자를 붙이고 로그 형식을 통일해, 여러 구성요소를 거친 문제도 추적할 수 있게 할까?" | 보완(L0) | wire 식별자(requestId·generation·sessionId·revision, `vite/types.ts`)는 있으나 로그 형식·레벨 규약이 없고 `vite/index.ts` logger.warn 3곳뿐. 다음: 진단에 request id 상시 포함. |
+| 64 | 관측과 알림 기반 — "지연·실패율·자원 사용량을 수집하고, 운영자가 대응해야 할 상황을 알려주는 대시보드와 알림을 구축할까?" | 비적용(L1) | 메트릭·대시보드·알림 없음(22행). 개발자용 기록은 `benchmarks/results/`를 사람이 읽는 수준. |
+| 65 | 외부 장애 대응 정책 — "타임아웃·재시도·호출 제한·장애 전파 차단을 공통으로 제공해, 외부 서비스 장애를 일관되게 처리할까?" | 부분(L0) | 공통 정책은 Vite dev 연결 한정(timeout·3회·supersede·last-good·CatalogLoadError). 운영 외부 호출은 L1 CatalogSource가 하고 재시도 정책은 미강제. |
+| 66 | 데이터 변경과 마이그레이션 — "스키마와 데이터 변경을 버전으로 관리하고, 중단 후 재개와 실패 시 복구를 지원하는 기반을 만들까?" | 부분(L0) | namespaceSchemaFingerprint(`core/schema.ts`), catalogVersion·tombstone(`vite/catalog-registry.ts`), quarantine(`translation-quarantine.ts`), gap 복구(`docs/08`). 마이그레이션 도구는 없음. |
+| 67 | 인프라를 코드로 관리 — "서버·네트워크·저장소·권한 설정을 코드로 선언해, 환경을 재구축하고 변경 이력을 추적할 수 있게 할까?" | 비적용(L2) | 관리할 서버·네트워크 없음. 유일한 선언은 `release.yml`이고 Trusted Publisher 등록값은 `docs/09` 표 기록(코드 재현 불가). |
+| 68 | 배포 전 검증 환경 — "운영 환경의 주요 조건을 재현하는 검증 환경을 만들고, 필요한 변경은 임시 환경에서 확인할 수 있게 할까?" | 부분(L2) | staging 없음. `pack-smoke.mjs`(저장소 밖 설치·JS/TS·SSR·lazy), `pack-sveltekit.mjs`(독립 앱+Chromium), 게시 후 `verify:registry:*`. 다음: 실행. |
+| 69 | 릴리스와 롤백 자동화 — "검증된 산출물로 배포하고, 배포 후 상태 확인과 이전 버전 복귀까지 연결하는 릴리스 체계를 구축할까?" | 부분(L2) | 게시는 검증→pack→dry run→OIDC 순서, `publish` 기본 false. 배포 후 확인은 `verify:registry:alpha4` 수동 실행. 복귀는 unpublish 대신 새 패치 정책. 런타임 롤백은 L1. |
+| 70 | 기능 활성화 제어 — "배포와 기능 공개를 분리하고, 일부 대상에게 먼저 적용하거나 문제가 생기면 즉시 끌 수 있는 기반을 만들까?" | 부분(L0+L2) | 플래그 `astRuntime`·`requireCompleteTranslations`, dist-tag `alpha`/`next`/`latest` 분리. 원격 플래그·점진 배포·kill switch 없음. |
+| 71 | 백업과 복구 자동화 — "백업 생성·보관·복원 검증을 자동화하고, 장애 때 정해진 절차로 복구할 수 있는 기반을 구축할까?" | 비적용(L1+L2) | 백업 대상 데이터 없음(48행). 자동 보관은 CI artifact 7일과 `releases/*.json`. tarball SHA-512 대조가 복원 검증 일부. |
+| 72 | 운영 절차의 실행 도구화 — "장애 대응과 정기 관리 절차를 문서와 실행 도구로 함께 만들어, 담당자가 바뀌어도 운영할 수 있게 할까?" | 적용(L2) | `docs/09-release.md` runbook과 `scripts/release-check.mjs`·`release-publish.mjs`·`verify-oidc.mjs`·`registry-release.mjs`. CLI 재현 명령까지 기재. |
+| 73 | 보안 검증 파이프라인 — "비밀정보 유출·취약 의존성·위험한 권한 변경을 개발과 배포 과정에서 잡아내는 기반을 구축할까?" | 보완(L2) | 있는 것: OIDC 게시·secret 미사용(`release.yml`), `verify-oidc.mjs` 토큰 미저장+테스트 3개, Actions 밖 `--publish` 거부, SHA-512 변조 거부. 없는 것: 취약점 스캔·`SECURITY.md`·권한 변경 감지. 다음: 스캔 존재 여부 확인. |
+| 74 | 코드와 문서의 동기화 — "API 명세·설정 항목·개발 명령을 실제 코드에서 추출하고, 변경 때 관련 문서도 함께 갱신되는 구조를 만들까?" | 부분(L0+L2) | typegen이 기준 스키마에서 `.d.ts` 추출(`typegen/generator.ts`)하고 fixture가 검증. 나머지는 수동: `docs/README.md` 우선순위 규칙, `docs/06` 사람이 링크·예제 확인. CI 문서 검증 없음. |
+
+## 실행검증 완료 (1건)
+
+`1336aa5` — `examples/npm` 오류 안내가 무관한 갱신에 덮이던 문제를 고쳤다. `main.js`는 진단을 보관해 명시적 해제 전까지 유지하고, `index.html`에 모달 내부 안내(`role=status`)와 `aria-labelledby`를 추가했다. 근거 `review/npm-demo-error-recovery-2026-10-11.json`: 수정 전 재현(`afterUnrelatedSave.status=Connected`), 수정 후 유지(진단+수정 안내, 모달 안에서 보임), 입력·모달·포커스·last-good 보존, 콘솔 오류·경고 0, 카탈로그 원복·서버·탭 정리. record는 예제 앱 변경이며 library API·패키지 버전 변경이 없고, 상태 표시는 영속 초안 저장소가 아니며 접근성 일반 감사가 아니라고 limits에 적었다. 해당 판정은 3·7행에만 반영한다.
+
+## 집계
+
+적용 15 (8,11,13,19,24,26,35,50,52,54,55,57,58,62,72) · 부분 30 (3,5,6,7,10,12,15,17,18,20,23,25,27,28,34,39,44,47,49,51,53,56,59,60,65,66,68,69,70,74) · 보완 7 (4,21,43,45,61,63,73) · 비적용 20 (9,14,16,22,29,30,31,32,33,36,37,38,40,41,42,46,48,64,67,71). 비적용 20개 중 15개는 SaaS 계열, 5개(46,48,64,67,71)는 운영·인프라 계열이다.
+
+## 미검증
+
+`npm run check`·`test`·`build`, `verify:pack`·`verify:registry:*`, 예제 5종 실행·브라우저 관측, `bench:live` 재계산, `release:check`·`pack`·`oidc`·dispatch, 클린 설치 재현, registry 조회. 59·60·73행의 remote 상태(자동 갱신 체계, 취약점 스캔, 이슈 창구 접근성)도 미확인이다.
+
+## 실제 효용 우선 Top 3
+
+1. 오류·상태 표시 계약을 문서화하고 나머지 예제를 맞춘다. `1336aa5`가 npm 예제에서 보여준 규칙(진단 유지·수정 안내·명시적 해제·모달 내 안내)을 `docs/04` 계열에 남기고 vanilla·react·svelte·sveltekit과 정렬한다. primary가 진행 중인 첫사용·연결상태 검토와 같은 계약을 공유한다(3·7·17·21행).
+2. 오류 신고용 진단 번들·절차를 만든다. `LiveDiagnostic`에 이미 파일·키·위치 좌표가 있으므로 환경 정보(Node·Vite·패키지 버전)와 붙여넣기 수단만 더하면 21·43행이 닫힌다. 서버·계정이 필요 없다.
+3. 공개 npm 설치만으로 첫 번역과 라이브 저장을 재현하는 시작 안내를 만든다(6·27행). 저장소가 private인 상태에서는 clone·GitHub 링크에 의존한 안내로 공개 사용자의 첫 성공을 입증할 수 없다. 파일 크기 검사는 사용자 막힘을 고친 뒤 검토한다.
+
+CI 캐시·paths 필터·PR 자동 검증 추가는 이번 추천에서 제외한다. 현행은 수동 dispatch 전용이라 상시 낭비가 측정되지 않았고, all-5 게시는 whole pack/check가 필요하며, run 38088660390 합계가 약 81초·`npm ci` 3초였다. 효용 측정 없이 자동화를 늘리지 않는다.
+
+## 당분간 제외 항목과 이유
+
+비적용 19개는 실패가 아니라 담당자 경계다. SaaS 계열 14개(14,16,22,29,30,31,32,33,36,37,38,40,41,42)는 서버·계정·조직·DB가 없어 소비 앱이 담당한다. 운영·인프라 5개 중 46·64는 운영 주체와 텔레메트리 부재, 48·71은 소유 데이터 부재, 67은 선언할 인프라가 `release.yml` 하나뿐이라는 이유다. 부분·보완 중 "L1 책임"으로 적은 몫(12,17,18,20행 등)은 소비 앱이 자기 제품 기준으로 결정한다.
+
+## 이력 출처
+
+goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40bfa5a` 한정 감사(이 문서 판정 아님)) · `docs/09-release.md`·`.github/workflows/release.yml`·CI run 38088660390 · GitHub issue #1 Dependency Dashboard(Renovate 탐지·승인 대기 조회 확인) · `1336aa5`와 `review/npm-demo-error-recovery-2026-10-11.json` · `review/local-readiness-2026-10-11.json`·`review/remote-state-2026-10-11.json` · HEAD `1336aa5`.
+
+## 다음 단계
+
+공개 npm 패키지만 쓰는 클린 첫 실행, 연결 중단·오류 신고 흐름을 다음 단위로 점검한다. 진단 유지와 캐시 수명 수정을 검증·커밋했지만, 일반 클라이언트 오류의 해제 시점과 나머지 시작 흐름은 추가 검증이 필요하다. 보완 항목과 Top 3를 작은 커밋으로 진행하고, 같은 입력의 유효한 기존 검증은 재사용한다. 이 문서는 전체 목표의 완료를 뜻하지 않는다.
+
+---
+작성 2026-10-11(KST). 기준 HEAD `c3d4036`. 실행 검증 표시는 연결한 실제 관측 기록의 범위에 한정한다. 검증된 source 변화는 npm 예제이며 라이브러리 소스·패키지 버전은 유지했다.
+
