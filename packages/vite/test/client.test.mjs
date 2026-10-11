@@ -195,6 +195,23 @@ for (const observer of ['update', 'subscriber']) test(`throwing eager ${observer
   assert.ok(diagnostics.every(diagnostic => diagnostic.operation === 'observer'));
 });
 
+for (const shape of ['opaque', 'throwing-message']) test(`an eager update throwing an ${shape} value still commits and keeps its binding`, t => {
+  const { hot, store } = fixture(t);
+  const error = shape === 'opaque' ? Object.create(null) : new Error('hidden');
+  if (shape === 'throwing-message') Object.defineProperty(error, 'message', { get() { throw new Error('unreadable message'); } });
+  const diagnostics = [];
+  let stop;
+  assert.doesNotThrow(() => {
+    stop = connectDev(store, { hot, onUpdate: () => { throw error; }, onDiagnostic: diagnostic => diagnostics.push(diagnostic) });
+  });
+  t.after(stop);
+  assert.equal(hot.listenerCount(SNAPSHOT_EVENT), 1);
+  assert.doesNotThrow(() => hot.emit(SNAPSHOT_EVENT, payload(1, 'committed despite view error')));
+  assert.equal(store.t('demo:hello'), 'committed despite view error');
+  assert.ok(diagnostics.length >= 2);
+  assert.ok(diagnostics.every(diagnostic => diagnostic.operation === 'observer' && typeof diagnostic.message === 'string' && diagnostic.message.length > 0));
+});
+
 test('one throwing eager diagnostic view does not interrupt another store on the shared socket', t => {
   const { hot, store } = fixture(t);
   const other = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [catalog('other')] });

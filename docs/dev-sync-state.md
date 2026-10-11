@@ -60,4 +60,6 @@ eager 경로는 production에 hot context가 없으면 `connectDev`가 noop을 �
 
 현재 checkout에서는 `onDiagnostic`의 동기 예외가 동기화를 중단하지 않도록 격리한다. eager의 첫 갱신·store 구독자 오류 보고 중 진단 콜백이 던져도 이미 커밋한 revision과 binding을 유지한다. 같은 소켓의 다른 eager store와 `DevCatalogSource.subscribeDiagnostic`의 다른 구독자도 원래 진단을 계속 받는다. lazy bridge는 외부 source가 stop 뒤 이미 예약된 진단 콜백을 호출해도 해제된 binding에서는 무시한다. 진단 콜백 자신의 오류를 같은 콜백으로 다시 보고하거나 콘솔에 자동 출력하지 않는다. async 콜백의 rejected Promise는 이 동기 예외 보호 범위 밖이므로 소비자가 처리해야 한다. 이 격리는 게시본 alpha.4 이후 변경이며 최종 릴리스 후보에 포함해 검증해야 한다.
 
+`DevCatalogSource.subscribeManifest`의 동기 예외도 `observer` 진단으로 보고한다. 정상 manifest 수락을 취소하거나 재요청하지 않고, 다른 구독자 알림과 처음 대기하던 카탈로그 요청을 계속 처리한다. 알림 도중 구독을 해제하거나 source를 폐기하면 아직 호출하지 않은 해당 구독자는 건너뛴다. manifest 내용 자체의 검증 실패는 기존 `handshake` 오류 처리로 남는다.
+
 재시도 정책은 바뀌지 않았다. 요청당 기본 타임아웃 5000ms(`requestTimeoutMs`), 최대 3회 시도, 새 소켓 연결이나 응답 갭에서 재시도한다. 수동 재시도 API는 없다.

@@ -117,6 +117,79 @@ test('custom lazy diagnostic delivery is passive and queued diagnostics are igno
   assert.equal(calls, 1, 'Queued callbacks must respect the released binding');
 });
 
+test('manifest observer failures do not hide lazy translations or replay an accepted registry revision', async t => {
+  const f = fixture(t);
+  f.source.subscribeManifest(() => { throw new Error('manifest view failed'); });
+  const diagnostics = [];
+  const recorder = createSupportRecorder();
+  const states = [];
+  f.source.subscribeSyncState(state => states.push(state.status));
+  connectDev(f.instance, { catalogSource: f.source, onDiagnostic: diagnostic => {
+    diagnostics.push(diagnostic); recorder.onDiagnostic(diagnostic); throw new Error('diagnostic view failed');
+  } });
+  await f.instance.setLocale('en');
+  const requests = f.sent.filter(entry => entry.event === MANIFEST_REQUEST_EVENT).length;
+  states.length = 0;
+  assert.doesNotThrow(() => f.replace([catalog('한국어'), catalog('Updated English', 'en'),
+    catalog('도움말', 'ko', 'help'), catalog('Help', 'en', 'help')]));
+  await tick();
+  assert.equal(f.instance.t('demo:title'), 'Updated English');
+  assert.equal(f.source.getSyncState().status, 'connected');
+  assert.equal(f.sent.filter(entry => entry.event === MANIFEST_REQUEST_EVENT).length, requests,
+    'A view failure must not replay the accepted manifest');
+  assert.deepEqual(states, []);
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].operation, 'observer');
+  assert.equal(diagnostics[0].message, 'manifest view failed');
+  assert.equal(recorder.getReport().events[0].operation, 'observer');
+});
+
+test('an opaque manifest observer error is reported without losing the lazy update', async t => {
+  const f = fixture(t);
+  f.source.subscribeManifest(() => { throw Object.create(null); });
+  const diagnostics = [];
+  connectDev(f.instance, { catalogSource: f.source, onDiagnostic: diagnostic => diagnostics.push(diagnostic) });
+  f.replace([catalog('updated with opaque error'), ...f.records().filter(record => record.locale !== 'ko' || record.namespace !== 'demo')]);
+  await tick();
+  assert.equal(f.instance.t('demo:title'), 'updated with opaque error');
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].operation, 'observer');
+  assert.equal(typeof diagnostics[0].message, 'string');
+  assert.ok(diagnostics[0].message.length > 0);
+});
+
+test('initial queued catalog loads resume when a changed manifest observer throws', { timeout: 2000 }, async t => {
+  const f = fixture(t);
+  f.restart();
+  f.source.subscribeManifest(() => { throw new Error('initial manifest view failed'); });
+  const diagnostics = [];
+  f.source.subscribeDiagnostic(diagnostic => diagnostics.push(diagnostic));
+  const loaded = await f.source.loadCatalog('en', 'demo');
+  assert.equal(loaded.status, 'present');
+  assert.equal(loaded.catalog.messages.title.source, 'English');
+  assert.equal(f.source.readManifest().sessionId, 'two');
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].operation, 'observer');
+  assert.equal(f.sent.filter(entry => entry.event === MANIFEST_REQUEST_EVENT).length, 1);
+  assert.equal(f.sent.filter(entry => entry.event === CATALOG_REQUEST_EVENT).length, 1);
+  assert.equal(f.source.getSyncState().status, 'stopped', 'One-off load releases its owned transport');
+});
+
+test('source disposal during a manifest notification stops detached views and pending transport', t => {
+  const f = fixture(t);
+  f.source.subscribeManifest(() => f.source.dispose());
+  let late = 0;
+  f.source.subscribeManifest(() => { late++; });
+  const release = f.source.connect();
+  t.after(release);
+  f.replace([catalog('changed'), ...f.records().filter(record => record.locale !== 'ko' || record.namespace !== 'demo')]);
+  assert.equal(late, 0);
+  assert.equal(f.source.getSyncState().status, 'stopped');
+  assert.equal(f.hot.listenerCount(MANIFEST_EVENT), 0);
+  assert.equal(f.hot.listenerCount(CATALOG_EVENT), 0);
+  assert.equal(f.sent.filter(entry => entry.event === MANIFEST_REQUEST_EVENT).length, 1);
+});
+
 test('lazy update failures are observer diagnostics while locale and manifest changes commit and recover', async t => {
   const f = fixture(t);
   const recorder = createSupportRecorder();

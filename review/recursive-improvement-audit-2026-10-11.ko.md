@@ -123,6 +123,8 @@ goal file(74줄, 3~74행 72개) · `docs/53-completion-audit.md`(2026-10-10 `40b
 
 ## 다음 단계
 
+2026-10-12 manifest 관측자 후속: 구독자 예외가 후속 번역 갱신을 가리거나 초기 카탈로그 요청을 타임아웃시키고, 알림 도중 폐기된 source가 다음 구독자를 호출하는 문제를 3회귀 실패로 재현했다. 알림별 예외 격리와 구독 해제·폐기 검사를 적용했다. 읽을 수 없는 예외 메시지도 갱신을 막지 않도록 보호했고 해당 3회귀도 수정 전 실패를 확인했다. 수정 후 Vite 전체131·소비 타입·동봉 문서 검사를 통과했다(`review/manifest-observer-isolation-acceptance-2026-10-12.json`). 아래 `7518290` 후보는 이번 수정 전 이력이라 다시 동결해야 한다. 비동기 Promise rejection·실브라우저 fault 주입은 아직 검증하지 않았다.
+
 2026-10-12 최신 후보: `7518290`를 동결한 alpha.5 사본에서 입력 983개 대조·전체 261개 테스트·독립 JS/TS 소비·게시 계획 dry run·SvelteKit SSR/Chromium과 모달 이동 포커스를 통과했다. 진단 관측자 예외 격리 회귀 5개와 동봉 계약도 포함한다. SvelteKit 뒤 입력 불변·다섯 tarball 재pack SHA-512 일치·기존 승격 패치 적용 가능 검사를 확인했으며 원본 버전은 alpha.4다(`review/release-alpha5-diagnostic-candidate-acceptance-2026-10-12.json`). 원격 CI/OIDC·실제 게시·registry 인수·실제 AT와 npm 제목 대비 incomplete2건은 계속 남아 있다.
 
 2026-10-12 진단 관측자 후속: onDiagnostic의 동기 예외가 eager 초기 binding·커밋 revision 처리와 공유 진단 fan-out을 중단하는 문제, lazy 외부 source의 진단 예외·stop 뒤 예약 콜백을 5회귀 실패로 재현했다. 공통 진단 전달 보호와 lazy binding 검사를 적용해 focused54·Vite 전체125·소비 타입·경계7·다섯 독립 JS/TS tarball을 통과했다(`review/diagnostic-observer-isolation-acceptance-2026-10-12.json`). 콜백 자신의 오류를 재귀 보고하거나 원문을 자동 로그로 남기지 않는다. async Promise rejection·실브라우저 fault 주입은 별도 범위이며, 기존 722e497 후보는 수정 전 이력이라 최종 후보를 다시 동결해야 한다.

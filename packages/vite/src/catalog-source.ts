@@ -8,7 +8,7 @@ import type { CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, M
 import { applyCatalogPatch } from './catalog-patch.js';
 import { decodeCatalogResult } from './catalog-wire.js';
 import type { PresentCatalog } from './catalog-patch.js';
-import { deliverDiagnostic } from './diagnostic-observers.js';
+import { deliverDiagnostic, diagnosticMessage } from './diagnostic-observers.js';
 
 type HotContext = NonNullable<ImportMeta['hot']>;
 
@@ -63,7 +63,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
       deliverDiagnostic(listener, diagnostic);
     }
   };
-  const report = (error: unknown, operation: 'handshake' | 'observer' = 'handshake') => notify({ message: error instanceof Error ? error.message : String(error), diagnostics: [], operation });
+  const report = (error: unknown, operation: 'handshake' | 'observer' = 'handshake') => notify({ message: diagnosticMessage(error), diagnostics: [], operation });
   const observeState = (state: DevSyncState) => {
     syncState = state;
     for (const listener of [...syncListeners]) {
@@ -141,8 +141,12 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
           // Keep one stale present baseline per available pair for request-scoped deltas.
           for (const [key, result] of cache) if (result.sessionId !== manifest.sessionId ||
               !manifest.catalogs.some(meta => id(meta.key) === key && meta.status === 'present')) cache.delete(key);
-          if (changed) for (const listener of [...listeners]) listener();
-          if (!wasReady) resume();
+          if (changed) for (const listener of [...listeners]) {
+            if (disposed || !listeners.has(listener)) continue;
+            try { listener(); }
+            catch (error) { report(error, 'observer'); }
+          }
+          if (!wasReady && !disposed) resume();
           return true;
         } catch (error) { report(error); return false; }
       },

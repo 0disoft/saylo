@@ -106,7 +106,7 @@ connectDev(i18n, {
 
 ## 동작 범위
 
-현재 checkout에서는 `onDiagnostic`의 동기 예외가 번역 갱신·binding이나 다른 진단 구독자를 중단하지 않는다. lazy bridge는 stop 뒤 예약된 진단도 무시한다. 진단 콜백 자신의 오류는 같은 콜백으로 다시 보고하지 않으며, async 콜백의 rejected Promise는 소비자가 처리한다. 이 격리는 게시본 alpha.4 이후 변경으로 최종 후보 검증 대상이다.
+현재 checkout에서는 `onDiagnostic`의 동기 예외가 번역 갱신·binding이나 다른 진단 구독자를 중단하지 않는다. `DevCatalogSource.subscribeManifest`의 동기 예외는 `observer`로 보고하고, 정상 manifest 수락·다른 구독자 갱신·대기 카탈로그 요청을 유지한다. lazy bridge는 stop 뒤 예약된 진단도 무시한다. 진단 콜백 자신의 오류는 같은 콜백으로 다시 보고하지 않으며, async 콜백의 rejected Promise는 소비자가 처리한다. 이 격리는 게시본 alpha.4 이후 변경으로 최종 후보 검증 대상이다.
 
 문의용 자료는 `createSupportRecorder()`의 `onDiagnostic`·`onSyncState`를 연결하고 `getReport()`를 JSON으로 만들어 검토한다. 보고서는 최근 32개 진단 이벤트의 오류 코드·숫자 위치·연결 상태와 허용한 환경 버전만 담으며, 오류 문구·파일 이름·번역 키·요청 ID는 제외한다. 자동 수집·전송은 하지 않는다. `clear()`로 기록과 상태를 비운다. 이 API도 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에서 제공하며 현재 npm 게시본 alpha.4에는 없다. 자세한 계약과 사용법은 [문의용 진단 자료](https://github.com/0disoft/saylo/blob/main/docs/support-report.md)에 있다.
 

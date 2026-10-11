@@ -8,7 +8,7 @@ import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from './types.js';
 import type { EagerCatalogEvent, LiveDiagnostic } from './types.js';
 import { freezeCatalogs } from './freeze.js';
 import { connectLazyDev } from './lazy-connection.js';
-import { deliverDiagnostic } from './diagnostic-observers.js';
+import { deliverDiagnostic, diagnosticMessage } from './diagnostic-observers.js';
 import type { ConnectLazyDevOptions } from './lazy-connection.js';
 export { freezeCatalogs } from './freeze.js';
 export { createDevCatalogSource } from './catalog-source.js';
@@ -47,7 +47,7 @@ export function connectDev<S extends Schema>(store: Store<S> | I18n<S>, options:
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('requestTimeoutMs must be a positive timer duration.');
   let unwatchDispose = noop;
   const report = (error: unknown, operation: 'handshake' | 'observer' = 'handshake') => {
-    if (bindings.get(store) === stop) deliverDiagnostic(options.onDiagnostic, { message: error instanceof Error ? error.message : String(error), diagnostics: [], operation });
+    if (bindings.get(store) === stop) deliverDiagnostic(options.onDiagnostic, { message: diagnosticMessage(error), diagnostics: [], operation });
   };
   const sync = new EagerSync({ timeoutMs,
     scope: () => ({ locale: store.getSnapshot().locale, namespaces: [...store.getSnapshot().loadedNamespaces] }),

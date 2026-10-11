@@ -1,0 +1,75 @@
+{
+  "schema": "saylo.manifest-observer-isolation-acceptance/v1",
+  "observedAt": "2026-10-11T18:08:35.576Z",
+  "baseCommit": "10f3ec2ae6d1e6d3b8de1511bde8a2ade2c5b618",
+  "sourceHashes": {
+    "packages/vite/src/catalog-source.ts": "75ff26b8b382e20a6dda42d09b0a6bed8e7ab54ba2ed670e78b33d3056cb8c4f",
+    "packages/vite/src/client.ts": "a25749452f73e4e46fd8b5dca730867dcad3f1b9e04e53dca73722a065db2255",
+    "packages/vite/src/lazy-connection.ts": "466cb7a83de1b7ccac15486434279dd6c7d0f12bc759ca9e2aa0c48835cd5334",
+    "packages/vite/src/diagnostic-observers.ts": "c40eb7c17620850f5a4e4c1f31b7871404c24acdd292a5114da1f7d7419c9f81",
+    "packages/vite/test/client.test.mjs": "5b5d1974c30c49fcb05d604a9e5028a8601e8fcdc5ba6991bdd3eb6430a87c19",
+    "packages/vite/test/lazy.test.mjs": "eeedf573e9858c3411ac56c38fcb9e1c84ad571751f20a3936f88d2605add532",
+    "docs/dev-sync-state.md": "a6848855df9ea4ffde9842f3d783e9666736ce878805015cd52618d6401ed464",
+    "packages/vite/README.md": "d564d5bdf05db788fa5f119c477b3de3273e5c9669a1ce0e339f54e548945a83"
+  },
+  "logs": {
+    "manifest-observers-before": {
+      "path": ".release/manifest-observers-before.log",
+      "sha256": "999a86078e9720d9305a9e96574e12d3fe7397463f0f541745267f3c9804105b"
+    },
+    "observer-message-before": {
+      "path": ".release/observer-message-before.log",
+      "sha256": "2f702df16474d59a787f13dd003f7b76388b96a21669ec3933beca7a21b85e5a"
+    },
+    "manifest-observers-after": {
+      "path": ".release/manifest-observers-after.log",
+      "sha256": "636111682074d15a6a34795de116f1c238d4b8c1f4df1d5f4967d8864cbb2eb1"
+    }
+  },
+  "reproduced": [
+    "Throwing manifest listener hid updated English from later lazy bridge subscribers.",
+    "First changed manifest listener failure left queued catalog loading to time out.",
+    "Disposal during notification still invoked a detached subscriber.",
+    "Opaque thrown values and throwing Error.message getters interrupted eager/lazy observer reporting."
+  ],
+  "checks": [
+    {
+      "phase": "before manifest isolation",
+      "tests": 3,
+      "failed": 3
+    },
+    {
+      "phase": "before defensive message conversion",
+      "tests": 3,
+      "failed": 3
+    },
+    {
+      "command": "npm run build --workspace=@0disoft/saylo-vite",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test --workspace=@0disoft/saylo-vite",
+      "exitCode": 0,
+      "tests": 131,
+      "failed": 0
+    },
+    {
+      "command": "npm run typecheck:consumers --workspace=@0disoft/saylo-vite",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build:docs",
+      "exitCode": 0,
+      "documents": 13,
+      "files": 15
+    },
+    {
+      "command": "npm run verify:docs",
+      "exitCode": 0
+    }
+  ],
+  "limits": [
+    "Synchronous callback exceptions only; rejected observer promises are outside this contract.",
+    "Local transport fixtures; no browser fault injection, new candidate, remote CI or publication in this record."
+  ]
+}

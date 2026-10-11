@@ -2,7 +2,7 @@ import type { I18n, ParsedCatalog, Schema } from '@0disoft/saylo-core';
 import type { DevCatalogSource } from './catalog-source.js';
 import type { LiveDiagnostic } from './types.js';
 import type { DevSyncState } from './dev-sync.js';
-import { deliverDiagnostic } from './diagnostic-observers.js';
+import { deliverDiagnostic, diagnosticMessage } from './diagnostic-observers.js';
 
 export interface ConnectLazyDevOptions {
   readonly catalogSource: DevCatalogSource;
@@ -18,7 +18,7 @@ export function connectLazyDev<S extends Schema>(instance: I18n<S>, options: Con
   const source = options.catalogSource;
   const cleanups: Array<() => void> = [];
   const report = (error: unknown, operation?: 'observer') => {
-    if (bindings.get(instance) === stop) deliverDiagnostic(options.onDiagnostic, { message: error instanceof Error ? error.message : String(error), diagnostics: [], ...(operation ? { operation } : {}) });
+    if (bindings.get(instance) === stop) deliverDiagnostic(options.onDiagnostic, { message: diagnosticMessage(error), diagnostics: [], ...(operation ? { operation } : {}) });
   };
   const update = () => {
     if (bindings.get(instance) !== stop || !options.onUpdate) return;
