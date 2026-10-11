@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
 import { createI18n, parseCatalog } from '@0disoft/saylo-core';
-import { connectDev, createDevCatalogSource, createStaticCatalogSource } from '../dist/client.js';
+import { connectDev, createDevCatalogSource, createStaticCatalogSource, createSupportRecorder } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
 import { encodeCatalogResult } from '../dist/catalog-wire.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest } from '../dist/types.js';
@@ -56,6 +56,66 @@ test('lazy connection fetches only the selected scope and newly requested namesp
   assert.equal(f.instance.t('help:title'), 'Help');
   assert.equal(f.sent.filter(e => e.event === CATALOG_REQUEST_EVENT).length, 3);
   assert.ok(Object.isFrozen(f.source.getCatalogs()[0].messages.title.ast));
+});
+
+test('initial lazy update and diagnostic observer failures retain the binding and subsequent locale intent', async t => {
+  const f = fixture(t);
+  const diagnostics = [];
+  let updates = 0;
+  let stop;
+  assert.doesNotThrow(() => {
+    stop = connectDev(f.instance, { catalogSource: f.source,
+      onUpdate: () => { updates++; throw new Error('update view failed'); },
+      onDiagnostic: diagnostic => { diagnostics.push(diagnostic); throw new Error('diagnostic view failed'); }
+    });
+  });
+  assert.equal(typeof stop, 'function');
+  assert.equal(f.hot.listenerCount(MANIFEST_EVENT), 1);
+  assert.equal(f.source.getSyncState().status, 'connected');
+  await assert.doesNotReject(f.instance.setLocale('en'));
+  assert.equal(f.instance.t('demo:title'), 'English');
+  assert.ok(updates >= 2);
+  assert.ok(diagnostics.length >= 2);
+  assert.ok(diagnostics.every(d => d.operation === 'observer' && d.message === 'update view failed'));
+  stop();
+  stop();
+  assert.equal(f.hot.listenerCount(MANIFEST_EVENT), 0);
+  assert.equal(f.hot.listenerCount(CATALOG_EVENT), 0);
+  const count = updates;
+  await f.instance.setLocale('ko');
+  assert.equal(updates, count, 'No update callbacks after bridge stop');
+});
+
+test('lazy update failures are observer diagnostics while locale and manifest changes commit and recover', async t => {
+  const f = fixture(t);
+  const recorder = createSupportRecorder();
+  const diagnostics = [];
+  let fail = false;
+  let updates = 0;
+  const stop = connectDev(f.instance, { catalogSource: f.source,
+    onUpdate: () => { updates++; if (fail) throw new Error('update view failed'); },
+    onDiagnostic: diagnostic => { diagnostics.push(diagnostic); recorder.onDiagnostic(diagnostic); }
+  });
+  await tick();
+  fail = true;
+  await assert.doesNotReject(f.instance.setLocale('en'));
+  assert.equal(f.instance.t('demo:title'), 'English');
+  f.replace([catalog('한국어'), catalog('Latest', 'en'), ...f.records().filter(c => c.namespace !== 'demo')]);
+  await tick();
+  assert.equal(f.instance.t('demo:title'), 'Latest');
+  assert.equal(f.source.getSyncState().status, 'connected');
+  assert.ok(diagnostics.length >= 2);
+  assert.ok(diagnostics.every(d => d.operation === 'observer' && d.message === 'update view failed'));
+  assert.ok(recorder.getReport().events.every(event => event.operation === 'observer'));
+  fail = false;
+  const reports = diagnostics.length;
+  const before = updates;
+  f.replace([catalog('한국어'), catalog('Recovered', 'en'), ...f.records().filter(c => c.namespace !== 'demo')]);
+  await tick();
+  assert.equal(f.instance.t('demo:title'), 'Recovered');
+  assert.ok(updates > before);
+  assert.equal(diagnostics.length, reports);
+  stop();
 });
 
 test('loaded edits refresh the UI while inactive and unloaded edits transfer no AST', async t => {

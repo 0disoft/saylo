@@ -1,0 +1,47 @@
+{
+  "observedOn": "2026-10-11",
+  "scope": "Lazy connectDev onUpdate callback failures are passive observer failures",
+  "source": "packages/vite/src/lazy-connection.ts",
+  "regressionFile": "packages/vite/test/lazy.test.mjs",
+  "before": {
+    "command": "node --test --test-name-pattern='initial lazy update|lazy update failures' packages/vite/test/lazy.test.mjs",
+    "exitCode": 1,
+    "tests": 2,
+    "failed": 2,
+    "failures": [
+      "Initial onUpdate exception escaped connectDev and released its binding",
+      "onUpdate exception during a committed locale selection rejected setLocale with Subscriber failures after i18n commit"
+    ]
+  },
+  "after": {
+    "build": { "command": "npm run build --workspace=@0disoft/saylo-vite", "exitCode": 0 },
+    "tests": {
+      "command": "node --test packages/vite/test/lazy.test.mjs packages/vite/test/sync-state.test.mjs packages/vite/test/client.test.mjs packages/vite/test/support-report.test.mjs",
+      "exitCode": 0,
+      "passed": 49,
+      "failed": 0
+    },
+    "consumerTypes": { "command": "npm run typecheck:consumers --workspace=@0disoft/saylo-vite", "exitCode": 0 },
+    "independentPackages": {
+      "command": "npm run verify:pack",
+      "exitCode": 0,
+      "packages": 5,
+      "checks": ["independent JS/checkJs and TypeScript consumers", "typegen CLI and public imports", "React and Svelte SSR", "Vite lazy production builds", "support report exports", "production SSR after pruning development dependencies"]
+    }
+  },
+  "verifiedBehavior": [
+    "An initial onUpdate exception is reported as observer and retains the connected bridge",
+    "Exceptions from the diagnostic callback reporting that observer failure do not escape",
+    "Locale selection resolves and renders English even when onUpdate throws",
+    "Subsequent manifest edits commit the latest translation without disconnecting",
+    "Support recorder events classify callback failures as observer",
+    "A repaired callback receives subsequent edits without additional diagnostics",
+    "Bridge stop is idempotent and removes owned manifest/catalog listeners and late callbacks",
+    "Existing malformed catalog, retry, shared-source, cleanup and eager connection regressions pass"
+  ],
+  "limits": [
+    "Uses real compiled modules and catalog registry/wire with an in-memory Vite hot transport; no browser fault injection in this change",
+    "Protects synchronous onUpdate callbacks; provider getCatalogs failures remain outside this observer guard",
+    "Unpublished local source; no version bump, registry publication or remote push"
+  ]
+}

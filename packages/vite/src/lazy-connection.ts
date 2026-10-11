@@ -19,7 +19,16 @@ export function connectLazyDev<S extends Schema>(instance: I18n<S>, options: Con
   const report = (error: unknown, operation?: 'observer') => {
     if (bindings.get(instance) === stop) options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [], ...(operation ? { operation } : {}) });
   };
-  const update = () => { if (bindings.get(instance) === stop) options.onUpdate?.(source.getCatalogs()); };
+  const update = () => {
+    if (bindings.get(instance) !== stop || !options.onUpdate) return;
+    const catalogs = source.getCatalogs();
+    try { options.onUpdate(catalogs); }
+    catch (error) {
+      // A passive view failure must not reject an already committed locale intent
+      // or release the bridge during its first update. Diagnostic views are passive too.
+      try { report(error, 'observer'); } catch { /* observers are passive */ }
+    }
+  };
   const observeState = (state: DevSyncState) => {
     if (bindings.get(instance) !== stop) return;
     try {
