@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-11",
+  "baselineCommit": "507f271",
+  "finding": "All demos already update html.lang on locale changes. In vanilla, English selection caused fixed Korean headers, guidance, status, support UI and Korean catalog to inherit en. The English catalog inherited ko when ko was selected.",
+  "changes": {
+    "fixedKoreanRegions": ["header", "preview guidance", "catalog/support panel", "dialog guidance and status"],
+    "fixedEnglishRegions": ["brand subtitle", "eyebrow", "revision badge", "English catalog textarea and its accessible name"],
+    "localeOptions": "Each option is tagged with its own locale",
+    "translatedContent": "Continues inheriting the successfully rendered locale from html; controls and native dialog are retained"
+  },
+  "verification": {
+    "command": "npm run verify:demo:vanilla",
+    "scope": "Built production JS and HTML, executed in jsdom; existing cached-page test now checks closest lang ancestor in both en and ko",
+    "buildModules": 47,
+    "passedTests": 3,
+    "exitCode": 0,
+    "checkedRegions": ["heading", "name input", "dialog title", "header", "locale select", "preview guidance", "brand subtitle", "status", "dialog status", "support status", "ko/en editor", "ko/en options"],
+    "existingChecks": ["cached page retains input and locale controls", "support metadata excludes form/catalog content", "render failure retains screen and repair clears status"]
+  },
+  "limits": ["Language metadata verification, not a screen reader pronunciation or accessibility conformance test", "React, Svelte and SvelteKit fixed-language regions remain to be addressed", "No library API, package version, push or publication changes"]
+}

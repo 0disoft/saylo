@@ -25,7 +25,26 @@ test('vanilla cached page retains live locale controls and form inputs', t => {
   locale.dispatchEvent(new window.Event('change', { bubbles: true }));
   assert.equal(document.querySelector('h1').textContent, 'New words. Same input.');
   assert.equal(document.documentElement.lang, 'en');
+  // The translated view follows the locale; fixed Korean guidance must not.
+  const language = node => node.closest('[lang]').lang;
+  assert.equal(language(document.querySelector('h1')), 'en');
+  assert.equal(language(document.querySelector('#name')), 'en');
+  assert.equal(language(document.querySelector('#dialog-title')), 'en');
+  assert.equal(language(document.querySelector('.preview > .hint')), 'ko');
+  assert.equal(language(document.querySelector('.brand span')), 'en');
+  for (const selector of ['header', '#locale', '#status', '#dialog-status', '#support-status']) {
+    assert.equal(language(document.querySelector(selector)), 'ko', selector);
+  }
+  assert.equal(language(document.querySelector('#en-editor')), 'en');
+  assert.equal(document.querySelector('#en-editor').getAttribute('aria-label'), 'English catalog');
+  assert.equal(language(document.querySelector('#ko-editor')), 'ko');
+  assert.equal(document.querySelector('#locale option[value="en"]').lang, 'en');
+  assert.equal(document.querySelector('#locale option[value="ko"]').lang, 'ko');
   assert.equal(document.querySelector('#name').value, 'Returning user');
+  locale.value = 'ko';
+  locale.dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal(language(document.querySelector('h1')), 'ko');
+  assert.equal(language(document.querySelector('#en-editor')), 'en');
 });
 
 test('vanilla support controls generate reviewable metadata without form or catalog content', t => {

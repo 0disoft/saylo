@@ -8,18 +8,18 @@
   </head>
   <body>
     <main>
-      <header>
-        <a class="brand" href="/">Saylo <span>vanilla demo</span></a>
+      <header lang="ko">
+        <a class="brand" href="/">Saylo <span lang="en">vanilla demo</span></a>
         <label class="locale-control">화면 언어 <select id="locale" aria-label="화면 언어"></select></label>
       </header>
       <section class="intro">
-        <p class="eyebrow">LIVE CATALOG PREVIEW</p>
+        <p class="eyebrow" lang="en">LIVE CATALOG PREVIEW</p>
         <h1 data-message="demo:heading"></h1>
         <p data-message="demo:description"></p>
       </section>
       <div class="layout">
         <section class="panel preview">
-          <div class="panel-header"><h2 data-message="demo:formTitle"></h2><span id="revision" class="badge"></span></div>
+          <div class="panel-header"><h2 data-message="demo:formTitle"></h2><span id="revision" class="badge" lang="en"></span></div>
           <form id="order-form">
             <label><span data-message="demo:name"></span><input id="name" name="name" autocomplete="off" data-placeholder="demo:namePlaceholder"></label>
             <label><span data-message="demo:note"></span><textarea id="note" name="note" rows="4" data-placeholder="demo:notePlaceholder"></textarea></label>
@@ -27,14 +27,14 @@
             <p id="summary" class="summary" aria-live="polite"></p>
             <button type="submit" data-message="demo:openDialog"></button>
           </form>
-          <p class="hint">입력값과 포커스는 유지하고, 번역 텍스트만 바꿉니다.</p>
-          <p class="hint">사용 가능한 namespace: <span id="namespaces"></span></p>
+          <p class="hint" lang="ko">입력값과 포커스는 유지하고, 번역 텍스트만 바꿉니다.</p>
+          <p class="hint" lang="ko">사용 가능한 namespace: <span id="namespaces"></span></p>
         </section>
-        <section class="panel editor">
+        <section class="panel editor" lang="ko">
           <div class="panel-header"><h2>현재 파일 문구</h2><span class="badge">JSON</span></div>
           <p class="hint">편집기에서 <code>locales/ko/demo.json</code> 또는 <code>locales/en/demo.json</code>을 수정하고 저장하세요. 아래에는 마지막 정상 문구가 표시됩니다.</p>
           <label>기준 문구 · 한국어<textarea id="ko-editor" class="code" rows="12" spellcheck="false" aria-label="한국어 카탈로그" readonly></textarea></label>
-          <label>번역 문구 · English<textarea id="en-editor" class="code" rows="12" spellcheck="false" aria-label="영어 카탈로그" readonly></textarea></label>
+          <label>번역 문구 · English<textarea id="en-editor" class="code" rows="12" spellcheck="false" aria-label="English catalog" lang="en" readonly></textarea></label>
           <p id="status" class="hint" role="status">개발 서버에 연결 중입니다.</p>
           <pre id="error" role="alert"></pre>
           <details id="support-panel">
@@ -54,8 +54,8 @@
         <h2 id="dialog-title" data-message="demo:dialogTitle"></h2>
         <label><span data-message="demo:dialogNote"></span><input id="confirmation-note" autocomplete="off"></label>
         <button data-message="demo:closeDialog"></button>
-        <p class="hint">번역 파일을 저장해도 이 창은 열린 채 유지됩니다.</p>
-        <p id="dialog-status" class="hint" role="status"></p>
+        <p class="hint" lang="ko">번역 파일을 저장해도 이 창은 열린 채 유지됩니다.</p>
+        <p id="dialog-status" class="hint" role="status" lang="ko"></p>
       </form>
     </dialog>
     <script type="module" src="/main.js"></script>

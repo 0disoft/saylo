@@ -42,7 +42,11 @@ function render(snapshot) {
     document.documentElement.lang = snapshot.locale;
     const nextList = snapshot.availableLocales.join(',');
     if (nextList !== localeList) {
-      localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => new Option({ ko: '한국어', en: 'English' }[locale] ?? locale, locale)));
+      localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => {
+        const option = new Option({ ko: '한국어', en: 'English' }[locale] ?? locale, locale);
+        option.lang = locale;
+        return option;
+      }));
       localeList = nextList;
     }
     localeSelect.value = snapshot.locale;
