@@ -1,12 +1,20 @@
 import { isSnapshotRequest } from './types.js';
 import type { EagerCatalogEvent, EagerSnapshotRequest } from './types.js';
 
+export interface DevSyncState {
+  readonly status: 'idle' | 'connecting' | 'retrying' | 'connected' | 'disconnected' | 'failed' | 'stopped';
+  /** Current handshake attempt, or the last failed attempt; zero for idle/healthy states. */
+  readonly attempt: number;
+  readonly maxAttempts: 3;
+}
+
 interface SyncOptions {
   readonly timeoutMs: number;
   readonly scope: () => Pick<EagerSnapshotRequest, 'locale' | 'namespaces'>;
   readonly send: (request: EagerSnapshotRequest) => void;
   readonly commit: (event: EagerCatalogEvent) => boolean;
   readonly report: (error: unknown) => void;
+  readonly onState?: (state: DevSyncState) => void;
 }
 
 /** Eager handshake coordinator. Keeps the last good UI until a current reply arrives. */
@@ -24,17 +32,23 @@ export class EagerSync {
   private needsSnapshot = true;
   private disconnected = false;
   private stopped = false;
+  private state: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: 3 });
 
   constructor(private readonly options: SyncOptions) {}
 
-  start() { this.request(); }
+  start() {
+    try { this.request(); }
+    catch (error) { this.clearPending(); this.setState('failed', this.attempts); throw error; }
+  }
 
   disconnect() {
+    if (this.stopped) return;
     this.disconnected = true;
     this.clearPending();
     this.needsSnapshot = true;
     this.hint = undefined;
     this.attempts = 0;
+    this.setState('disconnected');
   }
 
   reconnect() {
@@ -44,7 +58,17 @@ export class EagerSync {
     this.recover();
   }
 
-  stop() { this.stopped = true; this.clearPending(); }
+  stop() { this.stopped = true; this.clearPending(); this.setState('stopped'); }
+
+  private setState(status: DevSyncState['status'], attempt = 0) {
+    if (this.state.status === status && this.state.attempt === attempt) return;
+    this.state = Object.freeze({ status, attempt, maxAttempts: 3 });
+    try { this.options.onState?.(this.state); }
+    catch (error) {
+      // Observers must not prevent a handshake, timer cleanup, or another attempt.
+      try { this.options.report(error); } catch { /* diagnostic observers are passive too */ }
+    }
+  }
 
   acceptsRequest(request: EagerSnapshotRequest) {
     return !this.stopped && !this.disconnected && isSnapshotRequest(request) &&
@@ -74,11 +98,13 @@ export class EagerSync {
         return;
       }
       if (!this.options.commit(event)) return;
+      if (this.stopped || this.disconnected || this.pending !== request) return;
       this.adopt(event);
       this.clearPending();
       this.hint = undefined;
       this.needsSnapshot = false;
       this.attempts = 0;
+      this.setState('connected');
       return;
     }
     if (!Number.isSafeInteger(event.baseRevision) || event.baseRevision < 0 || event.revision !== event.baseRevision + 1) {
@@ -92,7 +118,7 @@ export class EagerSync {
       if (!this.pending) this.recover();
       return;
     }
-    if (this.options.commit(event)) this.adopt(event);
+    if (this.options.commit(event)) { this.adopt(event); if (!this.stopped && !this.disconnected) this.setState('connected'); }
     else this.recover();
   }
 
@@ -109,6 +135,7 @@ export class EagerSync {
   }
 
   private request() {
+    if (this.stopped || this.disconnected) return;
     this.needsSnapshot = true;
     this.attempts++;
     const generation = ++this.generation;
@@ -116,6 +143,8 @@ export class EagerSync {
       requestId: `${this.id}:${generation}`, generation };
     this.pending = request;
     this.timer = setTimeout(() => this.retry(), this.options.timeoutMs);
+    this.setState(this.attempts === 1 ? 'connecting' : 'retrying', this.attempts);
+    if (this.stopped || this.disconnected || this.pending !== request) return;
     this.options.send(request);
   }
 
@@ -123,17 +152,18 @@ export class EagerSync {
     if (this.stopped || this.disconnected) return;
     this.attempts = 0;
     try { this.request(); }
-    catch (error) { this.clearPending(); this.options.report(error); }
+    catch (error) { this.clearPending(); this.setState('failed', this.attempts); this.options.report(error); }
   }
 
   private retry() {
     this.clearPending();
     if (this.stopped || this.disconnected) return;
     if (this.attempts >= 3) {
+      this.setState('failed', this.attempts);
       this.options.report(new Error('Eager snapshot resync failed after 3 attempts; retaining the last good state.'));
       return;
     }
     try { this.request(); }
-    catch (error) { this.clearPending(); this.options.report(error); }
+    catch (error) { this.clearPending(); this.setState('failed', this.attempts); this.options.report(error); }
   }
 }

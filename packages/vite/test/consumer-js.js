@@ -8,10 +8,18 @@ saylo({ localesDir: './locales', baseLocale: 'ko', requireCompleteTranslations: 
 // @ts-expect-error checkJs also rejects non-boolean completeness
 saylo({ localesDir: './locales', baseLocale: 'ko', requireCompleteTranslations: 'true' });
 const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale });
-const stop = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.diagnostics) });
+const stop = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.diagnostics),
+  onSyncState: state => {
+    /** @type {3} */
+    const limit = state.maxAttempts;
+    console.log(state.status, state.attempt, limit);
+    // @ts-expect-error checkJs also rejects mutation of synchronization observations
+    state.status = 'connected';
+  }
+});
 stop();
 const lazy = createI18n({ catalogSource, locale: lazyLocale, initialNamespaces, initialCatalogs: lazyCatalogs });
-connectDev(lazy, { catalogSource });
+connectDev(lazy, { catalogSource, onSyncState: state => console.log(state.status) });
 // @ts-expect-error checkJs also requires the lazy source handle
 connectDev(lazy);
 

@@ -1,5 +1,6 @@
 import saylo from '@0disoft/saylo-vite';
 import { connectDev, createStaticCatalogSource } from '@0disoft/saylo-vite/client';
+import type { DevSyncState } from '@0disoft/saylo-vite/client';
 import { createI18n, createStore } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
@@ -8,11 +9,20 @@ saylo({ localesDir: './locales', baseLocale: 'ko', astRuntime: true, requireComp
 // @ts-expect-error completeness is a boolean option
 saylo({ localesDir: './locales', baseLocale: 'ko', requireCompleteTranslations: 'true' });
 const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale, timeZone });
-const stop: () => void = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.message) });
+const onSyncState = (state: DevSyncState) => {
+  const attempts: number = state.attempt;
+  const limit: 3 = state.maxAttempts;
+  console.log(state.status, attempts, limit);
+  // @ts-expect-error synchronization states are immutable observations
+  state.attempt = 7;
+};
+const stop: () => void = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.message), onSyncState });
 stop();
 
 const lazy = createI18n({ catalogSource, locale: lazyLocale, initialNamespaces, initialCatalogs: lazyCatalogs });
-const disconnect: () => void = connectDev(lazy, { catalogSource });
+const disconnect: () => void = connectDev(lazy, { catalogSource, onSyncState });
+catalogSource.subscribeSyncState?.(onSyncState);
+catalogSource.getSyncState?.();
 disconnect();
 // @ts-expect-error lazy instances require their source handle
 connectDev(lazy);

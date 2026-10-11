@@ -1,6 +1,7 @@
 import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
 import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
 import { EagerSync } from './dev-sync.js';
+import type { DevSyncState } from './dev-sync.js';
 import { catalogId as id, immutable, matches } from './catalog-outcome.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';
 import type { CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, ManifestEvent } from './types.js';
@@ -14,6 +15,9 @@ export interface DevCatalogSource extends CatalogSource {
   getCatalogs(): readonly ParsedCatalog[];
   subscribeManifest(listener: () => void): () => void;
   subscribeDiagnostic(listener: (diagnostic: LiveDiagnostic) => void): () => void;
+  /** Optional for custom sources written before synchronization-state observers. */
+  getSyncState?(): DevSyncState;
+  subscribeSyncState?(listener: (state: DevSyncState) => void): () => void;
   /** Reference-counted bridge lifetime; the Vite socket remains shared. */
   connect(): () => void;
   dispose(): void;
@@ -50,8 +54,17 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   const pending = new Map<string, Pending>();
   const listeners = new Set<() => void>();
   const diagnostics = new Set<(diagnostic: LiveDiagnostic) => void>();
+  const syncListeners = new Set<(state: DevSyncState) => void>();
+  let syncState: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: 3 });
   const notify = (diagnostic: LiveDiagnostic) => { for (const listener of [...diagnostics]) listener(diagnostic); };
   const report = (error: unknown) => notify({ message: error instanceof Error ? error.message : String(error), diagnostics: [] });
+  const observeState = (state: DevSyncState) => {
+    syncState = state;
+    for (const listener of [...syncListeners]) {
+      if (disposed || !syncListeners.has(listener)) continue;
+      try { listener(state); } catch (error) { try { report(error); } catch { /* observer errors do not block other listeners */ } }
+    }
+  };
   function failPending(error: unknown) {
     for (const entry of [...pending.values()]) { entry.cleanup(); entry.reject(error); }
   }
@@ -107,6 +120,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   function start() {
     if (sync || disposed) return;
     sync = new EagerSync({ timeoutMs,
+      onState: observeState,
       scope: () => ({ locale: manifest.baseLocale, namespaces: [] }),
       send: request => hot!.send(MANIFEST_REQUEST_EVENT, request),
       report: error => { failPending(error); report(error); },
@@ -135,7 +149,9 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     try { sync.start(); } catch (error) { stop(); throw error; }
   }
   function stop() {
-    sync?.stop(); sync = undefined; ready = false; generation++;
+    if (sync) sync.stop();
+    else observeState(Object.freeze({ status: 'stopped', attempt: 0, maxAttempts: 3 }));
+    sync = undefined; ready = false; generation++;
     hot!.off(MANIFEST_EVENT, receiveManifest);
     hot!.off(CATALOG_EVENT, receiveCatalog);
     hot!.off(DIAGNOSTIC_EVENT, receiveDiagnostic);
@@ -148,6 +164,11 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     getCatalogs: () => Object.freeze([...cache.values()].flatMap(o => o.status === 'present' && matches(manifest, o) ? [o.catalog] : [])),
     subscribeManifest(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; },
     subscribeDiagnostic(listener: (diagnostic: LiveDiagnostic) => void) { diagnostics.add(listener); return () => { diagnostics.delete(listener); }; },
+    getSyncState: () => syncState,
+    subscribeSyncState(listener: (state: DevSyncState) => void) {
+      if (disposed) return () => {};
+      syncListeners.add(listener); return () => { syncListeners.delete(listener); };
+    },
     connect() {
       if (disposed) throw new Error('Catalog source is disposed.');
       refs++;
@@ -180,7 +201,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
       if (disposed) return;
       disposed = true;
       failPending(new CatalogLoadError('DISPOSED', 'Catalog source is disposed.'));
-      stop(); cache.clear(); listeners.clear(); diagnostics.clear();
+      stop(); cache.clear(); listeners.clear(); diagnostics.clear(); syncListeners.clear();
     },
   });
   hot.dispose(source.dispose);

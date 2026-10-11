@@ -1,5 +1,7 @@
 import type { I18n, ParsedCatalog, Schema, Store } from '@0disoft/saylo-core';
 import { EagerSync } from './dev-sync.js';
+import type { DevSyncState } from './dev-sync.js';
+export type { DevSyncState } from './dev-sync.js';
 import { DIAGNOSTIC_EVENT, REQUEST_EVENT, SNAPSHOT_EVENT } from './types.js';
 import type { EagerCatalogEvent, LiveDiagnostic } from './types.js';
 import { freezeCatalogs } from './freeze.js';
@@ -17,6 +19,7 @@ export interface ConnectDevOptions {
   readonly hot?: HotContext;
   readonly onUpdate?: (catalogs: readonly ParsedCatalog[]) => void;
   readonly onDiagnostic?: (diagnostic: LiveDiagnostic) => void;
+  readonly onSyncState?: (state: DevSyncState) => void;
   /** Timeout per snapshot attempt. At most three attempts; defaults to 5000ms. */
   readonly requestTimeoutMs?: number;
 }
@@ -40,10 +43,13 @@ export function connectDev<S extends Schema>(store: Store<S> | I18n<S>, options:
   const timeoutMs = eagerOptions.requestTimeoutMs ?? 5000;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('requestTimeoutMs must be a positive timer duration.');
   let unwatchDispose = noop;
-  const report = (error: unknown) => options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [] });
+  const report = (error: unknown) => {
+    if (bindings.get(store) === stop) options.onDiagnostic?.({ message: error instanceof Error ? error.message : String(error), diagnostics: [] });
+  };
   const sync = new EagerSync({ timeoutMs,
     scope: () => ({ locale: store.getSnapshot().locale, namespaces: [...store.getSnapshot().loadedNamespaces] }),
     send: request => hot.send(REQUEST_EVENT, request), report,
+    onState: state => { if (bindings.get(store) === stop) eagerOptions.onSyncState?.(state); },
     commit: payload => {
       if (bindings.get(store) !== stop) return false;
       if (payload.baseLocale !== store.getSnapshot().baseLocale) { report(new Error('Plugin and store baseLocale differ.')); return false; }
@@ -71,8 +77,8 @@ export function connectDev<S extends Schema>(store: Store<S> | I18n<S>, options:
     hot.off(DIAGNOSTIC_EVENT, receiveDiagnostic);
     hot.off('vite:ws:disconnect', disconnect);
     hot.off('vite:ws:connect', reconnect);
-    sync.stop();
     bindings.delete(store);
+    sync.stop();
     unwatchDispose();
     hotBindings.get(hot)?.delete(stop);
   };
