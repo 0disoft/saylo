@@ -15,7 +15,7 @@
 
 이 예제는 루트 workspace에 속하지 않는 독립 `private` 패키지다. `workspaces`를 쓰지 않고, `file:`·`workspace:`·alias 링크 없이 npm registry에 게시된 실물 패키지를 설치한다. 그래서 루트 빌드가 필요 없다.
 
-`package.json`은 `alpha` tag를 사용하고, 현재 lockfile은 core·Vite·Vite의 전이 의존성 typegen을 `0.1.0-alpha.2`로 잠근다. `npm ci --workspaces=false`는 이 lockfile을 재현한다. tag가 이동한 뒤 새 게시본을 받으려면 `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false`를 실행한다.
+`package.json`은 `alpha` tag를 사용하고, 현재 lockfile은 core·Vite·Vite의 전이 의존성 typegen을 `0.1.0-alpha.4`로 잠근다. `npm ci --workspaces=false`는 이 lockfile을 재현한다. tag가 이동한 뒤 새 게시본을 받으려면 `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false`를 실행한다.
 
 ## 실행
 
@@ -64,6 +64,19 @@ Vite 플러그인은 `saylo({ localesDir: 'locales', baseLocale: 'ko', initialLo
 키를 지우거나 필수 인자를 추가하지 않는 정상 편집은 기준 스키마를 유지하므로 위처럼 폼·dialog 상태가 보존된다. 키 삭제나 필수 인자 추가처럼 스키마를 깨는 편집은 이 보존 범위 밖이다.
 
 ## 검증 범위
+
+### alpha.4 설치·빌드·라이브 수정 (2026-10-11)
+
+Windows, Node 24.18.0, Vite 8.3.3에서 실행했다. 이 예제가 쓰는 core·Vite·typegen은 `0.1.0-alpha.4`다.
+
+- `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false --ignore-scripts --no-audit --no-fund`가 exit 0으로 끝났다. `package.json`의 `alpha` tag는 그대로이고, Saylo 세 패키지 밖 서드파티 lockfile 항목과 키는 갱신 전후가 완전히 같다.
+- 같은 옵션의 `npm ci --workspaces=false --ignore-scripts --no-audit --no-fund`가 exit 0이다. 세 패키지는 registry 실물 tarball로 설치되고 symlink가 아니며, realpath는 예제의 `node_modules` 안쪽이다. 설치본 integrity는 [승인 manifest](../../releases/0.1.0-alpha.4.json)와 일치했다.
+- `npm run build`가 exit 0이다. 45 modules, 출력 JavaScript 28.23 kB(gzip 10.09 kB). 루트 workspace 빌드 없이 게시본만 사용했다.
+- IAB 실브라우저(`http://127.0.0.1:5188`)에서 dialog를 열고 `#name`에 `Alpha4`, `#note`에 `keep note alpha4`, `#dialog-note`에 `PreserveAlpha4`를 넣었다. 첫 저장 뒤 5ms를 기다려 서로 다른 내용으로 두 번째 저장을 했다. 화면 문구는 `Rapid2 final save`, dialog 제목은 `Rapid2 final, Alpha4`로 최종 반영됐고, 세 입력값과 dialog 열림·포커스는 유지됐다.
+- `locales/ja/demo.json`을 추가했을 때 `#locale` 목록이 `en`·`ja`·`ko`가 됐고, 열린 dialog의 입력값과 열림·포커스는 유지됐다. `#close-dialog`로 닫고 `ja`를 고른 뒤 다시 열면 `h1`이 `Alpha4 Japanese catalog`, dialog 제목이 `Japanese catalog, Alpha4`로 뜨고 세 입력값도 유지됐다. console warn/error는 없었다.
+- 사전 첫 visible 관측과 복원 중 `#dialog-note`가 입력 간섭처럼 변한 관측은 상태 보존 판정에 넣지 않았다. 복원 과정에서 본 `ja` 삭제 후 `ko` fallback도 관측으로만 남긴다. 임시로 고친 `en` JSON은 원래 bytes로 되돌리고 `ja` 파일 삭제, 브라우저 탭 close, 개발 서버 stop까지 마쳤다.
+
+근거는 [npm 예제 alpha.4 검증 기록](../../review/npm-example-alpha4-2026-10-11.json)에 있다. `npm run preview`는 실행하지 않았고 새 성능 수치도 측정하지 않았다.
 
 ### alpha.2 설치·빌드 (2026-10-09)
 

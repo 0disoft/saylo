@@ -4,7 +4,7 @@ Saylo의 React 19 바인딩이다. `createSayloReact`가 typed Provider와 hook 
 
 ## 상태
 
-마지막으로 게시를 확인한 버전은 2026-10-09의 `0.1.0-alpha.3`(dist-tag `alpha`)이다. `0.1.0-alpha.1`은 2026-10-06, `0.1.0-alpha.2`는 2026-10-09에 게시했다. 아래 `useI18nSelector`는 아직 이 게시본에 없고 저장소 checkout의 로컬 구현이다. 이 저장소의 workspace나 `npm pack` tarball로도 쓸 수 있다.
+마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)이다. `0.1.0-alpha.1`은 2026-10-06, `0.1.0-alpha.2`는 2026-10-09에 게시했다. 아래 `useI18nSelector`는 `0.1.0-alpha.4` 게시본에 포함된다. 이 저장소의 workspace나 `npm pack` tarball로도 쓸 수 있다.
 
 ## 설치
 
@@ -86,7 +86,7 @@ function LocaleButton() {
 
 - selector는 매 snapshot마다 다시 실행될 수 있고, 렌더의 props/state를 캡처할 수 있다. 다만 부수 효과 없이 값을 계산하고, 구독되지 않은 변경 가능한 전역값에 의존하지 않는다.
 - 변경되지 않은 객체 참조를 그대로 돌려주면 다시 렌더하지 않는다. selector가 매번 새 객체·새 배열을 만들면 snapshot이 바뀔 때마다 다시 렌더된다. 파생 목록이 필요하면 원본 참조를 그대로 돌려주고 렌더에서 필요한 계산만 한다.
-- 아직 npm 게시본에는 없다. 로컬 구현이며 게시 여부는 [릴리스 기록](https://github.com/0disoft/saylo/tree/main/releases)을 따른다.
+- `0.1.0-alpha.4` 게시본에 포함된다. 게시 이력은 [릴리스 기록](https://github.com/0disoft/saylo/tree/main/releases)에 있다.
 
 ## 관련 패키지
 

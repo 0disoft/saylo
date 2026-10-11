@@ -4,7 +4,7 @@ Saylo의 Vite 8 플러그인과 개발 클라이언트다. 카탈로그 파일 �
 
 ## 상태
 
-마지막으로 게시를 확인한 버전은 2026-10-09의 `0.1.0-alpha.3`(dist-tag `alpha`)다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 이 저장소의 workspace에서도 쓸 수 있다.
+마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 이 저장소의 workspace에서도 쓸 수 있다.
 
 lazy 개발 경로는 full present 응답을 compact로 보내고 브라우저에서 기존 카탈로그 형태로 복원한다. 복잡한 ICU AST와 오류 위치를 유지하며 브라우저 ICU 재파싱은 없다. 이 변경은 `0.1.0-alpha.2` 게시본에 포함된다. 범위·검증·성능 측정은 [compact 전송 기록](https://github.com/0disoft/saylo/blob/main/docs/16-compact-catalog-transport.md)을 따른다.
 
@@ -12,7 +12,7 @@ lazy 개발 경로는 full present 응답을 compact로 보내고 브라우저�
 
 앱 런타임에는 `@0disoft/saylo-core`를 설치하고, 플러그인과 dev client는 개발 의존성으로 넣는다. `vite`는 peer 의존성이며 현재 조건은 Vite 8이다.
 
-운영 SSR 빌드가 `@0disoft/saylo-vite/client`를 앱 번들에 포함하도록, 플러그인은 `@0disoft/saylo-vite` 패키지를 번들 대상(`ssr.noExternal`)으로 잡는다. 그래서 이 패키지를 운영 런타임 의존성으로 설치할 필요가 없다. 이 처리는 게시본이 아니라 저장소 checkout의 후속 수정이다.
+운영 SSR 빌드가 `@0disoft/saylo-vite/client`를 앱 번들에 포함하도록, 플러그인은 `@0disoft/saylo-vite` 패키지를 번들 대상(`ssr.noExternal`)으로 잡는다. 그래서 이 패키지를 운영 런타임 의존성으로 설치할 필요가 없다. 이 처리는 `0.1.0-alpha.4` 게시본에 포함된다.
 
 ```sh
 npm install @0disoft/saylo-core@alpha

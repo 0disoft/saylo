@@ -4,9 +4,11 @@ Saylo 코어 패키지다. 카탈로그 파싱과 스키마 검증, 동기 번�
 
 ## 상태
 
-마지막으로 게시를 확인한 버전은 2026-10-09의 `0.1.0-alpha.3`(dist-tag `alpha`)다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 이 저장소의 workspace에서 쓰거나 `npm pack`으로 만든 tarball을 설치할 수도 있다.
+마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 이 저장소의 workspace에서 쓰거나 `npm pack`으로 만든 tarball을 설치할 수도 있다.
 
-React·Svelte selector 미세구독(`useI18nSelector`, `selectSvelteStore`·`getI18nSelector`)은 저장소 checkout에만 있고 아직 게시본에는 없다.
+React·Svelte selector 미세구독(`useI18nSelector`, `selectSvelteStore`·`getI18nSelector`)은 `0.1.0-alpha.4` 게시본에 포함된다.
+
+이 README 수정은 다음 배포에 포함된다.
 
 ## 설치
 

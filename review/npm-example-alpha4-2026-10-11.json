@@ -1,0 +1,163 @@
+{
+  "observedAt": "2026-10-11T09:03:55.054Z",
+  "sourceRevision": "e2be808bf0fe8ad67f50b0ff0f8224b1e6e9a6f5",
+  "releaseVersion": "0.1.0-alpha.4",
+  "approvedManifest": "releases/0.1.0-alpha.4.json",
+  "environment": {
+    "platform": "win32",
+    "node": "v24.18.0",
+    "vite": "8.3.3"
+  },
+  "installed": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.4",
+      "integrity": "sha512-9AvPXq5w00N0I1zDm16tHWBfBTPIv0hgE4QczoXENZJVM8J725RqU0cB4xKJcSz7+0sXrMBhR5byYM5LYfkqdQ==",
+      "resolved": "https://registry.npmjs.org/@0disoft/saylo-core/-/saylo-core-0.1.0-alpha.4.tgz",
+      "symlink": false
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.4",
+      "integrity": "sha512-SZ5Cb+EwDAxJfWmf4MToXCKAy7/6Ygozvi2Yz6RG6uwcR4e64ZXMk7DrdLnoXeJd0bEKqqQQ9uzxVPkE0ftfhw==",
+      "resolved": "https://registry.npmjs.org/@0disoft/saylo-typegen/-/saylo-typegen-0.1.0-alpha.4.tgz",
+      "symlink": false
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.4",
+      "integrity": "sha512-ypX20D95dLD2SN4NW4oCgTUCRDyHDjoZtii++LlDxIDlah0if6J9hRCpHTZ3LijvWzqXErzgfop01HKjvS//Yg==",
+      "resolved": "https://registry.npmjs.org/@0disoft/saylo-vite/-/saylo-vite-0.1.0-alpha.4.tgz",
+      "symlink": false
+    }
+  ],
+  "thirdPartyLockEntriesUnchanged": true,
+  "checks": [
+    {
+      "command": "npm ci --workspaces=false --ignore-scripts --no-audit --no-fund",
+      "cwd": "examples/npm",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "cwd": "examples/npm",
+      "exitCode": 0,
+      "modules": 45,
+      "javascriptKB": 28.23,
+      "javascriptGzipKB": 10.09
+    },
+    {
+      "name": "approved integrity and independent registry installation",
+      "result": "pass"
+    },
+    {
+      "name": "rapid-save final text, input values, dialog and focus",
+      "result": "pass"
+    },
+    {
+      "name": "locale addition, input values, open dialog and focus",
+      "result": "pass"
+    },
+    {
+      "name": "locale selection and reopening dialog with retained input",
+      "result": "pass"
+    },
+    {
+      "name": "package README code examples unchanged",
+      "result": "pass"
+    }
+  ],
+  "browser": {
+    "browser": "Codex in-app browser",
+    "url": "http://127.0.0.1:5188/",
+    "initial": {
+      "dialogNote": "PreserveAlpha4",
+      "dialogTitle": "Final save, Alpha4",
+      "focused": "dialog-note",
+      "heading": "Alpha4 final save",
+      "locale": "en",
+      "locales": [
+        "en",
+        "ko"
+      ],
+      "name": "Alpha4",
+      "note": "keep note alpha4",
+      "open": true
+    },
+    "rapid": {
+      "dialogNote": "PreserveAlpha4",
+      "dialogTitle": "Rapid2 final, Alpha4",
+      "focused": "dialog-note",
+      "heading": "Rapid2 final save",
+      "locale": "en",
+      "locales": [
+        "en",
+        "ko"
+      ],
+      "name": "Alpha4",
+      "note": "keep note alpha4",
+      "open": true
+    },
+    "localeAdded": {
+      "dialogNote": "PreserveAlpha4",
+      "dialogTitle": "Rapid2 final, Alpha4",
+      "focused": "dialog-note",
+      "heading": "Rapid2 final save",
+      "locale": "en",
+      "locales": [
+        "en",
+        "ja",
+        "ko"
+      ],
+      "name": "Alpha4",
+      "note": "keep note alpha4",
+      "open": true
+    },
+    "localeSelected": {
+      "dialogNote": "PreserveAlpha4",
+      "dialogTitle": "Japanese catalog, Alpha4",
+      "focused": "dialog-note",
+      "heading": "Alpha4 Japanese catalog",
+      "locale": "ja",
+      "locales": [
+        "en",
+        "ja",
+        "ko"
+      ],
+      "name": "Alpha4",
+      "note": "keep note alpha4",
+      "open": true
+    },
+    "warningsAndErrors": [],
+    "delayRequestedMs": 5,
+    "note": "First visible probe observed concurrent input changes and was inconclusive; recorded checks used a hidden tab with a fresh baseline. Locale selection closed and reopened the dialog explicitly.",
+    "restorationObserved": {
+      "dialogNote": "PreserveAlpha4또다시",
+      "dialogTitle": "Alpha4님, 입력한 내용을 확인해 주세요",
+      "focused": "dialog-note",
+      "heading": "npm으로 설치해 쓰는 Saylo",
+      "locale": "ko",
+      "locales": [
+        "en",
+        "ko"
+      ],
+      "name": "Alpha4",
+      "note": "keep note alpha4",
+      "open": true
+    },
+    "restorationStateCheck": "Inconclusive: dialog input changed during cleanup; recorded rapid-save and locale-add checks passed before this observation. Locale deletion fallback to ko was observed.",
+    "observedAt": "2026-10-11T09:02:27.350Z"
+  },
+  "cleanup": {
+    "originalCatalogRestored": true,
+    "temporaryLocaleRemoved": true,
+    "ownedTabClosed": true,
+    "ownedDevServerStopped": true,
+    "listeningPort5188Absent": true
+  },
+  "limits": [
+    "No latency benchmark or preview run.",
+    "The initial visible probe and final cleanup input preservation observation were inconclusive and excluded from passing checks.",
+    "Package README edits enter the next publication."
+  ]
+}

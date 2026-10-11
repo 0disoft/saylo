@@ -1,6 +1,6 @@
 # @0disoft/saylo-svelte
 
-Svelte 5에서 Saylo의 불변 스냅샷을 `$i18n`으로 구독한다. ESM JavaScript와 TypeScript 선언 파일을 제공한다. 마지막으로 게시를 확인한 버전은 2026-10-09의 `0.1.0-alpha.3`(dist-tag `alpha`)이고, Svelte는 `0.1.0-alpha.2`부터 포함한다. 아래 두 selector API는 아직 이 게시본에 없고 저장소 checkout의 로컬 구현이다.
+Svelte 5에서 Saylo의 불변 스냅샷을 `$i18n`으로 구독한다. ESM JavaScript와 TypeScript 선언 파일을 제공한다. 마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)이고, Svelte는 `0.1.0-alpha.2`부터 포함한다. 아래 두 selector API는 `0.1.0-alpha.4` 게시본에 포함된다.
 
 ## 직접 구독
 
@@ -58,7 +58,7 @@ const title = getI18nSelector(snapshot => snapshot.t('cart:title'));
 - 첫 구독과 재구독은 동기 최신값을 전달하고, snapshot-bound `t`와 `setLocale`/`loadNamespace`를 유지한다.
 - 기존 `createSvelteStore`·`getI18n`은 그대로 남아 있다.
 
-selector가 던진 예외는 시점에 따라 다르게 처리한다. 첫 구독이나 재구독 시점의 실패는 새 구독을 해제한 뒤 selector가 throw한 값을 그대로 동기 throw하고(Error가 아니거나 `undefined`여도 그대로 전달), 이때 `onError`는 호출하지 않는다. 이전 성공값을 대신 돌려주지 않는다. 활성 구독이 snapshot을 갱신하는 중 실패하면 마지막 성공값을 유지하고 invalidate·알림 없이 다음 snapshot에서 다시 선택한다. 이 실패는 `onError`로 보고하고, 미지정이면 `console.error('[saylo:svelte] selector failed', error)`로 남긴다. `onError` 자체가 던지면 `console.error('[saylo:svelte] selector error reporter failed', reportingError)`로 보고하고 Svelte 알림은 계속한다. `options`는 저장소 checkout의 로컬 구현이고 아직 게시본에는 없다.
+selector가 던진 예외는 시점에 따라 다르게 처리한다. 첫 구독이나 재구독 시점의 실패는 새 구독을 해제한 뒤 selector가 throw한 값을 그대로 동기 throw하고(Error가 아니거나 `undefined`여도 그대로 전달), 이때 `onError`는 호출하지 않는다. 이전 성공값을 대신 돌려주지 않는다. 활성 구독이 snapshot을 갱신하는 중 실패하면 마지막 성공값을 유지하고 invalidate·알림 없이 다음 snapshot에서 다시 선택한다. 이 실패는 `onError`로 보고하고, 미지정이면 `console.error('[saylo:svelte] selector failed', error)`로 남긴다. `onError` 자체가 던지면 `console.error('[saylo:svelte] selector error reporter failed', reportingError)`로 보고하고 Svelte 알림은 계속한다. `options`는 `0.1.0-alpha.4` 게시본에 포함된다.
 
 ```ts
 const title = selectSvelteStore(i18n, snapshot => snapshot.t('cart:title'), {
