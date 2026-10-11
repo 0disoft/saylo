@@ -65,6 +65,17 @@ Vite 플러그인은 `saylo({ localesDir: 'locales', baseLocale: 'ko', initialLo
 
 ## 검증 범위
 
+### 예제 오류 안내와 뒤로가기 캐시 수명 (2026-10-11, checkout)
+
+게시된 Saylo 패키지는 바뀌지 않았다. 아래 두 항목은 이 예제 checkout의 변경이고 library API·패키지 버전은 그대로다. 첫 항목은 실브라우저 관측이고, 두 번째 항목만 `npm run verify:demo:npm` 자동 회귀 대상이다.
+
+- 오류 안내 유지(`1336aa5`): 실브라우저에서 `locales/en/demo.json`을 깨뜨리고, 겹치지 않는 정상 `locales/ko/demo.json`을 저장한 뒤 `en`을 복구했다. 수정 전에는 무관한 저장 뒤 안내가 `Connected`로 덮였고, 수정 후에는 진단이 파일을 고칠 때까지 남았다가 복구하면 `Connected`로 돌아온다. 열린 dialog 안 `role="status"` 안내, dialog `aria-labelledby`, last-good 문구·입력·포커스 유지가 모두 PASS다. 근거는 [npm 예제 오류 복구 검증 기록](../../review/npm-demo-error-recovery-2026-10-11.json)에 있다. 이 오류 안내 관측은 실브라우저 기록이며 자동화 회귀 검사가 아니다.
+- 뒤로가기 캐시 수명: production 번들과 jsdom에서 `PageTransitionEvent(persisted: true)` → `pageshow` → `#locale` change를 재현했을 때, 기존 `pagehide` cleanup이 선택은 `ko`인데 화면은 `en`으로 남는 상태를 만들었고 exit 1로 재현했다. `pagehide`에서 `event.persisted`가 false일 때만 cleanup하도록 고쳤다.
+
+`npm run verify:demo:npm`이 캐시 수명 회귀 2사례를 확인한다. 루트 `npm ci`(jsdom용)와 `examples/npm`의 `npm ci --workspaces=false`가 각각 필요하고, `examples/npm` 의존성이 있어야 standalone build가 돈다. `scripts/test/npm-demo-lifecycle.test.mjs`가 모델 DOM 검사 2개를 돌린다. 검사는 (1) 캐시된 history 복귀 뒤에도 `ko` 문구와 `#name` 입력이 계속 동작하는지, (2) non-persisted disposal이 반복돼도 안전한지다. 현재 PASS 2 tests다.
+
+실제 브라우저의 BFCache 채택 여부, 새로고침 뒤 draft 영속 저장, 라이브 연결의 BFCache 동작은 확인하지 않았다.
+
 ### alpha.4 설치·빌드·라이브 수정 (2026-10-11)
 
 Windows, Node 24.18.0, Vite 8.3.3에서 실행했다. 이 예제가 쓰는 core·Vite·typegen은 `0.1.0-alpha.4`다.

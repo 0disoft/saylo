@@ -1,0 +1,34 @@
+{
+  "sourceParentRevision": "1336aa5",
+  "scope": "Production npm example evaluated in jsdom; cached page transition event lifecycle only.",
+  "before": {
+    "command": "node .release/check-demo-history.mjs",
+    "exitCode": 1,
+    "selectedLocale": "ko",
+    "renderedLocale": "en",
+    "heading": "Saylo from npm"
+  },
+  "after": {
+    "command": "npm run verify:demo:npm",
+    "exitCode": 0,
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "cases": [
+      "Cached page retains draft input and functioning locale/name controls after history return.",
+      "Discarded page removes handlers and repeated pagehide dispatch is safe."
+    ]
+  },
+  "environment": {
+    "node": "24.18.0",
+    "vite": "8.3.3",
+    "jsdomMajor": 30,
+    "installedSaylo": "0.1.0-alpha.4"
+  },
+  "change": "Dispose the example only when pagehide.persisted is false.",
+  "limits": [
+    "No claim about a real browser admitting this page to BFCache.",
+    "No cross-reload persistence or live WebSocket BFCache claim.",
+    "This command checks lifecycle cases, not the separately observed catalog error banner regression."
+  ]
+}

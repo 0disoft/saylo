@@ -36,7 +36,8 @@
     "release:publish": "node scripts/release-publish.mjs",
     "release:oidc": "node scripts/verify-oidc.mjs",
     "verify:registry:alpha4": "node scripts/pack-smoke.mjs --registry --registry-version 0.1.0-alpha.4",
-    "verify:registry:sveltekit:alpha4": "node scripts/pack-sveltekit.mjs --registry-version 0.1.0-alpha.4"
+    "verify:registry:sveltekit:alpha4": "node scripts/pack-sveltekit.mjs --registry-version 0.1.0-alpha.4",
+    "verify:demo:npm": "npm --prefix examples/npm run build && node --test scripts/test/npm-demo-lifecycle.test.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "7",

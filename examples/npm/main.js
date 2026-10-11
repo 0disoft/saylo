@@ -51,5 +51,5 @@ listen(document.getElementById('open-dialog'), 'click', () => dialog.showModal()
 listen(document.getElementById('close-dialog'), 'click', () => dialog.close());
 
 function cleanup() { disconnect(); controls.abort(); unsubscribe(); store.dispose(); }
-listen(window, 'pagehide', cleanup);
+listen(window, 'pagehide', event => { if (!event.persisted) cleanup(); });
 if (import.meta.hot) import.meta.hot.dispose(cleanup);
