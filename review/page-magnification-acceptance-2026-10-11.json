@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-11",
+  "commit": "7c2e2dd",
+  "target": "Canonical vanilla development demo",
+  "method": "Live Codex in-app browser, ordinary keyboard input and tab-scoped DevTools Emulation.setPageScaleFactor; dimensions read from DOM visualViewport",
+  "baseline": { "layoutWidth": 1422, "devicePixelRatio": 1.125, "visualScale": 1 },
+  "ordinaryZoomShortcut": "ctrl+plus did not change layout width, devicePixelRatio or visualViewport.scale in this in-app browser; ordinary browser zoom is not verified",
+  "observations": [
+    {
+      "requestedPageScale": 2,
+      "observedVisualScale": 2,
+      "layoutWidth": 1422,
+      "visualWidth": 702.6666870117188,
+      "visualHeight": 400,
+      "keyboardActions": "ArrowUp selects English, Tab through name/note/count/submit, Return opens modal, type confirmation, Tab and Return close it",
+      "locale": "en",
+      "name": "Zoom user",
+      "note": "Zoom draft",
+      "confirmation": "Zoom confirmation",
+      "modalInitiallyFocused": "confirmation-note",
+      "closeRestoredFocus": "demo:openDialog"
+    },
+    {
+      "requestedPageScale": 4,
+      "observedVisualScale": 3,
+      "visualWidth": 468.4444580078125,
+      "visualHeight": 266.6666564941406,
+      "keyboardActions": "Return reopens modal; Escape closes it and restores focus to the opener",
+      "inputsPreserved": true,
+      "limitation": "This environment applied only 3x; a 4x result is not claimed"
+    }
+  ],
+  "accessibilityTree": {
+    "openModal": "Only the named Review your input container and its descendants were exposed in the observed tree",
+    "inputAccessibleName": "Confirmation note",
+    "closeButtonAccessibleName": "Close",
+    "focusedElement": "confirmation-note",
+    "limitation": "Tree exposure does not prove spoken announcements, complete focus cycling or screen-reader compatibility"
+  },
+  "cleanup": "Observed visual scale restored to 1 with Emulation.setPageScaleFactor, temporary tab closed, owned Vite server stopped; original catalogs and source were not edited",
+  "limits": [
+    "Page magnification leaves layout width unchanged and may require panning; it is not a reflow browser-zoom test",
+    "Ordinary 200/400 percent browser zoom, OS text enlargement, low-spec devices and other demos remain unverified in this slice",
+    "No accessibility conformance, actual assistive-technology speech, automated regression suite or publication claim"
+  ],
+  "protocolReference": "https://chromedevtools.github.io/devtools-protocol/tot/Emulation/#method-setPageScaleFactor"
+}
