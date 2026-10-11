@@ -1,0 +1,31 @@
+{
+  "scope": "Standalone npm example consumer error recovery; no library API change",
+  "date": "2026-10-11",
+  "before": {
+    "reproduction": "Remove heading from both en/demo.json and ko/demo.json, then restore both files",
+    "failedStatus": "Subscriber failures after store commit; committed snapshots are retained.",
+    "restoredStatus": "Subscriber failures after store commit; committed snapshots are retained."
+  },
+  "after": {
+    "environment": "Codex in-app browser, npm example dev server on 127.0.0.1:5188, installed alpha.4 packages",
+    "failedStatus": "Unknown message \"demo:heading\".\nFix the locale file and save again. The last valid translations remain visible.",
+    "restoredStatus": "Connected",
+    "headingDuringFailureAndAfterRestore": "Saylo from npm",
+    "noteDuringFailureAndAfterRestore": "Preserve this draft",
+    "dialogOpenDuringFailureAndAfterRestore": true,
+    "focusedElementDuringFailureAndAfterRestore": "dialog-note",
+    "dialogStatusMatchesPageStatus": true,
+    "consoleWarningsAndErrors": []
+  },
+  "automated": {
+    "command": "npm run verify:demo:npm",
+    "passed": 3,
+    "failed": 0,
+    "newCase": "Production bundle: incorrect data-i18n key retains rendered content, reports the key, then clears status after correcting the key and rerendering"
+  },
+  "limits": [
+    "Automated case changes the consumer's message reference; live browser case deletes and restores real catalog keys.",
+    "Rendering failure preserves the last rendered DOM; it does not undo the committed catalog snapshot.",
+    "No package version bump, publish, or remote push."
+  ]
+}

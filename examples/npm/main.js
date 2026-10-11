@@ -13,23 +13,40 @@ const controls = new AbortController();
 const listen = (element, event, callback) => element.addEventListener(event, callback, { signal: controls.signal });
 let localeList = '';
 let diagnosticMessage = '';
+let renderMessage = '';
 
 function renderStatus(message) {
   status.textContent = message;
   dialogStatus.textContent = message;
 }
 
+function refreshStatus() {
+  const message = diagnosticMessage || renderMessage;
+  renderStatus(message
+    ? `${message}\nFix the locale file and save again. The last valid translations remain visible.`
+    : import.meta.hot ? 'Connected' : 'Production catalogs');
+}
+
 function render(snapshot) {
-  // Update text without replacing input controls or the open dialog.
-  const translations = labels.map(node => [node, snapshot.t(node.dataset.i18n, { name: nameInput.value || 'Saylo' })]);
-  for (const [node, text] of translations) node.textContent = text;
-  const nextList = snapshot.availableLocales.join(',');
-  if (nextList !== localeList) {
-    localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => new Option(locale, locale)));
-    localeList = nextList;
+  try {
+    // Compute all translations before changing text; keep controls and dialog identity.
+    const translations = labels.map(node => [node, snapshot.t(node.dataset.i18n, { name: nameInput.value || 'Saylo' })]);
+    for (const [node, text] of translations) node.textContent = text;
+    const nextList = snapshot.availableLocales.join(',');
+    if (nextList !== localeList) {
+      localeSelect.replaceChildren(...snapshot.availableLocales.map(locale => new Option(locale, locale)));
+      localeList = nextList;
+    }
+    localeSelect.value = snapshot.locale;
+    document.documentElement.lang = snapshot.locale;
+  } catch (error) {
+    renderMessage = error instanceof Error ? error.message : String(error);
+    refreshStatus();
+    return;
   }
-  localeSelect.value = snapshot.locale;
-  document.documentElement.lang = snapshot.locale;
+  const recovered = Boolean(renderMessage);
+  renderMessage = '';
+  if (recovered) refreshStatus();
 }
 
 render(store.getSnapshot());
@@ -39,11 +56,9 @@ const disconnect = import.meta.hot ? connectDev(store, {
   hot: import.meta.hot,
   onDiagnostic: diagnostic => {
     diagnosticMessage = diagnostic.message || '';
-    renderStatus(diagnosticMessage
-      ? `${diagnosticMessage}\nFix the locale file and save again. The last valid translations remain visible.`
-      : 'Connected');
+    refreshStatus();
   },
-  onUpdate: () => { if (!diagnosticMessage) renderStatus('Connected'); },
+  onUpdate: refreshStatus,
 }) : () => {};
 listen(localeSelect, 'change', () => store.setLocale(localeSelect.value));
 listen(nameInput, 'input', () => render(store.getSnapshot()));

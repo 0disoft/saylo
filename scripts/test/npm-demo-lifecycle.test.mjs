@@ -44,3 +44,20 @@ test('discarded page releases its handlers and repeated cleanup stays safe', t =
   select.dispatchEvent(new window.Event('change', { bubbles: true }));
   assert.equal(document.documentElement.lang, 'en');
 });
+
+test('missing message keeps the last rendered screen and clears guidance after repair', t => {
+  const { window, document, name } = page(t);
+  const heading = document.querySelector('h1');
+  const original = heading.textContent;
+  heading.dataset.i18n = 'demo:missing';
+  name.value = 'Still editing';
+  name.dispatchEvent(new window.Event('input', { bubbles: true }));
+  assert.equal(heading.textContent, original);
+  assert.match(document.querySelector('#status').textContent, /demo:missing/);
+  assert.match(document.querySelector('#dialog-status').textContent, /save again/);
+  heading.dataset.i18n = 'demo:heading';
+  name.dispatchEvent(new window.Event('input', { bubbles: true }));
+  assert.equal(document.querySelector('#status').textContent, 'Production catalogs');
+  assert.equal(document.querySelector('#dialog-status').textContent, 'Production catalogs');
+  assert.ok(document.querySelector('[data-i18n="demo:greeting"]').textContent.includes('Still editing'));
+});
