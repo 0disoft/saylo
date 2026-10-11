@@ -13,15 +13,17 @@ await mkdir(path.join(repository, '.release'), { recursive: true });
 const axe = await readFile(fileURLToPath(import.meta.resolve('axe-core/axe.min.js')), 'utf8');
 const probe = await readFile(new URL('./demo-accessibility-browser.mjs', import.meta.url), 'utf8');
 const contrastReview = await readFile(new URL('./demo-contrast-review.mjs', import.meta.url), 'utf8');
+const journeyProbe = await readFile(new URL('./demo-keyboard-journey.mjs', import.meta.url), 'utf8');
 const exec = promisify(execFile);
 const reports = [];
 const originalCwd = process.cwd();
-const { values } = parseArgs({ options: { framework: { type: 'string' }, zoom: { type: 'string' }, keyboard: { type: 'boolean' } } });
-const keyboardChecks = values.keyboard === true;
+const { values } = parseArgs({ options: { framework: { type: 'string' }, zoom: { type: 'string' }, keyboard: { type: 'boolean' }, journey: { type: 'boolean' } } });
+const journeyChecks = values.journey === true;
+const keyboardChecks = values.keyboard === true || journeyChecks;
 const zoomChecks = values.zoom !== undefined;
 const zoom = Number(values.zoom ?? 1);
 assert.ok([1, 2, 4].includes(zoom), 'Supported zoom factors: 1, 2, 4');
-const reportPath = `.release/accessibility${keyboardChecks ? '-keyboard' : ''}${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
+const reportPath = `.release/accessibility${journeyChecks ? '-journey' : keyboardChecks ? '-keyboard' : ''}${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
 const frameworks = values.framework ? [values.framework] : ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'];
 assert.ok(frameworks.every(name => ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'].includes(name)));
 let activeReject;
@@ -70,20 +72,24 @@ try {
           { tag: 'script', attrs: { type: 'module', src: '/__saylo_a11y.mjs' }, injectTo: 'head' },
         ] } : {}),
         configureServer: instance => { instance.middlewares.use((req, res, next) => {
-          if (keyboardChecks && req.url === '/__saylo_a11y_key') {
+          if (keyboardChecks && (req.url === '/__saylo_a11y_key' || req.url === '/__saylo_a11y_text')) {
             if (req.method !== 'POST') { res.writeHead(405).end(); return; }
             let body = '';
-            req.on('data', chunk => { body += chunk; if (body.length > 32) req.destroy(); });
+            req.on('data', chunk => { body += chunk; if (body.length > 512) req.destroy(); });
             req.on('error', activeReject);
             req.on('end', async () => {
-              try { await (await keyboardDriver).press(body); res.end('ok'); }
+              try {
+                const driver = await keyboardDriver;
+                if (req.url === '/__saylo_a11y_text') await driver.write(body); else await driver.press(body);
+                res.end('ok');
+              }
               catch (error) { activeReject?.(error); res.writeHead(500).end('Keyboard probe failed'); }
             });
             return;
           }
-          if (req.url === '/__saylo_axe.js' || req.url === '/__saylo_a11y.mjs' || req.url === '/__saylo_contrast.mjs') {
+          if (req.url === '/__saylo_axe.js' || req.url === '/__saylo_a11y.mjs' || req.url === '/__saylo_contrast.mjs' || req.url === '/__saylo_journey.mjs') {
             res.setHeader('Content-Type', 'text/javascript');
-            res.end(req.url.endsWith('.js') ? axe : req.url === '/__saylo_contrast.mjs' ? contrastReview : probe); return;
+            res.end(req.url.endsWith('.js') ? axe : req.url === '/__saylo_contrast.mjs' ? contrastReview : req.url === '/__saylo_journey.mjs' ? journeyProbe : probe); return;
           }
           if (req.url !== '/__saylo_a11y_result') { next(); return; }
           if (req.method !== 'POST') { res.writeHead(405).end(); return; }
@@ -114,6 +120,7 @@ try {
       const target = new URL(server.resolvedUrls.local[0]);
       if (zoomChecks) target.searchParams.set('saylo-zoom', String(zoom));
       if (keyboardChecks) target.searchParams.set('saylo-keyboard', '1');
+      if (journeyChecks) target.searchParams.set('saylo-journey', '1');
       browser = spawn(executable, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
         ...(keyboardChecks ? ['--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0'] : []),
         '--disable-background-networking', ...(zoomChecks ? ['--window-size=1280,1024', '--force-device-scale-factor=1']
@@ -130,6 +137,12 @@ try {
       reports.push({ framework, ...report });
       assert.equal(report.ok, true, report.error);
       assert.equal(report.states.length, 4);
+      if (journeyChecks) {
+        assert.equal(report.journeys.length, 2);
+        assert.ok(report.journeys.every(flow => flow.localeSelected && flow.formPreserved));
+        assert.notEqual(report.journeys[0].heading, report.journeys[1].heading, 'Locale changed without translated heading');
+        if (framework !== 'npm') assert.ok(report.journeys.every(flow => flow.reportGenerated && flow.reportCleared));
+      }
       if (keyboardChecks) {
         assert.equal(report.keyboard.length, 2, 'Both modal languages need keyboard checks');
         assert.ok(report.keyboard.every(flow => flow.escapeRestored && flow.enterClosed && flow.inputsPreserved),
@@ -165,9 +178,10 @@ try {
 } finally {
   process.removeListener('SIGINT', interrupt); process.removeListener('SIGTERM', interrupt);
   process.chdir(originalCwd);
-  await writeFile(path.join(repository, reportPath), JSON.stringify({ reports, keyboardChecks, requestedPageZoom: zoomChecks ? zoom : null,
+  await writeFile(path.join(repository, reportPath), JSON.stringify({ reports, keyboardChecks, journeyChecks, requestedPageZoom: zoomChecks ? zoom : null,
     runComplete: reports.length === frameworks.length && reports.every(report => report.checksPassed),
-    scope: keyboardChecks ? 'Chromium Tab/Shift+Tab modal traversal, Escape/Enter activation and opener restoration across ko/en demos; axe checks'
+    scope: journeyChecks ? 'Chromium key/text input: locale choice, name/note editing, support generation/reset and modal traversal/dismissal across ko/en demos; axe checks'
+      : keyboardChecks ? 'Chromium Tab/Shift+Tab modal traversal, Escape/Enter activation and opener restoration across ko/en demos; axe checks'
       : zoomChecks ? 'Chromium page zoom, reflow, input preservation, modal focus/close reachability and axe checks across ko/en demos'
       : 'Rendered demo ko/en pages and open/closed dialogs with visible support panel; automated axe checks only',
     limits: ['No screen-reader speech observation or keyboard-only certification', ...(!zoomChecks ? ['No browser zoom observation'] : []),

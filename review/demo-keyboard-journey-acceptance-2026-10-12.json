@@ -1,0 +1,1025 @@
+{
+  "schema": "saylo.demo-keyboard-journey-acceptance/v1",
+  "observedAt": "2026-10-11T18:26:42.654Z",
+  "baseCommit": "8b77934eb66c4a5ebb61f969a3988de903bf6631",
+  "sourceHashes": {
+    "scripts/demo-keyboard-journey.mjs": "87844e11c07ed7ac184338b736c3f5a3b6d207bf84ae8cdbf3e406c7709e1ea8",
+    "scripts/demo-keyboard-driver.mjs": "b9f93698c4c6ae2049777402853d2422f66c2c6c0c66e735aaf645b1400de277",
+    "scripts/demo-accessibility-browser.mjs": "9681325e5a22b88527fb09b37148f6d29497a381de2a13d307fc1ce03c762172",
+    "scripts/verify-demo-accessibility.mjs": "fe4520c5a7c0b9535d78ef7043683f86a96ca2d87796366d15f8ecd5cbac9bc5"
+  },
+  "method": "Owned Chromium page Input.dispatchKeyEvent and Input.insertText. Tab reaches controls from the initial page state; Home/ArrowDown/Enter choose a locale; Ctrl+A and native text input edit fields. No click(), focus(), value setter, synthetic DOM change/input event or scrollIntoView substitutes on the journey branch. DOM and geometry are read for assertions. Contrast follow-up may separately inspect/restore scroll position.",
+  "states": 40,
+  "journeys": 20,
+  "supportGenerationAndResetFlows": 16,
+  "violations": 0,
+  "runs": [
+    {
+      "pageZoom": 1,
+      "command": "node scripts/verify-demo-accessibility.mjs --journey",
+      "exitCode": 0,
+      "artifact": {
+        "path": ".release/accessibility-journey-report.json",
+        "sha256": "c853cab3892a324ee7d9b0d87bc48dad0ac9e011f92190b9b3c66ba2414c53fe"
+      },
+      "log": {
+        "path": ".release/keyboard-journey.log",
+        "sha256": "c30313820c6c7bfe8f40883bd657ffc915ff15a8be2f52810cf88c483ebe7e2e"
+      },
+      "frameworks": [
+        {
+          "framework": "vanilla",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button",
+                "ko-editor",
+                "en-editor",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "번역을 바꿔도, 입력은 그대로",
+              "reportGenerated": true,
+              "reportCleared": true
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "ko-editor",
+                "en-editor",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button",
+                "ko-editor",
+                "en-editor",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "New words. Same input.",
+              "reportGenerated": true,
+              "reportCleared": true
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "react",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button",
+                "textarea",
+                "textarea",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "번역을 바꿔도, 입력은 그대로",
+              "reportGenerated": true,
+              "reportCleared": true
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "textarea",
+                "textarea",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button",
+                "textarea",
+                "textarea",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "New words. Same input.",
+              "reportGenerated": true,
+              "reportCleared": true
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "svelte",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "open-dialog",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "번역을 바꿔도, 입력은 그대로",
+              "reportGenerated": true,
+              "reportCleared": true
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "open-dialog",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "New words. Same input.",
+              "reportGenerated": true,
+              "reportCleared": true
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "close-dialog"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "close-dialog"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "npm",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "npm으로 설치해 쓰는 Saylo",
+              "support": "not provided by this example"
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "body",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "Saylo from npm",
+              "support": "not provided by this example"
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "dialog-note",
+                "close-dialog"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "dialog-note",
+                "close-dialog"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "sveltekit",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 1182,
+            "height": 804
+          },
+          "states": 4,
+          "incomplete": [],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "a",
+                "locale",
+                "locale",
+                "home-link",
+                "about-link",
+                "leave-link",
+                "name",
+                "note",
+                "open-dialog",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "home-link",
+                "about-link",
+                "leave-link",
+                "name",
+                "note",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "번역을 바꿔도, 입력은 그대로",
+              "reportGenerated": true,
+              "reportCleared": true
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "locale",
+                "home-link",
+                "about-link",
+                "leave-link",
+                "name",
+                "note",
+                "open-dialog",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "home-link",
+                "about-link",
+                "leave-link",
+                "name",
+                "note",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "New words. Same input.",
+              "reportGenerated": true,
+              "reportCleared": true
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "close-dialog",
+                "dialog-about"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "close-dialog",
+                "dialog-about"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pageZoom": 4,
+      "command": "node scripts/verify-demo-accessibility.mjs --journey --zoom 4",
+      "exitCode": 0,
+      "artifact": {
+        "path": ".release/accessibility-journey-zoom-4-report.json",
+        "sha256": "d56b35803a6d02f8bdb3df6ae7f72615023ac39179ad887360a958ba96edc6a8"
+      },
+      "log": {
+        "path": ".release/keyboard-journey-zoom4.log",
+        "sha256": "abf4e2e501402f60654f401e62ca246044ac5bc0fa7655729ed7d12d7ce60cb3"
+      },
+      "frameworks": [
+        {
+          "framework": "vanilla",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button",
+                "ko-editor",
+                "en-editor",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "번역을 바꿔도, 입력은 그대로",
+              "reportGenerated": true,
+              "reportCleared": true
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "ko-editor",
+                "en-editor",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button",
+                "ko-editor",
+                "en-editor",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "New words. Same input.",
+              "reportGenerated": true,
+              "reportCleared": true
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "react",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button",
+                "textarea",
+                "textarea",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "번역을 바꿔도, 입력은 그대로",
+              "reportGenerated": true,
+              "reportCleared": true
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "textarea",
+                "textarea",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button",
+                "textarea",
+                "textarea",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "button"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "New words. Same input.",
+              "reportGenerated": true,
+              "reportCleared": true
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "button[1]"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "svelte",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "open-dialog",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "번역을 바꿔도, 입력은 그대로",
+              "reportGenerated": true,
+              "reportCleared": true
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "open-dialog",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "name",
+                "note",
+                "count",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "New words. Same input.",
+              "reportGenerated": true,
+              "reportCleared": true
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "close-dialog"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "close-dialog"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "npm",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "npm으로 설치해 쓰는 Saylo",
+              "support": "not provided by this example"
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "body",
+                "locale",
+                "locale",
+                "name",
+                "note",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "Saylo from npm",
+              "support": "not provided by this example"
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "dialog-note",
+                "close-dialog"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "dialog-note",
+                "close-dialog"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        },
+        {
+          "framework": "sveltekit",
+          "axeVersion": "4.14.0",
+          "viewport": {
+            "width": 315,
+            "height": 232
+          },
+          "states": 4,
+          "incomplete": [
+            {
+              "locale": "en",
+              "dialog": true,
+              "rules": [
+                "color-contrast"
+              ]
+            }
+          ],
+          "journeys": [
+            {
+              "locale": "ko",
+              "tabPath": [
+                "a",
+                "locale",
+                "locale",
+                "home-link",
+                "about-link",
+                "leave-link",
+                "name",
+                "note",
+                "open-dialog",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "home-link",
+                "about-link",
+                "leave-link",
+                "name",
+                "note",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "번역을 바꿔도, 입력은 그대로",
+              "reportGenerated": true,
+              "reportCleared": true
+            },
+            {
+              "locale": "en",
+              "tabPath": [
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "locale",
+                "home-link",
+                "about-link",
+                "leave-link",
+                "name",
+                "note",
+                "open-dialog",
+                "summary",
+                "support-export",
+                "support-clear",
+                "support-report",
+                "body",
+                "a",
+                "locale",
+                "home-link",
+                "about-link",
+                "leave-link",
+                "name",
+                "note",
+                "open-dialog"
+              ],
+              "localeSelected": true,
+              "formPreserved": true,
+              "heading": "New words. Same input.",
+              "reportGenerated": true,
+              "reportCleared": true
+            }
+          ],
+          "modalChecks": [
+            {
+              "locale": "ko",
+              "controls": [
+                "confirmation-note",
+                "close-dialog",
+                "dialog-about"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            },
+            {
+              "locale": "en",
+              "controls": [
+                "confirmation-note",
+                "close-dialog",
+                "dialog-about"
+              ],
+              "escapeRestored": true,
+              "enterClosed": true,
+              "inputsPreserved": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Headless Chromium dev examples only; browser-driven key/text input is not a hardware keyboard or screen-reader certification.",
+    "The minimal npm demo has no support panel, so its four journeys cover locale/form/modal but do not claim report generation/reset.",
+    "axe incomplete findings remain recorded; previous heading contrast follow-up is not declared resolved.",
+    "No screen-reader speech, OS text scaling, other browser or low-spec hardware observation.",
+    "Only QA scripts changed. Packages, examples and bundled docs match the 0b85c93 candidate product inputs. Existing candidate excludes these later optional QA tools. No version bump, push or publication."
+  ]
+}

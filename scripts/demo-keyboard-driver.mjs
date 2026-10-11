@@ -47,12 +47,18 @@ export async function createKeyboardDriver(profile, target) {
   });
   return {
     async press(action) {
-      assert.ok(['Tab', 'ShiftTab', 'Escape', 'Enter'].includes(action), 'Unsupported verification key');
-      const key = action === 'ShiftTab' ? 'Tab' : action;
-      const params = { key, code: key, windowsVirtualKeyCode: { Tab: 9, Escape: 27, Enter: 13 }[key],
-        modifiers: action === 'ShiftTab' ? 8 : 0 };
+      const codes = { Tab: 9, Escape: 27, Enter: 13, Home: 36, ArrowDown: 40, SelectAll: 65 };
+      assert.ok(Object.hasOwn(codes, action) || action === 'ShiftTab', 'Unsupported verification key');
+      const key = action === 'ShiftTab' ? 'Tab' : action === 'SelectAll' ? 'a' : action;
+      const params = { key, code: action === 'SelectAll' ? 'KeyA' : key,
+        windowsVirtualKeyCode: codes[action === 'ShiftTab' ? 'Tab' : action],
+        modifiers: action === 'ShiftTab' ? 8 : action === 'SelectAll' ? 2 : 0 };
       await send('Input.dispatchKeyEvent', { ...params, type: 'keyDown', ...(key === 'Enter' ? { text: '\r' } : {}) });
       await send('Input.dispatchKeyEvent', { ...params, type: 'keyUp' });
+    },
+    async write(text) {
+      assert.ok(typeof text === 'string' && text.length <= 512, 'Verification text must be bounded');
+      await send('Input.insertText', { text });
     },
     close() { fail(); socket.close(); },
   };

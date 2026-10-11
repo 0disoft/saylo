@@ -1,8 +1,10 @@
 import { reviewContrast } from '/__saylo_contrast.mjs';
+import { createKeyboardJourney } from '/__saylo_journey.mjs';
 const states = [];
 const keyboard = [];
 const keyboardChecks = new URL(location.href).searchParams.has('saylo-keyboard');
 const zoomChecks = new URL(location.href).searchParams.has('saylo-zoom');
+const journeyChecks = new URL(location.href).searchParams.has('saylo-journey');
 const check = (condition, message) => { if (!condition) throw new Error(message); };
 const wait = async condition => {
   const until = performance.now() + 20000;
@@ -17,6 +19,7 @@ const press = async key => {
   check(response.ok, `Keyboard injection failed: ${key}`);
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 };
+const journey = journeyChecks ? createKeyboardJourney({ press, wait, check }) : null;
 async function traverseModal(locale, confirmation) {
   const dialog = node('#confirmation');
   check(document.activeElement === confirmation, 'Keyboard-opened dialog did not focus its input');
@@ -61,7 +64,7 @@ try {
   await wait(() => globalThis.axe && node('#locale')?.options.length >= 2 && node('h1')?.textContent.trim()
     && (!node('#saylo-layout') || node('#saylo-layout').dataset.ready === 'true'));
   // The optional support panel must be visible to be included in the analysis.
-  if (node('#support-panel')) {
+  if (node('#support-panel') && !journeyChecks) {
     node('#support-panel').open = true;
     node('#support-export').click();
     await wait(() => node('#support-report').value.length > 0);
@@ -71,7 +74,7 @@ try {
     Object.getOwnPropertyDescriptor(prototype, 'value').set.call(element, value);
     element.dispatchEvent(new Event('input', { bubbles: true }));
   };
-  if (zoomChecks || keyboardChecks) {
+  if ((zoomChecks || keyboardChecks) && !journeyChecks) {
     fill(node('#name'), 'Zoom preview');
     fill(node('#note'), 'Preserved at 200/400 percent');
   }
@@ -80,24 +83,29 @@ try {
     check(node('#note').value === 'Preserved at 200/400 percent', 'Zoom/locale transition reset note');
   };
   for (const locale of ['ko', 'en']) {
-    node('#locale').value = locale;
-    node('#locale').dispatchEvent(new Event('change', { bubbles: true }));
+    if (journeyChecks) await journey.prepare(locale, locale === 'ko');
+    else {
+      node('#locale').value = locale;
+      node('#locale').dispatchEvent(new Event('change', { bubbles: true }));
+    }
     await wait(() => document.documentElement.lang === locale);
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     if (zoomChecks || keyboardChecks) sameInputs();
     await scan(locale, false);
     const opener = node('#open-dialog') ?? node('#order-form button[type="submit"]');
-    if (zoomChecks || keyboardChecks) opener.focus();
+    if (journeyChecks) await journey.reach(opener);
+    else if (zoomChecks || keyboardChecks) opener.focus();
     if (keyboardChecks) await press('Enter'); else opener.click();
     await wait(() => node('#confirmation').open);
     const confirmation = node('#confirmation-note') ?? node('#dialog-note');
     if (zoomChecks || keyboardChecks) {
       check(document.activeElement === confirmation, 'Zoomed dialog did not focus its input');
-      fill(confirmation, 'Zoom confirmation');
+      if (journeyChecks) await journey.replace(confirmation, 'Zoom confirmation');
+      else fill(confirmation, 'Zoom confirmation');
     }
     await scan(locale, true);
     const close = node('#close-dialog') ?? node('#confirmation button');
-    if (zoomChecks) {
+    if (zoomChecks && !journeyChecks) {
       close.scrollIntoView({ block: 'center', inline: 'nearest' });
       const bounds = close.getBoundingClientRect();
       check(bounds.width > 0 && bounds.height > 0 && bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= 0 && bounds.bottom <= innerHeight,
@@ -114,6 +122,11 @@ try {
       await wait(() => node('#confirmation').open);
       for (let step = 0; document.activeElement !== close && step < 20; step++) await press('Tab');
       check(document.activeElement === close, 'Keyboard could not reach the close button');
+      if (journeyChecks && zoomChecks) {
+        const bounds = close.getBoundingClientRect();
+        check(bounds.width > 0 && bounds.height > 0 && bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= 0 && bounds.bottom <= innerHeight,
+          'Keyboard-focused close control is clipped at the requested zoom');
+      }
       await press('Enter');
       await wait(() => !node('#confirmation').open);
       check(document.activeElement === opener, 'Keyboard close did not restore opener focus');
@@ -130,7 +143,8 @@ try {
   }
   await fetch('/__saylo_a11y_result', { method: 'POST', body: JSON.stringify({
     ok: true, axeVersion: axe.version, viewport: { width: innerWidth, height: innerHeight }, states, keyboard,
+    journeys: journey?.reports,
   }) });
 } catch (error) {
-  await fetch('/__saylo_a11y_result', { method: 'POST', body: JSON.stringify({ ok: false, error: String(error), states, keyboard }) });
+  await fetch('/__saylo_a11y_result', { method: 'POST', body: JSON.stringify({ ok: false, error: String(error), states, keyboard, journeys: journey?.reports }) });
 }
