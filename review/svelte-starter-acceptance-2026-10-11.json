@@ -1,0 +1,32 @@
+{
+  "observedOn": "2026-10-11",
+  "document": "docs/getting-started-svelte.md",
+  "documentSha256": "027f9593a743694dd055b297081fb9e5ec8cef4627adbc6787eddd8bb76fe768",
+  "command": "npm run verify:starter:svelte",
+  "exitCode": 0,
+  "standaloneFiles": 9,
+  "installationFix": {
+    "before": "npm install rejected TypeScript 7.0.2 with ERESOLVE: svelte-check 4.7.6 declares TypeScript ^5.0.0 || ^6.0.0",
+    "after": "Use the supported TypeScript 6 major range; normal installation succeeded without force or legacy-peer-deps"
+  },
+  "installed": {
+    "@0disoft/saylo-core": "0.1.0-alpha.4",
+    "@0disoft/saylo-svelte": "0.1.0-alpha.4",
+    "@0disoft/saylo-vite": "0.1.0-alpha.4",
+    "vite": "8.3.4"
+  },
+  "developmentChromium": {
+    "checks": ["English first render", "ko/en selection", "English JSON edit", "ja locale addition and selection", "invalid ICU retains last good translation and reports error", "file repair clears diagnostic", "input DOM identity, Svelte state, native dialog and focus preservation"],
+    "runtimeErrors": []
+  },
+  "production": {
+    "svelteCheckErrors": 0,
+    "svelteCheckWarnings": 0,
+    "buildModules": 153,
+    "chromiumChecks": ["English first render", "ko/en selection", "input state and native dialog behavior"],
+    "runtimeErrors": []
+  },
+  "environment": { "node": "24.18.0", "browser": "HeadlessChrome/154.0.0.0", "platform": "Windows" },
+  "cleanup": "Command exited successfully after browser/server/worker shutdown and temporary consumer removal",
+  "limits": ["No SSR hydration or cross-browser matrix", "Optional typegen procedure is not part of this command", "Published APIs only; no unpublished diagnostic API", "No push or publish"]
+}
