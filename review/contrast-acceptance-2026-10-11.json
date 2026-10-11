@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-11",
+  "baselineCommit": "4e387ee",
+  "method": "Live in-app Chromium computed foreground/background/pseudo-placeholder and keyboard outline colors before and after CSS HMR; sRGB relative luminance and (Lmax+0.05)/(Lmin+0.05), no rounding for threshold checks",
+  "references": {
+    "text": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+    "nonText": "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html"
+  },
+  "measurements": [
+    { "target": "vanilla hint", "before": 4.0892211878838856, "after": 5.626135690474579, "minimum": 4.5, "foreground": "#586c61", "background": "#ffffff" },
+    { "target": "vanilla description", "before": 4.352419525966903, "after": 5.176885843924052, "minimum": 4.5, "foreground": "#586c61", "background": "#f4f6f3" },
+    { "target": "vanilla placeholder", "before": 3.0193311900072155, "after": 5.499723640706579, "minimum": 4.5, "foreground": "#596c61", "background": "#fcfdfb", "observedOpacity": 1 },
+    { "target": "vanilla input border", "before": 1.2992328511677553, "after": 3.636609770607656, "minimum": 3, "foreground": "#7a8a80", "background": "#ffffff" },
+    { "target": "vanilla keyboard focus", "before": 2.1408148286056705, "after": 5.396930336209039, "minimum": 3, "foreground": "#397561", "background": "#ffffff" },
+    { "target": "npm button keyboard focus", "before": 1.702660818160149, "after": 5.140945796494273, "minimum": 3, "foreground": "#2f7a63", "background": "#ffffff" },
+    { "target": "npm input border", "before": 1.4577203866876585, "after": 3.636609770607656, "minimum": 3, "foreground": "#7a8a80", "background": "#ffffff" }
+  ],
+  "propagation": "Vanilla shared CSS also serves React/Svelte; matching SvelteKit example and standalone guide CSS updated. Npm unused hint rule is aligned to #586c61 but no live hint node was measured.",
+  "verification": {
+    "browser": "All seven observed color pairs exceed their selected threshold; CSS HMR retained focused name and npm opener; keyboard form input, modal opening, confirmation typing, Tab/Return closing and focus restoration worked in both demos; console warnings/errors were empty",
+    "commands": [
+      { "command": "npx vite build --config examples/vanilla/vite.config.mjs", "exitCode": 0, "modules": 47 },
+      { "command": "npm --prefix examples/npm run build", "exitCode": 0, "modules": 45 },
+      { "command": "npm run build:docs", "exitCode": 0 },
+      { "command": "npm run verify:docs", "exitCode": 0 },
+      { "command": "npm pack --workspace=@0disoft/saylo-vite --ignore-scripts --dry-run --json", "exitCode": 0 }
+    ],
+    "packageDryRun": { "files": 58, "compressedBytes": 76074, "docsFiles": 13, "docsBytes": 136801, "note": "Workspace JSON is keyed by package name; the first local inspection assumed an array and failed before being corrected. No artifact was installed or published in this slice." },
+    "cleanup": "Both owned servers stopped and browser tabs closed; original catalogs untouched"
+  },
+  "limits": ["Seven scoped color pairs, not full WCAG conformance or assistive-technology certification", "Other browsers, forced colors, all UI states and actual low-vision users not tested", "React/Svelte/SvelteKit browser matrix and standalone installs not rerun for CSS-only edits; prior unchanged JS behavior results retained", "No package API, version, push or publication changes"]
+}

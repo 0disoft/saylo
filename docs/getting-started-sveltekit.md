@@ -290,12 +290,12 @@ body { margin: 0; }
 main { max-width: 1120px; margin: auto; padding: 28px 32px 56px; }
 header, .panel-header, .actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
 .brand { color: #1c4941; font-size: 26px; font-weight: 750; text-decoration: none; }
-.brand span { font-size: 13px; font-weight: 400; color: #657773; margin-left: 12px; }
+.brand span { font-size: 13px; font-weight: 400; color: #586c61; margin-left: 12px; }
 .locale-control { display: flex; align-items: center; gap: 12px; font-size: 13px; }
 .intro { padding: 48px 0 32px; }
 .eyebrow { font-size: 11px; letter-spacing: .16em; font-weight: 700; color: #4b776c; }
 h1 { font-size: clamp(27px, 3vw, 40px); letter-spacing: -.045em; margin: 10px 0 14px; }
-.intro > p:last-child { color: #657773; max-width: 700px; line-height: 1.7; }
+.intro > p:last-child { color: #586c61; max-width: 700px; line-height: 1.7; }
 h2 { font-size: 18px; margin: 0; }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: start; }
 .panel { min-width: 0; background: #fff; border-radius: 16px; padding: 26px; box-shadow: 0 4px 24px #21353206; }
@@ -303,19 +303,19 @@ h2 { font-size: 18px; margin: 0; }
 .badge { color: #526a61; background: #edf3ec; font-size: 11px; padding: 6px 10px; border-radius: 20px; white-space: nowrap; }
 label { display: grid; gap: 9px; font-size: 13px; font-weight: 550; }
 form > label, .editor > label { margin-bottom: 22px; }
-input, textarea, select { font: inherit; background: #fcfdfb; color: #213532; border: 1px solid #dce4db; border-radius: 8px; padding: 11px 12px; width: 100%; }
+input, textarea, select { font: inherit; background: #fcfdfb; color: #213532; border: 1px solid #7a8a80; border-radius: 8px; padding: 11px 12px; width: 100%; }
 textarea { resize: vertical; line-height: 1.6; }
-input:focus, textarea:focus, select:focus { outline: 2px solid #8bbbad; outline-offset: 2px; }
+input:focus, textarea:focus, select:focus { outline: 2px solid #397561; outline-offset: 2px; }
 select { width: auto; background: #fff; }
-input::placeholder, textarea::placeholder { color: #89968e; }
+input::placeholder, textarea::placeholder { color: #596c61; opacity: 1; }
 #count { max-width: 100px; }
 .summary { min-height: 44px; padding: 12px 14px; border-radius: 8px; background: #f0f5ee; font-size: 14px; }
 button { max-width: 100%; cursor: pointer; font: inherit; font-size: 13px; font-weight: 650; background: #255b4e; color: #fff; border: 0; border-radius: 8px; padding: 12px 18px; }
 button:hover { background: #1b483d; }
-button:focus-visible { outline: 3px solid #8bbbad; outline-offset: 3px; }
+button:focus-visible { outline: 3px solid #397561; outline-offset: 3px; }
 .secondary { color: #476659; background: #edf3ec; }
 .secondary:hover { background: #e0ebde; }
-.hint, .footnote { color: #738177; font-size: 12px; line-height: 1.75; }
+.hint, .footnote { color: #586c61; font-size: 12px; line-height: 1.75; }
 .editor > .hint { margin-bottom: 20px; }
 .code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; tab-size: 2; }
 .actions { justify-content: flex-start; }
