@@ -1,0 +1,78 @@
+{
+  "schema": "saylo.keyboard-navigation-focus-acceptance/v1",
+  "observedAt": "2026-10-11T17:12:37.502Z",
+  "sourceCommit": "0fb0c3e74ea1e23b26cbfa2a09f14714b0770166",
+  "sourceHashes": {
+    "docs/getting-started-sveltekit.md": "e85764be03bfb364d81d2efcfd135655e7c1daee38f3bf9bf8d85ac89393321c",
+    "examples/sveltekit/src/lib/Workbench.svelte": "b10966e2270ea4eb84736fe711ad5b52c81888a37eeb6b9f7d9b383f9957588e",
+    "scripts/pack-fixtures/sveltekit-browser.mjs": "50a7b817d5abbd80c395a3996f262f3e1386fb22eaefd560c71e0e4e2fab6157",
+    "scripts/pack-fixtures/sveltekit-registry-alpha5/src/lib/Workbench.svelte": "b10966e2270ea4eb84736fe711ad5b52c81888a37eeb6b9f7d9b383f9957588e",
+    "scripts/pack-sveltekit.mjs": "e24bd998d019e904482a1ff67485926d3e9d2b12c03a0e9507fcc477ac832cdd"
+  },
+  "reproduced": "Before the change, Enter on the About link inside the open shared-layout modal navigated but focus moved to body.",
+  "fix": "Apply data-sveltekit-reset=\"false\" only to the surviving shared-layout modal link; synchronise starter and alpha.5 consumer fixture.",
+  "reference": "https://svelte.dev/docs/kit/link-options#data-sveltekit-reset",
+  "method": "In-app browser pressKey(null, key) and typeText(null, text) through current focus; no click, fill or programmatic focus in the keyboard flow. Read-only DOM inspection verified final values.",
+  "checks": [
+    {
+      "command": "npm --prefix examples/sveltekit run check",
+      "exitCode": 0,
+      "result": "0 errors, 0 warnings; generated types unchanged"
+    },
+    {
+      "command": "npm exec -- node scripts/pack-sveltekit.mjs --consumer-fixture support",
+      "exitCode": 0,
+      "result": "Five independent tarballs, typecheck, client/SSR build, ko/en SSR, hydration, locale switching, support report, modal-navigation-focus, exit/re-entry"
+    },
+    {
+      "command": "npm run build:docs && npm run verify:docs",
+      "exitCode": 0,
+      "result": "15 files, code blocks preserved, bundled local file links resolved"
+    }
+  ],
+  "navigation": {
+    "confirmationNote": "Preserved confirmation",
+    "dialogOpen": true,
+    "focusedId": "dialog-about",
+    "heading": "New page. Same input.",
+    "name": "Kit keyboard",
+    "note": "Preserved delivery",
+    "url": "/about?locale=en"
+  },
+  "close": {
+    "dialogOpen": false,
+    "focusedId": "open-dialog",
+    "name": "Kit keyboard",
+    "note": "Preserved delivery"
+  },
+  "artifacts": {
+    "before": {
+      "path": ".release/sveltekit-keyboard-before-2026-10-12.json",
+      "sha256": "6e86f4dc3c6083622f23e6dc7a9db21575014423bb2e8e6b077a3503c1975f19"
+    },
+    "after": {
+      "path": ".release/sveltekit-keyboard-after-2026-10-12.json",
+      "sha256": "3144ab529ed133eb3542b745df3d66334ed2128a9675c634df60e552cb6ee834"
+    },
+    "screenshot": {
+      "path": ".release/sveltekit-keyboard-focus-2026-10-12.png",
+      "sha256": "bfdca88213dad69569a519e60fc3a655abf666e8182e4fdadd72ec708552fa17"
+    },
+    "packLog": {
+      "path": ".release/sveltekit-focus-defabbe8/pack.log",
+      "sha256": "3f729e95eaf85a70b2aa1d363871d27f9d4e246fcc51eee7999e33f2a9a4bd18"
+    }
+  },
+  "regression": "Modern consumer contract requires modal-navigation-focus; historical legacy contracts do not enable the new focus check.",
+  "cleanup": {
+    "temporaryTabClosed": true,
+    "ownedServerSession": 83207,
+    "ownedServerExitCode": 0,
+    "ownedPortReachableAfterExit": false
+  },
+  "limits": [
+    "Automation-routed keyboard input in one browser; no physical keyboard, screen-reader speech, zoom or full focus-cycle certification.",
+    "The pack regression programmatically focuses and activates the link; the separate in-app browser observation uses only keyboard input.",
+    "No package version bump, push, npm publication or CI/OIDC dispatch."
+  ]
+}

@@ -30,7 +30,7 @@
     <h2 id="dialog-title">{messages.dialogTitle}</h2>
     <label>{messages.dialogNote}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
     <button id="close-dialog">{messages.closeDialog}</button>
-    <a id="dialog-about" href="/about?locale={$i18n.locale}">{messages.about}</a>
+    <a id="dialog-about" href="/about?locale={$i18n.locale}" data-sveltekit-reset="false">{messages.about}</a>
     <p id="dialog-render-error" class="hint" role="alert" lang="ko">{renderError}</p>
     <p id="dialog-status" class="hint" role="status" lang="ko">{connection}{details && `\n${details}`}</p>
   </form>

@@ -72,12 +72,18 @@ if (new URL(location.href).searchParams.has('pack-check')) {
       await wait(() => document.querySelector('#confirmation')?.open, 'Dialog did not open');
       fill('#confirmation-note', 'Keep this confirmation');
       const dialog = element('#confirmation');
+      const focusCheck = new URL(location.href).searchParams.has('focus-check');
+      if (focusCheck) element('#dialog-about').focus();
       element('#dialog-about').click();
       await wait(() => location.pathname === '/about' && document.querySelector('h1')?.textContent === '페이지를 이동해도, 입력은 그대로',
         'About page did not render');
       sameInputs();
       check(element('#confirmation') === dialog && dialog.open, 'Navigation reset the open dialog');
       check(element('#confirmation-note').value === 'Keep this confirmation', 'Confirmation was reset');
+      if (focusCheck) {
+        check(document.activeElement === element('#dialog-about'), 'Navigation moved focus out of the open dialog');
+        checks.push('modal-navigation-focus');
+      }
       checks.push('shared-layout');
       element('#close-dialog').click();
       await wait(() => !dialog.open, 'Dialog did not close');

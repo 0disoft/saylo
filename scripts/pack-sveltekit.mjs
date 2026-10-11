@@ -153,14 +153,15 @@ try {
   console.log((await npm(['run', 'verify:ssr', '--', origin], app)).trim());
   browser = spawn(executable, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--disable-background-networking', `--user-data-dir=${path.join(root, 'browser-profile')}`,
-    `${origin}/?locale=ko&pack-check=1${supportChecks ? '&support-check=1' : ''}`], { windowsHide: true, stdio: 'ignore' });
+    `${origin}/?locale=ko&pack-check=1${supportChecks ? '&support-check=1&focus-check=1' : ''}`], { windowsHide: true, stdio: 'ignore' });
   browser.once('error', error => rejectBrowser?.(error));
   browser.once('exit', code => rejectBrowser?.(new Error(`Chromium exited before completion (${code}).`)));
   timer = setTimeout(() => rejectBrowser?.(new Error('Browser verification timed out after 30s.')), 30000);
   const report = await completed;
   assert.equal(report.ok, true, report.error);
   assert.deepEqual(report.errors, [], 'Browser reported runtime errors or warnings.');
-  assert.deepEqual(report.checks, ['hydration', 'ko-en-ko', ...(supportChecks ? ['support-report'] : []), 'shared-layout', 'exit-reentry']);
+  assert.deepEqual(report.checks, ['hydration', 'ko-en-ko', ...(supportChecks ? ['support-report', 'modal-navigation-focus'] : []), 'shared-layout', 'exit-reentry']);
+  if (supportChecks) console.log('[pack:sveltekit] Navigation inside the shared modal retained the focused link.');
   if (supportChecks) console.log('[pack:sveltekit] Support report generation, private form content exclusion, review/reset and input preservation passed.');
   console.log(`[pack:sveltekit] Chromium ${report.browser}: hydration, ko/en/ko switching, shared-layout state and exit/re-entry passed.`);
   console.log('[pack:sveltekit] Five tarballs: independent install, typecheck, client/SSR build, dev lifecycle and production HTTP/browser passed.');

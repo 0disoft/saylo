@@ -274,12 +274,14 @@ layout이 필요한 문구를 모두 계산해 페이지와 입력 화면에 공
     <h2 id="dialog-title">{messages.dialogTitle}</h2>
     <label>{messages.dialogNote}<input id="confirmation-note" autocomplete="off" bind:value={confirmation} /></label>
     <button id="close-dialog">{messages.closeDialog}</button>
-    <a id="dialog-about" href="/about?locale={$i18n.locale}">{messages.about}</a>
+    <a id="dialog-about" href="/about?locale={$i18n.locale}" data-sveltekit-reset="false">{messages.about}</a>
     <p id="dialog-render-error" class="hint" role="alert" lang="ko">{renderError}</p>
     <p id="dialog-status" class="hint" role="status" lang="ko">{connection}{details && `\n${details}`}</p>
   </form>
 </dialog>
 ```
+
+모달 안의 링크에는 `data-sveltekit-reset="false"`를 붙인다. 공통 layout의 모달은 페이지 이동 뒤에도 열려 있으므로, 링크에 있던 키보드 포커스를 유지해야 한다. 이 속성은 스크롤 위치도 유지하므로 모달 안의 링크에만 적용한다. 자세한 동작은 [SvelteKit 링크 옵션](https://svelte.dev/docs/kit/link-options#data-sveltekit-reset)을 참고한다.
 
 ### src/lib/style.css
 
