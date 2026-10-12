@@ -24,6 +24,8 @@
     "build:react": "npm run typegen:react && tsc -p examples/react/tsconfig.json && vite build --config examples/react/vite.config.mjs",
     "dev:svelte": "npm run build && vite --config examples/svelte/vite.config.mjs --host 127.0.0.1",
     "dev:vue": "npm run build && vite --config examples/vue/vite.config.mjs --host 127.0.0.1",
+    "dev:vue:ssr": "npm run build && node examples/vue-ssr/server.mjs",
+    "verify:demo:vue:ssr": "npm run build && node scripts/verify-vue-hydration.mjs",
     "setup:vue": "node scripts/setup-vue.mjs",
     "build:vue": "npm run build && node packages/typegen/dist/cli.js --locales-dir examples/vue/locales --base-locale ko --out-file examples/vue/generated.d.ts && npm run typecheck:vue && vite build --config examples/vue/vite.config.mjs",
     "typecheck:vue": "node scripts/typecheck-vue.cjs -p examples/vue/tsconfig.json",

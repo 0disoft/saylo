@@ -83,6 +83,7 @@ export const { provideI18n, useI18n } = createSayloVue<AppSchema>();
 
 - 마운트 관련 훅은 서버 렌더에서 실행되지 않으므로 SSR 중에는 구독이 생기지 않는다([컴포넌트 라이프사이클 훅](https://vuejs.org/guide/scaling-up/ssr.html#component-lifecycle-hooks)). 첫 렌더 값은 `setup` 시점의 `getSnapshot()`이다.
 - 서버에서 쓸 때는 요청마다 instance를 따로 만들어 부모 `provideI18n`에 넘긴다. factory는 공유해도 되지만 instance를 서버 전역에 두면 안 되고, 요청이 끝나면 호출자가 `dispose()`로 정리한다.
+- 서버 HTML과 boot snapshot을 브라우저에서 연결하는 예제는 [Vue SSR 데모](../../examples/vue-ssr/README.md)를 따른다. 클라이언트는 `initialSnapshot`으로 첫 렌더를 맞추고 `app.mount()`가 끝난 뒤 개발 동기화를 연결한다.
 - 어댑터는 컴포넌트 범위가 끝날 때 자신이 건 구독과 disposal 리스너만 해제한다. store의 수명은 앱이 소유한다.
 
 ## 구현 범위
