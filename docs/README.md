@@ -112,6 +112,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 개발 클라이언트의 handshake 상태 계약은 [dev-sync-state.md](dev-sync-state.md)에 있다.
 빈 폴더에서 npm 게시본으로 시작하는 React 안내는 [getting-started-react.md](getting-started-react.md)에 있다.
 Svelte 5 안내는 [getting-started-svelte.md](getting-started-svelte.md)에 있다.
+Vue 3의 로컬 tarball을 독립 프로젝트로 내보내는 안내는 [getting-started-vue.md](getting-started-vue.md)에 있다.
 요청별 SSR·hydration·layout 수명까지 포함하는 SvelteKit 3 안내는 [getting-started-sveltekit.md](getting-started-sveltekit.md)에 있다.
 문의용 진단 JSON의 수집·검토·초기화와 제출 절차는 [support-report.md](support-report.md)에 있다. 두 API 모두 현재 로컬 미게시 변경이다.
 

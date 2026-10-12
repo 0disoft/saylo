@@ -1,0 +1,26 @@
+{
+  "name": "saylo-vue-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typegen": "saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts",
+    "dev": "npm run typegen && vite",
+    "build": "npm run typegen && vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@0disoft/saylo-core": "file:./vendor/saylo-core.tgz",
+    "@0disoft/saylo-vue": "file:./vendor/saylo-vue.tgz",
+    "vue": "3"
+  },
+  "devDependencies": {
+    "@0disoft/saylo-vite": "file:./vendor/saylo-vite.tgz",
+    "@0disoft/saylo-typegen": "file:./vendor/saylo-typegen.tgz",
+    "@vitejs/plugin-vue": "6",
+    "@types/node": "24",
+    "typescript": "6",
+    "vue-tsc": "3",
+    "vite": "8"
+  },
+  "engines": { "node": "24.x" }
+}

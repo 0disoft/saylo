@@ -53,6 +53,8 @@
     "verify:starter": "node scripts/verify-getting-started.mjs",
     "verify:starter:react": "node scripts/verify-framework-starter.mjs --framework react",
     "verify:starter:svelte": "node scripts/verify-framework-starter.mjs --framework svelte",
+    "prepare:starter:vue": "npm run build && node scripts/prepare-vue-starter.mjs",
+    "verify:starter:vue": "npm run build && node scripts/verify-vue-starter.mjs",
     "verify:starter:sveltekit": "node scripts/verify-framework-starter.mjs --framework sveltekit",
     "verify:demo:vanilla": "vite build --config examples/vanilla/vite.config.mjs && node --test scripts/test/vanilla-demo-lifecycle.test.mjs",
     "verify:demo:react": "tsc -p examples/react/tsconfig.json && vite build --config examples/react/vite.config.mjs && node --experimental-vm-modules --test scripts/test/react-demo-lifecycle.test.mjs",

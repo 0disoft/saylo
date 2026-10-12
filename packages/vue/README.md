@@ -18,6 +18,8 @@ npm run verify:pack:vue
 
 `verify:pack:vue`는 core·Vue tarball을 임시 앱에 설치하고 JS·TS 타입과 동시 ko/en SSR을 확인한 뒤 임시 폴더를 정리한다.
 
+저장소 밖에서 Vue SFC 앱을 시작하려면 [Vue 시작 안내](../../docs/getting-started-vue.md)를 따른다. `prepare:starter:vue`가 네 tarball을 동봉하고, `verify:starter:vue`가 독립 설치·타입 생성·개발 서버·production 화면을 확인한다.
+
 ## 사용
 
 factory는 모듈 범위에서 한 번 만들고, 앱은 `createApp(...).use(createPlugin(store))`로 instance를 설치한다. 감싸는 컴포넌트가 필요 없다. 아래는 브라우저 앱 하나가 store를 소유하는 Vue `h` render function 예제다. SSR에서는 요청마다 store를 만든다.

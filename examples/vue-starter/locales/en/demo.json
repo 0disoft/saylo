@@ -1,0 +1,10 @@
+{
+  "heading": "Saylo Vue starter",
+  "greeting": "Hello {name}",
+  "nameLabel": "Name",
+  "noteLabel": "Note",
+  "openDialog": "Open confirmation",
+  "dialogTitle": "Confirm your input",
+  "dialogNoteLabel": "Confirmation note",
+  "closeDialog": "Close"
+}
