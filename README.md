@@ -62,6 +62,8 @@ Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그
 
 React 데모는 `npm run dev:react`로 실행한다. `examples/vanilla/locales`의 같은 카탈로그와 기존 스타일을 공유하고, 입력값·수량·모달은 React state로 관리한다. 처음에는 한국어 `demo`만 싣고 영어 선택 시 영어 pair를 조회한다. 새 namespace는 목록에 나타나고 버튼을 눌러 명시적으로 로드한다. `npm run typegen:react`는 타입만 생성한다. `npm run build:react`는 패키지 빌드 → 현재 디스크 검증과 타입 생성 → 데모 TS 검사 → Vite production 빌드 순서로 실행한다.
 
+React 선택 빌드는 화면이 쓰는 키만 남겨 `npm run build:react:selected`(출력 `examples/react/dist-selected/`)로 돌리고, 결과는 `npm run preview:react:selected`로 확인한다. `examples/react/selected-keys.mts`의 `demoKeys`를 빌드와 화면 타입이 함께 쓰며, store·hook 타입은 개발·기본·선택 빌드 모두 `DemoSchema`로 좁히고 생성 타입 `generated.d.ts`는 전체 base schema를 유지한다. 키 목록 관리와 검증은 [React 데모](examples/react/README.md)를 따른다.
+
 ```js
 import { parseCatalog, createBaseSchema, validateTranslation, createTranslator } from '@0disoft/saylo-core';
 

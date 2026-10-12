@@ -3,13 +3,17 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { SourceTextModule } from 'node:vm';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { JSDOM, VirtualConsole } from 'jsdom';
 
-const html = await readFile(new URL('../../examples/react/dist/index.html', import.meta.url), 'utf8');
+const dist = process.env.SAYLO_REACT_TEST_DIST
+  ? pathToFileURL(path.resolve(process.env.SAYLO_REACT_TEST_DIST) + path.sep)
+  : new URL('../../examples/react/dist/', import.meta.url);
+const html = await readFile(new URL('index.html', dist), 'utf8');
 const asset = /<script[^>]+src="([^"]+)"/.exec(html);
 assert.ok(asset, 'Build the React demo before checking its lifecycle');
-const source = await readFile(new URL(`../../examples/react/dist/${asset[1].replace(/^\//, '')}`, import.meta.url), 'utf8');
-const dist = new URL('../../examples/react/dist/', import.meta.url);
+const source = await readFile(new URL(asset[1].replace(/^\//, ''), dist), 'utf8');
 const mainUrl = new URL(asset[1].replace(/^\//, ''), dist);
 
 async function settle(condition, message) {

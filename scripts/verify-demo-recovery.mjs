@@ -34,7 +34,7 @@ process.once('SIGINT', interrupt); process.once('SIGTERM', interrupt);
 try {
   // Keep original catalogs, generated declarations and every other live demo untouched.
   const files = framework === 'react'
-    ? ['index.html', 'main.tsx', 'demo-messages.ts', 'i18n.ts', 'generated.d.ts', 'SupportPanel.tsx', 'tsconfig.json', 'vite.config.mjs']
+    ? ['index.html', 'main.tsx', 'demo-messages.ts', 'i18n.ts', 'selected-keys.mts', 'generated.d.ts', 'SupportPanel.tsx', 'tsconfig.json', 'vite.config.mjs']
     : framework === 'vue'
       ? ['index.html', 'main.ts', 'App.vue', 'demo-messages.ts', 'i18n.ts', 'generated.d.ts', 'vite-env.d.ts', 'tsconfig.json', 'vite.config.mjs']
       : ['index.html', 'main.ts', 'App.svelte', 'Preview.svelte', 'demo-messages.ts', 'i18n.ts', 'generated.d.ts', 'SupportPanel.svelte', 'tsconfig.json', 'vite.config.mjs'];

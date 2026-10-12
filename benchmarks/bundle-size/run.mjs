@@ -20,7 +20,7 @@ async function inputs(directory) {
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const file = path.join(directory, entry.name);
-    if (entry.isDirectory() && !['node_modules', 'dist', '.git'].includes(entry.name)) files.push(...await inputs(file));
+    if (entry.isDirectory() && !['node_modules', 'dist', 'dist-selected', '.git'].includes(entry.name)) files.push(...await inputs(file));
     else if (entry.isFile()) files.push(file);
   }
   return files;

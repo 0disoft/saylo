@@ -1,6 +1,7 @@
 node_modules/
 dist/
 examples/vanilla/dist-selected/
+examples/react/dist-selected/
 *.tsbuildinfo
 *.tgz
 .release/
