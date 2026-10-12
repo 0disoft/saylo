@@ -136,3 +136,58 @@ test('mount-time registration failure releases the already acquired subscription
   assert.equal(f.subscriptions.size, 0);
   assert.equal(f.store.getSnapshot().locale, 'ko');
 });
+
+test('app plugins isolate mounted roots and leave instance disposal to the caller', async t => {
+  const bindings = createSayloVue();
+  const ko = fixture(t, 'ko'), en = fixture(t, 'en');
+  const Root = { setup() { const state = bindings.useI18n(); return () => h('p', state.value.t('demo:title')); } };
+  const first = mount(t, Root), second = mount(t, Root);
+  first.app.use(bindings.createPlugin(ko.instance));
+  second.app.use(bindings.createPlugin(en.instance));
+  for (const f of [ko, en]) { assert.equal(f.subscriptions.size, 0); assert.equal(f.disposers.size, 0); }
+  first.start(); second.start();
+  assert.equal(first.root.children[0].text, '한국어');
+  assert.equal(second.root.children[0].text, 'English');
+  ko.store.replaceCatalogs(catalogs('앱 하나만 수정')); await nextTick();
+  assert.equal(first.root.children[0].text, '앱 하나만 수정');
+  assert.equal(second.root.children[0].text, 'English');
+  first.app.unmount();
+  assert.equal(ko.subscriptions.size, 0); assert.equal(ko.disposers.size, 0);
+  assert.equal(en.subscriptions.size, 1); assert.equal(en.disposers.size, 1);
+  ko.store.setLocale('en'); assert.equal(ko.store.getSnapshot().locale, 'en');
+  second.app.unmount();
+  assert.equal(en.subscriptions.size, 0); assert.equal(en.disposers.size, 0);
+  en.store.setLocale('ko'); assert.equal(en.store.getSnapshot().locale, 'ko');
+});
+
+test('app plugin SSR preserves component overrides and concurrent request isolation', async t => {
+  const bindings = createSayloVue();
+  const ko = fixture(t, 'ko'), en = fixture(t, 'en');
+  const Read = { setup() { const state = bindings.useI18n(); return () => h('p', state.value.t('demo:title')); } };
+  const Inner = { setup() { bindings.provideI18n(en.instance); return () => h(Read); } };
+  const Root = { setup() { return () => h('main', [h(Read), h(Inner), h(Read)]); } };
+  const result = await Promise.all([
+    renderToString(createSSRApp(Root).use(bindings.createPlugin(ko.instance))),
+    renderToString(createSSRApp(Read).use(bindings.createPlugin(en.instance))),
+  ]);
+  assert.deepEqual(result, ['<main><p>한국어</p><p>English</p><p>한국어</p></main>', '<p>English</p>']);
+  for (const f of [ko, en]) { assert.equal(f.subscriptions.size, 0); assert.equal(f.disposers.size, 0); }
+});
+
+test('plugin reinstall retains the original instance and mismatched factories stay isolated', t => {
+  const first = createSayloVue(), second = createSayloVue();
+  const ko = fixture(t, 'ko'), en = fixture(t, 'en');
+  const Root = { setup() { const state = first.useI18n(); return () => h('p', state.value.locale); } };
+  const ui = mount(t, Root);
+  ui.app.use(first.createPlugin(ko.instance));
+  // New plugin objects for the same caller-owned instance do not overwrite provide.
+  ui.app.use(first.createPlugin(ko.instance));
+  assert.throws(() => ui.app.use(first.createPlugin(en.instance)), /different instance/);
+  ui.start(); assert.equal(ui.root.children[0].text, 'ko');
+  const errors = [];
+  const other = mount(t, { setup() { second.useI18n(); return () => h('p'); } });
+  other.app.config.warnHandler = () => {};
+  other.app.config.errorHandler = error => errors.push(error);
+  other.app.use(first.createPlugin(ko.instance)); other.start();
+  assert.match(errors[0].message, /same createSayloVue factory/);
+});

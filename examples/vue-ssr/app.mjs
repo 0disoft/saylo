@@ -2,7 +2,7 @@ import { createSSRApp, h, onMounted, ref, watch } from 'vue';
 import { createSayloVue } from '@0disoft/saylo-vue';
 
 // Only the context key is shared. Every request/client supplies its own instance.
-const { provideI18n, useI18n } = createSayloVue();
+const { createPlugin, useI18n } = createSayloVue();
 const Form = {
   setup() {
     const state = useI18n();
@@ -38,7 +38,7 @@ const Form = {
 };
 
 export function createApp(instance) {
-  return createSSRApp({ setup() { provideI18n(instance); return () => h(Form); } });
+  return createSSRApp(Form).use(createPlugin(instance));
 }
 
 // Counters make this example's ownership observable without inspecting Vue internals.

@@ -22,7 +22,7 @@ http://127.0.0.1:5193/?locale=en
 
 `examples/vue-ssr`는 `examples/vue`와 별도 앱이다. 렌더 함수와 서버 요청 수명주기를 보여주는 게 목적이라 `App.vue` 대신 `h`로 트리를 만든다. 로케일 파일은 `examples/vue/locales`를 그대로 쓰고 따로 복사하지 않는다. 기준 로케일은 `ko`, 초기 namespace는 `demo`, timeZone은 `UTC`다.
 
-서버 요청마다 `createRequestI18n`으로 instance를 만들고 렌더가 끝나면 `finally`에서 dispose한다. 요청 간에 instance를 재사용하지 않는다. 직렬화한 boot snapshot(`serializeBootSnapshot`)을 HTML에 실어 보내고, 클라이언트는 `decodeBootSnapshot`으로 초기 snapshot을 복원해 하이드레이션에 쓴다. 요청이 만든 instance는 앱에 제공되고, 서버 쪽에 공용 singleton instance는 두지 않는다.
+`app.mjs`는 `createSayloVue()` factory를 모듈 범위에서 한 번 만들고, `createApp(instance)`가 `createSSRApp(Form).use(createPlugin(instance))`로 그 요청의 instance를 설치한다. 서버 요청마다 `createRequestI18n`으로 instance를 만들고 렌더가 끝나면 `finally`에서 dispose한다. 요청 간에 instance를 재사용하지 않고, 서버 쪽에 공용 singleton instance는 두지 않는다. 직렬화한 boot snapshot(`serializeBootSnapshot`)을 HTML에 실어 보내고, 클라이언트는 `decodeBootSnapshot`으로 초기 snapshot을 복원해 하이드레이션에 쓴다.
 
 이름·요청 사항 입력은 uncontrolled DOM input이다. 하이드레이션 이후 `onMounted`에서 값을 Vue ref로 읽어 echo 문구를 갱신한다. 하이드레이션 전에 이미 입력해 둔 값이 있어도 그대로 살아남고, 프레임워크가 input을 다시 그리지 않는다.
 
@@ -43,4 +43,6 @@ npm run verify:demo:vue:ssr
 
 `npm run build` 뒤 `scripts/verify-vue-hydration.mjs`를 headless Chromium으로 돌린다. 원본 번역 파일은 고치지 않고 `examples/vue/locales`를 `.release` 아래 격리된 fixture로 복사해 검사한다. 확인 항목은 `ko`·`en` 동시 SSR, boot와 초기 하이드레이션 snapshot 일치, 하이드레이션 전 입력·포커스·선택 범위·DOM 정체성 유지, 서버 카탈로그 수정 후 sync까지의 gap, 언어 전환, 하이드레이션 이후 라이브 수정, cleanup 뒤 리스너 수 0, 런타임 오류·경고 없음이다.
 
-2026-10-12 Node 24.18.0·Vite 8.3.4·headless Chromium 154에서 동시 SSR과 한국어·영어 각각 8단계의 브라우저 검사를 통과했다. 런타임 오류·경고는 없었고, 종료 후 컴포넌트 구독과 폐기 리스너는 모두 0이었다. 로컬 보고서는 `.release/vue-hydration-report.json`에 생성한다. 개발 서버에서 확인한 결과이며 production 배포·Nuxt 통합·실제 BFCache 복귀는 검증 범위에 포함하지 않는다. BFCache 검사는 합성 `pagehide` 이벤트의 `persisted` 분기만 확인한다.
+예제는 이제 요청 instance를 `app.use(createPlugin(instance))`로 설치한다. 2026-10-12 같은 환경에서 이 설치 경로도 동시 SSR과 한국어·영어 각각 8단계를 다시 통과했다. 런타임 오류·경고는 없었고, 종료 후 컴포넌트 구독과 폐기 리스너는 모두 0이었다.
+
+2026-10-12 Node 24.18.0·Vite 8.3.4·headless Chromium 154에서 동시 SSR과 한국어·영어 각각 8단계의 브라우저 검사를 통과했다(당시 설치 경로는 부모 컴포넌트 `provideI18n`). 런타임 오류·경고는 없었고, 종료 후 컴포넌트 구독과 폐기 리스너는 모두 0이었다. 로컬 보고서는 `.release/vue-hydration-report.json`에 생성한다. 개발 서버에서 확인한 결과이며 production 배포·Nuxt 통합·실제 BFCache 복귀는 검증 범위에 포함하지 않는다. BFCache 검사는 합성 `pagehide` 이벤트의 `persisted` 분기만 확인한다.

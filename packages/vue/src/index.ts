@@ -1,5 +1,5 @@
 import { getCurrentInstance, inject, onMounted, onScopeDispose, provide, shallowReadonly, shallowRef } from 'vue';
-import type { InjectionKey, ShallowRef } from 'vue';
+import type { App, InjectionKey, ObjectPlugin, ShallowRef } from 'vue';
 import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
 
 export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
@@ -56,6 +56,8 @@ export function useVueStore<S extends Schema>(instance: SayloInstance<S>): Saylo
 }
 
 export interface SayloVueBindings<S extends Schema> {
+  /** Install before mount; the caller owns the instance. No subscriptions are acquired. */
+  readonly createPlugin: (instance: SayloInstance<S>) => ObjectPlugin<[]>;
   /** Provide a stable caller-owned instance during a parent component's setup. */
   readonly provideI18n: (instance: SayloInstance<S>) => void;
   /** Read-only reactive snapshot; use i18n.value in script and i18n in templates. */
@@ -65,12 +67,22 @@ export interface SayloVueBindings<S extends Schema> {
 /** Create once at module scope; each provider/request supplies its own instance. */
 export function createSayloVue<S extends Schema = Schema>(): SayloVueBindings<S> {
   const key: InjectionKey<SayloInstance<S>> = Symbol('Saylo');
+  const installed = new WeakMap<App, SayloInstance<S>>();
   return Object.freeze({
+    createPlugin(instance: SayloInstance<S>): ObjectPlugin<[]> {
+      return Object.freeze({ install(app: App) {
+        const current = installed.get(app);
+        if (current === instance) return;
+        if (current) throw new Error('This Saylo Vue factory already installed a different instance in this app.');
+        app.provide(key, instance);
+        installed.set(app, instance);
+      } });
+    },
     provideI18n(instance: SayloInstance<S>) { requireSetup(); provide(key, instance); },
     useI18n() {
       requireSetup();
       const instance = inject(key);
-      if (!instance) throw new Error('useI18n requires provideI18n from the same createSayloVue factory in a parent component.');
+      if (!instance) throw new Error('useI18n requires provideI18n or app.use(createPlugin(instance)) from the same createSayloVue factory.');
       return useVueStore(instance);
     },
   });

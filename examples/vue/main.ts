@@ -1,9 +1,9 @@
-import { createApp, defineComponent, h } from 'vue';
+import { createApp } from 'vue';
 import App from './App.vue';
-import { provideI18n, store } from './i18n';
+import { createPlugin, store } from './i18n';
 import '../vanilla/style.css';
 
-const app = createApp(defineComponent({ setup() { provideI18n(store); return () => h(App); } }));
+const app = createApp(App).use(createPlugin(store));
 app.mount('#root');
 let stopped = false;
 function cleanup() {

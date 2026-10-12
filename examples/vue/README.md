@@ -13,7 +13,7 @@ npm run dev:vue
 
 ## 파일 구성
 
-`i18n.ts`가 `createI18n`으로 store를 만들고 `createSayloVue`의 `provideI18n`·`useI18n`을 낸다. `main.ts`가 이 store를 소유하고, `App.vue`는 `useI18n` snapshot과 `connectDev` 개발 연결을 구독한다. 기준 로케일은 `ko`, 초기 namespace는 `demo`, timeZone은 `UTC`다.
+`i18n.ts`가 `createI18n`으로 store를 만들고 `createSayloVue`의 `createPlugin`·`useI18n`을 낸다. `main.ts`가 `createApp(App).use(createPlugin(store))`로 plugin을 설치하며 이 store를 소유한다. `App.vue`는 `useI18n` snapshot과 `connectDev` 개발 연결을 구독한다. 기준 로케일은 `ko`, 초기 namespace는 `demo`, timeZone은 `UTC`다.
 
 ## 라이브 수정 확인
 
@@ -54,4 +54,4 @@ npm run verify:demo:vue:recovery
 
 ## 정리
 
-`main.ts`가 instance를 소유한다. `pagehide`가 `persisted`면 BFCache 복귀를 위해 구독을 남기고, 실제 페이지 종료면 `app.unmount()` 뒤 `store.dispose()`로 정리한다. Vite HMR dispose에서도 같은 cleanup을 탄다. `App.vue`는 `onScopeDispose`에서 개발 연결을 끊고 세대 번호를 올려 늦게 도착한 응답을 버린다.
+`main.ts`가 instance를 소유한다. `app.use(createPlugin(store))`로 설치한 plugin은 구독을 만들지 않고 instance도 폐기하지 않으므로 정리는 `main.ts`가 맡는다. `pagehide`가 `persisted`면 BFCache 복귀를 위해 구독을 남기고, 실제 페이지 종료면 `app.unmount()` 뒤 `store.dispose()`로 정리한다. Vite HMR dispose에서도 같은 cleanup을 탄다. `App.vue`는 `onScopeDispose`에서 개발 연결을 끊고 세대 번호를 올려 늦게 도착한 응답을 버린다.

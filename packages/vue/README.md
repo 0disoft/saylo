@@ -1,6 +1,6 @@
 # @0disoft/saylo-vue
 
-Saylo의 Vue 3 바인딩이다. `createSayloVue<Schema>()`가 typed context의 `provideI18n`과 `useI18n`을 만들고, `useVueStore(instance)`가 store snapshot을 읽기 전용 `shallowRef`로 구독한다. `useVueStore`와 factory의 두 함수는 컴포넌트 `setup`에서 동기 호출한다.
+Saylo의 Vue 3 바인딩이다. `createSayloVue<Schema>()`가 `createPlugin`·`provideI18n`·`useI18n`을 만들고, `useVueStore(instance)`가 store snapshot을 읽기 전용 `shallowRef`로 구독한다. `useI18n`·`useVueStore`·`provideI18n`은 컴포넌트 `setup`에서 동기 호출하고, `createPlugin(instance)`은 setup 밖에서 만들어 `app.use`로 설치한다.
 
 ## 상태와 설치
 
@@ -20,7 +20,7 @@ npm run verify:pack:vue
 
 ## 사용
 
-factory는 모듈 범위에서 한 번 만들고, 부모 `setup`에서 `provideI18n`, 자식 `setup`에서 `useI18n`을 쓴다. 아래는 브라우저 앱 하나가 store를 소유하는 Vue `h` render function 예제다. SSR에서는 요청마다 store를 만든다.
+factory는 모듈 범위에서 한 번 만들고, 앱은 `createApp(...).use(createPlugin(store))`로 instance를 설치한다. 감싸는 컴포넌트가 필요 없다. 아래는 브라우저 앱 하나가 store를 소유하는 Vue `h` render function 예제다. SSR에서는 요청마다 store를 만든다.
 
 ```js
 import { createApp, defineComponent, h } from 'vue';
@@ -30,34 +30,40 @@ import { createSayloVue } from '@0disoft/saylo-vue';
 const ko = parseCatalog('{"greeting":"안녕 {name}"}', { locale: 'ko', namespace: 'demo' });
 const en = parseCatalog('{"greeting":"Hello {name}"}', { locale: 'en', namespace: 'demo' });
 
-// 모듈 범위에서 한 번 만든다.
-const { provideI18n, useI18n } = createSayloVue();
+// 모듈 범위에서 한 번 만든다. 주입 키는 이 factory 안에서만 유효하다.
+const { createPlugin, provideI18n, useI18n } = createSayloVue();
 const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [ko, en] });
 
 const Child = defineComponent({
   setup() {
-    const i18n = useI18n(); // 같은 factory의 부모 provideI18n이 필요하다.
+    const i18n = useI18n(); // 같은 factory의 provider가 instance를 넘긴다.
     return () => h('button', {
       onClick: () => i18n.value.setLocale(i18n.value.locale === 'ko' ? 'en' : 'ko'),
     }, i18n.value.t('demo:greeting', { name: 'Saylo' }));
   },
 });
 
-const Parent = defineComponent({
-  setup() {
-    provideI18n(store); // 앱이 소유한 instance를 그대로 넘긴다.
-    return () => h(Child);
-  },
-});
-
-const app = createApp(Parent);
+// setup 밖에서 plugin을 만들고 앱에 설치한다. install이 app.provide를 대신한다.
+const app = createApp(Child).use(createPlugin(store));
 app.mount('#app');
 
-// 앱 종료 때 호출한다.
+// 앱 종료 때 호출한다. plugin은 instance를 폐기하지 않는다.
 function stop() {
   app.unmount();
   store.dispose();
 }
+```
+
+하위 트리만 다른 instance로 덮고 싶으면 그 부모 컴포넌트 `setup`에서 `provideI18n(instance)`를 부른다. `useI18n`은 가장 가까운 컴포넌트 provider를 먼저 찾고, 없으면 앱 provider를 쓴다. 앱 전체가 한 instance면 `provideI18n`은 필요 없다.
+
+```js
+const Subtree = defineComponent({
+  props: ['instance'],
+  setup(props) {
+    provideI18n(props.instance); // 호출자가 넘긴 instance를 이 subtree에 제공한다.
+    return () => h(Child);
+  },
+});
 ```
 
 `useI18n` 대신 같은 instance를 받는 `useVueStore(instance)`를 직접 써도 된다.
@@ -68,26 +74,27 @@ function stop() {
 import { createSayloVue } from '@0disoft/saylo-vue';
 
 type AppSchema = { 'demo:greeting': { name: string } };
-export const { provideI18n, useI18n } = createSayloVue<AppSchema>();
+export const { createPlugin, provideI18n, useI18n } = createSayloVue<AppSchema>();
 ```
 
 ## 계약
 
 - 반환값은 읽기 전용 `shallowRef`다. script에서는 `.value`로 읽고 템플릿에서는 자동으로 풀린다. 값은 동결된 snapshot 객체다.
-- `useVueStore`와 factory의 두 함수는 `setup` 중에만 부를 수 있고, 밖에서 부르면 동기 오류를 던진다. `useI18n`은 같은 factory의 부모 `provideI18n`이 없으면 오류를 던지고, 다른 factory의 context는 서로 읽히지 않는다.
-- `provideI18n`에 넘긴 instance는 마운트 동안 안정적으로 유지한다. 어댑터는 instance를 폐기하지 않으므로 `dispose()`는 호출자가 책임진다.
+- `useVueStore`와 `provideI18n`·`useI18n`은 `setup` 중에만 부를 수 있고, 밖에서 부르면 동기 오류를 던진다. `createPlugin(instance)`은 setup 밖에서 부를 수 있다. `useI18n`은 같은 factory의 provider가 없으면 오류를 던지고, 메시지가 `provideI18n` 또는 `app.use(createPlugin(instance))`를 안내한다. 다른 factory의 context는 서로 읽히지 않는다.
+- `createPlugin(instance)`의 `install`은 주입 키에 instance를 넣는 `app.provide`만 한다. 구독을 만들지 않고 instance도 폐기하지 않으며, 마운트 전에 설치한다. 같은 앱에 같은 instance로 새로 만든 plugin을 다시 설치하면 아무 일도 하지 않고, 같은 factory인데 다른 instance를 설치하면 오류를 던진다. 실행 중에 설치된 instance를 바꾸는 핫 스왑은 없다.
+- `provideI18n`이나 `createPlugin`에 넘긴 instance는 해당 범위에서 안정적으로 유지한다. 어댑터는 instance를 폐기하지 않으므로 `dispose()`는 호출자가 책임진다.
 - live 구독은 `onMounted`에서 시작한다. listener를 설치한 뒤 `getSnapshot()`을 한 번 더 읽어 setup과 mount 사이의 변경까지 반영하고, `onDispose` 리스너와 구독은 `onScopeDispose`에서 해제한다.
 - snapshot의 `t`는 그 snapshot의 번역에 묶여 있고, `setLocale`은 instance에서 온다. `setLocale`은 동기 `void` 또는 lazy instance의 `Promise<void>`다. lazy instance는 `loadNamespace`도 함께 온다.
 
 ## SSR과 소유권
 
 - 마운트 관련 훅은 서버 렌더에서 실행되지 않으므로 SSR 중에는 구독이 생기지 않는다([컴포넌트 라이프사이클 훅](https://vuejs.org/guide/scaling-up/ssr.html#component-lifecycle-hooks)). 첫 렌더 값은 `setup` 시점의 `getSnapshot()`이다.
-- 서버에서 쓸 때는 요청마다 instance를 따로 만들어 부모 `provideI18n`에 넘긴다. factory는 공유해도 되지만 instance를 서버 전역에 두면 안 되고, 요청이 끝나면 호출자가 `dispose()`로 정리한다.
+- 서버에서 쓸 때는 요청마다 instance를 따로 만들어 그 요청의 앱에 `createSSRApp(Root).use(createPlugin(instance))`로 설치한다. factory와 주입 키는 공유해도 되지만 instance를 서버 전역에 두면 안 되고, 요청이 끝나면 호출자가 `dispose()`로 정리한다.
 - 서버 HTML과 boot snapshot을 브라우저에서 연결하는 예제는 [Vue SSR 데모](../../examples/vue-ssr/README.md)를 따른다. 클라이언트는 `initialSnapshot`으로 첫 렌더를 맞추고 `app.mount()`가 끝난 뒤 개발 동기화를 연결한다.
 - 어댑터는 컴포넌트 범위가 끝날 때 자신이 건 구독과 disposal 리스너만 해제한다. store의 수명은 앱이 소유한다.
 
 ## 구현 범위
 
-브라우저 예제는 [Vue 데모](../../examples/vue/README.md)를 따른다. 키 단위 selector 구독, `app.use` 플러그인, Nuxt 모듈, 게시본 integrity 인수 검사는 구현하지 않았다. 이 패키지는 게시된 `alpha.4`·`alpha.5` 대상이 아니고 대응하는 릴리스 검증 기록도 없다.
+브라우저 예제는 [Vue 데모](../../examples/vue/README.md)를 따른다. 키 단위 selector 구독, Nuxt 모듈, 게시본 integrity 인수 검사는 구현하지 않았다. 이 패키지는 게시된 `alpha.4`·`alpha.5` 대상이 아니고 대응하는 릴리스 검증 기록도 없다.
 
 라이선스는 Apache-2.0이고, 배포 tarball의 `files`에 `LICENSE`와 `NOTICE`를 포함한다.

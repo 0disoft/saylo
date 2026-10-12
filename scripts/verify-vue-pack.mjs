@@ -44,7 +44,7 @@ const run = async locale => {
   let subscribed = 0;
   const instance = { ...store, subscribe() { subscribed++; throw new Error('SSR must not subscribe'); } };
   const Child = { setup() { const state = bindings.useI18n(); return () => h('p', state.value.t('demo:title')); } };
-  try { const result = await renderToString(createSSRApp({ setup() { bindings.provideI18n(instance); return () => h(Child); } }));
+  try { const result = await renderToString(createSSRApp(Child).use(bindings.createPlugin(instance)));
     assert.equal(subscribed, 0); return result;
   } finally { store.dispose(); }
 };

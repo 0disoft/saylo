@@ -1,9 +1,18 @@
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
 import type { I18n } from '@0disoft/saylo-core';
+import { createApp, defineComponent } from 'vue';
 import { createSayloVue, useVueStore } from '@0disoft/saylo-vue';
 type AppSchema = { 'demo:title': {}; 'demo:items': { count: number }; 'demo:code': { code: string } };
 const catalog = parseCatalog('{"title":"Title","items":"{count, number}","code":"{code}"}', { locale: 'en', namespace: 'demo' });
 const store = createStore<AppSchema>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
+const pluginBindings = createSayloVue<AppSchema>();
+const app = createApp(defineComponent({ setup: () => () => null }));
+app.use(pluginBindings.createPlugin(store));
+const wrongSchema = createStore<{ 'other:title': {} }>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
+// @ts-expect-error plugin instance must retain the factory schema
+pluginBindings.createPlugin(wrongSchema);
+// @ts-expect-error app.use plugin does not accept extra options
+app.use(pluginBindings.createPlugin(store), {});
 export function setup() {
   const state = useVueStore(store);
   state.value.t('demo:title');

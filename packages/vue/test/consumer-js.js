@@ -1,7 +1,12 @@
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
 import { createSayloVue, useVueStore } from '@0disoft/saylo-vue';
+import { createApp } from 'vue';
 const catalog = parseCatalog('{"title":"Title"}', { locale: 'en', namespace: 'demo' });
 const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
+const pluginBindings = createSayloVue();
+createApp({ render: () => null }).use(pluginBindings.createPlugin(store));
+// @ts-expect-error plugin requires a Saylo instance
+pluginBindings.createPlugin({});
 export function setup() {
   const bindings = createSayloVue();
   bindings.provideI18n(store);
