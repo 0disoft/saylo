@@ -10,6 +10,7 @@
     "demo:ssr": "npm run build && node examples/ssr/demo.mjs",
     "bench:live": "npm run build && node benchmarks/live-update/run.mjs",
     "verify:pack": "npm run build && node scripts/pack-smoke.mjs",
+    "verify:pack:vue": "npm run build --workspace=@0disoft/saylo-core && npm run build --workspace=@0disoft/saylo-vue && node scripts/verify-vue-pack.mjs",
     "verify:registry": "node scripts/pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1",
     "verify:registry:alpha2": "node scripts/pack-smoke.mjs --registry --registry-version 0.1.0-alpha.2",
     "verify:registry:alpha3": "node scripts/pack-smoke.mjs --registry --registry-version 0.1.0-alpha.3",
@@ -69,7 +70,8 @@
     "react-dom": "19",
     "svelte": "5",
     "typescript": "7",
-    "vite": "8"
+    "vite": "8",
+    "vue": "3"
   },
   "license": "Apache-2.0",
   "engines": {

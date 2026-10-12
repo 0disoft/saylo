@@ -6,7 +6,7 @@ import { parse } from '@babel/parser';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const directions = {
-  core: [], react: ['core'], svelte: ['core'], typegen: ['core'], vite: ['core', 'typegen'],
+  core: [], react: ['core'], svelte: ['core'], vue: ['core'], typegen: ['core'], vite: ['core', 'typegen'],
 };
 const builtins = new Set(builtinModules.map(name => name.replace(/^node:/, '')));
 const packageName = specifier => specifier.startsWith('@')
@@ -109,7 +109,7 @@ export function checkBoundaries(manifests, sources) {
     }
     runtimeEdges.set(file, edges);
   }
-  const browserRoots = [...sources.keys()].filter(file => ['core', 'react', 'svelte'].includes(file.split('/')[1]) && !file.endsWith('.d.ts'));
+  const browserRoots = [...sources.keys()].filter(file => ['core', 'react', 'svelte', 'vue'].includes(file.split('/')[1]) && !file.endsWith('.d.ts'));
   const client = manifests.vite?.exports?.['./client'];
   if (client) {
     const entry = resolveSource(`packages/vite/${sourceTarget(client.import)}`);

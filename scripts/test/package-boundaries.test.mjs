@@ -5,7 +5,7 @@ import { checkBoundaries, moduleReferences } from '../check-package-boundaries.m
 function fixture() {
   const manifests = {};
   const sources = new Map();
-  for (const id of ['core', 'react', 'svelte', 'typegen', 'vite']) {
+  for (const id of ['core', 'react', 'svelte', 'vue', 'typegen', 'vite']) {
     manifests[id] = { name: `@0disoft/saylo-${id}`, dependencies: id === 'core' ? {}
       : { '@0disoft/saylo-core': 'test', ...(id === 'vite' ? { '@0disoft/saylo-typegen': 'test' } : {}) },
     exports: { '.': { import: './dist/index.js', types: './dist/index.d.ts' } } };
@@ -16,6 +16,15 @@ function fixture() {
   return { manifests, sources, run() { return checkBoundaries(manifests, sources); } };
 }
 const codes = result => result.violations.map(item => item.code);
+
+test('Vue adapter permits its declared peer and core types but rejects Node runtime imports', () => {
+  const f = fixture();
+  f.manifests.vue.peerDependencies = { vue: '3' };
+  f.sources.set('packages/vue/src/index.ts', "import { shallowRef } from 'vue'; export type { Schema } from '@0disoft/saylo-core';");
+  assert.deepEqual(f.run().violations, []);
+  f.sources.set('packages/vue/src/index.ts', "import 'node:fs';");
+  assert.deepEqual(codes(f.run()), ['BROWSER_NODE']);
+});
 
 test('parses import/export syntax and TS import types, ignoring comments and generated source strings', () => {
   const refs = moduleReferences(`

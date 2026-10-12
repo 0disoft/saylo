@@ -1,0 +1,19 @@
+{
+  "name": "@0disoft/saylo-vue",
+  "version": "0.1.0-alpha.4",
+  "private": true,
+  "type": "module",
+  "description": "Vue 3 bindings for Saylo with typed context and snapshot-bound reactive translation state.",
+  "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/vue" },
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist/index.js", "dist/index.d.ts", "LICENSE", "NOTICE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/adapter.test.mjs",
+    "typecheck:consumers": "tsc -p test/tsconfig.json"
+  },
+  "dependencies": { "@0disoft/saylo-core": "0.1.0-alpha.4" },
+  "peerDependencies": { "vue": "3" },
+  "license": "Apache-2.0",
+  "engines": { "node": "24.x" }
+}

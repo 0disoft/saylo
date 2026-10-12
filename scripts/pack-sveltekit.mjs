@@ -78,7 +78,7 @@ try {
   assert.ok(!inside(repository, root), 'Consumer must live outside the repository.');
   await mkdir(packs);
   const source = approved ? ['--workspaces=false', ...approved.map(pack => `${pack.name}@${pack.version}`),
-    '--registry', 'https://registry.npmjs.org/'] : ['--workspaces'];
+    '--registry', 'https://registry.npmjs.org/'] : packageIds.map(id => `--workspace=@0disoft/saylo-${id}`);
   const metadata = JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
   assert.deepEqual(packed.map(pack => pack.name).sort(), packageIds.map(id => `@0disoft/saylo-${id}`).sort());

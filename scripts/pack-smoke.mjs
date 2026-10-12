@@ -71,7 +71,7 @@ try {
     console.log(`[registry] All ${names.length} approved ${values['registry-version']} artifacts match published integrity; current dist-tags are independent.`);
   }
   const supportsAstRuntime = !fromRegistry || Boolean(registryVersions.get('@0disoft/saylo-core')?.exports?.['./runtime']);
-  const source = fromRegistry ? ['--workspaces=false', ...names.map(name => `${name}@${registryVersions.get(name).version}`), '--registry', 'https://registry.npmjs.org/'] : ['--workspaces'];
+  const source = fromRegistry ? ['--workspaces=false', ...names.map(name => `${name}@${registryVersions.get(name).version}`), '--registry', 'https://registry.npmjs.org/'] : packageIds.map(id => `--workspace=@0disoft/saylo-${id}`);
   const metadata = JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
   assert.deepEqual(packed.map(pack => pack.name).sort(), [...names].sort());

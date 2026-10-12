@@ -1,0 +1,77 @@
+import { getCurrentInstance, inject, onMounted, onScopeDispose, provide, shallowReadonly, shallowRef } from 'vue';
+import type { InjectionKey, ShallowRef } from 'vue';
+import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
+
+export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
+  readonly onDispose?: (listener: () => void) => () => void;
+  readonly setLocale: (locale: string) => void | Promise<void>;
+  readonly loadNamespace?: (namespace: string) => Promise<void>;
+}
+
+export type SayloVueSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<SayloInstance<S>, 'setLocale' | 'loadNamespace'>>;
+export type SayloVueStore<S extends Schema> = Readonly<ShallowRef<SayloVueSnapshot<S>>>;
+
+function requireSetup() {
+  if (!getCurrentInstance()) throw new Error('Saylo Vue bindings must be called synchronously during component setup.');
+}
+
+/** One subscription per composable, owned by its component; caller owns the instance. */
+export function useVueStore<S extends Schema>(instance: SayloInstance<S>): SayloVueStore<S> {
+  requireSetup();
+  const bind = (snapshot: StoreSnapshot<S>): SayloVueSnapshot<S> => Object.freeze({
+    ...snapshot, setLocale: instance.setLocale,
+    ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}),
+  });
+  let previous = instance.getSnapshot();
+  const state = shallowRef(bind(previous));
+  let stopped = false;
+  let unsubscribe: (() => void) | undefined;
+  let offDispose: (() => void) | undefined;
+  const stop = () => {
+    if (stopped) return;
+    stopped = true;
+    const off = unsubscribe, dispose = offDispose;
+    unsubscribe = offDispose = undefined;
+    try { off?.(); } finally { dispose?.(); }
+  };
+  const publish = (snapshot: StoreSnapshot<S>) => {
+    if (stopped || snapshot === previous) return;
+    previous = snapshot;
+    state.value = bind(snapshot);
+  };
+  onScopeDispose(stop);
+  // Mount hooks do not run during SSR, so a server render cannot retain listeners.
+  onMounted(() => {
+    if (stopped) return;
+    try {
+      unsubscribe = instance.subscribe(publish);
+      if (stopped) { unsubscribe(); unsubscribe = undefined; return; }
+      offDispose = instance.onDispose?.(stop);
+      if (stopped) { offDispose?.(); offDispose = undefined; return; }
+      // Include changes committed between setup and mount, after installing the listener.
+      publish(instance.getSnapshot());
+    } catch (error) { stop(); throw error; }
+  });
+  return shallowReadonly(state);
+}
+
+export interface SayloVueBindings<S extends Schema> {
+  /** Provide a stable caller-owned instance during a parent component's setup. */
+  readonly provideI18n: (instance: SayloInstance<S>) => void;
+  /** Read-only reactive snapshot; use i18n.value in script and i18n in templates. */
+  readonly useI18n: () => SayloVueStore<S>;
+}
+
+/** Create once at module scope; each provider/request supplies its own instance. */
+export function createSayloVue<S extends Schema = Schema>(): SayloVueBindings<S> {
+  const key: InjectionKey<SayloInstance<S>> = Symbol('Saylo');
+  return Object.freeze({
+    provideI18n(instance: SayloInstance<S>) { requireSetup(); provide(key, instance); },
+    useI18n() {
+      requireSetup();
+      const instance = inject(key);
+      if (!instance) throw new Error('useI18n requires provideI18n from the same createSayloVue factory in a parent component.');
+      return useVueStore(instance);
+    },
+  });
+}
