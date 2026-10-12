@@ -52,6 +52,8 @@ pack 소비 검증은 `npm run verify:pack`으로 돌린다. workspace 패키지
 
 폼 데모는 `npm run dev`로 실행한 뒤 터미널에 표시되는 로컬 주소를 연다. 편집기에서 `examples/vanilla/locales/ko/demo.json` 또는 `en/demo.json`의 문구를 수정하고 저장한다. 입력값·포커스·커서·스크롤과 열린 모달이 유지되는지 확인할 수 있다. JSON이 깨지거나 번역 계약이 어긋나면 마지막 정상 상태와 파일별 진단을 유지한다. `npm run build:demo`는 현재 디스크의 카탈로그를 검증해 데모를 빌드한다.
 
+선택 빌드는 화면이 쓰는 키만 남겨 `npm run build:demo:selected`(출력 `examples/vanilla/dist-selected/`)로 돌리고, 결과는 `npm run preview:demo:selected`로 확인한다. 키 목록 관리와 동적 키 주의사항은 [vanilla 데모](examples/vanilla/README.md)를 따른다.
+
 Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@0disoft/saylo-vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수로 연결을 끊고 다시 연결할 수 있다. `store.dispose()`와 Vite dispose·prune도 연결을 정리한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@0disoft/saylo-vite/virtual`을 포함한다.
 
 개발 전송은 eager와 lazy 경로를 함께 지원한다. `virtual:saylo`는 기존 전체 registry를 제공하며 eager 갱신은 그 연결을 요청한 Vite client에만 보낸다. `virtual:saylo/lazy`는 초기 기준·대상 pair만 싣고, 이후에는 문구 없는 manifest를 받아 변경된 loaded pair만 조회한다. 매니페스트를 적용하면 현재 원하는 범위를 다시 조회하며, 직전에 받은 pair 버전이 서버 기록과 맞으면 그 버전을 기준으로 바뀐 메시지 delta를 받고, 그 외에는 전체 present/missing 응답을 받는다. delta는 메시지 단위 upsert·remove·위치 갱신이고, 클라이언트는 요청마다 기준을 고정해 여러 instance의 응답 순서와 무관하게 한 번에 게시한다. 위치가 일괄로 이동하면 목록 대신 shift 하나로 압축할 수 있다. 미로드 namespace·비활성 로케일 수정은 AST를 받지 않으며 새 namespace도 범용 조회로 로드한다. 처음 연결, revision gap, 새 세션과 재연결은 요청 ID·generation을 가진 manifest handshake로 복구한다. 늦은 pair 응답은 현재 session·version·schema로 판정한다. 라이브 갱신은 앱 모듈을 교체하지 않는다. Vite 서버 재시작은 페이지를 다시 로드할 수 있다.

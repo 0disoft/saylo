@@ -11,7 +11,8 @@
 - 공개 `@0disoft/saylo-core/runtime` 엔트리는 `parseCatalog`를 제외하고, 기존 루트 엔트리는 기존 API를 그대로 유지한다.
 - 런타임 엔트리만 쓴다고 모든 bundler에서 parser 제거가 보장되지는 않는다. 검증 범위는 Vite 8 production build다. 런타임에 parser가 남을 수도 있다.
 - core의 브라우저 엔트리에는 파일 시스템 접근이 없고 parser도 필수가 아니다. AST를 받으면 parser 없이 동작한다. 파일 시스템과 parser는 dev plugin과 build 경계에 둔다.
-- 사용하지 않는 메시지 제거(emit/whole unused-message elimination)는 후속 최적화로 둔다. 동적 t 키를 쓰는 코드에서는 제거가 위험하므로 tradeoff를 근거와 함께 검증한 뒤 결정한다.
+- 사용하지 않는 메시지 제거는 수동 목록으로 로컬 구현했다. Vite 플러그인 `includeKeys` 옵션에 `namespace:messageId` 목록을 넘기면 그 키만 빌드 출력에 남긴다. 목록은 손으로 관리하며 소스 코드를 스캔해 필요한 키를 자동으로 찾지 않는다. 동적 키를 빠뜨리면 운영에서 `UnknownMessageError`가 난다.
+- 소스 코드 분석으로 미사용 메시지를 자동 제거하는 최적화는 후속으로 둔다. 동적 t 키를 쓰는 코드에서는 제거가 위험하므로 tradeoff를 근거와 함께 검증한 뒤 결정한다.
 
 코드 생성 대기를 줄이는 접근이라는 점에서 코드젠 방식 도구([Paraglide 메시지 컴파일](https://paraglidejs.com/compiling-messages))와 HMR 방식 도구([Wuchale 개발 모드](https://wuchale.dev/guides/dev/)) 사이에 있다.
 
