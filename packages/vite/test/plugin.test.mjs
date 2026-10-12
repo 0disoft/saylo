@@ -74,6 +74,16 @@ test('completeness enabled for builds still permits partial live translations an
   assert.equal(store.t('demo:hello', { name: 'Saylo' }), 'Repaired Saylo');
 });
 
+test('includeKeys never filters startup, live edits or snapshots in development', async t => {
+  const { change, request } = await setup(t, { includeKeys: ['demo:not-added-yet'] });
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: request()[0].data.catalogs });
+  t.after(() => store.dispose());
+  assert.equal(store.t('demo:hello', { name: 'Saylo' }), 'en Saylo');
+  await change('en', '{"hello":"Still live {name}"}');
+  store.replaceCatalogs(request()[0].data.catalogs);
+  assert.equal(store.t('demo:hello', { name: 'Saylo' }), 'Still live Saylo');
+});
+
 test('startup type readiness precedes serving and live publish precedes background typegen', async t => {
   const { root, server, change, request, warnings } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
   const out = path.join(root, 'generated.d.ts');
@@ -524,12 +534,19 @@ test('a missing in-flight read keeps disk settling even when a newer reader is a
 });
 
 test('new locale and paired namespace files join the same valid batch', async t => {
-  const { disk, request, events } = await setup(t);
-  await Promise.all([
-    disk('create', 'ja', 'demo', '{"hello":"こんにちは {name}"}'),
-    disk('create', 'en', 'help', '{"title":"Help"}'),
-    disk('create', 'ko', 'help', '{"title":"도움말"}'),
-  ]);
+  const { root, disk, request, events } = await setup(t);
+  const additions = [
+    ['ja', 'demo', '{"hello":"こんにちは {name}"}'],
+    ['en', 'help', '{"title":"Help"}'],
+    ['ko', 'help', '{"title":"도움말"}'],
+  ];
+  // Finish disk preparation before enqueuing one batch; filesystem timing can
+  // otherwise split the writes across distinct event-loop turns.
+  await Promise.all(additions.map(async ([locale, namespace, source]) => {
+    await mkdir(path.join(root, locale), { recursive: true });
+    await writeFile(path.join(root, locale, `${namespace}.json`), source);
+  }));
+  await Promise.all(additions.map(([locale, namespace]) => disk('create', locale, namespace)));
   const store = createStore({ baseLocale: 'ko', locale: 'ja', catalogs: request()[0].data.catalogs });
   t.after(() => store.dispose());
   assert.deepEqual(store.getSnapshot().availableLocales, ['en', 'ja', 'ko']);

@@ -12,6 +12,8 @@ export interface SayloViteOptions {
   readonly timeZone?: string;
   /** Production-only parser removal scoped to Saylo's AST formatter. Defaults to true. */
   readonly astRuntime?: boolean;
+  /** Build-only exact namespace:messageId list. Undefined keeps all messages; [] keeps none. */
+  readonly includeKeys?: readonly string[];
   /** Build-only: every discovered locale and initialLocale must cover all base namespaces/keys. Defaults to false. */
   readonly requireCompleteTranslations?: boolean;
   /** Declaration file relative to Vite root. Startup awaits it; live updates do not. */

@@ -44,7 +44,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && node -e \"require('node:fs').copyFileSync('src/virtual.d.ts', 'dist/virtual.d.ts')\" && node ../../scripts/build-package-docs.mjs",
-    "test": "node --test test/plugin.test.mjs test/client.test.mjs test/lazy.test.mjs test/patch.test.mjs test/wire.test.mjs test/production.test.mjs test/server.test.mjs test/disk-rechecks.test.mjs test/sync-state.test.mjs test/support-report.test.mjs",
+    "test": "node --test test/plugin.test.mjs test/client.test.mjs test/lazy.test.mjs test/patch.test.mjs test/wire.test.mjs test/production.test.mjs test/build-keys.test.mjs test/server.test.mjs test/disk-rechecks.test.mjs test/sync-state.test.mjs test/support-report.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": {

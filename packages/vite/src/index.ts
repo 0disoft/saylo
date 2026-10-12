@@ -11,7 +11,8 @@ import { LiveRegistry } from './live-registry.js';
 import { catalogId } from './catalog-outcome.js';
 import { createAstFormatter } from './ast-formatter.js';
 import { requireCompleteTranslations } from './complete-translations.js';
-import type { CatalogOutcome } from '@0disoft/saylo-core';
+import { readIncludedKeys, selectBuildCatalogs } from './build-keys.js';
+import type { CatalogOutcome, ParsedCatalog } from '@0disoft/saylo-core';
 import { registerServerSource } from './server-source.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
   REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest, isSnapshotRequest } from './types.js';
@@ -24,9 +25,15 @@ const RESOLVED_LAZY = `\0${LAZY}`;
 const SERVER = 'virtual:saylo/server';
 const RESOLVED_SERVER = `\0${SERVER}`;
 const CHUNK = 'virtual:saylo/catalog/';
-const encode = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
+const encode = (value: unknown) => {
+  const json = JSON.stringify(value).replace(/</g, '\\u003c');
+  // A literal __proto__ property sets an object's prototype in emitted JS.
+  // JSON parsing preserves it as an own message key without ICU reparsing.
+  return json.includes('"__proto__":') ? `JSON.parse(${JSON.stringify(json)})` : json;
+};
 
 export default function saylo(options: SayloViteOptions): Plugin {
+  const includeKeys = readIncludedKeys(options.includeKeys);
   if (options.requireCompleteTranslations !== undefined && typeof options.requireCompleteTranslations !== 'boolean') {
     throw new TypeError('requireCompleteTranslations must be a boolean.');
   }
@@ -41,6 +48,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let files = new Map<string, CatalogFile>();
   let registry: CatalogRegistry;
   let production = false;
+  let buildCatalogs: readonly ParsedCatalog[] | undefined;
   const chunks = new Map<string, CatalogOutcome>();
   let revision = 0;
   let server: ViteDevServer | undefined;
@@ -123,7 +131,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (strictBuild) {
         await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
       }
-      registry = new CatalogRegistry(sessionId, baseLocale, snapshot().catalogs);
+      buildCatalogs = production ? selectBuildCatalogs(snapshot().catalogs, baseLocale, includeKeys) : undefined;
+      registry = new CatalogRegistry(sessionId, baseLocale, buildCatalogs ?? snapshot().catalogs);
       chunks.clear();
       if (production) for (const meta of registry.manifest().catalogs) {
         if (meta.status === 'present') chunks.set(`${CHUNK}${encodeURIComponent(meta.key.locale)}/${encodeURIComponent(meta.key.namespace)}`,
@@ -180,7 +189,7 @@ export const createRequestI18n = (options = {}) => createServerI18n({ locale: in
   initialNamespaces, ...options, catalogSource });` : ''}`;
       }
       if (id !== RESOLVED) return;
-      const catalogs = JSON.stringify(snapshot().catalogs).replace(/</g, '\\u003c');
+      const catalogs = encode(buildCatalogs ?? snapshot().catalogs);
       return `import { freezeCatalogs } from '@0disoft/saylo-vite/client';
 export const initialCatalogs = freezeCatalogs(${catalogs});
 export const baseLocale = ${JSON.stringify(baseLocale)};

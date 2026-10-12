@@ -6,6 +6,12 @@ import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLo
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 
 saylo({ localesDir: './locales', baseLocale: 'ko', astRuntime: true, requireCompleteTranslations: true, typegen: { outFile: 'generated.d.ts' } });
+saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: ['demo:hello'] as const });
+saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: [] });
+// @ts-expect-error includeKeys is a list of strings
+saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: 'demo:hello' });
+// @ts-expect-error message keys must be strings
+saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: [1] });
 // @ts-expect-error completeness is a boolean option
 saylo({ localesDir: './locales', baseLocale: 'ko', requireCompleteTranslations: 'true' });
 const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale, timeZone });

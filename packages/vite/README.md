@@ -53,6 +53,25 @@ export default defineConfig({
 
 카탈로그 파일 구조는 `locales/<locale>/<namespace>.json`이다. 예를 들어 `locales/ko/demo.json`, `locales/en/demo.json`이다.
 
+## 선택 빌드(includeKeys)
+
+`includeKeys`는 빌드에서 내보낼 메시지를 정확한 `namespace:messageId` 목록으로 지정하는 옵션이다. 와일드카드는 없고, 소스 코드를 스캔해 필요한 키를 자동으로 찾아주지도 않는다. 이 옵션은 현재 로컬 checkout에만 있고, 게시본 `0.1.0-alpha.4`와 동결된 `0.1.0-alpha.5` 후보 tarball 어디에도 들어가지 않았다.
+
+```js
+// vite.config.mjs
+saylo({
+  localesDir: 'locales',
+  baseLocale: 'ko',
+  includeKeys: ['demo:heading', 'demo:greeting'],
+});
+```
+
+옵션을 비우면 원본 카탈로그 전체를 그대로 내보낸다. `[]`를 주면 로케일·namespace는 그대로 두고 메시지가 0개인 카탈로그를 내보낸다. 문자열이 아니거나 콜론이 정확히 하나가 아닌 항목, 같은 목록의 중복 항목은 `saylo()`를 부를 때 바로 던진다. 기준 카탈로그에 없는 키는 빌드할 때만 확인하고, 개발 중에는 존재 여부를 검사하지 않는다. 목록은 plugin을 만들 때 복사해 동결하므로, 그 뒤 호출자가 배열을 바꿔도 빌드 설정은 바뀌지 않는다.
+
+개발 서버 제공과 hot 갱신은 이 목록으로 거르지 않는다. 빌드에서는 원본 소스의 schema 검사(깨진 JSON·ICU, 알 수 없는 인자)와, 켜져 있으면 `requireCompleteTranslations` 완역 검사를 pruning보다 먼저 끝낸다. 그래서 키를 빼도 깨진 번역이나 빠진 번역을 숨길 수 없다. pruning은 eager `virtual:saylo`, lazy boot·chunks, `virtual:saylo/server`(SSR)에 똑같이 적용하고, 선택한 메시지가 0개인 namespace라도 로케일·namespace 목록과 누락 pair fallback 메타데이터는 유지한다. schema fingerprint는 선택한 키 기준으로 다시 계산한다.
+
+`typegen`이 만드는 `generated.d.ts`는 의도적으로 원본 base schema 전체를 그대로 담는다. production에서 목록에서 뺀 키를 `t('omitted:key')`로 부르면 core가 `UnknownMessageError`를 던진다. `menuKey`나 데이터에서 만들어지는 키처럼 동적으로 정해지는 키는 목록에 넣거나 옵션 자체를 비워야 한다. 앱마다 자동 tree-shaking이나 성능 이득을 보장하지는 않는다.
+
 ## 빌드 완역 검사
 
 `requireCompleteTranslations`(기본 `false`)를 켜면 Vite 운영 빌드에서 번역 키와 namespace 누락을 검사한다. `0.1.0-alpha.3`부터 제공하며 기존 `0.1.0-alpha.2` 게시본에는 포함되지 않는다.
