@@ -29,8 +29,8 @@ assert.ok(!longTextChecks || zoomChecks, 'Long-text checks require --zoom to ver
 const zoom = Number(values.zoom ?? 1);
 assert.ok([1, 2, 4].includes(zoom), 'Supported zoom factors: 1, 2, 4');
 const reportPath = `.release/accessibility${longTextChecks ? '-long-text' : ''}${journeyChecks ? '-journey' : keyboardChecks ? '-keyboard' : ''}${cpuRate > 1 ? `-cpu-${cpuRate}` : ''}${zoomChecks ? `-zoom-${zoom}` : ''}-report.json`;
-const frameworks = values.framework ? [values.framework] : ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'];
-assert.ok(frameworks.every(name => ['vanilla', 'react', 'svelte', 'npm', 'sveltekit'].includes(name)));
+const frameworks = values.framework ? [values.framework] : ['vanilla', 'react', 'svelte', 'vue', 'npm', 'sveltekit'];
+assert.ok(frameworks.every(name => ['vanilla', 'react', 'svelte', 'vue', 'npm', 'sveltekit'].includes(name)));
 let activeReject;
 const interrupt = () => activeReject?.(new Error('Accessibility verification interrupted'));
 process.once('SIGINT', interrupt); process.once('SIGTERM', interrupt);

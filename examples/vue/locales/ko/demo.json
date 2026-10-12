@@ -1,0 +1,15 @@
+{
+  "heading": "번역을 바꿔도, 입력은 그대로",
+  "description": "폼에 입력하고 확인 창을 열어 둔 채 번역 파일을 수정하고 저장해 보세요.",
+  "formTitle": "주문 미리보기",
+  "name": "이름",
+  "namePlaceholder": "받으실 분의 이름",
+  "note": "요청 사항",
+  "notePlaceholder": "문 앞에 놓아 주세요",
+  "count": "상품 수",
+  "summary": "{count, plural, other {상품 #개}}",
+  "openDialog": "확인 창 열기",
+  "dialogTitle": "입력한 내용을 확인해 주세요",
+  "dialogNote": "확인 메모",
+  "closeDialog": "닫기"
+}

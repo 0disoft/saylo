@@ -1,6 +1,6 @@
 # Saylo
 
-Vue 3의 로컬 어댑터를 추가했다. typed context·반응형 snapshot·컴포넌트 구독 정리·요청별 SSR을 제공하며, 아직 private workspace이고 게시 대상에는 포함하지 않는다. API와 사용법은 [Vue 어댑터](packages/vue/README.md)를 따른다.
+Vue 3의 로컬 어댑터를 추가했다. typed context·반응형 snapshot·컴포넌트 구독 정리·요청별 SSR을 제공하며, 아직 private workspace이고 게시 대상에는 포함하지 않는다. API는 [Vue 어댑터](packages/vue/README.md), 번역 저장 중 입력·모달 보존 체험은 [Vue 데모](examples/vue/README.md)를 따른다. `npm run dev:vue`로 실행한다.
 
 Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않고 화면에 즉시 반영하는 것을 목표로 하는 i18n(국제화) 라이브러리다. JavaScript와 TypeScript 프로젝트를 함께 지원하고, 개발 서버에서 문구 수정, 로케일 추가, namespace 추가가 입력 폼과 모달 같은 기존 DOM 상태를 유지하며 반영되는 것을 목표로 한다. 상태 보존은 기존 호출부의 스키마를 깨뜨리지 않는 편집에 적용한다. 키 삭제·필수 인자 추가와 Vite 서버 재시작의 범위는 [제품과 범위](docs/01-product-and-scope.md)를 따른다.
 

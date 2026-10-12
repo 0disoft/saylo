@@ -78,6 +78,30 @@ void (async () => {
       check(document.activeElement === field, 'Focus reset');
       check(node('#support-report').value === reportText, 'Generated report reset');
     };
+    if (new URL(location.href).searchParams.has('live')) {
+      field.setSelectionRange(3, 8);
+      await action('edit-base');
+      await wait(() => node('h1').textContent === 'Vue live catalog edit' && node('#dialog-title').textContent === 'Vue live confirmation', 'Live edit did not render');
+      preserved();
+      check(field.selectionStart === 3 && field.selectionEnd === 8, 'Live edit reset cursor/selection');
+      checks.push('live-edit');
+      await action('invalid-base');
+      await wait(() => node('#error').textContent.length > 0, 'Invalid JSON has no diagnostic');
+      check(node('h1').textContent === 'Vue live catalog edit', 'Invalid JSON lost the last good view');
+      preserved(); checks.push('invalid-json');
+      await action('restore-base');
+      await wait(() => node('#error').textContent === '' && node('h1').textContent === '번역을 바꿔도, 입력은 그대로', 'Live edit repair did not recover');
+      preserved(); checks.push('live-restoration');
+      await action('add-locale');
+      await wait(() => [...node('#locale').options].some(option => option.value === 'fr'), 'Added locale missing');
+      await locale('fr');
+      checkLanguages('fr');
+      check(node('h1').textContent === 'Bonjour Vue', 'Added locale did not lazy load');
+      preserved(); checks.push('locale-addition');
+      await action('remove-added-locale');
+      await wait(() => document.documentElement.lang === 'ko' && ![...node('#locale').options].some(option => option.value === 'fr'), 'Deleted new locale did not fall back');
+      preserved(); checks.push('added-locale-removal');
+    }
     await locale('en');
     checkLanguages('en');
     await action('remove-locale');

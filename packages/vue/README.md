@@ -87,6 +87,6 @@ export const { provideI18n, useI18n } = createSayloVue<AppSchema>();
 
 ## 구현 범위
 
-현재 소스에는 위 API만 있다. 키 단위 selector 구독, `app.use` 플러그인, Nuxt 모듈, 데모/예제 앱, 게시본 integrity 인수 검사는 구현하지 않았다. 이 패키지는 게시된 `alpha.4`·`alpha.5` 대상이 아니고 대응하는 릴리스 검증 기록도 없다.
+브라우저 예제는 [Vue 데모](../../examples/vue/README.md)를 따른다. 키 단위 selector 구독, `app.use` 플러그인, Nuxt 모듈, 게시본 integrity 인수 검사는 구현하지 않았다. 이 패키지는 게시된 `alpha.4`·`alpha.5` 대상이 아니고 대응하는 릴리스 검증 기록도 없다.
 
 라이선스는 Apache-2.0이고, 배포 tarball의 `files`에 `LICENSE`와 `NOTICE`를 포함한다.

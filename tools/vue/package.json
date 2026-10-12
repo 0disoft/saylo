@@ -1,0 +1,6 @@
+{
+  "name": "saylo-vue-typecheck-tools",
+  "private": true,
+  "dependencies": { "typescript": "6", "vue-tsc": "3" },
+  "engines": { "node": "24.x" }
+}

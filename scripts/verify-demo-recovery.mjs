@@ -7,8 +7,8 @@ import { promisify } from 'node:util';
 import { createServer } from 'vite';
 
 const framework = process.argv[process.argv.indexOf('--framework') + 1];
-assert.ok(['react', 'svelte'].includes(framework), 'Use --framework react or svelte');
-const label = framework === 'react' ? 'React' : 'Svelte';
+assert.ok(['react', 'svelte', 'vue'].includes(framework), 'Use --framework react, svelte or vue');
+const label = framework === 'react' ? 'React' : framework === 'vue' ? 'Vue' : 'Svelte';
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const parent = path.join(repository, '.release');
 await mkdir(parent, { recursive: true });
@@ -35,14 +35,16 @@ try {
   // Keep original catalogs, generated declarations and every other live demo untouched.
   const files = framework === 'react'
     ? ['index.html', 'main.tsx', 'demo-messages.ts', 'i18n.ts', 'generated.d.ts', 'SupportPanel.tsx', 'tsconfig.json', 'vite.config.mjs']
-    : ['index.html', 'main.ts', 'App.svelte', 'Preview.svelte', 'demo-messages.ts', 'i18n.ts', 'generated.d.ts', 'SupportPanel.svelte', 'tsconfig.json', 'vite.config.mjs'];
+    : framework === 'vue'
+      ? ['index.html', 'main.ts', 'App.vue', 'demo-messages.ts', 'i18n.ts', 'generated.d.ts', 'vite-env.d.ts', 'tsconfig.json', 'vite.config.mjs']
+      : ['index.html', 'main.ts', 'App.svelte', 'Preview.svelte', 'demo-messages.ts', 'i18n.ts', 'generated.d.ts', 'SupportPanel.svelte', 'tsconfig.json', 'vite.config.mjs'];
   for (const name of files) {
     await mkdir(app, { recursive: true });
     await cp(path.join(repository, `examples/${framework}`, name), path.join(app, name));
   }
   for (const name of ['vanilla/locales', 'vanilla/style.css', 'shared'])
     await cp(path.join(repository, 'examples', name), path.join(root, 'examples', name), { recursive: true });
-  if (framework === 'svelte') await cp(path.join(repository, 'examples/svelte/locales'), path.join(app, 'locales'), { recursive: true });
+  if (framework !== 'react') await cp(path.join(repository, `examples/${framework}/locales`), path.join(app, 'locales'), { recursive: true });
   for (const id of ['core', 'vite', framework]) {
     await mkdir(path.join(root, 'packages', id), { recursive: true });
     await cp(path.join(repository, 'packages', id, 'package.json'), path.join(root, 'packages', id, 'package.json'));
@@ -50,6 +52,7 @@ try {
   const catalogs = framework === 'react' ? path.join(root, 'examples/vanilla/locales') : path.join(app, 'locales');
   const koFile = path.join(catalogs, 'ko/demo.json');
   const enFile = path.join(catalogs, 'en/demo.json');
+  const addedFile = path.join(catalogs, 'fr/demo.json');
   const ko = await readFile(koFile, 'utf8'); const en = await readFile(enFile, 'utf8');
   const probe = await readFile(new URL('./demo-recovery-browser.mjs', import.meta.url), 'utf8');
   const plugin = {
@@ -65,6 +68,14 @@ try {
       req.on('end', () => { void (async () => {
         if (req.url === '/__demo_recovery_result') { resolveReport(JSON.parse(body)); res.end('ok'); return; }
         if (body === 'remove-locale') await rm(enFile);
+        else if (body === 'edit-base' && framework === 'vue') await writeFile(koFile, JSON.stringify({ ...JSON.parse(ko),
+          heading: 'Vue live catalog edit', dialogTitle: 'Vue live confirmation' }));
+        else if (body === 'invalid-base' && framework === 'vue') await writeFile(koFile, '{invalid');
+        else if (body === 'add-locale' && framework === 'vue') {
+          await mkdir(path.dirname(addedFile), { recursive: true });
+          await writeFile(addedFile, JSON.stringify({ ...JSON.parse(en), heading: 'Bonjour Vue' }));
+        }
+        else if (body === 'remove-added-locale' && framework === 'vue') await rm(addedFile);
         else if (body === 'restore-locale') await writeFile(enFile, en);
         else if (body === 'empty-base') await writeFile(koFile, '{}');
         else if (body === 'restore-base') await writeFile(koFile, ko);
@@ -87,7 +98,7 @@ try {
     void completed.catch(() => {});
     browser = spawn(executable, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
       '--disable-background-networking', `--user-data-dir=${path.join(root, 'browser-profile')}`,
-      server.resolvedUrls.local[0] + (cold ? '?cold=1' : '')], { windowsHide: true, stdio: 'ignore' });
+      server.resolvedUrls.local[0] + (cold ? '?cold=1' : framework === 'vue' ? '?live=1' : '')], { windowsHide: true, stdio: 'ignore' });
     browser.once('error', rejectReport);
     browser.once('exit', code => rejectReport?.(new Error(`Chromium exited before report (${code}).`)));
     timer = setTimeout(() => rejectReport(new Error(`${label} recovery browser timed out after 45s.`)), 45000);
@@ -96,7 +107,8 @@ try {
     assert.equal(report.ok, true, report.error);
     assert.deepEqual(report.errors, [], `${label} logged runtime errors`);
     assert.deepEqual(report.checks, cold ? ['cold-empty-view', 'cold-interaction', 'cold-restoration']
-      : ['locale-removal', 'locale-restoration', 'empty-base', 'interactive-fallback', 'base-restoration', 'namespace-removal', 'namespace-restoration']);
+      : [...(framework === 'vue' ? ['live-edit', 'invalid-json', 'live-restoration', 'locale-addition', 'added-locale-removal'] : []),
+        'locale-removal', 'locale-restoration', 'empty-base', 'interactive-fallback', 'base-restoration', 'namespace-removal', 'namespace-restoration']);
     clearTimeout(timer); rejectReport = undefined;
     await stopBrowser();
   }
