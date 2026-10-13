@@ -1,0 +1,327 @@
+{
+  "schema": "saylo.release-candidate-refresh/v1",
+  "observedAt": "2026-10-13T08:04:19.315Z",
+  "sourceCommit": "500238f0511aaadd5301a0c3f580afa68152a031",
+  "proposedVersion": "0.1.0-alpha.5",
+  "tag": "alpha",
+  "candidateDirectory": ".release/candidate-0.1.0-alpha.5-Zs8WKy",
+  "validationDirectory": ".release/candidate-0.1.0-alpha.5-Zs8WKy/validation-JJBz8Y",
+  "validationSha256": "26ce77dbdaa2eb46278a3b926eef22bade85c02a64b77ddb08c0a3a5a6c2cf93",
+  "sourceArchiveSha256": "3a2a7f412e17abaa392bd2f8355cd0414ae69d6ef02bd628ccf6eeb5e92691ef",
+  "frozenInputs": 1057,
+  "inputInventorySha256": "28828d81cdb6fc526f66da3e27b7159d199da43585345f0c47692b4cf704d14b",
+  "checks": [
+    {
+      "name": "install",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "durationMs": 15038
+    },
+    {
+      "name": "check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "durationMs": 63086
+    },
+    {
+      "name": "release-metadata",
+      "command": [
+        "npm",
+        "run",
+        "release:check",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 1227
+    },
+    {
+      "name": "pack",
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/pack-smoke.mjs",
+        "--save-release"
+      ],
+      "exitCode": 0,
+      "durationMs": 58070
+    },
+    {
+      "name": "publish-plan",
+      "command": [
+        "npm",
+        "run",
+        "release:publish",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 795
+    }
+  ],
+  "checkTests": {
+    "groups": [
+      8,
+      82,
+      14,
+      14,
+      11,
+      137,
+      10,
+      8
+    ],
+    "total": 284,
+    "failed": 0
+  },
+  "logSha256": {
+    "install": "0c02c24c2fae8e7b19e893ff9378b575374d082699030a416872056ddb96a67d",
+    "check": "f0154b382d0ec594ffe903500d38ff58f43db43c58abdd03dadadf1115b5f742",
+    "release-metadata": "796254fc2234c914d050573a82d69453d67e2d6d03d4101db61671a1e4d9929e",
+    "pack": "008dd97415cf530f7603eeb612447cbe1e60bf844a6ed5aa4566298f0a0e3421",
+    "publish-plan": "b9420aaaf09a064773ba50e203d3b90de6b2d75c5b95a98bd96bb4f70de17b3c",
+    "react-selected": "a2f9ac8e50674359d475cbfd338584b47881924843775773fdd6a9bfdfb79e2b",
+    "sveltekit": "a7ac5b96d38ec37b9faa56826d696cc64fa290820bd9953b920ef19cc3dd63ec"
+  },
+  "artifacts": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-Ey6wBIzfa1WJGrSYsm1PivOm2bc89tzNtIy3n6Ao6G/n0Zx4uBdkA4OPxdy0D5ipsf630YPj+2m+Pku9TPbFEg=="
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-ynW9Yl4pKgaD7SSFdV2GPUObNOAlT2Ff/GH5zNLbcGzjnK3nb9BcHColc/J8zV+FZgCrr7jbmEZGJjttCZDm7Q=="
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-gKfPS8+IUPnl8xIoxRMe1QgjAY1+qVSzgxdBcjHNRaPgle8/B6gqUKFzHL5Vz2Bqd9HdCnXB7QWv4oeBFCVBGw=="
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-yUADQ7BkF60N27h992ptliwLlmRMym2vnx0FbCKYUJLKYdAK4YGqVUbBm4kuS4rol4kBlGutOBlCeuPqsxXm8w=="
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-x7dpGhA+/J6cZ8UX+YvNXv0Nz5JUmoBlQ1CVEfi2BJVZRC/68+jDBK4nm7YS3iyFq3vA7OW6LYJSFuYkCxJKdg=="
+    }
+  ],
+  "previousCandidate": {
+    "directory": ".release/candidate-0.1.0-alpha.5-1Vq2JZ",
+    "sourceCommit": "2037f9a72869cb874d1cf9ca4aeddf8671e5fc82",
+    "descriptorSha256": "984c0360c5faed0992170d4ad74b0b46e0908878f626fe53f0746b3688690555",
+    "sourceArchiveSha256": "22f84aa959fa975361515b370f223b59f8afc2166bda564be40e864c0f32fec0",
+    "validationSha256": "726af45db96f057bc4497548dc5d48f77f081da6f6f48c5272c8a7982579c477",
+    "artifacts": [
+      {
+        "name": "@0disoft/saylo-core",
+        "version": "0.1.0-alpha.5",
+        "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+        "integrity": "sha512-Ey6wBIzfa1WJGrSYsm1PivOm2bc89tzNtIy3n6Ao6G/n0Zx4uBdkA4OPxdy0D5ipsf630YPj+2m+Pku9TPbFEg=="
+      },
+      {
+        "name": "@0disoft/saylo-react",
+        "version": "0.1.0-alpha.5",
+        "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+        "integrity": "sha512-ynW9Yl4pKgaD7SSFdV2GPUObNOAlT2Ff/GH5zNLbcGzjnK3nb9BcHColc/J8zV+FZgCrr7jbmEZGJjttCZDm7Q=="
+      },
+      {
+        "name": "@0disoft/saylo-svelte",
+        "version": "0.1.0-alpha.5",
+        "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+        "integrity": "sha512-gKfPS8+IUPnl8xIoxRMe1QgjAY1+qVSzgxdBcjHNRaPgle8/B6gqUKFzHL5Vz2Bqd9HdCnXB7QWv4oeBFCVBGw=="
+      },
+      {
+        "name": "@0disoft/saylo-typegen",
+        "version": "0.1.0-alpha.5",
+        "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+        "integrity": "sha512-yUADQ7BkF60N27h992ptliwLlmRMym2vnx0FbCKYUJLKYdAK4YGqVUbBm4kuS4rol4kBlGutOBlCeuPqsxXm8w=="
+      },
+      {
+        "name": "@0disoft/saylo-vite",
+        "version": "0.1.0-alpha.5",
+        "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+        "integrity": "sha512-soe1H5j2EAuamcP46k2Q5cVoorYcBX8oH+aNcficGlLLQZMcNE9M79BK5azhTEcZrqmcL0BFhHMfrayNbjsHng=="
+      }
+    ],
+    "unchanged": true
+  },
+  "artifactComparison": [
+    {
+      "name": "@0disoft/saylo-core",
+      "previousIntegrity": "sha512-Ey6wBIzfa1WJGrSYsm1PivOm2bc89tzNtIy3n6Ao6G/n0Zx4uBdkA4OPxdy0D5ipsf630YPj+2m+Pku9TPbFEg==",
+      "currentIntegrity": "sha512-Ey6wBIzfa1WJGrSYsm1PivOm2bc89tzNtIy3n6Ao6G/n0Zx4uBdkA4OPxdy0D5ipsf630YPj+2m+Pku9TPbFEg==",
+      "identical": true
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "previousIntegrity": "sha512-ynW9Yl4pKgaD7SSFdV2GPUObNOAlT2Ff/GH5zNLbcGzjnK3nb9BcHColc/J8zV+FZgCrr7jbmEZGJjttCZDm7Q==",
+      "currentIntegrity": "sha512-ynW9Yl4pKgaD7SSFdV2GPUObNOAlT2Ff/GH5zNLbcGzjnK3nb9BcHColc/J8zV+FZgCrr7jbmEZGJjttCZDm7Q==",
+      "identical": true
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "previousIntegrity": "sha512-gKfPS8+IUPnl8xIoxRMe1QgjAY1+qVSzgxdBcjHNRaPgle8/B6gqUKFzHL5Vz2Bqd9HdCnXB7QWv4oeBFCVBGw==",
+      "currentIntegrity": "sha512-gKfPS8+IUPnl8xIoxRMe1QgjAY1+qVSzgxdBcjHNRaPgle8/B6gqUKFzHL5Vz2Bqd9HdCnXB7QWv4oeBFCVBGw==",
+      "identical": true
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "previousIntegrity": "sha512-yUADQ7BkF60N27h992ptliwLlmRMym2vnx0FbCKYUJLKYdAK4YGqVUbBm4kuS4rol4kBlGutOBlCeuPqsxXm8w==",
+      "currentIntegrity": "sha512-yUADQ7BkF60N27h992ptliwLlmRMym2vnx0FbCKYUJLKYdAK4YGqVUbBm4kuS4rol4kBlGutOBlCeuPqsxXm8w==",
+      "identical": true
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "previousIntegrity": "sha512-soe1H5j2EAuamcP46k2Q5cVoorYcBX8oH+aNcficGlLLQZMcNE9M79BK5azhTEcZrqmcL0BFhHMfrayNbjsHng==",
+      "currentIntegrity": "sha512-x7dpGhA+/J6cZ8UX+YvNXv0Nz5JUmoBlQ1CVEfi2BJVZRC/68+jDBK4nm7YS3iyFq3vA7OW6LYJSFuYkCxJKdg==",
+      "identical": false
+    }
+  ],
+  "extraAcceptance": {
+    "reactSelected": {
+      "exitCode": 0,
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/verify-react-selected.mjs"
+      ],
+      "reportSha256": "d803d1b296d6938e4daaf94a6ebb909cd6e59bdade68a4a3f8314169476a99f6",
+      "checks": [
+        "full-and-selected-type-contracts",
+        "retained-full-typegen",
+        "selected-lazy-production-chunks",
+        "production-bundle-jsdom-lifecycle"
+      ],
+      "browser": false,
+      "logSha256": "a2f9ac8e50674359d475cbfd338584b47881924843775773fdd6a9bfdfb79e2b"
+    },
+    "sveltekit": {
+      "exitCode": 0,
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/pack-sveltekit.mjs",
+        "--consumer-fixture",
+        "support"
+      ],
+      "reused": false,
+      "consumption": "New tarballs repacked from the same frozen candidate source, outside-workspace install; original consumer temporary tarballs are cleaned up by the script.",
+      "typecheck": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "checks": [
+        "concurrent-ko-en-SSR-and-boot",
+        "canonical-locale-and-fallback",
+        "dev-sync-support-and-listener-cleanup",
+        "production-HTTP",
+        "hydration",
+        "ko-en-ko",
+        "support-report",
+        "modal-navigation-focus",
+        "shared-layout",
+        "exit-reentry"
+      ],
+      "logSha256": "a7ac5b96d38ec37b9faa56826d696cc64fa290820bd9953b920ef19cc3dd63ec"
+    }
+  },
+  "privateWorkspace": {
+    "name": "@0disoft/saylo-vue",
+    "private": true,
+    "version": "0.1.0-alpha.4",
+    "candidateCoreDependency": "0.1.0-alpha.5",
+    "published": false
+  },
+  "originalWorkspace": [
+    {
+      "id": "core",
+      "version": "0.1.0-alpha.4",
+      "private": false,
+      "sha256": "72ed6b36298082337ec72babdd9fcbc053c2b1d902c14edfc85ae02e4c6cc5dd"
+    },
+    {
+      "id": "react",
+      "version": "0.1.0-alpha.4",
+      "private": false,
+      "core": "0.1.0-alpha.4",
+      "sha256": "c3dd61ef70fe5e4ff1ef1fd11d64f369d6d5de9c16d55442862a527ca026f445"
+    },
+    {
+      "id": "svelte",
+      "version": "0.1.0-alpha.4",
+      "private": false,
+      "core": "0.1.0-alpha.4",
+      "sha256": "d65751d9ba1e6c72e931c1c626209b0823634dc8d4533981acacb4c46e54218a"
+    },
+    {
+      "id": "typegen",
+      "version": "0.1.0-alpha.4",
+      "private": false,
+      "core": "0.1.0-alpha.4",
+      "sha256": "06bc7954a35422dad66f370381ee68b1db9656601edd8ec55a85e0e708fdd074"
+    },
+    {
+      "id": "vite",
+      "version": "0.1.0-alpha.4",
+      "private": false,
+      "core": "0.1.0-alpha.4",
+      "sha256": "c4649e8bf33537f7b150e65b7cc0d95d2a2391a0b1770ed81ed8139c6ad5aa57"
+    },
+    {
+      "id": "vue",
+      "version": "0.1.0-alpha.4",
+      "private": true,
+      "core": "0.1.0-alpha.4",
+      "sha256": "4b4f918ac86512e02ed190434c6a7bdee3a5a6fb4ed149d8154ed17119a4e4c2"
+    }
+  ],
+  "originalLockSha256": "73e7ce22bf64ed2ac7903b1535101b80d51491a76c348d60e74e8c8047887b92",
+  "originalVersionsUnchanged": true,
+  "failedFirstAttempt": {
+    "directory": ".release/candidate-0.1.0-alpha.5-JL0i4S",
+    "sourceCommit": "a60532592a16f822f90ba691723a35ff12d55eef",
+    "state": "validation failed",
+    "reason": "npm ci rejected the private Vue alpha.4 core reference after public packages were promoted to alpha.5.",
+    "fixCommit": "5086e1b",
+    "installLogSha256": "e14a05ed57593713a65ea4c8f42228cb3739148e7a9ce224b3aa8e3e7d8e1a78"
+  },
+  "state": "fresh local alpha.5 candidate validated; publication on hold",
+  "limits": [
+    "No original version bump, push, OIDC request, GitHub Actions dispatch or npm publication.",
+    "Vue stays private alpha.4; only its internal core dependency is aligned in the candidate copy.",
+    "Five candidate tarballs are local proof artifacts, not CI-approved or registry acceptance.",
+    "No new performance, accessibility, other-browser or screen-reader claims.",
+    "The previous eight-file promotion patch is historical; a future promotion must also align private Vue core refs and lock metadata."
+  ]
+}
