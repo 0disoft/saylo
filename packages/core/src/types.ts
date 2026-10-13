@@ -66,6 +66,14 @@ export type Translate<S extends Schema> = string extends keyof S
   ? (key: string, args?: Record<string, unknown>) => string
   : (...call: TypedCall<S>) => string;
 
+export type RichTextPart =
+  | { readonly type: 'text'; readonly value: string }
+  | { readonly type: 'tag'; readonly name: string; readonly children: readonly RichTextPart[] };
+
+export type TranslateParts<S extends Schema> = string extends keyof S
+  ? (key: string, args?: Record<string, unknown>) => readonly RichTextPart[]
+  : (...call: TypedCall<S>) => readonly RichTextPart[];
+
 /** A synchronous translator bound to one set of immutable parsed catalogs. */
 export interface TranslatorOptions {
   readonly locale: string;
@@ -80,6 +88,7 @@ export interface Translator<S extends Schema = Schema> {
   readonly baseLocale: string;
   readonly timeZone: string;
   readonly t: Translate<S>;
+  readonly tParts: TranslateParts<S>;
 }
 
 /** Shared UI snapshot. Lazy instances can load a subset of the namespace manifest. */
@@ -100,6 +109,7 @@ export interface StoreOptions {
 export interface Store<S extends Schema = Schema> {
   /** Reads the latest committed snapshot; snapshot.t stays bound to that snapshot. */
   readonly t: Translate<S>;
+  readonly tParts: TranslateParts<S>;
   getSnapshot(): StoreSnapshot<S>;
   subscribe(listener: (snapshot: StoreSnapshot<S>) => void): () => void;
   /** Adapters register owned resource cleanup; removing the listener is idempotent. */

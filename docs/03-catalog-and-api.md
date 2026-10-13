@@ -40,7 +40,7 @@ locales/
 - `offset:n`은 plural 분기의 offset 지정이고, `#`은 plural 안에서 offset이 적용된 수를 출력하는 자리다.
 - plural category 집합을 locale마다 같게 강요하지 않는다. `other`, 정확값 분기, `selectordinal`, `offset`, 중첩 구조를 각각 검증한다.
 - parser와 formatter는 검증된 라이브러리를 재사용한다. 초기 구현 선택은 `@formatjs/icu-messageformat-parser`와 `intl-messageformat`이다. `IntlMessageFormat`은 직렬화된 AST를 입력으로 받고 tag/`ignoreTag` 옵션을 지원한다([FormatJS intl-messageformat](https://formatjs.github.io/docs/intl-messageformat/)). 문법을 새로 발명하지 않는다.
-- 태그는 parser의 `ignoreTag`를 켜서 literal 텍스트로 처리한다. rich text 컴포넌트 보간은 MVP에서 제외하고 순수 텍스트를 지원한다.
+- 태그는 parser의 `ignoreTag`를 켜서 literal 텍스트로 처리한다. 초기 결정은 rich text 컴포넌트 보간을 MVP에서 제외하는 것이었다. 첫 rich text core API 슬라이스가 순수 텍스트 계약 위에 읽기 전용 parts 투영(`tParts`)을 더한다([78-rich-text-parts.md](78-rich-text-parts.md)). 인자로 컴포넌트를 넣는 보간과 자동 HTML 렌더는 여전히 비목표다.
 - 임의 JavaScript 실행, `eval`, 자동 HTML 주입을 하지 않는다.
 - AST는 언어 간에 같아야 하지 않는다. 번역마다 구조와 분기가 달라도 된다. 요구사항은 같은 로케일·같은 메시지·같은 argument에 대해 개발과 운영이 같은 출력, 같은 오류, 같은 fallback을 내는 것(dev/prod parity)이다. 같은 Intl locale data와 같은 런타임 매트릭스에서 비교한다.
 

@@ -1,5 +1,5 @@
 import { CatalogError, createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
-import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
+import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog, RichTextPart } from '@0disoft/saylo-core';
 import { createI18n as createRuntimeI18n, freezeCatalogs } from '@0disoft/saylo-core/runtime';
 
 const runtimeFactory: typeof createI18n = createRuntimeI18n;
@@ -39,6 +39,15 @@ const typed = createTranslator<AppSchema>({ locale: 'ko', baseCatalogs: [appCata
 typed.t('cart:title');
 typed.t('cart:items', { count: 3 });
 typed.t('cart:at', { at: new Date(0) });
+const parts: readonly RichTextPart[] = typed.tParts('cart:items', { count: 3 });
+// @ts-expect-error parts are immutable
+parts.push({ type: 'text', value: 'mutation' });
+// @ts-expect-error rich calls retain required base args
+typed.tParts('cart:items');
+// @ts-expect-error rich calls reject unknown keys
+typed.tParts('cart:unknown');
+// @ts-expect-error rich calls reject argument type mismatches
+typed.tParts('cart:items', { count: '3' });
 // @ts-expect-error unknown key
 typed.t('cart:unknown');
 // @ts-expect-error required args
@@ -46,6 +55,8 @@ typed.t('cart:items');
 // @ts-expect-error wrong number
 typed.t('cart:items', { count: '3' });
 declare const key: 'cart:title' | 'cart:items';
+// @ts-expect-error rich union keys also require narrowing
+typed.tParts(key, { count: 3 });
 // @ts-expect-error union key may require args
 typed.t(key);
 // @ts-expect-error union key and args have no proven correlation
@@ -56,6 +67,8 @@ untyped.t('dynamic:key', { value: 3 });
 
 const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog] });
 store.t('cart:items', { count: 3 });
+store.tParts('cart:items', { count: 3 });
+store.getSnapshot().tParts('cart:title');
 store.getSnapshot().t('cart:title');
 const unsubscribe = store.subscribe(snapshot => {
   snapshot.t('cart:items', { count: 3 });
@@ -86,6 +99,9 @@ const namespace: Promise<void> = lazy.loadNamespace('cart');
 const refresh: Promise<void> = lazy.refresh();
 void transition; void namespace; void refresh;
 lazy.t('cart:items', { count: 3 });
+lazy.tParts('cart:items', { count: 3 });
+// @ts-expect-error lazy parts preserve argument types
+lazy.tParts('cart:items', { count: '3' });
 lazy.getSnapshot().t('cart:at', { at: new Date(0) });
 // @ts-expect-error lazy callers preserve required args
 lazy.t('cart:items');

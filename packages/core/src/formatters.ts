@@ -1,7 +1,8 @@
 import { IntlMessageFormat } from 'intl-messageformat';
-import type { Formatters } from 'intl-messageformat';
+import type { Formatters, FormatXMLElementFn } from 'intl-messageformat';
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
-import type { ParsedMessage } from './types.js';
+import type { ParsedMessage, RichTextPart } from './types.js';
+import { freezeRichParts, projectRichText } from './rich-text.js';
 
 class BoundedCache<T> {
   private readonly values = new Map<string, T>();
@@ -31,6 +32,7 @@ export function createTextFormatter(timeZone: string) {
   const dates = new BoundedCache<Intl.DateTimeFormat>(128);
   const plurals = new BoundedCache<Intl.PluralRules>(128);
   const messages = new BoundedCache<IntlMessageFormat>(256);
+  const richMessages = new BoundedCache<{ formatter: IntlMessageFormat; tags: ReadonlyMap<string, string> }>(256);
   const formatters: Formatters = {
     getNumberFormat: (locale, options) => numbers.get(intlKey(locale, options), () => new Intl.NumberFormat(locale, options)),
     getDateTimeFormat: (locale, options) => {
@@ -40,7 +42,7 @@ export function createTextFormatter(timeZone: string) {
     },
     getPluralRules: (locale, options) => plurals.get(intlKey(locale, options), () => new Intl.PluralRules(locale, options)),
   };
-  return (namespace: string, id: string, message: ParsedMessage, formatLocale: string, values: Record<string, string | number>): string => {
+  const text = (namespace: string, id: string, message: ParsedMessage, formatLocale: string, values: Record<string, string | number>): string => {
     // Exact source text is a collision-free content key for this initial implementation.
     const key = JSON.stringify([namespace, id, message.source, formatLocale, timeZone]);
     const formatter = messages.get(key, () => new IntlMessageFormat(
@@ -50,4 +52,18 @@ export function createTextFormatter(timeZone: string) {
     const result = formatter.format(values);
     return Array.isArray(result) ? result.join('') : String(result);
   };
+  const parts = (namespace: string, id: string, message: ParsedMessage, formatLocale: string,
+    values: Record<string, string | number>): readonly RichTextPart[] => {
+    const key = JSON.stringify([namespace, id, message.source, formatLocale, timeZone]);
+    const { formatter, tags } = richMessages.get(key, () => {
+      const projected = projectRichText(message.ast, `${namespace}:${id}`, message.arguments);
+      return { formatter: new IntlMessageFormat(projected.ast, formatLocale, undefined, { formatters }), tags: projected.tags };
+    });
+    const richValues: Record<string, string | number | FormatXMLElementFn<RichTextPart>> = Object.assign(Object.create(null), values);
+    for (const [alias, name] of tags) {
+      richValues[alias] = children => Object.freeze({ type: 'tag' as const, name, children: freezeRichParts(children) });
+    }
+    return freezeRichParts(formatter.formatToParts<RichTextPart>(richValues).map(part => part.value));
+  };
+  return Object.assign(text, { parts });
 }

@@ -4,7 +4,7 @@ import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
 import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, readManifest, scopeKeys } from './loading-registry.js';
 import type { CatalogOutcome, CreateI18nOptions, I18n } from './loading-types.js';
-import type { Schema, StoreSnapshot, Translate } from './types.js';
+import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
 interface Waiter {
   readonly kind: 'locale' | 'namespace' | 'refresh';
@@ -158,6 +158,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
 
   return Object.freeze({
     t: ((key: string, args?: Record<string, unknown>) => (current.t as Translate<Schema>)(key, args)) as Translate<S>,
+    tParts: ((key: string, args?: Record<string, unknown>) => (current.tParts as TranslateParts<Schema>)(key, args)) as TranslateParts<S>,
     getSnapshot: () => current,
     getServerSnapshot: () => boot.snapshot,
     getBootSnapshot: () => createBootSnapshot({ manifest: committedManifest, locale: current.locale, timeZone,

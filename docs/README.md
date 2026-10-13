@@ -108,6 +108,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 
 74. [77-local-release-readiness.md](77-local-release-readiness.md) — 사전 로컬 check·tarball·SvelteKit browser 검증과 alpha.4 게시 후속
 75. [alpha.4 릴리스](../releases/0.1.0-alpha.4.md) — CI·OIDC 게시·승인 integrity·registry JS/TS 및 SvelteKit 소비 인수
+76. [78-rich-text-parts.md](78-rich-text-parts.md) — 첫 rich text core API 슬라이스의 `tParts` 계약·마커 문법·오류
 
 개발 클라이언트의 handshake 상태 계약은 [dev-sync-state.md](dev-sync-state.md)에 있다.
 빈 폴더에서 npm 게시본으로 시작하는 React 안내는 [getting-started-react.md](getting-started-react.md)에 있다.

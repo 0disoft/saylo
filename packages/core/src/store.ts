@@ -2,7 +2,7 @@ import { CatalogError } from './diagnostics.js';
 import { createTextFormatter } from './formatters.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { createBoundTranslator } from './translator.js';
-import type { ParsedCatalog, Schema, Store, StoreOptions, StoreSnapshot, Translate } from './types.js';
+import type { ParsedCatalog, Schema, Store, StoreOptions, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
 interface Registry {
   readonly catalogs: readonly ParsedCatalog[];
@@ -95,6 +95,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   }
   return Object.freeze({
     t: ((key: string, args?: Record<string, unknown>) => (current.t as Translate<Schema>)(key, args)) as Translate<S>,
+    tParts: ((key: string, args?: Record<string, unknown>) => (current.tParts as TranslateParts<Schema>)(key, args)) as TranslateParts<S>,
     getSnapshot: () => current,
     subscribe: (callback: (snapshot: StoreSnapshot<S>) => void) => {
       assertActive();

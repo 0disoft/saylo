@@ -196,6 +196,11 @@ try {
       await cp(path.join(fixtures, 'support-report.mjs'), path.join(app, 'support-report.mjs'));
       await cp(path.join(fixtures, 'sync-state.mjs'), path.join(app, 'sync-state.mjs'));
     }
+    if (!fromRegistry) {
+      await cp(path.join(fixtures, 'rich-text.mjs'), path.join(app, 'rich-text.mjs'));
+      const rich = await exec(process.execPath, ['rich-text.mjs'], { cwd: app, windowsHide: true, env: childEnv });
+      console.log(rich.stdout.trim());
+    }
     console.log((await npm(['run', 'typegen'], app)).trim());
     assert.match(await readFile(path.join(app, 'generated.d.ts'), 'utf8'), /"demo:items": \{ "count": number;/);
     await npm(['run', 'typecheck'], app);

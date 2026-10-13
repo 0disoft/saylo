@@ -18,6 +18,11 @@ base.keys.x.n.acceptedTypes.push('string');
 const typed = createTranslator({ locale: 'ko', baseCatalogs: [parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' })] });
 typed.t('cart:title');
 typed.t('cart:items', { count: 3 });
+typed.tParts('cart:items', { count: 3 });
+// @ts-expect-error structured output keeps JS argument types
+typed.tParts('cart:items', { count: '3' });
+// @ts-expect-error structured output keeps required JS args
+typed.tParts('cart:items');
 // @ts-expect-error required argument in typed JS
 typed.t('cart:items');
 // @ts-expect-error wrong number in typed JS

@@ -11,10 +11,11 @@ export type { ServerI18nOptions } from './server.js';
 export { readManifest as validateCatalogManifest } from './loading-registry.js';
 export { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
 export { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
+export { InvalidRichTextError } from './rich-text.js';
 export type {
   ArgumentSchema, ArgumentType, CatalogDiagnostic, CatalogOptions, CatalogSchema,
   DeepReadonly, DiagnosticCode, MessageSchema, ParsedCatalog, ParsedMessage, SourcePosition,
-  Schema, Translate, Translator, TranslatorOptions, TypedCall,
+  Schema, Translate, TranslateParts, RichTextPart, Translator, TranslatorOptions, TypedCall,
   Store, StoreOptions, StoreSnapshot,
 } from './types.js';
 export type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome, CatalogLoadResult,

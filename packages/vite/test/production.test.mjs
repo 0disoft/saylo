@@ -170,7 +170,7 @@ test('real production build emits scoped AST chunks, executes lazy imports, and 
         ordinal: '{n, selectordinal, one {#st} other {#th}}',
         select: '{who, select, a {A} other {Other}}',
         nested: '{n, plural, one {{who, select, a {OneA} other {OneOther}}} other {Other #}}',
-        tag: '<b>{name}</b>' }));
+        tag: '<b>{name}</b>', rich: '<link>{n, plural, one {<strong># item</strong>} other {<strong># items</strong>}}</link>' }));
   }
   await writeFile(path.join(root, 'locales', 'en', 'help.json'), '{}'); // Key fallback inside a present chunk.
   await writeFile(path.join(root, 'main.js'), `import { createI18n } from '@0disoft/saylo-core/runtime';
@@ -209,6 +209,12 @@ export const instance = createI18n({ catalogSource, initialCatalogs, locale: ini
   await instance.loadNamespace('help');
   assert.equal(instance.t('help:title'), 'LAZY_ko_help');
   assert.equal(source.getCatalogs().length, 4);
+  assert.deepEqual(instance.tParts('demo:rich', { n: 3 }), [{ type: 'tag', name: 'link', children: [
+    { type: 'tag', name: 'strong', children: [{ type: 'text', value: '3 items' }] },
+  ] }]);
+  assert.deepEqual(instance.tParts('help:tag', { name: '<script>literal</script>' }), [
+    { type: 'tag', name: 'b', children: [{ type: 'text', value: '<script>literal</script>' }] },
+  ]);
   const vectors = [
     ['number', { n: 1234.5 }], ['date', { at: new Date('2024-01-02T03:04:00Z') }],
     ['time', { at: new Date('2024-01-02T03:04:00Z') }], ['plural', { n: 3 }],
@@ -222,6 +228,7 @@ export const instance = createI18n({ catalogSource, initialCatalogs, locale: ini
   const normal = await import(pathToFileURL(path.join(root, 'dist', normalEntry.fileName)));
   t.after(() => normal.instance.dispose());
   await normal.instance.setLocale('en');
+  assert.deepEqual(normal.instance.tParts('demo:rich', { n: 3 }), instance.tParts('demo:rich', { n: 3 }));
   assert.deepEqual(vectors.map(([id, args]) => normal.instance.t(`demo:${id}`, args)), actual);
   const bytes = values => values.reduce((total, chunk) => total + Buffer.byteLength(chunk.code), 0);
   assert.ok(bytes(chunks) < bytes(normalChunks));

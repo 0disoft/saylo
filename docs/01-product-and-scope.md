@@ -36,7 +36,7 @@
 | --- | --- |
 | 전체 리로드로 반영 | DOM 상태를 파괴한다. |
 | 화면 컴포넌트 전면 remount | 입력·포커스·스크롤 상태를 잃는다. |
-| Rich text 컴포넌트 보간 MVP | 값 문법과 타입 계약을 복잡하게 만든다. 순수 텍스트를 먼저 지원한다. |
+| Rich text 컴포넌트 보간 MVP (초기 결정) | 처음에는 값 문법과 타입 계약이 복잡해져 순수 텍스트를 먼저 지원하기로 했다. 첫 rich text core API 슬라이스가 순수 텍스트 위에 읽기 전용 parts 투영(`tParts`)을 더한다. 인자로 컴포넌트를 넣는 보간과 자동 HTML 렌더는 그대로 비목표다. [78-rich-text-parts.md](78-rich-text-parts.md)를 따른다. |
 | selector 단위 미세구독 최적화 | MVP는 instance 단위 locale/catalog revision 구독으로 시작한다. |
 | 사용하지 않는 메시지 제거 최적화 | 동적 t 키와 충돌한다. 근거가 모인 뒤 별도로 다룬다. |
 | 컴파일러·번들러 대체 | Saylo는 i18n 계층만 담당한다. |

@@ -2,7 +2,7 @@ import { CatalogError } from './diagnostics.js';
 import { createTextFormatter } from './formatters.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
-import type { CatalogSchema, MessageSchema, ParsedCatalog, Schema, Translate, Translator, TranslatorOptions } from './types.js';
+import type { CatalogSchema, MessageSchema, ParsedCatalog, Schema, Translate, TranslateParts, Translator, TranslatorOptions } from './types.js';
 
 function catalogError(catalog: ParsedCatalog, code: 'DUPLICATE_CATALOG' | 'LOCALE_MISMATCH' | 'NAMESPACE_MISMATCH', message: string): never {
   throw new CatalogError([{ code, message, sourceName: catalog.sourceName, locale: catalog.locale, namespace: catalog.namespace }]);
@@ -68,7 +68,7 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
     translations.set(catalog.namespace, catalog);
   }
   const format = sharedFormat ?? createTextFormatter(timeZone);
-  const translate = (key: string, args?: Record<string, unknown>): string => {
+  const render = (key: string, args?: Record<string, unknown>, rich = false) => {
     if (typeof key !== 'string') throw new UnknownMessageError(String(key));
     const separator = key.indexOf(':');
     if (separator <= 0 || separator === key.length - 1 || key.indexOf(':', separator + 1) !== -1) throw new UnknownMessageError(key);
@@ -80,7 +80,10 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
     const values = validateArguments(key, baseSchemas.get(namespace)!.keys[id]!, args);
     const translation = translations.get(namespace);
     const source = translation && Object.hasOwn(translation.messages, id) ? translation : base;
-    return format(namespace, id, source.messages[id]!, source.locale, values);
+    return rich ? format.parts(namespace, id, source.messages[id]!, source.locale, values)
+      : format(namespace, id, source.messages[id]!, source.locale, values);
   };
-  return Object.freeze({ locale, baseLocale, timeZone, t: translate as Translate<S> });
+  const translate = (key: string, args?: Record<string, unknown>) => render(key, args);
+  const parts = (key: string, args?: Record<string, unknown>) => render(key, args, true);
+  return Object.freeze({ locale, baseLocale, timeZone, t: translate as Translate<S>, tParts: parts as TranslateParts<S> });
 }

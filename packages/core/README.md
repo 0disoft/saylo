@@ -50,6 +50,28 @@ TypeScript에서는 `createStore<AppSchema>(...)`로, JS에서는 JSDoc `Store<A
 
 브라우저 런타임에서 `parseCatalog`를 빼려면 `@0disoft/saylo-core/runtime` 서브패스 엔트리를 쓴다. 여기에는 `parseCatalog`가 없고 나머지 API는 루트 엔트리와 같다. 루트 엔트리 `@0disoft/saylo-core`는 기존 API를 그대로 유지한다. 이 서브패스는 `0.1.0-alpha.2` 게시본에 포함된다.
 
+## Rich text parts
+
+`tParts(key, args)`는 `t()`와 같은 메시지·인자 계약을 쓰면서 결과를 읽기 전용 parts 트리로 돌려준다. `t()`는 문자열과 literal 태그를 그대로 유지한다.
+
+```js
+import { parseCatalog, createStore } from '@0disoft/saylo-core';
+
+const ko = parseCatalog('{"bold":"<strong>{name}</strong>님, 안녕하세요"}', {
+  locale: 'ko', namespace: 'common', sourceName: 'locales/ko/common.json',
+});
+const richStore = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [ko] });
+
+richStore.tParts('common:bold', { name: '제로디' });
+// [
+//   { type: 'tag', name: 'strong', children: [{ type: 'text', value: '제로디' }] },
+//   { type: 'text', value: '님, 안녕하세요' },
+// ]
+richStore.dispose();
+```
+
+parts는 `{ type: 'text', value }`와 `{ type: 'tag', name, children }` 두 형태이고 깊게 동결된다. attribute 없는 짝 마커(`<name>`·`</name>`)만 구조로 해석한다. attribute가 붙은 마커와 self-closing 마커는 literal text로 남고, 어긋나거나 닫히지 않거나 ICU 분기 경계를 가로지르는 구조는 `InvalidRichTextError`를 던진다(이 오류는 `tParts`에만 적용). 인자 값에 들어온 `<`·`>`는 text로 남는다. 링크·HTML attribute는 앱이 허용 목록에 넣은 tag 이름만 자기 element로 매핑할 때 붙인다. 번역에서 온 이름으로 임의의 HTML element를 만들지 않는다. 마커 문법·오류·예제는 [rich text parts 기록](../../docs/78-rich-text-parts.md)에 있다. 이 API는 `0.1.0-alpha.4` 게시본에 없고 로컬 `npm run check`로 검증했다.
+
 ## 전송 카탈로그 동결
 
 `freezeCatalogs(catalogs)`는 JSON 전송 뒤 카탈로그 배열·AST·위치·인자 스키마를 깊게 동결하고 같은 배열을 반환한다. 루트와 `/runtime` 엔트리에서 제공한다. 같은 core 모듈이 이미 깊게 동결한 객체는 재순회하지 않으며, 외부에서 겉만 동결한 객체는 내부까지 순회한다. 유효성 검사는 기존 decoder·store·i18n에서 수행한다. 이 함수는 `0.1.0-alpha.2` 게시본에 포함되며 구현과 측정은 [동결 경로 공유 기록](../../docs/26-shared-catalog-freeze.md)과 [개발 prebundle 공유 기록](../../docs/30-prebundle-freeze-sharing.md)에 있다.

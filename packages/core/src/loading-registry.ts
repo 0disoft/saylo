@@ -6,7 +6,7 @@ import { createLoadedSignature } from './snapshot-signature.js';
 import { NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
 import type { createTextFormatter } from './formatters.js';
 import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome } from './loading-types.js';
-import type { Schema, StoreSnapshot, Translate } from './types.js';
+import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
 export function canonicalLocale(value: string): string {
   const locale = Intl.getCanonicalLocales(value)[0];
@@ -122,17 +122,19 @@ export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest
   // Schema compatibility is checked atomically by the translator, after all pairs finish.
   const bound = bases.length ? createBoundTranslator<S>({ locale, timeZone, baseCatalogs: bases,
     translations: locale === manifest.baseLocale ? [] : catalogs.filter(c => c.locale === locale) }, formatter) : undefined;
-  const translate = (key: string, args?: Record<string, unknown>) => {
+  const render = (key: string, args?: Record<string, unknown>, rich = false) => {
     if (typeof key !== 'string') throw new UnknownMessageError(String(key));
     const separator = key.indexOf(':');
     if (separator <= 0 || separator === key.length - 1 || key.indexOf(':', separator + 1) !== -1) throw new UnknownMessageError(key);
     const namespace = key.slice(0, separator);
     if (!manifest.availableNamespaces.includes(namespace)) throw new UnknownMessageError(key);
     if (!namespaces.includes(namespace)) throw new NamespaceNotLoadedError(namespace, key);
-    return (bound!.t as Translate<Schema>)(key, args);
+    return rich ? (bound!.tParts as TranslateParts<Schema>)(key, args) : (bound!.t as Translate<Schema>)(key, args);
   };
+  const translate = (key: string, args?: Record<string, unknown>) => render(key, args);
+  const parts = (key: string, args?: Record<string, unknown>) => render(key, args, true);
   const signature = createLoadedSignature(manifest, locale, namespaces, catalogs);
-  return { signature, snapshot: Object.freeze({ locale, baseLocale: manifest.baseLocale, timeZone, t: translate as Translate<S>,
+  return { signature, snapshot: Object.freeze({ locale, baseLocale: manifest.baseLocale, timeZone, t: translate as Translate<S>, tParts: parts as TranslateParts<S>,
     stateRevision, availableLocales: manifest.availableLocales, availableNamespaces: manifest.availableNamespaces,
     loadedNamespaces: Object.freeze([...namespaces]) }) };
 }

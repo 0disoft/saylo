@@ -1,4 +1,4 @@
-import type { ParsedCatalog, Schema, StoreSnapshot, Translate } from './types.js';
+import type { ParsedCatalog, Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
 import type { BootSnapshot } from './boot.js';
 
 export interface CatalogKey {
@@ -55,6 +55,7 @@ export type CreateI18nOptions = SharedI18nOptions & (
 
 export interface I18n<S extends Schema = Schema> {
   readonly t: Translate<S>;
+  readonly tParts: TranslateParts<S>;
   getSnapshot(): StoreSnapshot<S>;
   /** Immutable initial snapshot for server rendering and client hydration. */
   getServerSnapshot(): StoreSnapshot<S>;
