@@ -55,7 +55,7 @@ export default defineConfig({
 
 ## 선택 빌드(includeKeys)
 
-`includeKeys`는 빌드에서 내보낼 메시지를 정확한 `namespace:messageId` 목록으로 지정하는 옵션이다. 와일드카드는 없고, 소스 코드를 스캔해 필요한 키를 자동으로 찾아주지도 않는다. 이 옵션은 현재 로컬 checkout에만 있고, 게시본 `0.1.0-alpha.4`와 동결된 `0.1.0-alpha.5` 후보 tarball 어디에도 들어가지 않았다.
+`includeKeys`는 빌드에서 내보낼 메시지를 정확한 `namespace:messageId` 목록으로 지정하는 옵션이다. 와일드카드는 없고, 소스 코드를 스캔해 필요한 키를 자동으로 찾아주지도 않는다. 이 옵션은 게시본 `0.1.0-alpha.4`에는 없다. 이 기능이 추가되기 전 커밋 `2037f9a` 기준으로 동결한 `0.1.0-alpha.5` 후보 tarball에도 없다. 아직 게시되지 않은 기능이다.
 
 ```js
 // vite.config.mjs

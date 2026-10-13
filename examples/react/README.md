@@ -72,7 +72,7 @@ export const { SayloProvider, useI18n } = createSayloReact<DemoSchema>();
 
 `tsc`는 Vite `--mode`와 무관하게 돈다. 그래서 이 화면 계약은 개발·기본·선택 빌드에 모두 적용되고, `demoKeys`에 없는 키를 코드에서 부르면 선택 빌드가 아니어도 거부된다. `generated.d.ts`는 선택 빌드에서도 전체 base schema 그대로이고, `typegen:react`는 `includeKeys`를 받지 않는다.
 
-동적 키는 `keyof DemoSchema`로만 다룬다. 키를 `string`으로 넓혀 넘기면 컴파일에서 거부된다. `as keyof DemoSchema`처럼 캐스팅하면 그 검사를 건너뛰므로, 캐스팅으로 넘긴 키가 선택 빌드에서 빠져 있으면 런타임 `UnknownMessageError`로만 드러난다. 화면에 키를 더하거나 빼면 `demoKeys`도 같이 고치고 다시 빌드한다. `includeKeys`는 현재 로컬 checkout에만 있고, 게시본 `0.1.0-alpha.4`와 동결된 `0.1.0-alpha.5` 후보 tarball에는 들어 있지 않다.
+동적 키는 `keyof DemoSchema`로만 다룬다. 키를 `string`으로 넓혀 넘기면 컴파일에서 거부된다. `as keyof DemoSchema`처럼 캐스팅하면 그 검사를 건너뛰므로, 캐스팅으로 넘긴 키가 선택 빌드에서 빠져 있으면 런타임 `UnknownMessageError`로만 드러난다. 화면에 키를 더하거나 빼면 `demoKeys`도 같이 고치고 다시 빌드한다. `includeKeys`는 게시본 `0.1.0-alpha.4`에는 없고, 이 기능이 추가되기 전 커밋 `2037f9a` 기준으로 동결한 `0.1.0-alpha.5` 후보 tarball에도 없다. 아직 게시되지 않은 기능이다.
 
 ## 선택 빌드 검증
 

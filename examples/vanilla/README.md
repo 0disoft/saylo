@@ -31,7 +31,7 @@ npm run preview:demo:selected
 
 ## 선택 키 관리
 
-`demoKeys`는 이 화면이 실제로 쓰는 키를 손으로 적어 둔 목록이다. `data-message`·`data-placeholder` 값과 코드에서 직접 부르는 `t()` 키(`demo:summary` 등)를 모두 넣는다. 빠뜨린 키를 운영에서 부르면 `UnknownMessageError`가 난다. 화면에 키를 더하거나 빼면 이 목록도 같이 고치고 다시 빌드한다. `includeKeys`는 현재 로컬 checkout에만 있고, 게시본 `0.1.0-alpha.4`와 동결된 `0.1.0-alpha.5` 후보 tarball에는 들어 있지 않다.
+`demoKeys`는 이 화면이 실제로 쓰는 키를 손으로 적어 둔 목록이다. `data-message`·`data-placeholder` 값과 코드에서 직접 부르는 `t()` 키(`demo:summary` 등)를 모두 넣는다. 빠뜨린 키를 운영에서 부르면 `UnknownMessageError`가 난다. 화면에 키를 더하거나 빼면 이 목록도 같이 고치고 다시 빌드한다. `includeKeys`는 게시본 `0.1.0-alpha.4`에는 없고, 이 기능이 추가되기 전 커밋 `2037f9a` 기준으로 동결한 `0.1.0-alpha.5` 후보 tarball에도 없다. 아직 게시되지 않은 기능이다.
 
 ## 선택 빌드 검증
 
