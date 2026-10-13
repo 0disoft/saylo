@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { packageIds, releaseInput } from './release-check.mjs';
-import { promote } from './release-candidate-source.mjs';
+import { privateCandidateIds, promote } from './release-candidate-source.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const exec = promisify(execFile);
@@ -38,6 +38,14 @@ for (const id of packageIds) {
 const lockFile = path.join(checkout, 'package-lock.json');
 const lock = JSON.parse(await readFile(lockFile, 'utf8'));
 for (const id of packageIds) promote(lock.packages[`packages/${id}`], version);
+for (const id of privateCandidateIds) if (lock.packages[`packages/${id}`]) {
+  const file = path.join(checkout, `packages/${id}/package.json`);
+  const manifest = JSON.parse(await readFile(file, 'utf8'));
+  assert.equal(manifest.private, true, 'The excluded workspace must remain private.');
+  promote(manifest, version, { preserveVersion: true });
+  promote(lock.packages[`packages/${id}`], version, { preserveVersion: true });
+  await writeFile(file, JSON.stringify(manifest, null, 2) + '\n');
+}
 await writeFile(lockFile, JSON.stringify(lock, null, 2) + '\n');
 const descriptor = { sourceCommit, proposedVersion: version, tag, originalVersion: current.version,
   sourceDirectory: checkout, destination, state: 'prepared temporary proposal; not validated or approved',

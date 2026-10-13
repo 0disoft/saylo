@@ -76,7 +76,7 @@ try {
     proposedVersion: version, tag, sourceArchiveSha256, checkedAt: new Date().toISOString(), checks, inputs,
     artifacts, state: 'local candidate validated; not published',
     limits: ['No source version bump, push, OIDC exchange or workflow dispatch.',
-      'source.zip is the original Git archive; candidate package manifests and lock entries use the proposed version.',
+      'source.zip is the original Git archive; public package versions and internal dependency refs use the proposed version. Private workspace versions stay unchanged.',
       'Existing publication labels describe alpha.4. Final release documentation must be updated before publication.',
       'This is local JS/TS tarball consumption, not registry or SvelteKit browser acceptance.'] };
   await writeFile(path.join(output, 'validation.json'), JSON.stringify(evidence, null, 2) + '\n');
