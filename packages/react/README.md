@@ -88,6 +88,55 @@ function LocaleButton() {
 - 변경되지 않은 객체 참조를 그대로 돌려주면 다시 렌더하지 않는다. selector가 매번 새 객체·새 배열을 만들면 snapshot이 바뀔 때마다 다시 렌더된다. 파생 목록이 필요하면 원본 참조를 그대로 돌려주고 렌더에서 필요한 계산만 한다.
 - `0.1.0-alpha.4` 게시본에 포함된다. 게시 이력은 [릴리스 기록](https://github.com/0disoft/saylo/tree/main/releases)에 있다.
 
+## rich text 렌더 (renderRichText)
+
+`renderRichText`는 `snapshot.tParts(key, args)`가 돌려준 읽기 전용 parts를 React 노드로 그린다. 순수 함수이며, 어떤 tag를 어떤 element로 그릴지는 앱이 넘긴 `renderers`가 정한다. Saylo는 HTML이나 attribute를 만들지 않는다.
+
+```ts
+type RichTextRenderers = Readonly<Record<string, (children: ReactNode) => ReactNode>>;
+function renderRichText(parts: readonly RichTextPart[], renderers?: RichTextRenderers): ReactNode;
+```
+
+계약은 다음과 같다.
+
+- text part는 그대로 React text가 된다. React가 escape하므로 HTML로 해석되지 않는다.
+- tag part는 그 이름이 `renderers`의 own property이고 값이 함수일 때만 그 함수 결과로 바뀐다. 없거나 함수가 아니면 태그를 만들지 않고 자식만 이어 그린다.
+- 카탈로그에서 온 이름으로 임의의 DOM 태그, HTML, attribute, URL을 만들지 않는다. 링크와 attribute는 앱이 자기 목록에 넣은 이름에만 붙인다.
+- 중첩 태그를 지원한다.
+- Fragment key는 tag 이름과 그 이름의 등장 순번을 합쳐 만든다(`link:0`, `link:1`). literal을 삽입·편집해도 매핑된 컴포넌트 identity가 유지된다. renderers 콜백은 같은 tag에 같은 element·component 타입을 돌려줘야 한다. 타입이 바뀌면 React가 다시 mount해 입력·포커스·state가 사라진다.
+- 파싱 오류는 core `tParts`가 던진다. helper는 유효한 parts만 받는다.
+
+앞 예제와 별개로 자체 store를 쓰는 예다.
+
+```tsx
+import { createRoot } from 'react-dom/client';
+import { parseCatalog, createStore } from '@0disoft/saylo-core';
+import { createSayloReact, renderRichText } from '@0disoft/saylo-react';
+import type { RichTextRenderers } from '@0disoft/saylo-react';
+
+const ko = parseCatalog('{"rich":"<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요."}', { locale: 'ko', namespace: 'demo' });
+type OrderSchema = { 'demo:rich': { name: number | string } };
+
+const orderStore = createStore<OrderSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [ko] });
+const { SayloProvider: OrderProvider, useI18n: useOrder } = createSayloReact<OrderSchema>();
+
+const renderers: RichTextRenderers = {
+  strong: children => <strong>{children}</strong>,
+  link: children => <a href="#order-form">{children}</a>,
+};
+
+function OrderLine({ name }: { name: string }) {
+  const snapshot = useOrder();
+  return <p id="rich-preview">{renderRichText(snapshot.tParts('demo:rich', { name }), renderers)}</p>;
+}
+
+createRoot(document.getElementById('root')!).render(
+  <OrderProvider instance={orderStore}><OrderLine name="Saylo" /></OrderProvider>,
+);
+```
+
+이 helper는 아직 npm 게시본에 없다. 로컬 변경이며 버전 승격과 게시를 하지 않는다. 사용법과 검증 범위는 [React rich text 기록](../../docs/79-react-rich-text.md)을 따른다.
+
 ## 관련 패키지
 
 - [@0disoft/saylo-core](https://github.com/0disoft/saylo/tree/main/packages/core#readme) — 파싱·검증·store

@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
-import { createSayloReact } from '@0disoft/saylo-react';
+import { createSayloReact, renderRichText } from '@0disoft/saylo-react';
 
 /** @typedef {{ 'cart:title': {}, 'cart:items': { count: number } }} AppSchema */
 const catalog = parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'en', namespace: 'cart' });
@@ -20,6 +20,9 @@ function Cart() {
   bindings.useI18nSelector(snapshot => snapshot.t('cart:unknown'));
   void title;
   const { t, setLocale } = bindings.useI18n();
+  renderRichText(bindings.useI18n().tParts('cart:items', { count: 3 }), { strong: children => createElement('strong', null, children) });
+  // @ts-expect-error typed JS rejects arbitrary element name mappings too
+  renderRichText(bindings.useI18n().tParts('cart:title'), { link: 'a' });
   t('cart:items', { count: 3 });
   // @ts-expect-error checkJs retains required args
   t('cart:items');

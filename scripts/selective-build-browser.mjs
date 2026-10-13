@@ -38,7 +38,8 @@ try {
     && name.value === 'Retained Ada' && note.value === 'Retained delivery note'
     && dialog.open && element('confirmation-note').value === 'Retained dialog note', 'retained-form-and-dialog');
   const catalogs = ['ko', 'en'].map(locale => JSON.parse(element(`${locale}-editor`).value));
-  check(catalogs.every(catalog => Object.keys(catalog).length === (variant === 'selected' ? 13 : 113)), 'catalog-key-count');
+  const expectedCounts = JSON.parse(parameters.get('keyCounts'));
+  check(catalogs.every((catalog, index) => Object.keys(catalog).length === expectedCounts[index]), 'catalog-key-count');
   check(catalogs.every(catalog => Object.hasOwn(catalog, 'unused0') === (variant === 'full')), 'unused-keys-policy');
   check(element('error').textContent === '', 'no-render-error');
   check(errors.length === 0, 'no-browser-error');

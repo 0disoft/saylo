@@ -5,7 +5,7 @@ export const demoKeys = Object.freeze([
   'demo:heading', 'demo:description', 'demo:formTitle',
   'demo:name', 'demo:namePlaceholder', 'demo:note', 'demo:notePlaceholder',
   'demo:count', 'demo:summary', 'demo:openDialog',
-  'demo:dialogTitle', 'demo:dialogNote', 'demo:closeDialog',
+  'demo:dialogTitle', 'demo:dialogNote', 'demo:closeDialog', 'demo:rich',
 ] as const satisfies readonly (keyof AppSchema)[]);
 
 export type DemoSchema = Pick<AppSchema, typeof demoKeys[number]>;

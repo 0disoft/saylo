@@ -79,6 +79,8 @@ test('React production app retains inputs, modal and working controls across rep
   input(window, '#name', 'Returning user');
   input(window, '#count', '3');
   await settle(() => document.querySelector('#summary').textContent.includes('3'), 'Count input did not update React state');
+  await settle(() => document.querySelector('#rich-preview strong')?.textContent === 'Returning user', 'Rich text did not follow name input');
+  assert.equal(document.querySelector('#rich-preview a').getAttribute('href'), '#order-form');
   document.querySelector('#order-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
   const dialog = document.querySelector('#confirmation');
   await settle(() => dialog.open, 'React dialog did not open');
@@ -103,6 +105,8 @@ test('React production app retains inputs, modal and working controls across rep
   locale.dispatchEvent(new window.Event('change', { bubbles: true }));
   await settle(() => document.querySelector('h1')?.textContent === 'New words. Same input.', 'Lazy locale loading stopped after history restoration');
   assert.equal(document.documentElement.lang, 'en');
+  await settle(() => document.querySelector('#rich-preview').textContent === 'Returning user, review your order.', 'Selected locale lost rich text');
+  assert.equal(document.querySelector('#rich-preview strong').textContent, 'Returning user');
   const language = selector => document.querySelector(selector).closest('[lang]').lang;
   for (const selector of ['h1', '#name', '#dialog-title']) assert.equal(language(selector), 'en', selector);
   for (const selector of ['header', '#locale', '.preview > .hint', '#status', '#dialog-status', '#support-status']) {

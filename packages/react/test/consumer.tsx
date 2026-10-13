@@ -1,6 +1,6 @@
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
 import type { I18n } from '@0disoft/saylo-core';
-import { createSayloReact } from '@0disoft/saylo-react';
+import { createSayloReact, renderRichText } from '@0disoft/saylo-react';
 
 type AppSchema = {
   'cart:title': {};
@@ -27,6 +27,12 @@ function Cart() {
   const wrongSelection: number = useI18nSelector(snapshot => snapshot.locale);
   void wrongSelection;
   const snapshot = useI18n();
+  const rich = renderRichText(snapshot.tParts('cart:items', { count: 3 }), { strong: children => <strong>{children}</strong> });
+  void rich;
+  // @ts-expect-error parts retain their base argument type
+  renderRichText(snapshot.tParts('cart:items', { count: '3' }));
+  // @ts-expect-error mappings supply functions, not arbitrary element names
+  renderRichText(snapshot.tParts('cart:title'), { link: 'a' });
   snapshot.t('cart:title');
   snapshot.t('cart:items', { count: 3 });
   // @ts-expect-error required count

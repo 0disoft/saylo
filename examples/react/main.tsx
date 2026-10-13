@@ -1,5 +1,6 @@
 import { StrictMode, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { renderRichText } from '@0disoft/saylo-react';
 import { connectDev, createSupportRecorder } from '@0disoft/saylo-vite/client';
 import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
 import type { ParsedCatalog } from '@0disoft/saylo-core';
@@ -50,7 +51,7 @@ function App() {
   const [note, setNote] = useState('');
   const [count, setCount] = useState('2');
   const lastRendered = useRef<ReturnType<typeof store.getSnapshot> | undefined>(undefined);
-  const presentation = useMemo(() => projectDemoMessages(snapshot, lastRendered.current, Number(count)), [snapshot, count]);
+  const presentation = useMemo(() => projectDemoMessages(snapshot, lastRendered.current, Number(count), name || 'Saylo'), [snapshot, count, name]);
   const text = presentation.messages;
   useEffect(() => {
     // Only remember a committed render. A concurrent render that is abandoned
@@ -114,6 +115,10 @@ function App() {
             <label>{text.note}<textarea id="note" rows={4} placeholder={text.notePlaceholder} value={note} onChange={event => setNote(event.target.value)} /></label>
             <label>{text.count}<input id="count" type="number" min={0} max={100} value={count} onChange={event => setCount(event.target.value)} /></label>
             <p id="summary" className="summary" aria-live="polite">{text.summary}</p>
+            <p id="rich-preview">{renderRichText(text.rich, {
+              strong: children => <strong>{children}</strong>,
+              link: children => <a href="#order-form">{children}</a>,
+            })}</p>
             <button type="submit">{text.openDialog}</button>
           </form>
           <p className="hint" lang="ko">입력값은 React state로 관리합니다. 번역 파일을 저장해도 입력과 열린 모달이 유지됩니다.</p>

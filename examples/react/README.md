@@ -27,7 +27,7 @@ npm run preview:react:selected
 
 `preview:react:selected`는 `examples/react/dist-selected/`를 127.0.0.1에서 띄운다. 두 빌드 모두 `npm run typegen:react`로 전체 base schema를 생성하고, `tsc -p examples/react/tsconfig.json`으로 데모 TS를 검사한 뒤 Vite로 번들한다.
 
-이 화면은 `demoKeys`의 키를 모두 쓰므로 원본 예제만 빌드하면 기본 빌드와 선택 빌드의 크기가 같다. 차이는 사용하지 않는 키가 있을 때만 난다.
+이 화면은 `demoKeys`의 14개 키를 모두 쓴다. 기본 빌드와 선택 빌드 모두 그 14개를 담고, fixture가 쓰지 않는 키를 하나 더해 선택 빌드가 그 키를 빼는지 확인한다.
 
 ## 선택 키 관리
 
@@ -41,7 +41,7 @@ export const demoKeys = Object.freeze([
   'demo:heading', 'demo:description', 'demo:formTitle',
   'demo:name', 'demo:namePlaceholder', 'demo:note', 'demo:notePlaceholder',
   'demo:count', 'demo:summary', 'demo:openDialog',
-  'demo:dialogTitle', 'demo:dialogNote', 'demo:closeDialog',
+  'demo:dialogTitle', 'demo:dialogNote', 'demo:closeDialog', 'demo:rich',
 ] as const satisfies readonly (keyof AppSchema)[]);
 
 export type DemoSchema = Pick<AppSchema, typeof demoKeys[number]>;
@@ -73,6 +73,18 @@ export const { SayloProvider, useI18n } = createSayloReact<DemoSchema>();
 `tsc`는 Vite `--mode`와 무관하게 돈다. 그래서 이 화면 계약은 개발·기본·선택 빌드에 모두 적용되고, `demoKeys`에 없는 키를 코드에서 부르면 선택 빌드가 아니어도 거부된다. `generated.d.ts`는 선택 빌드에서도 전체 base schema 그대로이고, `typegen:react`는 `includeKeys`를 받지 않는다.
 
 동적 키는 `keyof DemoSchema`로만 다룬다. 키를 `string`으로 넓혀 넘기면 컴파일에서 거부된다. `as keyof DemoSchema`처럼 캐스팅하면 그 검사를 건너뛰므로, 캐스팅으로 넘긴 키가 선택 빌드에서 빠져 있으면 런타임 `UnknownMessageError`로만 드러난다. 화면에 키를 더하거나 빼면 `demoKeys`도 같이 고치고 다시 빌드한다. `includeKeys`는 게시본 `0.1.0-alpha.4`에는 없고, 이 기능이 추가되기 전 커밋 `2037f9a` 기준으로 동결한 `0.1.0-alpha.5` 후보 tarball에도 없다. 아직 게시되지 않은 기능이다.
+
+## rich text 미리보기
+
+공유 카탈로그 `examples/vanilla/locales/ko/demo.json`과 `en/demo.json`에 rich 키를 더한다. 한국어는 `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`이고, 영어는 `<strong>{name}</strong>, review <link>your order</link>.`이다.
+
+화면은 이 parts를 `renderRichText`로 그린다. `strong`을 `<strong>`에, `link`를 `<a href="#order-form">`에 매핑하고, 미리보기 노드의 id는 `rich-preview`다. 링크는 같은 화면의 주문 폼으로 간다. 이름 입력이 비어 있으면 `Saylo`를 쓴다.
+
+`projectDemoMessages`는 전체 번역 투영과 마지막 정상 상태 fallback 모두에 rich parts를 담는다. malformed 태그 뒤에도 이름·수량·입력 변경은 마지막 정상 snapshot을 다시 포맷한다.
+
+`demoKeys`에 `demo:rich`를 더하고, 생성 타입은 `"demo:rich": { "name": number | string; }`이다. 개발 서버·운영 빌드·선택 빌드·검증 명령은 앞의 절차를 그대로 쓴다.
+
+이 helper는 아직 npm 게시본에 없다. 로컬 변경이며 버전 승격과 게시를 하지 않는다. 로컬 rich renderer 테스트 3개와 전체 `npm run check`(293개), HeadlessChrome recovery 검사(warm 11·cold 3, browser 오류 없음, 로그 `.release/react-rich-recovery.log`), React 선택 빌드 검증(로그 `.release/react-rich-selected.log`), vanilla full·selected Chromium 검사 각 11개(로그 `.release/react-rich-vanilla-selected.log`)를 통과했고 독립 tarball 검사만 남았다.
 
 ## 선택 빌드 검증
 

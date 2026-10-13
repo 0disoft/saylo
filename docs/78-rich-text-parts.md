@@ -160,6 +160,6 @@ for (const part of i18n.tParts('demo:x', { name })) {
 - 라이브 store 카탈로그 교체와 옛 snapshot 고정.
 - parser가 없는 Vite production과 루트 엔트리의 동작 일치.
 
-## 다음 슬라이스
+## 다음 단계
 
-React·Svelte·Vue render helper와 실제 브라우저 UI 데모는 다음 슬라이스다. 훅은 기존 snapshot의 `tParts`를 그대로 쓴다.
+React render helper와 실제 Chromium 데모는 로컬에서 완료했다. [79-react-rich-text.md](79-react-rich-text.md)가 `renderRichText`의 계약과 React 데모를 정한다. 게시본에는 없다. 남은 단계는 Svelte·Vue render helper다. 훅은 기존 snapshot의 `tParts`를 그대로 쓴다.

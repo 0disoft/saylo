@@ -12,5 +12,6 @@ export type AppSchema = {
   "demo:note": {};
   "demo:notePlaceholder": {};
   "demo:openDialog": {};
+  "demo:rich": { "name": number | string; };
   "demo:summary": { "count": number; };
 };

@@ -102,6 +102,30 @@ void (async () => {
       await wait(() => document.documentElement.lang === 'ko' && ![...node('#locale').options].some(option => option.value === 'fr'), 'Deleted new locale did not fall back');
       preserved(); checks.push('added-locale-removal');
     }
+    if (node('#rich-preview')) {
+      await wait(() => node('#rich-preview strong')?.textContent === 'Recovery user', 'Rich text input did not render');
+      const link = node('#rich-preview a');
+      const strong = node('#rich-preview strong');
+      check(link?.getAttribute('href') === '#order-form', 'Rich link is not controlled by the app');
+      await action('rich-edit');
+      await wait(() => node('#rich-preview').textContent.includes('RICH_EDIT'), 'Rich catalog edit did not render');
+      check(node('#rich-preview a') === link && node('#rich-preview strong') === strong, 'Literal insertion remounted rich elements');
+      preserved(); checks.push('rich-live-edit');
+      await action('rich-invalid');
+      await wait(() => node('#render-error').textContent.includes('Invalid rich text'), 'Broken marker has no diagnostic');
+      check(node('#rich-preview').textContent.includes('RICH_EDIT'), 'Broken marker lost last good rich output');
+      check(node('#rich-preview a') === link, 'Broken marker replaced rich link');
+      preserved(); checks.push('rich-invalid');
+      fill('#name', 'Recovery changed');
+      await wait(() => node('#rich-preview strong')?.textContent === 'Recovery changed', 'Last good rich formatter ignored new input');
+      fill('#name', 'Recovery user');
+      await wait(() => node('#rich-preview strong')?.textContent === 'Recovery user', 'Rich fallback input did not reset');
+      preserved(); checks.push('rich-fallback-input');
+      await action('restore-base');
+      await wait(() => node('#render-error').textContent === '' && !node('#rich-preview').textContent.includes('RICH_EDIT'), 'Rich repair did not recover');
+      check(node('#rich-preview a') === link, 'Rich repair remounted link');
+      preserved(); checks.push('rich-restoration');
+    }
     await locale('en');
     checkLanguages('en');
     await action('remove-locale');

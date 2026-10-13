@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test test/react.test.mjs test/hydration.test.mjs test/selector.test.mjs",
+    "test": "node --test test/react.test.mjs test/hydration.test.mjs test/selector.test.mjs test/rich-text.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": {

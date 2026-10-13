@@ -21,6 +21,7 @@ const probe = await readFile(new URL('./selective-build-browser.mjs', import.met
 const marker = 'SAYLO_UNUSED_FIXTURE_';
 const hash = data => createHash('sha256').update(data).digest('hex');
 const metrics = [], browserReports = [], inputs = {};
+const fullKeyCounts = [];
 let server, browser, timer, rejectReport;
 const interrupt = () => rejectReport?.(new Error('Selective build verification interrupted'));
 process.once('SIGINT', interrupt); process.once('SIGTERM', interrupt);
@@ -75,7 +76,7 @@ async function checkBrowser(variant, outDir) {
       : process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : '/usr/bin/chromium');
     browser = spawn(executable, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
       '--disable-background-networking', `--user-data-dir=${path.join(root, `browser-${variant}`)}`,
-      `${server.resolvedUrls.local[0]}?variant=${variant}`], { windowsHide: true, stdio: 'ignore' });
+      `${server.resolvedUrls.local[0]}?variant=${variant}&keyCounts=${encodeURIComponent(JSON.stringify(variant === 'selected' ? [demoKeys.length, demoKeys.length] : fullKeyCounts))}`], { windowsHide: true, stdio: 'ignore' });
     browser.once('error', error => rejectReport?.(error));
     browser.once('exit', code => rejectReport?.(new Error(`Chromium exited before report (${code})`)));
     timer = setTimeout(() => rejectReport(new Error(`${variant} browser timed out after 45s`)), 45000);
@@ -105,7 +106,8 @@ try {
     const original = await readFile(file);
     inputs[`locales/${locale}/demo.json`] = hash(original);
     const catalog = JSON.parse(original);
-    assert.equal(Object.keys(catalog).length, 13);
+    assert.ok(demoKeys.every(key => Object.hasOwn(catalog, key.slice(key.indexOf(':') + 1))));
+    fullKeyCounts.push(Object.keys(catalog).length + 100);
     for (let index = 0; index < 100; index++) {
       catalog[`unused${index}`] = `${marker}${locale}_${index} `
         + Array.from({ length: 8 }, (_, word) => hash(`${locale}:${index}:${word}`)).join(' ');

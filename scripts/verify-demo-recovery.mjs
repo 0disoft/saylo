@@ -78,6 +78,11 @@ try {
         else if (body === 'remove-added-locale' && framework === 'vue') await rm(addedFile);
         else if (body === 'restore-locale') await writeFile(enFile, en);
         else if (body === 'empty-base') await writeFile(koFile, '{}');
+        else if ((body === 'rich-edit' || body === 'rich-invalid') && framework === 'react') {
+          const catalog = JSON.parse(ko);
+          catalog.rich = body === 'rich-edit' ? 'RICH_EDIT <strong>{name}</strong> <link>Order</link>' : '<strong>{name}</link>';
+          await writeFile(koFile, JSON.stringify(catalog));
+        }
         else if (body === 'restore-base') await writeFile(koFile, ko);
         else if (body === 'restore-all') { await writeFile(koFile, ko); await writeFile(enFile, en); }
         else if (body === 'remove-namespace') await rm(koFile);
@@ -107,7 +112,8 @@ try {
     assert.equal(report.ok, true, report.error);
     assert.deepEqual(report.errors, [], `${label} logged runtime errors`);
     assert.deepEqual(report.checks, cold ? ['cold-empty-view', 'cold-interaction', 'cold-restoration']
-      : [...(framework === 'vue' ? ['live-edit', 'invalid-json', 'live-restoration', 'locale-addition', 'added-locale-removal'] : []),
+      : [...(framework === 'react' ? ['rich-live-edit', 'rich-invalid', 'rich-fallback-input', 'rich-restoration'] : []),
+        ...(framework === 'vue' ? ['live-edit', 'invalid-json', 'live-restoration', 'locale-addition', 'added-locale-removal'] : []),
         'locale-removal', 'locale-restoration', 'empty-base', 'interactive-fallback', 'base-restoration', 'namespace-removal', 'namespace-restoration']);
     clearTimeout(timer); rejectReport = undefined;
     await stopBrowser();
