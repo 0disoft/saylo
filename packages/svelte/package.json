@@ -22,16 +22,20 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./RichText.svelte": {
+      "types": "./dist/rich-text-component.d.ts",
+      "svelte": "./dist/RichText.svelte",
+      "default": "./dist/RichText.svelte"
     }
   },
   "files": [
-    "dist/index.js",
-    "dist/index.d.ts",
+    "dist",
     "LICENSE",
     "NOTICE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node -e \"for (const name of ['RichText.svelte', 'rich-text-component.d.ts']) require('node:fs').copyFileSync('src/' + name, 'dist/' + name)\"",
     "test": "node --test test/store.test.mjs test/selectors.test.mjs test/components.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },

@@ -2,6 +2,7 @@ import { getContext, setContext } from 'svelte';
 import { derived, readable } from 'svelte/store';
 import type { Readable } from 'svelte/store';
 import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
+export type { RichTextProps, RichTextRenderers } from './rich-text.js';
 
 export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
   readonly onDispose?: (listener: () => void) => () => void;

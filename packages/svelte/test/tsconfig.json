@@ -3,5 +3,5 @@
     "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext",
     "lib": ["ES2022", "DOM"], "strict": true, "allowJs": true, "checkJs": true, "noEmit": true
   },
-  "files": ["consumer.ts", "consumer-js.js", "selector-consumer.ts", "selector-consumer-js.js"]
+  "files": ["consumer.ts", "consumer-js.js", "selector-consumer.ts", "selector-consumer-js.js", "rich-consumer.ts", "rich-consumer-js.js"]
 }

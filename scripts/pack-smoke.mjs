@@ -173,6 +173,12 @@ try {
     const hasSvelteSelectors = hasSvelte && (await readFile(path.join(app, 'node_modules/@0disoft/saylo-svelte/dist/index.d.ts'), 'utf8'))
       .includes('selectSvelteStore');
     if (!fromRegistry && hasSvelte) assert.ok(hasSvelteSelectors, 'Local Svelte package is missing selector declarations.');
+    const hasSvelteRichText = hasSvelte && Boolean(JSON.parse(await readFile(path.join(app, 'node_modules/@0disoft/saylo-svelte/package.json'), 'utf8')).exports?.['./RichText.svelte']);
+    if (!fromRegistry && hasSvelte) assert.ok(hasSvelteRichText, 'Local Svelte package is missing the rich component entry.');
+    if (hasSvelteRichText) {
+      await cp(path.join(repository, 'packages/svelte/test/rich-consumer-js.js'), path.join(app, 'src/consumer-svelte-rich.js'));
+      if (language === 'ts') await cp(path.join(repository, 'packages/svelte/test/rich-consumer.ts'), path.join(app, 'readme-svelte-rich.ts'));
+    }
     if (hasSvelteSelectors) {
       await cp(path.join(repository, 'packages/svelte/test/selector-consumer-js.js'), path.join(app, 'src/consumer-svelte-selectors.js'));
       if (language === 'ts') await cp(path.join(repository, 'packages/svelte/test/selector-consumer.ts'), path.join(app, 'readme-svelte-selectors.ts'));

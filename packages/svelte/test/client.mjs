@@ -11,8 +11,42 @@ after(() => dom.window.close());
 const { mount, hydrate, unmount, flushSync } = await import('svelte');
 const output = await compileFixtures('client');
 const { default: Parent } = await import(new URL('Parent.mjs', output));
+const { default: RichView } = await import(new URL('RichView.mjs', output));
 const catalog = (title, locale = 'ko') => parseCatalog(JSON.stringify({ title }), { locale, namespace: 'demo' });
 const catalogs = title => [catalog(title), catalog('English', 'en')];
+
+test('rich snippets retain independent state and focus when text is inserted', async t => {
+  const records = message => [parseCatalog(JSON.stringify({ message }), { locale: 'en', namespace: 'rich' })];
+  const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: records('<counter>{name}</counter> <counter>Other</counter>') });
+  const target = document.body.appendChild(document.createElement('div'));
+  const app = mount(RichView, { target, props: { instance: store, name: 'Ada' } });
+  flushSync();
+  t.after(async () => { await unmount(app); store.dispose(); target.remove(); });
+  const [first, second] = target.querySelectorAll('button');
+  first.click(); flushSync(); first.focus();
+  store.replaceCatalogs(records('Prefix <counter>{name}</counter> <counter>Other changed</counter>')); flushSync();
+  assert.equal(target.querySelectorAll('button')[0], first);
+  assert.equal(target.querySelectorAll('button')[1], second);
+  assert.equal(first.textContent, 'Ada 1');
+  assert.equal(second.textContent, 'Other changed 0');
+  assert.equal(document.activeElement, first);
+});
+
+test('rich snippets hydrate matching SSR markup and retain mapped links through updates', async t => {
+  const records = message => [parseCatalog(JSON.stringify({ message }), { locale: 'en', namespace: 'rich' })];
+  const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: records('<link>Hello <strong>{name}</strong></link> <script>safe</script> <constructor>end</constructor>') });
+  const target = document.body.appendChild(document.createElement('div'));
+  target.innerHTML = await readFile(new URL('./.compiled/server/rich-hydration.html', import.meta.url), 'utf8');
+  const link = target.querySelector('a');
+  const app = hydrate(RichView, { target, props: { instance: store } });
+  flushSync();
+  t.after(async () => { await unmount(app); store.dispose(); target.remove(); });
+  assert.equal(target.querySelector('a'), link);
+  store.replaceCatalogs(records('Prefix <link>Updated <strong>{name}</strong></link>')); flushSync();
+  assert.equal(target.querySelector('a'), link);
+  assert.equal(target.querySelector('strong').textContent, '<img src=x>');
+  assert.equal(target.querySelector('img'), null);
+});
 
 test('catalog edits and locale switches preserve input, focus, selection, dialog and component state', async t => {
   const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: catalogs('한국어') });

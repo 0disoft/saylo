@@ -10,7 +10,20 @@ import { compileFixtures } from './compile-fixtures.mjs';
 const output = await compileFixtures('server');
 const { default: Parent } = await import(new URL('Parent.mjs', output));
 const { primary, secondary } = await import(new URL('bindings.mjs', output));
+const { default: RichView } = await import(new URL('RichView.mjs', output));
 const catalogs = ['ko', 'en'].map(locale => parseCatalog(JSON.stringify({ title: locale === 'ko' ? '한국어' : 'English' }), { locale, namespace: 'demo' }));
+
+test('rich component SSR maps nested snippets, escapes values and unwraps unknown/inherited tags', async t => {
+  const rich = parseCatalog('{"message":"<link>Hello <strong>{name}</strong></link> <script>safe</script> <constructor>end</constructor>"}', { locale: 'en', namespace: 'rich' });
+  const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: [rich] });
+  t.after(() => store.dispose());
+  const body = render(RichView, { props: { instance: store } }).body;
+  const html = body.replace(/<!--[\s\S]*?-->/g, '');
+  assert.equal(html, '<p><a href="#order">Hello <strong>&lt;img src=x></strong></a> safe end</p>');
+  const inherited = Object.create({ link: () => { throw new Error('Inherited snippet must not execute'); } });
+  assert.equal(render(RichView, { props: { instance: store, renderers: inherited } }).body.replace(/<!--[\s\S]*?-->/g, ''), '<p>Hello &lt;img src=x> safe end</p>');
+  await writeFile(new URL('rich-hydration.html', output), body);
+});
 
 test('SSR isolates request and nested contexts, releases subscriptions and rejects mismatched factories', t => {
   const first = createStore({ baseLocale: 'ko', locale: 'ko', catalogs });
