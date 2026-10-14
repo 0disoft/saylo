@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { StoreSnapshot } from '@0disoft/saylo-core';
+  import type { Snippet } from 'svelte';
+  import RichText from '@0disoft/saylo-svelte/RichText.svelte';
   import type { AppSchema } from './generated';
   import { getI18n } from './i18n';
   import { projectDemoMessages } from './demo-messages';
@@ -9,7 +11,7 @@
   let note = $state('');
   let count = $state(2);
   const lastRendered: { current: StoreSnapshot<AppSchema> | undefined } = { current: undefined };
-  const presentation = $derived(projectDemoMessages($i18n, lastRendered.current, Number(count)));
+  const presentation = $derived(projectDemoMessages($i18n, lastRendered.current, Number(count), name || 'Saylo'));
   const text = $derived(presentation.messages);
   $effect(() => {
     // Remember only the view that reached the committed component.
@@ -39,6 +41,9 @@
   });
 </script>
 
+{#snippet strong(children: Snippet)}<strong>{@render children()}</strong>{/snippet}
+{#snippet link(children: Snippet)}<a href="#order-form">{@render children()}</a>{/snippet}
+
 <header lang="ko">
   <a class="brand" href="/">Saylo <span lang="en">Svelte 5 demo</span></a>
   <label class="locale-control">화면 언어
@@ -64,6 +69,7 @@
     <label>{text.note}<textarea id="note" rows="4" placeholder={text.notePlaceholder} bind:value={note}></textarea></label>
     <label>{text.count}<input id="count" type="number" min="0" max="100" bind:value={count} /></label>
     <p id="summary" class="summary" aria-live="polite">{text.summary}</p>
+    <p id="rich-preview"><RichText parts={text.rich} renderers={{ strong, link }} /></p>
     <button id="open-dialog" type="submit">{text.openDialog}</button>
   </form>
   <p class="hint" lang="ko">입력하고 확인 창을 연 뒤 <code>examples/svelte/locales/ko/demo.json</code>을 수정하고 저장하세요.</p>

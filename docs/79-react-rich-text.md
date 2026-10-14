@@ -72,4 +72,4 @@ vanilla 데모의 화면은 기존 13개 키를 쓴다. 공유 카탈로그에�
 
 ## 다음 단계
 
-Svelte·Vue render helper와 실제 브라우저 UI 데모는 다음 단계다. 이번 범위는 React helper와 React 데모까지다.
+Svelte rich text 컴포넌트를 로컬 커밋 `010a600`으로 더했고 Svelte 데모도 로컬에 연결했다. 계약·키 규칙·데모·검증 상태는 [80-svelte-rich-text.md](80-svelte-rich-text.md)에 정리했다. 게시본에는 아직 없다. 남은 단계는 Vue render helper와 Vue 데모다. 이 문서의 범위는 React helper와 React 데모까지다.

@@ -86,6 +86,45 @@ const title = selectSvelteStore(i18n, snapshot => snapshot.t('cart:title'), {
 
 검증은 `npm run test --workspace=@0disoft/saylo-svelte`와 `npm run typecheck:consumers --workspace=@0disoft/saylo-svelte`로 실행한다. SSR 요청·중첩 context 분리, 일치하는 SSR 마크업의 hydration, 구독 해제, snapshot-bound 번역, JS/TS 소비, 컴파일한 컴포넌트의 입력·포커스·커서·dialog·state 유지가 검증 범위이다. [Svelte 데모](https://github.com/0disoft/saylo/tree/main/examples/svelte)와 [구현 기록](https://github.com/0disoft/saylo/blob/main/docs/38-svelte-adapter.md)에 연결 방법과 실제 브라우저 검증을 정리했다.
 
+## rich text 컴포넌트 (RichText.svelte)
+
+core `tParts`가 돌려준 parts를 Svelte 5 컴포넌트로 그린다. 루트 엔트리는 store API를 그대로 두고 타입 `RichTextProps`·`RichTextRenderers`만 내보내며, 컴포넌트는 별도 기본 import로 가져온다. 루트 import는 Node SSR에서 Svelte 컴파일 없이 동작한다.
+
+```svelte
+<script lang="ts">
+  import type { Snippet } from 'svelte';
+  import type { RichTextPart } from '@0disoft/saylo-core';
+  import RichText from '@0disoft/saylo-svelte/RichText.svelte';
+
+  let { parts }: { parts: readonly RichTextPart[] } = $props();
+</script>
+
+{#snippet strong(children: Snippet)}
+  <strong>{@render children()}</strong>
+{/snippet}
+
+{#snippet link(children: Snippet)}
+  <a href="#order-form">{@render children()}</a>
+{/snippet}
+
+<RichText {parts} renderers={{ strong, link }} />
+```
+
+props는 `parts: readonly RichTextPart[]`와 선택적 `renderers?: Readonly<Record<string, Snippet<[Snippet]>>>`다. renderers 값은 자식 렌더러 하나를 받는 snippet이고, 앱은 `{@render children()}`으로 그 자리에 안쪽 parts를 그린다.
+
+계약은 다음과 같다.
+
+- text part는 템플릿 text가 되고 Svelte가 escape한다. 컴포넌트는 `{@html}`을 쓰지 않는다.
+- tag part는 이름이 renderers의 own property이고 값이 snippet일 때만 그 snippet으로 그린다. 없거나 snippet이 아니면 태그를 만들지 않고 자식만 그린다.
+- 조회는 own property만 본다. `constructor`·`toString`처럼 prototype에서 상속된 이름은 자식만 그린다.
+- 카탈로그에서 온 이름으로 임의의 DOM 태그, HTML, attribute, URL을 만들지 않는다. 링크·attribute는 앱이 renderers에 넣은 이름에만 붙인다.
+- key는 tag 이름과 등장 순번이다(`tag:link:0`, `tag:link:1`). 문구 편집이나 literal 삽입 뒤에도 노드 identity가 유지된다.
+- renderers snippet은 같은 tag에 대해 같은 타입을 유지한다. 타입이 바뀌면 노드가 다시 만들어져 입력·포커스·state가 사라진다.
+
+`dist/RichText.svelte`는 소스로 게시하고 소비자의 Svelte 5 컴파일러가 컴파일한다. helper JS와 타입 선언도 함께 담으며 기존 Svelte 5와 `@sveltejs/vite-plugin-svelte` 7 설정에서 쓴다. Node에서 컴포넌트를 SSR하려면 소비자가 Svelte 컴파일러로 컴파일한다.
+
+계약·키 규칙·데모·검증 상태는 [80-svelte-rich-text.md](https://github.com/0disoft/saylo/blob/main/docs/80-svelte-rich-text.md)에 정리했다. 이 컴포넌트는 로컬 커밋 `010a600`에 있고 게시본 `0.1.0-alpha.4`에는 없다.
+
 ## 문의와 보안 제보
 
 일반 문의·기능 제안·버그는 [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com)으로 보낸다. 패키지·버전, 환경, 기대한 동작과 실제 동작, 합성 데이터로 만든 최소 재현을 적는다. 보안 문제도 같은 이메일에 `Saylo security` 제목으로 비공개 제보한다. 토큰·키·쿠키·실제 사용자 데이터는 보내지 않는다.

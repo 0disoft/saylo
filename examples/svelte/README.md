@@ -17,3 +17,13 @@ npm run build:svelte
 기준 카탈로그에서 타입을 생성하고 `.ts` 연결부를 검사한 뒤 Svelte 컴포넌트를 production 빌드한다. 템플릿 전체의 TypeScript 진단은 별도 Svelte 도구로 검사하는 범위이다. 어댑터의 타입 계약은 JS checkJs와 TS strict 소비 테스트에서 검사한다.
 
 2026-10-08 실제 브라우저에서 정상 문구 저장 후 이름·요청 사항·모달 메모·모달 열림·포커스·커서 위치 유지, 임시 로케일 추가·선택·삭제와 기준 언어 복귀를 확인했다. 검증 중 생성한 임시 로케일과 문구 수정은 원복했다. 패키지를 재빌드하면 Vite가 연결된 패키지 모듈을 리로드하므로, 파일 저장 검증 중에는 패키지 빌드를 병행하지 않는다.
+
+## rich text 미리보기
+
+`Preview.svelte`가 `rich-preview` 문단을 더한다. `strong`은 `<strong>`에, `link`는 같은 화면의 주문 폼(`#order-form`)으로 가는 링크에 매핑하고, 이름 입력이 비어 있으면 `Saylo`를 쓴다.
+
+`examples/svelte/locales/ko/demo.json`·`en/demo.json`에 rich 키를 더한다. 한국어는 `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`이고, 영어는 `<strong>{name}</strong>, review <link>your order</link>.`로 React 데모와 같다.
+
+`projectDemoMessages`는 마지막 정상 전체 번역 투영에 rich parts를 담는다. rich markup이 잘못된 뒤에도 이름·수량·입력 변경은 마지막 정상 snapshot을 현재 인자로 다시 포맷한다.
+
+이 미리보기는 로컬 커밋 `010a600`의 컴포넌트를 쓰는 미게시 변경이다. 검증 상태는 [80-svelte-rich-text.md](https://github.com/0disoft/saylo/blob/main/docs/80-svelte-rich-text.md)를 따른다. 개발·빌드·복구 명령과 로케일 편집 절차는 앞의 절차를 그대로 쓴다.
