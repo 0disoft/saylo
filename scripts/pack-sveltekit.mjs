@@ -95,6 +95,7 @@ try {
   const fixture = contract?.sveltekitFixture ?? (values['consumer-fixture']
     ? (supportChecks ? 'sveltekit-registry-alpha5' : 'sveltekit-registry') : undefined);
   const example = path.join(repository, fixture ? `scripts/pack-fixtures/${fixture}` : 'examples/sveltekit');
+  const richChecks = !fixture && !approved;
   console.log(`[pack:sveltekit] Consumer inputs: ${path.relative(repository, example)}`);
   for (const name of ['src', 'locales', 'vite.config.mjs', 'tsconfig.json', 'verify-ssr.mjs', '.npmrc'])
     await cp(path.join(example, name), path.join(app, name), { recursive: true });
@@ -153,14 +154,15 @@ try {
   console.log((await npm(['run', 'verify:ssr', '--', origin], app)).trim());
   browser = spawn(executable, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--disable-background-networking', `--user-data-dir=${path.join(root, 'browser-profile')}`,
-    `${origin}/?locale=ko&pack-check=1${supportChecks ? '&support-check=1&focus-check=1' : ''}`], { windowsHide: true, stdio: 'ignore' });
+    `${origin}/?locale=ko&pack-check=1${richChecks ? '&rich-check=1' : ''}${supportChecks ? '&support-check=1&focus-check=1' : ''}`], { windowsHide: true, stdio: 'ignore' });
   browser.once('error', error => rejectBrowser?.(error));
   browser.once('exit', code => rejectBrowser?.(new Error(`Chromium exited before completion (${code}).`)));
   timer = setTimeout(() => rejectBrowser?.(new Error('Browser verification timed out after 30s.')), 30000);
   const report = await completed;
   assert.equal(report.ok, true, report.error);
   assert.deepEqual(report.errors, [], 'Browser reported runtime errors or warnings.');
-  assert.deepEqual(report.checks, ['hydration', 'ko-en-ko', ...(supportChecks ? ['support-report', 'modal-navigation-focus'] : []), 'shared-layout', 'exit-reentry']);
+  assert.deepEqual(report.checks, ['hydration', ...(richChecks ? ['rich-hydration', 'rich-input'] : []), 'ko-en-ko',
+    ...(supportChecks ? ['support-report', 'modal-navigation-focus'] : []), 'shared-layout', 'exit-reentry']);
   if (supportChecks) console.log('[pack:sveltekit] Navigation inside the shared modal retained the focused link.');
   if (supportChecks) console.log('[pack:sveltekit] Support report generation, private form content exclusion, review/reset and input preservation passed.');
   console.log(`[pack:sveltekit] Chromium ${report.browser}: hydration, ko/en/ko switching, shared-layout state and exit/re-entry passed.`);

@@ -57,6 +57,8 @@ try {
         if (body === 'remove-locale') await rm(enFile);
         else if (body === 'restore-locale') await writeFile(enFile, en);
         else if (body === 'empty-base') await writeFile(koFile, '{}');
+        else if (body === 'rich-edit' || body === 'rich-invalid') await writeFile(koFile, JSON.stringify({ ...JSON.parse(ko),
+          rich: body === 'rich-edit' ? 'RICH_EDIT <strong>{name}</strong> <link>Order</link>' : '<strong>{name}</link>' }));
         else if (body === 'restore-base') await writeFile(koFile, ko);
         else if (body === 'restore-all') { await writeFile(koFile, ko); await writeFile(enFile, en); }
         else if (body === 'remove-namespace') await rm(koFile);
@@ -94,6 +96,10 @@ try {
         for (const selector of ['header', '#locale', 'nav', '#leave-link', '#status', '#dialog-status', '#support-status']) {
           assert.equal(language(selector), 'ko', `${page}: wrong fixed language for ${selector}`);
         }
+        if (!empty) {
+          assert.equal(dom.window.document.querySelector('#rich-preview strong')?.textContent, 'Saylo');
+          assert.equal(dom.window.document.querySelector('#rich-preview a')?.getAttribute('href'), '#order-form');
+        }
       } finally { dom.window.close(); }
       return { page, status: response.status, setupHint: empty };
     }));
@@ -115,7 +121,8 @@ try {
     assert.equal(report.ok, true, report.error);
     assert.deepEqual(report.errors, [], 'Browser runtime/hydration errors');
     assert.deepEqual(report.checks, cold ? ['cold-empty-hydration', 'cold-interaction', 'cold-restoration']
-      : ['locale-removal', 'locale-restoration', 'empty-base', 'navigation-during-error', 'base-restoration', 'namespace-removal', 'namespace-restoration']);
+      : ['rich-live-edit', 'rich-invalid', 'rich-fallback-input', 'rich-restoration',
+        'locale-removal', 'locale-restoration', 'empty-base', 'navigation-during-error', 'base-restoration', 'namespace-removal', 'namespace-restoration']);
     clearTimeout(timer); rejectReport = undefined;
     await stopBrowser();
   }

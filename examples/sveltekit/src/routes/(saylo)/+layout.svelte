@@ -22,7 +22,8 @@
   const i18n = setSayloContext(instance);
   const support = createSupportRecorder(__SAYLO_SUPPORT_ENV__);
   const lastRendered: { current: StoreSnapshot<AppSchema> | undefined } = { current: undefined };
-  const presentation = $derived(projectDemoMessages($i18n, lastRendered.current));
+  let name = $state('');
+  const presentation = $derived(projectDemoMessages($i18n, lastRendered.current, name || 'Saylo'));
   const text = $derived(presentation.messages);
   setDemoView({ get current() { return presentation; } });
   $effect(() => { if (presentation.accepted) lastRendered.current = presentation.accepted; });
@@ -111,7 +112,7 @@
   <p id="transition-error" role="alert" lang="ko">{transitionError}</p>
   <p id="render-error" class="hint" role="alert" lang="ko">{presentation.error}</p>
   {@render children()}
-  <Workbench connection={connectionStatus} {details} messages={text} renderError={presentation.error} />
+  <Workbench bind:name connection={connectionStatus} {details} messages={text} renderError={presentation.error} />
   <p id="status" class="hint" role="status" lang="ko">{connectionStatus}</p>
   <pre id="error" role="alert" lang="ko">{details}</pre>
   <SupportPanel recorder={support} {syncState} />

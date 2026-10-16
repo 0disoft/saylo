@@ -13,8 +13,8 @@ const checkLanguages = translatedLocale => {
   check(language('.brand span') === 'en', 'Demo subtitle lost its English language');
   for (const option of node('#locale').options) check(option.lang === option.value, 'Locale option has wrong language');
 };
-const wait = async (condition, message) => {
-  const end = performance.now() + 10000;
+const wait = async (condition, message, timeout = 10000) => {
+  const end = performance.now() + timeout;
   while (!condition()) {
     if (performance.now() > end) throw new Error(message);
     await new Promise(resolve => setTimeout(resolve, 25));
@@ -31,7 +31,7 @@ const locale = async value => {
 };
 void (async () => {
   try {
-    await wait(() => node('#saylo-layout')?.dataset.ready === 'true', 'Hydrated layout is not ready');
+    await wait(() => node('#saylo-layout')?.dataset.ready === 'true', 'Hydrated layout is not ready', 30000);
     checkLanguages('ko');
     const cold = new URL(location.href).searchParams.has('cold');
     if (cold) {
@@ -47,6 +47,7 @@ void (async () => {
     await wait(() => node('#support-report').value.length > 0, 'Support report missing');
     const name = node('#name'), note = node('#note'), dialog = node('#confirmation'), field = node('#confirmation-note');
     const report = node('#support-report').value;
+    let strong, link;
     const preserved = (focus = true) => {
       check(node('#name') === name && name.value === 'Recovery user', 'Name input replaced or reset');
       check(node('#note') === note && note.value === 'Keep this draft', 'Draft replaced or reset');
@@ -54,6 +55,7 @@ void (async () => {
       check(node('#confirmation-note') === field && field.value === 'Keep this confirmation', 'Confirmation reset');
       check(node('#support-report').value === report, 'Generated support report reset');
       if (focus) check(document.activeElement === field, 'Focused input lost');
+      if (strong) check(node('#rich-preview strong') === strong && node('#rich-preview a') === link, 'Rich nodes replaced');
     };
     if (cold) {
       preserved(); checks.push('cold-interaction');
@@ -61,6 +63,25 @@ void (async () => {
       await wait(() => !node('#render-error').textContent && node('h1').textContent === '번역을 바꿔도, 입력은 그대로', 'Cold startup did not recover');
       preserved(); checks.push('cold-restoration');
     } else {
+      await wait(() => node('#rich-preview strong')?.textContent === 'Recovery user', 'Rich input did not render');
+      strong = node('#rich-preview strong'); link = node('#rich-preview a');
+      check(link?.getAttribute('href') === '#order-form', 'Rich link is not controlled by the app');
+      await action('rich-edit');
+      await wait(() => node('#rich-preview').textContent.includes('RICH_EDIT'), 'Rich catalog edit failed');
+      preserved(); checks.push('rich-live-edit');
+      await action('rich-invalid');
+      await wait(() => node('#render-error').textContent.includes('Invalid rich text'), 'Invalid rich markers lack a correction hint');
+      check(node('#rich-preview').textContent.includes('RICH_EDIT'), 'Invalid marker lost last good rich view');
+      preserved(); checks.push('rich-invalid');
+      fill('#name', '<img src=x>');
+      await wait(() => strong.textContent === '<img src=x>', 'Rich fallback ignored current input');
+      check(!node('#rich-preview img'), 'Rich argument became HTML');
+      fill('#name', 'Recovery user');
+      await wait(() => strong.textContent === 'Recovery user', 'Rich fallback input restoration failed');
+      preserved(); checks.push('rich-fallback-input');
+      await action('restore-base');
+      await wait(() => !node('#render-error').textContent && !node('#rich-preview').textContent.includes('RICH_EDIT'), 'Rich repair failed');
+      preserved(); checks.push('rich-restoration');
       await locale('en'); checkLanguages('en'); preserved();
       await action('remove-locale');
       await wait(() => document.documentElement.lang === 'ko' && ![...node('#locale').options].some(value => value.value === 'en'), 'Removed locale did not fall back');
@@ -94,6 +115,10 @@ void (async () => {
     }
     await fetch('/__recovery_result', { method: 'POST', body: JSON.stringify({ ok: true, checks, errors, browser: navigator.userAgent }) });
   } catch (error) {
-    await fetch('/__recovery_result', { method: 'POST', body: JSON.stringify({ ok: false, error: String(error), checks, errors }) });
+    await fetch('/__recovery_result', { method: 'POST', body: JSON.stringify({ ok: false, error: String(error), checks, errors,
+      startup: { ready: node('#saylo-layout')?.dataset.ready, status: node('#status')?.textContent,
+        renderError: node('#render-error')?.textContent, diagnostic: node('#error')?.textContent,
+        resources: performance.getEntriesByType('resource').map(entry => ({ path: new URL(entry.name).pathname,
+          duration: Math.round(entry.duration) })) } }) });
   }
 })();

@@ -15,5 +15,6 @@
   "home": "Preview",
   "about": "How it works",
   "aboutHeading": "New page. Same input.",
-  "aboutBody": "Pages share one translation instance through their common layout."
+  "aboutBody": "Pages share one translation instance through their common layout.",
+  "rich": "<strong>{name}</strong>, review <link>your order</link>."
 }

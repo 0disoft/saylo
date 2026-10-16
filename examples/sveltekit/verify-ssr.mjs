@@ -23,6 +23,10 @@ try {
     const html = await response.text();
     assert.ok(html.includes(`<html lang="${expected}">`));
     assert.ok(html.includes(expected === 'en' ? 'New words. Same input.' : '번역을 바꿔도, 입력은 그대로'));
+    // Svelte's SSR snippets insert hydration comments inside otherwise identical text.
+    const markup = html.replace(/<!--[\s\S]*?-->/g, '');
+    assert.ok(markup.includes('<strong>Saylo</strong>'), 'SSR rich name missing');
+    assert.ok(markup.includes('<a href="#order-form">'), 'SSR app-owned rich link missing');
     const dataResponse = await requestFetch(`${origin}/__data.json?locale=${encodeURIComponent(query)}`);
     assert.equal(dataResponse.status, 200);
     const data = await dataResponse.json();

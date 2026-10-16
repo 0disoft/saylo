@@ -15,5 +15,6 @@
   "home": "미리보기",
   "about": "연결 설명",
   "aboutHeading": "페이지를 이동해도, 입력은 그대로",
-  "aboutBody": "같은 layout에서 번역 instance를 공유하며 페이지 내용만 바꿉니다."
+  "aboutBody": "같은 layout에서 번역 instance를 공유하며 페이지 내용만 바꿉니다.",
+  "rich": "<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요."
 }

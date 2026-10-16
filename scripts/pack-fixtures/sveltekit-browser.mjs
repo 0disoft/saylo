@@ -25,6 +25,8 @@ if (new URL(location.href).searchParams.has('pack-check')) {
     element(selector).dispatchEvent(new Event('input', { bubbles: true }));
   };
   const checks = [];
+  const richChecks = new URL(location.href).searchParams.has('rich-check');
+  const strong = document.querySelector('#rich-preview strong'), link = document.querySelector('#rich-preview a');
   void (async () => {
     try {
       check(!sessionStorage.getItem('saylo-pack-started'), 'Language/navigation reloaded the document');
@@ -34,12 +36,25 @@ if (new URL(location.href).searchParams.has('pack-check')) {
       check(document.documentElement.lang === 'ko', 'Initial locale differs from SSR');
       check(element('h1').textContent === '번역을 바꿔도, 입력은 그대로', 'Initial translation differs');
       checks.push('hydration');
+      const richPreserved = () => {
+        check(strong && link && element('#rich-preview strong') === strong && element('#rich-preview a') === link, 'Hydration/navigation replaced rich elements');
+        check(link.getAttribute('href') === '#order-form', 'Rich link is not controlled by the app');
+      };
+      if (richChecks) {
+        richPreserved(); check(strong.textContent === 'Saylo', 'Initial SSR rich output differs');
+        checks.push('rich-hydration');
+      }
       fill('#name', 'Packed Saylo');
       fill('#note', 'Keep this note');
+      if (richChecks) {
+        await wait(() => strong.textContent === 'Packed Saylo', 'Rich input did not render');
+        checks.push('rich-input');
+      }
       const sameInputs = () => {
         check(element('#name').value === 'Packed Saylo', 'Name was reset');
         check(element('#note').value === 'Keep this note', 'Note was reset');
         check(element('#saylo-layout') === layout, 'Shared layout was replaced');
+        if (richChecks) { richPreserved(); check(strong.textContent === 'Packed Saylo', 'Rich input was reset'); }
       };
       for (const [locale, heading] of [['en', 'New words. Same input.'], ['ko', '번역을 바꿔도, 입력은 그대로']]) {
         element('#locale').value = locale;
@@ -94,6 +109,10 @@ if (new URL(location.href).searchParams.has('pack-check')) {
       check(element('#saylo-layout') !== layout, 'Re-entry retained the old layout');
       check(element('#name').value === '' && element('#note').value === '', 'Re-entry did not reset the form');
       check(document.documentElement.lang === 'ko', 'Re-entry locale differs');
+      if (richChecks) {
+        check(element('#rich-preview strong') !== strong && element('#rich-preview strong').textContent === 'Saylo', 'Re-entry retained old rich state');
+        check(element('#rich-preview a').getAttribute('href') === '#order-form', 'Re-entry lost app-owned rich link');
+      }
       checks.push('exit-reentry');
       await fetch('/__saylo_pack_result', { method: 'POST', body: JSON.stringify({ ok: true, checks, errors, browser: navigator.userAgent }) });
     } catch (error) {

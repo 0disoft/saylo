@@ -25,22 +25,37 @@ npm run dev:sveltekit
 
 공식 [서버 상태·context 지침](https://svelte.dev/docs/kit/state-management)에 따라 사용자 locale을 서버 전역 instance에 공유하지 않는다.
 
+## 리치 텍스트 미리보기
+
+`demo:rich` 문구는 `snapshot.tParts('demo:rich', { name })`로 조각을 만들고 `@0disoft/saylo-svelte/RichText.svelte`가 그린다. 조각의 태그는 앱이 넘긴 renderer 이름과 맞춰지며, 예제는 `strong`과 `link` 두 snippet을 준다. `link`는 `href="#order-form"`인 앵커로 폼을 가리키므로 링크 주소는 앱이 정하고 카탈로그는 문구와 태그만 정한다.
+
+이름은 `(saylo)` layout이 소유한다. layout은 `Workbench`에 `bind:name`으로 내려보내고 `projectDemoMessages(snapshot, previous, name || 'Saylo')`가 제목·본문·폼과 rich 조각을 한 번에 계산한다. 그래서 입력한 이름이 폼 값과 rich 문구의 `{name}` 자리에서 같이 바뀐다. `{name}` 인자는 텍스트로만 들어가므로 입력한 이름이 태그로 해석되지 않는다. SSR과 최초 hydration은 이름이 비어 있으므로 양쪽 모두 `Saylo`로 같은 출력을 만든다.
+
+번역을 표시할 수 없으면 마지막 정상 snapshot에 현재 이름을 다시 넣어 계산하고, 오류가 없던 snapshot만 다음 기준으로 남긴다. 어긋난 마커를 저장해도 입력과 마지막 정상 rich 출력은 그대로 남고 진단만 표시된다. `ko/demo.json`의 `rich` 값은 `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`이다.
+
+rich 출력은 `#rich-preview` 안에 들어가고 폼·모달과 같은 layout에 있다. 문구를 다시 그려도 열린 모달의 입력 값과 포커스는 그대로 유지된다.
+
+`/`와 `/about`은 같은 layout 노드를 쓰므로 rich 문구·입력·모달 상태가 유지된다. `/plain`으로 이동했다가 돌아오면 새 instance와 함께 이름이 초기화되고, rich 출력도 SSR 기본값 `Saylo`로 돌아간다.
+
 ## 검증 명령
 
 ```sh
 npm run build:sveltekit
 npm run verify:sveltekit
+npm run verify:demo:sveltekit:recovery
 npm run verify:pack:sveltekit
 npm run verify:registry:sveltekit
 ```
 
-`build`는 typegen·SvelteKit sync·템플릿과 TS 검사·client/SSR 빌드·Node adapter 생성을 수행한다. `verify:ssr`는 임시 개발 서버를 직접 시작해 한국어·영어 동시 요청의 SSR과 boot 일치, 로케일 정규화와 기준 언어 fallback을 확인한다. 실제 client 연결 함수에 hot context를 제공해 등록된 listener의 해제, 중복 stop, 해제 뒤 지연 연결 취소도 검사하고 서버를 닫는다. 이미 실행 중인 서버를 검사하려면 `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5191`로 주소를 넘긴다. 주소를 넘긴 실행은 HTTP 검증만 수행한다.
+`build`는 typegen·SvelteKit sync·템플릿과 TS 검사·client/SSR 빌드·Node adapter 생성을 수행한다. `verify:ssr`는 임시 개발 서버를 직접 시작해 한국어·영어 동시 요청의 SSR과 boot 일치, 로케일 정규화와 기준 언어 fallback을 확인한다. SSR HTML에서는 이름이 비어 있을 때의 rich 첫 출력(`<strong>Saylo</strong>`)과 앱 소유 링크(`href="#order-form"`)도 확인한다. 실제 client 연결 함수에 hot context를 제공해 등록된 listener의 해제, 중복 stop, 해제 뒤 지연 연결 취소도 검사하고 서버를 닫는다. 이미 실행 중인 서버를 검사하려면 `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5191`로 주소를 넘긴다. 주소를 넘긴 실행은 HTTP 검증만 수행한다.
 
-`verify:pack:sveltekit`은 다섯 Saylo 패키지를 tarball로 만들어 저장소 밖 임시 앱에 설치한다. 예제의 소스·설정·카탈로그만 복사하고 기존 lockfile·node_modules·빌드 출력은 가져오지 않는다. 타입 검사·client/SSR 빌드·개발 연결 수명·Node 운영 HTTP와 실제 Chromium의 hydration·ko/en/ko 전환·입력과 열린 모달 유지·layout 종료와 재진입을 검사한다. 브라우저 probe는 임시 앱에만 넣고 종료 시 브라우저·서버·임시 폴더를 정리한다. 설치된 Chrome 또는 Edge가 필요하며 자동 탐색되지 않으면 `npm run verify:pack:sveltekit -- --browser <실행파일>`로 지정한다. 2026-10-08 Windows·Node 24.18.0·HeadlessChrome 154에서 통과했다. 이 검사는 자동으로 CI에 추가하지 않았다.
+`verify:pack:sveltekit`은 다섯 Saylo 패키지를 tarball로 만들어 저장소 밖 임시 앱에 설치한다. 예제의 소스·설정·카탈로그만 복사하고 기존 lockfile·node_modules·빌드 출력은 가져오지 않는다. 타입 검사·client/SSR 빌드·개발 연결 수명·Node 운영 HTTP와 실제 Chromium의 hydration, rich hydration과 rich 입력, ko/en/ko 전환, 입력과 열린 모달 유지, layout 종료와 재진입을 검사한다. 브라우저 probe는 임시 앱에만 넣고 종료 시 브라우저·서버·임시 폴더를 정리한다. 설치된 Chrome 또는 Edge가 필요하며 자동 탐색되지 않으면 `npm run verify:pack:sveltekit -- --browser <실행파일>`로 지정한다. rich 검사가 붙기 전 실행은 2026-10-08 Windows·Node 24.18.0·HeadlessChrome 154에서 통과했다. 이 검사는 자동으로 CI에 추가하지 않았다.
+
+`verify:demo:sveltekit:recovery`는 예제를 임시 폴더로 복사해 headless Chromium으로 복구 흐름을 검사한다. 따뜻한 실행은 rich live 편집·잘못된 rich 마커·fallback 입력 유지·rich 복구 4개와 로케일 제거·복원, 빈 기준 카탈로그, 오류 중 페이지 이동, base 복원, namespace 제거·복원 7개를 확인한다. 차가운 실행은 빈 카탈로그에서 hydration·상호작용·복구 3개를 본다. SSR은 정상·빈·복구 상태마다 `/?locale=ko`, `/?locale=en`, `/about?locale=ko`, `/about?locale=en` 네 주소의 HTML과 렌더 언어를 확인한다. Windows에서는 `C:/Program Files/Google/Chrome/Application/chrome.exe` 경로를 그대로 사용하므로 다른 위치에 설치했다면 스크립트의 실행 경로도 함께 맞춘다.
+
+`verify:registry:sveltekit`은 [승인된 alpha.2 manifest](../../releases/0.1.0-alpha.2.json)의 다섯 파일을 npm registry에서 내려받아 SHA-512를 대조한 뒤 같은 앱 검증을 수행한다. 로컬 패키지를 빌드하거나 `file:` 디렉터리를 설치하지 않는다. 승인된 게시본의 검증을 그대로 유지하려고 이 실행에는 rich 검사를 켜지 않는다. 2026-10-09 실제 게시본에서 전체 검증을 통과했다. 기존 `verify:pack:sveltekit`은 로컬 후보 tarball 검사로 유지한다.
 
 ## 페이지 이동과 live 갱신
-
-`verify:registry:sveltekit`은 [승인된 alpha.2 manifest](../../releases/0.1.0-alpha.2.json)의 다섯 파일을 npm registry에서 내려받아 SHA-512를 대조한 뒤 같은 앱 검증을 수행한다. 로컬 패키지를 빌드하거나 `file:` 디렉터리를 설치하지 않는다. 2026-10-09 실제 게시본에서 전체 검증을 통과했다. 기존 `verify:pack:sveltekit`은 로컬 후보 tarball 검사로 유지한다.
 
 `/`와 `/about`은 `(saylo)` layout을 공유한다. 이름·요청 사항·모달 메모는 이 layout의 `Workbench`에 있으므로 두 페이지 사이에서 유지된다. 모달 안의 연결 설명 링크로 열린 창을 유지한 채 페이지를 이동할 수 있다. 언어 선택은 URL query를 갱신하며 locale 로드가 완료될 때까지 선택 중인 값을 표시한다.
 
@@ -48,4 +63,6 @@ npm run verify:registry:sveltekit
 
 개발 중 `locales/en/demo.json` 또는 `ko/demo.json`을 수정한다. 정상 문구 저장은 페이지를 다시 로드하지 않고 반영한다. 잘못된 JSON은 마지막 정상 번역을 유지하며 진단을 표시한다. 오류를 수정하면 진단이 사라진다. 운영 빌드는 정적 카탈로그와 lazy loader를 사용한다.
 
-2026-10-08 개발 서버와 실제 Node adapter 빌드에서 HTTP SSR·boot 일치와 브라우저 hydration을 확인했다. 개발 브라우저에서 열린 모달의 페이지 이동, 저장 후 입력·포커스·커서 유지, 잘못된 JSON의 마지막 정상 상태와 복구, URL 언어 전환, layout 종료·최신 boot 재진입과 live 재연결을 확인했다. 운영 브라우저에서도 언어 전환·페이지 이동 후 입력 유지와 console 오류·경고 없음을 확인했다. 상세 범위는 [39-sveltekit-example.md](../../docs/39-sveltekit-example.md)에 있다.
+2026-10-08 개발 서버와 실제 Node adapter 빌드에서 HTTP SSR·boot 일치와 브라우저 hydration을 확인했다. 개발 브라우저에서 열린 모달의 페이지 이동, 저장 후 입력·포커스·커서 유지, 잘못된 JSON의 마지막 정상 상태와 복구, URL 언어 전환, layout 종료·최신 boot 재진입과 live 재연결을 확인했다. 운영 브라우저에서도 언어 전환·페이지 이동 후 입력 유지와 console 오류·경고 없음을 확인했다. 이 기록은 rich 미리보기가 붙기 전 범위이다. 상세 범위는 [39-sveltekit-example.md](../../docs/39-sveltekit-example.md)에 있다.
+
+RichText 연결 후 Node 24.18.0·Vite 8.3.4·HeadlessChrome 155에서 템플릿·타입 검사 오류 0·경고 0, 복구 브라우저 11단계와 빈 첫 실행 3단계, 정상·빈·복구 상태의 SSR 12건을 통과했다. 독립 설치한 다섯 tarball의 client/SSR 빌드·개발 연결 정리와 Node 운영 브라우저 8단계도 통과했다. 강조·링크 DOM, 입력·열린 모달·포커스 유지와 layout 재진입 시 초기화를 확인했고 브라우저 오류·경고는 없었다. 로그는 `.release/sveltekit-rich-check.log`, `.release/sveltekit-rich-recovery.log`, `.release/sveltekit-rich-pack.log`다. 게시와 원격 CI는 실행하지 않았다.
