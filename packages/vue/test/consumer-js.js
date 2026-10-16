@@ -1,5 +1,5 @@
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
-import { createSayloVue, useVueStore, renderRichText } from '@0disoft/saylo-vue';
+import { createSayloVue, useVueStore, useVueSelector, renderRichText } from '@0disoft/saylo-vue';
 import { createApp, h } from 'vue';
 const catalog = parseCatalog('{"title":"Title"}', { locale: 'en', namespace: 'demo' });
 const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
@@ -11,6 +11,15 @@ export function setup() {
   const bindings = createSayloVue();
   bindings.provideI18n(store);
   const state = bindings.useI18n();
+  const selected = bindings.useI18nSelector(snapshot => snapshot.t('demo:title'));
+  /** @type {string} */
+  const selectedText = selected.value;
+  // @ts-expect-error readonly computed selection
+  selected.value = 'changed';
+  const selectLocale = useVueSelector(store, snapshot => snapshot.setLocale);
+  // @ts-expect-error selected actions retain types
+  selectLocale.value(3);
+  void selectedText;
   const title = state.value.t('demo:title');
   renderRichText(state.value.tParts('demo:title'), { strong: children => h('strong', children) });
   // @ts-expect-error renderer must return Vue children

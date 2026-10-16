@@ -1,5 +1,5 @@
-import { getCurrentInstance, inject, onMounted, onScopeDispose, provide, shallowReadonly, shallowRef } from 'vue';
-import type { App, InjectionKey, ObjectPlugin, ShallowRef } from 'vue';
+import { computed, getCurrentInstance, inject, onMounted, onScopeDispose, provide, shallowReadonly, shallowRef } from 'vue';
+import type { App, ComputedRef, InjectionKey, ObjectPlugin, ShallowRef } from 'vue';
 import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
 
 export { renderRichText } from './rich-text.js';
@@ -58,6 +58,13 @@ export function useVueStore<S extends Schema>(instance: SayloInstance<S>): Saylo
   return shallowReadonly(state);
 }
 
+/** Lazy, readonly selection; Vue skips downstream updates when Object.is is unchanged. */
+export function useVueSelector<S extends Schema, T>(instance: SayloInstance<S>,
+  selector: (snapshot: SayloVueSnapshot<S>) => T): ComputedRef<T> {
+  const source = useVueStore(instance);
+  return computed(() => selector(source.value));
+}
+
 export interface SayloVueBindings<S extends Schema> {
   /** Install before mount; the caller owns the instance. No subscriptions are acquired. */
   readonly createPlugin: (instance: SayloInstance<S>) => ObjectPlugin<[]>;
@@ -65,12 +72,20 @@ export interface SayloVueBindings<S extends Schema> {
   readonly provideI18n: (instance: SayloInstance<S>) => void;
   /** Read-only reactive snapshot; use i18n.value in script and i18n in templates. */
   readonly useI18n: () => SayloVueStore<S>;
+  /** Call during setup. Reactive values read by the selector are also tracked. */
+  readonly useI18nSelector: <T>(selector: (snapshot: SayloVueSnapshot<S>) => T) => ComputedRef<T>;
 }
 
 /** Create once at module scope; each provider/request supplies its own instance. */
 export function createSayloVue<S extends Schema = Schema>(): SayloVueBindings<S> {
   const key: InjectionKey<SayloInstance<S>> = Symbol('Saylo');
   const installed = new WeakMap<App, SayloInstance<S>>();
+  function requireInstance() {
+    requireSetup();
+    const instance = inject(key);
+    if (!instance) throw new Error('useI18n/useI18nSelector requires provideI18n or app.use(createPlugin(instance)) from the same createSayloVue factory.');
+    return instance;
+  }
   return Object.freeze({
     createPlugin(instance: SayloInstance<S>): ObjectPlugin<[]> {
       return Object.freeze({ install(app: App) {
@@ -83,10 +98,10 @@ export function createSayloVue<S extends Schema = Schema>(): SayloVueBindings<S>
     },
     provideI18n(instance: SayloInstance<S>) { requireSetup(); provide(key, instance); },
     useI18n() {
-      requireSetup();
-      const instance = inject(key);
-      if (!instance) throw new Error('useI18n requires provideI18n or app.use(createPlugin(instance)) from the same createSayloVue factory.');
-      return useVueStore(instance);
+      return useVueStore(requireInstance());
+    },
+    useI18nSelector<T>(selector: (snapshot: SayloVueSnapshot<S>) => T) {
+      return useVueSelector(requireInstance(), selector);
     },
   });
 }

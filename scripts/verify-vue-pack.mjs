@@ -43,7 +43,7 @@ const run = async locale => {
   const store = createStore({ baseLocale: 'ko', locale, catalogs: [catalog('한국어', 'ko'), catalog('English', 'en')] });
   let subscribed = 0;
   const instance = { ...store, subscribe() { subscribed++; throw new Error('SSR must not subscribe'); } };
-  const Child = { setup() { const state = bindings.useI18n(); return () => h('p', state.value.t('demo:title')); } };
+  const Child = { setup() { const title = bindings.useI18nSelector(snapshot => snapshot.t('demo:title')); return () => h('p', title.value); } };
   try { const result = await renderToString(createSSRApp(Child).use(bindings.createPlugin(instance)));
     assert.equal(subscribed, 0); return result;
   } finally { store.dispose(); }

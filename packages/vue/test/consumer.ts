@@ -2,7 +2,7 @@ import { createStore, parseCatalog } from '@0disoft/saylo-core';
 import type { I18n } from '@0disoft/saylo-core';
 import { createApp, defineComponent, h } from 'vue';
 import type { VNodeChild } from 'vue';
-import { createSayloVue, useVueStore, renderRichText } from '@0disoft/saylo-vue';
+import { createSayloVue, useVueStore, useVueSelector, renderRichText } from '@0disoft/saylo-vue';
 import type { RichTextRenderers } from '@0disoft/saylo-vue';
 type AppSchema = { 'demo:title': {}; 'demo:items': { count: number }; 'demo:code': { code: string } };
 const catalog = parseCatalog('{"title":"Title","items":"{count, number}","code":"{code}"}', { locale: 'en', namespace: 'demo' });
@@ -45,10 +45,26 @@ export function setup() {
   void transition; void namespace;
   const bindings = createSayloVue<AppSchema>();
   bindings.provideI18n(store); bindings.useI18n().value.t('demo:title');
+  const title = bindings.useI18nSelector(snapshot => snapshot.t('demo:title'));
+  const titleText: string = title.value;
+  // @ts-expect-error selection is readonly
+  title.value = 'changed';
+  // @ts-expect-error selection retains the schema
+  bindings.useI18nSelector(snapshot => snapshot.t('demo:missing'));
+  // @ts-expect-error selection retains required arguments
+  bindings.useI18nSelector(snapshot => snapshot.tParts('demo:code'));
+  const action = useVueSelector(store, snapshot => snapshot.setLocale);
+  const selectedTransition: void | Promise<void> = action.value('en');
+  void titleText; void selectedTransition;
   const other = createStore<{ 'other:title': {} }>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
   // @ts-expect-error incompatible schema
   bindings.provideI18n(other);
   return state;
 }
 declare const lazy: I18n<AppSchema>;
-export function lazySetup() { return useVueStore(lazy); }
+export function lazySetup() {
+  const selected = useVueSelector(lazy, snapshot => snapshot.loadNamespace);
+  const loading: Promise<void> | undefined = selected.value?.('demo');
+  void loading;
+  return useVueStore(lazy);
+}

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createRenderer, createSSRApp, h, isReadonly, nextTick } from 'vue';
+import { createRenderer, createSSRApp, h, isReadonly, nextTick, ref, watch } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
-import { createSayloVue, useVueStore } from '@0disoft/saylo-vue';
+import { createSayloVue, useVueStore, useVueSelector } from '@0disoft/saylo-vue';
 
 const catalogs = (ko = '한국어', en = 'English') => [
   parseCatalog(JSON.stringify({ title: ko }), { locale: 'ko', namespace: 'demo' }),
@@ -189,5 +189,91 @@ test('plugin reinstall retains the original instance and mismatched factories st
   other.app.config.warnHandler = () => {};
   other.app.config.errorHandler = error => errors.push(error);
   other.app.use(first.createPlugin(ko.instance)); other.start();
+  assert.match(errors[0].message, /same createSayloVue factory/);
+});
+
+test('selector skips unrelated renders and shares setup/mount/disposal ownership', async t => {
+  const f = fixture(t), bindings = createSayloVue();
+  let selected, renders = 0;
+  const ui = mount(t, { setup() {
+    selected = bindings.useI18nSelector(snapshot => snapshot.t('demo:title'));
+    assert.ok(isReadonly(selected));
+    assert.equal(f.subscriptions.size, 0);
+    // The mounted refresh must include this edit too.
+    f.store.replaceCatalogs(catalogs('Before mount'));
+    return () => { renders++; return h('p', selected.value); };
+  } });
+  ui.app.use(bindings.createPlugin(f.instance)); ui.start(); await nextTick();
+  assert.equal(ui.root.children[0].text, 'Before mount');
+  const rendered = renders;
+  const withOther = value => [...catalogs('Before mount'), parseCatalog(JSON.stringify({ title: value }), { locale: 'ko', namespace: 'other' })];
+  f.store.replaceCatalogs(withOther('new unrelated value')); await nextTick();
+  assert.equal(renders, rendered);
+  assert.equal(f.subscriptions.size, 1); assert.equal(f.disposers.size, 1);
+  f.store.replaceCatalogs(catalogs('Changed')); await nextTick();
+  assert.equal(ui.root.children[0].text, 'Changed');
+  assert.equal(renders, rendered + 1);
+  f.store.dispose();
+  assert.equal(f.subscriptions.size, 0); assert.equal(f.disposers.size, 0);
+  ui.app.unmount();
+});
+
+test('selector tracks reactive arguments and retries a failed read after correction', async t => {
+  const f = fixture(t), suffix = ref('one'), fail = ref(false);
+  let selected;
+  const errors = [];
+  const ui = mount(t, { setup() {
+    selected = useVueSelector(f.instance, snapshot => {
+      if (fail.value) throw new Error('selection failed');
+      return `${snapshot.t('demo:title')} ${suffix.value}`;
+    });
+    return () => h('p', selected.value);
+  } });
+  ui.app.config.errorHandler = error => errors.push(error);
+  ui.start(); suffix.value = 'two'; await nextTick();
+  assert.equal(ui.root.children[0].text, '한국어 two');
+  fail.value = true; await nextTick();
+  assert.equal(errors.length, 1);
+  assert.match(errors[0].message, /selection failed/);
+  fail.value = false; f.store.setLocale('en'); await nextTick();
+  assert.equal(ui.root.children[0].text, 'English two');
+  ui.app.unmount();
+  assert.equal(f.subscriptions.size, 0); assert.equal(f.disposers.size, 0);
+});
+
+test('selector compares stable references, NaN and signed zero using Object.is', async t => {
+  const f = fixture(t), input = ref(NaN), object = Object.freeze({ label: 'same' });
+  const values = [];
+  const ui = mount(t, { setup() {
+    const selected = useVueSelector(f.instance, () => input.value);
+    const stable = useVueSelector(f.instance, () => object);
+    watch(selected, value => values.push(value), { immediate: true });
+    watch(stable, () => values.push('object'), { immediate: true });
+    return () => h('p', String(selected.value));
+  } });
+  ui.start(); input.value = NaN; f.store.setLocale('en'); await nextTick();
+  assert.deepEqual(values, [NaN, 'object']);
+  input.value = 0; await nextTick(); input.value = -0; await nextTick();
+  assert.deepEqual(values, [NaN, 'object', 0, -0]);
+});
+
+test('selector SSR isolates requests/providers with no subscriptions and enforces setup/factory', async t => {
+  const bindings = createSayloVue(), other = createSayloVue();
+  const ko = fixture(t, 'ko'), en = fixture(t, 'en');
+  assert.throws(() => useVueSelector(ko.instance, snapshot => snapshot.locale), /during component setup/);
+  assert.throws(() => bindings.useI18nSelector(snapshot => snapshot.locale), /during component setup/);
+  const Read = { setup() { const title = bindings.useI18nSelector(snapshot => snapshot.t('demo:title')); return () => h('p', title.value); } };
+  const Inner = { setup() { bindings.provideI18n(en.instance); return () => h(Read); } };
+  const Root = { render: () => h('main', [h(Read), h(Inner), h(Read)]) };
+  assert.deepEqual(await Promise.all([
+    renderToString(createSSRApp(Root).use(bindings.createPlugin(ko.instance))),
+    renderToString(createSSRApp(Read).use(bindings.createPlugin(en.instance))),
+  ]), ['<main><p>한국어</p><p>English</p><p>한국어</p></main>', '<p>English</p>']);
+  for (const f of [ko, en]) { assert.equal(f.subscriptions.size, 0); assert.equal(f.disposers.size, 0); }
+  const errors = [];
+  const ui = mount(t, { setup() { other.useI18nSelector(snapshot => snapshot.locale); return () => h('p'); } });
+  ui.app.config.warnHandler = () => {};
+  ui.app.config.errorHandler = error => errors.push(error);
+  ui.app.use(bindings.createPlugin(ko.instance)); ui.start();
   assert.match(errors[0].message, /same createSayloVue factory/);
 });

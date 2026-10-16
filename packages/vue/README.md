@@ -88,6 +88,40 @@ export const { createPlugin, provideI18n, useI18n } = createSayloVue<AppSchema>(
 - live 구독은 `onMounted`에서 시작한다. listener를 설치한 뒤 `getSnapshot()`을 한 번 더 읽어 setup과 mount 사이의 변경까지 반영하고, `onDispose` 리스너와 구독은 `onScopeDispose`에서 해제한다.
 - snapshot의 `t`는 그 snapshot의 번역에 묶여 있고, `setLocale`은 instance에서 온다. `setLocale`은 동기 `void` 또는 lazy instance의 `Promise<void>`다. lazy instance는 `loadNamespace`도 함께 온다.
 
+## 선택자 구독
+
+`createSayloVue<S>()`가 돌려주는 `useI18nSelector`와 instance를 직접 받는 `useVueSelector`로 snapshot에서 필요한 값만 골라 읽는다. 둘 다 `setup`에서 동기 호출한다.
+
+```ts
+function useVueSelector<S extends Schema, T>(instance: SayloInstance<S>, selector: (snapshot: SayloVueSnapshot<S>) => T): ComputedRef<T>;
+function useI18nSelector<T>(selector: (snapshot: SayloVueSnapshot<S>) => T): ComputedRef<T>;
+```
+
+먼저 `useVueStore(instance)`로 source를 한 번 만든 뒤 `computed(() => selector(source.value))`로 값을 고른다. 반환값은 읽기 전용 `ComputedRef<T>`이고 script에서는 `.value`로, 템플릿에서는 자동으로 풀린다.
+
+- selector 결과가 `Object.is`로 같으면 downstream 업데이트를 건너뛴다. 매번 새 객체를 만들면 매번 갱신된다.
+- selector가 읽은 reactive ref·prop을 추적한다. selector는 순수해야 한다.
+- lazy `computed`라 처음 읽을 때 계산한다.
+- selector 예외는 Vue `computed`의 일반 처리와 같다. 자동으로 마지막 정상 값을 보관하지 않는다.
+
+구독은 composable마다 하나 만들고 `onMounted`에서 시작한다. listener를 설치한 뒤 snapshot을 한 번 더 읽어 `setup`과 mount 사이 변경까지 반영하고, scope dispose에서 해제한다. SSR에서는 구독이 생기지 않는다.
+
+```js
+import { defineComponent, h, ref } from 'vue';
+// i18n 모듈은 앱에 설치한 factory의 useI18nSelector도 함께 내보낸다.
+import { useI18nSelector } from './i18n';
+
+const Demo = defineComponent({
+  setup() {
+    const name = ref('Saylo');
+    const title = useI18nSelector(s => s.t('demo:greeting', { name: name.value }));
+    return () => h('p', title.value);
+  },
+});
+```
+
+`useI18nSelector` 대신 같은 instance를 받는 `useVueSelector(instance, selector)`를 직접 써도 된다. Vue 바인딩은 여전히 private이고 게시와 버전 승격은 보류한다.
+
 ## SSR과 소유권
 
 - 마운트 관련 훅은 서버 렌더에서 실행되지 않으므로 SSR 중에는 구독이 생기지 않는다([컴포넌트 라이프사이클 훅](https://vuejs.org/guide/scaling-up/ssr.html#component-lifecycle-hooks)). 첫 렌더 값은 `setup` 시점의 `getSnapshot()`이다.
@@ -141,6 +175,6 @@ const RichPreview = defineComponent({
 
 ## 구현 범위
 
-브라우저 예제는 [Vue 데모](../../examples/vue/README.md)를 따른다. 키 단위 selector 구독, Nuxt 모듈, 게시본 integrity 인수 검사는 구현하지 않았다. 이 패키지는 게시된 `alpha.4`·`alpha.5` 대상이 아니고 대응하는 릴리스 검증 기록도 없다.
+브라우저 예제는 [Vue 데모](../../examples/vue/README.md)를 따른다. Nuxt 모듈, 게시본 integrity 인수 검사는 구현하지 않았다. 이 패키지는 게시된 `alpha.4`·`alpha.5` 대상이 아니고 대응하는 릴리스 검증 기록도 없다.
 
 라이선스는 Apache-2.0이고, 배포 tarball의 `files`에 `LICENSE`와 `NOTICE`를 포함한다.
