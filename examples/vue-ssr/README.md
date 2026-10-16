@@ -35,14 +35,22 @@ http://127.0.0.1:5193/?locale=en
 3. 개발 모드에서 `examples/vue/locales/ko/demo.json` 문구를 고치고 저장한다. 하이드레이션 이후 라이브 수정이 반영되고 입력값·포커스·선택 범위는 유지된다.
 4. 언어를 `en`으로 바꿔 `examples/vue/locales`가 로케일 전환에도 쓰이는지 본다.
 
+## Rich text와 복구
+
+`app.mjs`는 `renderRichText`로 `rich-preview` 문단을 그린다. `strong`·`link`를 강조·링크 요소에 매핑하고, 링크의 `href`는 앱이 정한 `#order-form`을 가리킨다. parts는 `snapshot.tParts('demo:rich', { name: name || 'Saylo' })`로 만든다. SSR과 초기 하이드레이션은 이름이 비어 있어 `Saylo`로 같은 마크업을 낸다. `onMounted`가 하이드레이션 전에 입력한 값을 ref로 가져오면 강조 문구도 실제 이름으로 갱신된다.
+
+화면 번역은 전체를 먼저 계산한다. 잘못된 마커를 만나면 `render-error` 안내를 띄우고, 마지막 정상 snapshot을 현재 `name`·`count`로 다시 포맷해 유지한다. 번역을 고쳐 저장하면 오류 안내가 사라지고 정상 렌더로 돌아간다. 첫 서버 렌더부터 잘못된 경우에는 마지막 정상 snapshot이 없으므로 요청을 실패시킨다.
+
 ## 자동 확인
 
 ```sh
 npm run verify:demo:vue:ssr
 ```
 
-`npm run build` 뒤 `scripts/verify-vue-hydration.mjs`를 headless Chromium으로 돌린다. 원본 번역 파일은 고치지 않고 `examples/vue/locales`를 `.release` 아래 격리된 fixture로 복사해 검사한다. 확인 항목은 `ko`·`en` 동시 SSR, boot와 초기 하이드레이션 snapshot 일치, 하이드레이션 전 입력·포커스·선택 범위·DOM 정체성 유지, 서버 카탈로그 수정 후 sync까지의 gap, 언어 전환, 하이드레이션 이후 라이브 수정, cleanup 뒤 리스너 수 0, 런타임 오류·경고 없음이다.
+`npm run build` 뒤 `scripts/verify-vue-hydration.mjs`를 headless Chromium으로 돌린다. 원본 번역 파일은 고치지 않고 `examples/vue/locales`를 `.release` 아래 격리된 fixture로 복사해 검사한다. 확인 항목은 `ko`·`en` 동시 SSR, boot와 초기 하이드레이션 snapshot 일치, 하이드레이션 전 입력·포커스·선택 범위·DOM 정체성 유지, 서버 카탈로그 수정 후 sync까지의 gap, 언어 전환, 하이드레이션 이후 라이브 수정, cleanup 뒤 리스너 수 0, 런타임 오류·경고 없음이다. 여기에 rich SSR 문자열 escape와 marker 매핑, rich 라이브 리터럴 삽입 시 DOM 정체성 유지, 잘못된 rich marker에서의 복구와 현재 입력 추적이 더해진다.
 
 예제는 이제 요청 instance를 `app.use(createPlugin(instance))`로 설치한다. 2026-10-12 같은 환경에서 이 설치 경로도 동시 SSR과 한국어·영어 각각 8단계를 다시 통과했다. 런타임 오류·경고는 없었고, 종료 후 컴포넌트 구독과 폐기 리스너는 모두 0이었다.
 
 2026-10-12 Node 24.18.0·Vite 8.3.4·headless Chromium 154에서 동시 SSR과 한국어·영어 각각 8단계의 브라우저 검사를 통과했다(당시 설치 경로는 부모 컴포넌트 `provideI18n`). 런타임 오류·경고는 없었고, 종료 후 컴포넌트 구독과 폐기 리스너는 모두 0이었다. 로컬 보고서는 `.release/vue-hydration-report.json`에 생성한다. 개발 서버에서 확인한 결과이며 production 배포·Nuxt 통합·실제 BFCache 복귀는 검증 범위에 포함하지 않는다. BFCache 검사는 합성 `pagehide` 이벤트의 `persisted` 분기만 확인한다.
+
+RichText를 연결한 뒤 Node 24.18.0·Vite 8.3.4·HeadlessChrome 155에서 동시 SSR과 한국어·영어 각각 12단계를 통과했다. 추가한 4단계는 rich 문구 편집·잘못된 마커·오류 중 현재 이름 반영과 HTML 이스케이프·정상 복구다. 강조·링크 DOM과 입력·포커스·선택 범위를 유지했고, 오류·경고와 종료 후 남은 구독은 없었다. 로그는 `.release/vue-rich-ssr.log`, 보고서는 `.release/vue-hydration-report.json`이다.

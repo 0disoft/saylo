@@ -20,6 +20,8 @@ void (async () => {
     const opposite = locale === 'ko' ? 'en' : 'ko';
     const node = selector => document.querySelector(selector);
     const name = node('#name'), note = node('#note'), heading = node('h1');
+    const strong = node('#rich-preview strong'), link = node('#rich-preview a');
+    check(strong?.textContent === 'Saylo' && link?.getAttribute('href') === '#order-form', 'Server rich markup missing');
     const initialHeading = heading.textContent;
     check(document.documentElement.lang === locale && node('#locale').value === locale, 'Server locale mismatch');
     name.value = 'Before hydration'; note.value = 'Keep this note';
@@ -36,13 +38,20 @@ void (async () => {
     mounted = hydrate();
     check(mounted.initialLocale === locale && heading.textContent === initialHeading, 'Hydration did not use the server boot snapshot');
     check(node('#name') === name && node('#note') === note && node('h1') === heading, 'Hydration replaced server DOM');
+    const richPreserved = () => {
+      check(node('#rich-preview strong') === strong && node('#rich-preview a') === link, 'Rich elements replaced');
+      check(link.getAttribute('href') === '#order-form', 'Rich link destination changed');
+    };
+    richPreserved();
     const preserved = () => {
       check(name.value === 'Before hydration' && note.value === 'Keep this note', 'Typed values reset');
       check(document.activeElement === name && name.selectionStart === 2 && name.selectionEnd === 8, 'Focus/selection reset');
+      richPreserved();
     };
     preserved(); checks.push('frozen-boot-hydration');
     await wait(() => heading.textContent === `SSR gap ${locale}` && mounted.stats().connected, 'Post-hydration gap sync failed');
     check(node('#form-values').textContent === 'Before hydration / Keep this note', 'Vue did not adopt pre-hydration form state');
+    check(strong.textContent === 'Before hydration' && node('#rich-preview').textContent.includes(`SSR gap ${locale}`), 'Gap sync lost rich formatting/input');
     preserved(); checks.push('gap-sync');
     const select = node('#locale');
     select.value = opposite; select.dispatchEvent(new Event('change', { bubbles: true }));
@@ -53,6 +62,23 @@ void (async () => {
     await action('live');
     await wait(() => heading.textContent === `SSR live ${locale}`, 'Live translation edit failed');
     preserved(); checks.push('live-edit');
+    check(node('#rich-preview').textContent.includes(`SSR live ${locale}`) && strong.textContent === 'Before hydration', 'Rich live edit failed');
+    preserved(); checks.push('rich-live-edit');
+    await action('rich-invalid');
+    await wait(() => node('#render-error').textContent.includes('Invalid rich text'), 'Invalid rich markers lack a correction hint');
+    check(node('#rich-preview').textContent.includes(`SSR live ${locale}`), 'Invalid rich markers lost last good view');
+    preserved(); checks.push('rich-invalid');
+    name.value = '<img src=x>'; name.dispatchEvent(new Event('input', { bubbles: true }));
+    await wait(() => strong.textContent === '<img src=x>', 'Fallback rich formatter ignored current input');
+    check(!node('#rich-preview img'), 'Rich argument was interpreted as HTML');
+    richPreserved();
+    name.value = 'Before hydration'; name.dispatchEvent(new Event('input', { bubbles: true }));
+    name.setSelectionRange(2, 8);
+    await wait(() => strong.textContent === 'Before hydration', 'Fallback input did not restore');
+    preserved(); checks.push('rich-fallback-input');
+    await action('rich-restore');
+    await wait(() => node('#render-error').textContent === '' && !node('#rich-preview').textContent.includes(`SSR live ${locale}`), 'Rich marker correction did not recover');
+    preserved(); checks.push('rich-restoration');
     name.value = 'After hydration'; name.dispatchEvent(new Event('input', { bubbles: true }));
     await wait(() => node('#form-values').textContent === 'After hydration / Keep this note', 'Hydrated input handler failed');
     node('#count').click();

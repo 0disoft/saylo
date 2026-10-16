@@ -51,8 +51,12 @@ try {
         const value = JSON.parse(body);
         if (req.url === '/__vue_ssr_result') { resolveReport(value); res.end('ok'); return; }
         assert.ok(['ko', 'en'].includes(value.locale));
-        assert.ok(['gap', 'live'].includes(value.operation));
-        const content = { ...JSON.parse(originals[value.locale]), heading: `SSR ${value.operation} ${value.locale}` };
+        assert.ok(['gap', 'live', 'rich-invalid', 'rich-restore'].includes(value.operation));
+        const phase = value.operation === 'gap' ? 'gap' : 'live';
+        const content = { ...JSON.parse(originals[value.locale]), heading: `SSR ${phase} ${value.locale}` };
+        content.rich = value.operation === 'rich-invalid' ? '<strong>{name}</link>'
+          : value.operation === 'rich-restore' ? JSON.parse(originals[value.locale]).rich
+            : `SSR ${phase} ${value.locale} <strong>{name}</strong> <link>Order</link>`;
         await writeFile(path.join(catalogs, value.locale, 'demo.json'), JSON.stringify(content));
         res.end('ok');
       })().catch(error => { rejectReport?.(error); res.writeHead(500).end('Fixture action failed'); }); });
@@ -69,6 +73,9 @@ try {
     assert.equal(boot.locale, locale);
     assert.equal(boot.timeZone, 'UTC');
     assert.ok(html.includes(JSON.parse(originals[locale]).heading));
+    assert.ok(html.includes('<strong>Saylo</strong>'));
+    assert.ok(html.includes('<a href="#order-form">'));
+    assert.ok(!html.includes('&lt;strong&gt;'), 'Rich SSR markers should become app-owned elements');
   }
   const module = await demo.vite.ssrLoadModule('/entry-server.mjs');
   for (const result of await Promise.all(['ko', 'en'].map(locale => module.render(locale))))
@@ -92,7 +99,8 @@ try {
     assert.equal(report.locale, locale);
     assert.deepEqual(report.errors, []); assert.deepEqual(report.warnings, []);
     assert.deepEqual(report.checks, ['server-form-edit', 'frozen-boot-hydration', 'gap-sync', 'locale-switch',
-      'live-edit', 'interactive-form', 'bfcache-retention', 'client-cleanup']);
+      'live-edit', 'rich-live-edit', 'rich-invalid', 'rich-fallback-input', 'rich-restoration',
+      'interactive-form', 'bfcache-retention', 'client-cleanup']);
     reports.push(report);
     clearTimeout(timer); rejectReport = undefined;
     await stopBrowser();
