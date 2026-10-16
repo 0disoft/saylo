@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, onScopeDispose, ref, shallowRef, watch, watchEffect } from 'vue';
+import { computed, defineComponent, h, onMounted, onScopeDispose, ref, shallowRef, watch, watchEffect } from 'vue';
+import { renderRichText } from '@0disoft/saylo-vue';
+import type { RichTextRenderers } from '@0disoft/saylo-vue';
 import type { StoreSnapshot } from '@0disoft/saylo-core';
 import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource } from 'virtual:saylo/lazy';
 import type { AppSchema } from './generated';
-import { useI18n, store } from './i18n';
+import { useI18n, useI18nSelector, store } from './i18n';
 import { projectMessages } from './demo-messages';
 
 const i18n = useI18n();
@@ -13,7 +15,16 @@ const dialog = ref<HTMLDialogElement>();
 const diagnostic = ref(''), transitionError = ref('');
 const pendingLocale = ref<string>();
 const lastGood = shallowRef<StoreSnapshot<AppSchema>>();
-const view = computed(() => projectMessages(i18n.value, lastGood.value, name.value));
+const view = computed(() => projectMessages(i18n.value, lastGood.value, name.value || 'Saylo'));
+const richRenderers: RichTextRenderers = {
+  strong: children => h('strong', children),
+  link: children => h('a', { href: '#order-form' }, children),
+};
+const RichPreview = () => renderRichText(view.value.messages.rich, richRenderers);
+const SelectedLocale = defineComponent({ setup() {
+  const locale = useI18nSelector(snapshot => snapshot.locale);
+  return () => h('span', { id: 'selected-locale' }, locale.value);
+} });
 watch(view, value => {
   if (value.accepted && value.accepted !== lastGood.value) lastGood.value = value.accepted;
 }, { immediate: true, flush: 'post' });
@@ -39,9 +50,11 @@ async function selectLocale(event: Event) {
         <option v-for="locale in i18n.availableLocales" :key="locale" :value="locale">{{ locale }}</option>
       </select>
     </label>
-    <section :lang="view.locale">
+    <p lang="en">Selected locale: <SelectedLocale /></p>
+    <section id="order-form" :lang="view.locale">
       <h1 id="heading">{{ view.messages.heading }}</h1>
       <p id="greeting">{{ view.messages.greeting }}</p>
+      <p id="rich-preview"><RichPreview /></p>
       <label>{{ view.messages.nameLabel }}<input id="name" v-model="name" autocomplete="off"></label>
       <label>{{ view.messages.noteLabel }}<textarea id="note" v-model="note" rows="3"></textarea></label>
       <button id="open-dialog" @click="dialog?.showModal()">{{ view.messages.openDialog }}</button>

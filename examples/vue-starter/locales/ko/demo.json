@@ -6,5 +6,6 @@
   "openDialog": "확인 창 열기",
   "dialogTitle": "입력을 확인하세요",
   "dialogNoteLabel": "확인 메모",
-  "closeDialog": "닫기"
+  "closeDialog": "닫기",
+  "rich": "<strong>{name}</strong>님, <link>입력 내용</link>을 확인해 주세요."
 }

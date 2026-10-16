@@ -37,7 +37,7 @@ npm run prepare:starter:vue -- --out-dir C:/Users/cherr/Downloads/saylo-vue-star
 | [index.html](../examples/vue-starter/index.html) | mount 지점 `#root` |
 | [main.ts](../examples/vue-starter/main.ts) | 앱 생성·plugin 설치·종료 정리 |
 | [i18n.ts](../examples/vue-starter/i18n.ts) | `createI18n` lazy store와 `createSayloVue` factory |
-| [App.vue](../examples/vue-starter/App.vue) | 화면과 개발 연결 |
+| [App.vue](../examples/vue-starter/App.vue) | 화면·rich 미리보기와 개발 연결 |
 | [demo-messages.ts](../examples/vue-starter/demo-messages.ts) | 마지막 정상 snapshot 문구 투영 |
 | [locales/ko/demo.json](../examples/vue-starter/locales/ko/demo.json) | 기준 로케일 |
 | [locales/en/demo.json](../examples/vue-starter/locales/en/demo.json) | 초기 화면 로케일 |
@@ -76,6 +76,8 @@ npm run dev
 - [main.ts](../examples/vue-starter/main.ts)가 `createApp(App).use(createPlugin(store))`로 plugin을 설치한다. plugin은 구독을 만들지 않고 instance도 폐기하지 않으므로 store 수명은 앱이 소유한다. `pagehide`가 `persisted`면 BFCache 복귀를 위해 구독을 남기고, 실제 종료면 `app.unmount()` 뒤 `store.dispose()`로 정리한다. Vite HMR dispose에서도 같은 cleanup을 탄다.
 - [App.vue](../examples/vue-starter/App.vue)가 `useI18n` snapshot을 구독하고 `onMounted`에서 `connectDev(store, { catalogSource, onDiagnostic })`로 개발 연결을 붙인다. `onScopeDispose`에서 연결을 끊고 세대 번호를 올려 늦게 도착한 로케일 전환 응답을 버린다.
 - 화면 요소는 기본값 `Saylo`인 `#name` 입력, `#note` textarea, `#open-dialog`가 여는 `#confirmation` dialog, `#locale` 선택이다.
+- `#rich-preview`는 `snapshot.tParts('demo:rich', { name: name || 'Saylo' })` 결과를 `renderRichText`로 그린다. `strong`·`link` 태그는 앱이 넘기고 `link`의 `href`는 `#order-form`이다.
+- `#selected-locale`은 같은 factory가 낸 `useI18nSelector(snapshot => snapshot.locale)`을 쓰는 자식 컴포넌트가 그린다.
 
 ## 라이브 수정 확인
 
@@ -83,10 +85,12 @@ npm run dev
 2. `locales/en/demo.json`의 `greeting`을 `Hello {name}`에서 `Updated {name}`으로 고치고 저장한다. 페이지는 처음부터 `en`으로 뜨므로 문구가 그 자리에서 바뀌고, 입력값과 열어 둔 dialog는 그대로 남는다.
 3. `locales/ja/demo.json`을 기준과 같은 키로 만들면 `#locale` 목록에 `ja`가 나타나고, 고르면 그 파일을 지연 로딩해 보여준다.
 4. 기준 로케일 `ko`에 키를 추가하면 Vite plugin 옵션 `typegen: { outFile: 'generated.d.ts' }`가 `generated.d.ts`를 다시 만든다. 앱 호출부와 생성 타입을 함께 고쳐야 타입이 맞는다.
+5. `locales/en/demo.json`의 `rich` 문구를 고치면 `#rich-preview`가 그 자리에서 바뀌고 `strong` 노드와 열어 둔 dialog는 그대로 남는다.
+6. `rich` 마커를 `<strong>{name}</strong></link>`처럼 어긋나게 저장하면 `#render-error`에 진단이 뜨고 마지막 정상 rich 문구가 남는다. `#name`을 바꾸면 그 값으로 다시 보간되고, 파일을 복구하면 진단이 풀린다.
 
 ## 폼·dialog 보존
 
-`projectMessages`는 문구를 전부 계산한 뒤에만 화면을 바꾼다. 로케일 JSON이 깨지거나 키 스키마가 어긋나면 입력값·열린 dialog·포커스를 지우지 않고 마지막 정상 문구를 보여주며 진단을 띄운다. 파일을 복구하면 진단이 풀리고 저장된 입력으로 다시 보간한다. 기준 키 삭제나 필수 인자 추가처럼 기준 스키마 자체를 바꾸는 편집은 앱 호출부와 타입도 함께 고쳐야 한다.
+`projectMessages`는 문구를 rich까지 전부 계산한 뒤에만 화면을 바꾼다. 로케일 JSON이 깨지거나 키 스키마가 어긋나면 입력값·열린 dialog·포커스를 지우지 않고 마지막 정상 문구를 보여주며 진단을 띄운다. rich 마커가 어긋난 경우에도 화면 전체가 마지막 정상 snapshot에 머물며 rich 문구는 현재 입력값으로 다시 계산한다. 파일을 복구하면 진단이 풀리고 저장된 입력으로 다시 보간한다. 기준 키 삭제나 필수 인자 추가처럼 기준 스키마 자체를 바꾸는 편집은 앱 호출부와 타입도 함께 고쳐야 한다.
 
 ## 타입 생성
 
@@ -108,9 +112,9 @@ npm run typegen
 
 저장소 루트의 `npm run verify:starter:vue`가 내보내기부터 브라우저 확인까지 묶는다. 저장소를 빌드한 뒤 스타터를 저장소 밖 임시 폴더로 내보내고, 실제 tarball을 링크 없이 설치해 확인한다.
 
-- 실제 tar 파일 설치와 symlink 부재
-- 새 Vite 개발 서버 브라우저에서 라이브 편집, 로케일 추가, 깨진 JSON 복구
-- 설치본 CLI typegen으로 `generated.d.ts` 생성, 스타터 자체 빌드의 CLI typegen과 `vue-tsc`
-- production preview에서 언어 전환·폼 입력·dialog 동작
+- 실제 tar 파일 설치와 symlink 부재, 네 tarball의 SHA-512와 설치 lockfile integrity 대조
+- 설치본 CLI typegen의 `generated.d.ts` 생성(`demo:rich` 스키마 포함), 스타터 템플릿의 `vue-tsc` 검사와 스타터 자체 빌드
+- 새 Vite 개발 서버 브라우저 단계 15개: 첫 렌더, rich 렌더(`strong`과 `#order-form` 링크), 선택 로케일 표시, 로케일 전환, 라이브 편집, rich 라이브 편집, 어긋난 rich 마커, rich 대체 출력의 현재 입력값, rich 복구, 깨진 JSON의 마지막 정상 문구, 복구, 로케일 추가, 스키마 확장, 폼·dialog 보존, 정리
+- production preview 브라우저 단계 6개: 첫 렌더, rich 렌더, 선택 로케일 표시, 로케일 전환, 폼·dialog 보존, 정리
 
-2026-10-13 Node 24.18.0·Vite 8.3.4·Chromium 154에서 독립 설치와 개발 9단계·production 4단계를 통과했다. 네 tarball의 SHA-512와 설치 lockfile integrity를 대조했고, 기준 키 추가 후 개발 서버의 타입 갱신과 설치된 CLI·Vue 템플릿 검사·production 빌드도 통과했다. 브라우저 오류·경고는 없었다. 현재 출력은 `.release/vue-starter-report.json`에 남긴다. 라이브러리 게시나 원격 CI를 실행한 결과는 아니다.
+Node 24.18.0·Vite 8.3.4·HeadlessChrome 155에서 개발 15단계와 production 6단계를 통과했다. rich 노드와 `#selected-locale`, 입력값·열린 dialog·포커스·선택 범위를 유지했고 브라우저 오류·경고는 없었다. 보고서는 `.release/vue-starter-report.json`, 로그는 `.release/vue-starter-rich.log`에 남긴다. 라이브러리 게시나 원격 CI를 실행한 결과는 아니다.

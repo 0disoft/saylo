@@ -70,7 +70,7 @@ try {
     const probe = await readFile(new URL('./vue-starter-browser.mjs', import.meta.url), 'utf8');
     const enFile = path.join(root, 'locales/en/demo.json'), koFile = path.join(root, 'locales/ko/demo.json');
     const en = JSON.parse(await readFile(enFile, 'utf8')), ko = JSON.parse(await readFile(koFile, 'utf8'));
-    const edited = { ...en, greeting: 'Updated {name}' };
+    const edited = { ...en, greeting: 'Updated {name}', rich: 'RICH_EDIT <strong>{name}</strong> <link>Form</link>' };
     const plugin = {
       name: 'vue-starter-verification-only',
       transformIndexHtml: () => [{ tag: 'script', attrs: { type: 'module', src: '/__vue_starter_probe.mjs' }, injectTo: 'head-prepend' }],
@@ -87,6 +87,7 @@ try {
       req.on('end', () => { void (async () => {
         if (req.url === '/__vue_starter_result') { resolveReport(JSON.parse(body)); res.end('ok'); return; }
         if (body === 'edit' || body === 'restore') await writeFile(enFile, JSON.stringify(edited));
+        else if (body === 'rich-invalid') await writeFile(enFile, JSON.stringify({ ...edited, rich: '<strong>{name}</link>' }));
         else if (body === 'invalid') await writeFile(enFile, '{invalid');
         else if (body === 'add-locale') {
           await mkdir(path.join(root, 'locales/ja'), { recursive: true });
@@ -109,14 +110,16 @@ try {
       timer = setTimeout(() => rejectReport?.(new Error('Vue starter browser timed out after 45s')), 45000);
       const report = await completed;
       assert.equal(report.ok, true, report.error); assert.deepEqual(report.errors, []);
-      assert.deepEqual(report.checks, ['first-render', 'locale-switch', ...(mode === 'dev'
-        ? ['live-edit', 'invalid-last-good', 'repair', 'new-locale', 'schema-edit'] : []), 'form-dialog-preserved', 'teardown']);
+      assert.deepEqual(report.checks, ['first-render', 'rich-render', 'selector-locale', 'locale-switch', ...(mode === 'dev'
+        ? ['live-edit', 'rich-live-edit', 'rich-invalid', 'rich-fallback-input', 'rich-restoration',
+          'invalid-last-good', 'repair', 'new-locale', 'schema-edit'] : []), 'form-dialog-preserved', 'teardown']);
       clearTimeout(timer); rejectReport = undefined; await stopBrowser();
       console.log(`[vue-starter] ${mode}: ${report.checks.join(', ')}`);
       return report;
     }
     console.log((await npm(['run', 'typegen'])).trim());
     assert.ok((await readFile(path.join(root, 'generated.d.ts'), 'utf8')).includes('demo:greeting'));
+    assert.ok((await readFile(path.join(root, 'generated.d.ts'), 'utf8')).includes('"demo:rich":'));
     server = await vite.createServer({ root, plugins: [plugin], server: { host: '127.0.0.1', port: 0, strictPort: true,
       watch: { ignored: ['**/browser-dev/**', '**/browser-production/**'] } } });
     await server.listen(); const dev = await launch('dev');

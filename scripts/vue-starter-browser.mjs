@@ -20,6 +20,12 @@ void (async () => {
   try {
     await wait(() => node('#greeting')?.textContent === (mode === 'dev' ? 'Hello Saylo' : 'Updated Saylo'), 'First render failed');
     checks.push('first-render');
+    await wait(() => node('#rich-preview strong')?.textContent === 'Saylo', 'Initial rich text missing');
+    const strong = node('#rich-preview strong'), link = node('#rich-preview a'), selected = node('#selected-locale');
+    check(link?.getAttribute('href') === '#order-form', 'Rich link is not app-owned');
+    checks.push('rich-render');
+    check(selected?.textContent === 'en', 'Selected locale component missing');
+    checks.push('selector-locale');
     const name = node('#name'), note = node('#note');
     name.value = 'Ada'; name.dispatchEvent(new Event('input', { bubbles: true }));
     note.value = 'Keep note'; note.dispatchEvent(new Event('input', { bubbles: true }));
@@ -31,6 +37,8 @@ void (async () => {
       check(node('#name') === name && node('#note') === note && name.value === 'Ada' && note.value === 'Keep note', 'Form DOM/value reset');
       check(node('#confirmation').open && field.value === 'Keep dialog', 'Modal state reset');
       check(document.activeElement === field && field.selectionStart === 2 && field.selectionEnd === 6, 'Focus/selection reset');
+      check(node('#rich-preview strong') === strong && node('#rich-preview a') === link, 'Rich nodes replaced');
+      check(node('#selected-locale') === selected && selected.textContent === document.documentElement.lang, 'Selected locale did not stay in sync');
     };
     const locale = async (value, text) => {
       node('#locale').value = value; node('#locale').dispatchEvent(new Event('change', { bubbles: true }));
@@ -48,6 +56,21 @@ void (async () => {
       await action('edit');
       await wait(() => node('#greeting').textContent === 'Updated Ada', 'Live edit did not render');
       preserved(); checks.push('live-edit');
+      check(node('#rich-preview').textContent.includes('RICH_EDIT') && strong.textContent === 'Ada', 'Rich live edit failed');
+      preserved(); checks.push('rich-live-edit');
+      await action('rich-invalid');
+      await wait(() => node('#render-error').textContent.includes('Invalid rich text'), 'Broken rich marker has no hint');
+      check(node('#rich-preview').textContent.includes('RICH_EDIT'), 'Broken rich marker lost last good output');
+      preserved(); checks.push('rich-invalid');
+      name.value = '<img src=x>'; name.dispatchEvent(new Event('input', { bubbles: true }));
+      await wait(() => strong.textContent === '<img src=x>', 'Fallback rich output ignored current input');
+      check(!node('#rich-preview img'), 'Rich argument became HTML');
+      name.value = 'Ada'; name.dispatchEvent(new Event('input', { bubbles: true }));
+      await wait(() => strong.textContent === 'Ada', 'Rich input restoration failed');
+      preserved(); checks.push('rich-fallback-input');
+      await action('restore');
+      await wait(() => node('#render-error').textContent === '', 'Rich marker repair failed');
+      preserved(); checks.push('rich-restoration');
       await action('invalid');
       await wait(() => node('#error').textContent.length > 0, 'Invalid JSON has no diagnostic');
       check(node('#greeting').textContent === 'Updated Ada', 'Invalid JSON discarded last good translation');

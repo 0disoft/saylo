@@ -42,9 +42,15 @@ npm run preview  # 빌드 결과 127.0.0.1:5196 (strictPort)
 - 기준 로케일에 키를 추가하면 `generated.d.ts`를 다시 만들고 앱 호출부 타입도 맞춰야 한다.
 - 안 쓰는 로케일 파일을 지우면 그 로케일은 목록에서 빠진다.
 
+## rich 문구
+
+`App.vue`의 `#rich-preview`는 `snapshot.tParts('demo:rich', { name: name || 'Saylo' })` 결과를 `renderRichText`로 그린다. `strong`·`link` 태그는 앱이 정하고 `link`의 `href`는 `#order-form`이다. `locales/en/demo.json`·`locales/ko/demo.json`에 `rich` 문구가 들어 있고 다른 키와 같은 규칙으로 고친다.
+
+`#selected-locale`은 같은 factory의 `useI18nSelector(snapshot => snapshot.locale)`을 쓰는 자식 컴포넌트가 그린다. rich 마커가 어긋나면 `#render-error`에 진단이 뜨고 마지막 정상 문구를 현재 이름으로 다시 보간한다.
+
 ## 폼·dialog 보존
 
-`demo-messages.ts`의 `projectMessages`가 문구를 전부 계산한 뒤에만 화면을 바꾼다. 로케일 JSON이 깨지거나 키가 어긋나면 입력값·열린 dialog·포커스를 지우지 않고 마지막 정상 문구를 보여주며 진단을 띄운다. 파일을 복구하면 저장된 입력으로 다시 보간한다.
+`demo-messages.ts`의 `projectMessages`가 문구를 rich까지 전부 계산한 뒤에만 화면을 바꾼다. 로케일 JSON이 깨지거나 키가 어긋나면 입력값·열린 dialog·포커스를 지우지 않고 마지막 정상 문구를 보여주며 진단을 띄운다. 파일을 복구하면 저장된 입력으로 다시 보간한다.
 
 ## 정리
 

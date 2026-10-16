@@ -4,4 +4,4 @@ import { catalogSource, initialCatalogs, initialNamespaces, initialLocale, timeZ
 import type { AppSchema } from './generated';
 
 export const store = createI18n<AppSchema>({ catalogSource, initialCatalogs, initialNamespaces, locale: initialLocale, timeZone });
-export const { createPlugin, useI18n } = createSayloVue<AppSchema>();
+export const { createPlugin, useI18n, useI18nSelector } = createSayloVue<AppSchema>();

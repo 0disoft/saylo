@@ -6,5 +6,6 @@
   "openDialog": "Open confirmation",
   "dialogTitle": "Confirm your input",
   "dialogNoteLabel": "Confirmation note",
-  "closeDialog": "Close"
+  "closeDialog": "Close",
+  "rich": "<strong>{name}</strong>, review <link>your input</link>."
 }
