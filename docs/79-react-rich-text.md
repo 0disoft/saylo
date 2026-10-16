@@ -9,7 +9,7 @@
 - `@0disoft/saylo-react`가 `renderRichText`와 타입 `RichTextRenderers`를 내보낸다.
 - 입력은 core `tParts`가 돌려준 읽기 전용 `RichTextPart[]`이고, 인자·필수 인자 검증·기준 로케일 폴백·소스 locale·timeZone 계약은 core와 같다. 훅은 기존 snapshot의 `tParts`를 그대로 쓴다.
 - helper는 순수 함수다. props·state·store를 읽지 않고, 넘긴 parts와 renderers만으로 노드를 만든다.
-- 이번 범위에 넣지 않는 것: Svelte·Vue render helper, 자동 HTML 렌더, parts에서 attribute·URL을 만드는 동작. Svelte·Vue helper는 다음 단계다.
+- 이 문서의 범위는 React helper다. Svelte·Vue 구현은 아래 연결 문서에서 다룬다. 자동 HTML 렌더와 parts에서 attribute·URL을 만드는 동작은 지원하지 않는다.
 
 ## API
 
@@ -72,4 +72,4 @@ vanilla 데모의 화면은 기존 13개 키를 쓴다. 공유 카탈로그에�
 
 ## 다음 단계
 
-Svelte rich text 컴포넌트를 로컬 커밋 `010a600`으로 더했고 Svelte 데모도 로컬에 연결했다. 계약·키 규칙·데모·검증 상태는 [80-svelte-rich-text.md](80-svelte-rich-text.md)에 정리했다. 게시본에는 아직 없다. 남은 단계는 Vue render helper와 Vue 데모다. 이 문서의 범위는 React helper와 React 데모까지다.
+Svelte rich text 컴포넌트를 로컬 커밋 `010a600`으로 더했고 Svelte 데모도 로컬에 연결했다. 계약·키 규칙·데모·검증 상태는 [80-svelte-rich-text.md](80-svelte-rich-text.md)에 정리했다. 남은 단계였던 Vue render helper와 Vue 데모도 로컬에서 구현했다. Vue는 SFC 컴파일이나 서브패스 없이 루트 엔트리의 순수 TS `renderRichText`를 쓰고, 데모 `App.vue`가 `rich-preview` 문단에 그린다. 계약은 [@0disoft/saylo-vue README](../packages/vue/README.md), 데모 연결과 검증은 [Vue 데모](../examples/vue/README.md)에 적었다. 셋 다 게시본에는 아직 없다. 이 문서의 범위는 React helper와 React 데모까지다.

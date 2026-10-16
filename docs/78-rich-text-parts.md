@@ -162,4 +162,4 @@ for (const part of i18n.tParts('demo:x', { name })) {
 
 ## 다음 단계
 
-React render helper와 실제 Chromium 데모는 로컬에서 완료했다. [79-react-rich-text.md](79-react-rich-text.md)가 `renderRichText`의 계약과 React 데모를 정한다. 게시본에는 없다. 남은 단계는 Svelte·Vue render helper다. 훅은 기존 snapshot의 `tParts`를 그대로 쓴다.
+React render helper와 실제 Chromium 데모, Svelte 컴포넌트, Vue render helper를 로컬에서 더했다. [79-react-rich-text.md](79-react-rich-text.md)가 React `renderRichText`의 계약과 데모를, [80-svelte-rich-text.md](80-svelte-rich-text.md)가 Svelte 컴포넌트를, [@0disoft/saylo-vue README](../packages/vue/README.md)가 Vue `renderRichText`의 계약을 정한다. Vue 데모 연결과 검증은 [Vue 데모](../examples/vue/README.md)에 있다. 셋 다 게시본에는 없고 버전 승격과 게시는 보류한다. 훅은 기존 snapshot의 `tParts`를 그대로 쓴다.

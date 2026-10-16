@@ -9,7 +9,7 @@
 - `@0disoft/saylo-svelte/RichText.svelte` 서브패스를 별도 기본 import로 연다.
 - 루트 엔트리는 store API를 그대로 두고 타입 `RichTextProps`·`RichTextRenderers`만 내보낸다. 루트 import는 Node SSR에서 Svelte 컴파일 없이 동작한다.
 - 입력은 core `tParts`가 돌려준 읽기 전용 `RichTextPart[]`다. 인자·필수 인자 검증·기준 로케일 폴백·소스 locale·timeZone 계약은 core와 같다. 컴포넌트는 넘긴 parts와 renderers만으로 노드를 만든다.
-- 이번 범위에 넣지 않는 것: Vue render helper, 자동 HTML 렌더, parts에서 attribute·URL을 만드는 동작. Vue 컴포넌트는 다음 단계다.
+- 이 문서의 범위는 Svelte 컴포넌트다. Vue 구현은 아래 연결 문서에서 다룬다. 자동 HTML 렌더와 parts에서 attribute·URL을 만드는 동작은 지원하지 않는다.
 
 ## 설치와 import
 
@@ -117,4 +117,4 @@ snippet이 받는 인자는 매핑된 자식 렌더러다. 앱은 `{@render chil
 
 ## 다음 단계
 
-Svelte 컴포넌트는 로컬 커밋 `010a600`에 있고 데모는 로컬 변경으로 연결했다. 남은 단계는 Vue render helper와 Vue 데모다. 게시본에는 아직 없고 버전 승격과 게시는 보류한다.
+Svelte 컴포넌트는 로컬 커밋 `010a600`에 있고 데모는 로컬 변경으로 연결했다. 남은 단계였던 Vue render helper와 Vue 데모도 로컬에서 구현했다. Vue는 이 문서의 Svelte 컴포넌트와 달리 SFC 컴파일이나 서브패스 없이 루트 엔트리의 순수 TS `renderRichText`를 쓴다. 계약은 [@0disoft/saylo-vue README](../packages/vue/README.md), 데모 연결과 검증은 [Vue 데모](../examples/vue/README.md)에 적었다. 게시본에는 아직 없고 버전 승격과 게시는 보류한다.

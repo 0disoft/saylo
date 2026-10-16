@@ -95,6 +95,50 @@ export const { createPlugin, provideI18n, useI18n } = createSayloVue<AppSchema>(
 - 서버 HTML과 boot snapshot을 브라우저에서 연결하는 예제는 [Vue SSR 데모](../../examples/vue-ssr/README.md)를 따른다. 클라이언트는 `initialSnapshot`으로 첫 렌더를 맞추고 `app.mount()`가 끝난 뒤 개발 동기화를 연결한다.
 - 어댑터는 컴포넌트 범위가 끝날 때 자신이 건 구독과 disposal 리스너만 해제한다. store의 수명은 앱이 소유한다.
 
+## rich text 렌더 (renderRichText)
+
+`renderRichText`는 `snapshot.tParts(key, args)`가 돌려준 읽기 전용 parts를 Vue 노드로 그린다. 순수 TS 함수이고 `h`와 `Fragment`만 쓰므로 SFC 컴파일이나 별도 서브패스가 필요 없다. 루트 엔트리(`@0disoft/saylo-vue`)가 함수와 타입 `RichTextRenderers`를 함께 내보내고, 어떤 tag를 어떤 element로 그릴지는 앱이 넘긴 renderers가 정한다.
+
+```ts
+type RichTextRenderers = Readonly<Record<string, (children: VNodeChild[]) => VNodeChild>>;
+
+function renderRichText(parts: readonly RichTextPart[], renderers?: RichTextRenderers): VNodeChild[];
+```
+
+`renderers`를 주지 않으면 빈 객체로 본다.
+
+계약은 다음과 같다.
+
+- text part는 그대로 Vue text가 되고 Vue가 escape한다. helper는 `v-html`이나 raw HTML 문자열을 만들지 않는다.
+- tag part는 그 이름이 `renderers`의 own property이고 값이 함수일 때만 그 함수 결과로 바뀐다. 없거나 함수가 아니면 태그를 만들지 않고 자식만 이어 그린다.
+- 조회는 own property만 본다(`Object.hasOwn`). `constructor`·`toString`처럼 prototype에서 상속된 이름은 매핑으로 쓰지 않고 자식만 그린다.
+- 카탈로그에서 온 이름으로 임의의 DOM 태그, HTML, attribute, URL을 만들지 않는다. 링크와 attribute는 앱이 자기 renderers에 넣은 이름에만 붙인다.
+- 중첩 태그를 지원한다. 안쪽 tag도 같은 규칙으로 매핑한다.
+- 형제 tag는 이름과 등장 순번을 합친 key를 가진 `Fragment`로 그린다(`link:0`, `link:1`). 문구를 편집하거나 literal을 삽입해도 매핑한 컴포넌트 identity와 그 state가 유지된다. 같은 tag 종류끼리 순서를 바꿀 때의 의미적 identity는 보장하지 않는다.
+- renderers는 같은 tag에 같은 element·component 타입을 돌려줘야 한다. 타입이 바뀌면 Vue가 다시 mount해 입력·포커스·state가 사라진다.
+- 파싱 오류는 core `tParts`가 던진다. helper는 유효한 parts만 받는다.
+
+```ts
+import { defineComponent, h } from 'vue';
+import { renderRichText } from '@0disoft/saylo-vue';
+import type { RichTextRenderers } from '@0disoft/saylo-vue';
+import { useI18n } from './i18n';
+
+const richRenderers: RichTextRenderers = {
+  strong: children => h('strong', children),
+  link: children => h('a', { href: '#order-form' }, children),
+};
+
+const RichPreview = defineComponent({
+  setup() {
+    const i18n = useI18n(); // useI18n은 setup에서만 부를 수 있다.
+    return () => renderRichText(i18n.value.tParts('demo:rich', { name: 'Saylo' }), richRenderers);
+  },
+});
+```
+
+이 helper는 로컬 커밋 `4df90a2`에 있고 npm 게시본에는 없다. 버전 승격과 게시는 보류한다. 로컬 검증에서 패키지 테스트 13개, JS·TS 소비 타입 검사와 패키지 경계 검사, 독립 tarball JS·TS 설치와 concurrent SSR·rich SSR 소비, 데모 template 검사와 production 빌드, HeadlessChrome 155 recovery warm 16개·cold 3개(오류 없음), 워크스페이스 전체 `npm run check` exit 0(297개 테스트)까지 확인했다. 데모 연결은 [Vue 데모](../../examples/vue/README.md)를 따른다.
+
 ## 구현 범위
 
 브라우저 예제는 [Vue 데모](../../examples/vue/README.md)를 따른다. 키 단위 selector 구독, Nuxt 모듈, 게시본 integrity 인수 검사는 구현하지 않았다. 이 패키지는 게시된 `alpha.4`·`alpha.5` 대상이 아니고 대응하는 릴리스 검증 기록도 없다.

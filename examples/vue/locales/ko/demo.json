@@ -11,5 +11,6 @@
   "openDialog": "확인 창 열기",
   "dialogTitle": "입력한 내용을 확인해 주세요",
   "dialogNote": "확인 메모",
-  "closeDialog": "닫기"
+  "closeDialog": "닫기",
+  "rich": "<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요."
 }

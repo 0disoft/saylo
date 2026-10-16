@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, onScopeDispose, ref, shallowRef, watch, watchEffect } from 'vue';
+import { computed, h, onMounted, onScopeDispose, ref, shallowRef, watch, watchEffect } from 'vue';
+import { renderRichText } from '@0disoft/saylo-vue';
+import type { RichTextRenderers } from '@0disoft/saylo-vue';
 import type { ParsedCatalog, StoreSnapshot } from '@0disoft/saylo-core';
 import { connectDev, createSupportRecorder } from '@0disoft/saylo-vite/client';
 import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
@@ -40,8 +42,13 @@ const details = computed(() => diagnostic.value.diagnostics.length
   ? diagnostic.value.diagnostics.map(d => `${d.sourceName}${d.id ? ` [${d.id}]` : ''}: ${d.message}`).join('\n')
   : diagnostic.value.message);
 const lastRendered = shallowRef<StoreSnapshot<AppSchema>>();
-const presentation = computed(() => projectDemoMessages(i18n.value, lastRendered.value, Number(count.value)));
+const presentation = computed(() => projectDemoMessages(i18n.value, lastRendered.value, Number(count.value), name.value || 'Saylo'));
 const text = computed(() => presentation.value.messages);
+const richRenderers: RichTextRenderers = {
+  strong: children => h('strong', children),
+  link: children => h('a', { href: '#order-form' }, children),
+};
+const RichPreview = () => renderRichText(text.value.rich, richRenderers);
 watch(presentation, value => {
   if (value.accepted && value.accepted !== lastRendered.value) lastRendered.value = value.accepted;
 }, { immediate: true, flush: 'post' });
@@ -101,6 +108,7 @@ function clearReport() {
           <label>{{ text.note }}<textarea id="note" v-model="note" rows="4" :placeholder="text.notePlaceholder"></textarea></label>
           <label>{{ text.count }}<input id="count" v-model="count" type="number" min="0" max="100"></label>
           <p id="summary" class="summary" aria-live="polite">{{ text.summary }}</p>
+          <p id="rich-preview"><RichPreview /></p>
           <button id="open-dialog" type="submit">{{ text.openDialog }}</button>
         </form>
         <p class="hint" lang="ko">입력하고 확인 창을 연 뒤 examples/vue/locales/ko/demo.json을 수정하고 저장하세요.</p>
