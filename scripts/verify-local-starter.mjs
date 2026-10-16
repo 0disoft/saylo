@@ -11,7 +11,7 @@ import { prepareLocalStarter } from './prepare-local-starter.mjs';
 
 const { values } = parseArgs({ options: { consumer: { type: 'string' }, framework: { type: 'string' } } });
 const framework = values.framework;
-assert.ok(['react'].includes(framework), 'Choose a supported local starter framework.');
+assert.ok(['react', 'svelte'].includes(framework), 'Choose a supported local starter framework.');
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const ownsRoot = !values.consumer;
 const reportPath = path.join(repository, `.release/${framework}-starter-report.json`);

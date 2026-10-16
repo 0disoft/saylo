@@ -1,0 +1,26 @@
+{
+  "name": "saylo-svelte-local-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typegen": "saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts",
+    "dev": "npm run typegen && vite",
+    "build": "npm run typegen && svelte-check --tsconfig ./tsconfig.json && vite build",
+    "preview": "vite preview"
+  },
+  "engines": { "node": "24.x" },
+  "dependencies": {
+    "@0disoft/saylo-core": "file:./vendor/saylo-core.tgz",
+    "@0disoft/saylo-svelte": "file:./vendor/saylo-svelte.tgz",
+    "svelte": "5"
+  },
+  "devDependencies": {
+    "@0disoft/saylo-vite": "file:./vendor/saylo-vite.tgz",
+    "@0disoft/saylo-typegen": "file:./vendor/saylo-typegen.tgz",
+    "@sveltejs/vite-plugin-svelte": "7",
+    "@types/node": "24",
+    "svelte-check": "4",
+    "typescript": "6",
+    "vite": "8"
+  }
+}

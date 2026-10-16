@@ -1,0 +1,11 @@
+{
+  "heading": "Saylo Svelte starter",
+  "greeting": "Hello {name}",
+  "nameLabel": "Name",
+  "noteLabel": "Note",
+  "openDialog": "Open confirmation",
+  "dialogTitle": "Confirm your input",
+  "dialogNoteLabel": "Confirmation note",
+  "closeDialog": "Close",
+  "rich": "<strong>{name}</strong>, review <link>your input</link>."
+}

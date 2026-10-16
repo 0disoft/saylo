@@ -2,6 +2,8 @@
 
 저장소 밖에서 Vue 앱을 시작하는 [Vue 시작 안내](docs/getting-started-vue.md)를 추가했다. `npm run prepare:starter:vue -- --out-dir <빈 폴더>`로 소스 tarball 네 개와 예제를 내보내고, 해당 폴더에서 설치·실행한다.
 
+React 19와 Svelte 5의 로컬 스타터도 같은 방식으로 저장소 밖 폴더에 내보낸다. `npm run prepare:starter:react -- --out-dir <빈 폴더>`·`npm run prepare:starter:svelte -- --out-dir <빈 폴더>`로 내보내고, 로컬 검증은 `npm run verify:starter:react:local`·`npm run verify:starter:svelte:local`로 한다. 안내는 [React 로컬 스타터](examples/react-starter/README.md)·[Svelte 로컬 스타터](examples/svelte-starter/README.md)에 있다. 빈 폴더에서 npm 게시본 `alpha`로 시작하는 절차는 [React 시작 안내](docs/getting-started-react.md)·[Svelte 시작 안내](docs/getting-started-svelte.md)에 있다.
+
 Vue 3의 로컬 어댑터를 추가했다. `app.use()` 연결·typed context·반응형 snapshot·컴포넌트 구독 정리·요청별 SSR을 제공하며, 아직 private workspace이고 게시 대상에는 포함하지 않는다. API는 [Vue 어댑터](packages/vue/README.md), 번역 저장 중 입력·모달 보존 체험은 [Vue 데모](examples/vue/README.md)를 따른다. `npm run dev:vue`로 실행한다. 서버 HTML을 브라우저에 연결하는 [Vue SSR 데모](examples/vue-ssr/README.md)는 `npm run dev:vue:ssr`로 실행한다.
 
 Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않고 화면에 즉시 반영하는 것을 목표로 하는 i18n(국제화) 라이브러리다. JavaScript와 TypeScript 프로젝트를 함께 지원하고, 개발 서버에서 문구 수정, 로케일 추가, namespace 추가가 입력 폼과 모달 같은 기존 DOM 상태를 유지하며 반영되는 것을 목표로 한다. 상태 보존은 기존 호출부의 스키마를 깨뜨리지 않는 편집에 적용한다. 키 삭제·필수 인자 추가와 Vite 서버 재시작의 범위는 [제품과 범위](docs/01-product-and-scope.md)를 따른다.

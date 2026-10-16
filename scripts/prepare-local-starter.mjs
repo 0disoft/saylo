@@ -8,6 +8,7 @@ import { parseArgs, promisify } from 'node:util';
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const templates = {
   react: ['main.tsx', 'App.tsx'],
+  svelte: ['main.ts', 'App.svelte', 'SelectedLocale.svelte'],
 };
 export async function prepareLocalStarter(framework, destination) {
   assert.ok(Object.hasOwn(templates, framework), 'Choose a supported local starter framework.');

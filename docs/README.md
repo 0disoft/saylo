@@ -116,6 +116,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 빈 폴더에서 npm 게시본으로 시작하는 React 안내는 [getting-started-react.md](getting-started-react.md)에 있다.
 Svelte 5 안내는 [getting-started-svelte.md](getting-started-svelte.md)에 있다.
 Vue 3의 로컬 tarball을 독립 프로젝트로 내보내는 안내는 [getting-started-vue.md](getting-started-vue.md)에 있다.
+React 19와 Svelte 5의 로컬 tarball을 독립 프로젝트로 내보내는 안내는 [examples/react-starter](../examples/react-starter/README.md)·[examples/svelte-starter](../examples/svelte-starter/README.md)에 있다. `npm run prepare:starter:react -- --out-dir <저장소 밖 빈 폴더>`·`npm run prepare:starter:svelte -- --out-dir <저장소 밖 빈 폴더>`로 내보내고, 로컬 검증은 `npm run verify:starter:react:local`·`npm run verify:starter:svelte:local`로 한다.
 요청별 SSR·hydration·layout 수명까지 포함하는 SvelteKit 3 안내는 [getting-started-sveltekit.md](getting-started-sveltekit.md)에 있다.
 문의용 진단 JSON의 수집·검토·초기화와 제출 절차는 [support-report.md](support-report.md)에 있다. 두 API 모두 현재 로컬 미게시 변경이다.
 
