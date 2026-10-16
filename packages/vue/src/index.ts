@@ -2,6 +2,9 @@ import { getCurrentInstance, inject, onMounted, onScopeDispose, provide, shallow
 import type { App, InjectionKey, ObjectPlugin, ShallowRef } from 'vue';
 import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
 
+export { renderRichText } from './rich-text.js';
+export type { RichTextRenderers } from './rich-text.js';
+
 export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
   readonly onDispose?: (listener: () => void) => () => void;
   readonly setLocale: (locale: string) => void | Promise<void>;

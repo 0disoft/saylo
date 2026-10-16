@@ -1,6 +1,6 @@
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
-import { createSayloVue, useVueStore } from '@0disoft/saylo-vue';
-import { createApp } from 'vue';
+import { createSayloVue, useVueStore, renderRichText } from '@0disoft/saylo-vue';
+import { createApp, h } from 'vue';
 const catalog = parseCatalog('{"title":"Title"}', { locale: 'en', namespace: 'demo' });
 const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
 const pluginBindings = createSayloVue();
@@ -12,6 +12,9 @@ export function setup() {
   bindings.provideI18n(store);
   const state = bindings.useI18n();
   const title = state.value.t('demo:title');
+  renderRichText(state.value.tParts('demo:title'), { strong: children => h('strong', children) });
+  // @ts-expect-error renderer must return Vue children
+  renderRichText([], { strong: () => ({ arbitrary: true }) });
   const direct = useVueStore(store);
   direct.value.setLocale('en');
   // @ts-expect-error locale requires a string

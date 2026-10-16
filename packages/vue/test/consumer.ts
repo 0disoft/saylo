@@ -1,7 +1,9 @@
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
 import type { I18n } from '@0disoft/saylo-core';
-import { createApp, defineComponent } from 'vue';
-import { createSayloVue, useVueStore } from '@0disoft/saylo-vue';
+import { createApp, defineComponent, h } from 'vue';
+import type { VNodeChild } from 'vue';
+import { createSayloVue, useVueStore, renderRichText } from '@0disoft/saylo-vue';
+import type { RichTextRenderers } from '@0disoft/saylo-vue';
 type AppSchema = { 'demo:title': {}; 'demo:items': { count: number }; 'demo:code': { code: string } };
 const catalog = parseCatalog('{"title":"Title","items":"{count, number}","code":"{code}"}', { locale: 'en', namespace: 'demo' });
 const store = createStore<AppSchema>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
@@ -16,6 +18,14 @@ app.use(pluginBindings.createPlugin(store), {});
 export function setup() {
   const state = useVueStore(store);
   state.value.t('demo:title');
+  const renderers: RichTextRenderers = { strong: children => h('strong', children) };
+  const nodes: VNodeChild[] = renderRichText(state.value.tParts('demo:title'), renderers);
+  renderRichText(state.value.tParts('demo:code', { code: 'A' }));
+  // @ts-expect-error renderer must be a function, not an element name
+  renderRichText([], { strong: 'strong' });
+  // @ts-expect-error rich translation retains required arguments
+  state.value.tParts('demo:code');
+  void nodes;
   state.value.t('demo:items', { count: 3 });
   // @ts-expect-error required argument
   state.value.t('demo:items');
