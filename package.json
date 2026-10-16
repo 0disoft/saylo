@@ -59,6 +59,8 @@
     "verify:starter": "node scripts/verify-getting-started.mjs",
     "verify:starter:react": "node scripts/verify-framework-starter.mjs --framework react",
     "verify:starter:svelte": "node scripts/verify-framework-starter.mjs --framework svelte",
+    "prepare:starter:react": "npm run build && node scripts/prepare-local-starter.mjs --framework react",
+    "verify:starter:react:local": "npm run build && node scripts/verify-local-starter.mjs --framework react",
     "prepare:starter:vue": "npm run build && node scripts/prepare-vue-starter.mjs",
     "verify:starter:vue": "npm run build && node scripts/verify-vue-starter.mjs",
     "verify:starter:sveltekit": "node scripts/verify-framework-starter.mjs --framework sveltekit",

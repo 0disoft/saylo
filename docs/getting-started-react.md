@@ -2,6 +2,8 @@
 
 Saylo 저장소를 clone하지 않고 npm registry만으로 Vite 8 + React 19 앱에 Saylo를 붙인다. 빈 폴더에 파일 8개를 만들고 개발 서버를 띄우면, 로케일 JSON을 고치는 즉시 문구가 바뀌고 폼·모달 상태는 그대로 남는다. 이 문서는 게시본 `0.1.0-alpha.4`의 공개 API만 쓴다. 로컬 미게시 API(`onSyncState`, 문의용 진단 보고서)는 쓰지 않는다.
 
+Saylo 저장소를 clone한 상태에서 로컬 미게시 tarball로 같은 스타터를 저장소 밖 빈 폴더에 내보내려면 [examples/react-starter/README.md](../examples/react-starter/README.md)를 따른다.
+
 ## 전제
 
 - Node.js 24.x와 npm이 필요하다. 게시 패키지의 `engines.node`는 `24.x`다.

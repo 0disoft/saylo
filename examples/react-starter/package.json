@@ -1,0 +1,27 @@
+{
+  "name": "saylo-react-local-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typegen": "saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts",
+    "dev": "npm run typegen && vite",
+    "build": "npm run typegen && tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "engines": { "node": "24.x" },
+  "dependencies": {
+    "@0disoft/saylo-core": "file:./vendor/saylo-core.tgz",
+    "@0disoft/saylo-react": "file:./vendor/saylo-react.tgz",
+    "react": "19",
+    "react-dom": "19"
+  },
+  "devDependencies": {
+    "@0disoft/saylo-vite": "file:./vendor/saylo-vite.tgz",
+    "@0disoft/saylo-typegen": "file:./vendor/saylo-typegen.tgz",
+    "@types/node": "24",
+    "@types/react": "19",
+    "@types/react-dom": "19",
+    "typescript": "7",
+    "vite": "8"
+  }
+}
