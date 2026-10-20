@@ -1,7 +1,7 @@
 import type { ParsedCatalog, ParsedMessage } from '@0disoft/saylo-core';
 
 /** Copy configuration once; later caller mutations cannot change build output. */
-export function readIncludedKeys(value: readonly string[] | undefined): readonly string[] | undefined {
+export function readIncludedKeys(value: unknown): readonly string[] | undefined {
   if (value === undefined) return;
   if (!Array.isArray(value)) throw new TypeError('includeKeys must be an array of namespace:messageId strings.');
   const seen = new Set<string>();

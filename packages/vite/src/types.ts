@@ -1,6 +1,7 @@
 import type { CatalogDiagnostic, CatalogManifest, ParsedCatalog } from '@0disoft/saylo-core';
 import type { CatalogStamp } from './catalog-patch.js';
 import type { CatalogWireResult } from './catalog-wire.js';
+import type { AutoIncludeKeys } from './auto-keys.js';
 
 export interface SayloViteOptions {
   /** Relative to Vite root: <localesDir>/<locale>/<namespace>.json. */
@@ -13,7 +14,7 @@ export interface SayloViteOptions {
   /** Production-only parser removal scoped to Saylo's AST formatter. Defaults to true. */
   readonly astRuntime?: boolean;
   /** Build-only exact namespace:messageId list. Undefined keeps all messages; [] keeps none. */
-  readonly includeKeys?: readonly string[];
+  readonly includeKeys?: readonly string[] | AutoIncludeKeys;
   /** Build-only: every discovered locale and initialLocale must cover all base namespaces/keys. Defaults to false. */
   readonly requireCompleteTranslations?: boolean;
   /** Declaration file relative to Vite root. Startup awaits it; live updates do not. */

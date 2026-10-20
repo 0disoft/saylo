@@ -6,6 +6,7 @@ import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
 
 saylo({ localesDir: './locales', baseLocale: 'ko', requireCompleteTranslations: true });
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: ['demo:hello'] });
+saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: { from: ['src'], dynamicKeys: ['demo:hello'] } });
 // @ts-expect-error checkJs rejects a non-array key selector
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: 'demo:hello' });
 // @ts-expect-error checkJs also rejects non-boolean completeness

@@ -8,6 +8,9 @@ import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:sa
 saylo({ localesDir: './locales', baseLocale: 'ko', astRuntime: true, requireCompleteTranslations: true, typegen: { outFile: 'generated.d.ts' } });
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: ['demo:hello'] as const });
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: [] });
+saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: { from: ['src'], dynamicKeys: ['demo:hello'] } });
+// @ts-expect-error automatic analysis requires source paths
+saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: { dynamicKeys: ['demo:hello'] } });
 // @ts-expect-error includeKeys is a list of strings
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: 'demo:hello' });
 // @ts-expect-error message keys must be strings

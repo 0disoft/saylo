@@ -12,6 +12,7 @@ import { catalogId } from './catalog-outcome.js';
 import { createAstFormatter } from './ast-formatter.js';
 import { requireCompleteTranslations } from './complete-translations.js';
 import { readIncludedKeys, selectBuildCatalogs } from './build-keys.js';
+import { findIncludedKeys, readAutoKeys } from './auto-keys.js';
 import type { CatalogOutcome, ParsedCatalog } from '@0disoft/saylo-core';
 import { registerServerSource } from './server-source.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
@@ -33,7 +34,8 @@ const encode = (value: unknown) => {
 };
 
 export default function saylo(options: SayloViteOptions): Plugin {
-  const includeKeys = readIncludedKeys(options.includeKeys);
+  const autoKeys = readAutoKeys(options.includeKeys);
+  const includeKeys = autoKeys ? undefined : readIncludedKeys(options.includeKeys);
   if (options.requireCompleteTranslations !== undefined && typeof options.requireCompleteTranslations !== 'boolean') {
     throw new TypeError('requireCompleteTranslations must be a boolean.');
   }
@@ -131,7 +133,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (strictBuild) {
         await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
       }
-      buildCatalogs = production ? selectBuildCatalogs(snapshot().catalogs, baseLocale, includeKeys) : undefined;
+      const selectedKeys = production && autoKeys ? await findIncludedKeys(config.root, snapshot().catalogs, baseLocale, autoKeys) : includeKeys;
+      buildCatalogs = production ? selectBuildCatalogs(snapshot().catalogs, baseLocale, selectedKeys) : undefined;
       registry = new CatalogRegistry(sessionId, baseLocale, buildCatalogs ?? snapshot().catalogs);
       chunks.clear();
       if (production) for (const meta of registry.manifest().catalogs) {
@@ -256,3 +259,4 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
 }
 
 export type { SayloViteOptions, LiveDiagnostic, EagerCatalogSnapshot, EagerCatalogUpdate, EagerCatalogEvent, EagerSnapshotRequest } from './types.js';
+export type { AutoIncludeKeys } from './auto-keys.js';
