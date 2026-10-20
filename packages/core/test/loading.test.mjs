@@ -1,11 +1,28 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CatalogLoadError, I18nDisposedError, NamespaceNotLoadedError, SupersededRequestError,
-  UnknownMessageError, createBaseSchema, createI18n, parseCatalog } from '@0disoft/saylo-core';
+  UnknownMessageError, createBaseSchema, createI18n, parseCatalog, validateCatalogManifest } from '@0disoft/saylo-core';
 
 const catalog = (text, locale = 'ko', namespace = 'common') => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
 const id = (locale, namespace) => `${locale}/${namespace}`;
 const tick = () => new Promise(resolve => setImmediate(resolve));
+
+test('manifest membership rejects duplicate lists and unavailable present pairs while retaining retired tombstones', t => {
+  const { source } = fixture(t);
+  const manifest = source.readManifest();
+  for (const invalid of [
+    { ...manifest, availableLocales: [...manifest.availableLocales, manifest.availableLocales[0]] },
+    { ...manifest, availableNamespaces: [...manifest.availableNamespaces, manifest.availableNamespaces[0]] },
+    { ...manifest, availableLocales: manifest.availableLocales.filter(locale => locale !== 'ko') },
+    { ...manifest, catalogs: [...manifest.catalogs, { ...manifest.catalogs[0], key: { locale: 'ja', namespace: 'common' } }] },
+    { ...manifest, catalogs: [...manifest.catalogs, { ...manifest.catalogs[0], key: { locale: 'ko', namespace: 'retired' } }] },
+  ]) assert.throws(() => validateCatalogManifest(invalid), { code: 'INVALID_MANIFEST' });
+  const tombstone = { status: 'missing', key: { locale: 'ja', namespace: 'retired' }, catalogVersion: 2 };
+  const accepted = validateCatalogManifest({ ...manifest, catalogs: [...manifest.catalogs, tombstone] });
+  assert.deepEqual(accepted.catalogs.find(meta => meta.status === 'missing'), tombstone);
+  assert.deepEqual(accepted.availableLocales, [...manifest.availableLocales].sort());
+  assert.deepEqual(accepted.availableNamespaces, [...manifest.availableNamespaces].sort());
+});
 
 test('new pair versions with identical text keep the snapshot; schema and text changes still publish', async t => {
   const { i18n, change } = fixture(t);

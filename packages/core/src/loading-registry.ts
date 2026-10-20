@@ -33,9 +33,11 @@ export function readManifest(input: CatalogManifest): CatalogManifest {
   const locales = input.availableLocales.map(canonicalLocale);
   const namespaces = [...input.availableNamespaces];
   namespaces.forEach(assertNamespace);
+  const localeSet = new Set(locales);
+  const namespaceSet = new Set(namespaces);
   if (baseLocale !== input.baseLocale || locales.some((l, i) => l !== input.availableLocales[i]) ||
-      !locales.includes(baseLocale) || !namespaces.length ||
-      new Set(locales).size !== locales.length || new Set(namespaces).size !== namespaces.length)
+      !localeSet.has(baseLocale) || !namespaces.length ||
+      localeSet.size !== locales.length || namespaceSet.size !== namespaces.length)
     throw new CatalogLoadError('INVALID_MANIFEST', 'Manifest lists must be canonical and unique, with a base locale and namespace.');
   const seen = new Set<string>();
   const catalogs = input.catalogs.map(meta => {
@@ -49,7 +51,7 @@ export function readManifest(input: CatalogManifest): CatalogManifest {
     seen.add(id);
     const key = { locale: meta.key.locale, namespace: meta.key.namespace };
     if (meta.status === 'missing') return { key, catalogVersion: meta.catalogVersion, status: 'missing' as const };
-    if (!locales.includes(key.locale) || !namespaces.includes(key.namespace) ||
+    if (!localeSet.has(key.locale) || !namespaceSet.has(key.namespace) ||
         typeof meta.namespaceSchemaFingerprint !== 'string' || !meta.namespaceSchemaFingerprint)
       throw new CatalogLoadError('INVALID_MANIFEST', 'Present metadata needs an available pair and schema fingerprint.');
     return { key, catalogVersion: meta.catalogVersion, status: 'present' as const, namespaceSchemaFingerprint: meta.namespaceSchemaFingerprint };
