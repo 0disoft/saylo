@@ -31,7 +31,7 @@ export const view = <div>{tr('demo:title')}{parts('demo:rich')}{translate('demo:
 // t('demo:unused') must not count as usage.
 throw new Error('Sources must never execute during analysis');`);
   await writeFile(path.join(root, 'src/View.vue'), `<script setup lang="ts">const n: number = 1;</script>
-<template><p :title="t('demo:two')">{{ t('demo:one') }}</p></template>`);
+<template><p :title="t('demo:two')" :data="{ value: t('demo:one'), n: 1 }" @click="n++; t('demo:two')">{{ t('demo:one') }}</p></template>`);
   await writeFile(path.join(root, 'src/View.svelte'), `<script lang="ts">let name: string = 'x';</script>
 {#if name}<p>{t('demo:fallback')}</p>{:else}<p>{tParts('demo:rich')}</p>{/if}`);
   await mkdir(path.join(root, 'src/node_modules'));
@@ -61,6 +61,19 @@ test('invalid paths, unsupported syntax and incomplete automatic configuration f
   await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['../'] }), /escapes Vite root/);
   await writeFile(path.join(root, 'src/broken.ts'), 'const =');
   await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Cannot analyze/);
+});
+
+test('bound translators and call/apply aliases cannot silently drop dynamic keys', async t => {
+  const root = await fixture(t), file = path.join(root, 'src/main.ts');
+  for (const code of ['const msg = i18n.t.bind(i18n); msg(key);', 'i18n.t.call(i18n, key);', 'i18n.t.apply(i18n, values);', 'items.map(i18n.t);']) {
+    await writeFile(file, code);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/);
+  }
+  await writeFile(file, `i18n.t.call(i18n, 'demo:one'); i18n.t.apply(i18n, ['demo:two']);`);
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), ['demo:one', 'demo:two']);
+  await rm(file);
+  await writeFile(path.join(root, 'src/View.svelte'), `{#each items as item (t('demo:title'))}<p>{item}</p>{/each}`);
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), ['demo:title']);
 });
 
 test('real automatic production builds prune unused messages and preserve translation, fallback, types and dynamic overrides', async t => {

@@ -63,13 +63,15 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
   for (let before = -1; before !== aliases.size;) {
     before = aliases.size;
     for (const source of trees) for (const tree of source.trees) visit(tree, current => {
-      if (current.type === 'ImportSpecifier' && ['t', 'tParts'].includes(identifier(current.imported) ?? '')) {
+      if (current.type === 'ImportSpecifier' && aliases.has(identifier(current.imported) ?? '')) {
         const local = identifier(current.local); if (local) aliases.add(local);
       }
       if (current.type !== 'VariableDeclarator' && current.type !== 'AssignmentExpression') return;
       const left = node(current.id ?? current.left), right = node(current.init ?? current.right);
       const name = identifier(left);
       if (name && (translatedProperty(right) || aliases.has(identifier(right) ?? ''))) aliases.add(name);
+      const bound = right?.type === 'CallExpression' ? node(right.callee) : undefined;
+      if (name && property(bound) === 'bind' && (translatedProperty(bound?.object) || aliases.has(identifier(bound?.object) ?? ''))) aliases.add(name);
       if (left?.type === 'ObjectPattern') for (const value of left.properties as SourceNode[]) {
         if (['t', 'tParts'].includes(identifier(value.key) ?? literal(value.key) ?? '')) {
           const local = identifier(value.value); if (local) aliases.add(local);
@@ -82,9 +84,18 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
     const value = literal(current);
     if (value !== undefined && available.has(value)) selected.add(value);
     if (current.type !== 'CallExpression' && current.type !== 'OptionalCallExpression') return;
-    const callee = node(current.callee);
+    let callee = node(current.callee);
+    let argument = (current.arguments as unknown[])[0];
+    const target = node(callee?.object);
+    if (['call', 'apply'].includes(property(callee) ?? '') && (translatedProperty(target) || aliases.has(identifier(target) ?? ''))) {
+      argument = (current.arguments as unknown[])[1];
+      if (property(callee) === 'apply') argument = (node(argument)?.elements as unknown[] | undefined)?.[0];
+      callee = target;
+    }
+    // Passing a translator to unknown code cannot prove a finite set of keys.
+    if ((current.arguments as unknown[]).some(value => translatedProperty(value) || aliases.has(identifier(value) ?? '')))
+      dynamic.push(path.relative(root, source.file));
     if (!aliases.has(identifier(callee) ?? '') && !translatedProperty(callee)) return;
-    const argument = (current.arguments as unknown[])[0];
     const key = literal(argument);
     if (key !== undefined) { if (/^[^:]+:[^:]+$/.test(key)) selected.add(key); return; }
     const template = node(argument);
