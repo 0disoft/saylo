@@ -45,6 +45,19 @@ test('HTML-safe boot JSON restores immutable schemas, pair stamps, fallback and 
   assert.equal(decoded.catalogOutcomes[0].catalog.sourceName, 'ko/demo.json');
 });
 
+test('boot pair and schema order do not change canonical hydration data', t => {
+  const server = fixture().create();
+  t.after(() => server.dispose());
+  const original = serializeBootSnapshot(server.getBootSnapshot());
+  const reordered = JSON.parse(original);
+  reordered.catalogOutcomes.reverse();
+  reordered.baseSchemas.reverse();
+  reordered.loadedNamespaces.reverse();
+  const decoded = decodeBootSnapshot(JSON.stringify(reordered));
+  assert.equal(serializeBootSnapshot(decoded), original);
+  assert.equal(decoded.catalogOutcomes.find(outcome => outcome.key.locale === 'en' && outcome.key.namespace === 'help').status, 'missing');
+});
+
 test('boot decode rejects omissions, duplicates, wrong stamps, schema content and version', t => {
   const server = fixture().create();
   t.after(() => server.dispose());
@@ -52,10 +65,13 @@ test('boot decode rejects omissions, duplicates, wrong stamps, schema content an
   const corrupt = modify => { const value = JSON.parse(original); modify(value); assert.throws(() => decodeBootSnapshot(JSON.stringify(value)), { code: 'INVALID_BOOT' }); };
   corrupt(b => b.catalogOutcomes.pop());
   corrupt(b => b.catalogOutcomes.push(b.catalogOutcomes[0]));
+  corrupt(b => b.catalogOutcomes[1] = b.catalogOutcomes[0]);
   corrupt(b => b.catalogOutcomes[0].sessionId = 'wrong');
   corrupt(b => b.catalogOutcomes[0].catalogVersion++);
   corrupt(b => b.baseSchemas[0].keys.when = {});
   corrupt(b => b.baseSchemas.push(b.baseSchemas[0]));
+  corrupt(b => b.baseSchemas[1] = b.baseSchemas[0]);
+  corrupt(b => b.baseSchemas[0] = null);
   corrupt(b => b.format = 'saylo-boot-v2');
   corrupt(b => b.timeZone = 'invalid-zone');
   corrupt(b => b.stateRevision = -1);

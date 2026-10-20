@@ -35,9 +35,10 @@ export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
   if (new Set(namespaces).size !== namespaces.length || namespaces.some(n => !manifest.availableNamespaces.includes(n)))
     throw new CatalogLoadError('INVALID_BOOT', 'Boot namespaces must be unique and available.');
   const keys = scopeKeys(manifest, locale, namespaces);
+  const keyIndex = new Map(keys.map(key => [keyId(key), key]));
   const supplied = new Map<string, CatalogOutcome>();
   for (const outcome of input.catalogOutcomes) {
-    const key = keys.find(k => outcome?.key && keyId(k) === keyId(outcome.key));
+    const key = outcome?.key && keyIndex.get(keyId(outcome.key));
     if (!key || supplied.has(keyId(key))) throw new CatalogLoadError('INVALID_BOOT', 'Unexpected or duplicate boot pair.');
     supplied.set(keyId(key), acceptOutcome(manifest, key, outcome));
   }
@@ -66,9 +67,10 @@ export function validateBootSnapshot(input: BootSnapshot): BootSnapshot {
   if (!input || input.format !== 'saylo-boot-v1' || !Array.isArray(input.baseSchemas))
     throw new CatalogLoadError('INVALID_BOOT', 'Unsupported or malformed Saylo boot snapshot.');
   const accepted = createBootSnapshot(input);
+  const schemas = new Map(input.baseSchemas.map(schema => [schema?.namespace, schema]));
   // Compare canonical schemas, including actual keys and accepted argument types, rather than just a supplied stamp.
   if (input.baseSchemas.length !== accepted.baseSchemas.length || accepted.baseSchemas.some(schema => {
-    const supplied = input.baseSchemas.find(s => s?.namespace === schema.namespace);
+    const supplied = schemas.get(schema.namespace);
     return !supplied || supplied.baseLocale !== schema.baseLocale || supplied.fingerprint !== schema.fingerprint ||
       JSON.stringify(supplied.keys) !== JSON.stringify(schema.keys);
   })) throw new CatalogLoadError('INVALID_BOOT', 'Boot base schemas do not match their catalogs.');
