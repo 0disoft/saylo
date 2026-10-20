@@ -30,11 +30,11 @@
 | 코어 형태 | 프레임워크 중립 TypeScript, 배포는 ESM JS + `.d.ts` |
 | instance 생성 | 동기 `createI18n<AppSchema>` + `initialSnapshot`(BootSnapshot) + `catalogSource`. schema는 타입 전용, 런타임 schema는 boot 메타에서 |
 | 첫 dev plugin | Vite 8 plugin, `hotUpdate`에서 커스텀 이벤트 + `[]` 반환 |
-| 첫 프레임워크 어댑터 | vanilla subscription과 React. Svelte 5는 2026-10-08 로컬 구현 완료([38](38-svelte-adapter.md)). Vue는 후속 |
+| 첫 프레임워크 어댑터 | vanilla subscription과 React. Svelte 5는 alpha.4 게시([38](38-svelte-adapter.md)). Vue 3는 로컬 private workspace 구현 완료, npm 게시 보류 |
 | Svelte 연결 | `createSvelteStore(instance)` readable과 `createSayloSvelte<AppSchema>()` context factory. `$i18n.t`는 불변 스냅샷에 바인딩. instance는 호출자가 소유 |
 | React 연결 | `createSayloReact<AppSchema>()` factory가 Provider와 hook을 같은 context로 생성. hook의 t는 그 렌더가 선택한 UI snapshot에 바인딩 |
 | 상태 구분 | transport 상태(내부), 카탈로그 레코드(불변), UiSnapshot(공개), BootSnapshot(wire) 4종 |
-| 갱신 단위 | 로케일+namespace 카탈로그 스냅샷. selector 미세구독은 후속 |
+| 갱신 단위 | 로케일+namespace 카탈로그 스냅샷. React·Svelte selector는 alpha.4 게시, Vue selector는 로컬 구현 |
 | 갱신 프로토콜 | [08-update-protocol.md](08-update-protocol.md)가 단일 출처. wire 타입과 적용·resync 규칙을 이 문서에 중복하지 않는다 |
 | 갱신 적용 | envelope 먼저 원자 반영, 로드된 카탈로그만 payload 적용, 미로드는 dirty |
 | 로드/전환 조정 | 하나의 desired state(locale + 원하는 namespace)로 조정. generation은 오래된 완료 차단용이며 정상 동시 호출을 서로 reject하지 않는다 |
@@ -69,7 +69,7 @@
 | selector 미세구독 최적화 | React·Svelte selector를 alpha.4로 게시했다([43](43-react-selectors.md), [44](44-svelte-selectors.md)). 해당 버전의 CI `check`·`release:pack`·OIDC 게시, 승인 registry integrity와 JS/TS·SSR·SvelteKit Chromium 소비를 통과했다([릴리스](../releases/0.1.0-alpha.4.md)) |
 | Svelte 어댑터 | Svelte 5 readable·typed context·SSR·hydration과 데모 구현 완료. alpha.2 게시·외부 소비·SvelteKit 브라우저 검증 완료([38](38-svelte-adapter.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
 | SvelteKit 예제 | SvelteKit 3 요청별 SSR·boot·hydration·페이지 이동·layout 종료와 재진입을 구현. 예제는 로컬 `file:` 의존성을 유지하며, 별도 registry 검증 명령으로 alpha.2 게시본의 Node 운영 빌드·실제 브라우저 검증도 완료했다([39](39-sveltekit-example.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
-| Vue 어댑터 | 후속 |
+| Vue 어댑터 | Vue 3 `createSayloVue`·plugin 주입·snapshot 구독·selector·SSR hydration을 로컬 구현했다. private workspace이며 alpha.4·alpha.5 게시 대상이 아니다 |
 | secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트와 2026-10-07 실제 브라우저 검증을 통과했다. schema-breaking 편집이라 입력·dialog 상태 보존은 일반 보장이 아니다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
 | JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
 | message delta 비용 | request-scoped delta·불변 signature·LF 위치 색인과 후속 검증 재사용을 구현했다. 최신 small·large 편집 교차 비교가 로컬 100ms 목표를 통과했다([75](75-early-disk-rechecks.md)). 이전 2026-10-07의 small 72.66ms·large 165.94ms 계측은 [10](10-performance-measurements.md)·[11](11-parser-measurements.md)의 역사값이다. compact 전체 전송과 첫 언어 선택 비용은 편집 수치와 구분한다 |

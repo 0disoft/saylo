@@ -85,7 +85,7 @@ delete, rename, add도 같은 경로를 탄다. 파일 삭제·이름 변경·�
 - 미로드이거나 비활성인 locale 카탈로그 내용만 바뀌면 transport 상태만 바뀌고 UI snapshot 참조는 유지한다.
 - locale 목록이나 namespace 목록처럼 UI에 보이는 변화는 알림이 필요하다. 현재 locale 카탈로그나 base fallback 내용이 바뀌면 stateRevision을 올린다. registry revision, session, dirty 표시는 전송 타이밍 정보이므로 공개 UI 변경을 강제하지 않는다.
 
-selector 단위 미세구독은 후속 최적화다. MVP에서 컴포넌트 하나가 통째로 remount되는 일은 없지만, 같은 카탈로그를 쓰는 여러 컴포넌트가 함께 다시 렌더링될 수 있다는 점은 감수한다.
+React selectors(`useI18nSelector`)와 Svelte selectors(`selectSvelteStore`·`getI18nSelector`)는 `0.1.0-alpha.4` 게시본에 있다. Vue selectors(`useI18nSelector`·`useVueSelector`)는 로컬 private workspace 구현이다. selector를 쓰지 않으면 같은 카탈로그를 쓰는 여러 컴포넌트가 함께 다시 렌더링될 수 있다.
 
 registry revision은 transport 순서를 맞추는 값이다. instance stateRevision은 UI 구독 identity다. 로케일 전환은 stateRevision만 올린다. 두 값을 한 카운터로 합치지 않는다.
 
@@ -95,7 +95,8 @@ registry revision은 transport 순서를 맞추는 값이다. instance stateRevi
 - React: `createSayloReact<AppSchema>()` factory가 Provider와 `useI18n`을 같은 context로 함께 만든다. Provider에 전달한 제네릭이 멀리 떨어진 `useI18n()` 호출로 자동 전파된다는 계약은 두지 않는다. factory가 만든 context를 통해서만 타입이 연결된다.
 - React hook은 [useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore) 방식으로 store 스냅샷을 구독한다. hook이 돌려주는 `t`는 그 렌더가 선택한 불변 UI snapshot에 바인딩한다. 일반 `instance.t`는 최신 snapshot을 읽는다. 이 구분이 없으면 hydration이 읽은 snapshot과 실제 문자열이 다른 revision이 될 수 있다. locale이나 카탈로그 revision이 바뀌면 구독 컴포넌트만 다시 렌더링하고 DOM 노드는 remount하지 않는다.
 - `getSnapshot`은 변화가 없으면 같은 참조를 반환한다(`Object.is` 비교). 실제 카탈로그나 로케일이 갱신될 때만 새 immutable 스냅샷을 만든다. `subscribe`/`getSnapshot` 참조는 안정적으로 유지한다. 서버 렌더링에서는 `getServerSnapshot`이 브라우저 부팅 시점과 동등한 데이터를 돌려준다.
-- Svelte, Vue: 초기 구현 대상이 아니다. 코어가 프레임워크 중립이므로 후속 어댑터로 붙인다.
+- Svelte: `createSvelteStore(instance)` readable과 `createSayloSvelte<AppSchema>()` context factory, selector를 제공한다. Svelte 5 어댑터는 `0.1.0-alpha.4` 게시본에 있다.
+- Vue: `createSayloVue<AppSchema>()`가 `createPlugin`·`provideI18n`·`useI18n`을 만들고, `useVueStore`·`useVueSelector`를 제공한다. Vue 3 어댑터는 로컬 private workspace 구현이며 npm에 게시하지 않았다.
 
 React 훅 밖에서 일반 `t(...)`로 얻은 결과 문자열은 자동으로 갱신되지 않는다. 갱신이 필요하면 구독 경로(훅 또는 store 구독)를 통과해야 한다. 이 제약은 문서와 타입 주석에 명시한다.
 
@@ -108,7 +109,7 @@ remount 방지는 Saylo가 소유한 provider identity와 root key를 유지하�
 | 패키지 | 의존할 수 있는 Saylo 패키지 |
 | --- | --- |
 | core | 없음 |
-| react·svelte·typegen | core |
+| react·svelte·vue·typegen | core |
 | vite | core, typegen |
 
 - 선언: `dependencies`·`peerDependencies`에 위 방향을 어기는 Saylo 패키지가 있으면 `DIRECTION`이다.

@@ -1,6 +1,6 @@
 # 03. 카탈로그와 API
 
-이 문서는 카탈로그 파일 형식, ID·namespace 규칙, ICU 정책, argument 계약, 공개 API와 예제를 정한다. 갱신 프로토콜의 wire 타입과 적용 규칙은 [08-update-protocol.md](08-update-protocol.md)가 단일 출처다. 이 문서는 그 정의를 중복하지 않는다. 패키지 이름은 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite`로 확정했고 2026-10-06 `0.1.0-alpha.1`(dist-tag `alpha`)로 게시했다. 이 문서의 API 시그니처 중 아직 구현하지 않은 부분은 설계 제안이다.
+이 문서는 카탈로그 파일 형식, ID·namespace 규칙, ICU 정책, argument 계약, 공개 API와 예제를 정한다. 갱신 프로토콜의 wire 타입과 적용 규칙은 [08-update-protocol.md](08-update-protocol.md)가 단일 출처다. 이 문서는 그 정의를 중복하지 않는다. 공개 패키지는 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-svelte`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 다섯 개이고 `0.1.0-alpha.4`(dist-tag `alpha`)로 게시했다. `@0disoft/saylo-vue`는 로컬 private workspace 구현이다. API는 이 문서의 초안이 아니라 소스 타입을 따른다.
 
 ## 파일 레이아웃
 
@@ -135,7 +135,7 @@ argument 없는 키는 그대로 호출한다. `t("cart:title")`.
 | 값 | 소유 | 용도 | 노출 |
 | --- | --- | --- | --- |
 | registry revision | 개발 서버·전역 transport | 카탈로그 전송 순서를 맞춘다 | 공개 API 아님 |
-| instance stateRevision | 클라이언트 instance | UI 구독 identity | `UiSnapshot` |
+| instance stateRevision | 클라이언트 instance | UI 구독 identity | `StoreSnapshot` |
 
 - 로케일 전환은 instance stateRevision만 올린다. 로케일 전환으로 registry revision을 올리지 않는다.
 - 전역 schemaRevision은 공개 API와 wire에 두지 않는다. schema 버전은 namespace 단위 `namespaceSchemaFingerprint`로 다룬다. 한 namespace의 schema 변경이 다른 namespace의 정상 로드 결과를 낡게 만들지 않는다.
@@ -161,195 +161,41 @@ argument 없는 키는 그대로 호출한다. `t("cart:title")`.
 
 ## 공개 API
 
-현행 구현은 `freezeCatalogs(catalogs: readonly ParsedCatalog[]): readonly ParsedCatalog[]`를 core 루트와 `@0disoft/saylo-core/runtime`에서 제공한다. JSON 전송 뒤 배열·AST·위치·인자 스키마를 깊게 동결하고 같은 배열을 반환한다. 외부의 얕은 동결은 내부까지 순회하며, core가 이미 순회한 객체는 다시 방문하지 않는다. 카탈로그·스키마 유효성 검사는 기존 decoder·store·i18n에서 수행한다. 이 함수는 게시된 `0.1.0-alpha.1`에 아직 없으며 Vite와의 동결 경로 공유는 [26-shared-catalog-freeze.md](26-shared-catalog-freeze.md)에 기록한다.
+현행 공개 타입은 다음 소스가 단일 기준이다. 필드와 유니온은 이 파일들을 따른다.
 
-현재 코어는 parsed catalog 기반이다. 실제 생성 옵션은 두 갈래로, `catalogSource`·`locale`·`initialNamespaces`·`initialCatalogs`로 초기 카탈로그를 직접 전달하는 경로와 `initialSnapshot`(BootSnapshot)을 받는 SSR·hydration 경로가 있다. 실제 타입은 `packages/core/src/loading-types.ts`에 있다. `CatalogManifest.catalogs`의 pair별 version·schema fingerprint·missing tombstone과 모든 초기 base+target outcome을 검증한다. 비동기 `setLocale`·`loadNamespace`·어댑터용 `refresh`, `getSnapshot`·`getServerSnapshot`·`getBootSnapshot` 형태의 불변 조회, `onDispose`를 제공한다. 비동기 request-scoped 생성은 별도 `createServerI18n` factory가 맡는다. SSR 부팅 데이터는 `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`으로 구현했다. 아래 `UiSnapshot.catalogs`의 `Map<string, CatalogRecord>` 모형과 wire catalog record는 설계 초안이고, 현행 구현은 `CatalogOutcome` 배열과 parsed catalog를 쓴다. 실행 예제는 `npm run demo:lazy`, SSR 예제는 `npm run demo:ssr`·`npm run dev:ssr`다.
+- [packages/core/src/types.ts](../packages/core/src/types.ts): `ParsedCatalog`·`ParsedMessage`·`ArgumentSchema`·`CatalogSchema`·`Schema`·`Translate`·`StoreSnapshot`
+- [packages/core/src/loading-types.ts](../packages/core/src/loading-types.ts): `CatalogKey`·`CatalogManifest`·`CatalogOutcome`·`CatalogLoadResult`·`CatalogSource`·`CreateI18nOptions`·`I18n`
+- [packages/core/src/boot.ts](../packages/core/src/boot.ts): `BootSnapshot`와 boot 직렬화 함수
+- [packages/vite/src/virtual.d.ts](../packages/vite/src/virtual.d.ts): `virtual:saylo` 계열 선언
 
-초기 구현 선택은 동기 생성 + 명시적 로드다. 부팅에 필요한 로케일과 namespace는 `initialSnapshot`으로 함께 넘기고, 나머지는 필요할 때 로드한다. `createI18n`은 동기로 생성하고, SSR 요청 범위를 비동기로 준비하는 `createServerI18n`은 별도 factory로 제공한다.
+현행 모델은 네 층이다.
 
-schema는 런타임 옵션이 아니라 타입 전용 제네릭이다. 런타임 schema는 부팅 스냅샷의 base schema와 accepted schema 메타데이터에서 얻는다. `createI18n`에 schema 객체를 넘기지 않는다.
+- `ParsedCatalog`는 parser 출력이다. `locale`·`namespace`·`sourceName`과 `messages`를 갖고, 각 `ParsedMessage`는 `source`·`position`·`ast`·`arguments`를 갖는다.
+- `CatalogOutcome`은 session과 pair version을 붙인 전송 단위다. `present`는 `catalog: ParsedCatalog`와 `namespaceSchemaFingerprint`를, `missing`은 version만 가진 tombstone을 담는다. `CatalogLoadResult`는 여기에 `failed`를 더한다.
+- `StoreSnapshot<S>`는 `Translator<S>`를 확장한 공개 UI 스냅샷이다. `locale`·`baseLocale`·`timeZone`·`t`·`tParts`·`stateRevision`·`availableLocales`·`availableNamespaces`·`loadedNamespaces`를 담는다.
+- `BootSnapshot`은 `format: "saylo-boot-v1"`, `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas: CatalogSchema[]`, `catalogOutcomes: CatalogOutcome[]`를 담는다.
 
-```ts
-type Revision = number;
-type LiteralId = string;
-// TS 타입 전용. AppSchema 값 형태와 대응하며 런타임에는 존재하지 않는다.
-type ArgTypes = Readonly<Record<string, unknown>>;
+`Map<string, CatalogRecord>` 형태의 `UiSnapshot`은 초기 설계 초안이었고 현행 구현에 없다. 카탈로그 내용은 `CatalogOutcome.catalog`의 `ParsedCatalog`로 전달된다. `CatalogRecord`·`RuntimeArgumentSchema`·`ArgTypes`·`UiSnapshot`도 공개 타입에 없다.
 
-// 런타임 검증·직렬화용. 값 대신 accepted type partition과 required 여부를 담는다.
-interface RuntimeArgumentSchema {
-  readonly required: true;
-  readonly acceptedTypes: ReadonlyArray<"string" | "number" | "date">;
-}
+`createI18n`은 동기 생성이다. 클라이언트 lazy 경로는 `locale`·`initialNamespaces`·`initialCatalogs`를 직접 받고, SSR·hydration 경로는 `initialSnapshot`을 받는다. 두 형태 모두 `catalogSource`가 필요하다. `initialSnapshot`의 `timeZone`과 options의 `timeZone`이 다르면 생성 오류다.
 
-// typegen이 생성해 앱이 import하는 타입. 키 -> 인자 이름 -> 인자 타입.
-// Record 제약(string index signature) 문제를 피하려고 interface가 아니라 type 별칭으로 둔다.
-type AppSchema = {
-  "common:welcome": { name: string | number };
-  "cart:title": {};                 // 인자 없음
-  "cart:items": { count: number };
-  "cart:total": { total: number };
-  "cart:when": { at: number | Date };
-};
+`I18n`은 `t`·`tParts`, `getSnapshot`·`getServerSnapshot`·`getBootSnapshot`, `getLocales`·`getNamespaces`, `subscribe`·`onDispose`, `setLocale`·`loadNamespace`·`refresh`·`dispose`를 제공한다. typed 호출은 `TypedCall` tuple로 키와 인자를 묶는다.
 
-// 런타임/타입 공용 최소 형태.
-type Schema = Record<string, Record<string, unknown>>;
-type UntypedSchema = Schema;
+`fallbackLocale` 옵션은 없다. 번역이 없으면 baseLocale 하나로 폴백한다. 다단계 fallback은 로딩·스키마·포맷 출처를 함께 설계할 때 별도로 다룬다.
 
-// 키와 인자의 상관관계를 유지하는 호출 tuple. union 키에서 인자를 잃지 않는다.
-type TypedCall<S extends Schema> = {
-  [K in keyof S & string]:
-    keyof S[K] extends never
-      ? [key: K]
-      : [key: K, args: S[K]]
-}[keyof S & string];
-
-// 무타입 schema는 넓은 string 키를 허용하고, typed schema는 tuple 계약만 쓴다.
-// typed 경로에 넓은 string overload를 추가하지 않는다. 추가하면 위 상관관계가 다시 무너진다.
-type Translate<S extends Schema> =
-  string extends keyof S
-    ? (key: string, args?: Record<string, unknown>) => string
-    : (...call: TypedCall<S>) => string;
-
-// FormatJS AST 요소 배열. 형태는 불투명하게 둔다.
-type MessageAst = readonly unknown[];
-
-// Catalog는 literal ID -> MessageAst 맵이다.
-type Catalog = Readonly<Record<LiteralId, MessageAst>>;
-
-// namespace별 accepted base schema. 인자 스키마와 키 map, fingerprint를 담는다.
-interface BaseSchema {
-  readonly namespace: string;
-  readonly fingerprint: string;
-  readonly keys: ReadonlyMap<LiteralId, ReadonlyMap<string, RuntimeArgumentSchema>>;
-}
-
-// 한 로케일+namespace 카탈로그 레코드. 불변이다.
-interface CatalogRecord {
-  readonly locale: string;
-  readonly namespace: string;
-  readonly catalogVersion: Revision;
-  readonly namespaceSchemaFingerprint: string;
-  readonly formatLocale: string;                 // 이 메시지를 포맷할 출처 locale
-  readonly messages: ReadonlyMap<LiteralId, MessageAst>;
-  readonly messageFingerprints: ReadonlyMap<LiteralId, string>;
-}
-
-interface CatalogKey {
-  readonly locale: string;
-  readonly namespace: string;
-}
-
-type CatalogLoadResult =
-  | { readonly status: "present"; readonly sessionId: string; readonly key: CatalogKey;
-      readonly catalogVersion: Revision; readonly namespaceSchemaFingerprint: string;
-      readonly catalog: CatalogRecord }
-  | { readonly status: "missing"; readonly sessionId: string; readonly key: CatalogKey;
-      readonly catalogVersion: Revision }
-  | { readonly status: "failed"; readonly code: string; readonly message: string };
-
-interface CatalogManifest {
-  readonly sessionId: string;
-  readonly registryRevision: Revision;
-  readonly baseLocale: string;
-  readonly availableLocales: readonly string[];
-  readonly availableNamespaces: readonly string[];
-}
-
-// 카탈로그 조회 인터페이스. 개발과 운영 어댑터가 같은 인터페이스를 뒤에 둔다.
-interface CatalogSource {
-  loadCatalog(locale: string, namespace: string): Promise<CatalogLoadResult>;
-  readManifest(): CatalogManifest | undefined;
-}
-
-// 공개 UI 스냅샷. render가 읽는 값이다.
-interface UiSnapshot {
-  readonly locale: string;
-  readonly availableLocales: readonly string[];
-  readonly availableNamespaces: readonly string[];
-  readonly loadedNamespaces: readonly string[];
-  readonly stateRevision: Revision;
-  readonly catalogs: ReadonlyMap<string, CatalogRecord>;  // "<locale>:<namespace>" -> CatalogRecord
-  readonly baseSchemas: ReadonlyMap<string, BaseSchema>;  // namespace -> accepted base schema
-}
-
-// wire로 직렬화 가능한 부팅 스냅샷. Map은 배열로 인코딩한다.
-interface SerializedBaseSchema {
-  readonly namespace: string;
-  readonly fingerprint: string;
-  readonly keys: ReadonlyArray<readonly [literalId: LiteralId, args: ReadonlyArray<readonly [name: string, schema: RuntimeArgumentSchema]>]>;
-}
-interface SerializedCatalogRecord {
-  readonly key: CatalogKey;
-  readonly catalogVersion: Revision;
-  readonly namespaceSchemaFingerprint: string;
-  readonly formatLocale: string;
-  readonly messages: ReadonlyArray<readonly [literalId: LiteralId, ast: MessageAst]>;
-  readonly messageFingerprints: ReadonlyArray<readonly [literalId: LiteralId, fingerprint: string]>;
-}
-interface BootSnapshot {
-  readonly sessionId: string;
-  readonly registryRevision: Revision;
-  readonly locale: string;
-  readonly baseLocale: string;
-  readonly timeZone: string;
-  readonly availableLocales: readonly string[];
-  readonly availableNamespaces: readonly string[];
-  readonly loadedNamespaces: readonly string[];
-  readonly baseSchemas: readonly SerializedBaseSchema[];
-  readonly catalogs: readonly SerializedCatalogRecord[];
-  readonly catalogOutcomes: ReadonlyArray<{
-    readonly key: CatalogKey;
-    readonly outcome: "present" | "missing";
-    readonly catalogVersion: Revision;
-  }>;
-  readonly provenance: string;
-}
-
-interface CreateI18nOptions {
-  initialSnapshot: BootSnapshot;   // core가 decode해 UiSnapshot으로 만든다
-  catalogSource: CatalogSource;
-  timeZone?: string;               // 생략하면 initialSnapshot.timeZone 사용. 빌드·dev 기본은 "UTC"
-}
-
-interface I18n<S extends Schema> {
-  readonly t: Translate<S>;
-  setLocale(locale: string): Promise<void>;   // 허용 목록 밖이면 reject
-  getLocales(): readonly string[];
-  getNamespaces(): readonly string[];
-  getSnapshot(): UiSnapshot;                    // 변할 때만 새 참조, 아니면 동일 참조
-  subscribe(listener: (snapshot: UiSnapshot) => void): () => void;
-  loadNamespace(namespace: string): Promise<void>;
-  dispose(): void;                              // 이 instance가 소유한 구독만 정리
-}
-
-declare function createI18n<S extends Schema = UntypedSchema>(
-  options: CreateI18nOptions
-): I18n<S>;
-```
-
-- `fallbackLocale` 옵션은 두지 않는다. MVP의 fallback 대상은 baseLocale 하나다. 다단계 fallback은 로딩·스키마·포맷 출처까지 함께 설계한 뒤 후속으로 다룬다.
-- `UiSnapshot.catalogs`는 wire의 catalog 배열을 decode해 복원한 `ReadonlyMap<string, CatalogRecord>`이다. `CatalogRecord`가 formatLocale, catalogVersion, namespaceSchemaFingerprint를 함께 보존한다. `JSON.stringify(Map)` 결과로 만들지 않는다.
-- `ArgTypes`는 TS 타입 전용이다. 런타임 검증·직렬화는 `RuntimeArgumentSchema`(acceptedTypes, required)로 한다. 값 맵을 그대로 wire에 싣지 않는다.
-- `BootSnapshot`의 encode/decode와 dev metadata handle은 [08-update-protocol.md](08-update-protocol.md)를 따른다.
-- `catalogOutcomes`는 loadedNamespaces의 base+target pair 전부를 판정한 결과다. present는 같은 버전의 record가 반드시 있고, missing은 version을 가진 명시적 부재다. never-seen pair의 부재 버전은 0으로 시작한다. decode는 누락·중복·메타데이터 불일치를 거부한다.
-- `UiSnapshot`에는 timeZone과 baseLocale을 담지 않는다. instance의 baseLocale과 timeZone은 생성 시 고정되는 불변 값이고, snapshot-bound formatter도 이 값을 쓴다. `initialSnapshot`(BootSnapshot)의 timeZone과 options의 timeZone이 다르면 모호한 상태를 만들지 않고 생성 오류로 멈춘다.
-- 키와 인자의 상관관계는 `TypedCall` tuple로 유지한다. typed schema에 넓은 `string` overload를 덧붙이지 않는다.
-
-소유권 규칙:
-
-- `dispose`는 instance가 만든 구독만 닫는다. Vite dev server가 watcher와 websocket을 소유한다. Saylo plugin과 코어는 공유 watcher·socket을 닫지 않고 자신이 등록한 listener, route, channel binding만 소유·해제한다.
-- 서버 렌더링에서는 immutable한 요청 스냅샷을 그대로 쓴다. 서버 전역 `setLocale`을 두지 않는다.
-- Vite plugin은 dev 서버 종료 시 자신이 등록한 listener, route, channel binding만 정리한다. 공유 watcher와 socket은 Vite가 소유하며 닫지 않는다.
+`freezeCatalogs`는 core 루트와 `/runtime`에서 제공하며 `0.1.0-alpha.2`부터 게시본에 포함된다. 선택 빌드 키는 현재 수동 `includeKeys` 목록으로만 지정한다. 소스 스캔 자동 추출이나 서버 push는 아직 구현하지 않았고, `includeKeys`도 `0.1.0-alpha.4` 게시본에는 없다.
 
 ## 개발 연결 (virtual module)
 
 개발 서버는 세 가지를 클라이언트에 제공한다.
 
-- `virtual:saylo`: 카탈로그 handle, `initialSnapshot`(BootSnapshot), `catalogSource`를 내보낸다.
+- `virtual:saylo`: `initialCatalogs`(`ParsedCatalog[]`), `baseLocale`, `initialLocale`, `timeZone`을 내보낸다. 전체 registry를 한 번에 싣는 eager 경로다.
+- `virtual:saylo/lazy`: `initialCatalogs`(`CatalogOutcome[]`), `initialLocale`, `initialNamespaces`, `timeZone`, `catalogSource`를 내보낸다. `initialSnapshot`은 내보내지 않는다.
+- `virtual:saylo/server`: `catalogSource`와 `createRequestI18n`을 내보낸다.
 - `catalogSource`(개발): 범용 `loadCatalog(locale, namespace)`가 현재 registry를 조회한다. 부팅 뒤에 새 namespace가 생겨도 기존 namespace별 loader map에 항목이 없어서 실패하지 않는다.
-- `connectDev(instance)`: 어떤 instance를 갱신할지 plugin에 알린다. 이 호출이 없으면 plugin은 어느 store에 이벤트를 적용할지 알 수 없다. 개발에서만 호출한다.
+- `connectDev(instance, { catalogSource })`: lazy instance를 갱신 대상으로 등록한다. eager store는 `connectDev(store)`를 쓴다. 이 호출이 없으면 plugin은 어느 store에 이벤트를 적용할지 알 수 없다. 개발에서만 호출한다.
 
-- namespace manifest가 동적으로 늘거나 줄면 patch envelope의 `availableNamespaces`와 mutable manifest handle 갱신으로 전달한다. 개발 경로에는 정적 namespace map을 두지 않는다. 새 namespace 조회는 범용 `loadCatalog`가 모두 처리한다. 정적 loader map은 운영에서만 생성한다.
+- namespace manifest가 동적으로 늘거나 줄면 manifest의 `availableNamespaces` 갱신으로 현재 source에 알린다. 개발 경로에는 정적 namespace map을 두지 않는다. 새 namespace 조회는 범용 `loadCatalog`가 모두 처리한다. 정적 loader map은 운영에서만 생성한다.
 - 운영은 generated static loader map만 쓴다. 그 map도 같은 `CatalogSource` 인터페이스를 뒤에 둔다.
 
 ```ts
@@ -363,7 +209,7 @@ export default defineConfig({
       localesDir: "locales",
       baseLocale: "ko",
       initialLocale: "ko",
-      initialNamespaces: ["common", "cart"],
+      initialNamespaces: ["common"],
       timeZone: "UTC",
       // 생성물을 .ts 모듈로 두면 HMR 전파 대상이 되므로 .d.ts로 둔다.
       typegen: { outFile: "src/i18n/generated.d.ts" }
@@ -374,47 +220,52 @@ export default defineConfig({
 
 ## 예제
 
-TS, generated 타입 사용:
+TS, generated 타입과 lazy 초기화:
 
 ```ts
 // src/i18n/client.ts
 import { createI18n } from "@0disoft/saylo-core";
-import { initialSnapshot, catalogSource } from "virtual:saylo";
-import type { AppSchema } from "./generated";
+import { connectDev } from "@0disoft/saylo-vite/client";
+import { catalogSource, initialCatalogs, initialLocale, initialNamespaces, timeZone } from "virtual:saylo/lazy";
+import type { AppSchema } from "./generated.js";
 
 export const i18n = createI18n<AppSchema>({
-  initialSnapshot,
+  locale: initialLocale,
+  initialNamespaces,
+  initialCatalogs,
   catalogSource,
-  timeZone: "UTC"
+  timeZone,
 });
 
-i18n.t("cart:title");                          // 인자 없음
-i18n.t("common:welcome", { name: "제로디" });  // 필수 인자
-i18n.t("cart:items", { count: 3 });
-// i18n.t("cart:items", { count: "3" });       // 타입 오류: count는 number
-// i18n.t("common:welcome", {});               // 타입 오류: name 누락
-// i18n.t("cart:missing");                     // 타입 오류: 알 수 없는 키
-
-declare const key: "cart:title" | "cart:items";
-// i18n.t(key);                                // 타입 오류: union 키는 먼저 좁혀야 한다
-if (key === "cart:items") {
-  i18n.t(key, { count: 3 });                  // narrowing 후 통과
-}
-
 await i18n.loadNamespace("cart");
-await i18n.setLocale("en");                    // 허용 목록 밖이면 reject
+
+i18n.t("cart:title");
+i18n.t("common:welcome", { name: "제로디" });
+i18n.t("cart:items", { count: 3 });
+// i18n.t("cart:items", { count: "3" });   // 타입 오류: count는 number
+
+await i18n.setLocale("en");
+
+// 개발 엔트리에서만 연결한다. 정리는 disconnect(); i18n.dispose();
+export const disconnect = connectDev(i18n, { catalogSource });
 ```
 
-JS, `checkJs`와 JSDoc으로 typed 사용. 타입 없는 경로가 아니라 선언을 그대로 쓴다:
+JS, `checkJs`와 JSDoc으로 lazy 초기화:
 
 ```js
 // src/i18n/client.js
 // @ts-check
 import { createI18n } from "@0disoft/saylo-core";
-import { initialSnapshot, catalogSource } from "virtual:saylo";
+import { catalogSource, initialCatalogs, initialLocale, initialNamespaces, timeZone } from "virtual:saylo/lazy";
 
-/** @type {import('@0disoft/saylo-core').I18n<import('./generated').AppSchema>} */
-export const i18n = createI18n({ initialSnapshot, catalogSource, timeZone: "UTC" });
+/** @type {import("@0disoft/saylo-core").I18n<import("./generated.js").AppSchema>} */
+export const i18n = createI18n({
+  locale: initialLocale,
+  initialNamespaces,
+  initialCatalogs,
+  catalogSource,
+  timeZone,
+});
 ```
 
 ```js
@@ -428,9 +279,10 @@ await i18n.setLocale("en");   // subscribe가 이미 render하므로 다시 부�
 ```ts
 // src/i18n/dev.ts  (개발 엔트리에서만 import)
 import { connectDev } from "@0disoft/saylo-vite/client";
+import { catalogSource } from "virtual:saylo/lazy";
 import { i18n } from "./client";
 
-connectDev(i18n);
+connectDev(i18n, { catalogSource });
 ```
 
 React, factory가 같은 context로 Provider와 hook을 만든다:
