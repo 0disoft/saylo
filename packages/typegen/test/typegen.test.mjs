@@ -66,6 +66,45 @@ test('background worker coalesces burst generations to the latest schema and ski
   assert.deepEqual(await readdir(root), ['generated.d.ts']);
 });
 
+test('unchanged schemas restore deleted or overwritten output without changing the declaration', async t => {
+  const root = await directory(t);
+  const out = path.join(root, 'generated.d.ts');
+  const generator = new TypeGenerator(out);
+  t.after(() => generator.stop());
+  const schemas = [schema({ greeting: 'Hello {name}' })];
+  await generator.update(schemas);
+  const original = await readFile(out, 'utf8');
+  await rm(out);
+  await generator.update([schema({ greeting: 'Changed text {name}' })]);
+  assert.equal(await readFile(out, 'utf8'), original);
+  await writeFile(out, 'overwritten declaration');
+  await generator.update(schemas);
+  assert.equal(await readFile(out, 'utf8'), original);
+  await rm(out);
+  await Promise.all([generator.update(schemas), generator.update([schema({ temporary: 'Temporary' })]), generator.update(schemas)]);
+  assert.equal(await readFile(out, 'utf8'), original, 'Returning to the cached schema still finishes file recovery');
+  assert.deepEqual(await readdir(root), ['generated.d.ts']);
+});
+
+test('a newer schema supersedes cached-output recovery and stop cancels outstanding recovery', async t => {
+  const root = await directory(t);
+  const out = path.join(root, 'generated.d.ts');
+  const generator = new TypeGenerator(out);
+  t.after(() => generator.stop());
+  const schemas = [schema({ old: 'Old' })];
+  await generator.update(schemas);
+  await rm(out);
+  await Promise.all([generator.update(schemas), generator.update([schema({ latest: '{count, number}' })])]);
+  const latest = await readFile(out, 'utf8');
+  assert.ok(latest.includes('demo:latest') && !latest.includes('demo:old'));
+  await rm(out);
+  const recovery = generator.update([schema({ latest: '{count, number} edited' })]);
+  const rejected = assert.rejects(recovery, /stopped/);
+  await generator.stop();
+  await rejected;
+  assert.deepEqual(await readdir(root), []);
+});
+
 test('worker failures retain the previous declaration and allow retry', async t => {
   const root = await directory(t);
   const out = path.join(root, 'generated.d.ts');

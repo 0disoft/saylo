@@ -111,6 +111,34 @@ test('startup type readiness precedes serving and live publish precedes backgrou
   assert.equal((await stat(out)).mtimeMs, before);
 });
 
+test('a text-only live edit restores a deleted declaration without delaying catalog publication', async t => {
+  const { root, server, change, request, warnings } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
+  const out = path.join(root, 'generated.d.ts');
+  const original = await readFile(out, 'utf8');
+  await rm(out);
+  const send = server.ws.send;
+  let publishedBeforeRecovery = false;
+  server.ws.send = event => {
+    if (event.event === MANIFEST_EVENT) {
+      assert.throws(() => readFileSync(out, 'utf8'), { code: 'ENOENT' });
+      publishedBeforeRecovery = true;
+    }
+    send(event);
+  };
+  await change('ko', '{"hello":"Text only {name}"}');
+  assert.equal(request()[0].data.revision, 1);
+  assert.equal(publishedBeforeRecovery, true);
+  const deadline = Date.now() + 10000;
+  while (true) {
+    try { await stat(out); break; }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    assert.ok(Date.now() < deadline, 'background generation restores the deleted declaration');
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  assert.equal(await readFile(out, 'utf8'), original);
+  assert.deepEqual(warnings, []);
+});
+
 test('failed live type generation retries an identical save without republishing catalogs', async t => {
   const { root, change, request, warnings, events } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
   const out = path.join(root, 'generated.d.ts');

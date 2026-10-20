@@ -12,6 +12,7 @@ export class TypeGenerator {
   private desired: Job | undefined;
   private generation = 0;
   private successKey: string | undefined;
+  private successSource: string | undefined;
   private waiters = new Set<Waiter>();
   private stopped = false;
   private completion = Promise.resolve();
@@ -24,7 +25,6 @@ export class TypeGenerator {
   update(schemas: readonly CatalogSchema[]): Promise<void> {
     if (this.stopped) return Promise.reject(new Error('Type generator is stopped.'));
     const key = JSON.stringify([...schemas].map(s => [s.namespace, s.fingerprint]).sort((a, b) => a[0]! < b[0]! ? -1 : a[0]! > b[0]! ? 1 : 0));
-    if (!this.active && key === this.successKey) return Promise.resolve();
     if (key !== this.desired?.key) this.desired = { generation: ++this.generation, key, schemas };
     const promise = new Promise<void>((resolve, reject) => this.waiters.add({ resolve, reject }));
     try { this.start(); } catch (error) { this.fail(error); }
@@ -32,6 +32,12 @@ export class TypeGenerator {
   }
   private start() {
     if (this.active || !this.desired || this.stopped) return;
+    this.active = this.desired;
+    if (this.active.key === this.successKey && this.successSource !== undefined) {
+      // Recheck the output through the same serialized writer without rerendering in the worker.
+      this.completion = this.complete({ generation: this.active.generation, source: this.successSource }).catch(error => this.fail(error));
+      return;
+    }
     if (!this.worker) {
       const worker = new Worker(new URL('./worker.js', import.meta.url));
       this.worker = worker;
@@ -41,7 +47,6 @@ export class TypeGenerator {
       worker.on('error', error => { if (this.worker === worker) this.fail(error); });
       worker.on('exit', code => { if (this.worker === worker && !this.stopped) this.fail(new Error(`Typegen worker exited (${code}).`)); });
     }
-    this.active = this.desired;
     this.worker.ref();
     this.worker.postMessage({ generation: this.active.generation, schemas: this.active.schemas.map(s => ({ namespace: s.namespace, keys: s.keys })) });
   }
@@ -52,11 +57,11 @@ export class TypeGenerator {
       if (result.error || typeof result.source !== 'string') throw new Error(result.error ?? 'Invalid typegen worker result.');
       const status = await writeGenerated(this.outFile, result.source, () => !this.stopped && job.generation === this.desired?.generation);
       // A completed replacement describes the disk even if a newer request arrived during it.
-      if (status !== 'cancelled') this.successKey = job.key;
+      if (status !== 'cancelled') { this.successKey = job.key; this.successSource = result.source; }
     }
     if (this.stopped) return;
     this.active = undefined;
-    if (this.successKey !== this.desired?.key) { this.start(); return; }
+    if (job.generation !== this.desired?.generation || this.successKey !== this.desired?.key) { this.start(); return; }
     this.worker?.unref();
     for (const waiter of this.waiters) waiter.resolve();
     this.waiters.clear();
