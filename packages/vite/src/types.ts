@@ -1,4 +1,4 @@
-import type { CatalogDiagnostic, CatalogManifest, ParsedCatalog } from '@0disoft/saylo-core';
+import type { CatalogDiagnostic, CatalogManifest, CatalogMetadata, ParsedCatalog } from '@0disoft/saylo-core';
 import type { CatalogStamp } from './catalog-patch.js';
 import type { CatalogWireResult } from './catalog-wire.js';
 import type { AutoIncludeKeys } from './auto-keys.js';
@@ -78,6 +78,19 @@ export type ManifestEvent = { readonly manifest: CatalogManifest } & (
   | { readonly kind: 'snapshot'; readonly request: EagerSnapshotRequest }
   | { readonly kind: 'update'; readonly baseRevision: number }
 );
+export interface CatalogScope {
+  readonly owner: string;
+  readonly sessionId: string;
+  readonly catalogs: readonly CatalogMetadata[];
+}
+/** One manifest revision and all changed payloads in an explicitly subscribed scope. */
+export interface CatalogPush {
+  readonly kind: 'patch';
+  readonly owner: string;
+  readonly baseRevision: number;
+  readonly manifest: CatalogManifest;
+  readonly outcomes: readonly CatalogWireResult[];
+}
 export interface CatalogRequest {
   readonly requestId: string;
   readonly generation: number;
@@ -102,3 +115,5 @@ export const MANIFEST_EVENT = 'saylo:manifest';
 export const MANIFEST_REQUEST_EVENT = 'saylo:request-manifest';
 export const CATALOG_REQUEST_EVENT = 'saylo:request-catalog';
 export const CATALOG_EVENT = 'saylo:catalog';
+export const CATALOG_SCOPE_EVENT = 'saylo:catalog-scope';
+export const CATALOG_PUSH_EVENT = 'saylo:catalog-push';

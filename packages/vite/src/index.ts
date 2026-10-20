@@ -13,9 +13,10 @@ import { createAstFormatter } from './ast-formatter.js';
 import { requireCompleteTranslations } from './complete-translations.js';
 import { readIncludedKeys, selectBuildCatalogs } from './build-keys.js';
 import { findIncludedKeys, readAutoKeys } from './auto-keys.js';
+import { CatalogPushSubscriptions } from './catalog-push.js';
 import type { CatalogOutcome, ParsedCatalog } from '@0disoft/saylo-core';
 import { registerServerSource } from './server-source.js';
-import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
+import { CATALOG_EVENT, CATALOG_PUSH_EVENT, CATALOG_SCOPE_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
   REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest, isSnapshotRequest } from './types.js';
 import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './types.js';
 
@@ -63,6 +64,11 @@ export default function saylo(options: SayloViteOptions): Plugin {
   const isTypegenFile = (file: string) => generatedOut !== undefined && isGeneratedFile(generatedOut, file);
   let diagnostic: LiveDiagnostic = { message: '', diagnostics: [] };
   const eagerClients = new Set<WebSocketClient>();
+  const pushes = new CatalogPushSubscriptions();
+  const subscribeCatalogs: Parameters<ViteDevServer['ws']['on']>[1] = (data, client) => {
+    try { pushes.subscribe(client, data); }
+    catch { client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: { message: 'Invalid catalog push subscription.', diagnostics: [] } }); }
+  };
   const snapshot = () => ({ sessionId, revision, baseLocale, catalogs: [...files.values()].map(f => f.catalog) });
   const request: Parameters<ViteDevServer['ws']['on']>[1] = (data, client) => {
     if (!isSnapshotRequest(data)) {
@@ -97,6 +103,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
     server?.ws.off(REQUEST_EVENT, request);
     server?.ws.off(MANIFEST_REQUEST_EVENT, requestManifest);
     server?.ws.off(CATALOG_REQUEST_EVENT, requestCatalog);
+    server?.ws.off(CATALOG_SCOPE_EVENT, subscribeCatalogs);
+    pushes.clear();
     eagerClients.clear();
     server?.httpServer?.off('close', cleanup);
   }
@@ -186,7 +194,7 @@ export const initialLocale = ${encode(locale)};
 export const initialNamespaces = ${encode(namespaces)};
 export const timeZone = ${encode(timeZone)};
 export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, initialCatalogs, [${loaders.join(',\n')}])`
-          : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot })`};
+          : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot, push: true })`};
 ${id === RESOLVED_SERVER ? `import { createServerI18n } from '@0disoft/saylo-core';
 export const createRequestI18n = (options = {}) => createServerI18n({ locale: initialLocale, timeZone,
   initialNamespaces, ...options, catalogSource });` : ''}`;
@@ -216,6 +224,9 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
             if (!server?.ws.clients.has(client)) { eagerClients.delete(client); continue; }
             client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: update });
           }
+          for (const client of server?.ws.clients ?? []) for (const push of pushes.updates(client, registry, revision - 1)) {
+            client.send({ type: 'custom', event: CATALOG_PUSH_EVENT, data: push });
+          }
           server?.ws.send({ type: 'custom', event: MANIFEST_EVENT, data: { kind: 'update', baseRevision: revision - 1, manifest: registry.manifest() } });
         }
         const generator = typegen;
@@ -242,6 +253,7 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
       server.ws.on(REQUEST_EVENT, request);
       server.ws.on(MANIFEST_REQUEST_EVENT, requestManifest);
       server.ws.on(CATALOG_REQUEST_EVENT, requestCatalog);
+      server.ws.on(CATALOG_SCOPE_EVENT, subscribeCatalogs);
       server.httpServer?.once('close', cleanup);
     },
     async hotUpdate(context) {

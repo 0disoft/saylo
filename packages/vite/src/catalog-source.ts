@@ -3,8 +3,8 @@ import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, Ca
 import { EagerSync } from './dev-sync.js';
 import type { DevSyncState } from './dev-sync.js';
 import { catalogId as id, catalogMetadata, immutable, matches } from './catalog-outcome.js';
-import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';
-import type { CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, ManifestEvent } from './types.js';
+import { CATALOG_EVENT, CATALOG_PUSH_EVENT, CATALOG_SCOPE_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';
+import type { CatalogPush, CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, ManifestEvent } from './types.js';
 import { applyCatalogPatch } from './catalog-patch.js';
 import { decodeCatalogResult } from './catalog-wire.js';
 import type { PresentCatalog } from './catalog-patch.js';
@@ -26,6 +26,8 @@ export interface DevCatalogSource extends CatalogSource {
 export interface DevCatalogSourceOptions {
   readonly hot?: HotContext;
   readonly requestTimeoutMs?: number;
+  /** Subscribe cached pairs to atomic server pushes. Generated Vite sources enable this. */
+  readonly push?: boolean;
 }
 
 interface Pending {
@@ -56,6 +58,13 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   const listeners = new Set<() => void>();
   const diagnostics = new Set<(diagnostic: LiveDiagnostic) => void>();
   const syncListeners = new Set<(state: DevSyncState) => void>();
+  if (options.push !== undefined && typeof options.push !== 'boolean') throw new TypeError('push must be a boolean.');
+  const sendScope = (clear = false) => {
+    if (!options.push || !sync) return;
+    hot.send(CATALOG_SCOPE_EVENT, { owner: identity, sessionId: manifest.sessionId,
+      catalogs: clear ? [] : [...cache.values()].map(outcome => ({ key: outcome.key, catalogVersion: outcome.catalogVersion, status: outcome.status,
+        ...(outcome.status === 'present' ? { namespaceSchemaFingerprint: outcome.namespaceSchemaFingerprint } : {}) })) });
+  };
   let syncState: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: 3 });
   const notify = (diagnostic: LiveDiagnostic) => {
     for (const listener of [...diagnostics]) {
@@ -92,6 +101,11 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     sync.receive({ ...event, sessionId: event.manifest.sessionId, revision: event.manifest.registryRevision,
       baseLocale: event.manifest.baseLocale, catalogs: [] } as EagerCatalogEvent);
   };
+  const receivePush = (event: CatalogPush) => {
+    if (!options.push || !sync || event?.owner !== identity || event.kind !== 'patch' || !event.manifest) return;
+    sync.receive({ ...event, kind: 'update', sessionId: event.manifest.sessionId, revision: event.manifest.registryRevision,
+      baseLocale: event.manifest.baseLocale, catalogs: [], push: event } as EagerCatalogEvent);
+  };
   const receiveCatalog = (reply: CatalogReply) => {
     const entry = reply?.request && pending.get(reply.request.requestId);
     if (!entry || !ready || reply.request.generation !== entry.request.generation ||
@@ -105,6 +119,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
       if (result.status === 'failed') { entry.cleanup(); entry.resolve(result); return; }
       const accepted = immutable(result);
       cache.set(id(accepted.key), accepted);
+      sendScope();
       entry.cleanup();
       entry.resolve(accepted);
     } catch (error) {
@@ -122,7 +137,10 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     if (!diagnostic.request || sync?.acceptsRequest(diagnostic.request)) notify(diagnostic);
   };
   const disconnect = () => { ready = false; generation++; sync?.disconnect(); resume(); };
-  const reconnect = () => sync?.reconnect();
+  const reconnect = () => {
+    try { sendScope(); sync?.reconnect(); }
+    catch (error) { report(error); }
+  };
   function start() {
     if (sync || disposed) return;
     sync = new EagerSync({ timeoutMs,
@@ -134,14 +152,35 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
         try {
           const next = validateCatalogManifest((envelope as EagerCatalogEvent & { manifest: CatalogManifest }).manifest);
           if (next.baseLocale !== manifest.baseLocale) throw new Error('Source baseLocale changed.');
+          const push = (envelope as EagerCatalogEvent & { push?: CatalogPush }).push;
+          const replacements = new Map<string, CatalogOutcome>();
+          if (push) {
+            if (!Array.isArray(push.outcomes)) throw new Error('Invalid catalog push outcomes.');
+            for (const wire of push.outcomes) {
+              const decoded = decodeCatalogResult(wire);
+              if (!decoded || decoded.status === 'failed') throw new Error('Failed catalog push.');
+              const key = id(decoded.key), baseline = cache.get(key);
+              if (!baseline) continue; // Another source on the shared socket owns this pair.
+              if (replacements.has(key)) throw new Error('Duplicate catalog push outcome.');
+              const result = decoded.status === 'patch' ? applyCatalogPatch(baseline.status === 'present' ? baseline : undefined, decoded) : decoded;
+              if (!matches(next, result)) throw new CatalogLoadError('STALE_CATALOG', 'Pushed catalog does not match its manifest.');
+              replacements.set(key, immutable(result));
+            }
+          }
           const changed = JSON.stringify(next) !== JSON.stringify(manifest);
           const wasReady = ready;
           manifest = next;
           ready = true;
+          for (const [key, result] of replacements) cache.set(key, result);
           // Keep one stale present baseline per available pair for request-scoped deltas.
           const metadata = catalogMetadata(manifest);
           for (const [key, result] of cache) if (result.sessionId !== manifest.sessionId ||
-              metadata.get(key)?.status !== 'present') cache.delete(key);
+              (metadata.get(key)?.status !== 'present' && (!options.push || result.status === 'present')) ||
+              (options.push && (!manifest.availableNamespaces.includes(result.key.namespace) || !manifest.availableLocales.includes(result.key.locale)))) cache.delete(key);
+          for (const entry of [...pending.values()]) {
+            const accepted = cache.get(id(entry.key));
+            if (accepted && matches(manifest, accepted)) { entry.cleanup(); entry.resolve(accepted); }
+          }
           if (changed) for (const listener of [...listeners]) {
             if (disposed || !listeners.has(listener)) continue;
             try { listener(); }
@@ -154,17 +193,20 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     });
     hot!.on(MANIFEST_EVENT, receiveManifest);
     hot!.on(CATALOG_EVENT, receiveCatalog);
+    if (options.push) hot!.on(CATALOG_PUSH_EVENT, receivePush);
     hot!.on(DIAGNOSTIC_EVENT, receiveDiagnostic);
     hot!.on('vite:ws:disconnect', disconnect);
     hot!.on('vite:ws:connect', reconnect);
-    try { sync.start(); } catch (error) { stop(); throw error; }
+    try { sendScope(); sync.start(); } catch (error) { stop(); throw error; }
   }
   function stop() {
+    try { sendScope(true); } catch { /* Vite owns the socket; stopping never waits for it. */ }
     if (sync) sync.stop();
     else observeState(Object.freeze({ status: 'stopped', attempt: 0, maxAttempts: 3 }));
     sync = undefined; ready = false; generation++;
     hot!.off(MANIFEST_EVENT, receiveManifest);
     hot!.off(CATALOG_EVENT, receiveCatalog);
+    hot!.off(CATALOG_PUSH_EVENT, receivePush);
     hot!.off(DIAGNOSTIC_EVENT, receiveDiagnostic);
     hot!.off('vite:ws:disconnect', disconnect);
     hot!.off('vite:ws:connect', reconnect);
