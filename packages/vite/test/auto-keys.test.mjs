@@ -110,6 +110,20 @@ export const dynamic = (key: string) => store.t(key);`);
   assert.match(await readFile(path.join(root, 'generated.d.ts'), 'utf8'), /demo:unused/);
 });
 
+test('exported named aliases are followed and escaping translator references require dynamic preservation', async t => {
+  const root = await fixture(t), file = path.join(root, 'src/translators.ts');
+  await writeFile(file, `const { t } = useI18n(); export { t as message };`);
+  await writeFile(path.join(root, 'src/main.ts'), `import { message as msg } from './translators'; msg(key);`);
+  await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/);
+  await rm(path.join(root, 'src/main.ts'));
+  for (const source of ['export default i18n.t;', 'function translator() { return i18n.t; }', 'function translator() { return i18n.t.bind(i18n); }',
+    'consume(i18n.t.bind(i18n));', 'const api = { message: i18n.t };', 'const values = [i18n.t];']) {
+    await writeFile(file, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/);
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'], dynamicKeys: ['demo:one'] }), ['demo:one']);
+  }
+});
+
 test('Vite watch rebuilds reanalyze edited source keys and fresh catalog contents', { timeout: 20000 }, async t => {
   const root = await fixture(t);
   await mkdir(path.join(root, 'locales/ko'), { recursive: true });

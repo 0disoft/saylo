@@ -59,10 +59,14 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
   if (!paths.size) throw new Error('[saylo:auto-keys] No JavaScript, TypeScript, Vue or Svelte source files were found.');
   const trees = await Promise.all([...paths].map(async file => ({ file, trees: sourceTrees(await readFile(file, 'utf8'), file) })));
   const aliases = new Set(['t', 'tParts', '$t']);
+  const bindings = new WeakSet<SourceNode>();
   // Resolve simple aliases, including destructuring, without assuming a framework.
   for (let before = -1; before !== aliases.size;) {
     before = aliases.size;
     for (const source of trees) for (const tree of source.trees) visit(tree, current => {
+      if (current.type === 'ExportSpecifier' && aliases.has(identifier(current.local) ?? '')) {
+        const exported = identifier(current.exported); if (exported) aliases.add(exported);
+      }
       if (current.type === 'ImportSpecifier' && aliases.has(identifier(current.imported) ?? '')) {
         const local = identifier(current.local); if (local) aliases.add(local);
       }
@@ -73,14 +77,29 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
       const bound = right?.type === 'CallExpression' ? node(right.callee) : undefined;
       if (name && property(bound) === 'bind' && (translatedProperty(bound?.object) || aliases.has(identifier(bound?.object) ?? ''))) aliases.add(name);
       if (left?.type === 'ObjectPattern') for (const value of left.properties as SourceNode[]) {
+        bindings.add(value);
         if (['t', 'tParts'].includes(identifier(value.key) ?? literal(value.key) ?? '')) {
-          const local = identifier(value.value); if (local) aliases.add(local);
+          const binding = node(value.value);
+          const local = identifier(binding?.type === 'AssignmentPattern' ? binding.left : binding); if (local) aliases.add(local);
         }
       }
     });
   }
   const dynamic: string[] = [];
-  for (const source of trees) for (const tree of source.trees) visit(tree, current => {
+  const translationReference = (value: unknown): boolean => {
+    const current = node(value);
+    if (translatedProperty(current) || aliases.has(identifier(current) ?? '')) return true;
+    const callee = current?.type === 'CallExpression' ? node(current.callee) : undefined;
+    return property(callee) === 'bind' && (translatedProperty(callee?.object) || aliases.has(identifier(callee?.object) ?? ''));
+  };
+  for (const source of trees) for (const tree of source.trees) visit(tree, (current, parent) => {
+    const functionReference = translationReference(current);
+    if (functionReference && parent && (
+      parent.type === 'ReturnStatement' || parent.type === 'ExportDefaultDeclaration' || parent.type === 'ArrayExpression' ||
+      parent.type === 'ConditionalExpression' || parent.type === 'ArrowFunctionExpression' && parent.body === current ||
+      parent.type === 'ObjectProperty' && parent.value === current && !bindings.has(parent) ||
+      parent.type === 'AssignmentExpression' && parent.right === current && node(parent.left)?.type !== 'Identifier'))
+      dynamic.push(path.relative(root, source.file));
     const value = literal(current);
     if (value !== undefined && available.has(value)) selected.add(value);
     if (current.type !== 'CallExpression' && current.type !== 'OptionalCallExpression') return;
@@ -93,7 +112,7 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
       callee = target;
     }
     // Passing a translator to unknown code cannot prove a finite set of keys.
-    if ((current.arguments as unknown[]).some(value => translatedProperty(value) || aliases.has(identifier(value) ?? '')))
+    if ((current.arguments as unknown[]).some(translationReference))
       dynamic.push(path.relative(root, source.file));
     if (!aliases.has(identifier(callee) ?? '') && !translatedProperty(callee)) return;
     const key = literal(argument);

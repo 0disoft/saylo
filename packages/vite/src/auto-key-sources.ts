@@ -10,13 +10,13 @@ export function node(value: unknown): SourceNode | undefined {
     ? value as SourceNode : undefined;
 }
 
-export function visit(value: unknown, callback: (value: SourceNode) => void) {
+export function visit(value: unknown, callback: (value: SourceNode, parent?: SourceNode) => void, parent?: SourceNode) {
   const current = node(value);
   if (!current) return;
-  callback(current);
+  callback(current, parent);
   for (const child of Object.values(current)) {
-    if (Array.isArray(child)) child.forEach(value => visit(value, callback));
-    else if (node(child)) visit(child, callback);
+    if (Array.isArray(child)) child.forEach(value => visit(value, callback, current));
+    else if (node(child)) visit(child, callback, current);
   }
 }
 
