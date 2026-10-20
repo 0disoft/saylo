@@ -7,8 +7,9 @@ import { parseArgs, promisify } from 'node:util';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const templates = {
-  react: ['main.tsx', 'App.tsx'],
-  svelte: ['main.ts', 'App.svelte', 'SelectedLocale.svelte'],
+  react: ['style.css', 'main.tsx', 'App.tsx'],
+  svelte: ['style.css', 'main.ts', 'App.svelte', 'SelectedLocale.svelte'],
+  vue: ['main.ts', 'App.vue'],
 };
 export async function prepareLocalStarter(framework, destination) {
   assert.ok(Object.hasOwn(templates, framework), 'Choose a supported local starter framework.');
@@ -32,7 +33,7 @@ export async function prepareLocalStarter(framework, destination) {
   assert.ok(npmCli, `Run with npm run prepare:starter:${framework}.`);
   await mkdir(root, { recursive: true });
   const files = ['.gitignore', 'package.json', 'vite.config.mjs', 'tsconfig.json', 'index.html',
-    'i18n.ts', 'demo-messages.ts', 'style.css', 'README.md', 'locales', ...templates[framework]];
+    'i18n.ts', 'demo-messages.ts', 'README.md', 'locales', ...templates[framework]];
   for (const file of files) await cp(path.join(repository, `examples/${framework}-starter`, file), path.join(root, file), { recursive: true });
   const vendor = path.join(root, 'vendor'); await mkdir(vendor);
   const names = ['core', framework, 'vite', 'typegen'];
