@@ -37,6 +37,7 @@
 | 갱신 단위 | 로케일+namespace 카탈로그 스냅샷. React·Svelte selector는 alpha.4 게시, Vue selector는 로컬 구현 |
 | 갱신 프로토콜 | [08-update-protocol.md](08-update-protocol.md)가 단일 출처. wire 타입과 적용·resync 규칙을 이 문서에 중복하지 않는다 |
 | 갱신 적용 | envelope 먼저 원자 반영, 로드된 카탈로그만 payload 적용, 미로드는 dirty |
+| lazy push | `virtual:saylo/lazy` dev source가 scope를 등록하고 바뀐 캐시 pair만 수신한다. payload·revision 검증 뒤 manifest와 캐시를 한 번에 적용하고 core에 한 번 게시한다. 불량·gap은 snapshot+조회로 복구한다 |
 | 로드/전환 조정 | 하나의 desired state(locale + 원하는 namespace)로 조정. generation은 오래된 완료 차단용이며 정상 동시 호출을 서로 reject하지 않는다 |
 | 로더 | core `CatalogSource` 인터페이스. 개발은 범용 `loadCatalog`, 운영은 generated static loader map |
 | ICU 구현 | `@formatjs/icu-messageformat-parser` + `intl-messageformat` 재사용, AST 입력. 지원 범위는 FormatJS가 지원하는 MessageFormat 1 문법 |
@@ -65,7 +66,7 @@
 | 지원 버전 범위 | Node 24.x, Vite 8, React 19, Svelte 5, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
 | build-time parser 런타임 제거 | Vite plugin에 구현하고 alpha.2로 게시했다(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. alpha.1에는 없으며 alpha.2 게시본에서 외부 소비와 parser 제거를 검증했다([릴리스](../releases/0.1.0-alpha.2.md)) |
 | requireCompleteTranslations(완역 검사) | alpha.3에 게시한 Vite 운영 빌드 전용 옵션. 기본 `false`, 누락 키·namespace를 모아 빌드 실패. 로케일 폴더와 initialLocale 전체를 검사하고 개발 fallback은 유지한다([42](42-complete-translations.md), [릴리스](../releases/0.1.0-alpha.3.md)) |
-| unused message 제거 최적화 | 후속. 동적 t 키 tradeoff 검증 필요 |
+| unused message 제거 | `includeKeys` 수동 목록 또는 `{ from, dynamicKeys? }` 정적 소스 분석으로 production eager·lazy·SSR에서 선택한다. 코드 실행은 하지 않고, 해결 불가 동적 호출은 dynamicKeys가 없으면 빌드 실패. typegen은 전체 유지. 로컬 미게시 |
 | selector 미세구독 최적화 | React·Svelte selector를 alpha.4로 게시했다([43](43-react-selectors.md), [44](44-svelte-selectors.md)). 해당 버전의 CI `check`·`release:pack`·OIDC 게시, 승인 registry integrity와 JS/TS·SSR·SvelteKit Chromium 소비를 통과했다([릴리스](../releases/0.1.0-alpha.4.md)) |
 | Svelte 어댑터 | Svelte 5 readable·typed context·SSR·hydration과 데모 구현 완료. alpha.2 게시·외부 소비·SvelteKit 브라우저 검증 완료([38](38-svelte-adapter.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
 | SvelteKit 예제 | SvelteKit 3 요청별 SSR·boot·hydration·페이지 이동·layout 종료와 재진입을 구현. 예제는 로컬 `file:` 의존성을 유지하며, 별도 registry 검증 명령으로 alpha.2 게시본의 Node 운영 빌드·실제 브라우저 검증도 완료했다([39](39-sveltekit-example.md), [릴리스](../releases/0.1.0-alpha.2.md)) |

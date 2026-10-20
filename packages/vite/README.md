@@ -55,22 +55,25 @@ export default defineConfig({
 
 ## 선택 빌드(includeKeys)
 
-`includeKeys`는 빌드에서 내보낼 메시지를 정확한 `namespace:messageId` 목록으로 지정하는 옵션이다. 와일드카드는 없고, 소스 코드를 스캔해 필요한 키를 자동으로 찾아주지도 않는다. 이 옵션은 게시본 `0.1.0-alpha.4`에는 없다. 이 기능이 추가되기 전 커밋 `2037f9a` 기준으로 동결한 `0.1.0-alpha.5` 후보 tarball에도 없다. 아직 게시되지 않은 기능이다.
+`includeKeys`는 production에서 내보낼 메시지를 정한다. 기존처럼 정확한 `namespace:messageId` 배열을 넘기거나, `{ from, dynamicKeys? }` 객체로 소스에서 키를 찾게 할 수 있다. 이 기능은 게시본 `0.1.0-alpha.4`에는 없고 현재 로컬 checkout에만 있다.
 
 ```js
-// vite.config.mjs
+// 수동 목록
+saylo({ localesDir: 'locales', baseLocale: 'ko', includeKeys: ['demo:heading', 'demo:greeting'] });
+
+// 자동 분석
 saylo({
   localesDir: 'locales',
   baseLocale: 'ko',
-  includeKeys: ['demo:heading', 'demo:greeting'],
+  includeKeys: { from: ['src'], dynamicKeys: ['demo:menuKey'] },
 });
 ```
 
-옵션을 비우면 원본 카탈로그 전체를 그대로 내보낸다. `[]`를 주면 로케일·namespace는 그대로 두고 메시지가 0개인 카탈로그를 내보낸다. 문자열이 아니거나 콜론이 정확히 하나가 아닌 항목, 같은 목록의 중복 항목은 `saylo()`를 부를 때 바로 던진다. 기준 카탈로그에 없는 키는 빌드할 때만 확인하고, 개발 중에는 존재 여부를 검사하지 않는다. 목록은 plugin을 만들 때 복사해 동결하므로, 그 뒤 호출자가 배열을 바꿔도 빌드 설정은 바뀌지 않는다.
+`from`은 Vite root 기준 파일·디렉터리다. 디렉터리는 재귀 스캔하고, `.js`·`.ts`·`.jsx`·`.tsx`·`.vue`·`.svelte` 소스를 Babel로 정적 분석한다. 실행은 하지 않으며 `<script>`와 template 표현식의 `t`·`tParts` 호출, 가져온 별칭, 구조 분해 별칭, template prefix/suffix에 가능한 전체 키를 보존한다. 일치하는 문자열은 여분 키를 남겨도 제거하지 않는다. 해결할 수 없는 동적 호출은 `dynamicKeys`가 없으면 빌드를 실패시킨다. symlink, Vite root 밖 경로, 파싱 오류도 거부한다. 외부 `src`를 쓰는 Vue script/template는 자동 분석을 거부하므로 수동 키 목록을 사용한다.
 
-개발 서버 제공과 hot 갱신은 이 목록으로 거르지 않는다. 빌드에서는 원본 소스의 schema 검사(깨진 JSON·ICU, 알 수 없는 인자)와, 켜져 있으면 `requireCompleteTranslations` 완역 검사를 pruning보다 먼저 끝낸다. 그래서 키를 빼도 깨진 번역이나 빠진 번역을 숨길 수 없다. pruning은 eager `virtual:saylo`, lazy boot·chunks, `virtual:saylo/server`(SSR)에 똑같이 적용하고, 선택한 메시지가 0개인 namespace라도 로케일·namespace 목록과 누락 pair fallback 메타데이터는 유지한다. schema fingerprint는 선택한 키 기준으로 다시 계산한다.
+개발 서버와 hot 갱신은 이 목록으로 거르지 않는다. production eager `virtual:saylo`, lazy boot·chunk, `virtual:saylo/server`(SSR)가 같은 선택을 쓴다. `typegen`이 만드는 `generated.d.ts`는 원본 base schema 전체를 유지한다. 키 분석용 Babel parser는 dev plugin의 Node 쪽 의존성이며 브라우저 번들에 싣지 않는다.
 
-`typegen`이 만드는 `generated.d.ts`는 의도적으로 원본 base schema 전체를 그대로 담는다. production에서 목록에서 뺀 키를 `t('omitted:key')`로 부르면 core가 `UnknownMessageError`를 던진다. `menuKey`나 데이터에서 만들어지는 키처럼 동적으로 정해지는 키는 목록에 넣거나 옵션 자체를 비워야 한다. 앱마다 자동 tree-shaking이나 성능 이득을 보장하지는 않는다.
+`[]`는 로케일·namespace 목록과 missing 메타데이터를 유지한 채 메시지를 0개로 만든다. 목록은 plugin 생성 시 복사·동결한다. 깨진 번역이나 `requireCompleteTranslations` 실패는 pruning보다 먼저 검사해 숨길 수 없다. 동적으로 정해지는 키는 `dynamicKeys`에 넣거나 옵션을 비운다. 자동 tree-shaking이나 성능 이득을 보장하지는 않는다.
 
 ## 빌드 완역 검사
 
@@ -103,6 +106,8 @@ export const i18n = createI18n<AppSchema>({
 export const disconnect = connectDev(i18n, { catalogSource });
 // 정리: disconnect(); i18n.dispose();
 ```
+
+개발 source는 push를 켠 상태로 생성된다. 서버는 `saylo:catalog-scope`로 등록한 캐시 pair 중 바뀐 것만 `saylo:catalog-push`로 보내고, 클라이언트는 revision과 payload를 검증해 manifest와 캐시를 한 번에 적용한다. 수동 `createDevCatalogSource`는 `{ push: true }`로 선택하며 기본값은 `false`다. 불량·gap은 기존 snapshot과 pair 조회로 복구하고, `stop`·`dispose`는 owner 구독만 해제한다. 스스로 만든 source를 쓸 때는 `createDevCatalogSource(manifest, initialCatalogs, { hot, push: true })`로 넘긴다.
 
 TS/checkJs 소비자는 `compilerOptions.types`에 `["vite/client", "@0disoft/saylo-vite/virtual"]`을 넣는다.
 

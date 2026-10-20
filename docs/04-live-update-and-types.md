@@ -7,18 +7,18 @@
 wire 타입(sessionId, baseRevision, revision, envelope)과 수신 순서는 [08-update-protocol.md](08-update-protocol.md)를 따른다. 이 문서는 그 갱신을 받아들이는 판정을 정한다.
 
 - revision은 서버 세션(sessionId) 안에서 단조 증가한다. 서버가 재시작하면 sessionId가 바뀐다.
-- envelope(sessionId, revision, 목록, schema)를 먼저 원자적으로 반영한다. payload는 이미 로드된 카탈로그에만 적용하고, 로드하지 않은 카탈로그는 dirty로 표시한 뒤 payload를 버린다.
+- envelope(sessionId, revision, 목록, schema)를 먼저 원자적으로 반영한다. payload는 이미 캐시한 pair에만 적용한다. 캐시하지 않은 pair는 manifest의 version 갱신만 남겨 cache 불일치로 추적하고 AST payload는 버린다.
 - 같은 세션이고 이미 적용한 revision 이하인 patch는 버린다.
 - baseRevision이 현재 적용 revision과 같고 revision이 더 크면 한 트랜잭션으로 적용한다.
 - future baseRevision이나 적용할 수 없는 겹침이면 gap으로 보고 resync한다. 역순이라는 이유만으로 무조건 버리지 않는다.
 - 재연결은 이전 세션 상태를 신뢰하지 않고, 진행 중인 모든 load와 request generation을 무효화한 뒤 full snapshot으로 다시 맞춘다.
 - metadata와 payload는 같은 commit 안에서 반영하고, 알림은 그 commit이 끝날 때 한 번만 낸다.
 
-시작 시점의 리스너 등록 → snapshot 요청 → patch 버퍼링 순서는 [02-architecture.md](02-architecture.md)의 시작 핸드셰이크를 따른다.
+시작 시점의 리스너 등록 → snapshot 요청 순서는 [02-architecture.md](02-architecture.md)의 시작 핸드셰이크를 따른다. `EagerSync`는 patch 배열을 쌓지 않고 최신 session/revision hint 하나만 보관하며, gap이면 snapshot을 다시 요청한다.
 
 ## desired-state 조정
 
-현재 코어 구현은 `packages/core/src/i18n.ts`와 `catalog-loader.ts`다. desired locale·namespace의 준비를 합치고 pair/version별 요청을 공유한다. 미로드 namespace는 명시적으로 로드하며, present/missing 전체가 준비된 뒤 한 번 게시한다. stale 응답은 최대 3회 조회하고 실패 시 이전 UI를 유지한다. Vite는 manifest 전체와 요청한 parsed pair의 본문을 별도로 전달하며, loaded scope의 변경만 다시 조회한다. 직전 baseline과 맞는 pair 응답은 바뀐 메시지 request-scoped delta가 되고, 그 밖에는 full present/missing 응답으로 돌아간다(13단계, 로컬 구현 완료). 서버가 patch를 밀어주는 push 방식 전송은 후속이다. secondary 스키마 quarantine는 Vite plugin에서 구현했다(아래 참조).
+현재 코어 구현은 `packages/core/src/i18n.ts`와 `catalog-loader.ts`다. desired locale·namespace의 준비를 합치고 pair/version별 요청을 공유한다. 미로드 namespace는 명시적으로 로드하며, present/missing 전체가 준비된 뒤 한 번 게시한다. stale 응답은 최대 3회 조회하고 실패 시 이전 UI를 유지한다. Vite는 manifest 전체와 요청한 parsed pair의 본문을 별도로 전달하며, loaded scope의 변경만 다시 조회한다. 직전 baseline과 맞는 pair 응답은 바뀐 메시지 request-scoped delta가 되고, 그 밖에는 full present/missing 응답으로 돌아간다(13단계, 로컬 구현 완료). lazy 개발 source는 `{ push: true }`로 scope를 등록하고 서버가 캐시한 pair 중 바뀐 것만 push한다. 클라이언트는 payload·revision을 검증하고 manifest와 캐시를 한 번에 적용한 뒤 core에 한 번 게시한다. gap·불량 payload는 기존 snapshot+조회로 복구한다. secondary 스키마 quarantine는 Vite plugin에서 구현했다(아래 참조).
 
 로케일 전환과 namespace 로드는 하나의 desired state(locale + 원하는 namespace 집합)로 조정한다. generation은 transport의 오래된 완료를 차단하기 위한 값이지, generation이 바뀔 때마다 모든 호출자를 취소한다는 뜻이 아니다.
 

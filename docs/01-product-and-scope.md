@@ -37,12 +37,15 @@
 | 전체 리로드로 반영 | DOM 상태를 파괴한다. |
 | 화면 컴포넌트 전면 remount | 입력·포커스·스크롤 상태를 잃는다. |
 | Rich text 컴포넌트 보간 MVP (초기 결정) | 처음에는 값 문법과 타입 계약이 복잡해져 순수 텍스트를 먼저 지원하기로 했다. 첫 rich text core API 슬라이스가 순수 텍스트 위에 읽기 전용 parts 투영(`tParts`)을 더한다. 인자로 컴포넌트를 넣는 보간과 자동 HTML 렌더는 그대로 비목표다. [78-rich-text-parts.md](78-rich-text-parts.md)를 따른다. |
-| 사용하지 않는 메시지 제거 최적화 | 동적 t 키와 충돌한다. 근거가 모인 뒤 별도로 다룬다. |
 | 컴파일러·번들러 대체 | Saylo는 i18n 계층만 담당한다. |
 
 ## 구독 범위
 
 React의 `useI18nSelector`, Svelte의 `selectSvelteStore`·`getI18nSelector`는 `0.1.0-alpha.4` 게시본에 있다. Vue의 `useI18nSelector`·`useVueSelector`는 로컬 private workspace 구현이다. selector는 snapshot에서 필요한 값을 골라 `Object.is`로 비교하므로 선택 값이 같으면 하위 갱신을 건너뛴다.
+
+## 선택 빌드
+
+운영 빌드는 `includeKeys`의 수동 `string[]` 목록이나 `{ from, dynamicKeys? }` 소스 분석으로 화면이 쓰는 키만 남긴다. 분석은 JS·TS·JSX·TSX·Vue·Svelte 소스를 실행하지 않고 정적으로 읽는다. 개발은 전체 카탈로그를 쓰고, typegen 선언은 전체 base schema를 유지한다.
 
 ## 대상 사용자
 

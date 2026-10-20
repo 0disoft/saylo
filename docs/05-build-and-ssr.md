@@ -11,8 +11,9 @@
 - 공개 `@0disoft/saylo-core/runtime` 엔트리는 `parseCatalog`를 제외하고, 기존 루트 엔트리는 기존 API를 그대로 유지한다.
 - 런타임 엔트리만 쓴다고 모든 bundler에서 parser 제거가 보장되지는 않는다. 검증 범위는 Vite 8 production build다. 런타임에 parser가 남을 수도 있다.
 - core의 브라우저 엔트리에는 파일 시스템 접근이 없고 parser도 필수가 아니다. AST를 받으면 parser 없이 동작한다. 파일 시스템과 parser는 dev plugin과 build 경계에 둔다.
-- 사용하지 않는 메시지 제거는 수동 목록으로 로컬 구현했다. Vite 플러그인 `includeKeys` 옵션에 `namespace:messageId` 목록을 넘기면 그 키만 빌드 출력에 남긴다. 목록은 손으로 관리하며 소스 코드를 스캔해 필요한 키를 자동으로 찾지 않는다. 동적 키를 빠뜨리면 운영에서 `UnknownMessageError`가 난다.
-- 소스 코드 분석으로 미사용 메시지를 자동 제거하는 최적화는 후속으로 둔다. 동적 t 키를 쓰는 코드에서는 제거가 위험하므로 tradeoff를 근거와 함께 검증한 뒤 결정한다.
+- 사용하지 않는 메시지 제거는 `includeKeys`로 로컬 구현했다. 기존 `string[]` 또는 `{ from, dynamicKeys? }`를 받는다. 객체 경로는 Vite root 안의 JS·TS·JSX·TSX·Vue·Svelte 스크립트와 template 표현식만 정적으로 훑고 코드를 실행하지 않는다. 일치 문자열, `t`·`tParts` 별칭 호출, template prefix/suffix에 가능한 키를 보존한다. 해결 불가 동적 호출은 `dynamicKeys`가 없으면 빌드가 실패한다.
+- 개발은 전체 카탈로그를 쓰고 production eager·lazy·SSR만 선택 키로 줄인다. typegen은 전체 base schema를 유지한다. 런타임 키 분석은 Babel parser 메이저 7을 dev plugin Node 쪽에서만 쓴다. 메이저 8은 Node 24.11 이상을 요구해 기존 Node 24.x 설치 범위를 유지하려고 7을 골랐고, 루트 패키지 경계 검사용 devDependency 8은 별도다. 브라우저 번들에는 싣지 않으며 이 기능은 alpha.4 게시본에 없다.
+- 검증 명령은 `npm test --workspace=@0disoft/saylo-vite`와 `npm run verify:demo:react:recovery`다. 전체 테스트 수는 이 문서에서 고정하지 않고 저장소 실행 결과를 따른다.
 
 코드 생성 대기를 줄이는 접근이라는 점에서 코드젠 방식 도구([Paraglide 메시지 컴파일](https://paraglidejs.com/compiling-messages))와 HMR 방식 도구([Wuchale 개발 모드](https://wuchale.dev/guides/dev/)) 사이에 있다.
 
@@ -63,7 +64,7 @@
 ### 부팅 데이터
 
 - boot wire v1은 `format: 'saylo-boot-v1'`에 `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas`(`CatalogSchema[]`), `catalogOutcomes`(`CatalogOutcome[]`)를 담는다. `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`이 공개 API다.
-- 현재 `catalogOutcome`은 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣고 loaded base+target pair의 present/missing을 빠짐없이 명시한다. decode는 누락·중복 outcome과 stamp·schema 불일치를 `INVALID_BOOT`로 거부하고, boot timeZone은 config와 일치해야 한다. [03-catalog-and-api.md](03-catalog-and-api.md)의 `CatalogRecord`·`Map` 모형은 초안이며 후속 단계다.
+- 현재 `catalogOutcome`은 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣고 loaded base+target pair의 present/missing을 빠짐없이 명시한다. decode는 누락·중복 outcome과 stamp·schema 불일치를 `INVALID_BOOT`로 거부하고, boot timeZone은 config와 일치해야 한다. 공개 UI snapshot은 `StoreSnapshot`이고 전송 단위는 `CatalogOutcome`이다. `CatalogRecord`·`Map` 모형은 쓰지 않는다.
 - `serializeBootSnapshot`은 모든 `<`를 `\u003c`로, U+2028·U+2029를 escape한다. `createServerI18n({ catalogSource, locale, initialNamespaces, timeZone?, requestTimeoutMs? })`는 async scope를 준비한 뒤 요청별 instance를 만들고, `getServerSnapshot`이 생성 시점 snapshot이므로 렌더 전에 scope를 확정하려면 이 factory를 쓴다. `virtual:saylo/server`는 플러그인 기본값을 적용하는 `createRequestI18n`과 서버용 `catalogSource`를 노출한다.
 - HTML에 넣는 JSON은 모든 `<`를 `\u003c`로 치환해 `</script>` 종료를 막는다.
 - 날짜·시간 인자로 Date를 받을 때 내부에서 현재 시각(`Date.now`/`currentTime`)을 만들지 않는다.

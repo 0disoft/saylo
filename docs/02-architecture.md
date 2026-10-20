@@ -77,13 +77,13 @@ delete, rename, add도 같은 경로를 탄다. 파일 삭제·이름 변경·�
 
 | 상태 | 담는 것 | 노출 |
 | --- | --- | --- |
-| transport 상태 (내부) | sessionId(개발 서버 세션, 운영 artifact ID), registryRevision, requestGeneration, patch buffer, (locale, namespace)별 알려진 catalogVersion과 tombstone, 진행 중 requestId | 공개하지 않는다 |
-| 카탈로그 레코드 (불변) | locale, namespace, catalogVersion, namespaceSchemaFingerprint, formatLocale(출처 locale), AST 메시지와 메시지 fingerprint | render가 읽는다 |
-| UI snapshot (공개) | locale, availableLocales, availableNamespaces, loadedNamespaces, stateRevision, render용 불변 카탈로그와 accepted base schema | 구독자에게 알린다 |
+| transport 상태 (내부) | sessionId(개발 서버 세션, 운영 artifact ID), registryRevision, requestGeneration, 최신 session/revision hint 하나, (locale, namespace)별 알려진 catalogVersion과 tombstone, 진행 중 requestId | 공개하지 않는다 |
+| 카탈로그 레코드 (불변) | `CatalogOutcome`의 present parsed catalog. locale, namespace, catalogVersion, namespaceSchemaFingerprint, AST와 인자 schema | 내부 render 상태다 |
+| UI snapshot (공개) | `StoreSnapshot`의 Translator 필드(locale, baseLocale, timeZone, t, tParts)와 stateRevision, availableLocales, availableNamespaces, loadedNamespaces | 구독자에게 알린다 |
 
 - `ReadonlyMap` 타입만으로 freeze되지 않는다. persistent 또는 copy-on-write로 이전 snapshot이 공유한 객체를 제자리에서 수정하지 않는다.
-- 미로드이거나 비활성인 locale 카탈로그 내용만 바뀌면 transport 상태만 바뀌고 UI snapshot 참조는 유지한다.
-- locale 목록이나 namespace 목록처럼 UI에 보이는 변화는 알림이 필요하다. 현재 locale 카탈로그나 base fallback 내용이 바뀌면 stateRevision을 올린다. registry revision, session, dirty 표시는 전송 타이밍 정보이므로 공개 UI 변경을 강제하지 않는다.
+- 미로드이거나 비활성인 locale 카탈로그 내용만 바뀌고 현재 번역·base fallback에 영향이 없으면 transport 상태만 바뀌고 UI snapshot 참조는 유지한다.
+- locale 목록이나 namespace 목록처럼 UI에 보이는 변화는 알림이 필요하다. 현재 locale 카탈로그나 base fallback 내용이 바뀌면 stateRevision을 올린다. registry revision, session, 캐시 version 불일치는 전송 타이밍 정보이므로 공개 UI 변경을 강제하지 않는다. 카탈로그와 base schema 자체는 공개 snapshot 필드가 아니라 내부 render 상태다.
 
 React selectors(`useI18nSelector`)와 Svelte selectors(`selectSvelteStore`·`getI18nSelector`)는 `0.1.0-alpha.4` 게시본에 있다. Vue selectors(`useI18nSelector`·`useVueSelector`)는 로컬 private workspace 구현이다. selector를 쓰지 않으면 같은 카탈로그를 쓰는 여러 컴포넌트가 함께 다시 렌더링될 수 있다.
 

@@ -183,14 +183,19 @@ argument 없는 키는 그대로 호출한다. `t("cart:title")`.
 
 `fallbackLocale` 옵션은 없다. 번역이 없으면 baseLocale 하나로 폴백한다. 다단계 fallback은 로딩·스키마·포맷 출처를 함께 설계할 때 별도로 다룬다.
 
-`freezeCatalogs`는 core 루트와 `/runtime`에서 제공하며 `0.1.0-alpha.2`부터 게시본에 포함된다. 선택 빌드 키는 현재 수동 `includeKeys` 목록으로만 지정한다. 소스 스캔 자동 추출이나 서버 push는 아직 구현하지 않았고, `includeKeys`도 `0.1.0-alpha.4` 게시본에는 없다.
+`freezeCatalogs`는 core 루트와 `/runtime`에서 제공하며 `0.1.0-alpha.2`부터 게시본에 포함된다.
+
+선택 빌드는 `includeKeys`로 정한다. 기존 `string[]` 목록 또는 `{ from: ['src'], dynamicKeys?: ['demo:key'] }` 객체를 받는다. 객체 경로는 Vite root 안의 파일·디렉터리이고, 실제 JS·TS·JSX·TSX·Vue·Svelte 스크립트와 template 표현식만 정적으로 분석한다. 코드는 실행하지 않으며, 일치 문자열과 `t`·`tParts` 별칭의 정적 호출, template prefix/suffix에 맞는 가능한 전체 키를 보존한다. 해결할 수 없는 동적 호출은 `dynamicKeys`가 없으면 빌드를 실패시킨다. symlink·root 밖 경로·파싱 오류도 거부한다.
+
+개발은 전체 카탈로그를 쓰고, production eager·lazy·SSR은 선택 키만 싣는다. typegen 선언은 전체 base schema를 유지한다. 이 기능은 게시본 `0.1.0-alpha.4`에 없다.
 
 ## 개발 연결 (virtual module)
 
 개발 서버는 세 가지를 클라이언트에 제공한다.
 
 - `virtual:saylo`: `initialCatalogs`(`ParsedCatalog[]`), `baseLocale`, `initialLocale`, `timeZone`을 내보낸다. 전체 registry를 한 번에 싣는 eager 경로다.
-- `virtual:saylo/lazy`: `initialCatalogs`(`CatalogOutcome[]`), `initialLocale`, `initialNamespaces`, `timeZone`, `catalogSource`를 내보낸다. `initialSnapshot`은 내보내지 않는다.
+- `virtual:saylo/lazy`: `initialCatalogs`(`CatalogOutcome[]`), `initialLocale`, `initialNamespaces`, `timeZone`, `catalogSource`를 내보낸다. `initialSnapshot`은 내보내지 않는다. 개발 source는 `{ push: true }`로 만든다.
+- 수동 `createDevCatalogSource`는 `push: true` opt-in이며 기본값은 `false`다. source는 `saylo:catalog-scope`로 owner·session·캐시 pair metadata를 등록하고, 서버는 `saylo:catalog-push`로 그 scope에서 바뀐 pair만 보낸다. payload는 `{ kind: "patch", owner, baseRevision, manifest, outcomes }`다.
 - `virtual:saylo/server`: `catalogSource`와 `createRequestI18n`을 내보낸다.
 - `catalogSource`(개발): 범용 `loadCatalog(locale, namespace)`가 현재 registry를 조회한다. 부팅 뒤에 새 namespace가 생겨도 기존 namespace별 loader map에 항목이 없어서 실패하지 않는다.
 - `connectDev(instance, { catalogSource })`: lazy instance를 갱신 대상으로 등록한다. eager store는 `connectDev(store)`를 쓴다. 이 호출이 없으면 plugin은 어느 store에 이벤트를 적용할지 알 수 없다. 개발에서만 호출한다.
