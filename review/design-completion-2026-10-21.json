@@ -1,0 +1,311 @@
+{
+  "schema": "saylo.design-completion/v1",
+  "dateKST": "2026-10-21",
+  "checkedAt": "2026-10-20T18:37:54.685Z",
+  "sourceCommit": "47658700846e213b0d1b789d736001a86fa0ca42",
+  "scope": "Remaining design work: automatic key discovery, subscribed push delivery, current documentation and a newly validated local alpha.5 candidate.",
+  "requirements": [
+    {
+      "id": "automatic-key-discovery",
+      "state": "verified",
+      "sources": [
+        "packages/vite/src/auto-keys.ts",
+        "packages/vite/src/auto-key-sources.ts"
+      ],
+      "tests": [
+        "packages/vite/test/auto-keys.test.mjs",
+        "packages/vite/test/build-keys.test.mjs"
+      ],
+      "coverage": [
+        "JS/TS/JSX/TSX/Vue/Svelte",
+        "dynamic-key fail-closed override",
+        "bound translators",
+        "watch source/catalog changes",
+        "eager/lazy/SSR",
+        "unchanged full typegen",
+        "external installed package"
+      ]
+    },
+    {
+      "id": "subscribed-server-push",
+      "state": "verified",
+      "sources": [
+        "packages/vite/src/catalog-push.ts",
+        "packages/vite/src/catalog-source.ts"
+      ],
+      "tests": [
+        "packages/vite/test/push.test.mjs"
+      ],
+      "coverage": [
+        "cached-pair-only payloads",
+        "one atomic UI publication",
+        "base schema and translation quarantine",
+        "corrupt or lost push resync",
+        "multiple sources sharing one socket",
+        "scope disposal",
+        "deletion and recreation",
+        "reconnection and old revision rejection",
+        "real installed watcher/WebSocket without catalog request"
+      ]
+    },
+    {
+      "id": "current-design-and-consumer-docs",
+      "state": "verified",
+      "sources": [
+        "docs/01-product-and-scope.md",
+        "docs/02-architecture.md",
+        "docs/03-catalog-and-api.md",
+        "docs/04-live-update-and-types.md",
+        "docs/05-build-and-ssr.md",
+        "docs/07-decisions.md",
+        "docs/08-update-protocol.md",
+        "packages/vite/README.md",
+        "README.md"
+      ],
+      "coverage": [
+        "current public API and virtual exports",
+        "framework and selector status",
+        "current push protocol replacing old Map-based draft",
+        "README below 40KB",
+        "bundled consumer documentation"
+      ]
+    },
+    {
+      "id": "latest-local-release-candidate",
+      "state": "verified",
+      "candidate": ".release/candidate-0.1.0-alpha.5-OTQgQh",
+      "version": "0.1.0-alpha.5",
+      "validationSha256": "dfb69b7e039a77bdee8e09fdb40b915fb559521bcda393c563f514f21d7ae427",
+      "frozenInputs": 1111,
+      "artifacts": [
+        {
+          "name": "@0disoft/saylo-core",
+          "version": "0.1.0-alpha.5",
+          "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+          "integrity": "sha512-1EWMq3RUHiQv/FTFm1CyBF9piK6FHRqO9yVxkkUdJ1AK6Ny68Ch15EctxHj2osM5be7Bqw5ykobwhN1u7jCFoA=="
+        },
+        {
+          "name": "@0disoft/saylo-react",
+          "version": "0.1.0-alpha.5",
+          "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+          "integrity": "sha512-/yjg5izz6dMTH2qHHFJ0rrbJlSeEmIuoys8JS11WIewQwAzFsZKP3pzW46jnWlc3fyGus3HsRI1nkxVZJ2gdAA=="
+        },
+        {
+          "name": "@0disoft/saylo-svelte",
+          "version": "0.1.0-alpha.5",
+          "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+          "integrity": "sha512-i2PhMDimdtI2GQfBNZBLguGiRttBIJEFu4NlywcbT1/P0Af6sfs/fiGwduaxjptYjj4eoGFE5+ew3cu8p5C7lA=="
+        },
+        {
+          "name": "@0disoft/saylo-typegen",
+          "version": "0.1.0-alpha.5",
+          "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+          "integrity": "sha512-+XNgUTu94LQIj5plcQ4grptSAml6Txt2nCJWvMxjf7YwQU1HxcBsfwnP+9rvzw89OXAhlfY6d94vap6/xGIwZg=="
+        },
+        {
+          "name": "@0disoft/saylo-vite",
+          "version": "0.1.0-alpha.5",
+          "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+          "integrity": "sha512-9SBqZ1d1y9DaqkXCHloh8tr8ij5f4TGtlU/68UjozZ4OFSjh29zXZ25hgjJLA1+79jQUSDRl2FrpFZ39dbcHOg=="
+        }
+      ],
+      "checks": [
+        {
+          "name": "install",
+          "command": [
+            "npm",
+            "ci",
+            "--ignore-scripts",
+            "--no-audit",
+            "--no-fund"
+          ],
+          "exitCode": 0,
+          "durationMs": 28052
+        },
+        {
+          "name": "check",
+          "command": [
+            "npm",
+            "run",
+            "check"
+          ],
+          "exitCode": 0,
+          "durationMs": 70943
+        },
+        {
+          "name": "release-metadata",
+          "command": [
+            "npm",
+            "run",
+            "release:check",
+            "--",
+            "--version",
+            "0.1.0-alpha.5",
+            "--tag",
+            "alpha"
+          ],
+          "exitCode": 0,
+          "durationMs": 890
+        },
+        {
+          "name": "pack",
+          "command": [
+            "npm",
+            "exec",
+            "--",
+            "node",
+            "scripts/pack-smoke.mjs",
+            "--save-release"
+          ],
+          "exitCode": 0,
+          "durationMs": 58927
+        },
+        {
+          "name": "publish-plan",
+          "command": [
+            "npm",
+            "run",
+            "release:publish",
+            "--",
+            "--version",
+            "0.1.0-alpha.5",
+            "--tag",
+            "alpha"
+          ],
+          "exitCode": 0,
+          "durationMs": 1143
+        }
+      ],
+      "supplementalChecks": [
+        {
+          "file": "pack.log",
+          "directory": ".release/candidate-0.1.0-alpha.5-OTQgQh/validation-jCbDZy",
+          "reused": false,
+          "proof": "Installed automatic key analysis/build and real Vite watcher/WebSocket push passed",
+          "kind": "installed-package-automatic-selection-and-live-push",
+          "sha256": "1bb121531efab8de2de5202fcd80f3f11c9391380af9e37ec1a104ba9e0bd650"
+        },
+        {
+          "file": "sveltekit.log",
+          "directory": ".release/candidate-0.1.0-alpha.5-cTL2wz/validation-4WF2wD",
+          "reused": true,
+          "proof": "Five tarballs: independent install, typecheck, client/SSR build, dev lifecycle and production HTTP/browser passed.",
+          "kind": "sveltekit-installed-ssr-hydration-navigation-and-cleanup",
+          "sha256": "81f23bf40b508532045d1acbf0dd8ae58ea78b75a5afc9f850ff4b138fd9e4cf"
+        },
+        {
+          "file": "vue-pack.log",
+          "directory": ".release/candidate-0.1.0-alpha.5-cTL2wz/validation-4WF2wD",
+          "reused": true,
+          "proof": "Independent JS/TS Vue tarball and concurrent SSR passed",
+          "kind": "vue-installed-js-ts-and-concurrent-ssr",
+          "sha256": "19c0caf98be84b4be927174d0274e64ff785222eed9eec452962db18cb1e9353"
+        }
+      ],
+      "supplementalReuse": {
+        "oldSourceCommit": "404a6f364cb146fec6bed706a8d5c96fec1b80a0",
+        "sourceCommit": "47658700846e213b0d1b789d736001a86fa0ca42",
+        "comparisons": [
+          {
+            "name": "@0disoft/saylo-core",
+            "identical": true,
+            "changedFiles": []
+          },
+          {
+            "name": "@0disoft/saylo-react",
+            "identical": true,
+            "changedFiles": []
+          },
+          {
+            "name": "@0disoft/saylo-svelte",
+            "identical": true,
+            "changedFiles": []
+          },
+          {
+            "name": "@0disoft/saylo-typegen",
+            "identical": true,
+            "changedFiles": []
+          },
+          {
+            "name": "@0disoft/saylo-vite",
+            "identical": false,
+            "changedFiles": [
+              "package/dist/auto-key-sources.d.ts",
+              "package/dist/auto-key-sources.js",
+              "package/dist/auto-keys.js"
+            ]
+          }
+        ],
+        "supplementalReuse": {
+          "sveltekit": {
+            "log": ".release/candidate-0.1.0-alpha.5-cTL2wz/validation-4WF2wD/sveltekit.log",
+            "reason": "Four public archives are byte-identical; Vite differs only in automatic source analysis files. The verified SvelteKit configuration does not enable includeKeys, and all plugin/client/push/SSR code and shipped dependency metadata are byte-identical."
+          },
+          "vue": {
+            "log": ".release/candidate-0.1.0-alpha.5-cTL2wz/validation-4WF2wD/vue-pack.log",
+            "reason": "Vue source and distribution and core archive are unchanged. Only Vite automatic source analysis changed, which the Vue pack test does not import."
+          }
+        },
+        "vueIdenticalFiles": [
+          "package.json",
+          "README.md",
+          "LICENSE",
+          "NOTICE",
+          "dist/index.d.ts",
+          "dist/index.js",
+          "dist/rich-text.d.ts",
+          "dist/rich-text.js"
+        ]
+      }
+    }
+  ],
+  "totalTests": 325,
+  "testGroups": [
+    8,
+    91,
+    17,
+    15,
+    13,
+    156,
+    17,
+    8
+  ],
+  "originalPackages": {
+    "core": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "react": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "svelte": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "typegen": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "vite": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "vue": {
+      "version": "0.1.0-alpha.4",
+      "private": true
+    }
+  },
+  "boundaries": {
+    "sourceVersionsChanged": false,
+    "vueRemainsPrivate": true,
+    "pushPublishOrCIDispatch": false,
+    "publication": "Withheld per user instruction; registry state was not queried.",
+    "multiStageLocaleFallback": "Outside current scope; baseLocale-only design retained.",
+    "automaticHTMLInjection": "Outside current scope; app-controlled rich-text renderers retained."
+  },
+  "limits": [
+    "No new latency benchmark or cross-browser/screen-reader certification is claimed.",
+    "The frozen candidate includes code/docs through sourceCommit; later release-plan and audit records document this result."
+  ]
+}
