@@ -2,7 +2,7 @@ import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
 import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
 import { EagerSync } from './dev-sync.js';
 import type { DevSyncState } from './dev-sync.js';
-import { catalogId as id, immutable, matches } from './catalog-outcome.js';
+import { catalogId as id, catalogMetadata, immutable, matches } from './catalog-outcome.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';
 import type { CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, ManifestEvent } from './types.js';
 import { applyCatalogPatch } from './catalog-patch.js';
@@ -139,8 +139,9 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
           manifest = next;
           ready = true;
           // Keep one stale present baseline per available pair for request-scoped deltas.
+          const metadata = catalogMetadata(manifest);
           for (const [key, result] of cache) if (result.sessionId !== manifest.sessionId ||
-              !manifest.catalogs.some(meta => id(meta.key) === key && meta.status === 'present')) cache.delete(key);
+              metadata.get(key)?.status !== 'present') cache.delete(key);
           if (changed) for (const listener of [...listeners]) {
             if (disposed || !listeners.has(listener)) continue;
             try { listener(); }

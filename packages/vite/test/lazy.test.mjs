@@ -58,6 +58,28 @@ test('lazy connection fetches only the selected scope and newly requested namesp
   assert.ok(Object.isFrozen(f.source.getCatalogs()[0].messages.title.ast));
 });
 
+test('manifest cleanup keeps stale present baselines and removes cached pairs from deleted namespaces', async t => {
+  const f = fixture(t);
+  connectDev(f.instance, { catalogSource: f.source });
+  await f.instance.setLocale('en');
+  await f.instance.loadNamespace('help');
+  assert.equal(f.source.getCatalogs().length, 4);
+  const previous = f.registry().load('en', 'demo');
+  f.delay(true);
+  f.replace([catalog('한국어'), catalog('Updated English', 'en')]);
+  assert.deepEqual(f.source.getCatalogs().map(c => [c.locale, c.namespace]), [['ko', 'demo']],
+    'Removed pairs and stale translations are hidden from the accepted catalog list');
+  await tick();
+  const request = f.delayed.find(reply => reply.request.locale === 'en').request;
+  assert.deepEqual(request.known, { sessionId: previous.sessionId, catalogVersion: previous.catalogVersion },
+    'The last present version remains available for delta requests until its replacement arrives');
+  f.delay(false);
+  for (const reply of f.delayed.splice(0)) f.hot.emit(CATALOG_EVENT, reply);
+  await tick();
+  assert.equal(f.instance.t('demo:title'), 'Updated English');
+  assert.deepEqual(f.instance.getSnapshot().loadedNamespaces, ['demo']);
+});
+
 test('initial lazy update and diagnostic observer failures retain the binding and subsequent locale intent', async t => {
   const f = fixture(t);
   const diagnostics = [];

@@ -1,6 +1,6 @@
 import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
 import type { CatalogKey, CatalogManifest, CatalogOutcome } from '@0disoft/saylo-core';
-import { catalogId as id, immutable, matches } from './catalog-outcome.js';
+import { catalogId as id, catalogMetadata, immutable, matches } from './catalog-outcome.js';
 import type { DevCatalogSource } from './catalog-source.js';
 
 export interface StaticCatalogLoader {
@@ -15,7 +15,7 @@ const invalid = () => new CatalogLoadError('INVALID_STATIC_CATALOG', 'Static cat
 export function createStaticCatalogSource(initial: CatalogManifest, initialCatalogs: readonly CatalogOutcome[],
   entries: readonly StaticCatalogLoader[]): DevCatalogSource {
   const manifest = validateCatalogManifest(initial);
-  const metadata = new Map(manifest.catalogs.map(meta => [id(meta.key), meta]));
+  const metadata = catalogMetadata(manifest);
   const cache = new Map<string, CatalogOutcome>();
   const loaders = new Map<string, StaticCatalogLoader['load']>();
   const flights = new Map<string, Promise<CatalogOutcome>>();
