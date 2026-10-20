@@ -34,9 +34,10 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     if (!manifest.availableNamespaces.includes(namespace)) throw new RangeError('Initial namespace is outside the manifest.');
   }
   const initialKeys = scopeKeys(manifest, desiredLocale, [...desiredNamespaces].sort());
+  const initialKeyIndex = new Map(initialKeys.map(key => [keyId(key), key]));
   const initial = new Map<string, CatalogOutcome>();
   for (const outcome of decoded?.catalogOutcomes ?? options.initialCatalogs!) {
-    const key = initialKeys.find(key => outcome?.key && keyId(key) === keyId(outcome.key));
+    const key = outcome?.key && initialKeyIndex.get(keyId(outcome.key));
     if (!key || initial.has(keyId(key))) throw new CatalogLoadError('INVALID_INITIAL_STATE', 'Unexpected or duplicate initial catalog outcome.');
     initial.set(keyId(key), acceptOutcome(manifest, key, outcome));
   }

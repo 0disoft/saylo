@@ -240,6 +240,21 @@ test('incompatible translations do not publish a mixed schema candidate', async 
   assert.equal(i18n.t('common:title'), 'Recovered');
 });
 
+test('initial multi-namespace outcomes can arrive out of order but must belong to the requested scope', t => {
+  const { config, outcome } = fixture(t);
+  const options = { ...config, locale: 'en', initialNamespaces: ['cart', 'common'],
+    initialCatalogs: [outcome('en', 'common'), outcome('ko', 'cart'), outcome('en', 'cart'), outcome('ko', 'common')] };
+  const instance = createI18n(options);
+  t.after(() => instance.dispose());
+  assert.equal(instance.t('common:title'), 'English');
+  assert.equal(instance.t('cart:title'), 'Cart');
+  assert.deepEqual(instance.getSnapshot().loadedNamespaces, ['cart', 'common']);
+  assert.throws(() => createI18n({ ...options,
+    initialCatalogs: [...options.initialCatalogs, outcome('fr', 'common')] }), /Unexpected or duplicate initial/);
+  assert.throws(() => createI18n({ ...options,
+    initialCatalogs: [...options.initialCatalogs.slice(0, 3), outcome('ko', 'cart')] }), /Unexpected or duplicate initial/);
+});
+
 test('initial scope must explicitly contain every outcome and matching schema metadata', t => {
   const { config, outcome } = fixture(t);
   assert.throws(() => createI18n({ ...config, locale: 'fr', initialCatalogs: [outcome('ko', 'common')] }), /every base and target/);
