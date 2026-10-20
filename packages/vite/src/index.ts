@@ -40,7 +40,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   if (options.requireCompleteTranslations !== undefined && typeof options.requireCompleteTranslations !== 'boolean') {
     throw new TypeError('requireCompleteTranslations must be a boolean.');
   }
-  const baseLocale = Intl.getCanonicalLocales(options.baseLocale)[0];
+  const baseLocale = Intl.getCanonicalLocales(options.baseLocale)[0] ?? '';
   if (!baseLocale) throw new RangeError('baseLocale must not be empty.');
   const initialLocale = Intl.getCanonicalLocales(options.initialLocale ?? baseLocale)[0]!;
   if (!initialLocale) throw new RangeError('initialLocale must not be empty.');
@@ -52,6 +52,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let registry: CatalogRegistry;
   let production = false;
   let buildCatalogs: readonly ParsedCatalog[] | undefined;
+  const keySources = new Set<string>();
+  let builds = 0;
   const chunks = new Map<string, CatalogOutcome>();
   let revision = 0;
   let server: ViteDevServer | undefined;
@@ -116,6 +118,19 @@ export default function saylo(options: SayloViteOptions): Plugin {
     typegenRequest++;
     await generator?.stop();
   }
+  async function prepareBuild() {
+    keySources.clear();
+    const selectedKeys = production && autoKeys ? await findIncludedKeys(buildRoot,
+      snapshot().catalogs, baseLocale, autoKeys, file => keySources.add(file)) : includeKeys;
+    buildCatalogs = production ? selectBuildCatalogs(snapshot().catalogs, baseLocale, selectedKeys) : undefined;
+    registry = new CatalogRegistry(sessionId, baseLocale, buildCatalogs ?? snapshot().catalogs);
+    chunks.clear();
+    if (production) for (const meta of registry.manifest().catalogs) {
+      if (meta.status === 'present') chunks.set(`${CHUNK}${encodeURIComponent(meta.key.locale)}/${encodeURIComponent(meta.key.namespace)}`,
+        registry.load(meta.key.locale, meta.key.namespace));
+    }
+  }
+  let buildRoot = '';
   return {
     name: 'saylo',
     enforce: 'pre',
@@ -129,6 +144,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
         ...(generatedOut ? { server: { watch: { ignored: [(file: string) => isTypegenFile(file)] } } } : {}) };
     },
     async configResolved(config) {
+      buildRoot = config.root;
       const scanned = await scanCatalogs(path.resolve(config.root, options.localesDir));
       root = scanned.root;
       files = new Map(scanned.files.map(f => [f.file, f]));
@@ -141,19 +157,25 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (strictBuild) {
         await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
       }
-      const selectedKeys = production && autoKeys ? await findIncludedKeys(config.root, snapshot().catalogs, baseLocale, autoKeys) : includeKeys;
-      buildCatalogs = production ? selectBuildCatalogs(snapshot().catalogs, baseLocale, selectedKeys) : undefined;
-      registry = new CatalogRegistry(sessionId, baseLocale, buildCatalogs ?? snapshot().catalogs);
-      chunks.clear();
-      if (production) for (const meta of registry.manifest().catalogs) {
-        if (meta.status === 'present') chunks.set(`${CHUNK}${encodeURIComponent(meta.key.locale)}/${encodeURIComponent(meta.key.namespace)}`,
-          registry.load(meta.key.locale, meta.key.namespace));
-      }
+      await prepareBuild();
       if (options.typegen) {
         generatedOut = path.resolve(config.root, options.typegen.outFile);
         typegen = new TypeGenerator(generatedOut);
         try { await typegen.update(snapshot().catalogs.filter(c => c.locale === baseLocale).map(createBaseSchema)); }
         catch (error) { await cleanup(); throw error; }
+      }
+    },
+    async buildStart() {
+      if (!production || !autoKeys || builds++ === 0) return;
+      const scanned = await scanCatalogs(root);
+      files = new Map(scanned.files.map(file => [file.file, file]));
+      createStore({ baseLocale, locale: options.requireCompleteTranslations ? baseLocale : initialLocale,
+        catalogs: snapshot().catalogs, timeZone }).dispose();
+      if (options.requireCompleteTranslations) await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
+      await prepareBuild();
+      if (options.typegen) {
+        typegen ??= new TypeGenerator(generatedOut!);
+        await typegen.update(snapshot().catalogs.filter(catalog => catalog.locale === baseLocale).map(createBaseSchema));
       }
     },
     resolveId(id, importer) {
@@ -164,6 +186,11 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (production && options.astRuntime !== false) return astFormatter.resolve(id, importer, this);
     },
     load(id) {
+      if (production && autoKeys && ([RESOLVED, RESOLVED_LAZY, RESOLVED_SERVER].includes(id) || chunks.has(id.startsWith('\0') ? id.slice(1) : id))) {
+        for (const source of keySources) this.addWatchFile?.(source);
+        this.addWatchFile?.(root);
+        for (const file of files.keys()) this.addWatchFile?.(file);
+      }
       if (production && options.astRuntime !== false) {
         const ast = astFormatter.load(id);
         if (ast) return ast;

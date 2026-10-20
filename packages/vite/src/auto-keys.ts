@@ -36,7 +36,8 @@ export function readAutoKeys(value: unknown): AutoIncludeKeys | undefined {
 }
 
 /** Conservative source selection: matching literals may retain extra keys, never execute app code. */
-export async function findIncludedKeys(root: string, catalogs: readonly ParsedCatalog[], baseLocale: string, config: AutoIncludeKeys): Promise<readonly string[]> {
+export async function findIncludedKeys(root: string, catalogs: readonly ParsedCatalog[], baseLocale: string, config: AutoIncludeKeys,
+  onSource: (file: string) => void = () => {}): Promise<readonly string[]> {
   const available = new Set(catalogs.filter(c => c.locale === baseLocale).flatMap(c => Object.keys(c.messages).map(id => `${c.namespace}:${id}`)));
   const selected = new Set(config.dynamicKeys ?? []);
   const paths = new Set<string>();
@@ -47,6 +48,7 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
     const info = await lstat(file);
     if (info.isSymbolicLink()) throw new Error(`[saylo:auto-keys] Source symlinks are not supported: ${file}`);
     if (!inside(await realpath(file))) throw new Error(`[saylo:auto-keys] Source resolves outside Vite root: ${file}`);
+    onSource(file);
     if (info.isDirectory()) {
       for (const entry of (await readdir(file, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name))) {
         if (!ignored.has(entry.name) && !entry.name.startsWith('.')) await scan(path.join(file, entry.name));

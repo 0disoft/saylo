@@ -48,7 +48,7 @@
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": {
-    "@babel/parser": "8",
+    "@babel/parser": "7",
     "@0disoft/saylo-core": "0.1.0-alpha.4",
     "@0disoft/saylo-typegen": "0.1.0-alpha.4"
   },

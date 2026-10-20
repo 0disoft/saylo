@@ -92,3 +92,49 @@ export const dynamic = (key: string) => store.t(key);`);
   assert.throws(() => app.dynamic('demo:unused'), { name: 'UnknownMessageError' });
   assert.match(await readFile(path.join(root, 'generated.d.ts'), 'utf8'), /demo:unused/);
 });
+
+test('Vite watch rebuilds reanalyze edited source keys and fresh catalog contents', { timeout: 20000 }, async t => {
+  const root = await fixture(t);
+  await mkdir(path.join(root, 'locales/ko'), { recursive: true });
+  const catalog = path.join(root, 'locales/ko/demo.json');
+  await writeFile(catalog, JSON.stringify({ title: 'WATCH_TITLE_MARKER', two: 'WATCH_TWO_MARKER', unused: 'WATCH_UNUSED_MARKER' }));
+  const main = path.join(root, 'src/main.ts');
+  const entry = key => `import { createStore } from '@0disoft/saylo-core/runtime';
+import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
+const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale });
+export const value = () => store.t('${key}');`;
+  await writeFile(main, entry('demo:title'));
+  const outputs = [], failures = [];
+  const watcher = await build({ configFile: false, root, logLevel: 'silent',
+    plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', includeKeys: { from: ['src'] }, typegen: { outFile: 'generated.d.ts' } }),
+      { name: 'watch-evidence', generateBundle(_options, bundle) { outputs.push(Object.values(bundle).filter(value => value.type === 'chunk').map(value => value.code).join('\n')); } }],
+    resolve: { alias: { '@0disoft/saylo-core/runtime': fileURLToPath(new URL('../../core/dist/runtime.js', import.meta.url)),
+      '@0disoft/saylo-vite/client': fileURLToPath(new URL('../dist/client.js', import.meta.url)) } },
+    build: { outDir: 'out', watch: {}, minify: false, rolldownOptions: { input: main, preserveEntrySignatures: 'strict' } } });
+  watcher.on('event', event => {
+    if (event.code === 'ERROR') failures.push(event.error);
+    if (event.code === 'BUNDLE_END') void event.result.close();
+  });
+  async function waitFor(count) {
+    const deadline = Date.now() + 5000;
+    while (outputs.length < count && !failures.length && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 25));
+    if (failures.length) throw failures[0];
+    assert.ok(outputs.length >= count, `Expected watch build ${count}; got ${outputs.length}`);
+  }
+  try {
+    await waitFor(1);
+    assert.match(outputs.at(-1), /WATCH_TITLE_MARKER/);
+    assert.doesNotMatch(outputs.at(-1), /WATCH_TWO_MARKER|WATCH_UNUSED_MARKER/);
+    const before = outputs.length;
+    await writeFile(main, entry('demo:two'));
+    await waitFor(before + 1);
+    assert.match(outputs.at(-1), /WATCH_TWO_MARKER/);
+    assert.doesNotMatch(outputs.at(-1), /WATCH_TITLE_MARKER|WATCH_UNUSED_MARKER/);
+    const next = outputs.length;
+    await writeFile(catalog, JSON.stringify({ title: 'WATCH_TITLE_MARKER', two: 'WATCH_UPDATED_MARKER', added: 'new type' }));
+    await waitFor(next + 1);
+    assert.match(outputs.at(-1), /WATCH_UPDATED_MARKER/);
+    assert.doesNotMatch(outputs.at(-1), /WATCH_TWO_MARKER/);
+    assert.match(await readFile(path.join(root, 'generated.d.ts'), 'utf8'), /demo:added/);
+  } finally { await watcher.close(); }
+});
