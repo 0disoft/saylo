@@ -207,6 +207,11 @@ try {
       const rich = await exec(process.execPath, ['rich-text.mjs'], { cwd: app, windowsHide: true, env: childEnv });
       console.log(rich.stdout.trim());
     }
+    if (!fromRegistry && language === 'js') {
+      await cp(path.join(fixtures, 'catalog-features.mjs'), path.join(app, 'catalog-features.mjs'));
+      console.log((await exec(process.execPath, ['catalog-features.mjs'],
+        { cwd: app, windowsHide: true, env: childEnv, maxBuffer: 1024 * 1024 })).stdout.trim());
+    }
     console.log((await npm(['run', 'typegen'], app)).trim());
     assert.match(await readFile(path.join(app, 'generated.d.ts'), 'utf8'), /"demo:items": \{ "count": number;/);
     await npm(['run', 'typecheck'], app);
