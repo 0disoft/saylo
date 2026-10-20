@@ -128,6 +128,21 @@ test('production SSR uses filtered boot schemas for concurrent locale requests',
   }
 });
 
+test('automatic source selection reaches lazy locale chunks and concurrent server boot data', async t => {
+  const root = await fixture(t);
+  const options = { includeKeys: { from: ['main.mjs', 'server.mjs'] } };
+  const client = await output(root, 'auto-client', options);
+  t.after(() => { client.module.eagerStore.dispose(); client.module.lazy.dispose(); });
+  await client.module.lazy.setLocale('en');
+  assert.equal(client.module.lazy.t('demo:title'), 'en title');
+  assert.throws(() => client.module.lazy.t('demo:drop0'), { name: 'UnknownMessageError' });
+  assert.ok(client.chunks.every(chunk => !chunk.code.includes('DROP_MARKER')));
+  const server = await output(root, 'auto-ssr', options, true);
+  const responses = await Promise.all(['ko', 'en'].map(locale => server.module.render(locale)));
+  assert.deepEqual(responses.map(value => value.title), ['ko title', 'en title']);
+  for (const response of responses) assert.deepEqual(Object.keys(response.boot.baseSchemas[0].keys), ['title']);
+});
+
 test('unknown keys fail before typegen; pruning cannot hide ordinary or strict source validation errors', async t => {
   const root = await fixture(t);
   const out = path.join(root, 'generated.d.ts'); await writeFile(out, '// Preserve previous types');
