@@ -139,6 +139,26 @@ test('a text-only live edit restores a deleted declaration without delaying cata
   assert.deepEqual(warnings, []);
 });
 
+test('an identical valid save repairs type output without republishing catalogs or triggering reload', async t => {
+  const { root, change, request, events, warnings } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
+  const out = path.join(root, 'generated.d.ts');
+  const original = await readFile(out, 'utf8');
+  await rm(out);
+  events.length = 0;
+  await change('ko', JSON.stringify({ hello: 'ko {name}' }));
+  assert.equal(request()[0].data.revision, 0);
+  const deadline = Date.now() + 10000;
+  while (true) {
+    try { await stat(out); break; }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    assert.ok(Date.now() < deadline, 'identical save restores type output');
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  assert.equal(await readFile(out, 'utf8'), original);
+  assert.equal(events.filter(event => event.event === SNAPSHOT_EVENT || event.event === MANIFEST_EVENT || event.type === 'full-reload').length, 0);
+  assert.deepEqual(warnings, []);
+});
+
 test('failed live type generation retries an identical save without republishing catalogs', async t => {
   const { root, change, request, warnings, events } = await setup(t, { typegen: { outFile: 'generated.d.ts' } });
   const out = path.join(root, 'generated.d.ts');

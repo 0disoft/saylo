@@ -216,7 +216,8 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
           server?.ws.send({ type: 'custom', event: MANIFEST_EVENT, data: { kind: 'update', baseRevision: revision - 1, manifest: registry.manifest() } });
         }
         const generator = typegen;
-        if (generator && (changed || typegenPending)) {
+        // A valid identical save can repair deleted output without publishing a catalog revision.
+        if (generator && (changed || typegenPending || nextDiagnostic.message === '')) {
           typegenPending = true;
           const request = ++typegenRequest;
           void generator.update(live!.getAcceptedSchemas()).then(() => {
