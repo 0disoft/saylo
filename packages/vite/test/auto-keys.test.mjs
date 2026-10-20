@@ -74,6 +74,10 @@ test('bound translators and call/apply aliases cannot silently drop dynamic keys
   await rm(file);
   await writeFile(path.join(root, 'src/View.svelte'), `{#each items as item (t('demo:title'))}<p>{item}</p>{/each}`);
   assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), ['demo:title']);
+  await writeFile(path.join(root, 'src/View.svelte'), `{#snippet row(label = t('demo:two'))}<p>{label}</p>{/snippet}`);
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), ['demo:two']);
+  await writeFile(path.join(root, 'src/View.vue'), '<template src="./external.html" />');
+  await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /External SFC/);
 });
 
 test('real automatic production builds prune unused messages and preserve translation, fallback, types and dynamic overrides', async t => {

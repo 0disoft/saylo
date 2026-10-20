@@ -38,6 +38,8 @@ export function sourceTrees(source: string, file: string): SourceNode[] {
   };
   if (!/\.(?:vue|svelte)$/.test(file)) { add(source); return result; }
   let markup = source.replace(/<!--[^]*?-->/g, '');
+  if (/<(?:script|template)\b[^>]*\bsrc\s*=/i.test(markup))
+    throw new Error(`[saylo:auto-keys] External SFC script/template sources in ${file} need an explicit includeKeys list.`);
   markup = markup.replace(/<(script|style)\b[^>]*>([^]*?)<\/\1\s*>/gi, (_whole, tag: string, body: string) => {
     if (tag.toLowerCase() === 'script') add(body);
     return '';
@@ -67,7 +69,8 @@ export function sourceTrees(source: string, file: string): SourceNode[] {
     if (depth) throw new Error(`[saylo:auto-keys] Unclosed template expression in ${file}.`);
     let expression = markup.slice(start + 1, end - 1).trim();
     start = end - 1;
-    if (/^(?:\/|:else\s*$|:then\b|:catch\b|#snippet\b)/.test(expression)) continue;
+    if (expression.startsWith('#snippet ')) { add(`function ${expression.slice(9)} {}`); continue; }
+    if (/^(?:\/|:else\s*$|:then\b|:catch\b)/.test(expression)) continue;
     expression = expression.replace(/^:else\s+if\s+/, '').replace(/^#(?:if|key|await)\s+/, '')
       .replace(/^@(?:html|render|debug)\s+/, '');
     if (expression.startsWith('#each ')) {
