@@ -7,6 +7,32 @@ import { isCatalogRequest } from '../dist/types.js';
 const parse = source => parseCatalog(source, { locale: 'ko', namespace: 'demo' });
 const stamp = outcome => ({ sessionId: outcome.sessionId, catalogVersion: outcome.catalogVersion });
 
+test('registry lookup follows a newer base schema even when the translation version stays unchanged', () => {
+  const base = parse('{"x":"hello"}');
+  const translated = parseCatalog('{"x":"translated"}', { locale: 'en', namespace: 'demo' });
+  const registry = new CatalogRegistry('one', 'ko', [base, translated]);
+  const before = registry.load('en', 'demo');
+  const previousManifest = registry.manifest();
+  const nextBase = parse('{"x":"hello {name}"}');
+  registry.replace([nextBase, translated]);
+  const next = registry.load('en', 'demo');
+  assert.equal(next.catalogVersion, before.catalogVersion);
+  assert.equal(next.namespaceSchemaFingerprint, createBaseSchema(nextBase).fingerprint);
+  assert.notEqual(next.namespaceSchemaFingerprint, before.namespaceSchemaFingerprint);
+  assert.equal(previousManifest.catalogs.find(meta => meta.key.locale === 'en').namespaceSchemaFingerprint,
+    before.namespaceSchemaFingerprint);
+  registry.replace([nextBase]);
+  const removed = registry.load('en', 'demo');
+  assert.equal(removed.status, 'missing');
+  assert.ok(removed.catalogVersion > before.catalogVersion);
+  registry.replace([nextBase, translated]);
+  const restored = registry.load('en', 'demo');
+  assert.equal(restored.status, 'present');
+  assert.ok(restored.catalogVersion > removed.catalogVersion);
+  assert.equal(restored.namespaceSchemaFingerprint, next.namespaceSchemaFingerprint);
+  assert.equal(registry.load('fr', 'unknown').catalogVersion, 0);
+});
+
 test('wire deltas carry additions, removals and positions while preserving literal prototype-like IDs', () => {
   const before = parse('{"__proto__":"first","keep":"{name}","remove":"old"}');
   const after = parse('{\n"keep":"{name}","__proto__":"edited","constructor":"new"\n}');

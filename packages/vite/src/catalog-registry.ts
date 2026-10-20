@@ -2,8 +2,8 @@ import { createBaseSchema } from '@0disoft/saylo-core';
 import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome, ParsedCatalog } from '@0disoft/saylo-core';
 import { createCatalogPatch } from './catalog-patch.js';
 import type { CatalogPatch, CatalogStamp } from './catalog-patch.js';
+import { catalogId as id, catalogMetadata } from './catalog-outcome.js';
 
-const id = (key: CatalogKey) => JSON.stringify([key.locale, key.namespace]);
 // Positions belong to the version too, so a delta always has an exact baseline.
 function equivalent(before: ParsedCatalog, after: ParsedCatalog) {
   if (before.sourceName !== after.sourceName || Object.keys(before.messages).length !== Object.keys(after.messages).length) return false;
@@ -71,9 +71,10 @@ export class CatalogRegistry {
 
   load(locale: string, namespace: string): CatalogOutcome {
     const key = { locale, namespace };
-    const record = this.records.get(id(key));
-    const version = this.versions.get(id(key))?.version ?? 0;
-    const schema = this.current.catalogs.find(c => c.key.locale === locale && c.key.namespace === namespace);
+    const pair = id(key);
+    const record = this.records.get(pair);
+    const version = this.versions.get(pair)?.version ?? 0;
+    const schema = catalogMetadata(this.current).get(pair);
     return Object.freeze({ sessionId: this.sessionId, key: Object.freeze(key), catalogVersion: version,
       ...(record && schema?.status === 'present' ? { status: 'present' as const, namespaceSchemaFingerprint: schema.namespaceSchemaFingerprint,
         catalog: record } : { status: 'missing' as const }) });

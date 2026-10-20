@@ -5,7 +5,7 @@ export const catalogId = (key: CatalogKey) => JSON.stringify([key.locale, key.na
 
 const indexes = new WeakMap<CatalogManifest, ReadonlyMap<string, CatalogMetadata>>();
 
-/** Internal callers supply immutable manifests from validateCatalogManifest. */
+/** Internal callers supply immutable manifests from validation or CatalogRegistry. */
 export function catalogMetadata(manifest: CatalogManifest): ReadonlyMap<string, CatalogMetadata> {
   let index = indexes.get(manifest);
   if (!index) {
