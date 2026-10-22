@@ -8,9 +8,10 @@ export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnap
   readonly onDispose?: (listener: () => void) => () => void;
   readonly setLocale: (locale: string) => void | Promise<void>;
   readonly loadNamespace?: (namespace: string) => Promise<void>;
+  readonly setNamespaces?: (namespaces: readonly string[]) => Promise<void>;
 }
 
-export type SayloSvelteSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<SayloInstance<S>, 'setLocale' | 'loadNamespace'>>;
+export type SayloSvelteSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<SayloInstance<S>, 'setLocale' | 'loadNamespace' | 'setNamespaces'>>;
 export type SayloSvelteStore<S extends Schema> = Readable<SayloSvelteSnapshot<S>>;
 
 /** Shares one upstream subscription while consumers are mounted. The caller owns disposal. */
@@ -19,6 +20,7 @@ export function createSvelteStore<S extends Schema>(instance: SayloInstance<S>):
   const bind = (snapshot: StoreSnapshot<S>): SayloSvelteSnapshot<S> => Object.freeze({
     ...snapshot, setLocale: instance.setLocale,
     ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}),
+    ...(instance.setNamespaces ? { setNamespaces: instance.setNamespaces } : {}),
   });
   let current = bind(previous);
   return Object.freeze(readable(current, set => {

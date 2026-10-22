@@ -61,6 +61,7 @@ export function createHydrationAdapter<S extends Schema = Schema>(instance: Sayl
     },
     setLocale: instance.setLocale,
     ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}),
+    ...(instance.setNamespaces ? { setNamespaces: instance.setNamespaces } : {}),
     finishHydration() { if (!holding || disposed) return; holding = false; publish(); },
     dispose,
   });

@@ -9,7 +9,7 @@ import type { CatalogOutcome, CreateI18nOptions, I18n, I18nRequestOptions } from
 import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
 interface Waiter {
-  readonly kind: 'locale' | 'namespace' | 'refresh';
+  readonly kind: 'locale' | 'namespace' | 'namespaces' | 'refresh';
   readonly value: string;
   resolve(): void;
   reject(reason: unknown): void;
@@ -103,6 +103,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       () => new CatalogLoadError('LOCALE_REMOVED', 'Requested locale was removed from the manifest.'));
     rejectWhere(w => w.kind === 'namespace' && !manifestMembership(manifest).namespaces.has(w.value),
       () => new CatalogLoadError('NAMESPACE_REMOVED', 'Requested namespace was removed from the manifest.'));
+    rejectWhere(w => w.kind === 'namespaces' && (JSON.parse(w.value) as string[]).some(n => !manifestMembership(manifest).namespaces.has(n)),
+      () => new CatalogLoadError('NAMESPACE_REMOVED', 'Requested namespace was removed from the manifest.'));
     if (!manifestMembership(manifest).locales.has(desiredLocale)) desiredLocale = baseLocale;
     desiredNamespaces = new Set([...desiredNamespaces].filter(n => manifestMembership(manifest).namespaces.has(n)));
     schedule();
@@ -112,7 +114,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   function publish(snapshot: StoreSnapshot<S>, nextSignature: string) {
     const loaded = new Set(snapshot.loadedNamespaces);
     const ready = [...waiters].filter(w => w.kind === 'refresh' ||
-      (w.kind === 'locale' ? w.value === snapshot.locale : loaded.has(w.value)));
+      (w.kind === 'locale' ? w.value === snapshot.locale : w.kind === 'namespaces'
+        ? w.value === JSON.stringify(snapshot.loadedNamespaces) : loaded.has(w.value)));
     // These intents have committed, so reentrant selections cannot cancel them.
     for (const waiter of ready) { waiters.delete(waiter); waiter.cleanup(); }
     const errors: unknown[] = [];
@@ -206,9 +209,31 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     loadNamespace(namespace: string, requestOptions: I18nRequestOptions = {}) { return call(() => {
       assertNamespace(namespace);
       if (!manifestMembership(manifest).namespaces.has(namespace)) throw new RangeError('Namespace is outside the manifest.');
-      if (!desiredNamespaces.has(namespace)) { desiredNamespaces.add(namespace); generation++; }
+      if (!desiredNamespaces.has(namespace)) {
+        rejectWhere(w => w.kind === 'namespaces', () => new CatalogLoadError('SCOPE_SUPERSEDED', 'Namespace scope was replaced by a newer selection.'));
+        desiredNamespaces.add(namespace); generation++;
+      }
       staleRetries = 0;
       return request('namespace', namespace, requestOptions.signal);
+    }, requestOptions.signal); },
+    setNamespaces(namespaces: readonly string[], requestOptions: I18nRequestOptions = {}) { return call(() => {
+      if (!Array.isArray(namespaces)) throw new TypeError('Namespaces must be an array.');
+      const next = new Set<string>();
+      for (const namespace of namespaces) {
+        assertNamespace(namespace);
+        if (!manifestMembership(manifest).namespaces.has(namespace)) throw new RangeError('Namespace is outside the manifest.');
+        if (next.has(namespace)) throw new RangeError('Duplicate namespace.');
+        next.add(namespace);
+      }
+      const value = JSON.stringify([...next].sort());
+      if (value !== JSON.stringify([...desiredNamespaces].sort())) {
+        rejectWhere(w => w.kind === 'namespaces' || (w.kind === 'namespace' && !next.has(w.value)),
+          () => new CatalogLoadError('SCOPE_SUPERSEDED', 'Namespace scope was replaced by a newer selection.'));
+        desiredNamespaces = next;
+        generation++;
+      }
+      staleRetries = 0;
+      return request('namespaces', value, requestOptions.signal);
     }, requestOptions.signal); },
     refresh(requestOptions: I18nRequestOptions = {}) { return call(() => { staleRetries = 0; return request('refresh', '', requestOptions.signal); }, requestOptions.signal); },
     dispose() {

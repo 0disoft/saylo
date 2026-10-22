@@ -79,6 +79,8 @@ export interface I18n<S extends Schema = Schema> {
   onDispose(listener: () => void): () => void;
   setLocale(locale: string, options?: I18nRequestOptions): Promise<void>;
   loadNamespace(namespace: string, options?: I18nRequestOptions): Promise<void>;
+  /** Replace required namespaces atomically; cached catalogs remain reusable. Cancels superseded scope waits. */
+  setNamespaces(namespaces: readonly string[], options?: I18nRequestOptions): Promise<void>;
   /** Adapter hook: refresh current desired scope after a manifest/version change. */
   refresh(options?: I18nRequestOptions): Promise<void>;
   dispose(): void;

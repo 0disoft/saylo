@@ -17,9 +17,10 @@ export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnap
   readonly onDispose?: (listener: () => void) => () => void;
   readonly setLocale: (locale: string) => void | Promise<void>;
   readonly loadNamespace?: (namespace: string) => Promise<void>;
+  readonly setNamespaces?: (namespaces: readonly string[]) => Promise<void>;
 }
 
-export type SayloReactSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<SayloInstance<S>, 'setLocale' | 'loadNamespace'>>;
+export type SayloReactSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<SayloInstance<S>, 'setLocale' | 'loadNamespace' | 'setNamespaces'>>;
 
 export interface SayloReactBindings<S extends Schema> {
   readonly SayloProvider: ComponentType<SayloProviderProps<S>>;
@@ -31,7 +32,8 @@ export interface SayloReactBindings<S extends Schema> {
 
 function bindSnapshot<S extends Schema>(instance: SayloInstance<S>, snapshot: StoreSnapshot<S>): SayloReactSnapshot<S> {
   return Object.freeze({ ...snapshot, setLocale: instance.setLocale,
-    ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}) });
+    ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}),
+    ...(instance.setNamespaces ? { setNamespaces: instance.setNamespaces } : {}) });
 }
 
 /** Create once at module scope; the provider and hook share the same typed context. */

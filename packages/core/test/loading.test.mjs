@@ -9,6 +9,60 @@ const catalog = (text, locale = 'ko', namespace = 'common') => parseCatalog(JSON
 const id = (locale, namespace) => `${locale}/${namespace}`;
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
+test('replacing required scope releases a locale switch from a previous screen and keeps cached pairs', { timeout: 2000 }, async t => {
+  const { i18n, calls, defer } = fixture(t);
+  await i18n.loadNamespace('cart');
+  const previous = i18n.getSnapshot();
+  const slow = defer('en', 'common');
+  const locale = i18n.setLocale('en');
+  await tick();
+  const requested = ['cart'];
+  const scope = i18n.setNamespaces(requested);
+  requested.push('common'); // The caller does not own the internal desired scope.
+  await Promise.all([locale, scope]);
+  assert.equal(i18n.getSnapshot().locale, 'en');
+  assert.deepEqual(i18n.getSnapshot().loadedNamespaces, ['cart']);
+  assert.throws(() => i18n.t('common:title'), NamespaceNotLoadedError);
+  assert.equal(previous.t('common:title'), '기준');
+  slow.release(); await tick();
+  assert.deepEqual(i18n.getSnapshot().loadedNamespaces, ['cart']);
+  const count = calls.length;
+  await i18n.setNamespaces(['common', 'cart']);
+  assert.equal(calls.length, count);
+  assert.equal(i18n.t('common:title'), 'English');
+});
+
+test('scope replacement rejects displaced scope and namespace waits while preserving compatible locale waits', async t => {
+  const { i18n, defer } = fixture(t);
+  const slow = defer('ko', 'cart');
+  const namespace = assert.rejects(i18n.loadNamespace('cart'), { code: 'SCOPE_SUPERSEDED' });
+  const scope = assert.rejects(i18n.setNamespaces(['common', 'cart']), { code: 'SCOPE_SUPERSEDED' });
+  await tick();
+  await i18n.setNamespaces([]);
+  await Promise.all([namespace, scope]);
+  assert.deepEqual(i18n.getSnapshot().loadedNamespaces, []);
+  slow.release(); await tick();
+  assert.deepEqual(i18n.getSnapshot().loadedNamespaces, []);
+  await i18n.setNamespaces(['cart']);
+  assert.equal(i18n.t('cart:title'), '장바구니');
+});
+
+test('invalid and pre-aborted scope replacements are atomic; equivalent scopes coalesce', async t => {
+  const { i18n, calls } = fixture(t);
+  const before = i18n.getSnapshot();
+  for (const value of [null, 'common', ['common', 'common'], ['cart', 'missing'], ['cart', '../bad']])
+    await assert.rejects(i18n.setNamespaces(value));
+  const controller = new AbortController(); controller.abort('navigation');
+  await assert.rejects(i18n.setNamespaces(['cart'], { signal: controller.signal }), { code: 'ABORTED' });
+  assert.equal(calls.length, 0);
+  assert.equal(i18n.getSnapshot(), before);
+  await Promise.all([i18n.setNamespaces(['cart', 'common']), i18n.setNamespaces(['common', 'cart'])]);
+  assert.deepEqual(i18n.getSnapshot().loadedNamespaces, ['cart', 'common']);
+  assert.equal(calls.filter(c => c.namespace === 'cart').length, 1);
+  i18n.dispose();
+  await assert.rejects(i18n.setNamespaces([]), I18nDisposedError);
+});
+
 test('individual cancellation retains a shared load and removes its listener', async t => {
   const { i18n, calls, defer } = fixture(t);
   const slow = defer('en', 'common');

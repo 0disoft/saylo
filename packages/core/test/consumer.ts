@@ -96,6 +96,10 @@ const source: CatalogSource = {
 const lazy = createI18n<AppSchema>({ catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
 const transition: Promise<void> = lazy.setLocale('en');
 const namespace: Promise<void> = lazy.loadNamespace('cart');
+const scope: Promise<void> = lazy.setNamespaces(['cart'] as const, { signal: new AbortController().signal });
+void scope;
+// @ts-expect-error scope must be a list of namespace names
+lazy.setNamespaces('cart');
 const refresh: Promise<void> = lazy.refresh();
 const requestOptions = { signal: new AbortController().signal };
 const cancellable: Promise<void>[] = [lazy.setLocale('en', requestOptions), lazy.loadNamespace('cart', requestOptions), lazy.refresh(requestOptions)];
