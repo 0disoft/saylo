@@ -30,6 +30,32 @@ async function fixture(t, settings = {}) {
   return { root, config, write, run, snapshot };
 }
 
+test('export emits deterministic missing/review work with original values and source hashes without writing', async t => {
+  const f = await fixture(t, { checkLocales: ['en-US', 'fr'] });
+  await f.write('ko', 'common', { title: 'Old', empty: '', added: 'New' });
+  await f.write('en-us', 'common', { title: 'English', empty: '' });
+  const baseline = f.run(['snapshot']);
+  await writeFile(path.join(f.root, 'review.json'), baseline.stdout);
+  await f.write('ko', 'common', { title: 'Changed', empty: '', added: 'New' });
+  const before = await f.snapshot();
+  const result = f.run(['export', '--baseline', 'review.json']);
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  const work = JSON.parse(result.stdout);
+  assert.equal(work.format, 'saylo-translation-work/v1');
+  const review = work.entries.find(entry => entry.locale === 'en-US' && entry.id === 'title');
+  assert.equal(review.source, 'Changed'); assert.equal(review.originalTranslation, 'English');
+  assert.equal(review.translation, 'English'); assert.equal(review.reason, 'review');
+  assert.match(review.sourceHash, /^[a-f0-9]{64}$/);
+  assert.ok(work.entries.some(entry => entry.id === 'added' && entry.translation === null));
+  assert.ok(work.entries.some(entry => entry.locale === 'fr' && entry.id === 'empty'));
+  assert.ok(!work.entries.some(entry => entry.locale === 'en-US' && entry.id === 'empty'));
+  assert.equal(f.run(['export', '--baseline', 'review.json']).stdout, result.stdout);
+  assert.deepEqual(await f.snapshot(), before);
+  await f.write('en-us', 'common', '{');
+  const broken = f.run(['export']);
+  assert.equal(broken.status, 1); assert.equal(JSON.parse(broken.stdout).format, 'saylo-check/v1');
+});
+
 test('check aggregates parse, rich, argument, unknown-key and completeness issues without changing any files', async t => {
   const f = await fixture(t, { checkLocales: ['en', 'fr'], richText: { rich: { terms: ['link'] } } });
   await f.write('ko', 'common', { hello: '{name}', empty: '' });

@@ -6,13 +6,15 @@ import { inspectProject } from './catalog-audit.js';
 import type { CatalogCheckReport } from './catalog-audit.js';
 import { compareReviewBaseline, createReviewBaseline, readReviewBaseline } from './catalog-review.js';
 import { isBlockingIssue, planCatalogSync } from './catalog-sync.js';
+import { createTranslationWorkfile } from './catalog-workfile.js';
 
-const help = `Usage: saylo <check|sync|snapshot> [--config saylo.config.json] [--json]
+const help = `Usage: saylo <check|sync|snapshot|export> [--config saylo.config.json] [--json]
 
 Commands:
   check                     Validate catalogs, contracts and translation completeness; never writes files.
   sync --dry-run            Preview missing keys, review work and retained orphan translations; never writes files.
   snapshot                  Print a JSON source-hash comparison checkpoint to stdout; never writes files.
+  export                    Print missing/review translation tasks as editable JSON to stdout.
 
 Options:
   --config <file.json>       Defaults to saylo.config.json in cwd when present.
@@ -46,12 +48,12 @@ try {
   if (values.help) console.log(help);
   else {
     const command = positionals[0];
-    if (positionals.length !== 1 || !command || !['check', 'sync', 'snapshot'].includes(command))
-      throw new UsageError('Choose a command: saylo check, sync --dry-run, or snapshot.');
+    if (positionals.length !== 1 || !command || !['check', 'sync', 'snapshot', 'export'].includes(command))
+      throw new UsageError('Choose a command: saylo check, sync --dry-run, snapshot, or export.');
     if (command === 'sync' && !values['dry-run']) throw new UsageError('sync requires --dry-run; applying changes is not supported.');
     if (command !== 'sync' && values['dry-run']) throw new UsageError('--dry-run is only supported with sync.');
     if (command === 'snapshot' && values.baseline) throw new UsageError('snapshot prints a new checkpoint; --baseline is a comparison input, not an output path.');
-    json ||= command === 'snapshot';
+    json ||= command === 'snapshot' || command === 'export';
     const filename = values.config ?? (existsSync('saylo.config.json') ? 'saylo.config.json' : undefined);
     const loaded = filename === undefined ? {} : loadProjectConfig(filename);
     const config = resolveProjectConfig({ ...loaded,
@@ -63,7 +65,11 @@ try {
     const baseline = command !== 'snapshot' && config.baseline ? await readReviewBaseline(config.baseline, config.baseLocale) : undefined;
     const inspected = await inspectProject(config);
     const report = baseline ? compareReviewBaseline(inspected.inspection, inspected.report, baseline) : inspected.report;
-    if (command === 'snapshot') {
+    if (command === 'export') {
+      const plan = planCatalogSync(inspected.inspection, report);
+      console.log(JSON.stringify(plan.blocked ? report : createTranslationWorkfile(inspected.inspection, report)));
+      process.exitCode = plan.blocked ? 1 : 0;
+    } else if (command === 'snapshot') {
       const blocked = report.diagnostics.some(issue => issue.severity === 'error' && isBlockingIssue(issue.code));
       console.log(JSON.stringify(blocked ? report : createReviewBaseline(inspected.inspection, config.baseLocale)));
       process.exitCode = blocked ? 1 : 0;
