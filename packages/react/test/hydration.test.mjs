@@ -132,6 +132,39 @@ test('hydration adapters have independent barriers and clean up without disposin
   two.finishHydration();
 });
 
+test('hydration release queues reentrant commits until every listener sees the current snapshot', t => {
+  const catalog = locale => parseCatalog(JSON.stringify({ title: locale }), { locale, namespace: 'demo' });
+  const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: ['ko', 'en', 'fr'].map(catalog) });
+  const adapter = createHydrationAdapter(store);
+  t.after(() => { adapter.dispose(); store.dispose(); });
+  const seen = [];
+  const failure = new Error('release observer failed');
+  adapter.subscribe(snapshot => {
+    seen.push(`A:${snapshot.locale}`);
+    if (snapshot.locale === 'en') {
+      adapter.setLocale('fr');
+      adapter.setLocale('ko');
+      assert.equal(adapter.getSnapshot(), snapshot);
+      throw failure;
+    }
+  });
+  adapter.subscribe(snapshot => {
+    seen.push(`B:${snapshot.locale}`);
+    assert.equal(adapter.getSnapshot(), snapshot);
+  });
+  store.setLocale('en');
+  assert.throws(() => adapter.finishHydration(), error => {
+    assert.ok(error instanceof AggregateError);
+    assert.deepEqual(error.errors, [failure]);
+    return true;
+  });
+  assert.deepEqual(seen, ['A:en', 'B:en', 'A:fr', 'B:fr', 'A:ko', 'B:ko']);
+  assert.equal(adapter.getSnapshot(), store.getSnapshot());
+  assert.equal(adapter.getServerSnapshot().locale, 'ko');
+  adapter.finishHydration();
+  assert.equal(seen.length, 6);
+});
+
 test('selector hydration reads fixed server data even after the client barrier has released', async t => {
   const f = sourceFixture();
   const server = f.create();

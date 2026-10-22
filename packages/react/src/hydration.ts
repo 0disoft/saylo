@@ -16,15 +16,28 @@ export function createHydrationAdapter<S extends Schema = Schema>(instance: Sayl
   let latest = instance.getSnapshot();
   let holding = true;
   let disposed = false;
+  let notifying = false;
+  const pending: StoreSnapshot<S>[] = [];
   const listeners = new Set<{ callback: (snapshot: StoreSnapshot<S>) => void }>();
   function publish() {
-    if (holding || disposed || current === latest) return;
-    current = latest;
+    if (holding || disposed) return;
+    // Barrier release runs outside the store's notification loop; listeners can synchronously commit again.
+    pending.push(latest);
+    if (notifying) return;
+    notifying = true;
     const errors: unknown[] = [];
-    for (const listener of [...listeners]) {
-      if (!listeners.has(listener)) continue;
-      try { listener.callback(current); } catch (error) { errors.push(error); }
-    }
+    let cursor = 0;
+    try {
+      while (cursor < pending.length && !disposed) {
+        const next = pending[cursor++]!;
+        if (next === current) continue;
+        current = next;
+        for (const listener of [...listeners]) {
+          if (!listeners.has(listener)) continue;
+          try { listener.callback(current); } catch (error) { errors.push(error); }
+        }
+      }
+    } finally { pending.length = 0; notifying = false; }
     if (errors.length) throw new AggregateError(errors, 'Subscriber failures after hydration snapshot commit.');
   }
   const off = instance.subscribe(snapshot => { latest = snapshot; publish(); });
@@ -32,6 +45,7 @@ export function createHydrationAdapter<S extends Schema = Schema>(instance: Sayl
   function dispose() {
     if (disposed) return;
     disposed = true;
+    pending.length = 0;
     off(); offDispose?.(); listeners.clear();
   }
   try { offDispose = instance.onDispose?.(dispose); }
