@@ -2,6 +2,7 @@ import { createReviewBaseline } from './catalog-review.js';
 import { planCatalogSync } from './catalog-sync.js';
 import type { CatalogInspection } from './catalog-files.js';
 import type { CatalogCheckReport } from './catalog-audit.js';
+import { readFile } from 'node:fs/promises';
 
 export interface TranslationWorkEntry {
   readonly locale: string;
@@ -30,4 +31,39 @@ export function createTranslationWorkfile(input: CatalogInspection, report: Cata
       source: change.baseSource!, sourceHash: hashes[`${change.namespace}:${change.id}`]!,
       originalTranslation: change.translation, translation: change.translation,
     })) };
+}
+
+const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
+const exactFields = (value: Record<string, unknown>, fields: readonly string[]) =>
+  Object.keys(value).length === fields.length && fields.every(field => Object.hasOwn(value, field));
+function canonical(value: unknown): value is string {
+  try { return typeof value === 'string' && !!value && Intl.getCanonicalLocales(value)[0] === value; }
+  catch { return false; }
+}
+
+/** Paths never come from this document. Namespace/locale identities are validated before planning. */
+export function parseTranslationWorkfile(source: string, baseLocale: string): TranslationWorkfile {
+  const value: unknown = JSON.parse(source.replace(/^\uFEFF/, ''));
+  if (!record(value) || !exactFields(value, ['format', 'baseLocale', 'entries']) ||
+      value.format !== 'saylo-translation-work/v1' || value.baseLocale !== baseLocale || !Array.isArray(value.entries))
+    throw new TypeError('Invalid translation workfile format or base locale.');
+  const identities = new Set<string>();
+  for (const entry of value.entries) {
+    if (!record(entry) || !exactFields(entry, ['locale', 'namespace', 'id', 'reason', 'source', 'sourceHash', 'originalTranslation', 'translation']) ||
+        !canonical(entry.locale) || entry.locale === baseLocale || typeof entry.namespace !== 'string' || !entry.namespace ||
+        entry.namespace.startsWith('.') || /[:/\\\x00-\x1f]/.test(entry.namespace) ||
+        typeof entry.id !== 'string' || !entry.id || entry.id.includes(':') || !['add', 'review'].includes(String(entry.reason)) ||
+        typeof entry.source !== 'string' || typeof entry.sourceHash !== 'string' || !/^[a-f0-9]{64}$/.test(entry.sourceHash) ||
+        !(entry.originalTranslation === null || typeof entry.originalTranslation === 'string') ||
+        !(entry.translation === null || typeof entry.translation === 'string')) throw new TypeError('Invalid translation workfile entry.');
+    const identity = JSON.stringify([entry.locale, entry.namespace, entry.id]);
+    if (identities.has(identity)) throw new TypeError(`Duplicate translation workfile entry: ${identity}`);
+    identities.add(identity);
+  }
+  return value as unknown as TranslationWorkfile;
+}
+
+export async function readTranslationWorkfile(filename: string, baseLocale: string): Promise<TranslationWorkfile> {
+  try { return parseTranslationWorkfile(await readFile(filename, 'utf8'), baseLocale); }
+  catch (cause) { throw new Error(`Unable to read translation workfile: ${filename}: ${cause instanceof Error ? cause.message : String(cause)}`, { cause }); }
 }

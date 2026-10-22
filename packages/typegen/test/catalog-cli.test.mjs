@@ -56,6 +56,113 @@ test('export emits deterministic missing/review work with original values and so
   assert.equal(broken.status, 1); assert.equal(JSON.parse(broken.stdout).format, 'saylo-check/v1');
 });
 
+test('import previews and applies partial completed work, preserves unrelated keys, and is idempotent', async t => {
+  const f = await fixture(t, { checkLocales: ['en-US', 'fr'] });
+  await f.write('ko', 'common', { title: '제목', empty: '', pending: '대기', '__proto__.title': '리터럴' });
+  await f.write('en-us', 'common', { pending: 'Existing' });
+  const work = JSON.parse(f.run(['export']).stdout);
+  for (const entry of work.entries) if (entry.locale === 'en-US') entry.translation = entry.id === 'empty' ? '' : 'English';
+  work.entries.find(entry => entry.locale === 'fr' && entry.id === 'title').translation = 'Français';
+  await writeFile(path.join(f.root, 'work.json'), JSON.stringify(work));
+  await f.write('en-us', 'common', { pending: 'Edited unrelated text', orphan: 'Keep me' });
+  const before = await f.snapshot();
+  const preview = f.run(['import', '--file', 'work.json', '--dry-run', '--json']);
+  assert.equal(preview.status, 0, preview.stdout + preview.stderr);
+  assert.equal(JSON.parse(preview.stdout).changes.length, 4);
+  assert.deepEqual(await f.snapshot(), before);
+  const applied = f.run(['import', '--file', 'work.json', '--apply', '--json']);
+  assert.equal(applied.status, 0, applied.stdout + applied.stderr);
+  assert.deepEqual(JSON.parse(applied.stdout).writtenFiles, ['en-us/common.json', 'fr/common.json']);
+  const english = JSON.parse(await readFile(path.join(f.root, 'locales/en-us/common.json'), 'utf8'));
+  assert.equal(english.title, 'English'); assert.equal(english.empty, '');
+  assert.equal(english.orphan, 'Keep me'); assert.equal(english.pending, 'Edited unrelated text');
+  assert.equal(english['__proto__.title'], 'English');
+  assert.deepEqual(JSON.parse(await readFile(path.join(f.root, 'locales/fr/common.json'), 'utf8')), { title: 'Français' });
+  const after = await f.snapshot();
+  const again = f.run(['import', '--file', 'work.json', '--apply', '--json']);
+  assert.equal(again.status, 0, again.stdout); assert.deepEqual(JSON.parse(again.stdout).writtenFiles, []);
+  assert.deepEqual(await f.snapshot(), after);
+});
+
+test('import rejects stale source/rich contracts and edited target translations before any catalog writes', async t => {
+  const f = await fixture(t, { checkLocales: ['en'], richText: { common: { title: ['link'] } } });
+  await f.write('ko', 'common', { title: '<link>원문</link>', other: 'Original' });
+  await f.write('en', 'common', { title: '<link>Old</link>' });
+  const baseline = f.run(['snapshot']); await writeFile(path.join(f.root, 'review.json'), baseline.stdout);
+  await f.write('ko', 'common', { title: '<link>새 원문</link>', other: 'Original' });
+  const originalWork = JSON.parse(f.run(['export', '--baseline', 'review.json']).stdout);
+  for (const entry of originalWork.entries) entry.translation = entry.id === 'title' ? '<link>New</link>' : 'Other';
+  await writeFile(path.join(f.root, 'work.json'), JSON.stringify(originalWork));
+  await f.write('en', 'common', { title: '<link>Concurrent</link>' });
+  let before = await f.snapshot();
+  let result = f.run(['import', '--file', 'work.json', '--apply', '--json']);
+  assert.equal(result.status, 1, result.stdout);
+  assert.ok(JSON.parse(result.stdout).diagnostics.some(issue => issue.code === 'TRANSLATION_CONFLICT'));
+  assert.deepEqual(await f.snapshot(), before);
+  await f.write('en', 'common', { title: '<link>Old</link>' });
+  f.config.richText.common.title.push('strong');
+  await writeFile(path.join(f.root, 'saylo.config.json'), JSON.stringify(f.config));
+  before = await f.snapshot();
+  result = f.run(['import', '--file', 'work.json', '--apply', '--json']);
+  assert.equal(result.status, 1); assert.ok(JSON.parse(result.stdout).diagnostics.some(issue => issue.code === 'SOURCE_CONFLICT'));
+  assert.deepEqual(await f.snapshot(), before);
+  f.config.richText.common.title.pop();
+  await writeFile(path.join(f.root, 'saylo.config.json'), JSON.stringify(f.config));
+  await f.write('ko', 'common', { title: '<link>Edited after export</link>', other: 'Original' });
+  before = await f.snapshot();
+  result = f.run(['import', '--file', 'work.json', '--apply', '--json']);
+  assert.equal(result.status, 1); assert.ok(JSON.parse(result.stdout).diagnostics.some(issue => issue.code === 'SOURCE_CONFLICT'));
+  assert.deepEqual(await f.snapshot(), before);
+});
+
+test('import validates ICU, argument and rich contracts for all candidates before applying any file', async t => {
+  const f = await fixture(t, { checkLocales: ['en', 'fr'], richText: { common: { title: ['link'] } } });
+  await f.write('ko', 'common', { title: '<link>{name}</link>' });
+  const initial = JSON.parse(f.run(['export']).stdout);
+  for (const invalid of ['{', '{newArgument}', '<lnik>{name}</lnik>']) {
+    const work = structuredClone(initial);
+    work.entries.forEach(entry => { entry.translation = entry.locale === 'en' ? '<link>{name}</link>' : invalid; });
+    await writeFile(path.join(f.root, 'work.json'), JSON.stringify(work));
+    const before = await f.snapshot();
+    const result = f.run(['import', '--file', 'work.json', '--apply', '--json']);
+    assert.equal(result.status, 1, result.stdout); assert.equal(JSON.parse(result.stdout).blocked, true);
+    assert.deepEqual(await f.snapshot(), before);
+  }
+});
+
+test('import rejects malformed identities, duplicate tasks and unsafe flags without writing', async t => {
+  const f = await fixture(t, { checkLocales: ['en'] });
+  await f.write('ko', 'common', { title: '기준' });
+  const original = JSON.parse(f.run(['export']).stdout);
+  for (const alter of [work => { work.entries[0].namespace = '../outside'; }, work => { work.entries[0].locale = 'ko'; },
+    work => { work.entries.push({ ...work.entries[0] }); }, work => { work.entries[0].translation = 42; },
+    work => { work.entries[0].sourceHash = 'invalid'; }, work => { work.entries[0].file = '../../target'; }]) {
+    const work = structuredClone(original); alter(work);
+    await writeFile(path.join(f.root, 'work.json'), JSON.stringify(work));
+    const before = await f.snapshot();
+    assert.equal(f.run(['import', '--file', 'work.json', '--apply', '--json']).status, 2);
+    assert.deepEqual(await f.snapshot(), before);
+  }
+  for (const args of [['import', '--file', 'work.json'], ['import', '--apply'],
+    ['import', '--file', 'work.json', '--apply', '--dry-run'], ['check', '--apply'], ['export', '--file', 'work.json']])
+    assert.equal(f.run([...args, '--json']).status, 2);
+});
+
+test('import refuses a symlink target and never replaces it or modifies its destination', async t => {
+  const f = await fixture(t, { checkLocales: ['en'] });
+  await f.write('ko', 'common', { title: '기준' });
+  const work = JSON.parse(f.run(['export']).stdout); work.entries[0].translation = 'English';
+  await writeFile(path.join(f.root, 'work.json'), JSON.stringify(work));
+  await mkdir(path.join(f.root, 'locales/en'));
+  await writeFile(path.join(f.root, 'locales/inside.json'), '{}');
+  await symlink(path.join(f.root, 'locales/inside.json'), path.join(f.root, 'locales/en/common.json'));
+  const before = await f.snapshot();
+  const result = f.run(['import', '--file', 'work.json', '--apply', '--json']);
+  assert.equal(result.status, 2, result.stdout);
+  assert.match(JSON.parse(result.stdout).error.message, /symlink or junction/);
+  assert.deepEqual(await f.snapshot(), before);
+});
+
 test('check aggregates parse, rich, argument, unknown-key and completeness issues without changing any files', async t => {
   const f = await fixture(t, { checkLocales: ['en', 'fr'], richText: { rich: { terms: ['link'] } } });
   await f.write('ko', 'common', { hello: '{name}', empty: '' });

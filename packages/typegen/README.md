@@ -63,7 +63,7 @@ npx --no-install saylo sync --config saylo.config.json --dry-run --json
 
 `check`는 JSON·ICU·인자·rich 계약 오류, 기준에 없는 번역 키, 누락 namespace·메시지를 모아 보고한다. 명시된 완역 대상에 누락이 있으면 런타임에서 기준 언어로 폴백할 수 있어도 검사에서는 오류다. 빈 번역 문자열은 정상 번역으로 처리한다. 소스에서 실제 사용하지 않는 키를 추측해 삭제하지 않는다.
 
-`sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. 적용·삭제·자동 번역 기능은 없다. 모든 명령은 카탈로그·생성 타입·검수 기록을 직접 쓰지 않는다.
+`sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. `check`·`sync`·`snapshot`은 읽기 전용이며 카탈로그·생성 타입·검수 기록을 쓰지 않는다. 삭제와 자동 번역 기능은 없다. 번역을 카탈로그에 쓰는 명령은 `import --apply`뿐이다.
 
 원문 변경을 비교하려면 먼저 `snapshot`의 stdout을 파일로 저장한다. 검수 기록에는 메시지별 원문·rich 계약의 SHA-256만 담고 원문이나 번역 내용은 저장하지 않는다.
 
@@ -77,7 +77,61 @@ npx --no-install saylo sync --config saylo.config.json --baseline saylo-baseline
 
 기존 비교 기록을 갱신할 때는 stdout을 새 파일에 저장하고, 종료 코드 0과 내용을 확인한 뒤 교체한다. 기존 baseline에 바로 리다이렉트하면 명령이 실패해도 셸이 기존 파일을 먼저 덮어쓸 수 있다.
 
-종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. 사용법·설정·파일시스템 오류는 모두 2다. `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
+### 번역 작업 파일 내보내기와 가져오기 (미게시)
+
+`export`와 `import`는 현재 checkout에만 있으며 npm `alpha.4`에는 없다. `export`는 누락된 `add` 작업과 baseline에서 원문·rich 계약이 바뀌거나 추가된 `review` 작업만 stdout에 JSON으로 출력한다. 기존 번역을 유지하는 `retain` 항목은 넣지 않는다. 출력 형식은 `saylo-translation-work/v1`이다.
+
+```sh
+npx --no-install saylo export --config saylo.config.json > translation-work.json
+```
+
+원문 변경 검수를 포함하려면 `--baseline saylo-baseline.json`을 붙이거나 설정에 `baseline`을 둔다. baseline이 없으면 `add` 작업만 나온다. 카탈로그가 잘못되면 작업 파일 대신 `saylo-check/v1` 보고서를 출력하고 exit 1로 끝난다. `export`는 디스크를 쓰지 않으므로 새 파일에 저장하고 종료 코드와 내용을 확인한 뒤 기존 작업 파일과 교체한다.
+
+각 항목의 `source`·`sourceHash`·`originalTranslation`은 내보낸 시점의 체크포인트다. `translation`만 고치고 나머지 필드는 그대로 둔다. `add` 항목의 `originalTranslation`은 `null`이고, `review` 항목은 기존 번역으로 시작한다. `review` 항목을 손대지 않으면 `translation`이 `originalTranslation`과 같아서 가져올 때 건너뛴다. `translation: null`은 아직 하지 않은 작업이며, `""`는 정상 번역이다.
+
+```json
+{
+  "format": "saylo-translation-work/v1",
+  "baseLocale": "ko",
+  "entries": [
+    {
+      "locale": "en",
+      "namespace": "demo",
+      "id": "greeting",
+      "reason": "add",
+      "source": "안녕 {name}",
+      "sourceHash": "763db49e97b5a0937ce680dc9d9b5ac57b79408890eddf3ed4829d85cf13a617",
+      "originalTranslation": null,
+      "translation": "Hello {name}"
+    }
+  ]
+}
+```
+
+예시의 `sourceHash`는 형식만 보여 주는 값이다. 그대로 실행할 파일이 아니라 export 결과에서 `translation`만 바꾸는 모양을 보여 주며, 실제 파일에서는 export가 쓴 값을 그대로 둔다.
+
+`import`는 `--file`과 `--dry-run`·`--apply` 중 정확히 하나를 요구한다. `--dry-run --json`은 검증 결과와 변경 목록만 출력하고, `--apply --json`은 검증을 통과한 번역을 카탈로그에 쓴다.
+
+```sh
+npx --no-install saylo import --file translation-work.json --dry-run --json
+npx --no-install saylo import --file translation-work.json --apply --json
+```
+
+일부 항목만 완료해도 된다. `translation`이 `null`이거나 `originalTranslation`과 같으면 건너뛰고, 이미 적용된 값을 다시 가져와도 쓰기가 없다. 한 항목이라도 검증에 실패하면 전체 적용이 차단된다.
+
+작업 파일의 형식·기준 로케일·locale/namespace/id·중복을 검사한다. 대상 경로는 작업 파일에 적힌 경로를 믿지 않고 루트의 canonical 로케일 디렉터리와 namespace에서 만든다. 원문이나 rich 계약이 export 뒤 바뀌면 `SOURCE_CONFLICT`, 기존 번역이 `originalTranslation`과 달라졌으면 `TRANSLATION_CONFLICT`로 차단하므로 새로 export해서 다시 한다. 병합 결과의 JSON·ICU 인자·rich 태그도 모든 파일에 대해 먼저 검증한다.
+
+`--apply`는 파일마다 임시 파일을 쓰고 rename하며, Windows에서 `EPERM`·`EACCES`·`EBUSY`가 나면 재시도한다. 쓰기 전에 경로를 다시 확인하고 symlink나 junction이 있으면 실패한다. 모든 출력을 스테이징하고 검증한 뒤 첫 교체를 시작하지만 여러 파일을 한 트랜잭션으로 묶지는 않는다. 늦은 I/O·경합 실패가 나면 앞서 쓴 파일은 남을 수 있고, `--json` 오류의 `writtenFiles`에 그 목록이 나온다. 이미 쓴 파일을 되돌리려고 덮어쓰지 않는다.
+
+루트의 `.saylo-import.lock`이 동시 Saylo 가져오기를 막는다. 프로세스가 강제 종료되면 락이 남을 수 있으므로, 남은 락은 안에 적힌 pid가 실제로 끝났는지 확인한 뒤 직접 지운다.
+
+교체 전 바이트 비교와 rename 재시도로 그 사이의 편집을 감지하지만, 마지막 확인과 rename 사이에 다른 편집기가 쓰는 것을 막는 파일시스템 CAS는 아니다.
+
+`--apply`가 쓴 카탈로그는 2칸 들여쓰기 JSON으로 다시 쓴다. 메시지 값은 그대로 두고, 기존 파일이 CRLF를 쓰면 CRLF도 유지한다. 관련 없는 키와 고아 키는 보존하며, 삭제와 기계 번역은 하지 않는다.
+
+`import`는 타입 선언과 baseline을 다시 만들지 않는다. 적용 뒤 `saylo check`와 타입 생성(`saylo-typegen`)을 따로 실행한다. baseline 갱신은 번역 승인과 별개다.
+
+종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. 사용법·설정·파일시스템 오류, 읽을 수 없는 작업 파일 형식·식별자는 2다. `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
 
 ### 기존 인자로 타입 생성
 
