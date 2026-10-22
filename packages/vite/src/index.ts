@@ -66,7 +66,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let removeServerSource: (() => void) | undefined;
   const isTypegenFile = (file: string) => generatedOut !== undefined && isGeneratedFile(generatedOut, file);
   let diagnostic: LiveDiagnostic = { message: '', diagnostics: [] };
-  const eagerClients = new Set<WebSocketClient>();
+  let eagerClients = new WeakSet<WebSocketClient>();
   const pushes = new CatalogPushSubscriptions();
   const deliverUpdate = (send: () => void) => {
     try { send(); }
@@ -114,7 +114,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
     server?.ws.off(CATALOG_REQUEST_EVENT, requestCatalog);
     server?.ws.off(CATALOG_SCOPE_EVENT, subscribeCatalogs);
     pushes.clear();
-    eagerClients.clear();
+    eagerClients = new WeakSet();
     server?.httpServer?.off('close', cleanup);
   }
   async function cleanup() {
@@ -254,8 +254,8 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
           revision++;
           registry.replace(snapshot().catalogs);
           const update: EagerCatalogUpdate = { ...snapshot(), kind: 'update', baseRevision: revision - 1 };
-          for (const client of eagerClients) {
-            if (!server?.ws.clients.has(client)) { eagerClients.delete(client); continue; }
+          for (const client of server?.ws.clients ?? []) {
+            if (!eagerClients.has(client)) continue;
             deliverUpdate(() => client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: update }));
           }
           for (const client of server?.ws.clients ?? []) for (const push of pushes.updates(client, registry, revision - 1)) {
