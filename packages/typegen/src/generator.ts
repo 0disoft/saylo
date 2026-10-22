@@ -1,6 +1,8 @@
 import { Worker } from 'node:worker_threads';
 import type { CatalogSchema } from '@0disoft/saylo-core';
 import { writeGenerated } from './write.js';
+import { acquireOutputLock } from './output-lock.js';
+import type { OutputLock } from './output-lock.js';
 
 interface Job { generation: number; key: string; schemas: readonly CatalogSchema[] }
 interface Waiter { resolve: () => void; reject: (error: Error) => void }
@@ -16,9 +18,10 @@ export interface TypegenWorker {
 export interface TypeGeneratorOperations {
   readonly createWorker?: () => TypegenWorker;
   readonly write?: typeof writeGenerated;
+  readonly acquireLock?: (outFile: string) => OutputLock;
 }
 
-/** One active worker job and one latest desired generation. Intermediate jobs are coalesced. */
+/** One output owner until stop(), with one active worker job and one latest desired generation. */
 export class TypeGenerator {
   private worker: ReturnType<NonNullable<TypeGeneratorOperations['createWorker']>> | undefined;
   private active: Job | undefined;
@@ -31,6 +34,7 @@ export class TypeGenerator {
   private completion = Promise.resolve();
   private stopping: Promise<void> | undefined;
   private epoch = 0;
+  private lock: OutputLock | undefined;
 
   constructor(readonly outFile: string, private operations: TypeGeneratorOperations = {}) {
     if (!outFile.endsWith('.d.ts')) throw new Error('typegen outFile must end in .d.ts.');
@@ -46,6 +50,7 @@ export class TypeGenerator {
   }
   private start() {
     if (this.active || !this.desired || this.stopped) return;
+    this.lock ??= (this.operations.acquireLock ?? acquireOutputLock)(this.outFile);
     this.active = this.desired;
     if (this.active.key === this.successKey && this.successSource !== undefined) {
       // Recheck the output through the same serialized writer without rerendering in the worker.
@@ -76,7 +81,7 @@ export class TypeGenerator {
     if (job.generation === this.desired?.generation) {
       if (result.error || typeof result.source !== 'string') throw new Error(result.error ?? 'Invalid typegen worker result.');
       const status = await (this.operations.write ?? writeGenerated)(this.outFile, result.source,
-        () => !this.stopped && epoch === this.epoch && job.generation === this.desired?.generation);
+        () => !this.stopped && epoch === this.epoch && job.generation === this.desired?.generation, { lock: this.lock! });
       if (epoch !== this.epoch) return;
       // A completed replacement describes the disk even if a newer request arrived during it.
       if (status !== 'cancelled') { this.successKey = job.key; this.successSource = result.source; }
@@ -109,7 +114,14 @@ export class TypeGenerator {
     this.waiters.clear();
     const worker = this.worker;
     this.worker = undefined;
-    this.stopping = Promise.all([worker?.terminate(), this.completion]).then(() => {});
+    this.stopping = (async () => {
+      const results = await Promise.allSettled([Promise.resolve().then(() => worker?.terminate()), this.completion]);
+      const errors: unknown[] = results.flatMap(result => result.status === 'rejected' ? [result.reason] : []);
+      try { await this.lock?.release(); } catch (error) { errors.push(error); }
+      this.lock = undefined;
+      if (errors.length === 1) throw errors[0];
+      if (errors.length) throw new AggregateError(errors, 'Typegen shutdown failed after releasing owned resources.');
+    })();
     return this.stopping;
   }
 }

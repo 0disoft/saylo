@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import path from 'node:path';
 import { writeGenerated } from '../dist/write.js';
 
 function fixture(overrides = {}) {
   const calls = [];
   const operations = {
+    acquireLock: target => ({ target: (process.platform === 'win32' ? path.resolve(target).toLowerCase() : path.resolve(target)), active: true, release: async () => {} }),
     read: async () => 'before', mkdir: async () => { calls.push('mkdir'); }, createId: () => 'test-id',
     create: async () => { calls.push('create'); return {
       writeFile: async () => { calls.push('write'); }, close: async () => { calls.push('close'); },

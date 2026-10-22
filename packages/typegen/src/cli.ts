@@ -5,6 +5,7 @@ import { createBaseSchema, createStore } from '@0disoft/saylo-core';
 import { scanCatalogs } from './catalog-files.js';
 import { renderTypes } from './render.js';
 import { writeGenerated } from './write.js';
+import { withOutputLock } from './output-lock.js';
 
 const help = `Usage: saylo-typegen --locales-dir <directory> --base-locale <locale> --out-file <file.d.ts>
 
@@ -32,11 +33,13 @@ try {
     let baseLocale: string;
     try { baseLocale = Intl.getCanonicalLocales(values['base-locale'])[0]!; }
     catch { throw new CliUsageError('--base-locale must be a valid BCP 47 locale, for example ko or en-US.'); }
-    const { files } = await scanCatalogs(path.resolve(values['locales-dir']));
-    const catalogs = files.map(f => f.catalog);
-    createStore({ baseLocale, locale: baseLocale, catalogs }).dispose();
-    const source = renderTypes(catalogs.filter(c => c.locale === baseLocale).map(createBaseSchema));
-    const result = await writeGenerated(values['out-file'], source);
+    const result = await withOutputLock(values['out-file'], async lock => {
+      const { files } = await scanCatalogs(path.resolve(values['locales-dir']!));
+      const catalogs = files.map(f => f.catalog);
+      createStore({ baseLocale, locale: baseLocale, catalogs }).dispose();
+      const source = renderTypes(catalogs.filter(c => c.locale === baseLocale).map(createBaseSchema));
+      return writeGenerated(values['out-file']!, source, undefined, { lock });
+    });
     console.log(`[saylo:typegen] ${result}: ${values['out-file']}`);
   }
 } catch (error) {

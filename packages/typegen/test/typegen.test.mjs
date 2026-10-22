@@ -83,6 +83,7 @@ test('unchanged schemas restore deleted or overwritten output without changing t
   await rm(out);
   await Promise.all([generator.update(schemas), generator.update([schema({ temporary: 'Temporary' })]), generator.update(schemas)]);
   assert.equal(await readFile(out, 'utf8'), original, 'Returning to the cached schema still finishes file recovery');
+  await generator.stop();
   assert.deepEqual(await readdir(root), ['generated.d.ts']);
 });
 

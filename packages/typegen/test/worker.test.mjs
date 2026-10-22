@@ -4,6 +4,7 @@ import test from 'node:test';
 import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
 import { TypeGenerator } from '../dist/generator.js';
 
+const acquireLock = target => ({ target, active: true, release: async () => {} });
 const schema = name => [createBaseSchema(parseCatalog(JSON.stringify({ [name]: name }), { locale: 'ko', namespace: 'demo' }))];
 class Worker extends EventEmitter {
   jobs = []; terminations = 0;
@@ -16,7 +17,7 @@ class Worker extends EventEmitter {
 for (const lateFailure of [false, true]) {
   test(`a failed worker's delayed writer cannot corrupt its replacement (${lateFailure ? 'rejected' : 'written'})`, async t => {
     const workers = [], started = Promise.withResolvers(), release = Promise.withResolvers(), writes = [];
-    const generator = new TypeGenerator('generated.d.ts', { createWorker() { const worker = new Worker(); workers.push(worker); return worker; },
+    const generator = new TypeGenerator('generated.d.ts', { acquireLock, createWorker() { const worker = new Worker(); workers.push(worker); return worker; },
       async write(_file, source, isCurrent) {
         writes.push(source);
         if (source === 'old') { started.resolve(); await release.promise; if (lateFailure) throw new Error('old writer failed'); return 'written'; }
@@ -39,7 +40,7 @@ for (const lateFailure of [false, true]) {
 
 test('stop waits for an active writer and ignores late worker results', async () => {
   const worker = new Worker(), started = Promise.withResolvers(), release = Promise.withResolvers(); let writes = 0;
-  const generator = new TypeGenerator('generated.d.ts', { createWorker: () => worker,
+  const generator = new TypeGenerator('generated.d.ts', { acquireLock, createWorker: () => worker,
     async write(_file, _source, current) { writes++; started.resolve(); await release.promise; assert.equal(current(), false); return 'cancelled'; } });
   const cancelled = assert.rejects(generator.update(schema('one')), /stopped/);
   worker.reply('one'); await started.promise;
@@ -53,7 +54,7 @@ test('stop waits for an active writer and ignores late worker results', async ()
 
 test('duplicate and wrong-generation results do not start concurrent writes', async t => {
   const worker = new Worker(), started = Promise.withResolvers(), release = Promise.withResolvers(); let writes = 0;
-  const generator = new TypeGenerator('generated.d.ts', { createWorker: () => worker,
+  const generator = new TypeGenerator('generated.d.ts', { acquireLock, createWorker: () => worker,
     async write() { writes++; started.resolve(); await release.promise; return 'written'; } });
   t.after(() => generator.stop());
   const done = generator.update(schema('one'));

@@ -4,6 +4,7 @@ examples/vanilla/dist-selected/
 examples/react/dist-selected/
 *.tsbuildinfo
 *.tgz
+.*.saylo-typegen.lock/
 .release/
 packages/vite/docs/
 packages/svelte/test/.compiled/

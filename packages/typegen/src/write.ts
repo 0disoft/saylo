@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, open, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { replaceGenerated } from './replace.js';
+import { acquireOutputLock, assertOutputLock, withOutputLock } from './output-lock.js';
+import type { OutputLock } from './output-lock.js';
 
 export type WriteResult = 'written' | 'unchanged' | 'cancelled';
 interface TemporaryFile { writeFile(source: string): Promise<void>; close(): Promise<void> }
@@ -13,10 +15,13 @@ export interface WriteOperations {
   readonly remove: (file: string) => Promise<void>;
   readonly replace: (temp: string, target: string, isCurrent: () => boolean, signal?: AbortSignal) => Promise<'written' | 'cancelled'>;
   readonly createId: () => string;
+  readonly acquireLock?: (outFile: string) => OutputLock;
 }
 export interface WriteOptions {
   readonly signal?: AbortSignal;
   readonly operations?: Partial<WriteOperations>;
+  /** Reuse ownership acquired before rendering; otherwise this write acquires its own lock. */
+  readonly lock?: OutputLock;
 }
 const defaults: WriteOperations = {
   read: file => readFile(file, 'utf8'), mkdir: directory => mkdir(directory, { recursive: true }),
@@ -24,9 +29,10 @@ const defaults: WriteOperations = {
   replace: (temp, target, isCurrent, signal) => replaceGenerated(temp, target, isCurrent, undefined, signal),
 };
 export function isGeneratedFile(outFile: string, file: string): boolean {
-  const target = path.resolve(outFile);
-  const current = path.resolve(file);
-  return current === target || (path.dirname(current) === path.dirname(target)
+  const target = process.platform === 'win32' ? path.resolve(outFile).toLowerCase() : path.resolve(outFile);
+  const current = process.platform === 'win32' ? path.resolve(file).toLowerCase() : path.resolve(file);
+  const lock = path.join(path.dirname(target), `.${path.basename(target)}.saylo-typegen.lock`);
+  return current === target || current === lock || path.dirname(current) === lock || (path.dirname(current) === path.dirname(target)
     && path.basename(current).startsWith(`.${path.basename(target)}.saylo-typegen-`) && current.endsWith('.tmp'));
 }
 
@@ -38,6 +44,15 @@ export async function writeGenerated(outFile: string, source: string, isCurrent:
   const operations = { ...defaults, ...options.operations };
   const target = path.resolve(outFile);
   if (!target.endsWith('.d.ts')) throw new Error('typegen outFile must end in .d.ts.');
+  const write = (lock: OutputLock) => {
+    assertOutputLock(lock, target);
+    return writeLocked(target, source, () => lock.active && current(), operations, options.signal);
+  };
+  return options.lock ? write(options.lock) : withOutputLock(target, write, operations.acquireLock ?? acquireOutputLock);
+}
+
+async function writeLocked(target: string, source: string, current: () => boolean,
+  operations: WriteOperations, signal?: AbortSignal): Promise<WriteResult> {
   let existing: string | undefined;
   try { existing = await operations.read(target); }
   catch (error) { if ((error as NodeJS.ErrnoException | null)?.code !== 'ENOENT') throw error; }
@@ -54,7 +69,7 @@ export async function writeGenerated(outFile: string, source: string, isCurrent:
     handle = await operations.create(temp); owned = true;
     if (current()) await handle.writeFile(source);
     await handle.close(); handle = undefined;
-    if (current()) result = await operations.replace(temp, target, current, options.signal);
+    if (current()) result = await operations.replace(temp, target, current, signal);
   } catch (error) { failed = true; failure = error; }
   // Exclusive creation establishes ownership even if the following write fails.
   // A successful rename already removed the temp and is the commit point.
