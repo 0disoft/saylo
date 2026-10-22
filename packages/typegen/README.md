@@ -73,7 +73,7 @@ npx --no-install saylo check --config saylo.config.json --baseline saylo-baselin
 npx --no-install saylo sync --config saylo.config.json --baseline saylo-baseline.json --dry-run --json
 ```
 
-`baseline` 경로를 공통 JSON에 넣어도 된다. 경로를 지정했는데 파일이 없거나 잘못됐으면 실패한다. `snapshot`은 기존 baseline을 읽지 않고 새 비교 기준을 stdout으로 출력한다. 기준 기록 생성은 번역 승인 처리가 아니며, 미완성 번역이 있어도 가능하지만 잘못된 카탈로그가 있으면 거부한다. `check`·`sync`는 기록을 갱신하지 않는다. 원문이나 허용 태그가 바뀌면 기존 번역을 `SOURCE_CHANGED`, 새 원문에 이미 번역이 있으면 `SOURCE_ADDED`로 표시한다. 기록이 없으면 `reviewTracking: "not-configured"`로 표시하고 원문 변경 여부를 추정하지 않는다. 직접 검수한 뒤 비교 기준을 갱신한다.
+`baseline` 경로를 공통 JSON에 넣어도 된다. 경로를 지정했는데 파일이 없거나 잘못됐으면 실패한다. `snapshot`은 기존 baseline을 읽지 않고 새 비교 기준을 stdout으로 출력한다. 기준 기록 생성은 번역 승인 처리가 아니며, 미완성 번역이 있어도 가능하지만 잘못된 카탈로그가 있으면 거부한다. `check`·`sync`는 기록을 갱신하지 않는다. 원문이나 허용 태그가 바뀌면 기존 번역을 `SOURCE_CHANGED`, 새 원문에 이미 번역이 있으면 `SOURCE_ADDED`로 표시한다. `baseline`과 `reviews`를 모두 지정하지 않았을 때만 `reviewTracking: "not-configured"`이며, `baseline`만 쓰면 `baseline`, `reviews`만 쓰면 `approvals`, 둘 다면 `baseline-and-approvals`다. 직접 검수한 뒤 비교 기준을 갱신한다.
 
 기존 비교 기록을 갱신할 때는 stdout을 새 파일에 저장하고, 종료 코드 0과 내용을 확인한 뒤 교체한다. 기존 baseline에 바로 리다이렉트하면 명령이 실패해도 셸이 기존 파일을 먼저 덮어쓸 수 있다.
 
@@ -131,7 +131,25 @@ npx --no-install saylo import --file translation-work.json --apply --json
 
 `import`는 타입 선언과 baseline을 다시 만들지 않는다. 적용 뒤 `saylo check`와 타입 생성(`saylo-typegen`)을 따로 실행한다. baseline 갱신은 번역 승인과 별개다.
 
-종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. 사용법·설정·파일시스템 오류, 읽을 수 없는 작업 파일 형식·식별자는 2다. `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
+### 선택적 번역 승인 기록 (미게시)
+
+`reviews`는 승인한 로케일·키와 그때의 원문·번역 해시를 묶는 선택 기능이다. 공통 JSON에 `"reviews": "saylo-reviews.json"`을 넣거나 `check`·`sync`·`export`·`approve`에 `--reviews`를 붙인다. 지정하지 않으면 기존 baseline-only 동작을 유지한다. 장부에는 locale/namespace/id별 원문·rich 계약 해시와 번역 해시만 저장한다.
+
+처음 켜면 대상 로케일의 기존 번역도 모두 명시 승인이 필요하다. `check`·`sync`는 장부가 없으면 실패하고(exit 2), `export`와 `approve`는 없는 장부를 빈 기록으로 시작한다. `export`는 장부를 쓰지 않으며, 번역된 기존 키도 모두 `review` 작업으로 낸다.
+
+```sh
+npx --no-install saylo export --reviews saylo-reviews.json --locales en > review-work.json
+npx --no-install saylo approve --reviews saylo-reviews.json --file review-work.json --dry-run --json
+npx --no-install saylo approve --reviews saylo-reviews.json --file review-work.json --apply --json
+```
+
+작업 파일을 검토한 뒤 확인한 번역 문자열은 그대로 둔다. 아직 확인하지 않은 항목은 `translation`을 `null`로 바꾸거나 파일에서 뺀다. `translation: null`인 항목은 승인하지 않으며, 값이 그대로인 기존 번역도 남기면 명시 승인할 수 있다. 현재 원문·rich 해시나 번역이 export 뒤 달라졌으면 충돌로 막고 일부만 적용하지 않는다. `import --apply`도 번역을 자동 승인하지 않는다.
+
+`approve --apply`는 확인한 항목의 승인 기록만 추가하고 카탈로그·baseline·타입 선언은 쓰지 않는다. 다른 locale/key의 기존 승인은 보존하며, baseline을 새로 만들어도 승인 장부와 미승인 상태는 바뀌지 않는다. 승인 뒤 원문이 바뀌면 `SOURCE_CHANGED`, 번역이 바뀌면 `TRANSLATION_CHANGED`, 기록이 없는 키는 `REVIEW_REQUIRED`다. `check`·`sync`·`export`는 모두 장부를 적용해 이 상태를 낸다.
+
+장부는 `locales` 밖의 `.json` 파일이어야 한다. 쓰기 시 부모 디렉터리가 실제로 존재하고 symlink가 아니어야 하며, 장부 경로가 symlink면 거부한다. 같은 장부는 장부별 lock으로 직렬화하고 임시 파일을 atomic rename한다. 강제 종료로 남은 lock은 소유 pid가 끝났는지 확인한 뒤 지운다.
+
+종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`와 `approve`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. 사용법·설정·파일시스템 오류, 읽을 수 없는 작업 파일 형식·식별자는 2다. `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
 
 ### 기존 인자로 타입 생성
 

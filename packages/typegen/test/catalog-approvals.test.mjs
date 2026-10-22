@@ -90,3 +90,74 @@ test('approval documents reject duplicate or malformed identities, locale mismat
     assert.throws(() => parseReviewApprovals(JSON.stringify(value), 'ko'));
   }
 });
+
+test('explicit approval accepts unchanged translations, preserves other records, and never changes catalogs or baseline', async t => {
+  const f = await fixture(t);
+  await writeFile(path.join(f.root, 'baseline.json'), JSON.stringify(f.baseline));
+  const oldBaseline = await readFile(path.join(f.root, 'baseline.json'), 'utf8');
+  const reviews = path.join(f.root, 'reviews.json');
+  const work = f.run(['export', '--reviews', 'reviews.json', '--locales', 'en']);
+  assert.equal(work.status, 0, work.stdout);
+  await writeFile(path.join(f.root, 'work.json'), work.stdout);
+  const before = await readFile(path.join(f.config.localesDir, 'en/common.json'), 'utf8');
+  const args = ['approve', '--reviews', 'reviews.json', '--file', 'work.json'];
+  const preview = f.run([...args, '--dry-run', '--json']);
+  assert.equal(preview.status, 0, preview.stdout); assert.equal(JSON.parse(preview.stdout).changes.length, 2);
+  await assert.rejects(readFile(reviews), { code: 'ENOENT' });
+  const applied = f.run([...args, '--apply', '--json']);
+  assert.equal(applied.status, 0, applied.stdout); assert.equal(JSON.parse(applied.stdout).writtenFiles.length, 1);
+  assert.equal(await readFile(path.join(f.config.localesDir, 'en/common.json'), 'utf8'), before);
+  assert.equal(await readFile(path.join(f.root, 'baseline.json'), 'utf8'), oldBaseline);
+  const ledger = JSON.parse(await readFile(reviews, 'utf8'));
+  assert.equal(ledger.entries.length, 2); assert.ok(ledger.entries.every(entry => entry.locale === 'en'));
+  const remaining = JSON.parse(f.run(['export', '--reviews', 'reviews.json']).stdout);
+  assert.ok(remaining.entries.every(entry => entry.locale === 'fr'));
+  remaining.entries.find(entry => entry.id === 'same').translation = null;
+  await writeFile(path.join(f.root, 'fr-work.json'), JSON.stringify(remaining));
+  assert.equal(f.run(['approve', '--reviews', 'reviews.json', '--file', 'fr-work.json', '--apply', '--json']).status, 0);
+  const merged = JSON.parse(await readFile(reviews, 'utf8'));
+  assert.equal(merged.entries.length, 3); assert.deepEqual(merged.entries.filter(entry => entry.locale === 'en'), ledger.entries);
+  assert.equal(f.run([...args, '--apply', '--json']).status, 0);
+  assert.deepEqual(JSON.parse(f.run([...args, '--apply', '--json']).stdout).writtenFiles, []);
+});
+
+test('approval rejects stale reviewed text, missing translations and unsafe usage before changing a ledger', async t => {
+  const f = await fixture(t);
+  const work = JSON.parse(f.run(['export', '--reviews', 'reviews.json', '--locales', 'en']).stdout);
+  await writeFile(path.join(f.root, 'work.json'), JSON.stringify(work));
+  const args = ['approve', '--reviews', 'reviews.json', '--file', 'work.json', '--apply', '--json'];
+  await f.write('en', { title: 'Concurrent translation', same: 'en same' });
+  let result = f.run(args);
+  assert.equal(result.status, 1, result.stdout);
+  assert.ok(JSON.parse(result.stdout).diagnostics.some(issue => issue.code === 'TRANSLATION_CONFLICT'));
+  await assert.rejects(readFile(path.join(f.root, 'reviews.json')), { code: 'ENOENT' });
+  await f.write('en', { title: 'en title', same: 'en same' });
+  await f.write('ko', { title: 'Changed source', same: '동일' });
+  result = f.run(args); assert.equal(result.status, 1);
+  assert.ok(JSON.parse(result.stdout).diagnostics.some(issue => issue.code === 'SOURCE_CONFLICT'));
+  await f.write('ko', { title: '원문', same: '동일' });
+  await f.write('en', { same: 'en same' });
+  result = f.run(args); assert.equal(result.status, 1);
+  assert.ok(JSON.parse(result.stdout).diagnostics.some(issue => issue.code === 'TRANSLATION_CONFLICT'));
+  for (const invalid of [['approve', '--file', 'work.json', '--apply'], ['approve', '--reviews', 'reviews.json', '--file', 'work.json'],
+    ['approve', '--reviews', 'reviews.json', '--file', 'work.json', '--apply', '--dry-run'], ['import', '--reviews', 'reviews.json', '--file', 'work.json', '--apply']])
+    assert.equal(f.run([...invalid, '--json']).status, 2);
+  result = f.run(['approve', '--reviews', 'locales/.reviews.json', '--file', 'work.json', '--dry-run', '--json']);
+  assert.equal(result.status, 1); assert.ok(JSON.parse(result.stdout).diagnostics.some(issue => issue.code === 'INVALID_REVIEW_PATH'));
+});
+
+test('configured reviews resolve relative to config and do not make import approve or erase stale records', async t => {
+  const f = await fixture(t);
+  await writeFile(path.join(f.root, 'saylo.config.json'), JSON.stringify({ ...f.config, reviews: 'reviews.json' }));
+  const work = f.run(['export', '--locales', 'en']); assert.equal(work.status, 0);
+  const completed = JSON.parse(work.stdout);
+  completed.entries.find(entry => entry.id === 'title').translation = 'Revised en title';
+  await writeFile(path.join(f.root, 'work.json'), JSON.stringify(completed));
+  const imported = f.run(['import', '--file', 'work.json', '--apply', '--json']);
+  assert.equal(imported.status, 0, imported.stdout);
+  assert.equal(JSON.parse(await readFile(path.join(f.config.localesDir, 'en/common.json'), 'utf8')).title, 'Revised en title');
+  await assert.rejects(readFile(path.join(f.root, 'reviews.json')), { code: 'ENOENT' });
+  const approved = f.run(['approve', '--file', 'work.json', '--apply', '--json']);
+  assert.equal(approved.status, 0, approved.stdout);
+  assert.equal(JSON.parse(await readFile(path.join(f.root, 'reviews.json'), 'utf8')).entries.length, 2);
+});

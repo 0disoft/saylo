@@ -1,36 +1,16 @@
 import { randomUUID } from 'node:crypto';
-import { lstatSync, readFileSync, realpathSync } from 'node:fs';
+import { lstatSync } from 'node:fs';
 import { mkdir, open, rm, rmdir } from 'node:fs/promises';
 import path from 'node:path';
 import { replaceGenerated } from './replace.js';
-import type { ImportGuard, TranslationImportPlan, TranslationImportReport } from './catalog-import.js';
+import { assertSafePath, assertCurrent } from './catalog-io.js';
+import type { TranslationImportPlan, TranslationImportReport } from './catalog-import.js';
 
 /** Atomic per file, not a multi-file transaction. Always report commits made before an I/O failure. */
 export class TranslationApplyError extends Error {
   constructor(message: string, readonly writtenFiles: readonly string[], cause: unknown) { super(message, { cause }); }
 }
 
-function assertSafePath(root: string, file: string): void {
-  const relative = path.relative(root, file);
-  if (!relative || path.isAbsolute(relative) || relative === '..' || relative.startsWith(`..${path.sep}`) ||
-      path.relative(root, realpathSync(root))) throw new Error(`Import path escapes catalog root: ${file}`);
-  let current = root;
-  for (const part of relative.split(path.sep)) {
-    current = path.join(current, part);
-    try { if (lstatSync(current).isSymbolicLink()) throw new Error(`Import refuses a symlink or junction: ${current}`); }
-    catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return; throw error; }
-  }
-}
-function assertCurrent(root: string, guards: readonly ImportGuard[], signal?: AbortSignal): void {
-  signal?.throwIfAborted();
-  for (const guard of guards) {
-    assertSafePath(root, guard.file);
-    let current: string | null;
-    try { current = readFileSync(guard.file, 'utf8'); }
-    catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; current = null; }
-    if (current !== guard.source) throw new Error(`Catalog changed during import: ${guard.file}`);
-  }
-}
 export interface TranslationApplyOptions {
   readonly signal?: AbortSignal;
   readonly replace?: typeof replaceGenerated;
