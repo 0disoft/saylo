@@ -65,6 +65,8 @@ npx --no-install saylo sync --config saylo.config.json --dry-run --json
 
 `sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. `check`·`sync`·`snapshot`은 읽기 전용이며 카탈로그·생성 타입·검수 기록을 쓰지 않는다. 삭제와 자동 번역 기능은 없다. 번역을 카탈로그에 쓰는 명령은 `import --apply`뿐이다.
 
+다음 `snapshot`·`baseline` 예시는 `reviews`를 쓰지 않는 이전 baseline-only 검수 방식이다. 승인 장부를 쓰는 경우에는 뒤의 [선택적 번역 승인 기록](#선택적-번역-승인-기록-미게시)을 따른다.
+
 원문 변경을 비교하려면 먼저 `snapshot`의 stdout을 파일로 저장한다. 검수 기록에는 메시지별 원문·rich 계약의 SHA-256만 담고 원문이나 번역 내용은 저장하지 않는다.
 
 ```sh
@@ -85,7 +87,7 @@ npx --no-install saylo sync --config saylo.config.json --baseline saylo-baseline
 npx --no-install saylo export --config saylo.config.json > translation-work.json
 ```
 
-원문 변경 검수를 포함하려면 `--baseline saylo-baseline.json`을 붙이거나 설정에 `baseline`을 둔다. baseline이 없으면 `add` 작업만 나온다. 카탈로그가 잘못되면 작업 파일 대신 `saylo-check/v1` 보고서를 출력하고 exit 1로 끝난다. `export`는 디스크를 쓰지 않으므로 새 파일에 저장하고 종료 코드와 내용을 확인한 뒤 기존 작업 파일과 교체한다.
+`reviews`를 쓰지 않는 이전 baseline-only 방식에서 원문 변경 검수를 포함하려면 `--baseline saylo-baseline.json`을 붙이거나 설정에 `baseline`을 둔다. baseline이 없으면 `add` 작업만 나온다. 카탈로그가 잘못되면 작업 파일 대신 `saylo-check/v1` 보고서를 출력하고 exit 1로 끝난다. `export`는 디스크를 쓰지 않으므로 새 파일에 저장하고 종료 코드와 내용을 확인한 뒤 기존 작업 파일과 교체한다.
 
 각 항목의 `source`·`sourceHash`·`originalTranslation`은 내보낸 시점의 체크포인트다. `translation`만 고치고 나머지 필드는 그대로 둔다. `add` 항목의 `originalTranslation`은 `null`이고, `review` 항목은 기존 번역으로 시작한다. `review` 항목을 손대지 않으면 `translation`이 `originalTranslation`과 같아서 가져올 때 건너뛴다. `translation: null`은 아직 하지 않은 작업이며, `""`는 정상 번역이다.
 
@@ -134,6 +136,8 @@ npx --no-install saylo import --file translation-work.json --apply --json
 ### 선택적 번역 승인 기록 (미게시)
 
 `reviews`는 승인한 로케일·키와 그때의 원문·번역 해시를 묶는 선택 기능이다. 공통 JSON에 `"reviews": "saylo-reviews.json"`을 넣거나 `check`·`sync`·`export`·`approve`에 `--reviews`를 붙인다. 지정하지 않으면 기존 baseline-only 동작을 유지한다. 장부에는 locale/namespace/id별 원문·rich 계약 해시와 번역 해시만 저장한다.
+
+공통 JSON `SayloProjectConfig`에서 `requireReviewedTranslations: true`와 `reviews`를 함께 두면 같은 설정을 읽는 Vite 운영 빌드도 승인 검사를 강제한다. 이 옵션의 기본값은 `false`이며, `true`인데 `reviews`가 없으면 Vite dev에서도 거부한다.
 
 처음 켜면 대상 로케일의 기존 번역도 모두 명시 승인이 필요하다. `check`·`sync`는 장부가 없으면 실패하고(exit 2), `export`와 `approve`는 없는 장부를 빈 기록으로 시작한다. `export`는 장부를 쓰지 않으며, 번역된 기존 키도 모두 `review` 작업으로 낸다.
 

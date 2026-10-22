@@ -114,6 +114,23 @@ saylo({ localesDir: 'locales', baseLocale: 'ko', requireCompleteTranslations: tr
 
 누락은 `CatalogError.diagnostics`의 `MISSING_MESSAGE`·`MISSING_NAMESPACE`로 모아 빌드를 실패시킨다. 진단에 로케일·namespace·대상 파일과 누락 키를 넣고, 없는 파일은 만들어야 할 상대 경로로 안내한다. 생성 타입 파일을 갱신하기 전에 검사하므로 실패 시 기존 파일을 유지한다. 개발 서버와 라이브 수정은 옵션을 켜도 기존 부분 번역·fallback 동작을 유지한다. 상세 범위와 검증은 [완역 검사 기록](https://github.com/0disoft/saylo/blob/main/docs/42-complete-translations.md)에 있다.
 
+## 검수 승인 강제 (미게시)
+
+현재 checkout에는 Vite 옵션과 공통 JSON `SayloProjectConfig`의 `requireReviewedTranslations`(기본 `false`)가 있다. 켜면 `reviews` 경로가 필수이고, Vite 옵션에 직접 준 상대 경로는 Vite root, `loadProjectConfig()`가 읽은 JSON의 경로는 그 JSON 파일 폴더를 기준으로 해석한다.
+
+```js
+saylo({
+  localesDir: 'locales',
+  baseLocale: 'ko',
+  requireReviewedTranslations: true,
+  reviews: 'saylo-reviews.json', // Vite root 기준
+});
+```
+
+운영 빌드에서만 승인 파일을 읽고 `SOURCE_CHANGED`·`TRANSLATION_CHANGED`·`REVIEW_REQUIRED` 상태, 승인 파일 누락·손상을 빌드 실패로 처리한다. 이 옵션을 켜면 완역 검사도 함께 적용하며, `initialNamespaces`나 `includeKeys`와 무관하게 모든 로케일의 기준 키를 검사한다. 번역을 삭제해 승인을 우회할 수 없고, 이 검사는 타입 생성과 키 pruning 전에 끝난다. `vite build --watch`는 승인 파일 변경도 감지해 다시 검사한다.
+
+개발 서버는 승인 파일을 읽지 않고 기존 partial 번역·fallback 동작을 유지한다. 다만 옵션 설정 검사는 개발 중에도 하므로 `requireReviewedTranslations: true`에 `reviews`가 없으면 dev도 거부한다.
+
 ## 지연 로딩 클라이언트
 
 `virtual:saylo/lazy`가 초기 pair와 `catalogSource`를 제공한다. 앱은 코어 `createI18n`으로 instance를 만들고 `connectDev`로 개발 서버에 연결한다. `typegen.outFile`은 Vite root 기준이라 아래 `src/i18n.ts`에서는 `../generated.js`를 import한다.

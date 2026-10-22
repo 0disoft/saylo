@@ -3,6 +3,7 @@ import path from 'node:path';
 import { createBaseSchema, createStore } from '@0disoft/saylo-core';
 import { isGeneratedFile, TypeGenerator } from '@0disoft/saylo-typegen';
 import { assertRichTextKeys } from '@0disoft/saylo-typegen/config';
+import { requireReviewedTranslations } from '@0disoft/saylo-typegen/review-check';
 import type { Plugin, ViteDevServer, WebSocketClient } from 'vite';
 import { CatalogRegistry } from './catalog-registry.js';
 import { encodeCatalogResult } from './catalog-wire.js';
@@ -44,6 +45,13 @@ export default function saylo(options: SayloViteOptions): Plugin {
   if (options.requireCompleteTranslations !== undefined && typeof options.requireCompleteTranslations !== 'boolean') {
     throw new TypeError('requireCompleteTranslations must be a boolean.');
   }
+  if (options.requireReviewedTranslations !== undefined && typeof options.requireReviewedTranslations !== 'boolean')
+    throw new TypeError('requireReviewedTranslations must be a boolean.');
+  if (options.reviews !== undefined && (typeof options.reviews !== 'string' || !options.reviews.trim()))
+    throw new TypeError('reviews must be a nonempty string.');
+  const reviewedBuild = options.requireReviewedTranslations === true;
+  if (reviewedBuild && options.reviews === undefined)
+    throw new TypeError('requireReviewedTranslations requires a reviews file.');
   const baseLocale = Intl.getCanonicalLocales(options.baseLocale)[0] ?? '';
   if (!baseLocale) throw new RangeError('baseLocale must not be empty.');
   const initialLocale = Intl.getCanonicalLocales(options.initialLocale ?? baseLocale)[0]!;
@@ -55,6 +63,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let files = new Map<string, CatalogFile>();
   let registry: CatalogRegistry;
   let production = false;
+  let reviewsFile: string | undefined;
   let buildCatalogs: readonly ParsedCatalog[] | undefined;
   const keySources = new Set<string>();
   let builds = 0;
@@ -141,6 +150,13 @@ export default function saylo(options: SayloViteOptions): Plugin {
         registry.load(meta.key.locale, meta.key.namespace));
     }
   }
+  async function validateCatalogs() {
+    const strictBuild = production && (options.requireCompleteTranslations === true || reviewedBuild);
+    // Missing locales are reported by completeness, rather than by createStore's locale range check.
+    createStore({ baseLocale, locale: strictBuild ? baseLocale : initialLocale, catalogs: snapshot().catalogs, timeZone }).dispose();
+    if (strictBuild) await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
+    if (production && reviewedBuild) await requireReviewedTranslations([...files.values()], baseLocale, reviewsFile!);
+  }
   let buildRoot = '';
   let isAliased = (_specifier: string) => false;
   return {
@@ -165,14 +181,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
       root = scanned.root;
       files = new Map(scanned.files.map(f => [f.file, f]));
       production = config.command === 'build';
-      // Fresh strict validation for startup and builds, using the same core contracts.
-      const strictBuild = production && options.requireCompleteTranslations === true;
-      // Check catalog schemas even when strict mode's initial locale has no files;
-      // the completeness pass then reports its missing paths instead of a range error.
-      createStore({ baseLocale, locale: strictBuild ? baseLocale : initialLocale, catalogs: snapshot().catalogs, timeZone }).dispose();
-      if (strictBuild) {
-        await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
-      }
+      reviewsFile = options.reviews === undefined ? undefined : path.resolve(buildRoot, options.reviews);
+      await validateCatalogs();
       // Automatic analysis needs Vite's plugin resolver, available during buildStart.
       if (!production || !autoKeys) await prepareBuild();
       if (options.typegen) {
@@ -185,6 +195,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
     async buildStart() {
       if (!production) return;
       this.addWatchFile?.(root);
+      if (reviewedBuild) this.addWatchFile?.(reviewsFile!);
       for (const file of files.keys()) {
         this.addWatchFile?.(path.dirname(file));
         this.addWatchFile?.(file);
@@ -192,10 +203,10 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (builds++ > 0) {
         const scanned = await scanCatalogs(root, richText);
         files = new Map(scanned.files.map(file => [file.file, file]));
-        createStore({ baseLocale, locale: options.requireCompleteTranslations ? baseLocale : initialLocale,
-          catalogs: snapshot().catalogs, timeZone }).dispose();
-        if (options.requireCompleteTranslations) await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
       }
+      // Re-read approvals on every build, including ledger-only watch rebuilds and failed-build recovery.
+      if (builds > 1) await validateCatalogs();
+      else if (reviewedBuild) await requireReviewedTranslations([...files.values()], baseLocale, reviewsFile!);
       if (builds > 1 || autoKeys) await prepareBuild(async (specifier, importer) => {
         // Framework/runtime imports are translator seeds, not app-owned alias modules.
         if (/^@0disoft\/saylo-(?:core|react|svelte|vue|vite)(?:\/|$)/.test(specifier) ||

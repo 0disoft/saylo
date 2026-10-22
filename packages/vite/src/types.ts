@@ -19,6 +19,10 @@ export interface SayloViteOptions {
   readonly includeKeys?: readonly string[] | AutoIncludeKeys;
   /** Build-only: every discovered locale and initialLocale must cover all base namespaces/keys. Defaults to false. */
   readonly requireCompleteTranslations?: boolean;
+  /** Build-only: require complete translations and current explicit approvals. Defaults to false. */
+  readonly requireReviewedTranslations?: boolean;
+  /** Approval ledger relative to Vite root; required when requireReviewedTranslations is true. */
+  readonly reviews?: string;
   /** Declaration file relative to Vite root. Startup awaits it; live updates do not. */
   readonly typegen?: { readonly outFile: string };
 }

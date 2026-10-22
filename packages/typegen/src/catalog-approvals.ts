@@ -63,7 +63,7 @@ export async function readReviewApprovals(file: string, baseLocale: string, allo
 }
 
 /** Opt-in approval tracking is per locale/key and cannot be reset by replacing a global baseline. */
-export function applyReviewApprovals(input: CatalogInspection, report: CatalogCheckReport, approvals: ReviewApprovals): CatalogCheckReport {
+export function applyReviewApprovals(input: Pick<CatalogInspection, 'files'>, report: CatalogCheckReport, approvals: ReviewApprovals): CatalogCheckReport {
   const sourceIssues = new Map(report.diagnostics.filter(issue => ['SOURCE_CHANGED', 'SOURCE_ADDED'].includes(issue.code))
     .map(issue => [approvalIdentity({ ...issue, id: issue.id! }), issue]));
   const diagnostics: CatalogIssue[] = report.diagnostics.filter(issue => !['SOURCE_CHANGED', 'SOURCE_ADDED'].includes(issue.code));

@@ -3,6 +3,7 @@ import { writeGenerated, TypeGenerator } from '@0disoft/saylo-typegen';
 import type { WriteOptions, TypeGeneratorOperations } from '@0disoft/saylo-typegen';
 import { loadProjectConfig, resolveProjectConfig } from '@0disoft/saylo-typegen/config';
 import type { SayloProjectConfig } from '@0disoft/saylo-typegen/config';
+import { requireReviewedTranslations, TranslationReviewError } from '@0disoft/saylo-typegen/review-check';
 import type { AppSchema } from './generated.js';
 import { fixtureCatalog } from './fixture.mjs';
 
@@ -10,6 +11,10 @@ const writeOptions: WriteOptions = { signal: new AbortController().signal, opera
 const project: SayloProjectConfig = loadProjectConfig('saylo.config.json');
 const policy: readonly string[] | undefined = project.richText?.demo?.terms;
 void policy;
+const reviewRequired: boolean | undefined = project.requireReviewedTranslations;
+const reviewed: Promise<void> = requireReviewedTranslations([], 'ko', 'reviews.json');
+const reviewFailure = new TranslationReviewError([]);
+void reviewRequired; void reviewed; void reviewFailure;
 resolveProjectConfig({ localesDir: 'locales', baseLocale: 'ko' });
 const written: Promise<'written' | 'unchanged' | 'cancelled'> = writeGenerated('generated.d.ts', 'source', () => true, writeOptions);
 const generatorOperations: TypeGeneratorOperations = { write: writeGenerated };

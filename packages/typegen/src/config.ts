@@ -14,6 +14,7 @@ export interface SayloProjectConfig {
   readonly timeZone?: string;
   readonly richText?: RichTextPolicies;
   readonly requireCompleteTranslations?: boolean;
+  readonly requireReviewedTranslations?: boolean;
   readonly typegen?: { readonly outFile: string };
   /** Completeness targets for the catalog CLI; omitted means discovered locales. */
   readonly checkLocales?: readonly string[];
@@ -24,7 +25,7 @@ export interface SayloProjectConfig {
 }
 
 const fields = new Set(['format', 'localesDir', 'baseLocale', 'initialLocale', 'initialNamespaces', 'timeZone',
-  'richText', 'requireCompleteTranslations', 'typegen', 'checkLocales', 'baseline', 'reviews']);
+  'richText', 'requireCompleteTranslations', 'requireReviewedTranslations', 'typegen', 'checkLocales', 'baseline', 'reviews']);
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
 
 function string(value: unknown, name: string): string {
@@ -79,6 +80,10 @@ export function resolveProjectConfig(input: unknown, directory = process.cwd()):
   }
   if (input.requireCompleteTranslations !== undefined && typeof input.requireCompleteTranslations !== 'boolean')
     throw new TypeError('requireCompleteTranslations must be a boolean.');
+  if (input.requireReviewedTranslations !== undefined && typeof input.requireReviewedTranslations !== 'boolean')
+    throw new TypeError('requireReviewedTranslations must be a boolean.');
+  if (input.requireReviewedTranslations === true && input.reviews === undefined)
+    throw new TypeError('requireReviewedTranslations requires a reviews file.');
   const timeZone = input.timeZone === undefined ? undefined : string(input.timeZone, 'timeZone');
   if (timeZone !== undefined) new Intl.DateTimeFormat('en', { timeZone });
   return Object.freeze({ localesDir, baseLocale,
@@ -87,6 +92,7 @@ export function resolveProjectConfig(input: unknown, directory = process.cwd()):
     ...(timeZone === undefined ? {} : { timeZone }), ...(richText === undefined ? {} : { richText }),
     ...(typegen === undefined ? {} : { typegen }),
     ...(input.requireCompleteTranslations === undefined ? {} : { requireCompleteTranslations: input.requireCompleteTranslations as boolean }),
+    ...(input.requireReviewedTranslations === undefined ? {} : { requireReviewedTranslations: input.requireReviewedTranslations as boolean }),
     ...(input.checkLocales === undefined ? {} : { checkLocales: list(input.checkLocales, 'checkLocales', locale) }),
     ...(input.baseline === undefined ? {} : { baseline: path.resolve(directory, string(input.baseline, 'baseline')) }),
     ...(input.reviews === undefined ? {} : { reviews: path.resolve(directory, string(input.reviews, 'reviews')) }),

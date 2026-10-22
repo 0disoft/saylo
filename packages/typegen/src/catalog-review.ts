@@ -11,7 +11,7 @@ export interface CatalogReviewBaseline {
   readonly messages: Readonly<Record<string, string>>;
 }
 
-export function createReviewBaseline(input: CatalogInspection, baseLocale: string): CatalogReviewBaseline {
+export function createReviewBaseline(input: Pick<CatalogInspection, 'files'>, baseLocale: string): CatalogReviewBaseline {
   const entries = input.files.filter(file => file.catalog.locale === baseLocale).flatMap(({ catalog }) =>
     Object.entries(catalog.messages).map(([id, message]) => [`${catalog.namespace}:${id}`,
       createHash('sha256').update(JSON.stringify([message.source, message.richTextTags ?? null])).digest('hex')] as const));

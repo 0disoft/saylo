@@ -32,6 +32,10 @@
     "./catalog-files": {
       "types": "./dist/catalog-files.d.ts",
       "import": "./dist/catalog-files.js"
+    },
+    "./review-check": {
+      "types": "./dist/review-check.d.ts",
+      "import": "./dist/review-check.js"
     }
   },
   "bin": {

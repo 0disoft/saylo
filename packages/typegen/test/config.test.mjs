@@ -21,7 +21,8 @@ test('shared JSON settings resolve paths from their own directory and copy neste
   const root = await fixture(t);
   const input = { format: 'saylo-project/v1', localesDir: 'locales', baseLocale: 'en-us',
     richText: { demo: { terms: ['strong', 'link'] } }, checkLocales: ['ko'], initialNamespaces: ['demo'],
-    typegen: { outFile: 'generated.d.ts' }, baseline: 'review.json', timeZone: 'UTC' };
+    typegen: { outFile: 'generated.d.ts' }, baseline: 'review.json', timeZone: 'UTC',
+    requireReviewedTranslations: true, reviews: 'approvals.json' };
   const file = path.join(root, 'saylo.config.json');
   await writeFile(file, '\uFEFF' + JSON.stringify(input));
   const loaded = loadProjectConfig(file);
@@ -29,6 +30,8 @@ test('shared JSON settings resolve paths from their own directory and copy neste
   assert.equal(loaded.localesDir, path.join(root, 'locales'));
   assert.equal(loaded.typegen.outFile, path.join(root, 'generated.d.ts'));
   assert.equal(loaded.baseline, path.join(root, 'review.json'));
+  assert.equal(loaded.requireReviewedTranslations, true);
+  assert.equal(loaded.reviews, path.join(root, 'approvals.json'));
   const direct = resolveProjectConfig(input, root);
   input.richText.demo.terms.push('em'); input.checkLocales.push('fr');
   assert.deepEqual(direct, loaded);
@@ -40,7 +43,9 @@ test('config validation rejects misspelled fields and invalid domain policies', 
   const base = { localesDir: 'locales', baseLocale: 'ko' };
   for (const extra of [{ format: 'other' }, { localeDir: 'typo' }, { baseLocale: '' }, { timeZone: 'Invalid/Zone' },
     { checkLocales: ['en-us', 'en-US'] }, { initialNamespaces: ['../bad'] }, { typegen: { outFile: 'app.ts' } },
-    { richText: { demo: { terms: ['bad tag'] } } }, { richText: { demo: { terms: ['link', 'link'] } } }])
+    { richText: { demo: { terms: ['bad tag'] } } }, { richText: { demo: { terms: ['link', 'link'] } } },
+    { requireReviewedTranslations: 'true' }, { requireReviewedTranslations: true },
+    { requireReviewedTranslations: true, reviews: '' }])
     assert.throws(() => resolveProjectConfig({ ...base, ...extra }));
 });
 
