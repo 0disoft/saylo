@@ -1,4 +1,5 @@
 import { CatalogError } from './diagnostics.js';
+import { nextRevision } from './loading-runtime.js';
 import { createTextFormatter } from './formatters.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { createBoundTranslator } from './translator.js';
@@ -71,7 +72,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   function assertActive() { if (disposed) throw new Error('Store is disposed.'); }
   function publish(nextRegistry: Registry, nextLocale: string) {
     const nextSignature = visibleSignature(nextRegistry, baseLocale, nextLocale);
-    const next = nextSignature === signature ? planned : snapshot(nextRegistry, nextLocale, planned.stateRevision + 1);
+    const next = nextSignature === signature ? planned : snapshot(nextRegistry, nextLocale, nextRevision(planned.stateRevision));
     registry = nextRegistry;
     locale = nextLocale;
     signature = nextSignature;

@@ -108,6 +108,34 @@ test('request instances stay isolated and serialized scopes track committed stat
   assert.equal(serializeBootSnapshot(hydrate.getBootSnapshot()), serializeBootSnapshot(createBootSnapshot(hydrate.getBootSnapshot())));
 });
 
+test('revision exhaustion rejects before changing committed state and preserves boot serialization', async t => {
+  const f = fixture(), seed = f.create('ko'); t.after(() => seed.dispose());
+  const boot = seed.getBootSnapshot();
+  const instance = createI18n({ catalogSource: f.source,
+    initialSnapshot: { ...boot, stateRevision: Number.MAX_SAFE_INTEGER - 1 } });
+  t.after(() => instance.dispose());
+  await instance.setLocale('en');
+  assert.equal(instance.getSnapshot().stateRevision, Number.MAX_SAFE_INTEGER);
+  await instance.refresh(); // Unchanged state does not consume a revision.
+  const committed = instance.getSnapshot(), wire = serializeBootSnapshot(instance.getBootSnapshot());
+  await assert.rejects(instance.setLocale('ko'), { code: 'REVISION_OVERFLOW' });
+  assert.equal(instance.getSnapshot(), committed);
+  assert.equal(serializeBootSnapshot(instance.getBootSnapshot()), wire);
+});
+
+test('SSR preparation aborts owned loads without disposing the shared source', async t => {
+  const f = fixture(), controller = new AbortController();
+  const removed = t.mock.method(controller.signal, 'removeEventListener');
+  const started = Promise.withResolvers(); let captured;
+  const source = { ...f.source, loadCatalog(_locale, _namespace, signal) { captured = signal; started.resolve(); return new Promise(() => {}); } };
+  const pending = assert.rejects(createServerI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['demo'], signal: controller.signal }),
+    { code: 'ABORTED', cause: 'http closed' });
+  await started.promise; controller.abort('http closed'); await pending;
+  assert.equal(captured.aborted, true); assert.equal(removed.mock.callCount(), 1);
+  await assert.rejects(createServerI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['demo'], signal: controller.signal }), { code: 'ABORTED' });
+  const next = await createServerI18n({ catalogSource: f.source, locale: 'ko', initialNamespaces: ['demo'] }); next.dispose();
+});
+
 test('SSR request preparation pins the ready scope, retries changed pair stamps, and bounds waiting', async t => {
   const f = fixture();
   let changed = false;

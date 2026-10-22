@@ -1,6 +1,7 @@
 import { CatalogLoadError } from './loading-errors.js';
 import { acceptOutcome, keyId, metadata, stamp } from './loading-registry.js';
-import type { CatalogKey, CatalogManifest, CatalogOutcome, CatalogSource } from './loading-types.js';
+import type { CatalogKey, CatalogManifest, CatalogOutcome, CatalogSchedule, CatalogSource } from './loading-types.js';
+import { scheduleCatalog } from './loading-runtime.js';
 
 interface Flight {
   readonly key: CatalogKey;
@@ -15,7 +16,7 @@ export class CatalogLoader {
   private readonly flights = new Map<string, Flight>();
 
   constructor(private readonly source: CatalogSource, private readonly manifest: () => CatalogManifest,
-    private readonly timeoutMs: number) {}
+    private readonly timeoutMs: number, private readonly schedule: CatalogSchedule = scheduleCatalog) {}
 
   seed(outcomes: readonly CatalogOutcome[]) { for (const outcome of outcomes) this.cache.set(keyId(outcome.key), outcome); }
 
@@ -49,17 +50,17 @@ export class CatalogLoader {
     const promise = new Promise<CatalogOutcome>((yes, no) => { resolve = yes; reject = no; });
     const finish = () => {
       done = true;
-      clearTimeout(timer);
+      cancelTimer();
       this.flights.delete(version);
     };
     const flight: Flight = { key, version, promise, cancel: reason => {
       if (done) return;
       finish();
       reject(reason);
-      controller.abort();
+      controller.abort(reason);
     } };
-    const timer = setTimeout(() => flight.cancel(new CatalogLoadError('TIMEOUT',
-      `Catalog ${key.locale}/${key.namespace} did not load within ${this.timeoutMs}ms.`)), this.timeoutMs);
+    const cancelTimer = this.schedule(this.timeoutMs, () => flight.cancel(new CatalogLoadError('TIMEOUT',
+      `Catalog ${key.locale}/${key.namespace} did not load within ${this.timeoutMs}ms.`)));
     this.flights.set(version, flight);
     // Also catches a synchronous source throw, without delaying newer desired scopes.
     Promise.resolve().then(() => {

@@ -1,11 +1,83 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 import { CatalogLoadError, I18nDisposedError, NamespaceNotLoadedError, SupersededRequestError,
   UnknownMessageError, createBaseSchema, createI18n, parseCatalog, validateCatalogManifest } from '@0disoft/saylo-core';
 
 const catalog = (text, locale = 'ko', namespace = 'common') => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
 const id = (locale, namespace) => `${locale}/${namespace}`;
 const tick = () => new Promise(resolve => setImmediate(resolve));
+
+test('individual cancellation retains a shared load and removes its listener', async t => {
+  const { i18n, calls, defer } = fixture(t);
+  const slow = defer('en', 'common');
+  const controller = new AbortController();
+  const removed = t.mock.method(controller.signal, 'removeEventListener');
+  const first = i18n.setLocale('en', { signal: controller.signal });
+  const cancelled = assert.rejects(first, error => error.code === 'ABORTED' && error.cause === 'caller stopped');
+  const second = i18n.setLocale('en');
+  await tick(); controller.abort('caller stopped'); await cancelled;
+  const load = calls.find(call => call.locale === 'en');
+  assert.equal(load.signal.aborted, false);
+  assert.equal(removed.mock.callCount(), 1);
+  slow.release(); await second;
+  assert.equal(i18n.getSnapshot().locale, 'en');
+  assert.equal(calls.filter(call => call.locale === 'en').length, 1);
+});
+
+test('pre-aborted callers do not change desired state or start loads', async t => {
+  const { i18n, calls } = fixture(t);
+  const controller = new AbortController(); controller.abort('stop');
+  await assert.rejects(i18n.setLocale('en', { signal: controller.signal }), { code: 'ABORTED', cause: 'stop' });
+  await assert.rejects(i18n.loadNamespace('cart', { signal: controller.signal }), { code: 'ABORTED' });
+  await assert.rejects(i18n.refresh({ signal: controller.signal }), { code: 'ABORTED' });
+  await tick(); assert.equal(calls.length, 0); assert.equal(i18n.getSnapshot().locale, 'ko');
+});
+
+test('abort during a commit observer cannot reject an already committed caller', async t => {
+  const { i18n } = fixture(t);
+  const controller = new AbortController();
+  const removed = t.mock.method(controller.signal, 'removeEventListener');
+  i18n.subscribe(() => controller.abort());
+  await i18n.setLocale('en', { signal: controller.signal });
+  assert.equal(i18n.getSnapshot().locale, 'en');
+  assert.equal(removed.mock.callCount(), 1);
+});
+
+test('lifetime abort disposes owned flights and cleans its listener exactly once', async t => {
+  const controller = new AbortController();
+  const removed = t.mock.method(controller.signal, 'removeEventListener');
+  const { i18n, calls, defer } = fixture(t, { signal: controller.signal });
+  const slow = defer('en', 'common');
+  const pending = assert.rejects(i18n.setLocale('en'), I18nDisposedError);
+  await tick(); controller.abort(); await pending;
+  assert.equal(calls.find(call => call.locale === 'en').signal.aborted, true);
+  assert.equal(removed.mock.callCount(), 1);
+  slow.release(); i18n.dispose(); assert.equal(removed.mock.callCount(), 1);
+  await assert.rejects(i18n.refresh(), I18nDisposedError);
+});
+
+test('fractional timeout normalization and exact timeout boundary use injected timers', async t => {
+  const clock = scheduler();
+  const { i18n, handlers, calls } = fixture(t, { requestTimeoutMs: 1.5, schedule: clock.schedule });
+  handlers.set('en/common', () => new Promise(() => {}));
+  const timedOut = assert.rejects(i18n.setLocale('en'), { code: 'TIMEOUT' });
+  await tick(); clock.tick(1); assert.equal(calls.at(-1).signal.aborted, false);
+  clock.tick(1); await timedOut;
+  assert.equal(calls.at(-1).signal.reason.code, 'TIMEOUT'); assert.equal(clock.size, 0);
+  assert.equal(i18n.getSnapshot().locale, 'ko');
+});
+
+test('timeout duration accepts only finite positive timer range', t => {
+  const f = fixture(t), clock = scheduler();
+  for (const requestTimeoutMs of [-1, 0, NaN, Infinity, 2147483648])
+    assert.throws(() => createI18n({ ...f.config, requestTimeoutMs }), RangeError);
+  for (const requestTimeoutMs of [Number.MIN_VALUE, 1, 1.5, 2147483647]) {
+    const instance = createI18n({ ...f.config, requestTimeoutMs, schedule: clock.schedule }); instance.dispose();
+  }
+  const controller = new AbortController(); controller.abort('before creation');
+  assert.throws(() => createI18n({ ...f.config, signal: controller.signal }), { code: 'ABORTED', cause: 'before creation' });
+});
 
 test('manifest membership rejects duplicate lists and unavailable present pairs while retaining retired tombstones', t => {
   const { source } = fixture(t);

@@ -19,4 +19,4 @@ export type {
   Store, StoreOptions, StoreSnapshot,
 } from './types.js';
 export type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome, CatalogLoadResult,
-  CatalogSource, CreateI18nOptions, I18n } from './loading-types.js';
+  CatalogSource, CatalogSchedule, I18nRequestOptions, CreateI18nOptions, I18n } from './loading-types.js';

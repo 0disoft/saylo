@@ -97,6 +97,11 @@ const lazy = createI18n<AppSchema>({ catalogSource: source, locale: 'ko', initia
 const transition: Promise<void> = lazy.setLocale('en');
 const namespace: Promise<void> = lazy.loadNamespace('cart');
 const refresh: Promise<void> = lazy.refresh();
+const requestOptions = { signal: new AbortController().signal };
+const cancellable: Promise<void>[] = [lazy.setLocale('en', requestOptions), lazy.loadNamespace('cart', requestOptions), lazy.refresh(requestOptions)];
+void cancellable;
+// @ts-expect-error cancellation requires an AbortSignal
+lazy.refresh({ signal: 'abort' });
 void transition; void namespace; void refresh;
 lazy.t('cart:items', { count: 3 });
 lazy.tParts('cart:items', { count: 3 });

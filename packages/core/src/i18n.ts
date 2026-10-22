@@ -2,8 +2,9 @@ import { CatalogLoader } from './catalog-loader.js';
 import { createBootSnapshot, validateBootSnapshot } from './boot.js';
 import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
+import { aborted, nextRevision, timeoutDuration } from './loading-runtime.js';
 import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, readManifest, scopeKeys } from './loading-registry.js';
-import type { CatalogOutcome, CreateI18nOptions, I18n } from './loading-types.js';
+import type { CatalogOutcome, CreateI18nOptions, I18n, I18nRequestOptions } from './loading-types.js';
 import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
 interface Waiter {
@@ -11,10 +12,12 @@ interface Waiter {
   readonly value: string;
   resolve(): void;
   reject(reason: unknown): void;
+  cleanup(): void;
 }
 
 /** Async desired-scope coordinator; SSR instances start from a pinned boot manifest. */
 export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions): I18n<S> {
+  if (options.signal?.aborted) throw aborted(options.signal);
   const source = options.catalogSource;
   const decoded = options.initialSnapshot ? validateBootSnapshot(options.initialSnapshot) : undefined;
   let manifest = readManifest(decoded?.manifest ?? source.readManifest());
@@ -22,8 +25,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   const retiredSessions = new Set<string>();
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? decoded?.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   if (decoded && timeZone !== decoded.timeZone) throw new CatalogLoadError('INVALID_BOOT', 'Configured timeZone differs from the SSR boot snapshot.');
-  const timeoutMs = options.requestTimeoutMs ?? 5000;
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('requestTimeoutMs must be a positive timer duration.');
+  const timeoutMs = timeoutDuration(options.requestTimeoutMs);
   let desiredLocale = canonicalLocale(decoded?.locale ?? options.locale!);
   if (!manifest.availableLocales.includes(desiredLocale)) throw new RangeError('Initial locale is outside the manifest.');
   const initialNamespaces = decoded?.loadedNamespaces ?? options.initialNamespaces!;
@@ -57,7 +59,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   const waiters = new Set<Waiter>();
   const listeners = new Set<{ callback: (snapshot: StoreSnapshot<S>) => void }>();
   const disposers = new Set<{ callback: () => void }>();
-  const loader = new CatalogLoader(source, () => manifest, Math.ceil(timeoutMs));
+  const loader = new CatalogLoader(source, () => manifest, timeoutMs, options.schedule);
   loader.seed([...initial.values()]);
 
   function assertActive() { if (disposed) throw new I18nDisposedError(); }
@@ -110,7 +112,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     const ready = [...waiters].filter(w => w.kind === 'refresh' ||
       (w.kind === 'locale' ? w.value === snapshot.locale : snapshot.loadedNamespaces.includes(w.value)));
     // These intents have committed, so reentrant selections cannot cancel them.
-    for (const waiter of ready) waiters.delete(waiter);
+    for (const waiter of ready) { waiters.delete(waiter); waiter.cleanup(); }
     const errors: unknown[] = [];
     if (nextSignature !== signature) {
       current = snapshot;
@@ -133,11 +135,13 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       const outcomes = await Promise.all(scopeKeys(manifest, locale, namespaces).map(key => loader.load(key)));
       if (disposed || epoch !== generation) return;
       if (syncManifest()) return;
-      const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter, current.stateRevision + 1);
+      const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter, current.stateRevision);
+      const snapshot = candidate.signature === signature ? candidate.snapshot :
+        Object.freeze({ ...candidate.snapshot, stateRevision: nextRevision(current.stateRevision) });
       staleRetries = 0;
       committedManifest = manifest;
       committedOutcomes = outcomes;
-      publish(candidate.snapshot, candidate.signature);
+      publish(snapshot, candidate.signature);
     } catch (error) {
       if (disposed || epoch !== generation) return;
       try { if (syncManifest()) return; }
@@ -149,15 +153,25 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     } finally { running.delete(epoch); }
   }
 
-  function request(kind: Waiter['kind'], value: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => { waiters.add({ kind, value, resolve, reject }); schedule(); });
+  function request(kind: Waiter['kind'], value: string, signal?: AbortSignal): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      let listening = true;
+      const cleanup = () => { if (listening) { listening = false; signal?.removeEventListener('abort', cancel); } };
+      const waiter: Waiter = { kind, value, cleanup,
+        resolve() { cleanup(); resolve(); }, reject(reason) { cleanup(); reject(reason); } };
+      const cancel = () => { if (waiters.delete(waiter)) waiter.reject(aborted(signal!)); };
+      waiters.add(waiter);
+      signal?.addEventListener('abort', cancel, { once: true });
+      if (signal?.aborted) cancel();
+      schedule();
+    });
   }
-  function call(action: () => Promise<void>): Promise<void> {
-    try { assertActive(); syncManifest(); return action(); }
+  function call(action: () => Promise<void>, signal?: AbortSignal): Promise<void> {
+    try { assertActive(); if (signal?.aborted) throw aborted(signal); syncManifest(); if (signal?.aborted) throw aborted(signal); return action(); }
     catch (error) { return Promise.reject(error); }
   }
 
-  return Object.freeze({
+  const instance: I18n<S> = Object.freeze({
     t: ((key: string, args?: Record<string, unknown>) => (current.t as Translate<Schema>)(key, args)) as Translate<S>,
     tParts: ((key: string, args?: Record<string, unknown>) => (current.tParts as TranslateParts<Schema>)(key, args)) as TranslateParts<S>,
     getSnapshot: () => current,
@@ -176,7 +190,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       const listener = { callback }; disposers.add(listener);
       return () => { disposers.delete(listener); };
     },
-    setLocale(locale: string) { return call(() => {
+    setLocale(locale: string, requestOptions: I18nRequestOptions = {}) { return call(() => {
       const next = canonicalLocale(locale);
       if (!manifest.availableLocales.includes(next)) throw new RangeError('Locale is outside the manifest.');
       if (desiredLocale !== next) {
@@ -185,19 +199,20 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
         generation++;
       }
       staleRetries = 0;
-      return request('locale', next);
-    }); },
-    loadNamespace(namespace: string) { return call(() => {
+      return request('locale', next, requestOptions.signal);
+    }, requestOptions.signal); },
+    loadNamespace(namespace: string, requestOptions: I18nRequestOptions = {}) { return call(() => {
       assertNamespace(namespace);
       if (!manifest.availableNamespaces.includes(namespace)) throw new RangeError('Namespace is outside the manifest.');
       if (!desiredNamespaces.has(namespace)) { desiredNamespaces.add(namespace); generation++; }
       staleRetries = 0;
-      return request('namespace', namespace);
-    }); },
-    refresh() { return call(() => { staleRetries = 0; return request('refresh', ''); }); },
+      return request('namespace', namespace, requestOptions.signal);
+    }, requestOptions.signal); },
+    refresh(requestOptions: I18nRequestOptions = {}) { return call(() => { staleRetries = 0; return request('refresh', '', requestOptions.signal); }, requestOptions.signal); },
     dispose() {
       if (disposed) return;
       disposed = true;
+      options.signal?.removeEventListener('abort', disposeOnAbort);
       generation++;
       const reason = new I18nDisposedError();
       rejectWhere(() => true, () => reason);
@@ -212,4 +227,11 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       if (errors.length) throw new AggregateError(errors, 'Failures during i18n disposal; all cleanup was attempted.');
     },
   });
+  const disposeOnAbort = () => {
+    try { instance.dispose(); }
+    catch (error) { try { options.onError?.(error as AggregateError); } catch { /* Disposal has already released all resources. */ } }
+  };
+  options.signal?.addEventListener('abort', disposeOnAbort, { once: true });
+  if (options.signal?.aborted) { disposeOnAbort(); throw aborted(options.signal); }
+  return instance;
 }

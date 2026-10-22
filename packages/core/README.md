@@ -48,6 +48,10 @@ TypeScript에서는 `createStore<AppSchema>(...)`로, JS에서는 JSDoc `Store<A
 
 지연 로딩은 `createI18n`이 담당하고 카탈로그 전송 source는 [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme)가 제공한다. 요청별 SSR은 `createServerI18n`, boot 직렬화는 `serializeBootSnapshot`·`decodeBootSnapshot`이다.
 
+미게시 소스는 `setLocale(locale, { signal })`, `loadNamespace(namespace, { signal })`, `refresh({ signal })`을 지원한다. 이 signal은 해당 호출자의 대기만 취소하며, 공유 catalog load와 요청한 화면 상태 전환은 계속된다. 실패는 `CatalogLoadError`의 `code: 'ABORTED'`, `cause: signal.reason`으로 전달된다. 인스턴스 전체를 정리하려면 `dispose()`를 호출하거나 `createI18n`·`createServerI18n`의 options에 수명용 `signal`을 넘긴다. 수명 취소로 진행 중인 API 호출은 `I18nDisposedError`로 끝나고, SSR 준비 중 취소는 `ABORTED`로 끝난다.
+
+두 factory의 선택적 `schedule(milliseconds, callback)`은 테스트에서 타이머를 제어할 때 쓴다. callback을 나중에 실행하고 여러 번 호출해도 안전한 취소 함수를 반환해야 한다. `requestTimeoutMs`는 유한한 양수부터 `2,147,483,647`까지 허용하며 소수는 올림한다. 표시 상태가 바뀌어 revision이 안전 정수 범위를 넘게 되면 `REVISION_OVERFLOW`로 거부하고 기존 snapshot과 boot를 유지한다.
+
 브라우저 런타임에서 `parseCatalog`를 빼려면 `@0disoft/saylo-core/runtime` 서브패스 엔트리를 쓴다. 여기에는 `parseCatalog`가 없고 나머지 API는 루트 엔트리와 같다. 루트 엔트리 `@0disoft/saylo-core`는 기존 API를 그대로 유지한다. 이 서브패스는 `0.1.0-alpha.2` 게시본에 포함된다.
 
 ## Rich text parts

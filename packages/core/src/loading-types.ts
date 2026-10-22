@@ -37,11 +37,23 @@ export interface CatalogSource {
   loadCatalog(locale: string, namespace: string, signal?: AbortSignal): Promise<CatalogLoadResult>;
 }
 
+/** Must defer callbacks and return an idempotent timer cancellation function. */
+export type CatalogSchedule = (milliseconds: number, callback: () => void) => () => void;
+
+export interface I18nRequestOptions {
+  /** Cancels this caller's wait; the shared desired state and catalog load continue. */
+  readonly signal?: AbortSignal;
+}
+
 interface SharedI18nOptions {
   readonly catalogSource: CatalogSource;
   readonly timeZone?: string;
   /** Per-catalog timeout, defaults to 5000ms. */
   readonly requestTimeoutMs?: number;
+  /** Optional per-instance scheduler; defaults to setTimeout/clearTimeout. */
+  readonly schedule?: CatalogSchedule;
+  /** Aborting the instance lifetime disposes its owned loads and subscriptions. */
+  readonly signal?: AbortSignal;
   /** Subscriber errors from automatic manifest adoption without a pending API caller. */
   readonly onError?: (error: AggregateError) => void;
 }
@@ -65,9 +77,9 @@ export interface I18n<S extends Schema = Schema> {
   getNamespaces(): readonly string[];
   subscribe(listener: (snapshot: StoreSnapshot<S>) => void): () => void;
   onDispose(listener: () => void): () => void;
-  setLocale(locale: string): Promise<void>;
-  loadNamespace(namespace: string): Promise<void>;
+  setLocale(locale: string, options?: I18nRequestOptions): Promise<void>;
+  loadNamespace(namespace: string, options?: I18nRequestOptions): Promise<void>;
   /** Adapter hook: refresh current desired scope after a manifest/version change. */
-  refresh(): Promise<void>;
+  refresh(options?: I18nRequestOptions): Promise<void>;
   dispose(): void;
 }
