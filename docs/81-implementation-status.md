@@ -46,3 +46,5 @@
 ## 성능과 검증의 해석
 
 [75](75-early-disk-rechecks.md)의 성능 수치는 2026-10-11의 역사 측정값이다. 이 문서는 현재 HEAD에서 같은 조건을 다시 측정했거나 성능 목표를 달성했다고 주장하지 않는다.
+
+이 문서의 기준은 `464392f`로 유지한다. 이후 admin 지원 화면의 부분 번역 pilot과 production typegen 잠금 수정은 [82-admin-support-pilot.md](82-admin-support-pilot.md)에 별도로 기록하며, 이 문서의 기준 소스나 검증 결과를 소급해 바꾸지 않는다.
