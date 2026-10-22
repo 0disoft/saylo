@@ -9,6 +9,7 @@ import { CatalogError, parseCatalog } from '@0disoft/saylo-core';
 import saylo from '../dist/index.js';
 import { createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
+import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 
 function registry() {
   const catalog = (locale, namespace, text) => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
@@ -18,6 +19,44 @@ function registry() {
 const entries = r => r.manifest().catalogs.filter(m => m.status === 'present' && m.key.locale !== 'ko')
   .map(m => ({ key: m.key, load: async () => r.load(m.key.locale, m.key.namespace) }));
 const boot = r => [r.load('ko', 'demo'), r.load('ko', 'help')];
+
+test('static cancellation is per caller and abandoned imports cannot overwrite a new flight', async () => {
+  const r = registry(), clock = scheduler(), loads = [];
+  const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: { locale: 'en', namespace: 'demo' },
+    load: () => new Promise((resolve, reject) => loads.push({ resolve, reject })) }], { timeoutMs: 100, schedule: clock.schedule });
+  const a = new AbortController(), b = new AbortController(), reason = new Error('navigation');
+  const first = assert.rejects(source.loadCatalog('en', 'demo', a.signal), e => e.code === 'ABORTED' && e.cause === reason);
+  const second = source.loadCatalog('en', 'demo', b.signal);
+  const secondFailure = assert.rejects(second, { code: 'ABORTED' });
+  await Promise.resolve(); a.abort(reason); await first;
+  assert.equal(loads.length, 1);
+  b.abort(); await secondFailure;
+  const fresh = source.loadCatalog('en', 'demo'); await Promise.resolve();
+  loads[0].resolve(r.load('en', 'demo'));
+  for (let i = 0; i < 5; i++) await Promise.resolve();
+  assert.equal(source.getCatalogs().length, 2);
+  const joined = source.loadCatalog('en', 'demo'); await Promise.resolve();
+  assert.equal(loads.length, 2);
+  loads[1].resolve(r.load('en', 'demo'));
+  assert.equal(await fresh, await joined);
+  assert.equal(clock.size, 0);
+});
+
+test('a static source deadline releases hung imports and keeps other consumers active', async () => {
+  const r = registry(), clock = scheduler(), loads = [];
+  const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: { locale: 'en', namespace: 'demo' },
+    load: () => new Promise((resolve, reject) => loads.push({ resolve, reject })) }], { timeoutMs: 100, schedule: clock.schedule });
+  const a = new AbortController();
+  const cancelled = assert.rejects(source.loadCatalog('en', 'demo', a.signal), { code: 'ABORTED' });
+  const timeout = assert.rejects(source.loadCatalog('en', 'demo'), { code: 'TIMEOUT' });
+  await Promise.resolve(); a.abort(); await cancelled;
+  clock.tick(99); assert.equal(loads.length, 1);
+  clock.tick(1); await timeout;
+  const recovered = source.loadCatalog('en', 'demo'); await Promise.resolve();
+  loads[0].reject(new Error('late import rejection'));
+  loads[1].resolve(r.load('en', 'demo')); await recovered;
+  assert.equal(clock.size, 0);
+});
 
 async function completeFixture(t) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-complete-'));

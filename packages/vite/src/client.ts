@@ -16,7 +16,7 @@ import type { ConnectLazyDevOptions } from './lazy-connection.js';
 export { freezeCatalogs } from './freeze.js';
 export { createDevCatalogSource } from './catalog-source.js';
 export { createStaticCatalogSource } from './static-catalog-source.js';
-export type { StaticCatalogLoader } from './static-catalog-source.js';
+export type { StaticCatalogLoader, StaticCatalogSourceOptions } from './static-catalog-source.js';
 export type { DevCatalogSource, DevCatalogSourceOptions } from './catalog-source.js';
 export type { ConnectLazyDevOptions } from './lazy-connection.js';
 

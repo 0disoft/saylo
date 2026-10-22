@@ -2,6 +2,14 @@ import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
 import type { CatalogKey, CatalogManifest, CatalogOutcome } from '@0disoft/saylo-core';
 import { catalogId as id, catalogMetadata, immutable, matches } from './catalog-outcome.js';
 import type { DevCatalogSource } from './catalog-source.js';
+import { schedule, timeoutDuration } from './scheduling.js';
+import type { Schedule } from './scheduling.js';
+
+export interface StaticCatalogSourceOptions {
+  readonly timeoutMs?: number;
+  readonly schedule?: Schedule;
+}
+interface Flight { promise: Promise<CatalogOutcome>; users: number }
 
 export interface StaticCatalogLoader {
   readonly key: CatalogKey;
@@ -13,12 +21,13 @@ const invalid = () => new CatalogLoadError('INVALID_STATIC_CATALOG', 'Static cat
 
 /** Boot pairs are inline; other present pairs are loaded from generated imports on demand. */
 export function createStaticCatalogSource(initial: CatalogManifest, initialCatalogs: readonly CatalogOutcome[],
-  entries: readonly StaticCatalogLoader[]): DevCatalogSource {
+  entries: readonly StaticCatalogLoader[], options: StaticCatalogSourceOptions = {}): DevCatalogSource {
+  const timeoutMs = timeoutDuration(options.timeoutMs);
   const manifest = validateCatalogManifest(initial);
   const metadata = catalogMetadata(manifest);
   const cache = new Map<string, CatalogOutcome>();
   const loaders = new Map<string, StaticCatalogLoader['load']>();
-  const flights = new Map<string, Promise<CatalogOutcome>>();
+  const flights = new Map<string, Flight>();
   for (const outcome of initialCatalogs) {
     if (cache.has(id(outcome.key)) || !matches(manifest, outcome)) throw invalid();
     cache.set(id(outcome.key), immutable(outcome));
@@ -36,7 +45,8 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
     getCatalogs: () => Object.freeze([...cache.values()].flatMap(o => o.status === 'present' ? [o.catalog] : [])),
     subscribeManifest: () => noop, subscribeDiagnostic: () => noop, connect: () => noop, dispose: noop,
     loadCatalog(locale: string, namespace: string, signal?: AbortSignal): Promise<CatalogOutcome> {
-      if (signal?.aborted) return Promise.reject(new CatalogLoadError('ABORTED', 'Catalog request was cancelled.'));
+      const aborted = () => new CatalogLoadError('ABORTED', 'Catalog request was cancelled.', { cause: signal?.reason });
+      if (signal?.aborted) return Promise.reject(aborted());
       const key = { locale, namespace };
       const pair = id(key);
       const cached = cache.get(pair);
@@ -45,17 +55,38 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
       if (!meta || meta.status === 'missing') return Promise.resolve(immutable({
         status: 'missing', sessionId: manifest.sessionId, key, catalogVersion: meta?.catalogVersion ?? 0,
       }));
-      const pending = flights.get(pair);
-      if (pending) return pending;
-      // Import cannot be cancelled. Core guards timeout/disposal; its result may still seed the shared source cache.
-      const promise = Promise.resolve().then(() => loaders.get(pair)!()).then(outcome => {
-        if (!outcome || !outcome.key || id(outcome.key) !== pair || !matches(manifest, outcome)) throw invalid();
-        const accepted = immutable(outcome);
-        cache.set(pair, accepted);
-        return accepted;
-      }).finally(() => { flights.delete(pair); });
-      flights.set(pair, promise);
-      return promise;
+      let flight = flights.get(pair);
+      if (!flight) {
+        const created: Flight = { users: 0, promise: Promise.resolve().then(() => loaders.get(pair)!()).then(outcome => {
+          if (!outcome || !outcome.key || id(outcome.key) !== pair || !matches(manifest, outcome)) throw invalid();
+          const accepted = immutable(outcome);
+          if (flights.get(pair) === created) cache.set(pair, accepted);
+          return accepted;
+        }).finally(() => { if (flights.get(pair) === created) flights.delete(pair); }) };
+        flights.set(pair, created);
+        flight = created;
+      }
+      const shared = flight;
+      shared.users++;
+      return new Promise<CatalogOutcome>((resolve, reject) => {
+        let finished = false;
+        let cancelTimer = noop;
+        const finish = (error?: unknown, outcome?: CatalogOutcome) => {
+          if (finished) return;
+          finished = true;
+          cancelTimer();
+          signal?.removeEventListener('abort', abort);
+          if (--shared.users === 0 && flights.get(pair) === shared) flights.delete(pair);
+          if (outcome) resolve(outcome); else reject(error);
+        };
+        const abort = () => finish(aborted());
+        cancelTimer = (options.schedule ?? schedule)(timeoutMs,
+          () => finish(new CatalogLoadError('TIMEOUT', 'Static catalog load timed out.')));
+        signal?.addEventListener('abort', abort, { once: true });
+        // Imports cannot be interrupted; both handlers also observe orphaned rejections.
+        void shared.promise.then(outcome => finish(undefined, outcome), error => finish(error));
+        if (signal?.aborted) abort();
+      });
     },
   });
 }

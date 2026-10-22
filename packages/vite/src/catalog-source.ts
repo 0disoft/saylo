@@ -219,7 +219,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
       return () => { if (!connected) return; connected = false; refs--; maybeStop(); };
     },
     loadCatalog(locale: string, namespace: string, signal?: AbortSignal) {
-      if (disposed || signal?.aborted) return Promise.reject(new CatalogLoadError('ABORTED', 'Catalog request is no longer active.'));
+      if (disposed || signal?.aborted) return Promise.reject(new CatalogLoadError('ABORTED', 'Catalog request is no longer active.', { cause: signal?.reason }));
       const key = { locale, namespace };
       const cached = cache.get(id(key));
       if (cached && matches(manifest, cached)) return Promise.resolve(cached);
@@ -227,7 +227,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
         const baseline = cached?.status === 'present' ? cached : undefined;
         const request = { locale, namespace, generation, requestId: `${identity}:${++sequence}`,
           ...(baseline ? { known: { sessionId: baseline.sessionId, catalogVersion: baseline.catalogVersion } } : {}) };
-        const abort = () => { entry.cleanup(); reject(new CatalogLoadError('ABORTED', 'Catalog request was cancelled.')); };
+        const abort = () => { entry.cleanup(); reject(new CatalogLoadError('ABORTED', 'Catalog request was cancelled.', { cause: signal?.reason })); };
         const cancelTimer = (options.runtime?.schedule ?? schedule)(timeoutMs, () => { entry.cleanup(); reject(new CatalogLoadError('TIMEOUT', 'Catalog reply timed out.')); });
         const entry: Pending = { request, key, baseline, resolve, reject, cleanup: () => {
           cancelTimer(); signal?.removeEventListener('abort', abort); pending.delete(entry.request.requestId); maybeStop();
