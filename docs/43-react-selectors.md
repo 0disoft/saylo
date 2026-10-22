@@ -10,7 +10,7 @@
 - React `useI18nSelector`(selector 미세구독): npm `0.1.0-alpha.4`에 게시했다. CI·registry 소비 검증은 [릴리스 기록](../releases/0.1.0-alpha.4.md)을 따른다.
 - Svelte `selectSvelteStore`·`getI18nSelector`(selector 미세구독): npm `0.1.0-alpha.4`에 게시했다. 계약은 [44-svelte-selectors.md](44-svelte-selectors.md)를 따른다.
 
-선택 후속은 core의 selector 미세구독, Vue 어댑터, unused message 제거, 다른 환경의 성능 측정과 비교 실험이다. 최신 대표 조건의 성능 목표는 [75](75-early-disk-rechecks.md)를 따른다.
+선택 후속은 core의 selector 미세구독과 다른 환경의 성능 측정·비교 실험이다. Vue 어댑터와 unused message 제거는 구현됐으며 Vue는 `private`·미게시 상태다. 전체 현행 상태와 잔여 항목은 [81-implementation-status.md](81-implementation-status.md)를 따른다. 최신 대표 조건의 성능 목표는 [75](75-early-disk-rechecks.md)를 따른다.
 
 ## React 선택자
 

@@ -111,6 +111,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 76. [78-rich-text-parts.md](78-rich-text-parts.md) — 첫 rich text core API 슬라이스의 `tParts` 계약·마커 문법·오류
 77. [79-react-rich-text.md](79-react-rich-text.md) — React rich text render helper `renderRichText`의 계약·키 규칙·데모·검증 범위
 78. [80-svelte-rich-text.md](80-svelte-rich-text.md) — Svelte rich text 컴포넌트 `RichText.svelte`의 계약·키 규칙·데모·검증 범위
+79. [81-implementation-status.md](81-implementation-status.md) — `464392f` 기준 기능별 현행 소스와 잔여·후보·게시 상태 구분
 
 개발 클라이언트의 handshake 상태 계약은 [dev-sync-state.md](dev-sync-state.md)에 있다.
 빈 폴더에서 npm 게시본으로 시작하는 React 안내는 [getting-started-react.md](getting-started-react.md)에 있다.
