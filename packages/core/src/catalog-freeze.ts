@@ -1,7 +1,7 @@
-import { freeze } from './diagnostics.js';
+import { freeze, immutableSnapshot } from './diagnostics.js';
 import type { ParsedCatalog } from './types.js';
 
-/** Restore deep immutability after transport, sharing the core's traversal cache. */
-export function freezeCatalogs(catalogs: readonly ParsedCatalog[]): readonly ParsedCatalog[] {
-  return freeze(catalogs);
+/** Freeze input in place by default. With copy, snapshot mutable data and share already immutable subtrees. */
+export function freezeCatalogs(catalogs: readonly ParsedCatalog[], options: { readonly copy?: boolean } = {}): readonly ParsedCatalog[] {
+  return options.copy ? immutableSnapshot(catalogs) : freeze(catalogs);
 }

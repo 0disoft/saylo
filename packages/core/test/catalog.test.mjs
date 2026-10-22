@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
-import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
+import { CatalogError, createBaseSchema, parseCatalog, validateTranslation, freezeCatalogs } from '@0disoft/saylo-core';
 import { freeze, isDeepFrozen, createPositionLocator } from '../dist/diagnostics.js';
 
 const options = { locale: 'ko', namespace: 'cart', sourceName: 'locales/ko/cart.json' };
@@ -476,4 +476,44 @@ test('final catalog maps stay deeply immutable across new, reused and untrusted 
     assert.throws(() => { parsed.messages.extra = first.messages.complex; }, TypeError);
     if (Object.hasOwn(parsed.messages, 'complex')) assert.throws(() => { delete parsed.messages.complex; }, TypeError);
   }
+});
+
+
+test('error construction snapshots diagnostics without freezing caller-owned positions', () => {
+  const position = { offset: 2, line: 1, column: 3 };
+  const diagnostic = { ...options, code: 'INVALID_ICU', message: 'Before', position };
+  const input = [diagnostic];
+  const error = new CatalogError(input);
+  diagnostic.message = 'After'; position.column = 9; input.push(diagnostic);
+  assert.equal(error.diagnostics.length, 1);
+  assert.equal(error.diagnostics[0].message, 'Before');
+  assert.equal(error.diagnostics[0].position.column, 3);
+  assert.ok(Object.isFrozen(error.diagnostics[0].position));
+});
+
+test('base schema snapshots mutable argument types without freezing the source catalog', () => {
+  const parsed = catalog({ title: '{name}' });
+  const mutable = structuredClone(parsed);
+  const before = createBaseSchema(mutable);
+  mutable.messages.title.arguments.name.acceptedTypes.push('date');
+  assert.deepEqual(before.keys.title.name.acceptedTypes, ['string', 'number']);
+  assert.ok(Object.isFrozen(before.keys.title.name.acceptedTypes));
+  assert.notEqual(createBaseSchema(mutable).fingerprint, before.fingerprint);
+  assert.equal(createBaseSchema(parsed).keys.title, parsed.messages.title.arguments, 'Parser-owned contracts stay shared');
+});
+
+
+test('copying catalogs preserves shared schemas and literal keys without trusting shallow freezes', () => {
+  const parsed = catalog({ a: '{name}', b: '{name}' });
+  const mutable = structuredClone(parsed);
+  mutable.messages = Object.assign(Object.create(null), mutable.messages);
+  Object.defineProperty(mutable.messages, '__proto__', { value: mutable.messages.a, enumerable: true });
+  const input = Object.freeze([Object.freeze(mutable)]);
+  const [snapshot] = freezeCatalogs(input, { copy: true });
+  mutable.messages.a.arguments.name.acceptedTypes.push('date');
+  assert.equal(snapshot.messages.a.arguments, snapshot.messages.b.arguments);
+  assert.equal(snapshot.messages.__proto__, snapshot.messages.a);
+  assert.equal(Object.getPrototypeOf(snapshot.messages), null);
+  assert.deepEqual(snapshot.messages.a.arguments.name.acceptedTypes, ['string', 'number']);
+  assert.equal(freezeCatalogs([parsed], { copy: true })[0], parsed);
 });

@@ -16,6 +16,24 @@ export function freeze<T>(value: T): DeepReadonly<T> {
   return value as DeepReadonly<T>;
 }
 
+/** Snapshot plain catalog data; parser-owned immutable subtrees can stay shared. */
+export function immutableSnapshot<T>(value: T): DeepReadonly<T> {
+  if (value === null || typeof value !== 'object' || frozen.has(value)) return value as DeepReadonly<T>;
+  const copies = new WeakMap<object, object>();
+  function snapshot(input: unknown): unknown {
+    if (input === null || typeof input !== 'object' || frozen.has(input)) return input;
+    const previous = copies.get(input);
+    if (previous) return previous;
+    const copy = Array.isArray(input) ? input.map(snapshot) :
+      Object.fromEntries(Object.entries(input).map(([key, child]) => [key, snapshot(child)]));
+    // Message/argument maps can have a null prototype and literal __proto__ keys.
+    if (Object.getPrototypeOf(input) === null) Object.setPrototypeOf(copy, null);
+    copies.set(input, copy);
+    return freeze(copy);
+  }
+  return snapshot(value) as DeepReadonly<T>;
+}
+
 /** Internal parser finalization only: every message must already be deeply frozen.
  * The parser owns this fresh map; external/shallow-frozen maps must use freeze.
  */
@@ -52,7 +70,7 @@ export class CatalogError extends Error {
   constructor(diagnostics: readonly CatalogDiagnostic[]) {
     super(diagnostics.map(d => `${d.sourceName}${d.id === undefined ? '' : ` [${d.id}]`}: ${d.message}`).join('\n'));
     this.name = 'CatalogError';
-    this.diagnostics = freeze([...diagnostics]);
+    this.diagnostics = immutableSnapshot(diagnostics);
   }
 }
 

@@ -507,3 +507,19 @@ test('a malformed compact full reply rejects without changing the accepted UI an
   assert.equal((await recovered).catalog.messages.title.source, 'English');
   assert.equal(f.instance.getSnapshot(), before);
 });
+
+
+test('dev source snapshots mutable initial catalogs without freezing caller data', t => {
+  const parsed = catalog('Hello {name}');
+  const registry = new CatalogRegistry('ownership', 'ko', [parsed]);
+  const initial = structuredClone(registry.load('ko', 'demo'));
+  const hot = new EventEmitter(); hot.dispose = () => {}; hot.prune = () => {};
+  const source = createDevCatalogSource(registry.manifest(), [initial], { hot });
+  t.after(() => source.dispose());
+  initial.catalog.messages.title.source = 'Changed';
+  initial.catalog.messages.title.arguments.name.acceptedTypes.push('date');
+  const [stored] = source.getCatalogs();
+  assert.equal(stored.messages.title.source, 'Hello {name}');
+  assert.deepEqual(stored.messages.title.arguments.name.acceptedTypes, ['string', 'number']);
+  assert.ok(Object.isFrozen(stored.messages.title.ast));
+});

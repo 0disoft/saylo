@@ -1,4 +1,4 @@
-import { freeze } from './diagnostics.js';
+import { freeze, immutableSnapshot } from './diagnostics.js';
 import { CatalogLoadError } from './loading-errors.js';
 import { createBaseSchema } from './schema.js';
 import { createBoundTranslator } from './translator.js';
@@ -113,7 +113,7 @@ export function acceptOutcome(manifest: CatalogManifest, key: CatalogKey, outcom
     if (key.locale === manifest.baseLocale && createBaseSchema(outcome.catalog).fingerprint !== outcome.namespaceSchemaFingerprint)
       throw new CatalogLoadError('INVALID_SCHEMA', 'Base catalog payload does not match its schema fingerprint.');
   }
-  return freeze({ ...outcome, key: { ...key } });
+  return immutableSnapshot({ ...outcome, key: { ...key } });
 }
 
 export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest, locale: string,

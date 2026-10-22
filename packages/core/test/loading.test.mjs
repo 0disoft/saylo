@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { acceptOutcome } from '../dist/loading-registry.js';
 import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 import { CatalogLoadError, I18nDisposedError, NamespaceNotLoadedError, SupersededRequestError,
   UnknownMessageError, createBaseSchema, createI18n, parseCatalog, validateCatalogManifest } from '@0disoft/saylo-core';
@@ -432,4 +433,26 @@ test('a retired source session is rejected rather than rolling back the UI', asy
   source.readManifest = () => old;
   await assert.rejects(i18n.refresh(), e => e instanceof CatalogLoadError && e.code === 'STALE_MANIFEST');
   assert.equal(i18n.getSnapshot(), before);
+});
+
+
+test('accepted mutable outcomes remain independent of source changes and preserve literal IDs', () => {
+  const parsed = parseCatalog('{"__proto__":"Hello {name}"}', { locale: 'ko', namespace: 'common' });
+  const key = { locale: 'ko', namespace: 'common' };
+  const namespaceSchemaFingerprint = createBaseSchema(parsed).fingerprint;
+  const manifest = validateCatalogManifest({ sessionId: 'ownership', registryRevision: 0, baseLocale: 'ko',
+    availableLocales: ['ko'], availableNamespaces: ['common'],
+    catalogs: [{ key, status: 'present', catalogVersion: 1, namespaceSchemaFingerprint }] });
+  const input = { sessionId: 'ownership', key, status: 'present', catalogVersion: 1,
+    namespaceSchemaFingerprint, catalog: structuredClone(parsed) };
+  const accepted = acceptOutcome(manifest, key, input);
+  input.catalog.messages.__proto__.source = 'Changed';
+  input.catalog.messages.__proto__.arguments.name.acceptedTypes.push('date');
+  input.key.namespace = 'changed';
+  assert.equal(accepted.key.namespace, 'common');
+  assert.equal(accepted.catalog.messages.__proto__.source, 'Hello {name}');
+  assert.deepEqual(accepted.catalog.messages.__proto__.arguments.name.acceptedTypes, ['string', 'number']);
+  assert.ok(Object.isFrozen(accepted.catalog.messages.__proto__.ast));
+  assert.equal(Object.hasOwn(accepted.catalog.messages, '__proto__'), true);
+  assert.equal(acceptOutcome(manifest, accepted.key, { ...accepted, catalog: parsed }).catalog, parsed);
 });

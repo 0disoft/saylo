@@ -2,7 +2,7 @@ import { TYPE } from '@formatjs/icu-messageformat-parser/no-parser.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
-import { CatalogError, freeze, isDeepFrozen } from './diagnostics.js';
+import { CatalogError, freeze, isDeepFrozen, immutableSnapshot } from './diagnostics.js';
 import type { ArgumentType, CatalogDiagnostic, CatalogSchema, MessageSchema, ParsedCatalog } from './types.js';
 
 // The canonical cache is owned by one parse. Its shortcut dies with that cache;
@@ -95,7 +95,7 @@ export function createBaseSchema(catalog: ParsedCatalog): CatalogSchema {
     Object.keys(keys[id]!).sort().map(name => [name, [...keys[id]![name]!.acceptedTypes].sort()]),
   ]);
   const schema = freeze({ baseLocale: catalog.locale, namespace: catalog.namespace,
-    fingerprint: `saylo-schema-v2:sha256:${bytesToHex(sha256(utf8ToBytes(JSON.stringify([catalog.namespace, canonical]))))}`, keys });
+    fingerprint: `saylo-schema-v2:sha256:${bytesToHex(sha256(utf8ToBytes(JSON.stringify([catalog.namespace, canonical]))))}`, keys: immutableSnapshot(keys) });
   if (cacheable) schemas.set(catalog, schema);
   return schema;
 }

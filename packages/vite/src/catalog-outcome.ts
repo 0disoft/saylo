@@ -23,6 +23,9 @@ export function matches(manifest: CatalogManifest, result: CatalogOutcome) {
 }
 
 export function immutable(result: CatalogOutcome): CatalogOutcome {
-  if (result.status === 'present') freezeCatalogs([result.catalog]);
+  if (result.status === 'present') {
+    const [catalog] = freezeCatalogs([result.catalog], { copy: true });
+    return Object.freeze({ ...result, key: Object.freeze({ ...result.key }), catalog: catalog! });
+  }
   return Object.freeze({ ...result, key: Object.freeze({ ...result.key }) });
 }
