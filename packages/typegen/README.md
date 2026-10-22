@@ -8,6 +8,8 @@ writer는 Windows에서 `EPERM`·`EACCES`·`EBUSY`로 rename이 실패하면 최
 
 성공 판정은 디스크에 실제 반영된 출력을 기준으로 한다. 더 새로운 요청이 도중에 들어와도 이미 파일에 반영된 결과는 성공으로 기록하고, 생성이 실패한 뒤 같은 카탈로그를 다시 저장하면 이전 결과를 건너뛰지 않고 다시 시도한다. 이 동작은 `0.1.0-alpha.4` 게시본에 포함된다.
 
+미게시 소스의 `writeGenerated(outFile, source, isCurrent?, { signal, operations }?)`는 파일 I/O·임시 이름·교체 연산을 선택적으로 주입할 수 있다. 취소는 `cancelled`로 반환하며 I/O 사이와 교체 재시도 중 확인한다. rename 성공 뒤 도착한 취소는 `written`을 바꾸지 않는다. 독점 생성에 성공한 임시 파일만 정리하고, 쓰기 실패와 정리 실패가 겹치면 원래 실패를 우선한다. `new TypeGenerator(outFile, { createWorker, write }?)`는 Worker와 writer를 주입할 수 있으며, 이전 Worker의 늦은 완료·실패는 새 작업에 반영하지 않는다.
+
 마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 저장소 workspace에서 `node packages/typegen/dist/cli.js`로 직접 실행할 수도 있다.
 
 ## 설치

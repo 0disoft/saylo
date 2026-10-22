@@ -1,6 +1,14 @@
 import { createStore } from '@0disoft/saylo-core';
+import { writeGenerated, TypeGenerator } from '@0disoft/saylo-typegen';
+import type { WriteOptions, TypeGeneratorOperations } from '@0disoft/saylo-typegen';
 import type { AppSchema } from './generated.js';
 import { fixtureCatalog } from './fixture.mjs';
+
+const writeOptions: WriteOptions = { signal: new AbortController().signal, operations: { createId: () => 'type-test' } };
+const written: Promise<'written' | 'unchanged' | 'cancelled'> = writeGenerated('generated.d.ts', 'source', () => true, writeOptions);
+const generatorOperations: TypeGeneratorOperations = { write: writeGenerated };
+const generator = new TypeGenerator('generated.d.ts', generatorOperations);
+void written; void generator;
 
 const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [fixtureCatalog] });
 store.t('cart:plain');

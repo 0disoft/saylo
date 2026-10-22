@@ -2,6 +2,25 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { replaceGenerated } from '../dist/replace.js';
 
+test('the sixth Windows rename may succeed after exactly five waits totalling 620ms', async () => {
+  let attempts = 0; const waits = [];
+  const result = await replaceGenerated('temp', 'target', () => true, { platform: 'win32',
+    async rename() { if (++attempts < 6) throw Object.assign(new Error('busy'), { code: 'EBUSY' }); },
+    async wait(delay) { waits.push(delay); } });
+  assert.equal(result, 'written'); assert.equal(attempts, 6);
+  assert.deepEqual(waits, [20, 40, 80, 160, 320]);
+});
+
+test('abort interrupts even an injected retry wait that ignores its signal', async () => {
+  const controller = new AbortController(), started = Promise.withResolvers(), late = Promise.withResolvers(); let attempts = 0;
+  const pending = replaceGenerated('temp', 'target', () => true, { platform: 'win32',
+    async rename() { attempts++; throw Object.assign(new Error('busy'), { code: 'EBUSY' }); },
+    wait: () => { started.resolve(); return late.promise; } }, controller.signal);
+  await started.promise; controller.abort();
+  assert.equal(await pending, 'cancelled'); assert.equal(attempts, 1);
+  late.reject(new Error('late wait failure')); await Promise.resolve();
+});
+
 test('Windows transient replacement failures retry the same rename with bounded delays', async () => {
   for (const code of ['EPERM', 'EACCES', 'EBUSY']) {
     let attempts = 0;

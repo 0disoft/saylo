@@ -40,7 +40,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --experimental-test-module-mocks --test test/typegen.test.mjs test/replace.test.mjs test/generator-race.test.mjs",
+    "test": "node --test test/typegen.test.mjs test/replace.test.mjs test/generator-race.test.mjs test/write.test.mjs test/worker.test.mjs",
     "typecheck:consumers": "node test/generate-fixture.mjs && tsc -p test/tsconfig.json"
   },
   "dependencies": {
