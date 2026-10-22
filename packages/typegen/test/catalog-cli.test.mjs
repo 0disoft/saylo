@@ -84,6 +84,74 @@ test('import previews and applies partial completed work, preserves unrelated ke
   assert.deepEqual(await f.snapshot(), after);
 });
 
+test('import diff previews exact planned files and preserves the default JSON report and disk', async t => {
+  const f = await fixture(t, { checkLocales: ['en', 'fr'] });
+  await f.write('ko', 'common', { title: 'Old' });
+  await f.write('en', 'common', '{\r\n\t"title": "English"\r\n}');
+  await writeFile(path.join(f.root, 'review.json'), f.run(['snapshot']).stdout);
+  await f.write('ko', 'common', { title: 'New' });
+  const work = JSON.parse(f.run(['export', '--baseline', 'review.json']).stdout);
+  work.entries.forEach(entry => { entry.translation = entry.locale === 'en' ? '' : 'French'; });
+  await writeFile(path.join(f.root, 'work.json'), JSON.stringify(work));
+  const before = await f.snapshot();
+  const args = ['import', '--file', 'work.json', '--dry-run'];
+  const ordinary = JSON.parse(f.run([...args, '--json']).stdout);
+  assert.equal(Object.hasOwn(ordinary, 'diff'), false);
+  const preview = f.run([...args, '--diff']);
+  assert.equal(preview.status, 0, preview.stdout + preview.stderr);
+  assert.match(preview.stdout, /^--- a\/en\/common.json\n/);
+  assert.match(preview.stdout, /\+\t"title": ""\r\n/);
+  assert.match(preview.stdout, /\\ No newline at end of file/);
+  assert.match(preview.stdout, /--- \/dev\/null\n\+\+\+ b\/fr\/common.json/);
+  assert.ok(!preview.stdout.includes('[saylo:import]'));
+  const jsonPreview = f.run([...args, '--diff', '--json']);
+  assert.equal(jsonPreview.status, 0, jsonPreview.stdout);
+  const { diff, ...report } = JSON.parse(jsonPreview.stdout);
+  assert.equal(diff, preview.stdout);
+  assert.deepEqual(report, ordinary);
+  assert.deepEqual(await f.snapshot(), before);
+  assert.equal(f.run(['import', '--file', 'work.json', '--apply', '--json']).status, 0);
+  const applied = await f.snapshot();
+  const unchanged = f.run([...args, '--diff']);
+  assert.equal(unchanged.status, 0); assert.equal(unchanged.stdout, '');
+  assert.equal(JSON.parse(f.run([...args, '--diff', '--json']).stdout).diff, '');
+  assert.deepEqual(await f.snapshot(), applied);
+});
+
+test('blocked import diff never presents the valid subset as an applicable patch', async t => {
+  const f = await fixture(t, { checkLocales: ['en', 'fr'] });
+  await f.write('ko', 'common', { title: '{name}' });
+  const work = JSON.parse(f.run(['export']).stdout);
+  work.entries.forEach(entry => { entry.translation = entry.locale === 'en' ? 'Hello {name}' : '{wrong}'; });
+  await writeFile(path.join(f.root, 'work.json'), JSON.stringify(work));
+  const before = await f.snapshot();
+  for (const asJson of [false, true]) {
+    const result = f.run(['import', '--file', 'work.json', '--dry-run', '--diff', ...(asJson ? ['--json'] : [])]);
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    assert.ok(!result.stdout.includes('--- a/'));
+    assert.ok(!result.stdout.includes('--- /dev/null'));
+    if (asJson) {
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.diff, null); assert.equal(report.blocked, true);
+      assert.ok(report.diagnostics.length);
+    } else assert.match(result.stdout, /blocked/);
+  }
+  assert.deepEqual(await f.snapshot(), before);
+});
+
+test('diff flags are checked before filesystem access and are restricted to import dry-run', async t => {
+  const f = await fixture(t);
+  for (const args of [ ['check', '--diff'], ['sync', '--dry-run', '--diff'], ['export', '--diff'],
+    ['import', '--file', 'missing.json', '--diff'], ['import', '--file', 'missing.json', '--apply', '--diff'],
+    ['import', '--file', 'missing.json', '--apply', '--dry-run', '--diff'] ]) {
+    const result = f.run([...args, '--config', 'missing.json', '--json']);
+    assert.equal(result.status, 2);
+    assert.match(JSON.parse(result.stdout).error.message, /--diff is only supported with import --dry-run/);
+  }
+  const help = f.run(['--help']);
+  assert.equal(help.status, 0); assert.match(help.stdout, /--diff/);
+});
+
 test('import rejects stale source/rich contracts and edited target translations before any catalog writes', async t => {
   const f = await fixture(t, { checkLocales: ['en'], richText: { common: { title: ['link'] } } });
   await f.write('ko', 'common', { title: '<link>원문</link>', other: 'Original' });

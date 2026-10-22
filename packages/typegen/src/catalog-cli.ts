@@ -8,6 +8,7 @@ import { compareReviewBaseline, createReviewBaseline, readReviewBaseline } from 
 import { isBlockingIssue, planCatalogSync } from './catalog-sync.js';
 import { createTranslationWorkfile, readTranslationWorkfile } from './catalog-workfile.js';
 import { planTranslationImport } from './catalog-import.js';
+import { createImportDiff } from './catalog-diff.js';
 import { applyTranslationImport, TranslationApplyError } from './catalog-apply.js';
 import { applyReviewApprovals, readReviewApprovals } from './catalog-approvals.js';
 import { planReviewApproval } from './catalog-approve.js';
@@ -35,6 +36,7 @@ Options:
   --baseline <file.json>     Compare base text/rich contracts with a saved snapshot.
   --reviews <file.json>      Track explicit approvals per locale and message.
   --dry-run                 Preview sync, import or approval without writing files.
+  --diff                    Show a unified file diff; only with import --dry-run (optional --json).
   --apply                   Apply import (atomic per file) or atomically update approval JSON.
   --file <work.json>         Translation workfile input; supported with import, approve or refresh.
   --with-context            Export/refresh v2 workfiles with advisory argument types and allowed tags.
@@ -60,7 +62,7 @@ function printCheckReport(report: CatalogCheckReport): string {
 try {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: {
     config: { type: 'string' }, 'locales-dir': { type: 'string' }, 'base-locale': { type: 'string' },
-    locales: { type: 'string' }, json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
+    locales: { type: 'string' }, json: { type: 'boolean' }, diff: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
     baseline: { type: 'string' }, reviews: { type: 'string' }, 'dry-run': { type: 'boolean' },
     file: { type: 'string' }, apply: { type: 'boolean' }, 'with-context': { type: 'boolean' }, 'out-file': { type: 'string' },
   } });
@@ -71,6 +73,8 @@ try {
     if (positionals.length !== 1 || !command || !['check', 'sync', 'snapshot', 'export', 'import', 'approve', 'refresh'].includes(command))
       throw new UsageError('Choose a command: saylo check, sync --dry-run, snapshot, export, import, approve, or refresh.');
     if (command === 'sync' && !values['dry-run']) throw new UsageError('sync requires --dry-run; applying changes is not supported.');
+    if (values.diff && (command !== 'import' || !values['dry-run'] || values.apply))
+      throw new UsageError('--diff is only supported with import --dry-run.');
     if (values['with-context'] && !['export', 'refresh'].includes(command))
       throw new UsageError('--with-context is only supported with export or refresh.');
     if (values['out-file'] !== undefined && !['export', 'snapshot', 'refresh'].includes(command))
@@ -134,7 +138,10 @@ try {
       const plan = planTranslationImport(inspected.inspection, report, config, work);
       const result = values.apply && !plan.report.blocked ? await applyTranslationImport(plan, { signal: cancellation!.signal }) : plan.report;
       cancellation?.throwIfCancelled(result.writtenFiles);
-      console.log(json ? JSON.stringify(result) : `${result.diagnostics.map(issue => `${issue.code}: ${issue.message}`).join('\n')}\n[saylo:import] ${result.blocked ? 'blocked' : result.dryRun ? 'dry-run' : 'applied'}; ${result.changes.length} message(s); ${result.writtenFiles.length} file(s) written.`);
+      const diff = values.diff ? createImportDiff(plan) : undefined;
+      if (json) console.log(JSON.stringify(values.diff ? { ...result, diff } : result));
+      else if (typeof diff === 'string') process.stdout.write(diff);
+      else console.log(`${result.diagnostics.map(issue => `${issue.code}: ${issue.message}`).join('\n')}\n[saylo:import] ${result.blocked ? 'blocked' : result.dryRun ? 'dry-run' : 'applied'}; ${result.changes.length} message(s); ${result.writtenFiles.length} file(s) written.`);
       process.exitCode = result.blocked ? 1 : 0;
     } else if (command === 'export') {
       const plan = planCatalogSync(inspected.inspection, report);

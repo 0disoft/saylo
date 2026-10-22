@@ -156,6 +156,14 @@ npx --no-install saylo import --file translation-work.json --dry-run --json
 npx --no-install saylo import --file translation-work.json --apply --json
 ```
 
+`import --dry-run --diff`는 파일을 바꾸지 않고 `localesDir` 기준 상대 경로를 쓰는 3줄 문맥의 unified diff만 stdout에 낸다. 새 파일은 `--- /dev/null`로 시작하며 파일 끝 개행 누락 표식과 CRLF 줄도 diff에 유지한다. `--diff`는 `import --dry-run`에서만 유효하고 `--apply` 또는 다른 명령에 붙이면 사용법 오류(exit 2)다.
+
+```sh
+npx --no-install saylo import --file translation-work.json --dry-run --diff
+```
+
+`--diff --json`은 기존 `saylo-translation-import/v1` 보고서에 `diff` 문자열을 더한다. 차단되면 `diff: null`과 exit 1, 변경이 없으면 `diff: ""`와 exit 0이다. 일반 차단 출력은 기존 진단과 요약만 내며 diff는 출력하지 않는다.
+
 일부 항목만 완료해도 된다. `translation`이 `null`이거나 `originalTranslation`과 같으면 건너뛰고, 이미 적용된 값을 다시 가져와도 쓰기가 없다. 한 항목이라도 검증에 실패하면 전체 적용이 차단된다.
 
 작업 파일의 형식·기준 로케일·locale/namespace/id·중복을 검사한다. 대상 경로는 작업 파일에 적힌 경로를 믿지 않고 루트의 canonical 로케일 디렉터리와 namespace에서 만든다. 원문이나 rich 계약이 export 뒤 바뀌면 `SOURCE_CONFLICT`, 기존 번역이 `originalTranslation`과 달라졌으면 `TRANSLATION_CONFLICT`로 차단하므로 새로 export해서 다시 한다. 병합 결과의 JSON·ICU 인자·rich 태그도 모든 파일에 대해 먼저 검증한다.
