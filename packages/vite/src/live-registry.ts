@@ -15,6 +15,31 @@ type Read = () => string | Promise<string>;
 const QUIET_MS = 40;
 const MAX_WAIT_MS = 200;
 
+type Checks = ReadonlyMap<string, ReturnType<DiskRechecks['token']>>;
+
+function baseCatalogs(files: readonly CatalogFile[], baseLocale: string) {
+  const directories = new Map<string, string>();
+  for (const item of files) {
+    const directory = path.dirname(item.file);
+    const previous = directories.get(item.catalog.locale);
+    if (previous && previous !== directory) throw new Error(`Duplicate canonical locale directory: ${directory}`);
+    directories.set(item.catalog.locale, directory);
+  }
+  const bases = files.filter(f => f.catalog.locale === baseLocale);
+  if (!bases.length) throw new Error('The base locale must retain at least one catalog on disk.');
+  return bases;
+}
+
+function acceptedChanged(previous: ReadonlyMap<string, CatalogFile>, active: readonly CatalogFile[]): boolean {
+  return active.length !== previous.size || active.some(f => {
+    const before = previous.get(f.file);
+    if (!before || before.source !== f.source) return true;
+    if (before.catalog === f.catalog) return false;
+    return Object.keys(before.catalog.messages).length !== Object.keys(f.catalog.messages).length ||
+      Object.keys(f.catalog.messages).some(id => before.catalog.messages[id] !== f.catalog.messages[id]);
+  });
+}
+
 export interface LiveRegistryOperations extends DiskRecheckOperations {
   readonly now?: () => number;
   readonly read?: (file: string) => Promise<string>;
@@ -170,107 +195,107 @@ export class LiveRegistry {
     this.firstQueued = undefined;
     this.settleDisk = false;
     this.timer = undefined;
-    this.running = this.running.then(async () => {
-      if (this.stopped) return;
-      const candidate = new Map(this.desired);
-      const errors = new Map(this.errors);
-      const parsed = new Map<string, ParsedCatalog>();
-      let settleMissing = false;
-      for (const [file, read] of batch) {
-        const location = catalogLocation(this.root, file)!;
-        const previous = this.pendingParses.get(file) ?? candidate.get(file)?.catalog;
-        this.pendingParses.delete(file);
-        try {
-          // Read the final filesystem state, rather than trusting an earlier unlink/add label.
-          const changed = await (this.operations.readCatalog ?? readCatalogFile)(this.root, file, location.locale, location.namespace, async () => {
-            // Capture before reading: a suppressed write during the read must
-            // not be mistaken for the version represented by the old text.
-            stamps.set(file, await (this.operations.stamp ?? diskStamp)(file));
-            return read ? read() : this.read(file);
-          }, previous);
-          parsed.set(file, changed.catalog);
-          candidate.set(file, changed);
-          errors.delete(file);
-        } catch (error) {
-          if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') {
-            // An update reader can race an atomic replacement before its
-            // unlink/add events arrive. Confirm removal only after disk settling.
-            if (read) settleMissing = true;
-            else { candidate.delete(file); errors.delete(file); }
-          } else errors.set(file, this.failure(error));
-        }
-      }
-      if (this.stopped) return;
-      // A save arrived while reading: discard this attempt and re-read the affected paths.
-      if (generation !== this.generation || settleMissing) {
-        for (const [file, catalog] of parsed) this.pendingParses.set(file, catalog);
-        if (settleMissing) this.settleDisk = true;
-        for (const file of batch.keys()) if (!this.queued.has(file) &&
-          (settleMissing || this.rechecks.token(file) === checks.get(file))) this.requeue(file);
-        if (this.queued.size) this.schedule();
-        return;
-      }
-      this.desired = candidate;
-      this.errors = errors;
-      try {
-        const directories = new Map<string, string>();
-        for (const item of candidate.values()) {
-          const directory = path.dirname(item.file);
-          const previous = directories.get(item.catalog.locale);
-          if (previous && previous !== directory) throw new Error(`Duplicate canonical locale directory: ${directory}`);
-          directories.set(item.catalog.locale, directory);
-        }
-        const bases = [...candidate.values()].filter(f => f.catalog.locale === this.baseLocale);
-        if (!bases.length) throw new Error('The base locale must retain at least one catalog on disk.');
-        // Do not accept a ghost baseline if its unlink event is still in flight.
-        if (!(await Promise.all(bases.map(f => this.operations.isFile ? this.operations.isFile(f.file) : stat(f.file).then(s => s.isFile(), () => false)))).some(Boolean)) {
-          throw new Error('The base locale must retain at least one catalog on disk.');
-        }
-        const namespaces = new Set(bases.map(f => f.catalog.namespace));
-        // Removing a baseline namespace removes it from the active registry. Its secondary
-        // files stay cached on disk and rejoin if that baseline namespace is restored.
-        const prepared = this.prepareTranslations([...candidate.values()]
-          .filter(f => namespaces.has(f.catalog.namespace) || !this.knownNamespaces.has(f.catalog.namespace)));
-        const { active } = prepared;
-        this.validate(active);
-        if (generation !== this.generation || this.stopped) {
-          if (!this.stopped) {
-            for (const file of batch.keys()) if (!this.queued.has(file) && this.rechecks.token(file) === checks.get(file)) this.requeue(file);
-            if (this.queued.size) this.schedule();
-          }
-          return;
-        }
-        const changed = active.length !== this.accepted.size || active.some(f => {
-          const previous = this.accepted.get(f.file);
-          if (!previous || previous.source !== f.source) return true;
-          if (previous.catalog === f.catalog) return false;
-          return Object.keys(previous.catalog.messages).length !== Object.keys(f.catalog.messages).length ||
-            Object.keys(f.catalog.messages).some(id => previous.catalog.messages[id] !== f.catalog.messages[id]);
-        });
-        this.accepted = new Map(active.map(f => [f.file, f]));
-        this.lastGoodTranslations = prepared.translations;
-        this.errors = prepared.errors;
-        for (const namespace of namespaces) this.knownNamespaces.add(namespace);
-        this.errors.delete('<registry>');
-        this.emit(active, changed);
-      } catch (error) {
+    this.running = this.running.then(() => this.processBatch(batch, checks, stamps, generation))
+      .catch(error => {
         if (this.stopped) return;
-        if (generation !== this.generation) {
-          for (const file of batch.keys()) if (!this.queued.has(file) && this.rechecks.token(file) === checks.get(file)) this.requeue(file);
-          if (this.queued.size) this.schedule();
-          return;
-        }
         this.errors.set('<registry>', this.failure(error));
         this.emit([...this.accepted.values()], false);
+      }).finally(() => {
+        for (const [file, check] of checks) this.rechecks.finish(file, check, stamps.get(file));
+        for (const resolve of waiters) resolve();
+      });
+  }
+
+  private async readBatch(batch: ReadonlyMap<string, Read | undefined>, stamps: Map<string, string>) {
+    const candidate = new Map(this.desired);
+    const errors = new Map(this.errors);
+    const parsed = new Map<string, ParsedCatalog>();
+    let settleMissing = false;
+    for (const [file, read] of batch) {
+      const location = catalogLocation(this.root, file)!;
+      const previous = this.pendingParses.get(file) ?? candidate.get(file)?.catalog;
+      this.pendingParses.delete(file);
+      try {
+        // Read the final filesystem state, rather than trusting an earlier unlink/add label.
+        const changed = await (this.operations.readCatalog ?? readCatalogFile)(this.root, file, location.locale, location.namespace, async () => {
+          // Capture before reading: a suppressed write during the read must
+          // not be mistaken for the version represented by the old text.
+          stamps.set(file, await (this.operations.stamp ?? diskStamp)(file));
+          return read ? read() : this.read(file);
+        }, previous);
+        parsed.set(file, changed.catalog);
+        candidate.set(file, changed);
+        errors.delete(file);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') {
+          // An update reader can race an atomic replacement before its
+          // unlink/add events arrive. Confirm removal only after disk settling.
+          if (read) settleMissing = true;
+          else { candidate.delete(file); errors.delete(file); }
+        } else errors.set(file, this.failure(error));
       }
-    }).catch(error => {
+    }
+    return { candidate, errors, parsed, settleMissing };
+  }
+
+  private requeueBatch(batch: ReadonlyMap<string, Read | undefined>, checks: Checks, settleMissing = false) {
+    if (settleMissing) this.settleDisk = true;
+    for (const file of batch.keys()) {
+      if (this.queued.has(file)) continue;
+      if (settleMissing || this.rechecks.token(file) === checks.get(file)) this.requeue(file);
+    }
+    if (this.queued.size) this.schedule();
+  }
+
+  private async processBatch(batch: ReadonlyMap<string, Read | undefined>, checks: Checks,
+    stamps: Map<string, string>, generation: number) {
+    if (this.stopped) return;
+    const { candidate, errors, parsed, settleMissing } = await this.readBatch(batch, stamps);
+    if (this.stopped) return;
+    if (generation !== this.generation || settleMissing) {
+      for (const [file, catalog] of parsed) this.pendingParses.set(file, catalog);
+      this.requeueBatch(batch, checks, settleMissing);
+      return;
+    }
+    // Remember disk candidates even when validation keeps the last accepted registry active.
+    this.desired = candidate;
+    this.errors = errors;
+    try {
+      await this.acceptCandidate(candidate, batch, checks, generation);
+    } catch (error) {
       if (this.stopped) return;
+      if (generation !== this.generation) { this.requeueBatch(batch, checks); return; }
       this.errors.set('<registry>', this.failure(error));
       this.emit([...this.accepted.values()], false);
-    }).finally(() => {
-      for (const [file, check] of checks) this.rechecks.finish(file, check, stamps.get(file));
-      for (const resolve of waiters) resolve();
-    });
+    }
+  }
+
+  private async acceptCandidate(candidate: ReadonlyMap<string, CatalogFile>,
+    batch: ReadonlyMap<string, Read | undefined>, checks: Checks, generation: number) {
+    const files = [...candidate.values()];
+    const bases = baseCatalogs(files, this.baseLocale);
+    // Do not accept a ghost baseline if its unlink event is still in flight.
+    if (!(await Promise.all(bases.map(f => this.operations.isFile ? this.operations.isFile(f.file) : stat(f.file).then(s => s.isFile(), () => false)))).some(Boolean)) {
+      throw new Error('The base locale must retain at least one catalog on disk.');
+    }
+    const namespaces = new Set(bases.map(f => f.catalog.namespace));
+    // Removing a baseline namespace removes it from the active registry. Its secondary
+    // files stay cached on disk and rejoin if that baseline namespace is restored.
+    const prepared = this.prepareTranslations(files
+      .filter(f => namespaces.has(f.catalog.namespace) || !this.knownNamespaces.has(f.catalog.namespace)));
+    const { active } = prepared;
+    this.validate(active);
+    if (generation !== this.generation || this.stopped) {
+      if (!this.stopped) this.requeueBatch(batch, checks);
+      return;
+    }
+    const changed = acceptedChanged(this.accepted, active);
+    this.accepted = new Map(active.map(f => [f.file, f]));
+    this.lastGoodTranslations = prepared.translations;
+    this.errors = prepared.errors;
+    for (const namespace of namespaces) this.knownNamespaces.add(namespace);
+    this.errors.delete('<registry>');
+    this.emit(active, changed);
   }
 
   private requeue(file: string) {

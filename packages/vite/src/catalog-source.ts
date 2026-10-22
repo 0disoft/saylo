@@ -2,9 +2,10 @@ import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
 import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
 import { EagerSync } from './dev-sync.js';
 import type { DevSyncState } from './dev-sync.js';
-import { catalogId as id, catalogMetadata, immutable, matches } from './catalog-outcome.js';
+import { catalogId as id, immutable, matches } from './catalog-outcome.js';
 import { CATALOG_EVENT, CATALOG_PUSH_EVENT, CATALOG_SCOPE_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from './types.js';
 import type { CatalogPush, CatalogReply, CatalogRequest, EagerCatalogEvent, LiveDiagnostic, ManifestEvent } from './types.js';
+import { planPushReplacements, planCacheRemovals } from './catalog-commit.js';
 import { applyCatalogPatch } from './catalog-patch.js';
 import { decodeCatalogResult } from './catalog-wire.js';
 import type { PresentCatalog } from './catalog-patch.js';
@@ -156,30 +157,14 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
           const next = validateCatalogManifest((envelope as EagerCatalogEvent & { manifest: CatalogManifest }).manifest);
           if (next.baseLocale !== manifest.baseLocale) throw new Error('Source baseLocale changed.');
           const push = (envelope as EagerCatalogEvent & { push?: CatalogPush }).push;
-          const replacements = new Map<string, CatalogOutcome>();
-          if (push) {
-            if (!Array.isArray(push.outcomes)) throw new Error('Invalid catalog push outcomes.');
-            for (const wire of push.outcomes) {
-              const decoded = decodeCatalogResult(wire);
-              if (!decoded || decoded.status === 'failed') throw new Error('Failed catalog push.');
-              const key = id(decoded.key), baseline = cache.get(key);
-              if (!baseline) continue; // Another source on the shared socket owns this pair.
-              if (replacements.has(key)) throw new Error('Duplicate catalog push outcome.');
-              const result = decoded.status === 'patch' ? applyCatalogPatch(baseline.status === 'present' ? baseline : undefined, decoded) : decoded;
-              if (!matches(next, result)) throw new CatalogLoadError('STALE_CATALOG', 'Pushed catalog does not match its manifest.');
-              replacements.set(key, immutable(result));
-            }
-          }
+          const replacements = new Map([...planPushReplacements(next, cache, push)]
+            .map(([key, result]) => [key, immutable(result)]));
           const changed = JSON.stringify(next) !== JSON.stringify(manifest);
           const wasReady = ready;
           manifest = next;
           ready = true;
           for (const [key, result] of replacements) cache.set(key, result);
-          // Keep one stale present baseline per available pair for request-scoped deltas.
-          const metadata = catalogMetadata(manifest);
-          for (const [key, result] of cache) if (result.sessionId !== manifest.sessionId ||
-              (metadata.get(key)?.status !== 'present' && (!options.push || result.status === 'present')) ||
-              (options.push && (!manifest.availableNamespaces.includes(result.key.namespace) || !manifest.availableLocales.includes(result.key.locale)))) cache.delete(key);
+          for (const key of planCacheRemovals(manifest, cache, options.push === true)) cache.delete(key);
           for (const entry of [...pending.values()]) {
             const accepted = cache.get(id(entry.key));
             if (accepted && matches(manifest, accepted)) { entry.cleanup(); entry.resolve(accepted); }
