@@ -16,8 +16,9 @@ try {
     const address = server.httpServer.address();
     origin = `http://127.0.0.1:${address.port}`;
   }
-  const request = async (query, expected) => {
-    const response = await requestFetch(`${origin}/?locale=${encodeURIComponent(query)}`);
+  const request = async (query, expected, headers = {}) => {
+    const search = query === undefined ? '' : `?locale=${encodeURIComponent(query)}`;
+    const response = await requestFetch(`${origin}/${search}`, { headers, signal: AbortSignal.timeout(15000) });
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('cache-control'), 'no-store');
     const html = await response.text();
@@ -27,7 +28,7 @@ try {
     const markup = html.replace(/<!--[\s\S]*?-->/g, '');
     assert.ok(markup.includes('<strong>Saylo</strong>'), 'SSR rich name missing');
     assert.ok(markup.includes('<a href="#order-form">'), 'SSR app-owned rich link missing');
-    const dataResponse = await requestFetch(`${origin}/__data.json?locale=${encodeURIComponent(query)}`);
+    const dataResponse = await requestFetch(`${origin}/__data.json${search}`, { headers, signal: AbortSignal.timeout(15000) });
     assert.equal(dataResponse.status, 200);
     const data = await dataResponse.json();
     const layout = data.nodes.find(node => node?.type === 'data' && node.data?.[0]?.sayloBoot !== undefined);
@@ -37,12 +38,29 @@ try {
     assert.equal(boot.timeZone, 'UTC');
     assert.deepEqual(boot.loadedNamespaces, ['demo']);
   };
-  const concurrent = await Promise.allSettled([request('ko', 'ko'), request('en', 'en'), request('en', 'en'), request('ko', 'ko')]);
+  const concurrent = await Promise.allSettled([
+    request('ko', 'ko', { 'accept-language': 'en' }),
+    request('en', 'en', { cookie: 'saylo-locale=ko' }),
+    request(undefined, 'en', { 'accept-language': 'en-GB' }),
+    request(undefined, 'ko', { cookie: 'saylo-locale=ko', 'accept-language': 'en' }),
+  ]);
   for (const result of concurrent) if (result.status === 'rejected') throw result.reason;
   await request('EN', 'en');
   await request('en_US', 'ko');
   await request('fr', 'ko');
-  console.log('[sveltekit] Concurrent ko/en SSR, matching boot data, canonical locale and base fallback passed.');
+  await request('en-GB', 'en');
+  await request(undefined, 'ko');
+  await request(undefined, 'en', { 'accept-language': 'fr;q=1,en-GB;q=0.8,ko;q=0.2' });
+  await request(undefined, 'ko', { 'accept-language': 'en;q=0.2,ko;q=0.8' });
+  await request(undefined, 'ko', { 'accept-language': 'en-US,en;q=0,*;q=0.5' });
+  await request(undefined, 'en', { 'accept-language': '*;q=0,en;q=1' });
+  await request(undefined, 'en', { 'accept-language': 'broken;q=NaN,en;q=0.5' });
+  await request(undefined, 'ko', { 'accept-language': '*;q=0' });
+  await request(undefined, 'en', { cookie: 'saylo-locale=EN-gb', 'accept-language': 'ko' });
+  await request('en_US', 'en', { cookie: 'saylo-locale=en' });
+  await request('fr', 'en', { cookie: 'saylo-locale=en_US', 'accept-language': 'en' });
+  await request('en', 'en', { cookie: 'saylo-locale=ko', 'accept-language': 'en;q=0' });
+  console.log('[sveltekit] Concurrent SSR, matching boot data, parent lookup, query/cookie/header priority and q=0 passed.');
   if (server) {
     const { createRequestI18n } = await server.ssrLoadModule('virtual:saylo/server');
     const prepared = await createRequestI18n({ locale: 'en' });

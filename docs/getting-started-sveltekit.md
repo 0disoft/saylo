@@ -665,6 +665,12 @@ layout load는 요청마다 `createRequestI18n({ locale: locals.locale })`로 in
 
 요청 로케일은 hooks에서 `Intl.getCanonicalLocales`로 정규화한다. `EN`은 `en`이 되고, 잘못된 태그 `en_US`와 카탈로그가 없는 `fr`은 기준 로케일 `ko`를 사용한다.
 
+### 로컬 다음 버전 참고
+
+앞의 alpha.4 코드와 실행 순서는 query locale만 사용하는 게시본 기준을 유지한다. 로컬 다음 버전의 `examples/sveltekit`은 `resolveLocale`과 `resolveAcceptLanguage`로 query, `saylo-locale` cookie, `Accept-Language`, manifest 기준 locale 순서를 해석한다. 잘못되었거나 지원하지 않는 query·cookie는 다음 입력원으로 넘어가며, 명시한 query나 cookie가 있으면 `Accept-Language`의 `q=0` 제외를 덮는다. cookie는 읽기만 하고, 서버 hooks는 고른 locale을 `event.locals`에 둔 뒤 같은 boot를 `no-store`로 내려보낸다.
+
+이 helper는 로컬 미게시 API라 `0.1.0-alpha.4`에 없다. 위의 실행 가능한 alpha.4 예제에 새 import를 추가하지 않는다.
+
 화면의 로케일 선택은 `goto(url, { reset: false, refreshAll: true })`로 쿼리와 서버 데이터를 갱신한다. 삭제했던 언어를 다시 추가했을 때 URL이 같아도 요청별 boot를 다시 읽는다. 주소의 `locale`이 따라오고 폼은 공유 layout에서 관리한다. 라우트 이동의 포커스 처리는 SvelteKit 라우터가 맡는다.
 
 ## 연결과 layout 수명

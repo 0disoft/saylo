@@ -11,13 +11,15 @@ npm run setup:sveltekit
 npm run dev:sveltekit
 ```
 
-개발 주소는 `http://127.0.0.1:5191/?locale=en`이다. `?locale=ko`는 한국어이며, 잘못되거나 존재하지 않는 로케일은 기준 언어로 처리한다. 로케일 선택은 URL query를 기준으로 한다. Saylo 패키지 소스를 변경했다면 `setup:sveltekit`을 다시 실행해 빌드와 예제의 복사본 설치를 갱신한다.
+개발 주소는 `http://127.0.0.1:5191/?locale=en`이다. `?locale=ko`는 한국어이며, 잘못되거나 지원하지 않는 locale은 다음 입력원으로 넘어간다. 요청 locale은 URL query, `saylo-locale` cookie, `Accept-Language`, manifest 기준 locale 순서로 정한다. Saylo 패키지 소스를 변경했다면 `setup:sveltekit`을 다시 실행해 빌드와 예제의 복사본 설치를 갱신한다.
+
+예제는 cookie를 읽기만 한다. cookie로 언어를 기억하려면 앱이 `saylo-locale` 값을 직접 설정한다. query나 cookie에 지원 locale을 명시하면 `Accept-Language`의 `q=0` 제외보다 우선한다. 둘 다 없거나 쓸 수 없는 값이면 헤더 해석 결과를 쓰고, 헤더에서도 고를 수 없으면 manifest 기준 locale로 돌아간다.
 
 예제는 SvelteKit 3·Svelte 5·Vite 8·adapter-node 6·TypeScript 6·svelte-check 4를 사용한다. SvelteKit과 checker의 현재 peer 조건에 맞춰 예제만 TypeScript 6을 사용하며 Saylo 본체의 TypeScript 7은 유지한다. [SvelteKit 3 공식 변경 안내](https://svelte.dev/docs/kit/migrating-to-sveltekit-3)를 따른다.
 
 ## SSR과 hydration
 
-- `hooks.server.ts`가 요청의 query locale을 정규화하고 해당 요청의 `locals`에 보관한다. HTML `lang`도 이 값으로 설정한다.
+- `hooks.server.ts`가 query·cookie·`Accept-Language`·manifest 기준값 순서로 로케일을 해석하고 해당 요청의 `locals`에 보관한다. HTML `lang`도 이 값으로 설정한다.
 - `(saylo)/+layout.server.ts`가 `virtual:saylo/server`의 `createRequestI18n`으로 번역을 준비한다. boot를 JSON 문자열로 반환한 뒤 준비 instance를 `finally`에서 폐기한다. 응답은 `no-store`이다. load가 query locale을 직접 읽어 페이지 이동 중 query 변경도 다시 처리한다.
 - `(saylo)/+layout.svelte`는 boot에서 새로운 instance를 만들어 context에 전달한다. 서버·브라우저 첫 렌더는 같은 locale·카탈로그·시간대를 사용한다. 공유 모듈에는 context factory만 둔다.
 - `onMount`에서 개발 모드면 해당 요청 boot로 `createDevCatalogSource`를 새로 만든다. 이 source는 layout이 소유하고 폐기한다. 운영 모드면 `virtual:saylo/lazy`를 동적 import해 generated static source를 연결한다. SSR에서는 브라우저 전용 source를 실행하지 않는다. 첫 snapshot은 연결 전에 boot로 고정하고, 연결 후 최신 manifest를 갱신한다.
