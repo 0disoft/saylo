@@ -55,7 +55,7 @@ export function analyzeSource(source: string, file: string, available: ReadonlyS
   const trees = sourceTrees(source, file), namespaces = new Map<string, string>();
   // Imports are hoisted: an earlier use must also recognize a later declaration.
   for (const tree of trees) for (const statement of (node(tree.program)?.body as SourceNode[] | undefined) ?? []) {
-    if (statement.type === 'ImportDeclaration') for (const specifier of statement.specifiers as SourceNode[]) {
+    if (statement.type === 'ImportDeclaration' && statement.importKind !== 'type') for (const specifier of statement.specifiers as SourceNode[]) {
       const name = identifier(specifier.local);
       if (specifier.type === 'ImportNamespaceSpecifier' && name) {
         const specifier = literal(statement.source)!;
@@ -94,6 +94,7 @@ export function analyzeSource(source: string, file: string, available: ReadonlyS
       }
     }
     if (current.type === 'ExportSpecifier') {
+      if (current.exportKind === 'type' || parent?.exportKind === 'type') return;
       alias(identifier(current.local), identifier(current.exported));
       const exported = identifier(current.exported) ?? literal(current.exported);
       if (exported) facts.exports.push([exported, reference(current.local, namespaces)]);
@@ -104,6 +105,7 @@ export function analyzeSource(source: string, file: string, available: ReadonlyS
       if (namespaces.has(identifier(current.local) ?? '')) facts.escapes.push(reference(current.local, namespaces));
     }
     if (current.type === 'ImportSpecifier') {
+      if (current.importKind === 'type' || parent?.importKind === 'type') return;
       const imported = identifier(current.imported), local = identifier(current.local), specifier = literal(parent?.source);
       alias(imported, local);
       if (imported && local && specifier) facts.namedImports.push({ specifier, imported, local });
@@ -155,7 +157,7 @@ export function analyzeSource(source: string, file: string, available: ReadonlyS
 }
 
 /** Each newly discovered alias visits its dependents once, including reverse chains and cycles. */
-export function resolveAliases(sources: readonly SourceFacts[]): ReadonlySet<string> {
+export function resolveAliases(sources: readonly SourceFacts[], resolvedImports: ReadonlyMap<string, string> = new Map()): ReadonlySet<string> {
   const dependents = new Map<string, Set<string>>(), aliases = new Set(['t', 'tParts', '$t']);
   const edge = (from: string, to: string) => {
     let targets = dependents.get(from);
@@ -174,7 +176,7 @@ export function resolveAliases(sources: readonly SourceFacts[]): ReadonlySet<str
       if (ref === true) aliases.add(token); else if (typeof ref === 'string') edge(localId(source.file, ref), token);
     }
   }
-  linkNamespaceImports(sources, edge, token => { aliases.add(token); });
+  linkNamespaceImports(sources, edge, token => { aliases.add(token); }, resolvedImports);
   const queue = [...aliases];
   for (let index = 0; index < queue.length; index++) for (const target of dependents.get(queue[index]!) ?? []) {
     if (aliases.has(target)) continue;

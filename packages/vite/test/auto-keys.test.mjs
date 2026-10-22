@@ -8,6 +8,57 @@ import { parseCatalog } from '@0disoft/saylo-core';
 import saylo from '../dist/index.js';
 import { findIncludedKeys, readAutoKeys } from '../dist/auto-keys.js';
 
+test('resolved aliases follow named reexports and namespace members while preserving dynamic-call diagnostics', async t => {
+  const root = await fixture(t);
+  const main = path.join(root, 'src/main.ts');
+  const translator = path.join(root, 'src/translators.ts');
+  const bridge = path.join(root, 'src/bridge.ts');
+  await writeFile(translator, 'const translate = i18n.t; export { translate as message };');
+  await writeFile(bridge, `export { message as text } from '@/translators';`);
+  const calls = [];
+  const resolve = async (id, importer) => {
+    calls.push([id, importer]);
+    return id === '@/translators' ? translator : id === '$lib/bridge' ? bridge : undefined;
+  };
+  for (const source of [
+    `import { text as msg } from '$lib/bridge'; msg(key);`,
+    `import * as messages from '$lib/bridge'; messages.text(key);`,
+    `import * as messages from '$lib/bridge'; const { text: msg } = messages; msg(key);`,
+  ]) {
+    await writeFile(main, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }, undefined, resolve), /Dynamic translation keys/);
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'], dynamicKeys: ['demo:two'] }, undefined, resolve), ['demo:two']);
+  }
+  await writeFile(main, "import { text as msg } from '$lib/bridge'; msg(`demo:t${suffix}`);");
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }, undefined, resolve), ['demo:title', 'demo:two']);
+  assert.ok(calls.some(([id, importer]) => id === '@/translators' && importer === bridge));
+  await writeFile(translator, 'export const message = (key: string) => key;');
+  await writeFile(main, "import * as helpers from '$lib/bridge'; helpers.text(key);");
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }, undefined, resolve), []);
+});
+
+test('alias resolution never reads unscanned files and preserves resolver failure causes', async t => {
+  const root = await fixture(t);
+  const main = path.join(root, 'src/main.ts');
+  await writeFile(main, "import { message as msg } from '@/hidden'; msg(key);");
+  const outside = path.join(root, 'hidden.ts');
+  await writeFile(outside, 'this is intentionally not parseable JavaScript');
+  await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }, undefined, async () => outside),
+    error => /outside scanned sources/.test(error.message) && error.message.includes(main) && error.message.includes(outside));
+  const failure = new Error('Resolver failed');
+  await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }, undefined, async () => { throw failure; }),
+    error => error === failure);
+});
+
+test('type-only aliased imports and reexports never resolve or retain runtime keys', async t => {
+  const root = await fixture(t);
+  await writeFile(path.join(root, 'src/main.ts'), `import type * as types from '@/types';
+import type { Message } from '@/types'; import { type Other } from '@/types';
+export type { Message } from '@/types'; export { type Other } from '@/types';`);
+  const resolve = async () => { assert.fail('Type-only alias reached the runtime resolver'); };
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }, undefined, resolve), []);
+});
+
 const parent = fileURLToPath(new URL('../../../.release/', import.meta.url));
 async function fixture(t) {
   await mkdir(parent, { recursive: true });
@@ -272,16 +323,19 @@ test('Vite watch rebuilds reanalyze edited source keys and fresh catalog content
   const catalog = path.join(root, 'locales/ko/demo.json');
   await writeFile(catalog, JSON.stringify({ title: 'WATCH_TITLE_MARKER', two: 'WATCH_TWO_MARKER', unused: 'WATCH_UNUSED_MARKER' }));
   const main = path.join(root, 'src/main.ts');
-  const entry = key => `import { createStore } from '@0disoft/saylo-core/runtime';
+  await writeFile(path.join(root, 'src/translators.ts'), `import { createStore } from '@0disoft/saylo-core/runtime';
 import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
 const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale });
-export const value = () => store.t('${key}');`;
+const message = store.t; export { message };`);
+  const entry = key => `import { message as msg } from '@/translators';
+export const value = (suffix = ${JSON.stringify(key.at(-1))}) => msg(\`${key.slice(0, -1)}\${suffix}\`);`;
   await writeFile(main, entry('demo:title'));
   const outputs = [], failures = [];
   const watcher = await build({ configFile: false, root, logLevel: 'silent',
     plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', includeKeys: { from: ['src'] }, typegen: { outFile: 'generated.d.ts' } }),
       { name: 'watch-evidence', generateBundle(_options, bundle) { outputs.push(Object.values(bundle).filter(value => value.type === 'chunk').map(value => value.code).join('\n')); } }],
     resolve: { alias: { '@0disoft/saylo-core/runtime': fileURLToPath(new URL('../../core/dist/runtime.js', import.meta.url)),
+      '@': path.join(root, 'src'),
       '@0disoft/saylo-vite/client': fileURLToPath(new URL('../dist/client.js', import.meta.url)) } },
     build: { outDir: 'out', watch: {}, minify: false, rolldownOptions: { input: main, preserveEntrySignatures: 'strict' } } });
   watcher.on('event', event => {

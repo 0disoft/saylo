@@ -65,6 +65,67 @@ async function output(root, label, options, ssr = false) {
     gzipBytes: chunks.reduce((sum, chunk) => sum + gzipSync(chunk.code).byteLength, 0) };
 }
 
+test('Vite string and regex aliases retain named and namespace translation calls in eager, lazy and SSR builds', async t => {
+  const root = await fixture(t);
+  await mkdir(path.join(root, 'src'));
+  await writeFile(path.join(root, 'src/i18n.mjs'), `import { createStore } from '@0disoft/saylo-core/runtime';
+import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
+export const messageStore = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale });
+const message = messageStore.t; export { message };`);
+  await writeFile(path.join(root, 'src/bridge.mjs'), `export { message as translated } from '@app/i18n';`);
+  await writeFile(path.join(root, 'main.mjs'), (await readFile(path.join(root, 'main.mjs'), 'utf8')) + `
+import { translated as msg } from '@app/bridge';
+import * as messages from '$lib/bridge';
+export { messageStore } from '@app/i18n';
+export const selected = suffix => [msg(\`demo:t\${suffix}\`), messages.translated(\`help:t\${suffix}\`)];`);
+  const options = { includeKeys: { from: ['src', 'main.mjs'] } };
+  async function aliasedBuild(label, ssr = false) {
+    const settings = config(root, label, options, ssr);
+    settings.resolve.alias = [
+      { find: '@app', replacement: path.join(root, 'src') },
+      { find: /^\$lib\/(.*)$/, replacement: path.join(root, 'src', '$1') },
+      ...Object.entries(settings.resolve.alias).map(([find, replacement]) => ({ find, replacement })),
+    ];
+    const result = await build(settings);
+    const chunks = result.output.filter(value => value.type === 'chunk');
+    assert.ok(chunks.every(chunk => !chunk.code.includes('DROP_MARKER')));
+    const entry = chunks.find(chunk => chunk.isEntry);
+    return import(pathToFileURL(path.join(root, label, entry.fileName)));
+  }
+  const client = await aliasedBuild('alias-client');
+  t.after(() => { client.eagerStore.dispose(); client.lazy.dispose(); client.messageStore.dispose(); });
+  assert.deepEqual(client.selected('itle'), ['ko title', 'fallback help']);
+  client.messageStore.setLocale('en');
+  assert.deepEqual(client.selected('itle'), ['en title', 'fallback help']);
+  assert.equal(client.eagerStore.t('demo:title'), 'ko title');
+  await client.lazy.setLocale('en');
+  assert.equal(client.lazy.t('demo:title'), 'en title');
+  await client.lazy.loadNamespace('help');
+  assert.equal(client.lazy.t('help:title'), 'fallback help');
+  assert.throws(() => client.eagerStore.t('demo:drop0'), { name: 'UnknownMessageError' });
+  assert.match(await readFile(path.join(root, 'generated.d.ts'), 'utf8'), /demo:drop0/);
+  const server = await aliasedBuild('alias-server', true);
+  for (const locale of ['ko', 'en']) {
+    const result = await server.render(locale);
+    assert.equal(result.title, `${locale} title`);
+    assert.deepEqual(Object.keys(result.boot.baseSchemas.find(schema => schema.namespace === 'demo').keys), ['title']);
+  }
+});
+
+test('unresolved and unscanned Vite aliases fail automatic selection with actionable diagnostics', async t => {
+  const root = await fixture(t);
+  await mkdir(path.join(root, 'src'));
+  await writeFile(path.join(root, 'src/main.mjs'), `import { message as msg } from '@/hidden'; msg(key);`);
+  const options = { includeKeys: { from: ['src'] } };
+  const settings = config(root, 'alias-unscanned', options);
+  settings.resolve.alias['@'] = path.join(root, 'unscanned');
+  await mkdir(path.join(root, 'unscanned'));
+  await writeFile(path.join(root, 'unscanned/hidden.mjs'), 'export const message = i18n.t;');
+  await assert.rejects(build(settings), /outside scanned sources.*includeKeys.from/s);
+  settings.resolve.alias['@'] = path.join(root, 'missing');
+  await assert.rejects(build(settings), /\[saylo:auto-keys\].*(Cannot resolve aliased import|outside scanned sources)/s);
+});
+
 test('includeKeys rejects malformed/duplicate configuration and snapshots caller input', async t => {
   for (const includeKeys of [null, 'demo:title', [3], ['title'], [':title'], ['demo:'], ['demo:title:extra'], ['demo:title', 'demo:title']])
     assert.throws(() => saylo({ localesDir: 'locales', baseLocale: 'ko', includeKeys }), /includeKeys/);

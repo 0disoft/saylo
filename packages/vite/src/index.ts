@@ -15,6 +15,7 @@ import { createAstFormatter } from './ast-formatter.js';
 import { requireCompleteTranslations } from './complete-translations.js';
 import { readIncludedKeys, selectBuildCatalogs } from './build-keys.js';
 import { findIncludedKeys, readAutoKeys } from './auto-keys.js';
+import type { ImportResolver } from './auto-key-modules.js';
 import { CatalogPushSubscriptions } from './catalog-push.js';
 import type { CatalogOutcome, ParsedCatalog } from '@0disoft/saylo-core';
 import { registerServerSource } from './server-source.js';
@@ -127,11 +128,11 @@ export default function saylo(options: SayloViteOptions): Plugin {
     typegenRequest++;
     await generator?.stop();
   }
-  async function prepareBuild() {
+  async function prepareBuild(resolveImport?: ImportResolver) {
     keySources.clear();
     assertRichTextKeys(snapshot().catalogs, baseLocale, richText);
     const selectedKeys = production && autoKeys ? await findIncludedKeys(buildRoot,
-      snapshot().catalogs, baseLocale, autoKeys, file => keySources.add(file)) : includeKeys;
+      snapshot().catalogs, baseLocale, autoKeys, file => keySources.add(file), resolveImport) : includeKeys;
     buildCatalogs = production ? selectBuildCatalogs(snapshot().catalogs, baseLocale, selectedKeys) : undefined;
     registry = new CatalogRegistry(sessionId, baseLocale, buildCatalogs ?? snapshot().catalogs);
     chunks.clear();
@@ -141,6 +142,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
     }
   }
   let buildRoot = '';
+  let isAliased = (_specifier: string) => false;
   return {
     name: 'saylo',
     enforce: 'pre',
@@ -155,6 +157,10 @@ export default function saylo(options: SayloViteOptions): Plugin {
     },
     async configResolved(config) {
       buildRoot = config.root;
+      const aliases = config.resolve?.alias ?? [];
+      isAliased = specifier => aliases.some(({ find }) => typeof find === 'string'
+        ? specifier === find || specifier.startsWith(`${find}/`)
+        : new RegExp(find.source, find.flags).test(specifier));
       const scanned = await scanCatalogs(path.resolve(config.root, options.localesDir), richText);
       root = scanned.root;
       files = new Map(scanned.files.map(f => [f.file, f]));
@@ -167,7 +173,8 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (strictBuild) {
         await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
       }
-      await prepareBuild();
+      // Automatic analysis needs Vite's plugin resolver, available during buildStart.
+      if (!production || !autoKeys) await prepareBuild();
       if (options.typegen) {
         generatedOut = path.resolve(config.root, options.typegen.outFile);
         // Config-only consumers (svelte-kit sync, svelte-check) never run closeBundle.
@@ -188,8 +195,15 @@ export default function saylo(options: SayloViteOptions): Plugin {
         createStore({ baseLocale, locale: options.requireCompleteTranslations ? baseLocale : initialLocale,
           catalogs: snapshot().catalogs, timeZone }).dispose();
         if (options.requireCompleteTranslations) await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
-        await prepareBuild();
       }
+      if (builds > 1 || autoKeys) await prepareBuild(async (specifier, importer) => {
+        // Framework/runtime imports are translator seeds, not app-owned alias modules.
+        if (/^@0disoft\/saylo-(?:core|react|svelte|vue|vite)(?:\/|$)/.test(specifier) ||
+            /^virtual:saylo(?:\/|$)/.test(specifier) || !isAliased(specifier)) return;
+        const resolved = await this.resolve(specifier, importer, { skipSelf: true });
+        if (!resolved || resolved.external) throw new Error(`[saylo:auto-keys] Cannot resolve aliased import ${JSON.stringify(specifier)} in ${importer}. Use an explicit includeKeys list or correct the Vite alias.`);
+        return resolved.id;
+      });
       if (options.typegen) {
         typegen ??= new TypeGenerator(generatedOut!);
         await typegen.update(snapshot().catalogs.filter(catalog => catalog.locale === baseLocale).map(createBaseSchema));

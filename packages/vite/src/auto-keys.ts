@@ -3,6 +3,8 @@ import path from 'node:path';
 import type { ParsedCatalog } from '@0disoft/saylo-core';
 import { analyzeSource, resolveAliases, isTranslator } from './auto-key-analysis.js';
 import { mapFileTasks } from './catalog-files.js';
+import { resolveModuleImports } from './auto-key-modules.js';
+import type { ImportResolver } from './auto-key-modules.js';
 
 export interface AutoIncludeKeys {
   /** Files or directories relative to Vite root. Directories are scanned recursively. */
@@ -24,7 +26,7 @@ export function readAutoKeys(value: unknown): AutoIncludeKeys | undefined {
 
 /** Conservative source selection: matching literals may retain extra keys, never execute app code. */
 export async function findIncludedKeys(root: string, catalogs: readonly ParsedCatalog[], baseLocale: string, config: AutoIncludeKeys,
-  onSource: (file: string) => void = () => {}): Promise<readonly string[]> {
+  onSource: (file: string) => void = () => {}, resolveImport?: ImportResolver): Promise<readonly string[]> {
   const available = new Set(catalogs.filter(c => c.locale === baseLocale).flatMap(c => Object.keys(c.messages).map(id => `${c.namespace}:${id}`)));
   const selected = new Set(config.dynamicKeys ?? []);
   const paths = new Set<string>();
@@ -45,7 +47,7 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
   for (const entry of config.from) await scan(path.resolve(resolvedRoot, entry));
   if (!paths.size) throw new Error('[saylo:auto-keys] No JavaScript, TypeScript, Vue or Svelte source files were found.');
   const sources = await mapFileTasks([...paths], async file => analyzeSource(await readFile(file, 'utf8'), file, available));
-  const aliases = resolveAliases(sources);
+  const aliases = resolveAliases(sources, await resolveModuleImports(sources, resolveImport));
   const byNamespace = new Map<string, string[]>();
   for (const key of available) {
     const namespace = key.slice(0, key.indexOf(':'));

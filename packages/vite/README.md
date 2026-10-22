@@ -90,7 +90,9 @@ saylo({
 
 타입 단언·non-null·`satisfies`로 감싼 번역 함수, 직접 호출하는 `bind` 결과, `call`·`apply`, 함수 인자와 중첩 구조 분해의 `t`·`tParts`도 추적한다. `import * as messages`의 직접 멤버 접근과 구조 분해는 분석 범위에 포함된 named export 별칭을 따른다. 번역 함수를 컴포넌트 prop·생성자 인자·default export로 넘기거나 조건·기본값으로 선택하면 `dynamicKeys`로 필요한 키를 명시해야 한다.
 
-`from`에는 번역기를 정의하고 다시 내보내는 파일까지 포함한다. namespace 객체의 단순 변수 별칭과 분석 범위 안의 상대 경로 named export를 연결한다. 번역 export가 확인된 namespace 객체의 복제·외부 전달·rest 구조 분해는 `dynamicKeys` 또는 수동 `includeKeys` 목록이 필요하다. 번역과 무관한 외부 패키지 namespace나 일반 함수만 내보내는 모듈에는 이 제한을 적용하지 않는다. `from` 밖의 모듈을 자동으로 읽지 않으며, Vite 경로 별칭·외부 패키지의 사용자 정의 번역 export는 자동으로 해석하지 않는다. 이런 경로는 명시적 키 목록을 사용한다.
+`from`에는 번역기를 정의하고 다시 내보내는 파일까지 포함한다. namespace 객체의 단순 변수 별칭과 분석 범위 안의 상대 경로 named export를 연결한다. 번역 export가 확인된 namespace 객체의 복제·외부 전달·rest 구조 분해는 `dynamicKeys` 또는 수동 `includeKeys` 목록이 필요하다. 번역과 무관한 외부 패키지 namespace나 일반 함수만 내보내는 모듈은 번역기로 세지 않으며 이 제한도 적용하지 않는다.
+
+`from` 밖의 모듈을 자동으로 편입하지 않는다. 현재 로컬 checkout의 production `buildStart`에서는 설정한 Vite `resolve.alias`(문자열·정규식)를 Vite plugin resolver로 해석해 named import/reexport와 namespace import를 연결한다. 이때 `includeKeys.from`으로 이미 스캔한 파일만 참여하며, 해석을 따라 스캔 범위를 넓히거나 Vite root 밖으로 나가지 않는다. 운영 `build --watch` 재빌드에서도 다시 해석한다. 해석할 수 없거나 external로 남는 별칭, 스캔 밖 파일을 가리키는 별칭은 importer와 문제가 된 경로·대상을 담은 진단으로 빌드를 멈춘다. 진단은 `from`·alias 수정 또는 명시적 `includeKeys` 목록 사용을 안내한다. 공식 `@0disoft/saylo-*` 런타임과 `virtual:saylo` 모듈은 기존 번역기 처리를 유지하고, 그 밖의 외부 패키지의 사용자 정의 번역 export는 따라가지 않는다. 이 지원은 아직 게시하지 않은 로컬 변경이며 `0.1.0-alpha.4`에는 없다.
 
 Vue·Svelte의 실제 HTML 주석과 `<script>` 본문은 구분해서 읽는다. 템플릿 표현식이나 속성 안에 `<!--` 같은 주석 표식 또는 script 표식이 들어 있으면 임의로 지우지 않고 자동 분석을 중단한다. 이 구문을 사용한 파일은 수동 `includeKeys` 목록으로 처리한다.
 
