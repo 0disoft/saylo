@@ -1,8 +1,8 @@
 import { lstat, readFile, readdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import type { ParsedCatalog } from '@0disoft/saylo-core';
-import { node, sourceTrees, visit } from './auto-key-sources.js';
-import type { SourceNode } from './auto-key-sources.js';
+import { analyzeSource, resolveAliases, isTranslator } from './auto-key-analysis.js';
+import { mapFileTasks } from './catalog-files.js';
 
 export interface AutoIncludeKeys {
   /** Files or directories relative to Vite root. Directories are scanned recursively. */
@@ -12,19 +12,6 @@ export interface AutoIncludeKeys {
 }
 
 const ignored = new Set(['node_modules', '.git', '.release', 'dist', 'build', '.svelte-kit', 'coverage']);
-const identifier = (value: unknown) => { const current = node(value); return current?.type === 'Identifier' ? current.name as string : undefined; };
-const literal = (value: unknown): string | undefined => {
-  const current = node(value);
-  if (current?.type === 'StringLiteral') return current.value as string;
-  if (current?.type === 'TemplateLiteral' && Array.isArray(current.expressions) && !current.expressions.length) {
-    const part = current.quasis as { value: { cooked: string } }[];
-    return part[0]?.value.cooked;
-  }
-  return;
-};
-const property = (value: unknown) => { const current = node(value); return current?.computed ? literal(current.property) : identifier(current?.property); };
-const translatedProperty = (value: unknown) => ['t', 'tParts'].includes(property(value) ?? '');
-
 export function readAutoKeys(value: unknown): AutoIncludeKeys | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return;
   const config = value as AutoIncludeKeys;
@@ -57,78 +44,39 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
   }
   for (const entry of config.from) await scan(path.resolve(resolvedRoot, entry));
   if (!paths.size) throw new Error('[saylo:auto-keys] No JavaScript, TypeScript, Vue or Svelte source files were found.');
-  const trees = await Promise.all([...paths].map(async file => ({ file, trees: sourceTrees(await readFile(file, 'utf8'), file) })));
-  const aliases = new Set(['t', 'tParts', '$t']);
-  const bindings = new WeakSet<SourceNode>();
-  // Resolve simple aliases, including destructuring, without assuming a framework.
-  for (let before = -1; before !== aliases.size;) {
-    before = aliases.size;
-    for (const source of trees) for (const tree of source.trees) visit(tree, current => {
-      if (current.type === 'ExportSpecifier' && aliases.has(identifier(current.local) ?? '')) {
-        const exported = identifier(current.exported); if (exported) aliases.add(exported);
-      }
-      if (current.type === 'ImportSpecifier' && aliases.has(identifier(current.imported) ?? '')) {
-        const local = identifier(current.local); if (local) aliases.add(local);
-      }
-      if (current.type !== 'VariableDeclarator' && current.type !== 'AssignmentExpression') return;
-      const left = node(current.id ?? current.left), right = node(current.init ?? current.right);
-      const name = identifier(left);
-      if (name && (translatedProperty(right) || aliases.has(identifier(right) ?? ''))) aliases.add(name);
-      const bound = right?.type === 'CallExpression' ? node(right.callee) : undefined;
-      if (name && property(bound) === 'bind' && (translatedProperty(bound?.object) || aliases.has(identifier(bound?.object) ?? ''))) aliases.add(name);
-      if (left?.type === 'ObjectPattern') for (const value of left.properties as SourceNode[]) {
-        bindings.add(value);
-        if (['t', 'tParts'].includes(identifier(value.key) ?? literal(value.key) ?? '')) {
-          const binding = node(value.value);
-          const local = identifier(binding?.type === 'AssignmentPattern' ? binding.left : binding); if (local) aliases.add(local);
-        }
-      }
-    });
+  const sources = await mapFileTasks([...paths], async file => analyzeSource(await readFile(file, 'utf8'), file, available));
+  const aliases = resolveAliases(sources);
+  const byNamespace = new Map<string, string[]>();
+  for (const key of available) {
+    const namespace = key.slice(0, key.indexOf(':'));
+    let keys = byNamespace.get(namespace);
+    if (!keys) { keys = []; byNamespace.set(namespace, keys); }
+    keys.push(key);
   }
-  const dynamic: string[] = [];
-  const translationReference = (value: unknown): boolean => {
-    const current = node(value);
-    if (translatedProperty(current) || aliases.has(identifier(current) ?? '')) return true;
-    const callee = current?.type === 'CallExpression' ? node(current.callee) : undefined;
-    return property(callee) === 'bind' && (translatedProperty(callee?.object) || aliases.has(identifier(callee?.object) ?? ''));
-  };
-  for (const source of trees) for (const tree of source.trees) visit(tree, (current, parent) => {
-    const functionReference = translationReference(current);
-    if (functionReference && parent && (
-      parent.type === 'ReturnStatement' || parent.type === 'ExportDefaultDeclaration' || parent.type === 'ArrayExpression' ||
-      parent.type === 'ConditionalExpression' || parent.type === 'ArrowFunctionExpression' && parent.body === current ||
-      parent.type === 'ObjectProperty' && parent.value === current && !bindings.has(parent) ||
-      parent.type === 'AssignmentExpression' && parent.right === current && node(parent.left)?.type !== 'Identifier'))
-      dynamic.push(path.relative(root, source.file));
-    const value = literal(current);
-    if (value !== undefined && available.has(value)) selected.add(value);
-    if (current.type !== 'CallExpression' && current.type !== 'OptionalCallExpression') return;
-    let callee = node(current.callee);
-    let argument = (current.arguments as unknown[])[0];
-    const target = node(callee?.object);
-    if (['call', 'apply'].includes(property(callee) ?? '') && (translatedProperty(target) || aliases.has(identifier(target) ?? ''))) {
-      argument = (current.arguments as unknown[])[1];
-      if (property(callee) === 'apply') argument = (node(argument)?.elements as unknown[] | undefined)?.[0];
-      callee = target;
-    }
-    // Passing a translator to unknown code cannot prove a finite set of keys.
-    if ((current.arguments as unknown[]).some(translationReference))
-      dynamic.push(path.relative(root, source.file));
-    if (!aliases.has(identifier(callee) ?? '') && !translatedProperty(callee)) return;
-    const key = literal(argument);
-    if (key !== undefined) { if (/^[^:]+:[^:]+$/.test(key)) selected.add(key); return; }
-    const template = node(argument);
-    if (template?.type === 'TemplateLiteral') {
-      const quasis = template.quasis as { value: { cooked: string | null } }[];
-      const pieces = quasis.map(q => q.value.cooked);
-      if (pieces.every((p): p is string => p !== null) && pieces.some(p => p.length > 0)) {
+  const matchedPatterns = new Map<string, readonly string[]>();
+  const dynamic = new Set<string>();
+  for (const source of sources) {
+    const markDynamic = () => { dynamic.add(path.relative(root, source.file)); };
+    for (const key of source.literals) selected.add(key);
+    if (source.escapes.some(ref => isTranslator(ref, aliases))) markDynamic();
+    for (const call of source.calls) {
+      if (call.arguments.some(ref => isTranslator(ref, aliases))) markDynamic();
+      if (!isTranslator(call.callee, aliases)) continue;
+      if (call.key !== undefined) { if (/^[^:]+:[^:]+$/.test(call.key)) selected.add(call.key); continue; }
+      const pieces = call.pieces;
+      if (!pieces || !pieces.every((p): p is string => p !== null) || !pieces.some(p => p.length > 0)) { markDynamic(); continue; }
+      const identity = JSON.stringify(pieces);
+      let matched = matchedPatterns.get(identity);
+      if (!matched) {
         const pattern = new RegExp('^' + pieces.map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$');
-        for (const candidate of available) if (pattern.test(candidate)) selected.add(candidate);
-        return;
+        const first = pieces[0] ?? '', separator = first.indexOf(':');
+        const candidates = separator >= 0 ? byNamespace.get(first.slice(0, separator)) ?? [] : available;
+        matched = [...candidates].filter(candidate => pattern.test(candidate));
+        matchedPatterns.set(identity, matched);
       }
+      for (const key of matched) selected.add(key);
     }
-    dynamic.push(path.relative(root, source.file));
-  });
-  if (dynamic.length && !config.dynamicKeys?.length) throw new Error(`[saylo:auto-keys] Dynamic translation keys in ${[...new Set(dynamic)].join(', ')}. Supply includeKeys.dynamicKeys or use an explicit includeKeys list.`);
+  }
+  if (dynamic.size && !config.dynamicKeys?.length) throw new Error(`[saylo:auto-keys] Dynamic translation keys in ${[...dynamic].join(', ')}. Supply includeKeys.dynamicKeys or use an explicit includeKeys list.`);
   return Object.freeze([...selected].sort());
 }

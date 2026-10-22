@@ -23,6 +23,26 @@ async function fixture(t) {
 const messages = { title: 'Hello', rich: '<b>Rich</b>', one: 'One', two: 'Two', fallback: 'Base only', unused: 'UNUSED_AUTO_KEY_MARKER' };
 const catalogs = [parseCatalog(JSON.stringify(messages), { locale: 'ko', namespace: 'demo' })];
 
+test('reverse alias chains and cross-file cycles retain dynamic-call detection', async t => {
+  const root = await fixture(t);
+  const chain = Array.from({ length: 1500 }, (_, i) => `const alias${i} = ${i === 1499 ? 'i18n.t' : `alias${i + 1}`};`).join('\n');
+  await writeFile(path.join(root, 'src/a.ts'), 'let cycleA = cycleB; let cycleB = cycleA; cycleA = alias0; cycleB(key);');
+  await writeFile(path.join(root, 'src/z.ts'), chain);
+  await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys in src[\\/]a.ts/);
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'], dynamicKeys: ['demo:title'] }), ['demo:title']);
+  await writeFile(path.join(root, 'src/a.ts'), 'let cycleA = cycleB; let cycleB = cycleA; cycleB(key);');
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src/a.ts'] }), []);
+});
+
+test('repeated template patterns preserve literal regex characters, namespace scope, and sorted unique keys', async t => {
+  const root = await fixture(t);
+  const data = ['demo', 'help'].map(namespace => parseCatalog('{"part.1":"A","part+2":"B","other":"C"}', { locale: 'ko', namespace }));
+  await writeFile(path.join(root, 'src/a.ts'), Array.from({ length: 50 }, () => 't(`demo:part.${suffix}`);').join('\n'));
+  await writeFile(path.join(root, 'src/b.ts'), 't(`${namespace}:part.${suffix}`);');
+  assert.deepEqual(await findIncludedKeys(root, data, 'ko', { from: ['src/a.ts'] }), ['demo:part.1']);
+  assert.deepEqual(await findIncludedKeys(root, data, 'ko', { from: ['src'] }), ['demo:part.1', 'help:part.1']);
+});
+
 test('automatic selection parses TS/JSX, aliases, Vue expressions and Svelte control blocks without executing sources', async t => {
   const root = await fixture(t);
   await writeFile(path.join(root, 'src/code.tsx'), `import { t as tr } from './translator';
