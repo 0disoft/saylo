@@ -3,7 +3,8 @@ import { planCatalogSync } from './catalog-sync.js';
 import { createTranslationWorkfile } from './catalog-workfile.js';
 import type { CatalogCheckReport } from './catalog-audit.js';
 import type { CatalogInspection } from './catalog-files.js';
-import type { TranslationWorkEntry, TranslationWorkfile } from './catalog-workfile.js';
+import type { TranslationWorkEntry, TranslationWorkfile, TranslationWorkOptions } from './catalog-workfile.js';
+import { createTranslationWorkContext } from './catalog-work-context.js';
 
 export interface TranslationRefreshConflict {
   readonly code: 'UNKNOWN_TARGET' | 'SOURCE_REMOVED' | 'SOURCE_CONFLICT' | 'TRANSLATION_CONFLICT';
@@ -25,7 +26,7 @@ const byIdentity = (a: TranslationWorkEntry, b: TranslationWorkEntry) => identit
 
 /** Preserve drafts only across matching checkpoints; unresolved conflicts never enter the candidate. */
 export function refreshTranslationWorkfile(input: CatalogInspection, report: CatalogCheckReport,
-  previous: TranslationWorkfile): TranslationRefreshReport {
+  previous: TranslationWorkfile, options: TranslationWorkOptions = {}): TranslationRefreshReport {
   const result = { format: 'saylo-translation-refresh/v1' as const, report };
   // Removed source keys/namespaces commonly leave orphan translations. Retain their diagnostics
   // in the report, but let refresh describe the removal instead of blocking before draft comparison.
@@ -33,7 +34,8 @@ export function refreshTranslationWorkfile(input: CatalogInspection, report: Cat
     !['UNKNOWN_MESSAGE', 'NAMESPACE_MISMATCH'].includes(issue.code)) };
   if (planCatalogSync(input, planningReport).blocked)
     return { ...result, blocked: true, workfile: null, conflicts: [], alreadyApplied: [] };
-  const fresh = createTranslationWorkfile(input, planningReport);
+  const withContext = options.withContext === true || previous.format === 'saylo-translation-work/v2';
+  const fresh = createTranslationWorkfile(input, planningReport, { withContext });
   const entries = new Map(fresh.entries.map(entry => [identity(entry), entry]));
   const bases = new Map(input.files.filter(file => file.catalog.locale === report.baseLocale).map(file => [file.catalog.namespace, file.catalog]));
   const translations = new Map(input.files.map(file => [pair(file.catalog.locale, file.catalog.namespace), file.catalog]));
@@ -49,15 +51,16 @@ export function refreshTranslationWorkfile(input: CatalogInspection, report: Cat
       locale: entry.locale, namespace: entry.namespace, id: entry.id, reason: translation === null ? 'add' : 'review',
       source: source.source, sourceHash: hashes[`${entry.namespace}:${entry.id}`]!,
       originalTranslation: translation, translation: null,
+      ...(withContext ? { context: createTranslationWorkContext(source) } : {}),
     };
     let code: TranslationRefreshConflict['code'] | undefined;
     if (!targets.has(entry.locale)) code = 'UNKNOWN_TARGET';
     else if (!source) code = 'SOURCE_REMOVED';
     else if (source.source !== entry.source || current!.sourceHash !== entry.sourceHash) code = 'SOURCE_CONFLICT';
     else if (translation !== entry.originalTranslation && (entry.translation === null || translation !== entry.translation)) code = 'TRANSLATION_CONFLICT';
-    if (code) { conflicts.push({ code, previous: { ...entry }, current }); continue; }
+    if (code) { conflicts.push({ code, previous: structuredClone(entry), current }); continue; }
     if (entry.translation !== null && entry.translation !== entry.originalTranslation && translation === entry.translation)
-      alreadyApplied.push({ ...entry });
+      alreadyApplied.push(structuredClone(entry));
     entries.set(key, { ...current!, translation: entry.translation });
   }
   conflicts.sort((a, b) => byIdentity(a.previous, b.previous));

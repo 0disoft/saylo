@@ -112,6 +112,29 @@ npx --no-install saylo export --config saylo.config.json > translation-work.json
 
 예시의 `sourceHash`는 형식만 보여 주는 값이다. 그대로 실행할 파일이 아니라 export 결과에서 `translation`만 바꾸는 모양을 보여 주며, 실제 파일에서는 export가 쓴 값을 그대로 둔다.
 
+`export --with-context`를 명시하면 `saylo-translation-work/v2`를 출력하고 각 entry에 `context`를 더한다. 옵션이 없으면 기존 v1이며 entry는 `context`가 없는 기존 8개 필드를 유지한다.
+
+```json
+{
+  "context": {
+    "arguments": {
+      "count": ["number"],
+      "at": ["date", "number"],
+      "name": ["number", "string"]
+    },
+    "richTextTags": ["link"]
+  }
+}
+```
+
+`arguments`는 기준 스키마에서 쓸 수 있는 인자와 타입을 알려 주는 값이며 모든 인자를 번역에 꼭 써야 한다는 뜻은 아니다. 기존처럼 인자를 생략해도 된다. `richTextTags: null`은 rich 정책을 적용하지 않아 태그 모양이 텍스트일 수 있다는 뜻이고, `[]`은 rich 모드지만 허용 태그가 없으며, `["link"]` 같은 배열은 허용 목록이다.
+
+```sh
+npx --no-install saylo export --with-context --config saylo.config.json > translation-work-v2.json
+```
+
+`import`·`approve`·`refresh`는 v1과 v2를 자동으로 읽는다. v2의 `context` 구조는 검사하지만 내용은 안내용이며, 실제 `sourceHash`·ICU·인자·태그·승인 검증은 현재 카탈로그와 설정으로 한다. `context`를 고쳐 허용 규칙을 바꿀 수 없다. `--with-context`는 `export`와 `refresh`에서만 받고 다른 명령에서는 exit 2다. 이 옵션과 v2 형식은 아직 게시하지 않은 현재 checkout 기능이다.
+
 `import`는 `--file`과 `--dry-run`·`--apply` 중 정확히 하나를 요구한다. `--dry-run --json`은 검증 결과와 변경 목록만 출력하고, `--apply --json`은 검증을 통과한 번역을 카탈로그에 쓴다.
 
 ```sh
@@ -135,7 +158,7 @@ npx --no-install saylo import --file translation-work.json --apply --json
 
 ### 번역 작업 파일 새로고침 (미게시)
 
-`refresh`는 작성 중인 작업 파일을 최신 `export` 후보와 합쳐 `saylo-translation-refresh/v1` 보고서로 stdout에 낸다. `--json`을 주지 않아도 stdout 전체가 단일 JSON이며, `blocked`·`workfile`·`conflicts`·`alreadyApplied`·`report`를 담는다. `workfile`은 `saylo-translation-work/v1`이며, JSON·ICU·인자·rich 정책 오류처럼 카탈로그가 잘못됐으면 `null`이다. 삭제된 원문 키·namespace의 잔여 번역은 비교를 진행해 `SOURCE_REMOVED`로 보여 주고, `UNKNOWN_MESSAGE`·`NAMESPACE_MISMATCH`는 `report`에 보존하되 이 두 진단만으로 후보 생성을 막지 않으며 카탈로그도 삭제하지 않는다. `report`는 카탈로그 검사 결과다.
+`refresh`는 작성 중인 작업 파일을 최신 `export` 후보와 합쳐 `saylo-translation-refresh/v1` 보고서로 stdout에 낸다. `--json`을 주지 않아도 stdout 전체가 단일 JSON이며, `blocked`·`workfile`·`conflicts`·`alreadyApplied`·`report`를 담는다. `workfile`은 `saylo-translation-work/v1` 또는 `saylo-translation-work/v2`이며, JSON·ICU·인자·rich 정책 오류처럼 카탈로그가 잘못됐으면 `null`이다. 삭제된 원문 키·namespace의 잔여 번역은 비교를 진행해 `SOURCE_REMOVED`로 보여 주고, `UNKNOWN_MESSAGE`·`NAMESPACE_MISMATCH`는 `report`에 보존하되 이 두 진단만으로 후보 생성을 막지 않으며 카탈로그도 삭제하지 않는다. `report`는 카탈로그 검사 결과다.
 
 ```sh
 npx --no-install saylo refresh --file translation-work.json --config saylo.config.json > refresh-report.json
@@ -146,6 +169,8 @@ jq '.workfile' refresh-report.json > refreshed-work.json
 `--config`·`--locales`로 카탈로그를 정하고 `--baseline`·`--reviews`를 `export`와 같이 적용한다. 승인 장부가 없으면 `export`처럼 빈 장부로 시작할 수 있지만, `baseline`을 지정했는데 파일이 없으면 실패한다. `refresh`는 입력 작업 파일, 카탈로그, baseline, 승인 장부, 생성 타입을 모두 쓰지 않는다. `--apply`와 `--dry-run`은 받지 않으며 사용법 오류다.
 
 원문·rich 해시와 현재 카탈로그 번역이 작업 파일의 `originalTranslation`에서 바뀌지 않았으면 `translation`에 적어 둔 내용을 보존한다. `null`과 빈 문자열도 작성 중 상태로 유지하고, 최신 export의 새 `add`·`review` 작업도 포함해 locale·namespace·id 순으로 정렬한다.
+
+`refresh`는 입력이 v1이면 v1, v2면 v2를 유지하고 v2의 `context`는 최신 값으로 다시 계산한다. v1 입력에 `--with-context`를 주면 v2로 승격하며, 새 작업과 `conflicts.current`에는 최신 `context`를 넣고 `conflicts.previous`와 `alreadyApplied`는 입력 당시 스냅샷을 보존한다.
 
 `SOURCE_REMOVED`·`SOURCE_CONFLICT`·`TRANSLATION_CONFLICT`·`UNKNOWN_TARGET`은 `conflicts`에 `{ code, previous, current }`로 넣는다. `previous`는 원래 entry, `current`는 최신 entry 또는 `null`이며 원문과 작성 번역을 보존한다. `conflicts.current`의 `translation`은 `null`이고 충돌 키는 `workfile.entries`에서 뺀다. `current`가 있는 충돌만 최신 원문을 검토해 `current.translation`을 채운 뒤 후보에 추가한다. `current: null`인 삭제·대상 제외 항목은 이전 항목을 기록으로 보관하거나 원문·대상을 복구한 뒤 다시 `refresh`한다.
 

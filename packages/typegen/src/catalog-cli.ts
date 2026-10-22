@@ -35,6 +35,7 @@ Options:
   --dry-run                 Preview sync, import or approval without writing files.
   --apply                   Apply import (atomic per file) or atomically update approval JSON.
   --file <work.json>         Translation workfile input; supported with import, approve or refresh.
+  --with-context            Export/refresh v2 workfiles with advisory argument types and allowed tags.
   --json                    Emit one machine-readable JSON result on stdout.
   --help, -h                Show help without reading files.
 
@@ -56,7 +57,7 @@ try {
     config: { type: 'string' }, 'locales-dir': { type: 'string' }, 'base-locale': { type: 'string' },
     locales: { type: 'string' }, json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
     baseline: { type: 'string' }, reviews: { type: 'string' }, 'dry-run': { type: 'boolean' },
-    file: { type: 'string' }, apply: { type: 'boolean' },
+    file: { type: 'string' }, apply: { type: 'boolean' }, 'with-context': { type: 'boolean' },
   } });
   json = values.json ?? false;
   if (values.help) console.log(help);
@@ -65,6 +66,8 @@ try {
     if (positionals.length !== 1 || !command || !['check', 'sync', 'snapshot', 'export', 'import', 'approve', 'refresh'].includes(command))
       throw new UsageError('Choose a command: saylo check, sync --dry-run, snapshot, export, import, approve, or refresh.');
     if (command === 'sync' && !values['dry-run']) throw new UsageError('sync requires --dry-run; applying changes is not supported.');
+    if (values['with-context'] && !['export', 'refresh'].includes(command))
+      throw new UsageError('--with-context is only supported with export or refresh.');
     const usesWorkfile = ['import', 'approve'].includes(command);
     if (!['sync', 'import', 'approve'].includes(command) && values['dry-run']) throw new UsageError('--dry-run is only supported with sync, import or approve.');
     if (usesWorkfile && (!values.file || !!values.apply === !!values['dry-run']))
@@ -94,7 +97,7 @@ try {
     const report = approvals && command !== 'approve' ? applyReviewApprovals(inspected.inspection, compared, approvals.approvals) : compared;
     if (command === 'refresh') {
       const work = await readTranslationWorkfile(values.file!, config.baseLocale);
-      const result = refreshTranslationWorkfile(inspected.inspection, report, work);
+      const result = refreshTranslationWorkfile(inspected.inspection, report, work, { withContext: values['with-context'] === true });
       console.log(JSON.stringify(result));
       process.exitCode = result.blocked ? 1 : 0;
     } else if (command === 'approve') {
@@ -111,7 +114,7 @@ try {
       process.exitCode = result.blocked ? 1 : 0;
     } else if (command === 'export') {
       const plan = planCatalogSync(inspected.inspection, report);
-      console.log(JSON.stringify(plan.blocked ? report : createTranslationWorkfile(inspected.inspection, report)));
+      console.log(JSON.stringify(plan.blocked ? report : createTranslationWorkfile(inspected.inspection, report, { withContext: values['with-context'] === true })));
       process.exitCode = plan.blocked ? 1 : 0;
     } else if (command === 'snapshot') {
       const blocked = report.diagnostics.some(issue => issue.severity === 'error' && isBlockingIssue(issue.code));
