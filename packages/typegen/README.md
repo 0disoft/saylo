@@ -63,7 +63,7 @@ npx --no-install saylo sync --config saylo.config.json --dry-run --json
 
 `check`는 JSON·ICU·인자·rich 계약 오류, 기준에 없는 번역 키, 누락 namespace·메시지를 모아 보고한다. 명시된 완역 대상에 누락이 있으면 런타임에서 기준 언어로 폴백할 수 있어도 검사에서는 오류다. 빈 번역 문자열은 정상 번역으로 처리한다. 소스에서 실제 사용하지 않는 키를 추측해 삭제하지 않는다.
 
-`sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. `check`·`sync`·`snapshot`은 읽기 전용이며 카탈로그·생성 타입·검수 기록을 쓰지 않는다. 삭제와 자동 번역 기능은 없다. 번역을 카탈로그에 쓰는 명령은 `import --apply`뿐이다.
+`sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. `check`·`sync`·`snapshot`·`refresh`는 읽기 전용이며 카탈로그·생성 타입·검수 기록을 쓰지 않는다. 삭제와 자동 번역 기능은 없다. 번역을 카탈로그에 쓰는 명령은 `import --apply`뿐이다.
 
 다음 `snapshot`·`baseline` 예시는 `reviews`를 쓰지 않는 이전 baseline-only 검수 방식이다. 승인 장부를 쓰는 경우에는 뒤의 [선택적 번역 승인 기록](#선택적-번역-승인-기록-미게시)을 따른다.
 
@@ -133,13 +133,33 @@ npx --no-install saylo import --file translation-work.json --apply --json
 
 `import`는 타입 선언과 baseline을 다시 만들지 않는다. 적용 뒤 `saylo check`와 타입 생성(`saylo-typegen`)을 따로 실행한다. baseline 갱신은 번역 승인과 별개다.
 
+### 번역 작업 파일 새로고침 (미게시)
+
+`refresh`는 작성 중인 작업 파일을 최신 `export` 후보와 합쳐 `saylo-translation-refresh/v1` 보고서로 stdout에 낸다. `--json`을 주지 않아도 stdout 전체가 단일 JSON이며, `blocked`·`workfile`·`conflicts`·`alreadyApplied`·`report`를 담는다. `workfile`은 `saylo-translation-work/v1`이며, JSON·ICU·인자·rich 정책 오류처럼 카탈로그가 잘못됐으면 `null`이다. 삭제된 원문 키·namespace의 잔여 번역은 비교를 진행해 `SOURCE_REMOVED`로 보여 주고, `UNKNOWN_MESSAGE`·`NAMESPACE_MISMATCH`는 `report`에 보존하되 이 두 진단만으로 후보 생성을 막지 않으며 카탈로그도 삭제하지 않는다. `report`는 카탈로그 검사 결과다.
+
+```sh
+npx --no-install saylo refresh --file translation-work.json --config saylo.config.json > refresh-report.json
+# exit 0과 내용을 확인한 뒤
+jq '.workfile' refresh-report.json > refreshed-work.json
+```
+
+`--config`·`--locales`로 카탈로그를 정하고 `--baseline`·`--reviews`를 `export`와 같이 적용한다. 승인 장부가 없으면 `export`처럼 빈 장부로 시작할 수 있지만, `baseline`을 지정했는데 파일이 없으면 실패한다. `refresh`는 입력 작업 파일, 카탈로그, baseline, 승인 장부, 생성 타입을 모두 쓰지 않는다. `--apply`와 `--dry-run`은 받지 않으며 사용법 오류다.
+
+원문·rich 해시와 현재 카탈로그 번역이 작업 파일의 `originalTranslation`에서 바뀌지 않았으면 `translation`에 적어 둔 내용을 보존한다. `null`과 빈 문자열도 작성 중 상태로 유지하고, 최신 export의 새 `add`·`review` 작업도 포함해 locale·namespace·id 순으로 정렬한다.
+
+`SOURCE_REMOVED`·`SOURCE_CONFLICT`·`TRANSLATION_CONFLICT`·`UNKNOWN_TARGET`은 `conflicts`에 `{ code, previous, current }`로 넣는다. `previous`는 원래 entry, `current`는 최신 entry 또는 `null`이며 원문과 작성 번역을 보존한다. `conflicts.current`의 `translation`은 `null`이고 충돌 키는 `workfile.entries`에서 뺀다. `current`가 있는 충돌만 최신 원문을 검토해 `current.translation`을 채운 뒤 후보에 추가한다. `current: null`인 삭제·대상 제외 항목은 이전 항목을 기록으로 보관하거나 원문·대상을 복구한 뒤 다시 `refresh`한다.
+
+현재 카탈로그 번역이 작성 번역과 같고 그 작성 번역이 `originalTranslation`과 다르면 `alreadyApplied`에 이전 항목을 넣는다. `workfile`에는 `originalTranslation`과 `translation`을 모두 현재 번역으로 둔 검수 가능한 항목을 남긴다. 이 항목의 `import`는 no-op이며 승인은 `approve`로 따로 처리한다. 원문 변경 여부는 `alreadyApplied` 판정보다 먼저 검사한다.
+
+보고서 전체는 import·approve 입력이 아니다. `jq`로 최상위 `workfile`을 꺼낸 `refreshed-work.json`을 다음 단계에 쓴다. `exit 1`이어도 보고서는 남으므로 `conflicts[].previous`·`current`를 확인하고 작업 파일을 손으로 고친 뒤 추출한다.
+
 ### 선택적 번역 승인 기록 (미게시)
 
-`reviews`는 승인한 로케일·키와 그때의 원문·번역 해시를 묶는 선택 기능이다. 공통 JSON에 `"reviews": "saylo-reviews.json"`을 넣거나 `check`·`sync`·`export`·`approve`에 `--reviews`를 붙인다. 지정하지 않으면 기존 baseline-only 동작을 유지한다. 장부에는 locale/namespace/id별 원문·rich 계약 해시와 번역 해시만 저장한다.
+`reviews`는 승인한 로케일·키와 그때의 원문·번역 해시를 묶는 선택 기능이다. 공통 JSON에 `"reviews": "saylo-reviews.json"`을 넣거나 `check`·`sync`·`export`·`refresh`·`approve`에 `--reviews`를 붙인다. 지정하지 않으면 기존 baseline-only 동작을 유지한다. 장부에는 locale/namespace/id별 원문·rich 계약 해시와 번역 해시만 저장한다.
 
 공통 JSON `SayloProjectConfig`에서 `requireReviewedTranslations: true`와 `reviews`를 함께 두면 같은 설정을 읽는 Vite 운영 빌드도 승인 검사를 강제한다. 이 옵션의 기본값은 `false`이며, `true`인데 `reviews`가 없으면 Vite dev에서도 거부한다.
 
-처음 켜면 대상 로케일의 기존 번역도 모두 명시 승인이 필요하다. `check`·`sync`는 장부가 없으면 실패하고(exit 2), `export`와 `approve`는 없는 장부를 빈 기록으로 시작한다. `export`는 장부를 쓰지 않으며, 번역된 기존 키도 모두 `review` 작업으로 낸다.
+처음 켜면 대상 로케일의 기존 번역도 모두 명시 승인이 필요하다. `check`·`sync`는 장부가 없으면 실패하고(exit 2), `export`·`refresh`·`approve`는 없는 장부를 빈 기록으로 시작한다. `export`는 장부를 쓰지 않으며, 번역된 기존 키도 모두 `review` 작업으로 낸다.
 
 ```sh
 npx --no-install saylo export --reviews saylo-reviews.json --locales en > review-work.json
@@ -149,11 +169,11 @@ npx --no-install saylo approve --reviews saylo-reviews.json --file review-work.j
 
 작업 파일을 검토한 뒤 확인한 번역 문자열은 그대로 둔다. 아직 확인하지 않은 항목은 `translation`을 `null`로 바꾸거나 파일에서 뺀다. `translation: null`인 항목은 승인하지 않으며, 값이 그대로인 기존 번역도 남기면 명시 승인할 수 있다. 현재 원문·rich 해시나 번역이 export 뒤 달라졌으면 충돌로 막고 일부만 적용하지 않는다. `import --apply`도 번역을 자동 승인하지 않는다.
 
-`approve --apply`는 확인한 항목의 승인 기록만 추가하고 카탈로그·baseline·타입 선언은 쓰지 않는다. 다른 locale/key의 기존 승인은 보존하며, baseline을 새로 만들어도 승인 장부와 미승인 상태는 바뀌지 않는다. 승인 뒤 원문이 바뀌면 `SOURCE_CHANGED`, 번역이 바뀌면 `TRANSLATION_CHANGED`, 기록이 없는 키는 `REVIEW_REQUIRED`다. `check`·`sync`·`export`는 모두 장부를 적용해 이 상태를 낸다.
+`approve --apply`는 확인한 항목의 승인 기록만 추가하고 카탈로그·baseline·타입 선언은 쓰지 않는다. 다른 locale/key의 기존 승인은 보존하며, baseline을 새로 만들어도 승인 장부와 미승인 상태는 바뀌지 않는다. 승인 뒤 원문이 바뀌면 `SOURCE_CHANGED`, 번역이 바뀌면 `TRANSLATION_CHANGED`, 기록이 없는 키는 `REVIEW_REQUIRED`다. `check`·`sync`·`export`·`refresh`는 모두 장부를 적용해 이 상태를 낸다.
 
 장부는 `locales` 밖의 `.json` 파일이어야 한다. 쓰기 시 부모 디렉터리가 실제로 존재하고 symlink가 아니어야 하며, 장부 경로가 symlink면 거부한다. 같은 장부는 장부별 lock으로 직렬화하고 임시 파일을 atomic rename한다. 강제 종료로 남은 lock은 소유 pid가 끝났는지 확인한 뒤 지운다.
 
-종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`와 `approve`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. 사용법·설정·파일시스템 오류, 읽을 수 없는 작업 파일 형식·식별자는 2다. `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
+종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`와 `approve`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. `refresh`는 충돌 없는 후보 0, 충돌 또는 잘못된 카탈로그 1, 사용법·파일시스템·작업 파일 형식 오류 2다. `refresh`는 `--json` 없이도 stdout 전체가 단일 JSON 보고서다. 다른 명령의 `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
 
 ### 기존 인자로 타입 생성
 

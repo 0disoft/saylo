@@ -12,8 +12,9 @@ import { applyTranslationImport, TranslationApplyError } from './catalog-apply.j
 import { applyReviewApprovals, readReviewApprovals } from './catalog-approvals.js';
 import { planReviewApproval } from './catalog-approve.js';
 import { writeReviewApproval, ReviewApprovalWriteError } from './review-write.js';
+import { refreshTranslationWorkfile } from './catalog-refresh.js';
 
-const help = `Usage: saylo <check|sync|snapshot|export|import|approve> [--config saylo.config.json] [--json]
+const help = `Usage: saylo <check|sync|snapshot|export|import|approve|refresh> [--config saylo.config.json] [--json]
 
 Commands:
   check                     Validate catalogs, contracts and translation completeness; never writes files.
@@ -22,6 +23,7 @@ Commands:
   export                    Print missing/review translation tasks as editable JSON to stdout.
   import --file <work.json>  Validate completed translations; requires --dry-run or --apply.
   approve --file <work.json> Approve current source/translation pairs; requires --reviews and --dry-run or --apply.
+  refresh --file <work.json> Print a refreshed workfile and conflict report as JSON; never writes files.
 
 Options:
   --config <file.json>       Defaults to saylo.config.json in cwd when present.
@@ -32,11 +34,11 @@ Options:
   --reviews <file.json>      Track explicit approvals per locale and message.
   --dry-run                 Preview sync, import or approval without writing files.
   --apply                   Apply import (atomic per file) or atomically update approval JSON.
-  --file <work.json>         Translation workfile input; supported with import or approve.
+  --file <work.json>         Translation workfile input; supported with import, approve or refresh.
   --json                    Emit one machine-readable JSON result on stdout.
   --help, -h                Show help without reading files.
 
-Exit codes: check 0 clean/1 issues; sync/export/import/approve 0 ready/1 blocked; snapshot 0 valid/1 invalid catalogs.
+Exit codes: check 0 clean/1 issues; sync/export/import/approve/refresh 0 ready/1 blocked; snapshot 0 valid/1 invalid catalogs.
 All commands use exit 2 for usage/config/filesystem failures. Only import --apply writes catalogs.
 approve --apply writes only the reviews ledger. Import/snapshot never approve translations.`;
 class UsageError extends Error {}
@@ -60,18 +62,20 @@ try {
   if (values.help) console.log(help);
   else {
     const command = positionals[0];
-    if (positionals.length !== 1 || !command || !['check', 'sync', 'snapshot', 'export', 'import', 'approve'].includes(command))
-      throw new UsageError('Choose a command: saylo check, sync --dry-run, snapshot, export, import, or approve.');
+    if (positionals.length !== 1 || !command || !['check', 'sync', 'snapshot', 'export', 'import', 'approve', 'refresh'].includes(command))
+      throw new UsageError('Choose a command: saylo check, sync --dry-run, snapshot, export, import, approve, or refresh.');
     if (command === 'sync' && !values['dry-run']) throw new UsageError('sync requires --dry-run; applying changes is not supported.');
     const usesWorkfile = ['import', 'approve'].includes(command);
     if (!['sync', 'import', 'approve'].includes(command) && values['dry-run']) throw new UsageError('--dry-run is only supported with sync, import or approve.');
     if (usesWorkfile && (!values.file || !!values.apply === !!values['dry-run']))
       throw new UsageError(`${command} requires --file and exactly one of --dry-run or --apply.`);
-    if (!usesWorkfile && (values.file !== undefined || values.apply)) throw new UsageError('--file and --apply are only supported with import or approve.');
+    if (command === 'refresh' && !values.file) throw new UsageError('refresh requires --file.');
+    if (!usesWorkfile && values.apply) throw new UsageError('--apply is only supported with import or approve.');
+    if (!usesWorkfile && command !== 'refresh' && values.file !== undefined) throw new UsageError('--file is only supported with import, approve or refresh.');
     if (usesWorkfile && values.baseline) throw new UsageError(`${command} uses workfile checkpoints; --baseline is not supported.`);
-    if (['import', 'snapshot'].includes(command) && values.reviews) throw new UsageError('--reviews is supported with check, sync, export or approve.');
+    if (['import', 'snapshot'].includes(command) && values.reviews) throw new UsageError('--reviews is supported with check, sync, export, approve or refresh.');
     if (command === 'snapshot' && values.baseline) throw new UsageError('snapshot prints a new checkpoint; --baseline is a comparison input, not an output path.');
-    json ||= command === 'snapshot' || command === 'export';
+    json ||= ['snapshot', 'export', 'refresh'].includes(command);
     const filename = values.config ?? (existsSync('saylo.config.json') ? 'saylo.config.json' : undefined);
     const loaded = filename === undefined ? {} : loadProjectConfig(filename);
     const config = resolveProjectConfig({ ...loaded,
@@ -85,10 +89,15 @@ try {
     const baseline = !['snapshot', 'import', 'approve'].includes(command) && config.baseline ? await readReviewBaseline(config.baseline, config.baseLocale) : undefined;
     const inspected = await inspectProject(config);
     const compared = baseline ? compareReviewBaseline(inspected.inspection, inspected.report, baseline) : inspected.report;
-    const approvals = ['check', 'sync', 'export', 'approve'].includes(command) && config.reviews
-      ? await readReviewApprovals(config.reviews, config.baseLocale, ['export', 'approve'].includes(command)) : undefined;
+    const approvals = ['check', 'sync', 'export', 'approve', 'refresh'].includes(command) && config.reviews
+      ? await readReviewApprovals(config.reviews, config.baseLocale, ['export', 'approve', 'refresh'].includes(command)) : undefined;
     const report = approvals && command !== 'approve' ? applyReviewApprovals(inspected.inspection, compared, approvals.approvals) : compared;
-    if (command === 'approve') {
+    if (command === 'refresh') {
+      const work = await readTranslationWorkfile(values.file!, config.baseLocale);
+      const result = refreshTranslationWorkfile(inspected.inspection, report, work);
+      console.log(JSON.stringify(result));
+      process.exitCode = result.blocked ? 1 : 0;
+    } else if (command === 'approve') {
       const work = await readTranslationWorkfile(values.file!, config.baseLocale);
       const plan = planReviewApproval(inspected.inspection, report, work, approvals!);
       const result = values.apply && !plan.report.blocked ? await writeReviewApproval(plan) : plan.report;
