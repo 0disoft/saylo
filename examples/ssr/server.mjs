@@ -1,6 +1,7 @@
 import { createServer as createHttpServer } from 'node:http';
 import { createServer } from 'vite';
 import { config } from './config.mjs';
+import { createServerCloser } from './server-lifecycle.mjs';
 
 let vite;
 const server = createHttpServer((req, res) => vite.middlewares(req, res, async () => {
@@ -18,12 +19,7 @@ const server = createHttpServer((req, res) => vite.middlewares(req, res, async (
 vite = await createServer({ ...config, server: { middlewareMode: true, hmr: { server } } });
 const port = Number(process.env.PORT ?? 5190);
 server.listen(port, '127.0.0.1', () => console.log(`Saylo SSR demo: http://127.0.0.1:${port}/?locale=en`));
-let closing = false;
-async function close() {
-  if (closing) return;
-  closing = true;
-  await vite.close();
-  server.close();
-}
+const closeServers = createServerCloser(vite, server);
+const close = () => { void closeServers().catch(error => { console.error(error); process.exitCode = 1; }); };
 process.once('SIGINT', close);
 process.once('SIGTERM', close);

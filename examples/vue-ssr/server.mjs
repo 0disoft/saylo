@@ -2,6 +2,7 @@ import { createServer as createHttpServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { createServer } from 'vite';
 import { config } from './config.mjs';
+import { createServerCloser } from '../ssr/server-lifecycle.mjs';
 
 export async function startServer({ port = 5193, viteConfig = config } = {}) {
   let vite;
@@ -24,14 +25,12 @@ export async function startServer({ port = 5193, viteConfig = config } = {}) {
   try {
     vite = await createServer({ ...viteConfig, server: { middlewareMode: true, hmr: { server } } });
     await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
-  } catch (error) { await vite?.close(); throw error; }
-  let closing;
-  function close() {
-    return closing ??= (async () => {
-      await vite.close();
-      await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
-    })();
+  } catch (error) {
+    try { await createServerCloser(vite, server)(); }
+    catch (cleanupError) { throw new AggregateError([error, cleanupError], 'SSR startup and cleanup failed.', { cause: error }); }
+    throw error;
   }
+  const close = createServerCloser(vite, server);
   return { vite, url: `http://127.0.0.1:${server.address().port}/`, close };
 }
 
