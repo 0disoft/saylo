@@ -13,6 +13,7 @@ import { applyReviewApprovals, readReviewApprovals } from './catalog-approvals.j
 import { planReviewApproval } from './catalog-approve.js';
 import { writeReviewApproval, ReviewApprovalWriteError } from './review-write.js';
 import { refreshTranslationWorkfile } from './catalog-refresh.js';
+import { CommandInterruptedError, createCliCancellation } from './cli-cancellation.js';
 
 const help = `Usage: saylo <check|sync|snapshot|export|import|approve|refresh> [--config saylo.config.json] [--json]
 
@@ -41,9 +42,11 @@ Options:
 
 Exit codes: check 0 clean/1 issues; sync/export/import/approve/refresh 0 ready/1 blocked; snapshot 0 valid/1 invalid catalogs.
 All commands use exit 2 for usage/config/filesystem failures. Only import --apply writes catalogs.
-approve --apply writes only the reviews ledger. Import/snapshot never approve translations.`;
+approve --apply writes only the reviews ledger. Import/snapshot never approve translations.
+Apply commands wait for cleanup on SIGINT/SIGTERM, then exit 130/143 and report already written files.`;
 class UsageError extends Error {}
 let json = process.argv.includes('--json');
+let cancellation: ReturnType<typeof createCliCancellation> | undefined;
 
 function printCheckReport(report: CatalogCheckReport): string {
   const lines = report.diagnostics.map(issue => `${issue.severity} ${issue.code} ${issue.sourceName}${issue.id === undefined ? '' : ` [${issue.id}]`}: ${issue.message}`);
@@ -78,6 +81,7 @@ try {
     if (usesWorkfile && values.baseline) throw new UsageError(`${command} uses workfile checkpoints; --baseline is not supported.`);
     if (['import', 'snapshot'].includes(command) && values.reviews) throw new UsageError('--reviews is supported with check, sync, export, approve or refresh.');
     if (command === 'snapshot' && values.baseline) throw new UsageError('snapshot prints a new checkpoint; --baseline is a comparison input, not an output path.');
+    if (usesWorkfile && values.apply) cancellation = createCliCancellation();
     json ||= ['snapshot', 'export', 'refresh'].includes(command);
     const filename = values.config ?? (existsSync('saylo.config.json') ? 'saylo.config.json' : undefined);
     const loaded = filename === undefined ? {} : loadProjectConfig(filename);
@@ -95,6 +99,7 @@ try {
     const approvals = ['check', 'sync', 'export', 'approve', 'refresh'].includes(command) && config.reviews
       ? await readReviewApprovals(config.reviews, config.baseLocale, ['export', 'approve', 'refresh'].includes(command)) : undefined;
     const report = approvals && command !== 'approve' ? applyReviewApprovals(inspected.inspection, compared, approvals.approvals) : compared;
+    cancellation?.throwIfCancelled();
     if (command === 'refresh') {
       const work = await readTranslationWorkfile(values.file!, config.baseLocale);
       const result = refreshTranslationWorkfile(inspected.inspection, report, work, { withContext: values['with-context'] === true });
@@ -102,14 +107,18 @@ try {
       process.exitCode = result.blocked ? 1 : 0;
     } else if (command === 'approve') {
       const work = await readTranslationWorkfile(values.file!, config.baseLocale);
+      cancellation?.throwIfCancelled();
       const plan = planReviewApproval(inspected.inspection, report, work, approvals!);
-      const result = values.apply && !plan.report.blocked ? await writeReviewApproval(plan) : plan.report;
+      const result = values.apply && !plan.report.blocked ? await writeReviewApproval(plan, { signal: cancellation!.signal }) : plan.report;
+      cancellation?.throwIfCancelled(result.writtenFiles);
       console.log(json ? JSON.stringify(result) : `${result.diagnostics.map(issue => `${issue.code}: ${issue.message}`).join('\n')}\n[saylo:approve] ${result.blocked ? 'blocked' : result.dryRun ? 'dry-run' : 'approved'}; ${result.changes.length} approval(s); ${result.writtenFiles.length} ledger file(s) written.`);
       process.exitCode = result.blocked ? 1 : 0;
     } else if (command === 'import') {
       const work = await readTranslationWorkfile(values.file!, config.baseLocale);
+      cancellation?.throwIfCancelled();
       const plan = planTranslationImport(inspected.inspection, report, config, work);
-      const result = values.apply && !plan.report.blocked ? await applyTranslationImport(plan) : plan.report;
+      const result = values.apply && !plan.report.blocked ? await applyTranslationImport(plan, { signal: cancellation!.signal }) : plan.report;
+      cancellation?.throwIfCancelled(result.writtenFiles);
       console.log(json ? JSON.stringify(result) : `${result.diagnostics.map(issue => `${issue.code}: ${issue.message}`).join('\n')}\n[saylo:import] ${result.blocked ? 'blocked' : result.dryRun ? 'dry-run' : 'applied'}; ${result.changes.length} message(s); ${result.writtenFiles.length} file(s) written.`);
       process.exitCode = result.blocked ? 1 : 0;
     } else if (command === 'export') {
@@ -132,8 +141,11 @@ try {
   }
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
-  const writtenFiles = error instanceof TranslationApplyError || error instanceof ReviewApprovalWriteError ? error.writtenFiles : undefined;
-  if (json) console.log(JSON.stringify({ format: 'saylo-command-error/v1', error: { message, ...(writtenFiles ? { writtenFiles } : {}) } }));
-  else console.error(`[saylo] ${message}${writtenFiles ? `\nAlready written: ${writtenFiles.join(', ') || '(none)'}` : ''}\nRun saylo --help for options.`);
-  process.exitCode = 2;
-}
+  const interrupted = cancellation?.signal.reason instanceof CommandInterruptedError ? cancellation.signal.reason : undefined;
+  const writtenFiles = error instanceof TranslationApplyError || error instanceof ReviewApprovalWriteError || error instanceof CommandInterruptedError
+    ? error.writtenFiles : interrupted ? [] : undefined;
+  if (json) console.log(JSON.stringify({ format: 'saylo-command-error/v1', error: { message,
+    ...(writtenFiles ? { writtenFiles } : {}), ...(interrupted ? { cancelled: true, signal: interrupted.signalName } : {}) } }));
+  else console.error(`[saylo] ${message}${writtenFiles ? `\nAlready written: ${writtenFiles.join(', ') || '(none)'}` : ''}${interrupted ? '' : '\nRun saylo --help for options.'}`);
+  process.exitCode = interrupted?.exitCode ?? 2;
+} finally { cancellation?.dispose(); }

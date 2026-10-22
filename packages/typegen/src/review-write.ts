@@ -41,12 +41,13 @@ export async function writeReviewApproval(plan: ApprovalPlan, options: ReviewWri
     options.signal?.throwIfAborted();
     try { lock = await open(lockFile, 'wx', 0o600); }
     catch (cause) { throw new Error(`Cannot acquire review lock: ${lockFile}. Verify its owner has stopped before removing a stale lock.`, { cause }); }
+    options.signal?.throwIfAborted();
     await lock.writeFile(JSON.stringify({ pid: process.pid }));
     current();
     const handle = await open(temp, 'wx', plan.ledger.source === null ? 0o666 : lstatSync(target).mode & 0o777);
     owned = true;
     const errors: unknown[] = [];
-    try { await handle.writeFile(JSON.stringify(plan.approvals, null, 2) + '\n'); } catch (error) { errors.push(error); }
+    try { options.signal?.throwIfAborted(); await handle.writeFile(JSON.stringify(plan.approvals, null, 2) + '\n'); } catch (error) { errors.push(error); }
     try { await handle.close(); } catch (error) { errors.push(error); }
     if (errors.length === 1) throw errors[0];
     if (errors.length > 1) throw new AggregateError(errors, 'Review staging and cleanup failed', { cause: errors[0] });

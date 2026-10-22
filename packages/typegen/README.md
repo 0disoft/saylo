@@ -152,6 +152,10 @@ npx --no-install saylo import --file translation-work.json --apply --json
 
 교체 전 바이트 비교와 rename 재시도로 그 사이의 편집을 감지하지만, 마지막 확인과 rename 사이에 다른 편집기가 쓰는 것을 막는 파일시스템 CAS는 아니다.
 
+`import --apply`와 `approve --apply`는 SIGINT·SIGTERM을 AbortSignal로 받는다. 신호를 받으면 추가 반영을 멈추고 진행 중인 I/O와 handle·temp·lock 정리를 기다린 뒤 종료한다. 이미 성공한 atomic rename은 되돌리지 않으며 rename과 신호가 겹쳐 완료된 파일도 `writtenFiles`에 정확히 보고한다. 첫 신호를 우선하고 정리 중 반복 신호로 즉시 강제 종료하지 않는다. 정상 종료와 실패 모두 CLI 신호 리스너를 해제하며, 취소 종료 코드는 SIGINT 130·SIGTERM 143, 그 밖의 일반 오류는 2다.
+
+`--json` 취소는 기존 `saylo-command-error/v1`의 `error`에 `cancelled: true`, `signal: "SIGINT"|"SIGTERM"`, `writtenFiles: [...]`를 더하고 원인을 설명하는 `message`를 유지한다. 이 연결은 `--apply`에만 해당하며 dry-run·읽기전용 명령은 대상이 아니다. SIGKILL·Windows 강제 종료·전원 꺼짐은 cleanup을 보장하지 않으므로 기존 stale lock 수동 확인 정책을 유지한다.
+
 `--apply`가 쓴 카탈로그는 2칸 들여쓰기 JSON으로 다시 쓴다. 메시지 값은 그대로 두고, 기존 파일이 CRLF를 쓰면 CRLF도 유지한다. 관련 없는 키와 고아 키는 보존하며, 삭제와 기계 번역은 하지 않는다.
 
 `import`는 타입 선언과 baseline을 다시 만들지 않는다. 적용 뒤 `saylo check`와 타입 생성(`saylo-typegen`)을 따로 실행한다. baseline 갱신은 번역 승인과 별개다.
@@ -198,7 +202,7 @@ npx --no-install saylo approve --reviews saylo-reviews.json --file review-work.j
 
 장부는 `locales` 밖의 `.json` 파일이어야 한다. 쓰기 시 부모 디렉터리가 실제로 존재하고 symlink가 아니어야 하며, 장부 경로가 symlink면 거부한다. 같은 장부는 장부별 lock으로 직렬화하고 임시 파일을 atomic rename한다. 강제 종료로 남은 lock은 소유 pid가 끝났는지 확인한 뒤 지운다.
 
-종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`와 `approve`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. `refresh`는 충돌 없는 후보 0, 충돌 또는 잘못된 카탈로그 1, 사용법·파일시스템·작업 파일 형식 오류 2다. `refresh`는 `--json` 없이도 stdout 전체가 단일 JSON 보고서다. 다른 명령의 `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
+종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`와 `approve`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. `import --apply`·`approve --apply` 취소는 SIGINT 130, SIGTERM 143이며 다른 일반 오류는 2다. `refresh`는 충돌 없는 후보 0, 충돌 또는 잘못된 카탈로그 1, 사용법·파일시스템·작업 파일 형식 오류 2다. `refresh`는 `--json` 없이도 stdout 전체가 단일 JSON 보고서다. 다른 명령의 `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
 
 ### 기존 인자로 타입 생성
 
