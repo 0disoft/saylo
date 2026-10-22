@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { build } from 'vite';
 import { CatalogError, parseCatalog } from '@0disoft/saylo-core';
-import saylo from '../dist/index.js';
+import saylo, { loadProjectConfig } from '../dist/index.js';
 import { createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
 import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
@@ -19,6 +19,16 @@ function registry() {
 const entries = r => r.manifest().catalogs.filter(m => m.status === 'present' && m.key.locale !== 'ko')
   .map(m => ({ key: m.key, load: async () => r.load(m.key.locale, m.key.namespace) }));
 const boot = r => [r.load('ko', 'demo'), r.load('ko', 'help')];
+
+test('Vite reads the shared JSON settings independently of its project root', async t => {
+  const root = await completeFixture(t);
+  const file = path.join(root, 'saylo.config.json');
+  await writeFile(file, JSON.stringify({ localesDir: 'locales', baseLocale: 'ko', richText: { demo: { hello: ['link'] } } }));
+  await writeFile(path.join(root, 'locales/ko/demo.json'), '{"hello":"<lnik>bad</lnik>"}');
+  const plugin = saylo(loadProjectConfig(file));
+  try { await assert.rejects(plugin.configResolved({ root: os.tmpdir(), command: 'build' }), error => error.diagnostics?.[0].code === 'INVALID_RICH_TEXT'); }
+  finally { await plugin.closeBundle(); }
+});
 
 test('misspelled rich policy keys fail before replacing generated declarations', async t => {
   const root = await completeFixture(t);

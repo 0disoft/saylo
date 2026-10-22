@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { createBaseSchema, createStore } from '@0disoft/saylo-core';
 import { isGeneratedFile, TypeGenerator } from '@0disoft/saylo-typegen';
+import { assertRichTextKeys } from '@0disoft/saylo-typegen/config';
 import type { Plugin, ViteDevServer, WebSocketClient } from 'vite';
 import { CatalogRegistry } from './catalog-registry.js';
 import { encodeCatalogResult } from './catalog-wire.js';
@@ -128,15 +129,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
   }
   async function prepareBuild() {
     keySources.clear();
-    if (richText !== undefined) {
-      const bases = new Map(snapshot().catalogs.filter(catalog => catalog.locale === baseLocale).map(catalog => [catalog.namespace, catalog]));
-      for (const [namespace, messages] of Object.entries(richText)) {
-        const base = bases.get(namespace);
-        if (!base) throw new RangeError(`Rich text namespace ${JSON.stringify(namespace)} is absent from the base catalogs.`);
-        for (const id of Object.keys(messages)) if (!Object.hasOwn(base.messages, id))
-          throw new RangeError(`Rich text key ${JSON.stringify(`${namespace}:${id}`)} is absent from the base catalogs.`);
-      }
-    }
+    assertRichTextKeys(snapshot().catalogs, baseLocale, richText);
     const selectedKeys = production && autoKeys ? await findIncludedKeys(buildRoot,
       snapshot().catalogs, baseLocale, autoKeys, file => keySources.add(file)) : includeKeys;
     buildCatalogs = production ? selectBuildCatalogs(snapshot().catalogs, baseLocale, selectedKeys) : undefined;
@@ -327,3 +320,4 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
 
 export type { SayloViteOptions, LiveDiagnostic, EagerCatalogSnapshot, EagerCatalogUpdate, EagerCatalogEvent, EagerSnapshotRequest } from './types.js';
 export type { AutoIncludeKeys } from './auto-keys.js';
+export { loadProjectConfig } from '@0disoft/saylo-typegen/config';
