@@ -63,7 +63,7 @@ npx --no-install saylo sync --config saylo.config.json --dry-run --json
 
 `check`는 JSON·ICU·인자·rich 계약 오류, 기준에 없는 번역 키, 누락 namespace·메시지를 모아 보고한다. 명시된 완역 대상에 누락이 있으면 런타임에서 기준 언어로 폴백할 수 있어도 검사에서는 오류다. 빈 번역 문자열은 정상 번역으로 처리한다. 소스에서 실제 사용하지 않는 키를 추측해 삭제하지 않는다.
 
-`sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. `check`·`sync`·`snapshot`·`refresh`는 읽기 전용이며 카탈로그·생성 타입·검수 기록을 쓰지 않는다. 삭제와 자동 번역 기능은 없다. 번역을 카탈로그에 쓰는 명령은 `import --apply`뿐이다.
+`sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. `--out-file` 없는 `export`·`snapshot`·`refresh`와 `check`·`sync`는 읽기 전용이며 카탈로그·생성 타입·검수 기록을 쓰지 않는다. 삭제와 자동 번역 기능은 없다. 번역을 카탈로그에 쓰는 명령은 `import --apply`뿐이다.
 
 다음 `snapshot`·`baseline` 예시는 `reviews`를 쓰지 않는 이전 baseline-only 검수 방식이다. 승인 장부를 쓰는 경우에는 뒤의 [선택적 번역 승인 기록](#선택적-번역-승인-기록-미게시)을 따른다.
 
@@ -75,9 +75,23 @@ npx --no-install saylo check --config saylo.config.json --baseline saylo-baselin
 npx --no-install saylo sync --config saylo.config.json --baseline saylo-baseline.json --dry-run --json
 ```
 
-`baseline` 경로를 공통 JSON에 넣어도 된다. 경로를 지정했는데 파일이 없거나 잘못됐으면 실패한다. `snapshot`은 기존 baseline을 읽지 않고 새 비교 기준을 stdout으로 출력한다. 기준 기록 생성은 번역 승인 처리가 아니며, 미완성 번역이 있어도 가능하지만 잘못된 카탈로그가 있으면 거부한다. `check`·`sync`는 기록을 갱신하지 않는다. 원문이나 허용 태그가 바뀌면 기존 번역을 `SOURCE_CHANGED`, 새 원문에 이미 번역이 있으면 `SOURCE_ADDED`로 표시한다. `baseline`과 `reviews`를 모두 지정하지 않았을 때만 `reviewTracking: "not-configured"`이며, `baseline`만 쓰면 `baseline`, `reviews`만 쓰면 `approvals`, 둘 다면 `baseline-and-approvals`다. 직접 검수한 뒤 비교 기준을 갱신한다.
+`baseline` 경로를 공통 JSON에 넣어도 된다. 경로를 지정했는데 파일이 없거나 잘못됐으면 실패한다. `snapshot`은 기존 baseline을 읽지 않는다. `--out-file`이 없으면 새 비교 기준을 stdout으로, 지정하면 새 파일로 출력한다. 설정의 `baseline`이 같은 경로를 가리켜도 `snapshot`은 이를 읽지 않으므로 파일이 아직 없으면 최초 baseline으로 만들 수 있다. 기준 기록 생성은 번역 승인 처리가 아니며, 미완성 번역이 있어도 가능하지만 잘못된 카탈로그가 있으면 거부한다. `check`·`sync`는 기록을 갱신하지 않는다. 원문이나 허용 태그가 바뀌면 기존 번역을 `SOURCE_CHANGED`, 새 원문에 이미 번역이 있으면 `SOURCE_ADDED`로 표시한다. `baseline`과 `reviews`를 모두 지정하지 않았을 때만 `reviewTracking: "not-configured"`이며, `baseline`만 쓰면 `baseline`, `reviews`만 쓰면 `approvals`, 둘 다면 `baseline-and-approvals`다. 직접 검수한 뒤 비교 기준을 갱신한다.
 
-기존 비교 기록을 갱신할 때는 stdout을 새 파일에 저장하고, 종료 코드 0과 내용을 확인한 뒤 교체한다. 기존 baseline에 바로 리다이렉트하면 명령이 실패해도 셸이 기존 파일을 먼저 덮어쓸 수 있다.
+`--out-file` 없이 기존 비교 기록을 갱신할 때는 stdout을 새 파일에 저장하고, 종료 코드 0과 내용을 확인한 뒤 교체한다. 기존 baseline에 바로 리다이렉트하면 명령이 실패해도 셸이 기존 파일을 먼저 덮어쓸 수 있다. 새 파일은 `--out-file`로 만들 수 있으며 기존 파일은 덮어쓰지 않는다.
+
+### 안전한 파일 출력 (미게시)
+
+`--out-file <new.json>`은 `export`·`snapshot`·`refresh`에서만 지원한다. 지정하지 않으면 기존 stdout 출력과 read-only 동작이 그대로다. 상대 경로는 cwd 기준이며 확장자는 `.json`이어야 한다. 부모 디렉터리가 실제로 존재하고 symlink가 아니어야 하며, `locales` 안이나 입력 작업 파일·설정·실제로 읽는 baseline·reviews 경로에는 쓸 수 없다. 기존 파일·디렉터리·symlink는 거부하고 `--force`나 덮어쓰기 옵션은 없다.
+
+출력 JSON 전체를 만들고 검증한 뒤 같은 디렉터리의 독점 temp에 쓰고 닫은 다음 hardlink로 새 파일을 게시한다. 기존 파일은 덮어쓰지 않으며 hardlink를 지원하지 않는 파일시스템은 안전하게 실패하고 temp를 정리한다. 성공하면 stdout에는 `{"format":"saylo-file-output/v1","command":"export"|"snapshot"|"refresh","writtenFiles":[절대경로],"blocked":boolean}` 영수증 하나만 나오며 `--json`은 필요 없다. 실제 작업 파일·snapshot·refresh JSON은 지정한 파일에 들어가고 `blocked`는 저장한 내용의 차단 상태다.
+
+```sh
+npx --no-install saylo export --with-context --out-file translation-work.json --config saylo.config.json
+npx --no-install saylo snapshot --out-file saylo-baseline.json --config saylo.config.json
+npx --no-install saylo refresh --file translation-work.json --out-file refresh-report.json --config saylo.config.json
+```
+
+`export`·`snapshot`의 JSON 검증이 실패하면 outfile을 만들지 않고 기존 진단을 stdout에 내며 exit 1이다. `refresh`는 `workfile: null`이면 파일을 만들지 않고, 충돌이 있어도 `workfile`이 있으면 전체 보고서를 저장한 뒤 exit 1을 유지한다. 사용법·출력 오류는 2, 취소는 SIGINT 130·SIGTERM 143이다. 기존 파일을 보존해야 할 때 셸 리다이렉트 대신 `--out-file`을 사용한다.
 
 ### 번역 작업 파일 내보내기와 가져오기 (미게시)
 
@@ -87,7 +101,7 @@ npx --no-install saylo sync --config saylo.config.json --baseline saylo-baseline
 npx --no-install saylo export --config saylo.config.json > translation-work.json
 ```
 
-`reviews`를 쓰지 않는 이전 baseline-only 방식에서 원문 변경 검수를 포함하려면 `--baseline saylo-baseline.json`을 붙이거나 설정에 `baseline`을 둔다. baseline이 없으면 `add` 작업만 나온다. 카탈로그가 잘못되면 작업 파일 대신 `saylo-check/v1` 보고서를 출력하고 exit 1로 끝난다. `export`는 디스크를 쓰지 않으므로 새 파일에 저장하고 종료 코드와 내용을 확인한 뒤 기존 작업 파일과 교체한다.
+`reviews`를 쓰지 않는 이전 baseline-only 방식에서 원문 변경 검수를 포함하려면 `--baseline saylo-baseline.json`을 붙이거나 설정에 `baseline`을 둔다. baseline이 없으면 `add` 작업만 나온다. `--out-file`을 지정하지 않았을 때 카탈로그가 잘못되면 작업 파일 대신 `saylo-check/v1` 보고서를 stdout에 내고 exit 1로 끝난다. `--out-file`을 지정해도 검증 실패면 outfile을 만들지 않고 같은 진단을 stdout에 낸다. `--out-file` 없는 export는 디스크를 쓰지 않으므로 stdout을 새 파일에 저장하고 종료 코드와 내용을 확인한 뒤 기존 작업 파일과 교체한다.
 
 각 항목의 `source`·`sourceHash`·`originalTranslation`은 내보낸 시점의 체크포인트다. `translation`만 고치고 나머지 필드는 그대로 둔다. `add` 항목의 `originalTranslation`은 `null`이고, `review` 항목은 기존 번역으로 시작한다. `review` 항목을 손대지 않으면 `translation`이 `originalTranslation`과 같아서 가져올 때 건너뛴다. `translation: null`은 아직 하지 않은 작업이며, `""`는 정상 번역이다.
 
@@ -152,9 +166,9 @@ npx --no-install saylo import --file translation-work.json --apply --json
 
 교체 전 바이트 비교와 rename 재시도로 그 사이의 편집을 감지하지만, 마지막 확인과 rename 사이에 다른 편집기가 쓰는 것을 막는 파일시스템 CAS는 아니다.
 
-`import --apply`와 `approve --apply`는 SIGINT·SIGTERM을 AbortSignal로 받는다. 신호를 받으면 추가 반영을 멈추고 진행 중인 I/O와 handle·temp·lock 정리를 기다린 뒤 종료한다. 이미 성공한 atomic rename은 되돌리지 않으며 rename과 신호가 겹쳐 완료된 파일도 `writtenFiles`에 정확히 보고한다. 첫 신호를 우선하고 정리 중 반복 신호로 즉시 강제 종료하지 않는다. 정상 종료와 실패 모두 CLI 신호 리스너를 해제하며, 취소 종료 코드는 SIGINT 130·SIGTERM 143, 그 밖의 일반 오류는 2다.
+`import --apply`·`approve --apply`와 `--out-file`을 쓰는 `export`·`snapshot`·`refresh`는 SIGINT·SIGTERM을 AbortSignal로 받는다. 신호를 받으면 추가 쓰기·게시를 멈추고 진행 중인 I/O와 handle·temp·lock 정리를 기다린 뒤 종료한다. 이미 성공한 atomic rename이나 outfile hardlink publish는 되돌리지 않으며, 신호와 겹쳐 완료된 파일도 `writtenFiles`에 정확히 보고한다. 첫 신호를 우선하고 정리 중 반복 신호로 즉시 강제 종료하지 않는다. 정상 종료와 실패 모두 CLI 신호 리스너를 해제하며, 취소 종료 코드는 SIGINT 130·SIGTERM 143, 그 밖의 일반 오류는 2다.
 
-`--json` 취소는 기존 `saylo-command-error/v1`의 `error`에 `cancelled: true`, `signal: "SIGINT"|"SIGTERM"`, `writtenFiles: [...]`를 더하고 원인을 설명하는 `message`를 유지한다. 이 연결은 `--apply`에만 해당하며 dry-run·읽기전용 명령은 대상이 아니다. SIGKILL·Windows 강제 종료·전원 꺼짐은 cleanup을 보장하지 않으므로 기존 stale lock 수동 확인 정책을 유지한다.
+`import --apply`·`approve --apply`의 `--json` 취소는 기존 `saylo-command-error/v1`의 `error`에 `cancelled: true`, `signal: "SIGINT"|"SIGTERM"`, `writtenFiles: [...]`를 더하고 원인을 설명하는 `message`를 유지한다. `--out-file`도 같은 취소·`writtenFiles`·cleanup 보장을 따른다. dry-run과 `--out-file` 없는 읽기전용 경로는 대상이 아니다. SIGKILL·Windows 강제 종료·전원 꺼짐은 cleanup을 보장하지 않으므로 기존 stale lock 수동 확인 정책을 유지한다.
 
 `--apply`가 쓴 카탈로그는 2칸 들여쓰기 JSON으로 다시 쓴다. 메시지 값은 그대로 두고, 기존 파일이 CRLF를 쓰면 CRLF도 유지한다. 관련 없는 키와 고아 키는 보존하며, 삭제와 기계 번역은 하지 않는다.
 
@@ -162,7 +176,7 @@ npx --no-install saylo import --file translation-work.json --apply --json
 
 ### 번역 작업 파일 새로고침 (미게시)
 
-`refresh`는 작성 중인 작업 파일을 최신 `export` 후보와 합쳐 `saylo-translation-refresh/v1` 보고서로 stdout에 낸다. `--json`을 주지 않아도 stdout 전체가 단일 JSON이며, `blocked`·`workfile`·`conflicts`·`alreadyApplied`·`report`를 담는다. `workfile`은 `saylo-translation-work/v1` 또는 `saylo-translation-work/v2`이며, JSON·ICU·인자·rich 정책 오류처럼 카탈로그가 잘못됐으면 `null`이다. 삭제된 원문 키·namespace의 잔여 번역은 비교를 진행해 `SOURCE_REMOVED`로 보여 주고, `UNKNOWN_MESSAGE`·`NAMESPACE_MISMATCH`는 `report`에 보존하되 이 두 진단만으로 후보 생성을 막지 않으며 카탈로그도 삭제하지 않는다. `report`는 카탈로그 검사 결과다.
+`refresh`는 작성 중인 작업 파일을 최신 `export` 후보와 합쳐 `saylo-translation-refresh/v1` 보고서로 stdout에 낸다. `--out-file`을 주면 실제 보고서는 그 파일에 쓰고 stdout에는 영수증을 낸다. `--json`을 주지 않아도 stdout 전체가 단일 JSON이며, 보고서는 `blocked`·`workfile`·`conflicts`·`alreadyApplied`·`report`를 담는다. `workfile`은 `saylo-translation-work/v1` 또는 `saylo-translation-work/v2`이며, JSON·ICU·인자·rich 정책 오류처럼 카탈로그가 잘못됐으면 `null`이다. 삭제된 원문 키·namespace의 잔여 번역은 비교를 진행해 `SOURCE_REMOVED`로 보여 주고, `UNKNOWN_MESSAGE`·`NAMESPACE_MISMATCH`는 `report`에 보존하되 이 두 진단만으로 후보 생성을 막지 않으며 카탈로그도 삭제하지 않는다. `report`는 카탈로그 검사 결과다. `workfile: null`이면 `--out-file`도 만들지 않는다.
 
 ```sh
 npx --no-install saylo refresh --file translation-work.json --config saylo.config.json > refresh-report.json
@@ -170,7 +184,7 @@ npx --no-install saylo refresh --file translation-work.json --config saylo.confi
 jq '.workfile' refresh-report.json > refreshed-work.json
 ```
 
-`--config`·`--locales`로 카탈로그를 정하고 `--baseline`·`--reviews`를 `export`와 같이 적용한다. 승인 장부가 없으면 `export`처럼 빈 장부로 시작할 수 있지만, `baseline`을 지정했는데 파일이 없으면 실패한다. `refresh`는 입력 작업 파일, 카탈로그, baseline, 승인 장부, 생성 타입을 모두 쓰지 않는다. `--apply`와 `--dry-run`은 받지 않으며 사용법 오류다.
+`--config`·`--locales`로 카탈로그를 정하고 `--baseline`·`--reviews`를 `export`와 같이 적용한다. 승인 장부가 없으면 `export`처럼 빈 장부로 시작할 수 있지만, `baseline`을 지정했는데 파일이 없으면 실패한다. `refresh`는 `--out-file`로 지정한 보고서 외에는 입력 작업 파일, 카탈로그, baseline, 승인 장부, 생성 타입을 쓰지 않는다. `--apply`와 `--dry-run`은 받지 않으며 사용법 오류다.
 
 원문·rich 해시와 현재 카탈로그 번역이 작업 파일의 `originalTranslation`에서 바뀌지 않았으면 `translation`에 적어 둔 내용을 보존한다. `null`과 빈 문자열도 작성 중 상태로 유지하고, 최신 export의 새 `add`·`review` 작업도 포함해 locale·namespace·id 순으로 정렬한다.
 
@@ -202,7 +216,7 @@ npx --no-install saylo approve --reviews saylo-reviews.json --file review-work.j
 
 장부는 `locales` 밖의 `.json` 파일이어야 한다. 쓰기 시 부모 디렉터리가 실제로 존재하고 symlink가 아니어야 하며, 장부 경로가 symlink면 거부한다. 같은 장부는 장부별 lock으로 직렬화하고 임시 파일을 atomic rename한다. 강제 종료로 남은 lock은 소유 pid가 끝났는지 확인한 뒤 지운다.
 
-종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`와 `approve`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. `import --apply`·`approve --apply` 취소는 SIGINT 130, SIGTERM 143이며 다른 일반 오류는 2다. `refresh`는 충돌 없는 후보 0, 충돌 또는 잘못된 카탈로그 1, 사용법·파일시스템·작업 파일 형식 오류 2다. `refresh`는 `--json` 없이도 stdout 전체가 단일 JSON 보고서다. 다른 명령의 `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
+종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`와 `approve`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. `--apply`·`--out-file` 취소는 SIGINT 130, SIGTERM 143이며 다른 일반 오류는 2다. `refresh`는 충돌 없는 후보 0, 충돌 또는 잘못된 카탈로그 1, 사용법·파일시스템·작업 파일 형식 오류 2다. `refresh`는 `--json` 없이도 stdout 전체가 단일 JSON 보고서다. 다른 명령의 `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
 
 ### 기존 인자로 타입 생성
 

@@ -8,8 +8,8 @@ const signal = process.env.SAYLO_CANCEL_SIGNAL ?? 'SIGINT';
 const counts = ['SIGINT', 'SIGTERM'].map(name => process.listenerCount(name));
 let delivered = false, renames = 0;
 const interrupt = () => { if (!delivered) { delivered = true; process.emit(signal); } };
-const managedTemp = file => /\.saylo-(?:import|review)-.*\.tmp$/.test(String(file));
-const open = fs.open, rename = fs.rename, readFile = fs.readFile, rm = fs.rm;
+const managedTemp = file => /\.saylo-(?:import|review|output)-.*\.tmp$/.test(String(file));
+const open = fs.open, rename = fs.rename, readFile = fs.readFile, rm = fs.rm, link = fs.link;
 fs.open = async (...args) => {
   const handle = await open(...args);
   if ((phase === 'lock' && String(args[0]).endsWith('.lock')) || (phase === 'stage' && managedTemp(args[0]))) interrupt();
@@ -18,6 +18,11 @@ fs.open = async (...args) => {
 fs.rename = async (...args) => {
   const result = await rename(...args);
   if (managedTemp(args[0]) && ++renames === Number(process.env.SAYLO_CANCEL_RENAME ?? 1) && phase === 'rename') interrupt();
+  return result;
+};
+fs.link = async (...args) => {
+  const result = await link(...args);
+  if (managedTemp(args[0]) && phase === 'publish') interrupt();
   return result;
 };
 fs.readFile = async (...args) => {
