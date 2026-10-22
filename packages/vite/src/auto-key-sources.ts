@@ -37,13 +37,46 @@ export function sourceTrees(source: string, file: string): SourceNode[] {
     }
   };
   if (!/\.(?:vue|svelte)$/.test(file)) { add(source); return result; }
-  let markup = source.replace(/<!--[^]*?-->/g, '');
+  let cursor = 0, braces = 0, expressionQuote = '', attributeQuote = '', inTag = false;
+  const svelte = file.endsWith('.svelte');
+  // Inspect only markup between blocks. Raw scripts and real comments are each
+  // consumed whole, so comment-looking JavaScript strings cannot erase code.
+  const inspectPrefix = (text: string) => {
+    for (let i = 0; i < text.length; i++) {
+      const character = text[i]!;
+      if (braces) {
+        if (expressionQuote) {
+          if (character === '\\') i++;
+          else if (character === expressionQuote) expressionQuote = '';
+        } else if ('\"\'`'.includes(character)) expressionQuote = character;
+        else if (character === '{') braces++;
+        else if (character === '}') braces--;
+      } else if (character === '{' && (svelte || !attributeQuote && text[i + 1] === '{')) {
+        braces = svelte ? 1 : 2;
+        if (!svelte) i++;
+      } else if (attributeQuote) {
+        if (character === attributeQuote) attributeQuote = '';
+      } else if (inTag) {
+        if (character === '"' || character === "'") attributeQuote = character;
+        else if (character === '>') inTag = false;
+      } else if (character === '<' && /[a-z/!]/i.test(text[i + 1] ?? '')) inTag = true;
+    }
+  };
+  const markup = source.replace(/<!--[^]*?-->|<(script|style)\b([^>]*)>([^]*?)<\/\1\s*>/gi,
+    (whole, tag: string | undefined, attributes: string, body: string, offset: number) => {
+      inspectPrefix(source.slice(cursor, offset));
+      if (braces || attributeQuote || inTag)
+        throw new Error(`[saylo:auto-keys] Comment or script markers inside template expressions or attributes in ${file} need an explicit includeKeys list.`);
+      cursor = offset + whole.length;
+      if (tag?.toLowerCase() === 'script') {
+        if (/\bsrc\s*=/i.test(attributes))
+          throw new Error(`[saylo:auto-keys] External SFC script/template sources in ${file} need an explicit includeKeys list.`);
+        add(body);
+      }
+      return '';
+    });
   if (/<(?:script|template)\b[^>]*\bsrc\s*=/i.test(markup))
     throw new Error(`[saylo:auto-keys] External SFC script/template sources in ${file} need an explicit includeKeys list.`);
-  markup = markup.replace(/<(script|style)\b[^>]*>([^]*?)<\/\1\s*>/gi, (_whole, tag: string, body: string) => {
-    if (tag.toLowerCase() === 'script') add(body);
-    return '';
-  });
   if (file.endsWith('.vue')) {
     for (const match of markup.matchAll(/{{([^]*?)}}/g)) add(match[1]!, true);
     for (const match of markup.matchAll(/(?:\s|<)(?:[:@][\w:.[\]-]+|v-[\w:.[\]-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {

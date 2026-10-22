@@ -100,6 +100,85 @@ test('bound translators and call/apply aliases cannot silently drop dynamic keys
   await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /External SFC/);
 });
 
+test('typed and inline-bound translator calls preserve dynamic-key diagnostics', async t => {
+  const root = await fixture(t), file = path.join(root, 'src/main.tsx');
+  for (const source of [
+    'const translate = i18n.t as typeof i18n.t; translate(key);',
+    'const translate = i18n.t!; translate(key);',
+    '(i18n.t satisfies Function)(key);',
+    'i18n.t.bind(i18n)(key);',
+    '(i18n.t as Function).call(i18n, key);',
+    'i18n.t.apply(i18n, values as [string]);',
+    'function render({ t: translate }) { return translate(key); }',
+    'const { nested: { tParts: parts } } = context; parts(key);',
+  ]) {
+    await writeFile(file, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/, source);
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'], dynamicKeys: ['demo:one'] }), ['demo:one']);
+  }
+  await writeFile(file, 'const translate = i18n.t as typeof i18n.t; translate(`demo:${suffix}` as string);');
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), Object.keys(messages).map(key => `demo:${key}`).sort());
+  await writeFile(file, "(i18n.t as Function).apply(i18n, ['demo:two'] as const);");
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), ['demo:two']);
+});
+
+test('translator callbacks passed through JSX, defaults and logical expressions need explicit dynamic preservation', async t => {
+  const root = await fixture(t), file = path.join(root, 'src/main.tsx');
+  for (const source of [
+    'const view = <Widget translate={i18n.t} />;',
+    'const view = <Widget translate={i18n.t as Function} />;',
+    'const translate = i18n.t || fallback; translate(key);',
+    'function render(translate = i18n.t) { return translate(key); }',
+    'const translate = (0, i18n.t); translate(key);',
+    'const view = new Widget(i18n.t);',
+    'const translate = i18n.t; export { translate as default };',
+  ]) {
+    await writeFile(file, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/, source);
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'], dynamicKeys: ['demo:two'] }), ['demo:two']);
+  }
+  await rm(file);
+  for (const [name, source] of [
+    ['View.svelte', '<Widget translate={i18n.t} />'],
+    ['View.vue', '<template><Widget :translate="i18n.t" /></template>'],
+  ]) {
+    const component = path.join(root, 'src', name);
+    await writeFile(component, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/, name);
+    await rm(component);
+  }
+});
+
+test('template substitutions retain keys containing escaped line terminators', async t => {
+  const root = await fixture(t);
+  const ids = ['line\nbreak', 'line\rbreak', 'line\u2028break', 'line\u2029break'];
+  const data = [parseCatalog(JSON.stringify(Object.fromEntries(ids.map(id => [id, 'Hello']))), { locale: 'ko', namespace: 'demo' })];
+  await writeFile(path.join(root, 'src/main.ts'), 't(`demo:${suffix}`);');
+  assert.deepEqual(await findIncludedKeys(root, data, 'ko', { from: ['src'] }), ids.map(id => `demo:${id}`).sort());
+});
+
+test('SFC comment removal never erases script code and rejects ambiguous template markers', async t => {
+  const root = await fixture(t);
+  for (const extension of ['vue', 'svelte']) {
+    const file = path.join(root, 'src', `View.${extension}`);
+    await writeFile(file, '<script>const opening = "<!--"; t(key); const closing = "-->";</script>');
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/, extension);
+    await writeFile(file, '<!-- <script>t(key);</script> --><script>const title = "demo:title";</script>');
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), ['demo:title']);
+    await writeFile(file, '<script SRC="./external.ts"></script>');
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /External SFC/, extension);
+    await writeFile(file, extension === 'vue'
+      ? `<template><p>{{ '<!--' + t(key) + '-->' }}</p></template>`
+      : `<p>{'<!--' + t(key) + '-->'}</p>`);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /explicit includeKeys/, extension);
+    await writeFile(file, extension === 'vue'
+      ? `<template><p :title="'<!--' + t(key) + '-->'"></p></template>`
+      : `<p title={'<!--' + t(key) + '-->'}></p>`);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /explicit includeKeys/, extension);
+    await rm(file);
+  }
+});
+
 test('real automatic production builds prune unused messages and preserve translation, fallback, types and dynamic overrides', async t => {
   const root = await fixture(t);
   for (const locale of ['ko', 'en']) {
@@ -142,6 +221,49 @@ test('exported named aliases are followed and escaping translator references req
     await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/);
     assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'], dynamicKeys: ['demo:one'] }), ['demo:one']);
   }
+});
+
+test('namespace imports retain exported translator aliases without treating unrelated object methods as translators', async t => {
+  const root = await fixture(t), file = path.join(root, 'src/main.ts');
+  await writeFile(path.join(root, 'src/translators.ts'), 'const translate = i18n.t; export { translate as message };');
+  for (const source of [
+    "import * as messages from './translators'; messages.message(key);",
+    "messages.message(key); import * as messages from './translators';",
+    "import * as messages from './translators'; const { message: msg } = messages; msg(key);",
+    "import * as messages from './translators'; const msg = messages.message; msg(key);",
+    "import * as messages from './translators'; messages.message.bind(messages)(key);",
+    "import * as messages from './translators'; const alias = messages; alias.message(key);",
+    "import * as messages from './translators'; const first = messages; const alias = first; alias.message(key);",
+    "import * as messages from './translators'; const alias = messages; const { message: msg } = alias; msg(key);",
+    "import * as messages from './translators'; passToConsumer(messages);",
+    "import * as messages from './translators'; export const forwarded = messages;",
+    "import * as messages from './translators'; const copy = { ...messages }; copy.message(key);",
+    "import * as messages from './translators'; const { ...copy } = messages; copy.message(key);",
+    "import * as messages from './translators'; const { [member]: msg } = messages; msg(key);",
+    "import * as messages from './translators'; messages[member](key);",
+  ]) {
+    await writeFile(file, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/, source);
+  }
+  await writeFile(file, "import * as messages from './translators'; const { message: msg } = messages; msg(`demo:${suffix}`);");
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), Object.keys(messages).map(key => `demo:${key}`).sort());
+  await writeFile(file, 'const logger = getLogger(); logger.message(key);');
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), []);
+});
+
+test('namespace tracking follows scanned module exports without classifying unrelated namespaces as translators', async t => {
+  const root = await fixture(t), file = path.join(root, 'src/main.ts');
+  await writeFile(path.join(root, 'src/translators.ts'), 'const translate = i18n.t; export { translate as message };');
+  await writeFile(path.join(root, 'src/helpers.ts'), 'const message = (key: string) => key; export { message };');
+  await writeFile(file, `import * as React from 'react'; import * as helpers from './helpers';
+    const copy = { ...React }; passToConsumer(React); const { ...rest } = React;
+    const local = { ...helpers }; helpers.message(key);`);
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), []);
+  await writeFile(path.join(root, 'src/bridge.ts'), `import { message as msg } from './translators.js'; export { msg as text };`);
+  await writeFile(file, `import * as messages from './bridge'; messages.text(key);`);
+  await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/);
+  await writeFile(file, `import * as messages from './bridge'; messages.text(\`demo:\${suffix}\`);`);
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), Object.keys(messages).map(key => `demo:${key}`).sort());
 });
 
 test('Vite watch rebuilds reanalyze edited source keys and fresh catalog contents', { timeout: 20000 }, async t => {

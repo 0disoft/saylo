@@ -71,6 +71,12 @@ saylo({
 
 `from`은 Vite root 기준 파일·디렉터리다. 디렉터리는 재귀 스캔하고, `.js`·`.ts`·`.jsx`·`.tsx`·`.vue`·`.svelte` 소스를 Babel로 정적 분석한다. 실행은 하지 않으며 `<script>`와 template 표현식의 `t`·`tParts` 호출, 가져온 별칭, 구조 분해 별칭, template prefix/suffix에 가능한 전체 키를 보존한다. 일치하는 문자열은 여분 키를 남겨도 제거하지 않는다. 해결할 수 없는 동적 호출은 `dynamicKeys`가 없으면 빌드를 실패시킨다. symlink, Vite root 밖 경로, 파싱 오류도 거부한다. 외부 `src`를 쓰는 Vue script/template는 자동 분석을 거부하므로 수동 키 목록을 사용한다.
 
+타입 단언·non-null·`satisfies`로 감싼 번역 함수, 직접 호출하는 `bind` 결과, `call`·`apply`, 함수 인자와 중첩 구조 분해의 `t`·`tParts`도 추적한다. `import * as messages`의 직접 멤버 접근과 구조 분해는 분석 범위에 포함된 named export 별칭을 따른다. 번역 함수를 컴포넌트 prop·생성자 인자·default export로 넘기거나 조건·기본값으로 선택하면 `dynamicKeys`로 필요한 키를 명시해야 한다.
+
+`from`에는 번역기를 정의하고 다시 내보내는 파일까지 포함한다. namespace 객체의 단순 변수 별칭과 분석 범위 안의 상대 경로 named export를 연결한다. 번역 export가 확인된 namespace 객체의 복제·외부 전달·rest 구조 분해는 `dynamicKeys` 또는 수동 `includeKeys` 목록이 필요하다. 번역과 무관한 외부 패키지 namespace나 일반 함수만 내보내는 모듈에는 이 제한을 적용하지 않는다. `from` 밖의 모듈을 자동으로 읽지 않으며, Vite 경로 별칭·외부 패키지의 사용자 정의 번역 export는 자동으로 해석하지 않는다. 이런 경로는 명시적 키 목록을 사용한다.
+
+Vue·Svelte의 실제 HTML 주석과 `<script>` 본문은 구분해서 읽는다. 템플릿 표현식이나 속성 안에 `<!--` 같은 주석 표식 또는 script 표식이 들어 있으면 임의로 지우지 않고 자동 분석을 중단한다. 이 구문을 사용한 파일은 수동 `includeKeys` 목록으로 처리한다.
+
 개발 서버와 hot 갱신은 이 목록으로 거르지 않는다. production eager `virtual:saylo`, lazy boot·chunk, `virtual:saylo/server`(SSR)가 같은 선택을 쓴다. `typegen`이 만드는 `generated.d.ts`는 원본 base schema 전체를 유지한다. 키 분석용 Babel parser는 dev plugin의 Node 쪽 의존성이며 브라우저 번들에 싣지 않는다.
 
 `[]`는 로케일·namespace 목록과 missing 메타데이터를 유지한 채 메시지를 0개로 만든다. 목록은 plugin 생성 시 복사·동결한다. 깨진 번역이나 `requireCompleteTranslations` 실패는 pruning보다 먼저 검사해 숨길 수 없다. 동적으로 정해지는 키는 `dynamicKeys`에 넣거나 옵션을 비운다. 자동 tree-shaking이나 성능 이득을 보장하지는 않는다.
