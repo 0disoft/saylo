@@ -80,6 +80,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   const observeState = (state: DevSyncState) => {
     syncState = state;
     for (const listener of [...syncListeners]) {
+      if (syncState !== state) break; // A reentrant observer already moved the source to a newer state.
       if (disposed || !syncListeners.has(listener)) continue;
       try { listener(state); } catch (error) { try { report(error, 'observer'); } catch { /* observer errors do not block other listeners */ } }
     }
@@ -190,8 +191,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   }
   function stop() {
     try { sendScope(true); } catch { /* Vite owns the socket; stopping never waits for it. */ }
-    if (sync) sync.stop();
-    else observeState(Object.freeze({ status: 'stopped', attempt: 0, maxAttempts: DEV_HANDSHAKE_MAX_ATTEMPTS }));
+    const previous = sync;
     sync = undefined; ready = false; generation++;
     hot!.off(MANIFEST_EVENT, receiveManifest);
     hot!.off(CATALOG_EVENT, receiveCatalog);
@@ -199,6 +199,9 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     hot!.off(DIAGNOSTIC_EVENT, receiveDiagnostic);
     hot!.off('vite:ws:disconnect', disconnect);
     hot!.off('vite:ws:connect', reconnect);
+    // A stopped observer may reconnect synchronously; finish the old transport cleanup before notifying it.
+    if (previous) previous.stop();
+    else observeState(Object.freeze({ status: 'stopped', attempt: 0, maxAttempts: DEV_HANDSHAKE_MAX_ATTEMPTS }));
   }
   function maybeStop() { if (!refs && !pending.size) stop(); }
   const source: DevCatalogSource = Object.freeze({

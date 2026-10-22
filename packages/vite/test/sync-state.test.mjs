@@ -67,6 +67,53 @@ test('lazy catalog timeout is normalized, abort cleans timers, and late replies 
   stop();
 });
 
+test('lazy stopped observers can reconnect after final release and one-shot catalog completion', async t => {
+  for (const trigger of ['release', 'catalog']) await t.test(trigger, async t => {
+    const english = parseCatalog('{"hello":"English"}', { locale: 'en', namespace: 'demo' });
+    const registry = new CatalogRegistry('reentrant-stop', 'ko', [catalog('initial'), english]);
+    const hot = new EventEmitter(), clock = scheduler(), requests = [];
+    hot.dispose = hot.prune = () => {};
+    let identity = 0;
+    hot.send = (event, request) => {
+      requests.push(event);
+      if (event === MANIFEST_REQUEST_EVENT) hot.emit(MANIFEST_EVENT, { kind: 'snapshot', request, manifest: registry.manifest() });
+      else {
+        assert.equal(event, CATALOG_REQUEST_EVENT);
+        hot.emit(CATALOG_EVENT, { request, result: registry.load(request.locale, request.namespace) });
+      }
+    };
+    const source = createDevCatalogSource(registry.manifest(), [registry.load('ko', 'demo')], { hot,
+      runtime: { schedule: clock.schedule, createId: () => `reentrant-${++identity}` } });
+    t.after(() => source.dispose());
+    let reconnectOnce = true, releaseReconnected;
+    source.subscribeSyncState(state => {
+      if (state.status === 'stopped' && reconnectOnce) {
+        reconnectOnce = false;
+        releaseReconnected = source.connect();
+      }
+    });
+    const observed = [];
+    source.subscribeSyncState(state => observed.push(state.status));
+    if (trigger === 'release') source.connect()();
+    else assert.equal((await source.loadCatalog('en', 'demo')).status, 'present');
+    assert.equal(typeof releaseReconnected, 'function');
+    assert.equal(source.getSyncState().status, 'connected');
+    assert.equal(observed.at(-1), 'connected', 'An old stop notification cannot follow the new connection.');
+    assert.equal(requests.filter(event => event === MANIFEST_REQUEST_EVENT).length, 2);
+    assert.equal(hot.listenerCount(MANIFEST_EVENT), 1);
+    assert.equal(hot.listenerCount(CATALOG_EVENT), 1);
+    const baseRevision = registry.manifest().registryRevision;
+    registry.replace([catalog('after reconnect'), english]);
+    hot.emit(MANIFEST_EVENT, { kind: 'update', baseRevision, manifest: registry.manifest() });
+    assert.equal((await source.loadCatalog('ko', 'demo')).catalog.messages.hello.source, 'after reconnect');
+    releaseReconnected(); releaseReconnected();
+    assert.equal(source.getSyncState().status, 'stopped');
+    assert.equal(hot.listenerCount(MANIFEST_EVENT), 0);
+    assert.equal(hot.listenerCount(CATALOG_EVENT), 0);
+    assert.equal(clock.size, 0);
+  });
+});
+
 test('eager timeouts expose attempts and final failure, then reconnect recovers without stale state events', { timeout: 2000 }, async t => {
   const { hot, store, requests, reply } = fixture(t);
   const states = [];
