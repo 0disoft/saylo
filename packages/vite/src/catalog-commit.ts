@@ -26,11 +26,13 @@ export function planPushReplacements(next: CatalogManifest, cache: ReadonlyMap<s
 /** Keep one stale present baseline per available pair for request-scoped deltas. */
 export function planCacheRemovals(manifest: CatalogManifest, cache: ReadonlyMap<string, CatalogOutcome>, push: boolean): string[] {
   const metadata = catalogMetadata(manifest);
+  const namespaces = push ? new Set(manifest.availableNamespaces) : undefined;
+  const locales = push ? new Set(manifest.availableLocales) : undefined;
   const removals: string[] = [];
   for (const [key, result] of cache) {
     if (result.sessionId !== manifest.sessionId ||
         (metadata.get(key)?.status !== 'present' && (!push || result.status === 'present')) ||
-        (push && (!manifest.availableNamespaces.includes(result.key.namespace) || !manifest.availableLocales.includes(result.key.locale)))) removals.push(key);
+        (push && (!namespaces!.has(result.key.namespace) || !locales!.has(result.key.locale)))) removals.push(key);
   }
   return removals;
 }

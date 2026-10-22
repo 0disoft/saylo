@@ -4,7 +4,7 @@ import { CatalogLoader } from './catalog-loader.js';
 import { createI18n } from './i18n.js';
 import { CatalogLoadError } from './loading-errors.js';
 import { aborted, timeoutDuration } from './loading-runtime.js';
-import { canonicalLocale, readManifest, scopeKeys } from './loading-registry.js';
+import { canonicalLocale, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import type { CatalogSource, CatalogSchedule, I18n } from './loading-types.js';
 import type { Schema } from './types.js';
 
@@ -26,8 +26,8 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   for (let attempt = 0; attempt < SSR_STABILITY_MAX_ATTEMPTS; attempt++) {
     const manifest = readManifest(options.catalogSource.readManifest());
-    if (!manifest.availableLocales.includes(locale) || new Set(options.initialNamespaces).size !== options.initialNamespaces.length ||
-        options.initialNamespaces.some(n => !manifest.availableNamespaces.includes(n))) throw new RangeError('SSR scope is outside the manifest.');
+    if (!manifestMembership(manifest).locales.has(locale) || new Set(options.initialNamespaces).size !== options.initialNamespaces.length ||
+        options.initialNamespaces.some(n => !manifestMembership(manifest).namespaces.has(n))) throw new RangeError('SSR scope is outside the manifest.');
     const loader = new CatalogLoader(options.catalogSource, () => manifest, timeoutMs, options.schedule);
     const abort = () => loader.stop(aborted(options.signal!));
     options.signal?.addEventListener('abort', abort, { once: true });

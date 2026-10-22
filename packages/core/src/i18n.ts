@@ -4,7 +4,7 @@ import { createBootSnapshot, validateBootSnapshot } from './boot.js';
 import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
 import { aborted, nextRevision, timeoutDuration } from './loading-runtime.js';
-import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, readManifest, scopeKeys } from './loading-registry.js';
+import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import type { CatalogOutcome, CreateI18nOptions, I18n, I18nRequestOptions } from './loading-types.js';
 import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
@@ -28,13 +28,13 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   if (decoded && timeZone !== decoded.timeZone) throw new CatalogLoadError('INVALID_BOOT', 'Configured timeZone differs from the SSR boot snapshot.');
   const timeoutMs = timeoutDuration(options.requestTimeoutMs);
   let desiredLocale = canonicalLocale(decoded?.locale ?? options.locale!);
-  if (!manifest.availableLocales.includes(desiredLocale)) throw new RangeError('Initial locale is outside the manifest.');
+  if (!manifestMembership(manifest).locales.has(desiredLocale)) throw new RangeError('Initial locale is outside the manifest.');
   const initialNamespaces = decoded?.loadedNamespaces ?? options.initialNamespaces!;
   let desiredNamespaces = new Set(initialNamespaces);
   if (desiredNamespaces.size !== initialNamespaces.length) throw new RangeError('Duplicate initial namespace.');
   for (const namespace of desiredNamespaces) {
     assertNamespace(namespace);
-    if (!manifest.availableNamespaces.includes(namespace)) throw new RangeError('Initial namespace is outside the manifest.');
+    if (!manifestMembership(manifest).namespaces.has(namespace)) throw new RangeError('Initial namespace is outside the manifest.');
   }
   const initialKeys = scopeKeys(manifest, desiredLocale, [...desiredNamespaces].sort());
   const initialKeyIndex = new Map(initialKeys.map(key => [keyId(key), key]));
@@ -68,8 +68,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     for (const waiter of waiters) if (predicate(waiter)) { waiters.delete(waiter); waiter.reject(reason(waiter)); }
   }
   function rollbackDesired() {
-    desiredLocale = manifest.availableLocales.includes(current.locale) ? current.locale : baseLocale;
-    desiredNamespaces = new Set(current.loadedNamespaces.filter(n => manifest.availableNamespaces.includes(n)));
+    desiredLocale = manifestMembership(manifest).locales.has(current.locale) ? current.locale : baseLocale;
+    desiredNamespaces = new Set(current.loadedNamespaces.filter(n => manifestMembership(manifest).namespaces.has(n)));
     generation++;
   }
   function fail(error: unknown) {
@@ -99,19 +99,20 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     manifest = next;
     generation++;
     loader.invalidate();
-    rejectWhere(w => w.kind === 'locale' && !manifest.availableLocales.includes(w.value),
+    rejectWhere(w => w.kind === 'locale' && !manifestMembership(manifest).locales.has(w.value),
       () => new CatalogLoadError('LOCALE_REMOVED', 'Requested locale was removed from the manifest.'));
-    rejectWhere(w => w.kind === 'namespace' && !manifest.availableNamespaces.includes(w.value),
+    rejectWhere(w => w.kind === 'namespace' && !manifestMembership(manifest).namespaces.has(w.value),
       () => new CatalogLoadError('NAMESPACE_REMOVED', 'Requested namespace was removed from the manifest.'));
-    if (!manifest.availableLocales.includes(desiredLocale)) desiredLocale = baseLocale;
-    desiredNamespaces = new Set([...desiredNamespaces].filter(n => manifest.availableNamespaces.includes(n)));
+    if (!manifestMembership(manifest).locales.has(desiredLocale)) desiredLocale = baseLocale;
+    desiredNamespaces = new Set([...desiredNamespaces].filter(n => manifestMembership(manifest).namespaces.has(n)));
     schedule();
     return true;
   }
 
   function publish(snapshot: StoreSnapshot<S>, nextSignature: string) {
+    const loaded = new Set(snapshot.loadedNamespaces);
     const ready = [...waiters].filter(w => w.kind === 'refresh' ||
-      (w.kind === 'locale' ? w.value === snapshot.locale : snapshot.loadedNamespaces.includes(w.value)));
+      (w.kind === 'locale' ? w.value === snapshot.locale : loaded.has(w.value)));
     // These intents have committed, so reentrant selections cannot cancel them.
     for (const waiter of ready) { waiters.delete(waiter); waiter.cleanup(); }
     const errors: unknown[] = [];
@@ -193,7 +194,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     },
     setLocale(locale: string, requestOptions: I18nRequestOptions = {}) { return call(() => {
       const next = canonicalLocale(locale);
-      if (!manifest.availableLocales.includes(next)) throw new RangeError('Locale is outside the manifest.');
+      if (!manifestMembership(manifest).locales.has(next)) throw new RangeError('Locale is outside the manifest.');
       if (desiredLocale !== next) {
         desiredLocale = next;
         rejectWhere(w => w.kind === 'locale' && w.value !== next, w => new SupersededRequestError(w.value));
@@ -204,7 +205,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     }, requestOptions.signal); },
     loadNamespace(namespace: string, requestOptions: I18nRequestOptions = {}) { return call(() => {
       assertNamespace(namespace);
-      if (!manifest.availableNamespaces.includes(namespace)) throw new RangeError('Namespace is outside the manifest.');
+      if (!manifestMembership(manifest).namespaces.has(namespace)) throw new RangeError('Namespace is outside the manifest.');
       if (!desiredNamespaces.has(namespace)) { desiredNamespaces.add(namespace); generation++; }
       staleRetries = 0;
       return request('namespace', namespace, requestOptions.signal);

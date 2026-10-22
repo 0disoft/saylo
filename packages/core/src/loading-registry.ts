@@ -23,8 +23,13 @@ export const keyId = (key: CatalogKey) => JSON.stringify([key.locale, key.namesp
 export const stamp = (sessionId: string, metadata: CatalogMetadata) => JSON.stringify([sessionId, metadata.key,
   metadata.status, metadata.catalogVersion, metadata.status === 'present' ? metadata.namespaceSchemaFingerprint : null]);
 const indexes = new WeakMap<CatalogManifest, ReadonlyMap<string, CatalogMetadata>>();
+const scopes = new WeakMap<CatalogManifest, { locales: ReadonlySet<string>; namespaces: ReadonlySet<string> }>();
+
+export function manifestMembership(manifest: CatalogManifest) { return scopes.get(manifest)!; }
 
 export function readManifest(input: CatalogManifest): CatalogManifest {
+  // Only manifests validated and frozen here can reuse their indexes.
+  if (indexes.has(input)) return input;
   if (!input || !input.sessionId || typeof input.sessionId !== 'string' ||
       !Number.isSafeInteger(input.registryRevision) || input.registryRevision < 0 ||
       !Array.isArray(input.availableLocales) || !Array.isArray(input.availableNamespaces) || !Array.isArray(input.catalogs))
@@ -70,6 +75,7 @@ export function readManifest(input: CatalogManifest): CatalogManifest {
   const manifest = freeze({ sessionId: input.sessionId, registryRevision: input.registryRevision, baseLocale,
     availableLocales: locales.sort(), availableNamespaces: namespaces.sort(), catalogs });
   indexes.set(manifest, index);
+  scopes.set(manifest, { locales: localeSet, namespaces: namespaceSet });
   return manifest;
 }
 
@@ -124,13 +130,15 @@ export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest
   // Schema compatibility is checked atomically by the translator, after all pairs finish.
   const bound = bases.length ? createBoundTranslator<S>({ locale, timeZone, baseCatalogs: bases,
     translations: locale === manifest.baseLocale ? [] : catalogs.filter(c => c.locale === locale) }, formatter) : undefined;
+  const available = manifestMembership(manifest).namespaces;
+  const loaded = new Set(namespaces);
   const render = (key: string, args?: Record<string, unknown>, rich = false) => {
     if (typeof key !== 'string') throw new UnknownMessageError(String(key));
     const separator = key.indexOf(':');
     if (separator <= 0 || separator === key.length - 1 || key.indexOf(':', separator + 1) !== -1) throw new UnknownMessageError(key);
     const namespace = key.slice(0, separator);
-    if (!manifest.availableNamespaces.includes(namespace)) throw new UnknownMessageError(key);
-    if (!namespaces.includes(namespace)) throw new NamespaceNotLoadedError(namespace, key);
+    if (!available.has(namespace)) throw new UnknownMessageError(key);
+    if (!loaded.has(namespace)) throw new NamespaceNotLoadedError(namespace, key);
     return rich ? (bound!.tParts as TranslateParts<Schema>)(key, args) : (bound!.t as Translate<Schema>)(key, args);
   };
   const translate = (key: string, args?: Record<string, unknown>) => render(key, args);
