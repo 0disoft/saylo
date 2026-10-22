@@ -1,0 +1,11 @@
+{
+  "format": "saylo-project/v1",
+  "localesDir": "locales",
+  "baseLocale": "ko",
+  "checkLocales": ["en"],
+  "richText": {
+    "demo": {
+      "rich": ["strong", "link"]
+    }
+  }
+}

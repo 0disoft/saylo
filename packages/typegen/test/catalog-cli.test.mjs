@@ -69,7 +69,8 @@ test('check respects canonical physical directory names, empty translations and 
 test('usage, config and filesystem errors return a JSON failure, never a clean audit', async t => {
   const f = await fixture(t);
   for (const args of [['check', '--unknown', '--json'], ['check', '--config', 'missing.json', '--json'],
-    ['check', '--locales-dir', 'missing', '--json'], ['other', '--json']]) {
+    ['check', '--locales-dir', 'missing', '--json'], ['other', '--json'], ['check', '--config', '', '--json'],
+    ['check', '--locales-dir', '', '--json'], ['check', '--baseline', '', '--json']]) {
     const result = f.run(args);
     assert.equal(result.status, 2); assert.equal(result.stderr, '');
     assert.equal(JSON.parse(result.stdout).format, 'saylo-command-error/v1');
@@ -105,4 +106,106 @@ test('inspection rejects a locale junction or symlink outside the catalog root',
   const result = f.run(['check', '--json']);
   assert.equal(result.status, 2);
   assert.match(JSON.parse(result.stdout).error.message, /escapes locales root/);
+});
+
+test('sync previews untranslated additions, preserves orphans and never edits catalogs or declarations', async t => {
+  const f = await fixture(t, { checkLocales: ['en-US', 'fr'] });
+  await f.write('ko', 'common', { title: '기준', added: '추가', empty: '' });
+  await f.write('ko', 'help', { title: '도움말' });
+  await f.write('en-us', 'common', { title: 'Existing', empty: '', extra: 'keep me' });
+  await f.write('en-us', 'old', { legacy: 'keep namespace' });
+  await writeFile(path.join(f.root, 'generated.d.ts'), '// keep types');
+  const before = await f.snapshot();
+  const result = f.run(['sync', '--dry-run', '--json']);
+  assert.equal(result.status, 1); // Schema errors mark the preview blocked; the plan remains inspectable.
+  const plan = JSON.parse(result.stdout);
+  assert.equal(plan.format, 'saylo-sync-plan/v1'); assert.equal(plan.dryRun, true); assert.equal(plan.blocked, true);
+  assert.equal(plan.report.reviewTracking, 'not-configured');
+  const addition = plan.changes.find(change => change.locale === 'en-US' && change.id === 'added');
+  assert.equal(addition.sourceName, 'en-us/common.json');
+  assert.equal(addition.translation, null); assert.equal(addition.baseSource, '추가');
+  assert.ok(plan.changes.some(change => change.action === 'retain' && change.translation === 'keep me'));
+  assert.ok(plan.changes.some(change => change.action === 'retain' && change.translation === 'keep namespace'));
+  assert.ok(plan.changes.some(change => change.locale === 'fr' && change.sourceName === 'fr/help.json' && change.action === 'add'));
+  assert.ok(!plan.changes.some(change => change.locale === 'en-US' && change.id === 'empty'));
+  assert.deepEqual(await f.snapshot(), before);
+  assert.equal(f.run(['sync', '--dry-run', '--json']).stdout, result.stdout);
+});
+
+test('source checkpoints detect changed and added sources without treating a snapshot as translation approval', async t => {
+  const f = await fixture(t, { checkLocales: ['en'] });
+  await f.write('ko', 'common', { title: 'old' });
+  await f.write('en', 'common', { title: 'English' });
+  const saved = f.run(['snapshot']);
+  assert.equal(saved.status, 0, saved.stdout + saved.stderr);
+  const baseline = JSON.parse(saved.stdout);
+  assert.equal(baseline.format, 'saylo-review-baseline/v1');
+  assert.match(baseline.messages['common:title'], /^[a-f0-9]{64}$/);
+  await writeFile(path.join(f.root, 'review.json'), saved.stdout);
+  assert.equal(f.run(['check', '--baseline', 'review.json', '--json']).status, 0);
+  await f.write('ko', 'common', { title: 'new', imported: 'new base', missing: 'needs translation' });
+  await f.write('en', 'common', { title: 'English', imported: 'already imported' });
+  const before = await f.snapshot();
+  const checked = f.run(['check', '--baseline', 'review.json', '--json']);
+  assert.equal(checked.status, 1);
+  const report = JSON.parse(checked.stdout);
+  assert.equal(report.reviewTracking, 'baseline');
+  assert.ok(report.diagnostics.some(issue => issue.id === 'title' && issue.code === 'SOURCE_CHANGED'));
+  assert.ok(report.diagnostics.some(issue => issue.id === 'imported' && issue.code === 'SOURCE_ADDED'));
+  const result = f.run(['sync', '--dry-run', '--baseline', 'review.json', '--json']);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  const plan = JSON.parse(result.stdout);
+  assert.equal(plan.blocked, false);
+  assert.equal(plan.changes.filter(change => change.action === 'review').length, 2);
+  assert.equal(plan.changes.filter(change => change.action === 'add').length, 1);
+  assert.deepEqual(await f.snapshot(), before);
+});
+
+test('review hashing ignores source positions and policy ordering but catches rich-contract-only changes', async t => {
+  const f = await fixture(t, { richText: { common: { title: ['link', 'strong'] } } });
+  await f.write('ko', 'common', { title: '<link>약관</link>', other: '다른 문구' });
+  await f.write('en', 'common', { title: '<link>Terms</link>', other: 'Other' });
+  const snapshot = f.run(['snapshot']); assert.equal(snapshot.status, 0);
+  await writeFile(path.join(f.root, 'review.json'), snapshot.stdout);
+  await f.write('ko', 'common', '{\n "other": "다른 문구",\n "title": "<link>약관</link>"\n}');
+  assert.equal(f.run(['check', '--baseline', 'review.json', '--json']).status, 0);
+  f.config.richText.common.title = ['strong', 'link'];
+  f.config.baseline = 'review.json';
+  await writeFile(path.join(f.root, 'saylo.config.json'), JSON.stringify(f.config));
+  assert.equal(f.run(['check', '--json']).status, 0);
+  f.config.richText.common.title.push('em');
+  await writeFile(path.join(f.root, 'saylo.config.json'), JSON.stringify(f.config));
+  const changed = f.run(['check', '--json']);
+  assert.equal(changed.status, 1);
+  assert.deepEqual(JSON.parse(changed.stdout).diagnostics.map(issue => issue.code), ['SOURCE_CHANGED']);
+});
+
+test('invalid catalogs block snapshots and sync never proposes replacement for a broken file', async t => {
+  const f = await fixture(t, { checkLocales: ['en'] });
+  await f.write('ko', 'common', { title: '기준' });
+  await f.write('en', 'common', '{');
+  const before = await f.snapshot();
+  const result = f.run(['sync', '--dry-run', '--json']);
+  assert.equal(result.status, 1);
+  assert.equal(JSON.parse(result.stdout).blocked, true);
+  assert.deepEqual(JSON.parse(result.stdout).changes, []);
+  const saved = f.run(['snapshot']);
+  assert.equal(saved.status, 1);
+  assert.equal(JSON.parse(saved.stdout).format, 'saylo-check/v1');
+  assert.deepEqual(await f.snapshot(), before);
+});
+
+test('sync requires dry-run and baseline input errors never pass silently', async t => {
+  const f = await fixture(t);
+  await f.write('ko', 'common', { title: '기준' });
+  for (const args of [['sync', '--json'], ['sync', '--apply', '--json'], ['check', '--dry-run', '--json'],
+    ['check', '--baseline', 'missing.json', '--json'], ['snapshot', '--baseline', 'review.json', '--json']])
+    assert.equal(f.run(args).status, 2);
+  const file = path.join(f.root, 'review.json');
+  for (const baseline of [{}, { format: 'saylo-review-baseline/v1', baseLocale: 'en', messages: {} },
+    { format: 'saylo-review-baseline/v1', baseLocale: 'ko', messages: { 'common:title': 'bad hash' } }]) {
+    await writeFile(file, JSON.stringify(baseline));
+    const result = f.run(['check', '--baseline', 'review.json', '--json']);
+    assert.equal(result.status, 2); assert.equal(JSON.parse(result.stdout).format, 'saylo-command-error/v1');
+  }
 });

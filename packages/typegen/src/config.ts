@@ -92,15 +92,16 @@ export function resolveProjectConfig(input: unknown, directory = process.cwd()):
 
 /** Synchronous for use directly inside vite.config; never imports or executes config code. */
 export function loadProjectConfig(filename: string): SayloProjectConfig {
-  const file = path.resolve(filename);
+  const file = path.resolve(string(filename, 'config path'));
   let input: unknown;
   try { input = JSON.parse(readFileSync(file, 'utf8').replace(/^\uFEFF/, '')); }
-  catch (cause) { throw new Error(`Unable to read Saylo JSON config: ${file}`, { cause }); }
+  catch (cause) { throw new Error(`Unable to read Saylo JSON config: ${file}: ${cause instanceof Error ? cause.message : String(cause)}`, { cause }); }
   return resolveProjectConfig(input, path.dirname(file));
 }
 
 /** Catch misspelled policy declarations before generation or production projection. */
 export function assertRichTextKeys(catalogs: readonly ParsedCatalog[], baseLocale: string, richText?: RichTextPolicies): void {
+  if (richText === undefined) return;
   const bases = new Map(catalogs.filter(catalog => catalog.locale === baseLocale).map(catalog => [catalog.namespace, catalog]));
   for (const [name, messages] of Object.entries(richText ?? {})) {
     const base = bases.get(name);

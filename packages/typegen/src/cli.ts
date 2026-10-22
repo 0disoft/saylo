@@ -32,7 +32,7 @@ try {
   } });
   if (values.help) console.log(help);
   else {
-    const config = values.config ? loadProjectConfig(values.config) : undefined;
+    const config = values.config === undefined ? undefined : loadProjectConfig(values.config);
     const localesDir = values['locales-dir'] ?? config?.localesDir;
     const configuredBase = values['base-locale'] ?? config?.baseLocale;
     const outFile = values['out-file'] ?? config?.typegen?.outFile;

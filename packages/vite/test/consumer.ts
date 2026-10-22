@@ -1,4 +1,4 @@
-import saylo from '@0disoft/saylo-vite';
+import saylo, { loadProjectConfig } from '@0disoft/saylo-vite';
 import { connectDev, createStaticCatalogSource, createSupportReport, createSupportRecorder } from '@0disoft/saylo-vite/client';
 import type { DevSyncState } from '@0disoft/saylo-vite/client';
 import { createI18n, createStore } from '@0disoft/saylo-core';
@@ -8,6 +8,7 @@ import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:sa
 saylo({ localesDir: './locales', baseLocale: 'ko', astRuntime: true, requireCompleteTranslations: true, typegen: { outFile: 'generated.d.ts' } });
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: ['demo:hello'] as const });
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: [] });
+saylo(loadProjectConfig('saylo.config.json'));
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: { from: ['src'], dynamicKeys: ['demo:hello'] } });
 // @ts-expect-error automatic analysis requires source paths
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: { dynamicKeys: ['demo:hello'] } });

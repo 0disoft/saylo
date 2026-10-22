@@ -12,6 +12,7 @@ export interface CatalogCheckReport {
   readonly format: 'saylo-check/v1';
   readonly baseLocale: string;
   readonly locales: readonly string[];
+  readonly reviewTracking: 'not-configured' | 'baseline';
   readonly summary: { readonly errors: number; readonly warnings: number };
   readonly diagnostics: readonly CatalogIssue[];
 }
@@ -22,7 +23,7 @@ export function reportIssues(baseLocale: string, locales: readonly string[], dia
     const right = JSON.stringify([b.sourceName, b.id ?? '', b.code, b.argument ?? '']);
     return left < right ? -1 : left > right ? 1 : 0;
   });
-  return { format: 'saylo-check/v1', baseLocale, locales,
+  return { format: 'saylo-check/v1', baseLocale, locales, reviewTracking: 'not-configured',
     summary: { errors: issues.filter(issue => issue.severity === 'error').length,
       warnings: issues.filter(issue => issue.severity === 'warning').length }, diagnostics: issues };
 }

@@ -33,6 +33,19 @@ Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `
 
 ## 설정
 
+현재 미게시 소스는 `loadProjectConfig()`로 CLI와 같은 JSON 설정을 읽는다. 파일 경로는 설정 파일 위치를 기준으로 해석하며 Vite root가 달라도 유지된다. 기준 언어·카탈로그 경로·rich 태그 정책을 한 파일에 두고 `saylo-typegen --config`와 `saylo check --config`에서도 사용할 수 있다. 공통 설정과 검수 비교 기록의 사용법은 [typegen 사용 안내](../typegen/README.md)에 있다.
+
+```js
+import { fileURLToPath } from 'node:url';
+import saylo, { loadProjectConfig } from '@0disoft/saylo-vite';
+
+const project = loadProjectConfig(fileURLToPath(new URL('./saylo.config.json', import.meta.url)));
+// vite.config의 plugins에 등록한다.
+const plugins = [saylo(project)];
+```
+
+기존 객체 설정도 그대로 지원한다.
+
 ```js
 // vite.config.mjs
 import { defineConfig } from 'vite';

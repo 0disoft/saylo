@@ -35,6 +35,52 @@ Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `
 
 ## 실행
 
+### 공통 설정과 카탈로그 점검 (미게시)
+
+현재 checkout의 `loadProjectConfig()`와 `saylo` 명령은 npm `alpha.4`에 없다. 기존 `saylo-typegen` 인자는 유지하며, 새 `--config` 옵션으로 Vite와 같은 JSON 설정을 읽을 수 있다. JSON 이외의 설정 코드는 실행하지 않는다.
+
+```json
+{
+  "format": "saylo-project/v1",
+  "localesDir": "locales",
+  "baseLocale": "ko",
+  "checkLocales": ["en", "fr"],
+  "typegen": { "outFile": "generated.d.ts" }
+}
+```
+
+위 내용을 `saylo.config.json`에 저장한다. 경로는 설정 파일의 디렉터리를 기준으로 해석한다. `richText`는 Vite와 같은 namespace → 메시지 ID → 허용 태그 목록이며, 선언한 키는 기준 카탈로그에 있어야 한다. `checkLocales`는 CLI의 완역 검사 대상이고 Vite의 로케일 목록을 추가하는 설정은 아니다. 생략하면 빈 디렉터리를 포함한 발견된 로케일을 검사한다. `initialLocale`도 검사 대상에 포함된다.
+
+미게시 tarball을 설치한 프로젝트에서는 다음 명령을 쓴다. `--no-install`은 다른 패키지를 내려받지 않고 설치된 실행 파일을 사용한다.
+
+```sh
+npx --no-install saylo-typegen --config saylo.config.json
+npx --no-install saylo check --config saylo.config.json --json
+npx --no-install saylo sync --config saylo.config.json --dry-run --json
+```
+
+저장소에서는 빌드 후 `node packages/typegen/dist/catalog-cli.js check --config examples/vanilla/saylo.config.json --json`으로 예제를 검사할 수 있다. 같은 설정을 vanilla 예제의 Vite 플러그인도 읽는다.
+
+`check`는 JSON·ICU·인자·rich 계약 오류, 기준에 없는 번역 키, 누락 namespace·메시지를 모아 보고한다. 명시된 완역 대상에 누락이 있으면 런타임에서 기준 언어로 폴백할 수 있어도 검사에서는 오류다. 빈 번역 문자열은 정상 번역으로 처리한다. 소스에서 실제 사용하지 않는 키를 추측해 삭제하지 않는다.
+
+`sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. 적용·삭제·자동 번역 기능은 없다. 모든 명령은 카탈로그·생성 타입·검수 기록을 직접 쓰지 않는다.
+
+원문 변경을 비교하려면 먼저 `snapshot`의 stdout을 파일로 저장한다. 검수 기록에는 메시지별 원문·rich 계약의 SHA-256만 담고 원문이나 번역 내용은 저장하지 않는다.
+
+```sh
+npx --no-install saylo snapshot --config saylo.config.json > saylo-baseline.json
+npx --no-install saylo check --config saylo.config.json --baseline saylo-baseline.json --json
+npx --no-install saylo sync --config saylo.config.json --baseline saylo-baseline.json --dry-run --json
+```
+
+`baseline` 경로를 공통 JSON에 넣어도 된다. 경로를 지정했는데 파일이 없거나 잘못됐으면 실패한다. `snapshot`은 기존 baseline을 읽지 않고 새 비교 기준을 stdout으로 출력한다. 기준 기록 생성은 번역 승인 처리가 아니며, 미완성 번역이 있어도 가능하지만 잘못된 카탈로그가 있으면 거부한다. `check`·`sync`는 기록을 갱신하지 않는다. 원문이나 허용 태그가 바뀌면 기존 번역을 `SOURCE_CHANGED`, 새 원문에 이미 번역이 있으면 `SOURCE_ADDED`로 표시한다. 기록이 없으면 `reviewTracking: "not-configured"`로 표시하고 원문 변경 여부를 추정하지 않는다. 직접 검수한 뒤 비교 기준을 갱신한다.
+
+기존 비교 기록을 갱신할 때는 stdout을 새 파일에 저장하고, 종료 코드 0과 내용을 확인한 뒤 교체한다. 기존 baseline에 바로 리다이렉트하면 명령이 실패해도 셸이 기존 파일을 먼저 덮어쓸 수 있다.
+
+종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. 사용법·설정·파일시스템 오류는 모두 2다. `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
+
+### 기존 인자로 타입 생성
+
 ```sh
 npx saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
 ```
@@ -72,6 +118,8 @@ Required options:
   --locales-dir <directory>  Directory containing locale/namespace.json catalogs.
   --base-locale <locale>     Base BCP 47 locale, for example ko or en-US.
   --out-file <file.d.ts>     Generated declaration file; must end in .d.ts.
+
+  --config <file.json>      Shared project settings; explicit flags override their paths relative to cwd.
 
   --help, -h                Show this help without reading or writing files.
 
