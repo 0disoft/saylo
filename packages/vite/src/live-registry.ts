@@ -10,7 +10,7 @@ import { quarantineTranslation } from './translation-quarantine.js';
 import { DiskRechecks, diskStamp } from './disk-rechecks.js';
 import type { DiskRecheckOperations } from './disk-rechecks.js';
 import { diagnosticMessage } from './diagnostic-observers.js';
-import { schedule } from './scheduling.js';
+import { schedule, timeoutDuration } from './scheduling.js';
 
 type Read = () => string | Promise<string>;
 
@@ -40,6 +40,7 @@ function acceptedChanged(previous: ReadonlyMap<string, CatalogFile>, active: rea
 }
 
 export interface LiveRegistryOperations extends DiskRecheckOperations {
+  readonly timeoutMs?: number;
   readonly now?: () => number;
   readonly read?: (file: string) => Promise<string>;
   readonly readCatalog?: typeof readCatalogFile;
@@ -70,6 +71,8 @@ export class LiveRegistry {
   // A verified metadata change needs an immediate read, not the add/unlink
   // quiet window. ENOENT during this read still takes the atomic-save retry.
   private rechecks: DiskRechecks;
+  private readonly lifetime = new AbortController();
+  private readonly timeoutMs: number;
 
   constructor(
     private root: string,
@@ -78,7 +81,10 @@ export class LiveRegistry {
     private publish: (files: readonly CatalogFile[], changed: boolean, diagnostic: LiveDiagnostic) => void,
     private operations: LiveRegistryOperations = {},
   ) {
-    this.rechecks = new DiskRechecks(file => { void this.enqueue(file, () => this.read(file)); }, operations);
+    this.timeoutMs = timeoutDuration(operations.timeoutMs ?? DEV_DISK_POLICY.operationTimeoutMs);
+    this.rechecks = new DiskRechecks(file => { void this.enqueue(file, () => this.read(file)); }, {
+      ...operations, stamp: file => this.bounded(`Catalog stamp: ${file}`, () => (operations.stamp ?? diskStamp)(file)),
+    });
     this.desired = new Map(files.map(f => [f.file, f]));
     this.accepted = new Map(this.desired);
     this.lastGoodTranslations = new Map(files.filter(f => f.catalog.locale !== baseLocale).map(f => [f.file, f]));
@@ -214,14 +220,17 @@ export class LiveRegistry {
       const location = catalogLocation(this.root, file)!;
       const previous = this.pendingParses.get(file) ?? candidate.get(file)?.catalog;
       this.pendingParses.delete(file);
+      let capturedStamp: string | undefined;
       try {
         // Read the final filesystem state, rather than trusting an earlier unlink/add label.
-        const changed = await (this.operations.readCatalog ?? readCatalogFile)(this.root, file, location.locale, location.namespace, async () => {
+        const changed = await this.bounded(`Catalog read: ${file}`, signal =>
+          (this.operations.readCatalog ?? readCatalogFile)(this.root, file, location.locale, location.namespace, async () => {
           // Capture before reading: a suppressed write during the read must
           // not be mistaken for the version represented by the old text.
-          stamps.set(file, await (this.operations.stamp ?? diskStamp)(file));
+          capturedStamp = await (this.operations.stamp ?? diskStamp)(file);
+          signal.throwIfAborted();
           return read ? read() : this.read(file);
-        }, previous);
+        }, previous));
         parsed.set(file, changed.catalog);
         candidate.set(file, changed);
         errors.delete(file);
@@ -232,6 +241,10 @@ export class LiveRegistry {
           if (read) settleMissing = true;
           else { candidate.delete(file); errors.delete(file); }
         } else errors.set(file, this.failure(error));
+      } finally {
+        // Parse failures still need disk rechecks for watcher-suppressed repairs.
+        // Late operations may update the local stamp, never the finished batch map.
+        if (capturedStamp !== undefined) stamps.set(file, capturedStamp);
       }
     }
     return { candidate, errors, parsed, settleMissing };
@@ -274,7 +287,13 @@ export class LiveRegistry {
     const files = [...candidate.values()];
     const bases = baseCatalogs(files, this.baseLocale);
     // Do not accept a ghost baseline if its unlink event is still in flight.
-    if (!(await Promise.all(bases.map(f => this.operations.isFile ? this.operations.isFile(f.file) : stat(f.file).then(s => s.isFile(), () => false)))).some(Boolean)) {
+    if (!(await this.bounded('Base catalog existence check', () => Promise.all(bases.map(async f => {
+      try { return this.operations.isFile ? await this.operations.isFile(f.file) : (await stat(f.file)).isFile(); }
+      catch (error) {
+        if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') return false;
+        throw error;
+      }
+    })))).some(Boolean)) {
       throw new Error('The base locale must retain at least one catalog on disk.');
     }
     const namespaces = new Set(bases.map(f => f.catalog.namespace));
@@ -308,6 +327,28 @@ export class LiveRegistry {
 
   private read(file: string) { return this.operations.read ? this.operations.read(file) : readFile(file, 'utf8'); }
 
+  private bounded<T>(label: string, operation: (signal: AbortSignal) => T | Promise<T>): Promise<T> {
+    const controller = new AbortController();
+    const parent = this.lifetime.signal;
+    return new Promise<T>((resolve, reject) => {
+      let finished = false;
+      let cancelTimer = () => {};
+      const finish = (failed: boolean, value: unknown) => {
+        if (finished) return;
+        finished = true;
+        cancelTimer(); parent.removeEventListener('abort', abort);
+        if (failed) { controller.abort(value); reject(value); } else resolve(value as T);
+      };
+      const abort = () => finish(true, parent.reason);
+      if (parent.aborted) { abort(); return; }
+      parent.addEventListener('abort', abort, { once: true });
+      cancelTimer = (this.operations.schedule ?? schedule)(this.timeoutMs,
+        () => finish(true, new Error(`${label} timed out after ${this.timeoutMs}ms.`, { cause: new Error('Disk operation deadline exceeded.') })));
+      void Promise.resolve().then(() => { controller.signal.throwIfAborted(); return operation(controller.signal); })
+        .then(value => finish(false, value), error => finish(true, error));
+    });
+  }
+
   private emit(files: readonly CatalogFile[], changed: boolean) {
     const pending = changed || this.publicationPending;
     this.errors.delete('<publication>');
@@ -322,6 +363,7 @@ export class LiveRegistry {
 
   stop() {
     this.stopped = true;
+    this.lifetime.abort(new Error('Live registry is stopped.'));
     this.rechecks.stop();
     this.timer?.();
     this.queued.clear();

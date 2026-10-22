@@ -3,6 +3,7 @@ export const MAX_TIMER_DURATION_MS = 2147483647;
 export const DEV_HANDSHAKE_MAX_ATTEMPTS = 3;
 
 export const DEV_DISK_POLICY = Object.freeze({
+  operationTimeoutMs: 5000,
   earlyRecheckMs: 10,
   middleRecheckMs: 30,
   trailingRecheckMs: 60,

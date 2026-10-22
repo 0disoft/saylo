@@ -6,7 +6,7 @@ import { LiveRegistry } from '../dist/live-registry.js';
 import { DiskRechecks } from '../dist/disk-rechecks.js';
 import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 
-function fixture(t, publish = () => {}) {
+function fixture(t, publish = () => {}, operations = {}) {
   const clock = scheduler();
   const root = path.resolve('virtual-locales');
   const file = path.join(root, 'ko', 'demo.json');
@@ -16,10 +16,57 @@ function fixture(t, publish = () => {}) {
   const registry = new LiveRegistry(root, [item(source)], 'ko', publish, { ...clock,
     read: async () => { reads++; return source; }, stamp: async () => 'stable', isFile: async () => true,
     readCatalog: async (_root, _file, _locale, _namespace, read) => item(await read()),
+    ...operations,
   });
   t.after(() => registry.stop());
   return { clock, file, registry, get reads() { return reads; }, write(text) { source = JSON.stringify({ title: text }); } };
 }
+
+const flush = async () => { for (let i = 0; i < 25; i++) await Promise.resolve(); };
+for (const stage of ['read', 'readCatalog', 'stamp', 'isFile']) {
+  test(`a stalled ${stage} is bounded, keeps accepted data, and a later save recovers`, async t => {
+    const deferred = Promise.withResolvers(), publications = [];
+    let hanging = true;
+    const fallback = {
+      read: async () => '{"title":"Recovered"}', stamp: async () => 'stable', isFile: async () => true,
+      readCatalog: async (_root, file, locale, namespace, read) => {
+        const source = await read(); return { file, source, catalog: parseCatalog(source, { locale, namespace }) };
+      },
+    };
+    const f = fixture(t, (files, changed) => publications.push([files[0].catalog.messages.title.source, changed]), {
+      timeoutMs: 100, [stage]: (...args) => hanging ? deferred.promise : fallback[stage](...args),
+    });
+    const first = f.registry.enqueue(f.file); f.clock.tick(40); await flush();
+    f.clock.tick(99); assert.equal(publications.length, 0);
+    f.clock.tick(1); await first;
+    assert.match(f.registry.diagnostic().message, /timed out/);
+    assert.deepEqual(publications.at(-1), ['Before', false]);
+    hanging = false;
+    const second = f.registry.enqueue(f.file); f.clock.tick(40); await second;
+    assert.equal(f.registry.diagnostic().message, '');
+    deferred.reject(new Error('late failure')); await flush();
+    assert.equal(f.registry.diagnostic().message, '');
+    assert.equal(publications.length, 2);
+    f.registry.stop(); assert.equal(f.clock.size, 0);
+  });
+}
+
+test('baseline ENOENT means absent, while I/O failures retain their diagnostic and recover', async t => {
+  let code = 'EIO';
+  const f = fixture(t, () => {}, { isFile: async () => {
+    if (code) throw Object.assign(new Error(`baseline ${code}`), { code }); return true;
+  } });
+  const save = async () => { const job = f.registry.enqueue(f.file, () => '{"title":"After"}'); f.clock.tick(0); await job; };
+  await save(); assert.match(f.registry.diagnostic().message, /baseline EIO/);
+  code = 'ENOENT'; await save(); assert.match(f.registry.diagnostic().message, /retain at least one catalog/);
+  code = undefined; await save(); assert.equal(f.registry.diagnostic().message, '');
+});
+
+test('stop releases a hung read waiter and its deadline', async t => {
+  const f = fixture(t, () => assert.fail('publication after stop'), { read: () => new Promise(() => {}) });
+  const job = f.registry.enqueue(f.file); f.clock.tick(40); await flush();
+  f.registry.stop(); await job; assert.equal(f.clock.size, 0);
+});
 
 test('failed publication cannot poison later saves and identical saves retry publication', async t => {
   let failing = true;
