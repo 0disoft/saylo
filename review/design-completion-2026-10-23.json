@@ -1,0 +1,163 @@
+{
+  "format": "saylo-design-completion/v1",
+  "date": "2026-10-23",
+  "sourceCommit": "109afe749a2bf7728394b70796eef396e9891aab",
+  "candidate": ".release/candidate-0.1.0-alpha.5-DhQ1s3",
+  "validation": ".release/candidate-0.1.0-alpha.5-DhQ1s3/validation-pAOEjE/validation.json",
+  "validationSha256": "fbc7522b3249f0c08778397ad67775f6d8c6d6f891970c09d24090eb81c6c0cd",
+  "frozenInputs": 1169,
+  "testGroups": [
+    8,
+    121,
+    18,
+    15,
+    130,
+    206,
+    17,
+    11
+  ],
+  "totalTests": 526,
+  "checks": [
+    {
+      "name": "install",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "durationMs": 15648
+    },
+    {
+      "name": "check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "durationMs": 96299
+    },
+    {
+      "name": "release-metadata",
+      "command": [
+        "npm",
+        "run",
+        "release:check",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 889
+    },
+    {
+      "name": "pack",
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/pack-smoke.mjs",
+        "--save-release"
+      ],
+      "exitCode": 0,
+      "durationMs": 90866
+    },
+    {
+      "name": "publish-plan",
+      "command": [
+        "npm",
+        "run",
+        "release:publish",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 989
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-pVj506D3YIFlH6uyeSm+oYw03MiNR0BXQuGCDcdOlENJsAgcj94qjlYHATyvOQRNXTNe4Wg9TY6QhBbzYxB33g=="
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-w7603HJhT2PO/0N9Su8N73hINo/iuaeEoSTxs5mV7KRseyvGHU7tKA+qBZjMH/rSPuY1qNcs5lpTt4lWG2BlZg=="
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-/1S9yIO+cTn6mc8BQAxrSOKg7Z2LDlq7AP7Reu099EiY66Erg2rqzdzzV3lI62IOCeiSGAj99CvAoj6MpSWP0g=="
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-Rq2vBNtBz7YMVq+hJea2edCe9KCQ04N7VTIwBN+25wFSkjbDFWWHPCCOJwUoHYCyTINPwO/ovWIoizV9XjlGSQ=="
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-8HZIZZXlgRa1QUw7qXdsH+PPAyUK76iG+KBNVNwkyCvLDiyrnW7UY/0douT0x4VUcXrzeOWjRe0drWtfTDDGmQ=="
+    }
+  ],
+  "adminPilot": {
+    "repository": "zdp-platforms/admin-ops/zdp-admin-console",
+    "implementationCommit": "4d79fe7ebbf8b4f1cc1ca4ff62ff187e717049e4",
+    "documentationCommit": "b105ae5",
+    "keysPerLocale": 30,
+    "localSource": "d4eb6e8",
+    "localTarballDistChecks": true,
+    "registryAlpha4CleanInstall": true,
+    "productionBuild": true,
+    "concurrentSsr": [
+      "ko",
+      "en"
+    ],
+    "englishHydration": true,
+    "liveEdit": true,
+    "parseRecovery": true,
+    "localeAddRemove": true,
+    "draftSelectionFilterIdentity": true,
+    "focusCaret": true,
+    "pageErrors": 0,
+    "relatedTests": 20,
+    "assertions": 103,
+    "svelteCheck": {
+      "errors": 0,
+      "warnings": 0
+    },
+    "runtimeBoundaries": true,
+    "syntheticDataOnly": true
+  },
+  "originalVersions": {
+    "core": "0.1.0-alpha.4",
+    "react": "0.1.0-alpha.4",
+    "svelte": "0.1.0-alpha.4",
+    "typegen": "0.1.0-alpha.4",
+    "vite": "0.1.0-alpha.4",
+    "vue": "0.1.0-alpha.4"
+  },
+  "state": "local candidate validated; not published",
+  "limits": [
+    "No source version bump, push, OIDC exchange or workflow dispatch.",
+    "source.zip is the original Git archive; public package versions and internal dependency refs use the proposed version. Private workspace versions stay unchanged.",
+    "Existing publication labels describe alpha.4. Final release documentation must be updated before publication.",
+    "This is local JS/TS tarball consumption, not registry or SvelteKit browser acceptance."
+  ]
+}
