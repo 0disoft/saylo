@@ -129,6 +129,7 @@ test('an old writer deadline also bounds recovery queued after a worker failure'
   workers[0].reply('one'); await flush();
   workers[0].emit('error', new Error('crashed')); await crashed;
   const recovery = assert.rejects(generator.update(schema('two')), { code: 'TIMEOUT' });
+  await flush(); // Recovery starts only after the previous worker has terminated.
   workers[1].reply('two'); await flush(); clock.tick(100); await recovery;
   release.resolve(); await flush();
   assert.equal(clock.size, 0);
@@ -153,6 +154,7 @@ for (const lateFailure of [false, true]) {
     workers[0].reply('old'); await started.promise;
     workers[0].emit('error', new Error('worker failed')); await old;
     const current = generator.update(schema('current'));
+    await flush(); // Let the previous worker release its execution slot.
     workers[1].reply('current');
     workers[0].reply('stale'); workers[0].emit('exit', 1);
     release.resolve(); await current;
@@ -186,4 +188,65 @@ test('duplicate and wrong-generation results do not start concurrent writes', as
   worker.reply('wrong', 99); worker.reply('one'); worker.reply('duplicate');
   await started.promise; assert.equal(writes, 1); release.resolve(); await done;
   await generator.stop(); assert.equal(writes, 1);
+});
+
+
+test('worker retirement coalesces updates until the previous worker actually exits', async t => {
+  const workers = [], release = Promise.withResolvers(), writes = [];
+  const generator = new TypeGenerator('generated.d.ts', { acquireLock,
+    createWorker() { const worker = new Worker(); if (!workers.length) worker.terminate = () => release.promise; workers.push(worker); return worker; },
+    write: async (_file, source) => { writes.push(source); return 'written'; } });
+  t.after(async () => { release.resolve(0); await generator.stop(); });
+  const failed = assert.rejects(generator.update(schema('old')), /worker crashed/);
+  workers[0].emit('error', new Error('worker crashed')); await failed;
+  const middle = generator.update(schema('middle')), latest = generator.update(schema('latest'));
+  middle.catch(() => {}); latest.catch(() => {});
+  assert.equal(workers.length, 1, 'retiring worker still owns its execution slot');
+  release.resolve(0); await flush();
+  assert.equal(workers.length, 2);
+  assert.deepEqual(Object.keys(workers[1].jobs[0].schemas[0].keys), ['latest']);
+  workers[0].reply('stale'); workers[1].reply('latest'); await Promise.all([middle, latest]);
+  assert.deepEqual(writes, ['latest']);
+});
+
+test('a retirement deadline cannot permit unlimited live replacement workers', async () => {
+  const clock = scheduler(), workers = [], release = Promise.withResolvers();
+  const generator = new TypeGenerator('generated.d.ts', { ...clock, timeoutMs: 100, acquireLock,
+    createWorker() { const worker = new Worker(); if (!workers.length) worker.terminate = () => release.promise; workers.push(worker); return worker; },
+    write: async () => 'written' });
+  try {
+    const failed = assert.rejects(generator.update(schema('old')), { code: 'TIMEOUT' });
+    clock.tick(100); await failed; await flush();
+    const queued = assert.rejects(generator.update(schema('queued')), e =>
+      e instanceof AggregateError && e.cause.code === 'TIMEOUT' && e.errors[1].code === 'TIMEOUT');
+    assert.equal(workers.length, 1);
+    clock.tick(100); await queued;
+    for (let i = 0; i < 5; i++) await assert.rejects(generator.update(schema(`retry${i}`)), AggregateError);
+    assert.equal(workers.length, 1, 'the timed out physical termination retains its slot');
+    release.resolve(0); await flush();
+    const recovered = generator.update(schema('recovered')); workers[1].reply('recovered'); await recovered;
+    assert.equal(workers.length, 2);
+  } finally {
+    release.resolve(0); await flush();
+    await assert.rejects(generator.stop(), e => e instanceof AggregateError && e.cause.code === 'TIMEOUT');
+  }
+  assert.equal(clock.size, 0);
+});
+
+test('failed termination blocks replacement until an observed exit proves retirement', async () => {
+  const workers = [], original = new Error('worker crashed'), cleanup = new Error('terminate failed');
+  const generator = new TypeGenerator('generated.d.ts', { acquireLock,
+    createWorker() { const worker = new Worker(); if (!workers.length) worker.terminate = async () => { throw cleanup; }; workers.push(worker); return worker; },
+    write: async () => 'written' });
+  try {
+    const failed = assert.rejects(generator.update(schema('old')), e => e === original);
+    workers[0].emit('error', original); await failed; await flush();
+    await assert.rejects(generator.update(schema('blocked')), e => e instanceof AggregateError && e.cause === original);
+    assert.equal(workers.length, 1);
+    workers[0].emit('exit', 1); await flush();
+    const recovered = generator.update(schema('recovered')); workers[1].reply('recovered'); await recovered;
+    assert.equal(workers.length, 2);
+  } finally {
+    await assert.rejects(generator.stop(), e => e instanceof AggregateError && e.cause === original && e.errors[1] === cleanup);
+  }
 });

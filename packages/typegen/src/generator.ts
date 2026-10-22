@@ -47,6 +47,8 @@ export class TypeGenerator {
   private workerTimer: (() => void) | undefined;
   private writerAbort: AbortController | undefined;
   private writeBlocked: Error | undefined;
+  private retiring: { worker: TypegenWorker; exit: () => void } | undefined;
+  private retirementFailure: Error | undefined;
   private terminations = new Set<Promise<void>>();
   private cleanupErrors: unknown[] = [];
   private failureCause: Error | undefined;
@@ -59,6 +61,7 @@ export class TypeGenerator {
   update(schemas: readonly CatalogSchema[]): Promise<void> {
     if (this.stopped) return Promise.reject(new Error('Type generator is stopped.'));
     if (this.writeBlocked) return Promise.reject(this.writeBlocked);
+    if (this.retirementFailure) return Promise.reject(this.retirementFailure);
     const key = JSON.stringify([...schemas].map(s => [s.namespace, s.fingerprint]).sort((a, b) => a[0]! < b[0]! ? -1 : a[0]! > b[0]! ? 1 : 0));
     if (key !== this.desired?.key) this.desired = { generation: ++this.generation, key, schemas };
     const promise = new Promise<void>((resolve, reject) => this.waiters.add({ resolve, reject }));
@@ -66,7 +69,7 @@ export class TypeGenerator {
     return promise;
   }
   private start() {
-    if (this.active || !this.desired || this.stopped) return;
+    if (this.active || this.retiring || !this.desired || this.stopped) return;
     this.lock ??= (this.operations.acquireLock ?? acquireOutputLock)(this.outFile);
     this.active = this.desired;
     if (this.active.key === this.successKey && this.successSource !== undefined) {
@@ -84,7 +87,13 @@ export class TypeGenerator {
         }
       });
       worker.on('error', error => { if (this.worker === worker) this.fail(error); });
-      worker.on('exit', code => { if (this.worker === worker && !this.stopped) this.fail(new Error(`Typegen worker exited (${code}).`)); });
+      worker.on('exit', code => {
+        if (this.retiring?.worker === worker) { this.retiring.exit(); return; }
+        if (this.worker === worker && !this.stopped) {
+          this.worker = undefined;
+          this.fail(new Error(`Typegen worker exited (${code}).`));
+        }
+      });
     }
     this.worker.ref();
     this.workerTimer = (this.operations.schedule ?? schedule)(this.timeoutMs,
@@ -156,9 +165,26 @@ export class TypeGenerator {
   private clearWorkerTimer() { this.workerTimer?.(); this.workerTimer = undefined; }
 
   private terminate(worker: TypegenWorker, cause?: Error) {
-    const pending = withinDeadline(Promise.resolve().then(() => worker.terminate()), this.timeoutMs,
+    let exit!: () => void;
+    const exited = new Promise<void>(resolve => { exit = resolve; });
+    const retirement = { worker, exit };
+    this.retiring = retirement;
+    void exited.then(() => {
+      if (this.retiring !== retirement) return;
+      this.retiring = undefined;
+      this.retirementFailure = undefined;
+      if (this.waiters.size) { try { this.start(); } catch (error) { this.fail(error); } }
+    });
+    // A reporting deadline does not prove that a worker has stopped executing.
+    const physical = Promise.resolve().then(() => worker.terminate()).then(exit);
+    const pending = withinDeadline(Promise.race([physical, exited]), this.timeoutMs,
       this.operations.schedule ?? schedule, 'Typegen worker termination').then(() => {}, error => {
-      this.cleanupErrors.push(cause ? new AggregateError([cause, error], 'Typegen failed and worker termination also failed.', { cause }) : error);
+      const failure = cause ? new AggregateError([cause, error], 'Typegen failed and worker termination also failed.', { cause }) : error;
+      this.cleanupErrors.push(failure);
+      if (this.retiring === retirement) {
+        this.retirementFailure = failure instanceof Error ? failure : new Error(String(failure));
+        this.fail(this.retirementFailure);
+      }
     });
     this.terminations.add(pending);
     void pending.then(() => { this.terminations.delete(pending); });
