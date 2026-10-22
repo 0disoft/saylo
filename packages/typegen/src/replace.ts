@@ -1,6 +1,8 @@
 import { rename } from 'node:fs/promises';
 import { setTimeout } from 'node:timers/promises';
 
+const WINDOWS_REPLACE_POLICY = Object.freeze({ maxRetries: 5, initialRetryMs: 20 });
+
 interface Operations {
   readonly platform: NodeJS.Platform;
   readonly rename: typeof rename;
@@ -36,10 +38,10 @@ export async function replaceGenerated(temp: string, target: string, isCurrent: 
       return 'written';
     } catch (error) {
       const code = (error as NodeJS.ErrnoException | null)?.code;
-      if (ops.platform !== 'win32' || !['EPERM', 'EACCES', 'EBUSY'].includes(code ?? '') || attempt >= 5) throw error;
-      // At most five waits (620ms total). Newer generations and stop() cancel before retrying.
+      if (ops.platform !== 'win32' || !['EPERM', 'EACCES', 'EBUSY'].includes(code ?? '') || attempt >= WINDOWS_REPLACE_POLICY.maxRetries) throw error;
+      // Bounded exponential waits. Newer generations and stop() cancel before retrying.
       if (signal?.aborted || !isCurrent()) return 'cancelled';
-      if (!await waitForRetry(ops.wait, 20 * 2 ** attempt, signal)) return 'cancelled';
+      if (!await waitForRetry(ops.wait, WINDOWS_REPLACE_POLICY.initialRetryMs * 2 ** attempt, signal)) return 'cancelled';
     }
   }
 }

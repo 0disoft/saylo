@@ -5,8 +5,10 @@ import { catalogId, catalogMetadata } from './catalog-outcome.js';
 import { encodeCatalogResult } from './catalog-wire.js';
 import type { CatalogPush, CatalogScope } from './types.js';
 
+const MAX_OWNER_LENGTH = 256;
+
 function scope(input: CatalogScope): CatalogScope {
-  if (!input || typeof input.owner !== 'string' || !input.owner || input.owner.length > 256 ||
+  if (!input || typeof input.owner !== 'string' || !input.owner || input.owner.length > MAX_OWNER_LENGTH ||
       typeof input.sessionId !== 'string' || !input.sessionId || !Array.isArray(input.catalogs)) throw new Error('Invalid catalog push scope.');
   const seen = new Set<string>();
   const catalogs = input.catalogs.map(meta => {

@@ -1,3 +1,4 @@
+import { STALE_CATALOG_MAX_ATTEMPTS } from './loading-policy.js';
 import { CatalogLoader } from './catalog-loader.js';
 import { createBootSnapshot, validateBootSnapshot } from './boot.js';
 import { createTextFormatter } from './formatters.js';
@@ -146,7 +147,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       if (disposed || epoch !== generation) return;
       try { if (syncManifest()) return; }
       catch (manifestError) { fail(manifestError); return; }
-      if (error instanceof CatalogLoadError && error.code === 'STALE_CATALOG' && ++staleRetries < 3) {
+      if (error instanceof CatalogLoadError && error.code === 'STALE_CATALOG' && ++staleRetries < STALE_CATALOG_MAX_ATTEMPTS) {
         generation++;
         schedule();
       } else fail(error);

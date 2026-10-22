@@ -1,3 +1,4 @@
+import { DEFAULT_CATALOG_REQUEST_TIMEOUT_MS, MAX_TIMER_DURATION_MS } from './loading-policy.js';
 import { CatalogLoadError } from './loading-errors.js';
 import type { CatalogSchedule } from './loading-types.js';
 
@@ -6,8 +7,8 @@ export const scheduleCatalog: CatalogSchedule = (milliseconds, callback) => {
   return () => clearTimeout(timer);
 };
 
-export function timeoutDuration(value = 5000): number {
-  if (!Number.isFinite(value) || value <= 0 || value > 2147483647)
+export function timeoutDuration(value = DEFAULT_CATALOG_REQUEST_TIMEOUT_MS): number {
+  if (!Number.isFinite(value) || value <= 0 || value > MAX_TIMER_DURATION_MS)
     throw new RangeError('requestTimeoutMs must be a positive timer duration.');
   return Math.ceil(value);
 }

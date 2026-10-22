@@ -1,3 +1,4 @@
+import { DEV_HANDSHAKE_MAX_ATTEMPTS } from './dev-policy.js';
 import type { DiagnosticCode, SourcePosition } from '@0disoft/saylo-core';
 import type { DevSyncState } from './dev-sync.js';
 import type { LiveDiagnostic } from './types.js';
@@ -45,6 +46,7 @@ export interface SupportRecorder {
 
 const maxEvents = 32;
 const maxDiagnostics = 64;
+const maxVersionLength = 64;
 const codes: Record<DiagnosticCode, true> = {
   INVALID_LOCALE: true, INVALID_NAMESPACE: true, INVALID_JSON: true,
   INVALID_CATALOG: true, INVALID_ID: true, DUPLICATE_ID: true,
@@ -66,7 +68,7 @@ function environment(value?: SupportEnvironment): SupportReport['environment'] {
     const version = value?.[key];
     // Reject URLs, build metadata and arbitrary prerelease labels, rather than
     // trying to redact secrets from free text. The entire supplied value must match.
-    if (typeof version === 'string' && version.length <= 64 &&
+    if (typeof version === 'string' && version.length <= maxVersionLength &&
         /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:alpha|beta|rc|dev|next)\.(?:0|[1-9]\d*))?$/.exec(version)?.[0] === version)
       result[key] = version;
   }
@@ -74,8 +76,8 @@ function environment(value?: SupportEnvironment): SupportReport['environment'] {
 }
 
 function state(value?: DevSyncState): DevSyncState | undefined {
-  if (!value || !statuses.has(value.status) || !integer(value.attempt) || value.attempt > 3 || value.maxAttempts !== 3) return;
-  return Object.freeze({ status: value.status, attempt: value.attempt, maxAttempts: 3 });
+  if (!value || !statuses.has(value.status) || !integer(value.attempt) || value.attempt > DEV_HANDSHAKE_MAX_ATTEMPTS || value.maxAttempts !== DEV_HANDSHAKE_MAX_ATTEMPTS) return;
+  return Object.freeze({ status: value.status, attempt: value.attempt, maxAttempts: DEV_HANDSHAKE_MAX_ATTEMPTS });
 }
 
 function event(value: LiveDiagnostic): SupportEvent {

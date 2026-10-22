@@ -4,6 +4,8 @@ import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import type { ParsedMessage, RichTextPart } from './types.js';
 import { freezeRichParts, projectRichText } from './rich-text.js';
 
+const FORMATTER_CACHE_POLICY = Object.freeze({ intlEntries: 128, messageEntries: 256 });
+
 class BoundedCache<T> {
   private readonly values = new Map<string, T>();
   constructor(private readonly limit: number) {}
@@ -28,11 +30,11 @@ function intlKey(locale: unknown, options: object | undefined): string {
 
 /** Two separate bounded caches; text changes do not invalidate native Intl formatters. */
 export function createTextFormatter(timeZone: string) {
-  const numbers = new BoundedCache<Intl.NumberFormat>(128);
-  const dates = new BoundedCache<Intl.DateTimeFormat>(128);
-  const plurals = new BoundedCache<Intl.PluralRules>(128);
-  const messages = new BoundedCache<IntlMessageFormat>(256);
-  const richMessages = new BoundedCache<{ formatter: IntlMessageFormat; tags: ReadonlyMap<string, string> }>(256);
+  const numbers = new BoundedCache<Intl.NumberFormat>(FORMATTER_CACHE_POLICY.intlEntries);
+  const dates = new BoundedCache<Intl.DateTimeFormat>(FORMATTER_CACHE_POLICY.intlEntries);
+  const plurals = new BoundedCache<Intl.PluralRules>(FORMATTER_CACHE_POLICY.intlEntries);
+  const messages = new BoundedCache<IntlMessageFormat>(FORMATTER_CACHE_POLICY.messageEntries);
+  const richMessages = new BoundedCache<{ formatter: IntlMessageFormat; tags: ReadonlyMap<string, string> }>(FORMATTER_CACHE_POLICY.messageEntries);
   const formatters: Formatters = {
     getNumberFormat: (locale, options) => numbers.get(intlKey(locale, options), () => new Intl.NumberFormat(locale, options)),
     getDateTimeFormat: (locale, options) => {

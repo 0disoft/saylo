@@ -1,3 +1,4 @@
+import { SSR_STABILITY_MAX_ATTEMPTS } from './loading-policy.js';
 import { createBootSnapshot } from './boot.js';
 import { CatalogLoader } from './catalog-loader.js';
 import { createI18n } from './i18n.js';
@@ -23,7 +24,7 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
   if (options.signal?.aborted) throw aborted(options.signal);
   const locale = canonicalLocale(options.locale);
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < SSR_STABILITY_MAX_ATTEMPTS; attempt++) {
     const manifest = readManifest(options.catalogSource.readManifest());
     if (!manifest.availableLocales.includes(locale) || new Set(options.initialNamespaces).size !== options.initialNamespaces.length ||
         options.initialNamespaces.some(n => !manifest.availableNamespaces.includes(n))) throw new RangeError('SSR scope is outside the manifest.');
@@ -39,7 +40,7 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
       return createI18n<S>({ catalogSource: options.catalogSource, initialSnapshot, requestTimeoutMs: timeoutMs,
         ...(options.schedule ? { schedule: options.schedule } : {}), ...(options.signal ? { signal: options.signal } : {}) });
     } catch (error) {
-      if (!(error instanceof CatalogLoadError) || error.code !== 'STALE_CATALOG' || attempt === 2) throw error;
+      if (!(error instanceof CatalogLoadError) || error.code !== 'STALE_CATALOG' || attempt === SSR_STABILITY_MAX_ATTEMPTS - 1) throw error;
     } finally { options.signal?.removeEventListener('abort', abort); loader.stop(new CatalogLoadError('DISPOSED', 'SSR preparation finished.')); }
   }
   throw new CatalogLoadError('STALE_CATALOG', 'SSR catalogs did not stabilize.');

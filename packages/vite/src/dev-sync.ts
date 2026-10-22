@@ -1,3 +1,4 @@
+import { DEV_HANDSHAKE_MAX_ATTEMPTS } from './dev-policy.js';
 import { isSnapshotRequest } from './types.js';
 import type { EagerCatalogEvent, EagerSnapshotRequest } from './types.js';
 import { createRequestId, schedule, timeoutDuration } from './scheduling.js';
@@ -7,7 +8,7 @@ export interface DevSyncState {
   readonly status: 'idle' | 'connecting' | 'retrying' | 'connected' | 'disconnected' | 'failed' | 'stopped';
   /** Current handshake attempt, or the last failed attempt; zero for idle/healthy states. */
   readonly attempt: number;
-  readonly maxAttempts: 3;
+  readonly maxAttempts: typeof DEV_HANDSHAKE_MAX_ATTEMPTS;
 }
 
 interface SyncOptions {
@@ -36,7 +37,7 @@ export class EagerSync {
   private needsSnapshot = true;
   private disconnected = false;
   private stopped = false;
-  private state: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: 3 });
+  private state: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: DEV_HANDSHAKE_MAX_ATTEMPTS });
 
   constructor(private readonly options: SyncOptions) {
     this.id = (options.runtime?.createId ?? createRequestId)();
@@ -69,7 +70,7 @@ export class EagerSync {
 
   private setState(status: DevSyncState['status'], attempt = 0) {
     if (this.state.status === status && this.state.attempt === attempt) return;
-    this.state = Object.freeze({ status, attempt, maxAttempts: 3 });
+    this.state = Object.freeze({ status, attempt, maxAttempts: DEV_HANDSHAKE_MAX_ATTEMPTS });
     try { this.options.onState?.(this.state); }
     catch (error) {
       // Observers must not prevent a handshake, timer cleanup, or another attempt.
@@ -165,7 +166,7 @@ export class EagerSync {
   private retry() {
     this.clearPending();
     if (this.stopped || this.disconnected) return;
-    if (this.attempts >= 3) {
+    if (this.attempts >= DEV_HANDSHAKE_MAX_ATTEMPTS) {
       this.setState('failed', this.attempts);
       this.options.report(new Error('Eager snapshot resync failed after 3 attempts; retaining the last good state.'));
       return;

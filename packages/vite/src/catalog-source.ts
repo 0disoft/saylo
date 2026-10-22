@@ -1,3 +1,4 @@
+import { DEV_HANDSHAKE_MAX_ATTEMPTS } from './dev-policy.js';
 import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
 import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
 import { EagerSync } from './dev-sync.js';
@@ -68,7 +69,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
       catalogs: clear ? [] : [...cache.values()].map(outcome => ({ key: outcome.key, catalogVersion: outcome.catalogVersion, status: outcome.status,
         ...(outcome.status === 'present' ? { namespaceSchemaFingerprint: outcome.namespaceSchemaFingerprint } : {}) })) });
   };
-  let syncState: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: 3 });
+  let syncState: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: DEV_HANDSHAKE_MAX_ATTEMPTS });
   const notify = (diagnostic: LiveDiagnostic) => {
     for (const listener of [...diagnostics]) {
       if (disposed || !diagnostics.has(listener)) continue;
@@ -190,7 +191,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   function stop() {
     try { sendScope(true); } catch { /* Vite owns the socket; stopping never waits for it. */ }
     if (sync) sync.stop();
-    else observeState(Object.freeze({ status: 'stopped', attempt: 0, maxAttempts: 3 }));
+    else observeState(Object.freeze({ status: 'stopped', attempt: 0, maxAttempts: DEV_HANDSHAKE_MAX_ATTEMPTS }));
     sync = undefined; ready = false; generation++;
     hot!.off(MANIFEST_EVENT, receiveManifest);
     hot!.off(CATALOG_EVENT, receiveCatalog);

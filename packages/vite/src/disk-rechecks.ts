@@ -1,3 +1,4 @@
+import { DEV_DISK_POLICY } from './dev-policy.js';
 import { stat } from 'node:fs/promises';
 import { schedule } from './scheduling.js';
 import type { Schedule } from './scheduling.js';
@@ -5,9 +6,6 @@ import type { Schedule } from './scheduling.js';
 // Vite's watcher can suppress a second change within its short throttle window.
 // Keep the first publication immediate. Probe early for a suppressed rapid
 // save, then retain the trailing check for writes arriving after the probe.
-const EARLY_RECHECK_MS = 10;
-const MIDDLE_RECHECK_MS = 30;
-const RECHECK_MS = 60;
 interface Check { early?: () => void; middle?: () => void; timer?: () => void; pending?: number; final?: boolean }
 
 export interface DiskRecheckOperations {
@@ -41,13 +39,13 @@ export class DiskRechecks {
     if (this.stopped || !check || this.checks.get(file) !== check) return;
     if (stamp === undefined) { this.checks.delete(file); return; }
     const later = this.operations.schedule ?? schedule;
-    check.early = later(EARLY_RECHECK_MS, () => {
+    check.early = later(DEV_DISK_POLICY.earlyRecheckMs, () => {
       void this.verify(file, check, stamp, false);
     });
-    check.middle = later(MIDDLE_RECHECK_MS, () => {
+    check.middle = later(DEV_DISK_POLICY.middleRecheckMs, () => {
       void this.verify(file, check, stamp, false);
     });
-    check.timer = later(RECHECK_MS, () => {
+    check.timer = later(DEV_DISK_POLICY.trailingRecheckMs, () => {
       void this.verify(file, check, stamp);
     });
   }

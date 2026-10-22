@@ -1,3 +1,4 @@
+import { DEV_DISK_POLICY } from './dev-policy.js';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { CatalogError, createBaseSchema, validateTranslation } from '@0disoft/saylo-core';
@@ -12,8 +13,6 @@ import { diagnosticMessage } from './diagnostic-observers.js';
 import { schedule } from './scheduling.js';
 
 type Read = () => string | Promise<string>;
-const QUIET_MS = 40;
-const MAX_WAIT_MS = 200;
 
 type Checks = ReadonlyMap<string, ReturnType<DiskRechecks['token']>>;
 
@@ -179,9 +178,9 @@ export class LiveRegistry {
     // the next turn; disk add/unlink and superseded reads still need settling.
     // Keep the longer window even if a later reader replaces the same path.
     for (const read of this.queued.values()) if (!read) { this.settleDisk = true; break; }
-    const quietMs = this.settleDisk ? QUIET_MS : 0;
+    const quietMs = this.settleDisk ? DEV_DISK_POLICY.quietWindowMs : 0;
     this.timer?.();
-    this.timer = (this.operations.schedule ?? schedule)(Math.max(0, Math.min(quietMs, MAX_WAIT_MS - (now - this.firstQueued))), () => this.drain());
+    this.timer = (this.operations.schedule ?? schedule)(Math.max(0, Math.min(quietMs, DEV_DISK_POLICY.maxQueueWaitMs - (now - this.firstQueued))), () => this.drain());
   }
 
   private drain() {

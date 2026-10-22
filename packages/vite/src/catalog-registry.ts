@@ -4,6 +4,8 @@ import { createCatalogPatch } from './catalog-patch.js';
 import type { CatalogPatch, CatalogStamp } from './catalog-patch.js';
 import { catalogId as id, catalogMetadata } from './catalog-outcome.js';
 
+const PATCH_DENSITY_POLICY = Object.freeze({ changedCountFloor: 8, changedFraction: 0.5 });
+
 // Positions belong to the version too, so a delta always has an exact baseline.
 function equivalent(before: ParsedCatalog, after: ParsedCatalog) {
   if (before.sourceName !== after.sourceName || Object.keys(before.messages).length !== Object.keys(after.messages).length) return false;
@@ -66,7 +68,7 @@ export class CatalogRegistry {
     if (!baseline) return outcome;
     const patch = createCatalogPatch(baseline, outcome, known);
     // Dense changes are cheaper and simpler as a full replacement.
-    return patch.upsert.length + patch.remove.length > Math.max(8, patch.messageCount / 2) ? outcome : patch;
+    return patch.upsert.length + patch.remove.length > Math.max(PATCH_DENSITY_POLICY.changedCountFloor, patch.messageCount * PATCH_DENSITY_POLICY.changedFraction) ? outcome : patch;
   }
 
   load(locale: string, namespace: string): CatalogOutcome {
