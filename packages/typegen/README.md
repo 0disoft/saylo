@@ -170,7 +170,7 @@ npx --no-install saylo import --file translation-work.json --apply --json
 
 `import --apply`·`approve --apply`의 `--json` 취소는 기존 `saylo-command-error/v1`의 `error`에 `cancelled: true`, `signal: "SIGINT"|"SIGTERM"`, `writtenFiles: [...]`를 더하고 원인을 설명하는 `message`를 유지한다. `--out-file`도 같은 취소·`writtenFiles`·cleanup 보장을 따른다. dry-run과 `--out-file` 없는 읽기전용 경로는 대상이 아니다. SIGKILL·Windows 강제 종료·전원 꺼짐은 cleanup을 보장하지 않으므로 기존 stale lock 수동 확인 정책을 유지한다.
 
-`--apply`가 쓴 카탈로그는 2칸 들여쓰기 JSON으로 다시 쓴다. 메시지 값은 그대로 두고, 기존 파일이 CRLF를 쓰면 CRLF도 유지한다. 관련 없는 키와 고아 키는 보존하며, 삭제와 기계 번역은 하지 않는다.
+`--apply`는 기존 파일에서 바뀐 문자열 토큰만 교체해 키 순서·들여쓰기·줄바꿈·파일 끝 개행·수정하지 않은 이스케이프 표기를 보존하고, 새 키는 기존 콜론 주변 공백·들여쓰기·줄바꿈 방식으로 뒤에 추가한다. 여러 줄로 된 빈 객체는 2칸 들여쓰기를 쓰며 새 파일은 2칸·LF·마지막 개행으로 쓰고, 관련 없는 키와 고아 키는 그대로 둔다.
 
 `import`는 타입 선언과 baseline을 다시 만들지 않는다. 적용 뒤 `saylo check`와 타입 생성(`saylo-typegen`)을 따로 실행한다. baseline 갱신은 번역 승인과 별개다.
 

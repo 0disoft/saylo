@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { CatalogError, createBaseSchema, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
 import { createReviewBaseline } from './catalog-review.js';
+import { editCatalogJson } from './catalog-json-edit.js';
 import type { CatalogInspection } from './catalog-files.js';
 import type { CatalogCheckReport } from './catalog-audit.js';
 import type { SayloProjectConfig } from './config.js';
@@ -64,11 +65,16 @@ export function planTranslationImport(input: CatalogInspection, checked: Catalog
     const values: Record<string, string> = Object.create(null);
     for (const [id, message] of Object.entries(current?.catalog.messages ?? {})) values[id] = message.source;
     Object.assign(values, patch.values);
-    const source = JSON.stringify(values, null, 2) + '\n';
+    const source = current ? editCatalogJson(current.source, patch.values) : JSON.stringify(values, null, 2) + '\n';
     const options = { locale: patch.locale, namespace: patch.namespace, sourceName,
       richText: config.richText?.[patch.namespace] };
     try {
-      parseCatalog(source, options); // Also check the merged JSON/ICU/rich catalog, preserving orphan keys.
+      const merged = parseCatalog(source, options); // Check the merged JSON/ICU/rich catalog, preserving orphan keys.
+      if (Object.keys(merged.messages).length !== Object.keys(values).length
+        || Object.entries(values).some(([id, value]) => merged.messages[id]?.source !== value)) {
+        throw new CatalogError([{ ...options, code: 'INVALID_CATALOG',
+          message: 'Catalog edit did not preserve the expected message values; import blocked.' }]);
+      }
       validateTranslation(createBaseSchema(base.catalog), parseCatalog(JSON.stringify(patch.values), options));
     } catch (error) {
       if (!(error instanceof CatalogError)) throw error;
@@ -78,7 +84,7 @@ export function planTranslationImport(input: CatalogInspection, checked: Catalog
     const file = path.join(input.root, ...sourceName.split('/'));
     guards.set(file, { file, source: current?.source ?? null });
     files.push({ file, sourceName, baseFile: base.file, source: current?.source ?? null,
-      nextSource: current?.source.includes('\r\n') ? source.replace(/\n/g, '\r\n') : source });
+      nextSource: source });
   }
   return { root: input.root, files, guards: [...guards.values()], report: { ...report, changes, blocked: diagnostics.length > 0 } };
 }
