@@ -65,7 +65,14 @@ export const title = () => store.t('demo:title');`);
   });
   const before = sent.filter(frame => frame.event === 'saylo:request-catalog').length;
   const updated = new Promise((resolve, reject) => {
-    const timer = setTimeout(() => { off(); reject(new Error('Real watcher/socket push did not reach the instance.')); }, 5000);
+    const timer = setTimeout(() => {
+      off(); reject(new Error(`Real watcher/socket push did not reach the instance: ${JSON.stringify({
+        state: source.getSyncState(), title: instance.t('demo:title'),
+        sent: sent.map(frame => frame.event),
+        received: received.map(frame => ({ event: frame.event, kind: frame.data.kind,
+          revision: frame.data.manifest?.registryRevision, diagnostic: frame.data.message })),
+      })}`));
+    }, 5000);
     const off = instance.subscribe(snapshot => {
       if (snapshot.t('demo:title') === 'PACK_PUSH_CHANGED') { clearTimeout(timer); off(); resolve(); }
     });

@@ -1,0 +1,120 @@
+{
+  "schema": "saylo.runtime-boundaries/v1",
+  "dateKST": "2026-10-22",
+  "sourceCommit": "ebc100cfffbb44c708748e67589eb66aa3c0ae84",
+  "implementationCommits": [
+    "9abe013a00772662e8489b59bbc9f291cf88738d",
+    "cf90bfc25d0d40295935583c867d228106805713",
+    "8dfd11f7f0b16fcd6070e3d559820bcfec938d2f",
+    "ebc100cfffbb44c708748e67589eb66aa3c0ae84"
+  ],
+  "scope": [
+    "isolate failed publication and client sends",
+    "monotonic zero-origin batching and injected timer/filesystem probes",
+    "caller-only cancellation and instance/SSR lifetime cancellation",
+    "safe state revision increments",
+    "inject dev request IDs and normalize fractional timeouts",
+    "exclusive temp ownership and abortable replacement waits",
+    "serialize worker completions and ignore obsolete worker epochs"
+  ],
+  "verification": {
+    "check": {
+      "command": "npm run check",
+      "exitCode": 0,
+      "totalTests": 357,
+      "testGroups": [
+        8,
+        99,
+        17,
+        15,
+        29,
+        164,
+        17,
+        8
+      ],
+      "log": {
+        "path": ".release/robustness-check-2026-10-22.log",
+        "sha256": "26aa19cd2474ca05981cb463a84af26a003764893c59247a7482ca6356c47d80"
+      }
+    },
+    "metadata": {
+      "command": "npm run release:check -- --version 0.1.0-alpha.4 --tag alpha",
+      "exitCode": 0,
+      "log": {
+        "path": ".release/robustness-metadata-2026-10-22.log",
+        "sha256": "6039bf89b73163b771114c4e4cc893ad24eb268239896f4939d450cd95753dcb"
+      }
+    },
+    "independentPack": {
+      "command": "npm run verify:pack",
+      "exitCode": 0,
+      "node": "v24.18.0",
+      "packages": 5,
+      "consumers": [
+        "JS/checkJs",
+        "TypeScript"
+      ],
+      "coverage": [
+        "installed automatic key analysis and real watcher/WebSocket push",
+        "eager synchronization and support reporting",
+        "React and Svelte selector SSR",
+        "production lazy build and complete-translation rejection/recovery",
+        "SSR with development dependencies removed"
+      ],
+      "log": {
+        "path": ".release/robustness-pack-retry-2026-10-22.log",
+        "sha256": "4f6200c36ac063dfabe1e4fe4be297705ce7b681c8ea318cd650a4ddae742b9f"
+      }
+    },
+    "firstPackAttempt": {
+      "exitCode": 1,
+      "command": "npm exec -- node scripts/pack-smoke.mjs",
+      "failure": "Real watcher/socket push exceeded the 5000ms fixture deadline. The same scenario passed directly in the workspace and during the subsequent official pack run. Root cause was not established.",
+      "log": {
+        "path": ".release/robustness-pack-2026-10-22.log",
+        "sha256": "5ade95eac9343851491e6c79940ac9f68bc0c877f2b5e78120d20c4ff642df35"
+      }
+    },
+    "supportingHarness": {
+      "path": "scripts/pack-fixtures/catalog-features.mjs",
+      "sha256": "7f5ce44fcd5b3252f7517044356d3659f9da57af2f20d09916c6c0364dc1bf77",
+      "change": "Include source connection state, event names and revisions in timeout diagnostics; no deadline increase."
+    }
+  },
+  "originalPackages": {
+    "core": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "react": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "svelte": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "typegen": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "vite": {
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    "vue": {
+      "version": "0.1.0-alpha.4",
+      "private": true
+    }
+  },
+  "boundaries": {
+    "sourceVersionsChanged": false,
+    "pushPublishOrCIDispatch": false,
+    "previousAlpha5Candidate": "47658700846e213b0d1b789d736001a86fa0ca42; predates these changes and must be regenerated before publication",
+    "callerAbort": "Cancels only this caller; shared desired state and catalog flights continue. Instance lifetime abort uses disposal. Successful rename is the writer commit point."
+  },
+  "limits": [
+    "No new SvelteKit Chromium run, cross-browser run, latency benchmark or registry query.",
+    "Existing alpha.5 candidate and prior completion record retain their original source scope."
+  ]
+}
