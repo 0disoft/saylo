@@ -13,7 +13,7 @@ function equivalent(before: ParsedCatalog, after: ParsedCatalog) {
     if (!Object.hasOwn(after.messages, key)) continue;
     const previous = Object.hasOwn(before.messages, key) ? before.messages[key] : undefined;
     const message = after.messages[key]!;
-    if (!previous || previous.source !== message.source || previous.position.offset !== message.position.offset ||
+    if (!previous || previous.source !== message.source || JSON.stringify(previous.richTextTags) !== JSON.stringify(message.richTextTags) || previous.position.offset !== message.position.offset ||
         previous.position.line !== message.position.line || previous.position.column !== message.position.column) return false;
   }
   return true;

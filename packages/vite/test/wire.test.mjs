@@ -11,6 +11,16 @@ const outcome = messages => {
   return new CatalogRegistry('one', 'en', [catalog]).load('en', 'demo');
 };
 
+test('compact payloads preserve rich contracts through JSON and reject malformed tag metadata', () => {
+  const catalog = parseCatalog('{"x":"<link>Terms</link>"}', { locale: 'en', namespace: 'demo', richText: { x: ['link'] } });
+  const original = new CatalogRegistry('rich', 'en', [catalog]).load('en', 'demo');
+  const wire = json(encodeCatalogResult(original));
+  const decoded = decodeCatalogResult(wire);
+  assert.deepEqual(json(decoded), json(original));
+  wire.catalog.messages[0][7] = ['bad tag'];
+  assert.throws(() => decodeCatalogResult(wire), /Invalid compact/);
+});
+
 test('compact catalogs round-trip exact messages, ICU AST locations, schemas and prototype-like names', () => {
   const messages = Object.assign(Object.create(null), {
     empty: '', unicode: '😀\r\n안녕 {name} \ud800', repeated: '{name} and {name}',

@@ -72,7 +72,8 @@ export function validateBootSnapshot(input: BootSnapshot): BootSnapshot {
   if (input.baseSchemas.length !== accepted.baseSchemas.length || accepted.baseSchemas.some(schema => {
     const supplied = schemas.get(schema.namespace);
     return !supplied || supplied.baseLocale !== schema.baseLocale || supplied.fingerprint !== schema.fingerprint ||
-      JSON.stringify(supplied.keys) !== JSON.stringify(schema.keys);
+      JSON.stringify(supplied.keys) !== JSON.stringify(schema.keys) ||
+      JSON.stringify(supplied.richTextTags) !== JSON.stringify(schema.richTextTags);
   })) throw new CatalogLoadError('INVALID_BOOT', 'Boot base schemas do not match their catalogs.');
   return accepted;
 }

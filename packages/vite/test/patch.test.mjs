@@ -7,6 +7,19 @@ import { isCatalogRequest } from '../dist/types.js';
 const parse = source => parseCatalog(source, { locale: 'ko', namespace: 'demo' });
 const stamp = outcome => ({ sessionId: outcome.sessionId, catalogVersion: outcome.catalogVersion });
 
+test('policy-only changes increment catalog versions and carry their rich contract in a delta', () => {
+  const before = parse('{"x":"<link>Terms</link>"}');
+  const after = parseCatalog('{"x":"<link>Terms</link>"}', { locale: 'ko', namespace: 'demo', richText: { x: ['link'] } });
+  const registry = new CatalogRegistry('rich', 'ko', [before]);
+  const old = registry.load('ko', 'demo');
+  registry.replace([after]);
+  const next = registry.load('ko', 'demo');
+  assert.ok(next.catalogVersion > old.catalogVersion);
+  const patch = registry.loadDelta('ko', 'demo', stamp(old));
+  assert.equal(patch.upsert.length, 1);
+  assert.deepEqual(applyCatalogPatch(old, patch), next);
+});
+
 test('registry lookup follows a newer base schema even when the translation version stays unchanged', () => {
   const base = parse('{"x":"hello"}');
   const translated = parseCatalog('{"x":"translated"}', { locale: 'en', namespace: 'demo' });

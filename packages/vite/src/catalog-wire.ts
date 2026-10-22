@@ -4,7 +4,7 @@ import type { CatalogPatch, PresentCatalog } from './catalog-patch.js';
 type Node = ParsedMessage['ast'][number];
 type Point = readonly [offset: number, line: number, column: number];
 type SimpleNode = readonly [type: 0 | 1, value: string] | readonly [type: 0 | 1, value: string, ...start: Point, ...end: Point];
-type WireMessage = readonly [id: string, source: string, ...position: Point, ast: readonly (Node | SimpleNode)[], schema: number];
+type WireMessage = readonly [id: string, source: string, ...position: Point, ast: readonly (Node | SimpleNode)[], schema: number, richTextTags?: readonly string[]];
 interface CompactCatalog {
   readonly sourceName: string;
   readonly schemas: readonly MessageSchema[];
@@ -38,7 +38,8 @@ export function encodeCatalogResult(result: CatalogLoadResult | CatalogPatch): C
         if (node.type !== 0 && node.type !== 1) return node;
         return node.location ? [node.type, node.value, ...point(node.location.start), ...point(node.location.end)] : [node.type, node.value];
       });
-      messages.push([id, message.source, ...point(message.position), ast, index]);
+      messages.push(message.richTextTags === undefined ? [id, message.source, ...point(message.position), ast, index]
+        : [id, message.source, ...point(message.position), ast, index, message.richTextTags]);
     }
     catalog = { sourceName: result.catalog.sourceName, schemas, messages };
     cache.set(result.catalog, catalog);
@@ -88,11 +89,14 @@ export function decodeCatalogResult(result: CatalogWireResult): CatalogLoadResul
   }
   const messages: Record<string, ParsedMessage> = Object.create(null);
   for (const entry of catalog.messages) {
-    if (!Array.isArray(entry) || entry.length !== 7) throw invalid();
-    const [id, source, , , , ast, index] = entry;
+    if (!Array.isArray(entry) || (entry.length !== 7 && entry.length !== 8)) throw invalid();
+    const [id, source, , , , ast, index, tags] = entry;
     if (typeof id !== 'string' || !id || id.includes(':') || Object.hasOwn(messages, id) || typeof source !== 'string' ||
         !Array.isArray(ast) || !Number.isSafeInteger(index) || index < 0 || index >= catalog.schemas.length) throw invalid();
-    messages[id] = { source, position: readPoint(entry, 2), ast: ast.map(decodeNode), arguments: catalog.schemas[index]! };
+    if (tags !== undefined && (!Array.isArray(tags) || tags.some(tag => typeof tag !== 'string' || !/^[A-Za-z][A-Za-z0-9_-]*$/.test(tag)) ||
+        new Set(tags).size !== tags.length)) throw invalid();
+    messages[id] = { source, position: readPoint(entry, 2), ast: ast.map(decodeNode), arguments: catalog.schemas[index]!,
+      ...(tags === undefined ? {} : { richTextTags: tags }) };
   }
   return { status: 'present', sessionId: result.sessionId, key: result.key, catalogVersion: result.catalogVersion,
     namespaceSchemaFingerprint: result.namespaceSchemaFingerprint,

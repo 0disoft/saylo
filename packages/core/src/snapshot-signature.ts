@@ -9,7 +9,8 @@ function catalogSignature(catalog: ParsedCatalog): string {
   const cached = cacheable ? signatures.get(catalog) : undefined;
   if (cached !== undefined) return cached;
   const signature = JSON.stringify([catalog.locale, catalog.namespace,
-    Object.keys(catalog.messages).sort().map(id => [id, catalog.messages[id]!.source])]);
+    Object.keys(catalog.messages).sort().map(id => [id, catalog.messages[id]!.source,
+      ...(catalog.messages[id]!.richTextTags === undefined ? [] : [catalog.messages[id]!.richTextTags])])]);
   if (cacheable) signatures.set(catalog, signature);
   return signature;
 }

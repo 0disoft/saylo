@@ -17,6 +17,8 @@ export interface CatalogOptions {
   readonly locale: string;
   readonly namespace: string;
   readonly sourceName?: string;
+  /** Opt-in rich message IDs and allowed tags, e.g. { terms: ['link'] }. Other messages remain literal. */
+  readonly richText?: Readonly<Record<string, readonly string[]>> | undefined;
 }
 
 export interface SourcePosition {
@@ -30,6 +32,8 @@ export interface ParsedMessage {
   readonly position: SourcePosition;
   readonly ast: DeepReadonly<MessageFormatElement[]>;
   readonly arguments: MessageSchema;
+  /** Presence opts this message into acceptance-time rich text validation, including an empty allowlist. */
+  readonly richTextTags?: readonly string[];
 }
 
 /** Parser output, before render records, versions, or store state are added. */
@@ -43,15 +47,16 @@ export interface ParsedCatalog {
 export interface CatalogSchema {
   readonly baseLocale: string;
   readonly namespace: string;
-  /** SHA-256 of the canonical namespace/key/argument schema, independent of message text. */
+  /** SHA-256 of namespace, keys, arguments and optional rich contracts, independent of message text. */
   readonly fingerprint: string;
   readonly keys: Readonly<Record<string, MessageSchema>>;
+  readonly richTextTags?: Readonly<Record<string, readonly string[]>>;
 }
 
 export type DiagnosticCode =
   | 'INVALID_LOCALE' | 'INVALID_NAMESPACE' | 'INVALID_JSON'
   | 'INVALID_CATALOG' | 'INVALID_ID' | 'DUPLICATE_ID'
-  | 'INVALID_ICU' | 'ARGUMENT_CONFLICT' | 'NAMESPACE_MISMATCH'
+  | 'INVALID_ICU' | 'INVALID_RICH_TEXT' | 'ARGUMENT_CONFLICT' | 'NAMESPACE_MISMATCH'
   | 'UNKNOWN_MESSAGE' | 'UNKNOWN_ARGUMENT' | 'ARGUMENT_TYPE_NARROWING'
   | 'MISSING_MESSAGE' | 'MISSING_NAMESPACE'
   | 'DUPLICATE_CATALOG' | 'LOCALE_MISMATCH';

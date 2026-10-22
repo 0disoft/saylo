@@ -2,7 +2,7 @@
 
 이 문서는 첫 rich text core API 슬라이스의 계약과 사용법을 정한다. 기존 `t()`가 문자열을 돌려주는 동작은 그대로 두고, 같은 메시지에서 읽기 전용 parts 트리를 얻는 `tParts(key, args)`를 core에 더한다.
 
-상태: 로컬 구현과 `npm run check`·독립 JS/TS pack 소비 검증을 마쳤다. 게시본에는 이 API가 없다. 카탈로그·wire metadata를 추가하지 않고, 버전 승격과 게시도 하지 않는다.
+상태: 첫 구현은 로컬 `npm run check`·독립 JS/TS pack 소비 검증을 마쳤다. 게시본에는 이 API가 없다. 현재 checkout에는 선택적 rich 계약 metadata와 수용 단계 검증도 포함한다. 버전 승격과 게시는 하지 않았다.
 
 ## 범위
 
@@ -53,7 +53,7 @@ ICU 식 전체를 `<link>{n, plural, other {# items}}</link>`처럼 감싸는 �
 
 attribute가 붙은 여는 마커는 구조가 아니라 literal text다. 그래서 `<a href="/">x</a>`에서 여는 `<a href="/">`는 그대로 남지만 짝 없는 닫는 `</a>`가 매칭되지 않아 오류가 난다. attribute 없는 짝 마커만 구조로 지원하고, href와 나머지 HTML attribute는 앱 매핑이 붙인다.
 
-이 오류는 `tParts()`에만 적용한다. 같은 메시지에서도 `t()`는 문자열을 계속 돌려준다.
+사전 검증을 지정하지 않은 메시지는 이 오류가 `tParts()`에만 적용되고, `t()`는 문자열을 계속 돌려준다. 현재 미게시 소스는 `parseCatalog(source, { locale, namespace, richText: { terms: ['link'] } })`로 메시지별 허용 태그를 지정할 수 있다. 지정한 메시지는 카탈로그 수용 전에 모든 ICU 분기의 구조와 허용 태그를 검사하고, 실패하면 `CatalogError`의 `INVALID_RICH_TEXT` 진단으로 거부한다. 기준 schema에 이 계약을 담으므로 별도 옵션 없이 파싱한 번역도 같은 검증을 받는다. 태그 순서·중첩·생략은 허용한다.
 
 ## 인자와 마커의 관계
 

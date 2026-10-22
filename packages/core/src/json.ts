@@ -10,7 +10,7 @@ export interface JsonEntry {
 }
 
 /** Strict flat JSON. JSON.parse checks syntax; tokens retain decoded duplicate keys. */
-export function readJson(source: string, context: Required<CatalogOptions>): JsonEntry[] {
+export function readJson(source: string, context: Required<Omit<CatalogOptions, 'richText'>>): JsonEntry[] {
   if (typeof source !== 'string') {
     throw new CatalogError([{ ...context, code: 'INVALID_JSON', message: 'Catalog source must be a JSON string.' }]);
   }

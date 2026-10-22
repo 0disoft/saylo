@@ -53,6 +53,10 @@ export default defineConfig({
 
 카탈로그 파일 구조는 `locales/<locale>/<namespace>.json`이다. 예를 들어 `locales/ko/demo.json`, `locales/en/demo.json`이다.
 
+미게시 소스의 `richText: { demo: { terms: ['link', 'strong'] } }` 옵션은 namespace·메시지별 허용 태그를 지정한다. 지정한 메시지는 시작·운영 빌드·개발 중 수정 때 모든 ICU 분기의 태그 균형과 허용 목록을 검사한다. 잘못된 편집은 `INVALID_RICH_TEXT`로 진단하고 개발 서버는 마지막 정상 카탈로그를 유지한다. 번역의 태그 순서·중첩·생략은 허용하며, 지정하지 않은 일반 문자열은 기존 동작을 유지한다. 이 계약은 lazy 전송과 SSR boot 데이터에도 포함된다.
+
+운영 `vite build --watch`는 기본·수동·자동 `includeKeys` 모드에서 카탈로그 변경을 감시하고 매 재빌드마다 다시 검증한다. 번역 문구·lazy chunk·생성 타입을 새 디스크 내용으로 갱신한다. 이 수정도 현재 checkout에만 있다.
+
 ## 선택 빌드(includeKeys)
 
 `includeKeys`는 production에서 내보낼 메시지를 정한다. 기존처럼 정확한 `namespace:messageId` 배열을 넘기거나, `{ from, dynamicKeys? }` 객체로 소스에서 키를 찾게 할 수 있다. 이 기능은 게시본 `0.1.0-alpha.4`에는 없고 현재 로컬 checkout에만 있다.

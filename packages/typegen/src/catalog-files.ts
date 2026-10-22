@@ -1,7 +1,7 @@
 import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { parseCatalog } from '@0disoft/saylo-core';
-import type { ParsedCatalog } from '@0disoft/saylo-core';
+import type { CatalogOptions, ParsedCatalog } from '@0disoft/saylo-core';
 import { mapFileTasks } from './file-tasks.js';
 export { mapFileTasks, FileTaskQueue, FILE_IO_CONCURRENCY } from './file-tasks.js';
 
@@ -25,14 +25,15 @@ export async function assertInside(root: string, file: string): Promise<void> {
   }
 }
 
-export async function readCatalogFile(root: string, file: string, locale: string, namespace: string, read: () => string | Promise<string> = () => readFile(file, 'utf8'), previous?: ParsedCatalog): Promise<CatalogFile> {
+export async function readCatalogFile(root: string, file: string, locale: string, namespace: string, read: () => string | Promise<string> = () => readFile(file, 'utf8'), previous?: ParsedCatalog,
+  options: Pick<CatalogOptions, 'richText'> = {}): Promise<CatalogFile> {
   await assertInside(root, file);
   const source = await read();
-  const catalog = parseCatalog(source, { locale, namespace, sourceName: path.relative(root, file).split(path.sep).join('/') }, previous);
+  const catalog = parseCatalog(source, { ...options, locale, namespace, sourceName: path.relative(root, file).split(path.sep).join('/') }, previous);
   return { file, source, catalog };
 }
 
-export async function scanCatalogs(directory: string): Promise<{ root: string; files: CatalogFile[] }> {
+export async function scanCatalogs(directory: string, richText?: Readonly<Record<string, NonNullable<CatalogOptions['richText']>>>): Promise<{ root: string; files: CatalogFile[] }> {
   const root = await realpath(directory);
   const files: CatalogFile[] = [];
   const locales = new Set<string>();
@@ -51,7 +52,9 @@ export async function scanCatalogs(directory: string): Promise<{ root: string; f
     const loaded = await mapFileTasks(names, async name => {
       const file = path.join(directory, name);
       if (!(await stat(file)).isFile()) throw new Error(`Catalog is not a file: ${file}`);
-      return readCatalogFile(root, file, locale, name.slice(0, -5));
+      const namespace = name.slice(0, -5);
+      return readCatalogFile(root, file, locale, namespace, undefined, undefined,
+        { richText: richText && Object.hasOwn(richText, namespace) ? richText[namespace] : undefined });
     });
     for (const file of loaded) files.push(file);
   }

@@ -8,6 +8,9 @@ void runtimeFactory;
 import { parseCatalog as runtimeParser } from '@0disoft/saylo-core/runtime';
 
 const parsed: ParsedCatalog = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
+parseCatalog('{"terms":"<link>Terms</link>"}', { locale: 'ko', namespace: 'cart', richText: { terms: ['link'] } });
+// @ts-expect-error rich contracts require arrays of allowed tag names
+parseCatalog('{}', { locale: 'ko', namespace: 'cart', richText: { terms: 'link' } });
 const frozenCatalogs: readonly ParsedCatalog[] = freezeCatalogs([parsed]);
 // @ts-expect-error frozen catalog list is readonly
 frozenCatalogs.push(parsed);

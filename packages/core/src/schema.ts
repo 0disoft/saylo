@@ -3,6 +3,7 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import { CatalogError, freeze, isDeepFrozen, immutableSnapshot } from './diagnostics.js';
+import { validateRichMessage } from './rich-contract.js';
 import type { ArgumentType, CatalogDiagnostic, CatalogSchema, MessageSchema, ParsedCatalog } from './types.js';
 
 // The canonical cache is owned by one parse. Its shortcut dies with that cache;
@@ -90,12 +91,22 @@ export function createBaseSchema(catalog: ParsedCatalog): CatalogSchema {
   const cached = cacheable ? schemas.get(catalog) : undefined;
   if (cached) return cached;
   const keys: Record<string, MessageSchema> = Object.create(null);
-  for (const [id, message] of Object.entries(catalog.messages)) keys[id] = message.arguments;
+  const richTextTags: Record<string, readonly string[]> = Object.create(null);
+  for (const [id, message] of Object.entries(catalog.messages)) {
+    keys[id] = message.arguments;
+    if (message.richTextTags !== undefined) {
+      validateRichMessage(message, message.richTextTags, { locale: catalog.locale, namespace: catalog.namespace,
+        sourceName: catalog.sourceName, id, position: message.position });
+      richTextTags[id] = Object.freeze([...message.richTextTags].sort());
+    }
+  }
   const canonical = Object.keys(keys).sort().map(id => [id,
     Object.keys(keys[id]!).sort().map(name => [name, [...keys[id]![name]!.acceptedTypes].sort()]),
+    ...(Object.hasOwn(richTextTags, id) ? [richTextTags[id]] : []),
   ]);
   const schema = freeze({ baseLocale: catalog.locale, namespace: catalog.namespace,
-    fingerprint: `saylo-schema-v2:sha256:${bytesToHex(sha256(utf8ToBytes(JSON.stringify([catalog.namespace, canonical]))))}`, keys: immutableSnapshot(keys) });
+    fingerprint: `saylo-schema-v2:sha256:${bytesToHex(sha256(utf8ToBytes(JSON.stringify([catalog.namespace, canonical]))))}`, keys: immutableSnapshot(keys),
+    ...(Object.keys(richTextTags).length ? { richTextTags } : {}) });
   if (cacheable) schemas.set(catalog, schema);
   return schema;
 }
@@ -120,6 +131,14 @@ export function validateTranslation(base: CatalogSchema, translation: ParsedCata
     if (!original) {
       diagnostics.push({ ...context, id, position: message.position, code: 'UNKNOWN_MESSAGE', message: 'Translation introduces a key absent from the base catalog.' });
       continue;
+    }
+    if (base.richTextTags && Object.hasOwn(base.richTextTags, id)) {
+      try { validateRichMessage(message, base.richTextTags[id]!, { ...context, id, position: message.position }); }
+      catch (error) {
+        if (!(error instanceof CatalogError)) throw error;
+        diagnostics.push(...error.diagnostics);
+        continue;
+      }
     }
     const cacheable = isDeepFrozen(message.arguments) && isDeepFrozen(original);
     const cached = cacheable ? validatedArguments.get(message.arguments) : undefined;

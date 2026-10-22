@@ -43,7 +43,7 @@ export function createCatalogPatch(before: ParsedCatalog, after: PresentCatalog,
     const message = after.catalog.messages[id]!;
     count++;
     const previous = Object.hasOwn(before.messages, id) ? before.messages[id] : undefined;
-    if (!previous || previous.source !== message.source) upsert.push([id, message]);
+    if (!previous || previous.source !== message.source || JSON.stringify(previous.richTextTags) !== JSON.stringify(message.richTextTags)) upsert.push([id, message]);
     else {
       const offsetDelta = message.position.offset - previous.position.offset;
       const lineDelta = message.position.line - previous.position.line;

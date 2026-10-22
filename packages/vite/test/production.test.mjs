@@ -20,6 +20,18 @@ const entries = r => r.manifest().catalogs.filter(m => m.status === 'present' &&
   .map(m => ({ key: m.key, load: async () => r.load(m.key.locale, m.key.namespace) }));
 const boot = r => [r.load('ko', 'demo'), r.load('ko', 'help')];
 
+test('misspelled rich policy keys fail before replacing generated declarations', async t => {
+  const root = await completeFixture(t);
+  const out = path.join(root, 'generated.d.ts');
+  await writeFile(out, '// last good types');
+  for (const richText of [{ missing: { hello: ['link'] } }, { demo: { typo: ['link'] } }]) {
+    const plugin = saylo({ localesDir: 'locales', baseLocale: 'ko', richText, typegen: { outFile: 'generated.d.ts' } });
+    try { await assert.rejects(plugin.configResolved({ root, command: 'build' }), /absent from the base catalogs/); }
+    finally { await plugin.closeBundle(); }
+    assert.equal(await readFile(out, 'utf8'), '// last good types');
+  }
+});
+
 for (const includeKeys of [undefined, ['demo:hello']]) {
   test(`production watch refreshes catalog-only edits (${includeKeys ? 'manual keys' : 'all keys'})`, { timeout: 20000 }, async t => {
     const root = await completeFixture(t);
@@ -254,6 +266,7 @@ export const source = catalogSource;
 export const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });`);
   const config = (astRuntime = true) => ({ configFile: false, root, logLevel: 'silent',
     plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', initialNamespaces: ['demo'], timeZone: 'UTC', astRuntime,
+      richText: { demo: { rich: ['link', 'strong'] }, help: { rich: ['link', 'strong'] } },
       typegen: { outFile: 'generated.d.ts' } })],
     resolve: { alias: { '@0disoft/saylo-core/runtime': fileURLToPath(new URL('../../core/dist/runtime.js', import.meta.url)),
       '@0disoft/saylo-core': fileURLToPath(new URL('../../core/dist/index.js', import.meta.url)),
@@ -321,6 +334,10 @@ export const instance = createI18n({ catalogSource, initialCatalogs, locale: ini
   t.after(() => other.instance.dispose());
   assert.equal(other.externalText, 'Hello Ada');
   assert.ok(mixed.output.some(o => o.type === 'chunk' && o.code.includes('EXPECT_ARGUMENT_CLOSING_BRACE')));
+  await writeFile(path.join(root, 'locales', 'en', 'demo.json'), '{"rich":"<lnik>typo</lnik>"}');
+  await assert.rejects(build(config()), error => error.diagnostics?.[0].code === 'INVALID_RICH_TEXT');
+  await writeFile(path.join(root, 'locales', 'en', 'demo.json'), '{"rich":"<link>unclosed"}');
+  await assert.rejects(build(config()), error => error.diagnostics?.[0].code === 'INVALID_RICH_TEXT');
   await writeFile(path.join(root, 'locales', 'en', 'demo.json'), '{');
   await assert.rejects(build(config()));
 });

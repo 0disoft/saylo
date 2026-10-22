@@ -7,13 +7,13 @@ import type { CatalogOptions, ParsedCatalog } from './types.js';
 interface JsonSpans { source: string; ids: string[]; offsets: Uint32Array }
 const accepted = new WeakMap<ParsedCatalog, JsonSpans>();
 
-function prior(previous: ParsedCatalog | undefined, context: Required<CatalogOptions>) {
+function prior(previous: ParsedCatalog | undefined, context: Required<Omit<CatalogOptions, 'richText'>>) {
   const cached = previous ? accepted.get(previous) : undefined;
   return cached && previous!.locale === context.locale && previous!.namespace === context.namespace &&
     previous!.sourceName === context.sourceName ? cached : undefined;
 }
 
-export function hasSameCatalogSource(source: string, context: Required<CatalogOptions>, previous?: ParsedCatalog): boolean {
+export function hasSameCatalogSource(source: string, context: Required<Omit<CatalogOptions, 'richText'>>, previous?: ParsedCatalog): boolean {
   const cached = prior(previous, context);
   if (!cached || cached.source !== source) return false;
   // Preserve context extensions passed by JS callers; never reuse an old
@@ -39,7 +39,7 @@ export function rememberCatalogJson(catalog: ParsedCatalog, source: string, entr
   accepted.set(catalog, { source, ids, offsets });
 }
 
-export function readCatalogJson(source: string, context: Required<CatalogOptions>, previous?: ParsedCatalog): JsonEntry[] {
+export function readCatalogJson(source: string, context: Required<Omit<CatalogOptions, 'richText'>>, previous?: ParsedCatalog): JsonEntry[] {
   const before = prior(previous, context);
   const edited = typeof source === 'string' && before ? editValue(before, source, previous!) : undefined;
   return edited ?? readJson(source, context);

@@ -5,7 +5,7 @@ import { isGeneratedFile, TypeGenerator } from '@0disoft/saylo-typegen';
 import type { Plugin, ViteDevServer, WebSocketClient } from 'vite';
 import { CatalogRegistry } from './catalog-registry.js';
 import { encodeCatalogResult } from './catalog-wire.js';
-import { scanCatalogs } from './catalog-files.js';
+import { readCatalogFile, scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
 import { diagnosticMessage } from './diagnostic-observers.js';
@@ -38,6 +38,7 @@ const encode = (value: unknown) => {
 export default function saylo(options: SayloViteOptions): Plugin {
   const autoKeys = readAutoKeys(options.includeKeys);
   const includeKeys = autoKeys ? undefined : readIncludedKeys(options.includeKeys);
+  const richText = options.richText === undefined ? undefined : structuredClone(options.richText);
   if (options.requireCompleteTranslations !== undefined && typeof options.requireCompleteTranslations !== 'boolean') {
     throw new TypeError('requireCompleteTranslations must be a boolean.');
   }
@@ -127,6 +128,15 @@ export default function saylo(options: SayloViteOptions): Plugin {
   }
   async function prepareBuild() {
     keySources.clear();
+    if (richText !== undefined) {
+      const bases = new Map(snapshot().catalogs.filter(catalog => catalog.locale === baseLocale).map(catalog => [catalog.namespace, catalog]));
+      for (const [namespace, messages] of Object.entries(richText)) {
+        const base = bases.get(namespace);
+        if (!base) throw new RangeError(`Rich text namespace ${JSON.stringify(namespace)} is absent from the base catalogs.`);
+        for (const id of Object.keys(messages)) if (!Object.hasOwn(base.messages, id))
+          throw new RangeError(`Rich text key ${JSON.stringify(`${namespace}:${id}`)} is absent from the base catalogs.`);
+      }
+    }
     const selectedKeys = production && autoKeys ? await findIncludedKeys(buildRoot,
       snapshot().catalogs, baseLocale, autoKeys, file => keySources.add(file)) : includeKeys;
     buildCatalogs = production ? selectBuildCatalogs(snapshot().catalogs, baseLocale, selectedKeys) : undefined;
@@ -152,7 +162,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
     },
     async configResolved(config) {
       buildRoot = config.root;
-      const scanned = await scanCatalogs(path.resolve(config.root, options.localesDir));
+      const scanned = await scanCatalogs(path.resolve(config.root, options.localesDir), richText);
       root = scanned.root;
       files = new Map(scanned.files.map(f => [f.file, f]));
       production = config.command === 'build';
@@ -180,7 +190,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
         this.addWatchFile?.(file);
       }
       if (builds++ === 0) return;
-      const scanned = await scanCatalogs(root);
+      const scanned = await scanCatalogs(root, richText);
       files = new Map(scanned.files.map(file => [file.file, file]));
       createStore({ baseLocale, locale: options.requireCompleteTranslations ? baseLocale : initialLocale,
         catalogs: snapshot().catalogs, timeZone }).dispose();
@@ -289,7 +299,9 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
           deliverUpdate(() => server?.ws.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic }));
           if (diagnostic.message) server?.config.logger.warn(`[saylo] ${diagnostic.message}`);
         }
-      });
+      }, { readCatalog: (directory, file, locale, namespace, read, previous) =>
+        readCatalogFile(directory, file, locale, namespace, read, previous,
+          { richText: richText && Object.hasOwn(richText, namespace) ? richText[namespace] : undefined }) });
       server.watcher.add(root);
       server.watcher.on('add', onAdd);
       server.watcher.on('unlink', onFile);

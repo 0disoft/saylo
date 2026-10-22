@@ -1,12 +1,66 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseCatalog, createTranslator, createStore, createBaseSchema, createBootSnapshot,
-  serializeBootSnapshot, decodeBootSnapshot, createI18n, InvalidArgumentError, InvalidRichTextError } from '../dist/index.js';
+  serializeBootSnapshot, decodeBootSnapshot, createI18n, validateTranslation, CatalogError, InvalidArgumentError, InvalidRichTextError } from '../dist/index.js';
 import { createI18n as runtimeI18n } from '../dist/runtime.js';
 
 const catalog = (messages, locale = 'en') => parseCatalog(JSON.stringify(messages), { locale, namespace: 'demo' });
 const text = value => ({ type: 'text', value });
 const tag = (name, ...children) => ({ type: 'tag', name, children });
+
+test('opt-in rich policies reject malformed structure and unknown tags in every branch before acceptance', () => {
+  const richText = { x: ['link', 'strong'] };
+  const parse = value => parseCatalog(JSON.stringify({ x: value }), { locale: 'en', namespace: 'demo', richText });
+  for (const value of ['<link>broken', '<link>bad</strong>', '<lnik>typo</lnik>',
+    '{n, plural, one {<link>ok</link>} other {<lnik>unselected</lnik>}}']) {
+    assert.throws(() => parse(value), error => error instanceof CatalogError && error.diagnostics[0].code === 'INVALID_RICH_TEXT');
+  }
+  const base = parse('<strong><link>{name}</link></strong>');
+  richText.x.push('em');
+  assert.equal(Object.isFrozen(richText.x), false);
+  assert.deepEqual(base.messages.x.richTextTags, ['link', 'strong']);
+  assert.deepEqual(createBaseSchema(base).richTextTags.x, ['link', 'strong']);
+  const tr = createTranslator({ locale: 'en', baseCatalogs: [base] });
+  assert.deepEqual(tr.tParts('demo:x', { name: '<lnik>user data' }), [tag('strong', tag('link', text('<lnik>user data')))]);
+  assert.equal(catalog({ x: '<link>literal' }).messages.x.richTextTags, undefined);
+});
+
+test('base rich contracts validate unmarked translations and retain the last committed store on failure', () => {
+  const base = parseCatalog('{"x":"<link>Terms</link>"}', { locale: 'en', namespace: 'demo', richText: { x: ['link', 'strong'] } });
+  const schema = createBaseSchema(base);
+  const good = catalog({ x: '<strong><link>약관</link></strong>' }, 'ko');
+  validateTranslation(schema, good);
+  const store = createStore({ baseLocale: 'en', locale: 'ko', catalogs: [base, good] });
+  const before = store.getSnapshot();
+  try {
+    for (const value of ['<lnik>약관</lnik>', '<link>broken']) {
+      const bad = catalog({ x: value }, 'ko');
+      assert.throws(() => store.replaceCatalogs([base, bad]), error => error.diagnostics[0].code === 'INVALID_RICH_TEXT');
+      assert.equal(store.getSnapshot(), before);
+    }
+    // Reordering, nesting, omission and partial translation remain supported.
+    validateTranslation(schema, catalog({ x: 'plain translation' }, 'ko'));
+    validateTranslation(schema, catalog({}, 'ko'));
+  } finally { store.dispose(); }
+});
+
+test('rich policy changes cannot reuse a parse, fingerprint or visible snapshot from the prior policy', () => {
+  const source = '{"x":"<link>Terms</link>"}';
+  const options = { locale: 'en', namespace: 'demo' };
+  const plain = parseCatalog(source, options);
+  const strict = parseCatalog(source, { ...options, richText: { x: ['link'] } }, plain);
+  assert.notEqual(strict, plain);
+  assert.notEqual(createBaseSchema(strict).fingerprint, createBaseSchema(plain).fingerprint);
+  assert.throws(() => parseCatalog(source, { ...options, richText: { x: [] } }, strict), CatalogError);
+  assert.equal(parseCatalog(source, { ...options, richText: { x: ['link'] } }, strict), strict);
+  const literal = parseCatalog(source, options, strict);
+  assert.equal(literal.messages.x.richTextTags, undefined);
+  const store = createStore({ baseLocale: 'en', locale: 'en', catalogs: [plain] });
+  const before = store.getSnapshot(); store.replaceCatalogs([strict]);
+  assert.notEqual(store.getSnapshot(), before); store.dispose();
+  for (const richText of [null, [], { x: 'link' }, { x: ['link', 'link'] }, { x: ['bad tag'] }])
+    assert.throws(() => parseCatalog(source, { ...options, richText }), TypeError);
+});
 
 test('nested and repeated markers preserve text t, freeze parts, and never interpret argument markup', () => {
   const base = catalog({ x: 'Hello <link><strong>{name}</strong></link> / <link>again</link>' });
@@ -66,14 +120,18 @@ test('live stores advance parts but old snapshots stay pinned; failed reads do n
   store.dispose();
 });
 
-test('existing boot wire and runtime entry carry rich parts without additional metadata', () => {
-  const base = catalog({ x: '<strong>{name}</strong>' });
+test('boot wire and runtime entry preserve explicit rich contracts and reject tampered schema tags', () => {
+  const base = parseCatalog('{"x":"<strong>{name}</strong>"}', { locale: 'en', namespace: 'demo', richText: { x: ['strong'] } });
   const manifest = { sessionId: 'rich', registryRevision: 0, baseLocale: 'en', availableLocales: ['en'], availableNamespaces: ['demo'],
     catalogs: [{ status: 'present', key: { locale: 'en', namespace: 'demo' }, catalogVersion: 0, namespaceSchemaFingerprint: createBaseSchema(base).fingerprint }] };
   const outcome = { status: 'present', sessionId: 'rich', key: { locale: 'en', namespace: 'demo' }, catalogVersion: 0,
     namespaceSchemaFingerprint: createBaseSchema(base).fingerprint, catalog: base };
   const boot = decodeBootSnapshot(serializeBootSnapshot(createBootSnapshot({ manifest, locale: 'en', timeZone: 'UTC', stateRevision: 0,
     loadedNamespaces: ['demo'], catalogOutcomes: [outcome] })));
+  assert.deepEqual(boot.baseSchemas[0].richTextTags.x, ['strong']);
+  const tampered = JSON.parse(serializeBootSnapshot(boot));
+  tampered.baseSchemas[0].richTextTags.x = ['lnik'];
+  assert.throws(() => decodeBootSnapshot(JSON.stringify(tampered)), { code: 'INVALID_BOOT' });
   for (const create of [createI18n, runtimeI18n]) {
     const instance = create({ initialSnapshot: boot, catalogSource: { readManifest: () => manifest, loadCatalog: async () => outcome } });
     assert.deepEqual(instance.tParts('demo:x', { name: 'SSR' }), [tag('strong', text('SSR'))]);

@@ -40,7 +40,8 @@ function validateRegistry(catalogs: readonly ParsedCatalog[], baseLocale: string
 
 function visibleSignature(registry: Registry, baseLocale: string, locale: string): string {
   const catalogs = registry.catalogs.filter(c => c.locale === baseLocale || c.locale === locale)
-    .map(c => [c.locale, c.namespace, Object.keys(c.messages).sort().map(id => [id, c.messages[id]!.source])]);
+    .map(c => [c.locale, c.namespace, Object.keys(c.messages).sort().map(id => [id, c.messages[id]!.source,
+      ...(c.messages[id]!.richTextTags === undefined ? [] : [c.messages[id]!.richTextTags])])]);
   catalogs.sort((a, b) => JSON.stringify(a.slice(0, 2)).localeCompare(JSON.stringify(b.slice(0, 2))));
   return JSON.stringify([locale, registry.locales, registry.namespaces, catalogs]);
 }

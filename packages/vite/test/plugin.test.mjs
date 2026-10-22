@@ -278,6 +278,26 @@ test('changed file sends snapshot, suppresses default HMR, and dedupes identical
   assert.match(virtual, /Hello/);
 });
 
+test('opt-in rich validation retains last good catalogs for malformed edits and tag typos', async t => {
+  const richText = { demo: { hello: ['link'] } };
+  const { change, request } = await setup(t, { richText });
+  richText.demo.hello.push('lnik'); // Plugin policy was copied at construction.
+  await change('ko', '{"hello":"<link>기준 {name}</link>"}');
+  const revision = request()[0].data.revision;
+  for (const [locale, value] of [['ko', '<link>broken'], ['en', '<lnik>Terms</lnik>']]) {
+    await change(locale, JSON.stringify({ hello: value }));
+    assert.equal(request()[0].data.revision, revision);
+    assert.equal(request()[1].data.diagnostics[0].code, 'INVALID_RICH_TEXT');
+  }
+  await change('ko', '{"hello":"<link>복구 {name}</link>"}');
+  await change('en', '{"hello":"<link>Terms {name}</link>"}');
+  const state = request()[0].data;
+  const store = createStore({ baseLocale: 'ko', locale: 'en', catalogs: state.catalogs });
+  try { assert.equal(store.tParts('demo:hello', { name: 'A' })[0].name, 'link'); }
+  finally { store.dispose(); }
+  assert.deepEqual(request()[1].data.diagnostics, []);
+});
+
 test('bad JSON retains last good registry and recovery clears diagnostic', async t => {
   const { change, events, request } = await setup(t);
   await change('ko', '{');

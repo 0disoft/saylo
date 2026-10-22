@@ -1,4 +1,4 @@
-import type { CatalogDiagnostic, CatalogManifest, CatalogMetadata, ParsedCatalog } from '@0disoft/saylo-core';
+import type { CatalogDiagnostic, CatalogManifest, CatalogMetadata, CatalogOptions, ParsedCatalog } from '@0disoft/saylo-core';
 import type { CatalogStamp } from './catalog-patch.js';
 import type { CatalogWireResult } from './catalog-wire.js';
 import type { AutoIncludeKeys } from './auto-keys.js';
@@ -11,6 +11,8 @@ export interface SayloViteOptions {
   /** Scope exported by virtual:saylo/lazy. Defaults to every base namespace. */
   readonly initialNamespaces?: readonly string[];
   readonly timeZone?: string;
+  /** Namespace -> message ID -> allowed rich text tags. E.g. { common: { terms: ['link'] } }. */
+  readonly richText?: Readonly<Record<string, NonNullable<CatalogOptions['richText']>>>;
   /** Production-only parser removal scoped to Saylo's AST formatter. Defaults to true. */
   readonly astRuntime?: boolean;
   /** Build-only exact namespace:messageId list. Undefined keeps all messages; [] keeps none. */

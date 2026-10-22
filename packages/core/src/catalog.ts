@@ -4,11 +4,17 @@ import { messageOffset } from './json.js';
 import { hasSameCatalogSource, readCatalogJson, rememberCatalogJson } from './catalog-json.js';
 import { inferArguments } from './schema.js';
 import { createSimplePositionPool, parseSimpleMessage } from './simple-message.js';
+import { readRichTextPolicy, validateRichMessage } from './rich-contract.js';
 import type { CatalogDiagnostic, CatalogOptions, MessageSchema, ParsedCatalog, ParsedMessage } from './types.js';
+
+const richPolicies = new WeakMap<ParsedCatalog, string>();
 
 /** An immutable previous catalog lets live readers reuse unchanged ICU messages. */
 export function parseCatalog(source: string, options: CatalogOptions, previous?: ParsedCatalog): ParsedCatalog {
-  const context = { ...options, sourceName: options.sourceName ?? '<catalog>' };
+  const { richText, ...catalogOptions } = options;
+  const policy = readRichTextPolicy(richText);
+  const policySignature = JSON.stringify(Object.entries(policy ?? {}).sort(([a], [b]) => a.localeCompare(b)));
+  const context = { ...catalogOptions, sourceName: options.sourceName ?? '<catalog>' };
   if (typeof options.namespace !== 'string' || !options.namespace || options.namespace === '.' || options.namespace === '..' || /[:/\\\x00-\x1f]/.test(options.namespace)) {
     throw new CatalogError([{ ...context, code: 'INVALID_NAMESPACE', message: 'Namespace must be a nonempty filename without colons or path separators.' }]);
   }
@@ -18,7 +24,7 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
   } catch {
     throw new CatalogError([{ ...context, code: 'INVALID_LOCALE', message: 'Locale must be a valid BCP 47 language tag.' }]);
   }
-  if (hasSameCatalogSource(source, context, previous)) return previous!;
+  if (previous && richPolicies.get(previous) === policySignature && hasSameCatalogSource(source, context, previous)) return previous;
   const entries = readCatalogJson(source, context, previous);
   const positionAt = createPositionLocator(source);
   const diagnostics: CatalogDiagnostic[] = [];
@@ -36,7 +42,8 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
     // Most live entries are immutable reuse hits. Build diagnostic context only
     // for messages that actually need parsing, avoiding a spread per cached ID.
     const before = reusable && Object.hasOwn(reusable, entry.id) ? reusable[entry.id] : undefined;
-    if (before?.source === entry.value) {
+    const tags = policy && Object.hasOwn(policy, entry.id) ? policy[entry.id] : undefined;
+    if (before?.source === entry.value && (before.richTextTags === tags || JSON.stringify(before.richTextTags) === JSON.stringify(tags))) {
       const position = positionAt(entry.valueOffset);
       messages[entry.id] = before.position.offset === position.offset && before.position.line === position.line &&
         before.position.column === position.column ? before : freeze({ ...before, position });
@@ -47,7 +54,10 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
       const ast = parseSimpleMessage(entry.value, simplePosition) ?? parse(entry.value, { ignoreTag: true, captureLocation: true, requiresOtherClause: true, locale });
       const argumentsSchema = inferArguments(ast, (argument, offset) => ({ ...details, argument, code: 'ARGUMENT_CONFLICT',
         position: positionAt(messageOffset(entry, offset, source)), message: `Argument ${JSON.stringify(argument)} has incompatible uses in the same message.` }), argumentSchemas);
-      messages[entry.id] = freeze({ source: entry.value, position: positionAt(entry.valueOffset), ast: freezeMessageAst(ast), arguments: argumentsSchema });
+      const position = positionAt(entry.valueOffset);
+      if (tags !== undefined) validateRichMessage({ ast, arguments: argumentsSchema }, tags, { ...details, position });
+      messages[entry.id] = freeze({ source: entry.value, position, ast: freezeMessageAst(ast), arguments: argumentsSchema,
+        ...(tags === undefined ? {} : { richTextTags: tags }) });
     } catch (error) {
       if (error instanceof CatalogError) diagnostics.push(...error.diagnostics);
       else {
@@ -61,5 +71,6 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
   if (diagnostics.length) throw new CatalogError(diagnostics);
   const catalog = freeze({ ...context, messages: freezeOwnedMessageMap(messages) });
   rememberCatalogJson(catalog, source, entries);
+  richPolicies.set(catalog, policySignature);
   return catalog;
 }
