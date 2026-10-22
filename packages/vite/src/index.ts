@@ -216,8 +216,16 @@ export default function saylo(options: SayloViteOptions): Plugin {
         return resolved.id;
       });
       if (options.typegen) {
-        typegen ??= new TypeGenerator(generatedOut!);
-        await typegen.update(snapshot().catalogs.filter(catalog => catalog.locale === baseLocale).map(createBaseSchema));
+        const generator = typegen ??= new TypeGenerator(generatedOut!);
+        const errors: unknown[] = [];
+        try { await generator.update(snapshot().catalogs.filter(catalog => catalog.locale === baseLocale).map(createBaseSchema)); }
+        catch (error) { errors.push(error); }
+        // SvelteKit can start a client build inside SSR writeBundle, before closeBundle.
+        // A production generation owns the output only until its physical write settles.
+        try { await generator.stop(); } catch (error) { errors.push(error); }
+        if (typegen === generator) typegen = undefined;
+        if (errors.length === 1) throw errors[0];
+        if (errors.length > 1) throw new AggregateError(errors, 'Build type generation and cleanup failed', { cause: errors[0] });
       }
     },
     resolveId(id, importer) {

@@ -78,6 +78,22 @@ for (const includeKeys of [undefined, ['demo:hello']]) {
   });
 }
 
+test('nested production builds release typegen ownership before the outer closeBundle and refresh on rebuild', async t => {
+  const root = await completeFixture(t);
+  const outer = saylo({ localesDir: 'locales', baseLocale: 'ko', typegen: { outFile: 'generated.d.ts' } });
+  const inner = saylo({ localesDir: 'locales', baseLocale: 'ko', typegen: { outFile: 'generated.d.ts' } });
+  const context = { addWatchFile() {} };
+  try {
+    await outer.configResolved({ root, command: 'build' });
+    await outer.buildStart.call(context);
+    await inner.configResolved({ root, command: 'build' });
+    await inner.buildStart.call(context); // SvelteKit starts client build from SSR writeBundle.
+    await writeFile(path.join(root, 'locales/ko/demo.json'), '{"hello":"ko {name}","added":"new"}');
+    await outer.buildStart.call(context);
+    assert.match(await readFile(path.join(root, 'generated.d.ts'), 'utf8'), /demo:added/);
+  } finally { await inner.closeBundle(); await outer.closeBundle(); }
+});
+
 test('static cancellation is per caller and abandoned imports cannot overwrite a new flight', async () => {
   const r = registry(), clock = scheduler(), loads = [];
   const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: { locale: 'en', namespace: 'demo' },
