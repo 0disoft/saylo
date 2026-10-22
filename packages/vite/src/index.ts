@@ -170,9 +170,9 @@ export default function saylo(options: SayloViteOptions): Plugin {
       await prepareBuild();
       if (options.typegen) {
         generatedOut = path.resolve(config.root, options.typegen.outFile);
+        // Config-only consumers (svelte-kit sync, svelte-check) never run closeBundle.
+        // Validate the target here, but acquire resources only for a server/build lifetime.
         typegen = new TypeGenerator(generatedOut);
-        try { await typegen.update(snapshot().catalogs.filter(c => c.locale === baseLocale).map(createBaseSchema)); }
-        catch (error) { await cleanup(); throw error; }
       }
     },
     async buildStart() {
@@ -182,13 +182,14 @@ export default function saylo(options: SayloViteOptions): Plugin {
         this.addWatchFile?.(path.dirname(file));
         this.addWatchFile?.(file);
       }
-      if (builds++ === 0) return;
-      const scanned = await scanCatalogs(root, richText);
-      files = new Map(scanned.files.map(file => [file.file, file]));
-      createStore({ baseLocale, locale: options.requireCompleteTranslations ? baseLocale : initialLocale,
-        catalogs: snapshot().catalogs, timeZone }).dispose();
-      if (options.requireCompleteTranslations) await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
-      await prepareBuild();
+      if (builds++ > 0) {
+        const scanned = await scanCatalogs(root, richText);
+        files = new Map(scanned.files.map(file => [file.file, file]));
+        createStore({ baseLocale, locale: options.requireCompleteTranslations ? baseLocale : initialLocale,
+          catalogs: snapshot().catalogs, timeZone }).dispose();
+        if (options.requireCompleteTranslations) await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
+        await prepareBuild();
+      }
       if (options.typegen) {
         typegen ??= new TypeGenerator(generatedOut!);
         await typegen.update(snapshot().catalogs.filter(catalog => catalog.locale === baseLocale).map(createBaseSchema));
@@ -253,7 +254,12 @@ export const baseLocale = ${JSON.stringify(baseLocale)};
 export const initialLocale = ${JSON.stringify(snapshot().catalogs.some(c => c.locale === initialLocale) ? initialLocale : baseLocale)};
 export const timeZone = ${JSON.stringify(timeZone)};`;
     },
-    configureServer(devServer) {
+    async configureServer(devServer) {
+      if (options.typegen) {
+        typegen ??= new TypeGenerator(generatedOut!);
+        try { await typegen.update(snapshot().catalogs.filter(c => c.locale === baseLocale).map(createBaseSchema)); }
+        catch (error) { await cleanup(); throw error; }
+      }
       detachLive();
       server = devServer;
       removeServerSource = registerServerSource(sessionId, {

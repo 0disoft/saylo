@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import saylo from '../dist/index.js';
+import { resolveConfig } from 'vite';
 import { LiveRegistry } from '../dist/live-registry.js';
 import { decodeCatalogResult } from '../dist/catalog-wire.js';
 import { createStore, createI18n } from '@0disoft/saylo-core';
@@ -37,7 +38,7 @@ async function setup(t, options = {}) {
   const watcher = new EventEmitter();
   watcher.add = () => {};
   const server = { ws, watcher, httpServer: new EventEmitter(), config: { logger: { warn(message) { warnings.push(message); } } } };
-  plugin.configureServer(server);
+  await plugin.configureServer(server);
   const eagerClient = { send: event => ws.send(event) };
   ws.clients.add(eagerClient);
   ws.emit(REQUEST_EVENT, { scope: 'eager', requestId: 'eager', generation: 1, locale: 'ko', namespaces: ['demo'] }, eagerClient);
@@ -101,6 +102,18 @@ test('includeKeys never filters startup, live edits or snapshots in development'
   await change('en', '{"hello":"Still live {name}"}');
   store.replaceCatalogs(request()[0].data.catalogs);
   assert.equal(store.t('demo:hello', { name: 'Saylo' }), 'Still live Saylo');
+});
+
+test('config-only tools can resolve repeatedly without generating types or retaining output locks', async t => {
+  const root = await fixture(t);
+  const out = path.join(root, 'generated.d.ts');
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const plugin = saylo({ localesDir: root, baseLocale: 'ko', typegen: { outFile: 'generated.d.ts' } });
+    t.after(() => plugin.closeBundle());
+    await resolveConfig({ root, configFile: false, plugins: [plugin], logLevel: 'silent' }, 'serve');
+    await assert.rejects(stat(out), { code: 'ENOENT' });
+    await assert.rejects(stat(path.join(root, '.generated.d.ts.saylo-typegen.lock')), { code: 'ENOENT' });
+  }
 });
 
 test('startup type readiness precedes serving and live publish precedes background typegen', async t => {
