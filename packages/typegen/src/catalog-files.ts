@@ -2,6 +2,8 @@ import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { parseCatalog } from '@0disoft/saylo-core';
 import type { ParsedCatalog } from '@0disoft/saylo-core';
+import { mapFileTasks } from './file-tasks.js';
+export { mapFileTasks, FileTaskQueue, FILE_IO_CONCURRENCY } from './file-tasks.js';
 
 export interface CatalogFile {
   readonly file: string;
@@ -45,12 +47,13 @@ export async function scanCatalogs(directory: string): Promise<{ root: string; f
     if (!locale) throw new Error(`Invalid locale directory: ${entry.name}`);
     if (locales.has(locale)) throw new Error(`Duplicate canonical locale directory: ${entry.name}`);
     locales.add(locale);
-    for (const name of (await readdir(directory)).sort()) {
-      if (name.startsWith('.') || !name.endsWith('.json')) continue;
+    const names = (await readdir(directory)).sort().filter(name => !name.startsWith('.') && name.endsWith('.json'));
+    const loaded = await mapFileTasks(names, async name => {
       const file = path.join(directory, name);
       if (!(await stat(file)).isFile()) throw new Error(`Catalog is not a file: ${file}`);
-      files.push(await readCatalogFile(root, file, locale, name.slice(0, -5)));
-    }
+      return readCatalogFile(root, file, locale, name.slice(0, -5));
+    });
+    for (const file of loaded) files.push(file);
   }
   return { root, files };
 }

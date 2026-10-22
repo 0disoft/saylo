@@ -3,7 +3,7 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { CatalogError, createBaseSchema, validateTranslation } from '@0disoft/saylo-core';
 import type { CatalogSchema, ParsedCatalog } from '@0disoft/saylo-core';
-import { catalogLocation, readCatalogFile } from './catalog-files.js';
+import { catalogLocation, readCatalogFile, mapFileTasks, FileTaskQueue } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import type { LiveDiagnostic } from './types.js';
 import { quarantineTranslation } from './translation-quarantine.js';
@@ -73,6 +73,8 @@ export class LiveRegistry {
   private rechecks: DiskRechecks;
   private readonly lifetime = new AbortController();
   private readonly timeoutMs: number;
+  private readonly fileTasks = new FileTaskQueue();
+  private readonly cancelOperations = new Set<() => void>();
 
   constructor(
     private root: string,
@@ -83,7 +85,8 @@ export class LiveRegistry {
   ) {
     this.timeoutMs = timeoutDuration(operations.timeoutMs ?? DEV_DISK_POLICY.operationTimeoutMs);
     this.rechecks = new DiskRechecks(file => { void this.enqueue(file, () => this.read(file)); }, {
-      ...operations, stamp: file => this.bounded(`Catalog stamp: ${file}`, () => (operations.stamp ?? diskStamp)(file)),
+      ...operations, stamp: file => this.bounded(`Catalog stamp: ${file}`,
+        signal => this.fileTasks.run(() => (operations.stamp ?? diskStamp)(file), signal)),
     });
     this.desired = new Map(files.map(f => [f.file, f]));
     this.accepted = new Map(this.desired);
@@ -216,35 +219,40 @@ export class LiveRegistry {
     const errors = new Map(this.errors);
     const parsed = new Map<string, ParsedCatalog>();
     let settleMissing = false;
-    for (const [file, read] of batch) {
+    const entries = [...batch];
+    const results = await this.bounded('Catalog batch read', signal => mapFileTasks(entries, async ([file, read]) => {
       const location = catalogLocation(this.root, file)!;
-      const previous = this.pendingParses.get(file) ?? candidate.get(file)?.catalog;
-      this.pendingParses.delete(file);
+      const previous = this.pendingParses.get(file) ?? this.desired.get(file)?.catalog;
       let capturedStamp: string | undefined;
       try {
         // Read the final filesystem state, rather than trusting an earlier unlink/add label.
-        const changed = await this.bounded(`Catalog read: ${file}`, signal =>
+        const changed = await this.fileTasks.run(() =>
           (this.operations.readCatalog ?? readCatalogFile)(this.root, file, location.locale, location.namespace, async () => {
           // Capture before reading: a suppressed write during the read must
           // not be mistaken for the version represented by the old text.
           capturedStamp = await (this.operations.stamp ?? diskStamp)(file);
           signal.throwIfAborted();
           return read ? read() : this.read(file);
-        }, previous));
+        }, previous), signal);
+        return { file, read, changed, capturedStamp, failed: false as const };
+      } catch (error) { return { file, read, error, capturedStamp, failed: true as const }; }
+    }, { signal }));
+    for (const { file, read, capturedStamp, ...result } of results) {
+      this.pendingParses.delete(file);
+      if (capturedStamp !== undefined) stamps.set(file, capturedStamp);
+      if (!result.failed) {
+        const changed = result.changed;
         parsed.set(file, changed.catalog);
         candidate.set(file, changed);
         errors.delete(file);
-      } catch (error) {
+      } else {
+        const error = result.error;
         if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') {
           // An update reader can race an atomic replacement before its
           // unlink/add events arrive. Confirm removal only after disk settling.
           if (read) settleMissing = true;
           else { candidate.delete(file); errors.delete(file); }
         } else errors.set(file, this.failure(error));
-      } finally {
-        // Parse failures still need disk rechecks for watcher-suppressed repairs.
-        // Late operations may update the local stamp, never the finished batch map.
-        if (capturedStamp !== undefined) stamps.set(file, capturedStamp);
       }
     }
     return { candidate, errors, parsed, settleMissing };
@@ -287,13 +295,14 @@ export class LiveRegistry {
     const files = [...candidate.values()];
     const bases = baseCatalogs(files, this.baseLocale);
     // Do not accept a ghost baseline if its unlink event is still in flight.
-    if (!(await this.bounded('Base catalog existence check', () => Promise.all(bases.map(async f => {
-      try { return this.operations.isFile ? await this.operations.isFile(f.file) : (await stat(f.file)).isFile(); }
+    const existing = await this.bounded('Base catalog existence check', signal => mapFileTasks(bases, async f => {
+      try { return await this.fileTasks.run(() => this.operations.isFile ? this.operations.isFile(f.file) : stat(f.file).then(s => s.isFile()), signal); }
       catch (error) {
         if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') return false;
         throw error;
       }
-    })))).some(Boolean)) {
+    }, { signal }));
+    if (!existing.some(Boolean)) {
       throw new Error('The base locale must retain at least one catalog on disk.');
     }
     const namespaces = new Set(bases.map(f => f.catalog.namespace));
@@ -336,12 +345,12 @@ export class LiveRegistry {
       const finish = (failed: boolean, value: unknown) => {
         if (finished) return;
         finished = true;
-        cancelTimer(); parent.removeEventListener('abort', abort);
+        cancelTimer(); this.cancelOperations.delete(abort);
         if (failed) { controller.abort(value); reject(value); } else resolve(value as T);
       };
       const abort = () => finish(true, parent.reason);
       if (parent.aborted) { abort(); return; }
-      parent.addEventListener('abort', abort, { once: true });
+      this.cancelOperations.add(abort);
       cancelTimer = (this.operations.schedule ?? schedule)(this.timeoutMs,
         () => finish(true, new Error(`${label} timed out after ${this.timeoutMs}ms.`, { cause: new Error('Disk operation deadline exceeded.') })));
       void Promise.resolve().then(() => { controller.signal.throwIfAborted(); return operation(controller.signal); })
@@ -364,6 +373,7 @@ export class LiveRegistry {
   stop() {
     this.stopped = true;
     this.lifetime.abort(new Error('Live registry is stopped.'));
+    for (const cancel of this.cancelOperations) cancel();
     this.rechecks.stop();
     this.timer?.();
     this.queued.clear();

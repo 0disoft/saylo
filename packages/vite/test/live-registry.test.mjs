@@ -23,6 +23,32 @@ function fixture(t, publish = () => {}, operations = {}) {
 }
 
 const flush = async () => { for (let i = 0; i < 25; i++) await Promise.resolve(); };
+
+test('large live batches read at most eight files at once and commit in enqueue order', async t => {
+  const clock = scheduler(), root = path.resolve('virtual-locales'), pending = [], published = [];
+  const initial = path.join(root, 'ko', 'base.json');
+  const item = (file, namespace, source) => ({ file, source, catalog: parseCatalog(source, { locale: 'ko', namespace }) });
+  let active = 0, peak = 0;
+  const registry = new LiveRegistry(root, [item(initial, 'base', '{"title":"Base"}')], 'ko', files => published.push(files), {
+    ...clock, stamp: async () => 'stable', isFile: async () => true,
+    readCatalog: async (_root, file, _locale, namespace, read) => item(file, namespace, await read()),
+  });
+  t.after(() => registry.stop());
+  const names = Array.from({ length: 20 }, (_, i) => `part${i}`);
+  const done = names.map((namespace, i) => registry.enqueue(path.join(root, 'ko', `${namespace}.json`), () => {
+    const gate = Promise.withResolvers(); pending[i] = gate;
+    peak = Math.max(peak, ++active);
+    return gate.promise.finally(() => { active--; });
+  }));
+  clock.tick(0); await flush(); assert.equal(pending.length, 8);
+  for (let offset = 0; offset < 20; offset += 8) {
+    for (let i = Math.min(offset + 7, 19); i >= offset; i--) pending[i].resolve('{"title":"Changed"}');
+    await flush(); await flush();
+  }
+  await Promise.all(done);
+  assert.equal(peak, 8); assert.equal(published.length, 1);
+  assert.deepEqual(published[0].map(f => f.catalog.namespace), ['base', ...names]);
+});
 for (const stage of ['read', 'readCatalog', 'stamp', 'isFile']) {
   test(`a stalled ${stage} is bounded, keeps accepted data, and a later save recovers`, async t => {
     const deferred = Promise.withResolvers(), publications = [];

@@ -8,6 +8,7 @@ import test from 'node:test';
 import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
 import { renderTypes, TypeGenerator, writeGenerated, isGeneratedFile } from '@0disoft/saylo-typegen';
 import { fixtureSchema } from './fixture.mjs';
+import { mapFileTasks, FileTaskQueue, scanCatalogs } from '../dist/catalog-files.js';
 
 const schema = (messages, namespace = 'demo') => createBaseSchema(parseCatalog(JSON.stringify(messages), { locale: 'ko', namespace }));
 async function directory(t) {
@@ -15,6 +16,48 @@ async function directory(t) {
   t.after(() => rm(root, { recursive: true, force: true }));
   return root;
 }
+
+test('file tasks cap concurrency, keep input order, and report the earliest input failure', async () => {
+  const pending = [], started = [];
+  let active = 0, peak = 0;
+  const work = mapFileTasks(Array.from({ length: 20 }, (_, i) => i), i => {
+    const gate = Promise.withResolvers(); pending[i] = gate; started.push(i);
+    peak = Math.max(peak, ++active);
+    return gate.promise.then(() => i).finally(() => { active--; });
+  });
+  const flush = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
+  assert.equal(started.length, 8);
+  for (let offset = 0; offset < 20; offset += 8) {
+    for (let i = Math.min(offset + 7, 19); i >= offset; i--) pending[i].resolve();
+    await flush();
+  }
+  assert.deepEqual(await work, Array.from({ length: 20 }, (_, i) => i)); assert.equal(peak, 8);
+  const gates = Array.from({ length: 4 }, () => Promise.withResolvers());
+  const first = new Error('first input failure'), later = new Error('faster later failure');
+  const failed = assert.rejects(mapFileTasks(gates, gate => gate.promise, { concurrency: 4 }), error => error === first);
+  gates[3].reject(later); gates[1].reject(first); gates[0].resolve(); gates[2].resolve(); await failed;
+});
+
+test('aborted file tasks retain physical slots and discard queued operations', async () => {
+  const queue = new FileTaskQueue(1), controller = new AbortController(), physical = Promise.withResolvers();
+  const reason = new Error('deadline'); let started = 0;
+  const first = assert.rejects(queue.run(() => { started++; return physical.promise; }, controller.signal), error => error === reason);
+  const discarded = assert.rejects(queue.run(async () => { assert.fail('aborted queued operation'); }, controller.signal), error => error === reason);
+  await Promise.resolve(); controller.abort(reason); await Promise.all([first, discarded]);
+  const next = queue.run(async () => { started++; return 'recovered'; });
+  for (let i = 0; i < 10; i++) await Promise.resolve();
+  assert.equal(started, 1); physical.resolve(); assert.equal(await next, 'recovered'); assert.equal(started, 2);
+});
+
+test('parallel catalog scanning preserves sorted locale and namespace output', async t => {
+  const root = await directory(t);
+  for (const locale of ['ko', 'en']) {
+    await mkdir(path.join(root, locale));
+    for (const namespace of ['z', 'b', 'a']) await writeFile(path.join(root, locale, `${namespace}.json`), '{"title":"Value"}');
+  }
+  assert.deepEqual((await scanCatalogs(root)).files.map(f => `${f.catalog.locale}/${f.catalog.namespace}`),
+    ['en/a', 'en/b', 'en/z', 'ko/a', 'ko/b', 'ko/z']);
+});
 
 test('emission is stable across text/order edits and preserves base argument contracts', () => {
   const source = renderTypes([fixtureSchema]);
