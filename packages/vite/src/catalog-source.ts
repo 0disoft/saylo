@@ -9,6 +9,8 @@ import { applyCatalogPatch } from './catalog-patch.js';
 import { decodeCatalogResult } from './catalog-wire.js';
 import type { PresentCatalog } from './catalog-patch.js';
 import { deliverDiagnostic, diagnosticMessage } from './diagnostic-observers.js';
+import { createRequestId, schedule, timeoutDuration } from './scheduling.js';
+import type { DevRuntime } from './scheduling.js';
 
 type HotContext = NonNullable<ImportMeta['hot']>;
 
@@ -26,6 +28,7 @@ export interface DevCatalogSource extends CatalogSource {
 export interface DevCatalogSourceOptions {
   readonly hot?: HotContext;
   readonly requestTimeoutMs?: number;
+  readonly runtime?: DevRuntime;
   /** Subscribe cached pairs to atomic server pushes. Generated Vite sources enable this. */
   readonly push?: boolean;
 }
@@ -44,9 +47,8 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   const hot = options.hot ?? import.meta.hot;
   if (!hot) throw new Error('createDevCatalogSource requires a Vite hot context.');
   let manifest = validateCatalogManifest(initial);
-  const timeoutMs = options.requestTimeoutMs ?? 5000;
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('Invalid catalog source timeout.');
-  const identity = crypto.getRandomValues(new Uint32Array(4)).join('-');
+  const timeoutMs = timeoutDuration(options.requestTimeoutMs);
+  const identity = (options.runtime?.createId ?? createRequestId)();
   let sequence = 0;
   let generation = 1;
   let refs = 0;
@@ -144,6 +146,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   function start() {
     if (sync || disposed) return;
     sync = new EagerSync({ timeoutMs,
+      ...(options.runtime ? { runtime: options.runtime } : {}),
       onState: observeState,
       scope: () => ({ locale: manifest.baseLocale, namespaces: [] }),
       send: request => hot!.send(MANIFEST_REQUEST_EVENT, request),
@@ -239,9 +242,9 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
         const request = { locale, namespace, generation, requestId: `${identity}:${++sequence}`,
           ...(baseline ? { known: { sessionId: baseline.sessionId, catalogVersion: baseline.catalogVersion } } : {}) };
         const abort = () => { entry.cleanup(); reject(new CatalogLoadError('ABORTED', 'Catalog request was cancelled.')); };
-        const timer = setTimeout(() => { entry.cleanup(); reject(new CatalogLoadError('TIMEOUT', 'Catalog reply timed out.')); }, timeoutMs);
+        const cancelTimer = (options.runtime?.schedule ?? schedule)(timeoutMs, () => { entry.cleanup(); reject(new CatalogLoadError('TIMEOUT', 'Catalog reply timed out.')); });
         const entry: Pending = { request, key, baseline, resolve, reject, cleanup: () => {
-          clearTimeout(timer); signal?.removeEventListener('abort', abort); pending.delete(entry.request.requestId); maybeStop();
+          cancelTimer(); signal?.removeEventListener('abort', abort); pending.delete(entry.request.requestId); maybeStop();
         } };
         pending.set(request.requestId, entry);
         signal?.addEventListener('abort', abort, { once: true });

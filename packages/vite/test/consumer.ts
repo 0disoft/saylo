@@ -26,6 +26,9 @@ const onSyncState = (state: DevSyncState) => {
   state.attempt = 7;
 };
 const stop: () => void = connectDev(store, { onDiagnostic: diagnostic => console.log(diagnostic.message), onSyncState });
+connectDev(store, { runtime: { createId: () => 'consumer', schedule: (milliseconds, callback) => {
+  const timer = setTimeout(callback, milliseconds); return () => clearTimeout(timer);
+} } });
 stop();
 const recorder = createSupportRecorder({ runtime: 'browser', sayloVite: '0.1.0-alpha.4' });
 connectDev(store, { onDiagnostic: recorder.onDiagnostic, onSyncState: recorder.onSyncState });

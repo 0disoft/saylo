@@ -117,6 +117,8 @@ TS/checkJs 소비자는 `compilerOptions.types`에 `["vite/client", "@0disoft/sa
 
 `connectDev`는 eager·lazy 두 경로 모두 `onSyncState(state)`로 개발 서버 handshake 상태를 알린다. `state`는 `{ status, attempt, maxAttempts: 3 }`인 frozen 객체이고 `status`는 `idle`·`connecting`·`retrying`·`connected`·`disconnected`·`failed`·`stopped` 중 하나다. `attempt`는 `connecting`에서 1, `retrying`에서 2·3, `failed`에서 마지막 시도값이고 나머지 상태는 0이다.
 
+미게시 소스의 eager `connectDev`와 `createDevCatalogSource`는 선택적 `runtime: { schedule, createId }`를 받는다. `schedule(milliseconds, callback)`은 callback을 나중에 실행하고 idempotent 취소 함수를 반환해야 하며, `createId()`는 연결마다 고유한 문자열을 반환해야 한다. 생략하면 기본 타이머와 암호학적 난수를 사용한다. `requestTimeoutMs`의 양수 소수는 코어와 같이 올림한다. lazy bridge의 타이머는 `createDevCatalogSource`에 설정한다.
+
 ```ts
 connectDev(i18n, {
   catalogSource,

@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
+import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 import { createI18n, createStore, parseCatalog } from '@0disoft/saylo-core';
 import { connectDev, createDevCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
-import { REQUEST_EVENT, SNAPSHOT_EVENT, MANIFEST_REQUEST_EVENT, MANIFEST_EVENT, DIAGNOSTIC_EVENT } from '../dist/types.js';
+import { REQUEST_EVENT, SNAPSHOT_EVENT, MANIFEST_REQUEST_EVENT, MANIFEST_EVENT, DIAGNOSTIC_EVENT, CATALOG_REQUEST_EVENT, CATALOG_EVENT } from '../dist/types.js';
 
 const catalog = text => parseCatalog(JSON.stringify({ hello: text }), { locale: 'ko', namespace: 'demo' });
 const view = states => states.map(state => [state.status, state.attempt]);
@@ -20,6 +21,51 @@ function fixture(t) {
     baseLocale: 'ko', catalogs: [catalog(text)] });
   return { hot, store, requests, reply };
 }
+
+test('injected handshake timers bound retries at exact deadlines and use explicit identities', t => {
+  const f = fixture(t), clock = scheduler(), states = [];
+  const stop = connectDev(f.store, { hot: f.hot, requestTimeoutMs: 1.5,
+    runtime: { schedule: clock.schedule, createId: () => 'test-eager' }, onSyncState: state => states.push(state) });
+  assert.equal(f.requests[0].requestId, 'test-eager:1');
+  clock.tick(1); assert.equal(f.requests.length, 1);
+  clock.tick(1); assert.equal(f.requests.length, 2);
+  clock.tick(2); assert.equal(f.requests.length, 3);
+  clock.tick(2); assert.equal(states.at(-1).status, 'failed');
+  clock.tick(100); assert.equal(f.requests.length, 3); assert.equal(clock.size, 0);
+  f.hot.emit('vite:ws:disconnect');
+  f.hot.send = (_, request) => f.hot.emit(SNAPSHOT_EVENT, f.reply(request));
+  f.hot.emit('vite:ws:connect');
+  assert.equal(f.store.t('demo:hello'), 'recovered'); assert.equal(clock.size, 0);
+  stop(); assert.equal(clock.size, 0);
+});
+
+test('lazy catalog timeout is normalized, abort cleans timers, and late replies cannot win', async t => {
+  const registry = new CatalogRegistry('lazy-timer', 'ko', [catalog('initial')]);
+  const hot = new EventEmitter(), clock = scheduler(), requests = []; let identity = 0;
+  hot.dispose = hot.prune = () => {};
+  hot.send = (event, request) => {
+    if (event === MANIFEST_REQUEST_EVENT) hot.emit(MANIFEST_EVENT, { kind: 'snapshot', request, manifest: registry.manifest() });
+    else { assert.equal(event, CATALOG_REQUEST_EVENT); requests.push(request); }
+  };
+  const source = createDevCatalogSource(registry.manifest(), [], { hot, requestTimeoutMs: 1.5,
+    runtime: { schedule: clock.schedule, createId: () => `lazy-${++identity}` } });
+  t.after(() => source.dispose());
+  const stop = source.connect();
+  let settled = false;
+  const first = source.loadCatalog('ko', 'demo').finally(() => { settled = true; });
+  const failed = assert.rejects(first, { code: 'TIMEOUT' });
+  clock.tick(1); await Promise.resolve(); assert.equal(settled, false);
+  clock.tick(1); await failed; assert.equal(clock.size, 0);
+  const controller = new AbortController();
+  const cancelled = assert.rejects(source.loadCatalog('ko', 'demo', controller.signal), { code: 'ABORTED' });
+  controller.abort(); await cancelled; assert.equal(clock.size, 0);
+  hot.emit(CATALOG_EVENT, { request: requests[0], result: registry.load('ko', 'demo') });
+  assert.equal(source.getCatalogs().length, 0);
+  const ready = source.loadCatalog('ko', 'demo');
+  hot.emit(CATALOG_EVENT, { request: requests.at(-1), result: registry.load('ko', 'demo') });
+  assert.equal((await ready).status, 'present'); assert.equal(clock.size, 0);
+  stop();
+});
 
 test('eager timeouts expose attempts and final failure, then reconnect recovers without stale state events', { timeout: 2000 }, async t => {
   const { hot, store, requests, reply } = fixture(t);

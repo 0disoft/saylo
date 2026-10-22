@@ -1,6 +1,12 @@
 /** Timers are deferred; cancellation remains valid after a callback has fired. */
 export type Schedule = (milliseconds: number, callback: () => void) => () => void;
 
+export interface DevRuntime {
+  readonly schedule?: Schedule;
+  /** Return a unique connection identity; shared sockets require distinct IDs. */
+  readonly createId?: () => string;
+}
+
 export const schedule: Schedule = (milliseconds, callback) => {
   const timer = setTimeout(callback, milliseconds);
   return () => clearTimeout(timer);

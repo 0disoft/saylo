@@ -9,6 +9,9 @@ import type { EagerCatalogEvent, LiveDiagnostic } from './types.js';
 import { freezeCatalogs } from './freeze.js';
 import { connectLazyDev } from './lazy-connection.js';
 import { deliverDiagnostic, diagnosticMessage } from './diagnostic-observers.js';
+import { timeoutDuration } from './scheduling.js';
+import type { DevRuntime } from './scheduling.js';
+export type { DevRuntime, Schedule } from './scheduling.js';
 import type { ConnectLazyDevOptions } from './lazy-connection.js';
 export { freezeCatalogs } from './freeze.js';
 export { createDevCatalogSource } from './catalog-source.js';
@@ -25,6 +28,7 @@ export interface ConnectDevOptions {
   readonly onSyncState?: (state: DevSyncState) => void;
   /** Timeout per snapshot attempt. At most three attempts; defaults to 5000ms. */
   readonly requestTimeoutMs?: number;
+  readonly runtime?: DevRuntime;
 }
 
 const bindings = new WeakMap<object, () => void>();
@@ -43,13 +47,13 @@ export function connectDev<S extends Schema>(store: Store<S> | I18n<S>, options:
   const eagerOptions = options as ConnectDevOptions;
   const hot = eagerOptions.hot ?? import.meta.hot;
   if (!hot) return noop;
-  const timeoutMs = eagerOptions.requestTimeoutMs ?? 5000;
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647) throw new RangeError('requestTimeoutMs must be a positive timer duration.');
+  const timeoutMs = timeoutDuration(eagerOptions.requestTimeoutMs);
   let unwatchDispose = noop;
   const report = (error: unknown, operation: 'handshake' | 'observer' = 'handshake') => {
     if (bindings.get(store) === stop) deliverDiagnostic(options.onDiagnostic, { message: diagnosticMessage(error), diagnostics: [], operation });
   };
   const sync = new EagerSync({ timeoutMs,
+    ...(eagerOptions.runtime ? { runtime: eagerOptions.runtime } : {}),
     scope: () => ({ locale: store.getSnapshot().locale, namespaces: [...store.getSnapshot().loadedNamespaces] }),
     send: request => hot.send(REQUEST_EVENT, request), report,
     onState: state => { if (bindings.get(store) === stop) eagerOptions.onSyncState?.(state); },

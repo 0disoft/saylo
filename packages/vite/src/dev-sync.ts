@@ -1,5 +1,7 @@
 import { isSnapshotRequest } from './types.js';
 import type { EagerCatalogEvent, EagerSnapshotRequest } from './types.js';
+import { createRequestId, schedule, timeoutDuration } from './scheduling.js';
+import type { DevRuntime } from './scheduling.js';
 
 export interface DevSyncState {
   readonly status: 'idle' | 'connecting' | 'retrying' | 'connected' | 'disconnected' | 'failed' | 'stopped';
@@ -15,26 +17,31 @@ interface SyncOptions {
   readonly commit: (event: EagerCatalogEvent) => boolean;
   readonly report: (error: unknown, operation?: 'handshake' | 'observer') => void;
   readonly onState?: (state: DevSyncState) => void;
+  readonly runtime?: DevRuntime;
 }
 
 /** Eager handshake coordinator. Keeps the last good UI until a current reply arrives. */
 export class EagerSync {
   // getRandomValues also works on HTTP LAN dev hosts where randomUUID is unavailable.
-  private readonly id = crypto.getRandomValues(new Uint32Array(4)).join('-');
+  private readonly id: string;
+  private readonly timeoutMs: number;
   private generation = 0;
   private sessionId: string | undefined;
   private revision = -1;
   private readonly retired = new Set<string>();
   private pending: EagerSnapshotRequest | undefined;
   private hint: { sessionId: string; revision: number } | undefined;
-  private timer: ReturnType<typeof setTimeout> | undefined;
+  private timer: (() => void) | undefined;
   private attempts = 0;
   private needsSnapshot = true;
   private disconnected = false;
   private stopped = false;
   private state: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: 3 });
 
-  constructor(private readonly options: SyncOptions) {}
+  constructor(private readonly options: SyncOptions) {
+    this.id = (options.runtime?.createId ?? createRequestId)();
+    this.timeoutMs = timeoutDuration(options.timeoutMs);
+  }
 
   start() {
     try { this.request(); }
@@ -129,7 +136,7 @@ export class EagerSync {
   }
 
   private clearPending() {
-    clearTimeout(this.timer);
+    this.timer?.();
     this.timer = undefined;
     this.pending = undefined;
   }
@@ -142,7 +149,7 @@ export class EagerSync {
     const request: EagerSnapshotRequest = { ...this.options.scope(), scope: 'eager',
       requestId: `${this.id}:${generation}`, generation };
     this.pending = request;
-    this.timer = setTimeout(() => this.retry(), this.options.timeoutMs);
+    this.timer = (this.options.runtime?.schedule ?? schedule)(this.timeoutMs, () => this.retry());
     this.setState(this.attempts === 1 ? 'connecting' : 'retrying', this.attempts);
     if (this.stopped || this.disconnected || this.pending !== request) return;
     this.options.send(request);
