@@ -29,7 +29,9 @@ test('partial write failure remains the cause when close and cleanup also fail',
   const f = fixture({ create: async () => ({ writeFile: async () => { throw failure; },
     close: async () => { closed = true; throw new Error('close failed'); } }),
     remove: async () => { removed = true; throw new Error('cleanup failed'); } });
-  await assert.rejects(writeGenerated('generated.d.ts', 'after', undefined, f), error => error === failure);
+  await assert.rejects(writeGenerated('generated.d.ts', 'after', undefined, f), error =>
+    error instanceof AggregateError && error.cause === failure && error.errors.length === 3 &&
+    error.errors[1].message === 'close failed' && error.errors[2].message === 'cleanup failed');
   assert.equal(closed, true); assert.equal(removed, true);
 });
 

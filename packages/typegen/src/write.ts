@@ -65,6 +65,7 @@ async function writeLocked(target: string, source: string, current: () => boolea
   const temp = path.join(path.dirname(target), `.${path.basename(target)}.saylo-typegen-${identity}.tmp`);
   let handle: TemporaryFile | undefined, owned = false, failed = false;
   let failure: unknown, result: WriteResult = 'cancelled';
+  const cleanupErrors: unknown[] = [];
   try {
     handle = await operations.create(temp); owned = true;
     if (current()) await handle.writeFile(source);
@@ -74,10 +75,15 @@ async function writeLocked(target: string, source: string, current: () => boolea
   // Exclusive creation establishes ownership even if the following write fails.
   // A successful rename already removed the temp and is the commit point.
   if (handle) {
-    try { await handle.close(); } catch (error) { if (!failed) { failed = true; failure = error; } }
+    try { await handle.close(); } catch (error) { cleanupErrors.push(error); }
   }
   if (owned && result !== 'written') {
-    try { await operations.remove(temp); } catch (error) { if (!failed) { failed = true; failure = error; } }
+    try { await operations.remove(temp); } catch (error) { cleanupErrors.push(error); }
+  }
+  if (cleanupErrors.length) {
+    const errors = failed ? [failure, ...cleanupErrors] : cleanupErrors;
+    if (errors.length === 1) throw errors[0];
+    throw new AggregateError(errors, 'Typegen write and resource cleanup failed.', { cause: errors[0] });
   }
   if (failed) throw failure;
   return result;
