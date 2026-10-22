@@ -7,10 +7,20 @@ import type { CatalogFile } from './catalog-files.js';
 import type { LiveDiagnostic } from './types.js';
 import { quarantineTranslation } from './translation-quarantine.js';
 import { DiskRechecks, diskStamp } from './disk-rechecks.js';
+import type { DiskRecheckOperations } from './disk-rechecks.js';
+import { diagnosticMessage } from './diagnostic-observers.js';
+import { schedule } from './scheduling.js';
 
 type Read = () => string | Promise<string>;
 const QUIET_MS = 40;
 const MAX_WAIT_MS = 200;
+
+export interface LiveRegistryOperations extends DiskRecheckOperations {
+  readonly now?: () => number;
+  readonly read?: (file: string) => Promise<string>;
+  readonly readCatalog?: typeof readCatalogFile;
+  readonly isFile?: (file: string) => Promise<boolean>;
+}
 
 /** Incremental disk candidate + bounded quiet window, without owning Vite's watcher. */
 export class LiveRegistry {
@@ -26,22 +36,25 @@ export class LiveRegistry {
   // the next read. The new source still passes through the strict parser.
   private pendingParses = new Map<string, ParsedCatalog>();
   private waiters: (() => void)[] = [];
-  private timer: ReturnType<typeof setTimeout> | undefined;
-  private firstQueued = 0;
+  private timer: (() => void) | undefined;
+  private firstQueued: number | undefined;
+  private publicationPending = false;
   private settleDisk = false;
   private generation = 0;
   private stopped = false;
   private running = Promise.resolve();
   // A verified metadata change needs an immediate read, not the add/unlink
   // quiet window. ENOENT during this read still takes the atomic-save retry.
-  private rechecks = new DiskRechecks(file => { void this.enqueue(file, () => readFile(file, 'utf8')); });
+  private rechecks: DiskRechecks;
 
   constructor(
     private root: string,
     files: readonly CatalogFile[],
     private baseLocale: string,
     private publish: (files: readonly CatalogFile[], changed: boolean, diagnostic: LiveDiagnostic) => void,
+    private operations: LiveRegistryOperations = {},
   ) {
+    this.rechecks = new DiskRechecks(file => { void this.enqueue(file, () => this.read(file)); }, operations);
     this.desired = new Map(files.map(f => [f.file, f]));
     this.accepted = new Map(this.desired);
     this.lastGoodTranslations = new Map(files.filter(f => f.catalog.locale !== baseLocale).map(f => [f.file, f]));
@@ -121,7 +134,7 @@ export class LiveRegistry {
     // A new path has no accepted state to temporarily remove. Read it on the
     // next turn; known-path replacements and pending unlinks still settle.
     return this.enqueue(resolved, this.desired.has(resolved) || this.accepted.has(resolved)
-      ? undefined : () => readFile(resolved, 'utf8'));
+      ? undefined : () => this.read(resolved));
   }
 
   enqueue(file: string, read?: Read): Promise<void> {
@@ -135,14 +148,15 @@ export class LiveRegistry {
   }
 
   private schedule() {
-    if (!this.firstQueued) this.firstQueued = Date.now();
+    const now = (this.operations.now ?? (() => performance.now()))();
+    this.firstQueued ??= now;
     // Vite supplies a guarded reader for ordinary updates. Coalesce those on
     // the next turn; disk add/unlink and superseded reads still need settling.
     // Keep the longer window even if a later reader replaces the same path.
     for (const read of this.queued.values()) if (!read) { this.settleDisk = true; break; }
     const quietMs = this.settleDisk ? QUIET_MS : 0;
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.drain(), Math.max(0, Math.min(quietMs, MAX_WAIT_MS - (Date.now() - this.firstQueued))));
+    this.timer?.();
+    this.timer = (this.operations.schedule ?? schedule)(Math.max(0, Math.min(quietMs, MAX_WAIT_MS - (now - this.firstQueued))), () => this.drain());
   }
 
   private drain() {
@@ -153,7 +167,7 @@ export class LiveRegistry {
     const generation = this.generation;
     this.queued = new Map();
     this.waiters = [];
-    this.firstQueued = 0;
+    this.firstQueued = undefined;
     this.settleDisk = false;
     this.timer = undefined;
     this.running = this.running.then(async () => {
@@ -168,17 +182,17 @@ export class LiveRegistry {
         this.pendingParses.delete(file);
         try {
           // Read the final filesystem state, rather than trusting an earlier unlink/add label.
-          const changed = await readCatalogFile(this.root, file, location.locale, location.namespace, async () => {
+          const changed = await (this.operations.readCatalog ?? readCatalogFile)(this.root, file, location.locale, location.namespace, async () => {
             // Capture before reading: a suppressed write during the read must
             // not be mistaken for the version represented by the old text.
-            stamps.set(file, await diskStamp(file));
-            return read ? read() : readFile(file, 'utf8');
+            stamps.set(file, await (this.operations.stamp ?? diskStamp)(file));
+            return read ? read() : this.read(file);
           }, previous);
           parsed.set(file, changed.catalog);
           candidate.set(file, changed);
           errors.delete(file);
         } catch (error) {
-          if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') {
             // An update reader can race an atomic replacement before its
             // unlink/add events arrive. Confirm removal only after disk settling.
             if (read) settleMissing = true;
@@ -209,7 +223,7 @@ export class LiveRegistry {
         const bases = [...candidate.values()].filter(f => f.catalog.locale === this.baseLocale);
         if (!bases.length) throw new Error('The base locale must retain at least one catalog on disk.');
         // Do not accept a ghost baseline if its unlink event is still in flight.
-        if (!(await Promise.all(bases.map(f => stat(f.file).then(s => s.isFile(), () => false)))).some(Boolean)) {
+        if (!(await Promise.all(bases.map(f => this.operations.isFile ? this.operations.isFile(f.file) : stat(f.file).then(s => s.isFile(), () => false)))).some(Boolean)) {
           throw new Error('The base locale must retain at least one catalog on disk.');
         }
         const namespaces = new Set(bases.map(f => f.catalog.namespace));
@@ -238,7 +252,7 @@ export class LiveRegistry {
         this.errors = prepared.errors;
         for (const namespace of namespaces) this.knownNamespaces.add(namespace);
         this.errors.delete('<registry>');
-        this.publish(active, changed, this.diagnostic());
+        this.emit(active, changed);
       } catch (error) {
         if (this.stopped) return;
         if (generation !== this.generation) {
@@ -247,8 +261,12 @@ export class LiveRegistry {
           return;
         }
         this.errors.set('<registry>', this.failure(error));
-        this.publish([...this.accepted.values()], false, this.diagnostic());
+        this.emit([...this.accepted.values()], false);
       }
+    }).catch(error => {
+      if (this.stopped) return;
+      this.errors.set('<registry>', this.failure(error));
+      this.emit([...this.accepted.values()], false);
     }).finally(() => {
       for (const [file, check] of checks) this.rechecks.finish(file, check, stamps.get(file));
       for (const resolve of waiters) resolve();
@@ -261,13 +279,27 @@ export class LiveRegistry {
   }
 
   private failure(error: unknown): LiveDiagnostic {
-    return { message: error instanceof Error ? error.message : String(error), diagnostics: error instanceof CatalogError ? error.diagnostics : [] };
+    return { message: diagnosticMessage(error), diagnostics: error instanceof CatalogError ? error.diagnostics : [] };
+  }
+
+  private read(file: string) { return this.operations.read ? this.operations.read(file) : readFile(file, 'utf8'); }
+
+  private emit(files: readonly CatalogFile[], changed: boolean) {
+    const pending = changed || this.publicationPending;
+    this.errors.delete('<publication>');
+    try {
+      this.publish(files, pending, this.diagnostic());
+      this.publicationPending = false;
+    } catch (error) {
+      this.publicationPending = pending;
+      this.errors.set('<publication>', this.failure(error));
+    }
   }
 
   stop() {
     this.stopped = true;
     this.rechecks.stop();
-    clearTimeout(this.timer);
+    this.timer?.();
     this.queued.clear();
     this.pendingParses.clear();
     for (const resolve of this.waiters) resolve();

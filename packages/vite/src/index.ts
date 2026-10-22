@@ -8,6 +8,7 @@ import { encodeCatalogResult } from './catalog-wire.js';
 import { scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
+import { diagnosticMessage } from './diagnostic-observers.js';
 import { catalogId } from './catalog-outcome.js';
 import { createAstFormatter } from './ast-formatter.js';
 import { requireCompleteTranslations } from './complete-translations.js';
@@ -67,6 +68,12 @@ export default function saylo(options: SayloViteOptions): Plugin {
   let diagnostic: LiveDiagnostic = { message: '', diagnostics: [] };
   const eagerClients = new Set<WebSocketClient>();
   const pushes = new CatalogPushSubscriptions();
+  const deliverUpdate = (send: () => void) => {
+    try { send(); }
+    catch (error) {
+      try { server?.config.logger.warn(`[saylo:transport] ${diagnosticMessage(error)}`); } catch { /* Logging cannot interrupt another client or typegen. */ }
+    }
+  };
   const subscribeCatalogs: Parameters<ViteDevServer['ws']['on']>[1] = (data, client) => {
     try { pushes.subscribe(client, data); }
     catch { client.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: { message: 'Invalid catalog push subscription.', diagnostics: [] } }); }
@@ -249,12 +256,12 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
           const update: EagerCatalogUpdate = { ...snapshot(), kind: 'update', baseRevision: revision - 1 };
           for (const client of eagerClients) {
             if (!server?.ws.clients.has(client)) { eagerClients.delete(client); continue; }
-            client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: update });
+            deliverUpdate(() => client.send({ type: 'custom', event: SNAPSHOT_EVENT, data: update }));
           }
           for (const client of server?.ws.clients ?? []) for (const push of pushes.updates(client, registry, revision - 1)) {
-            client.send({ type: 'custom', event: CATALOG_PUSH_EVENT, data: push });
+            deliverUpdate(() => client.send({ type: 'custom', event: CATALOG_PUSH_EVENT, data: push }));
           }
-          server?.ws.send({ type: 'custom', event: MANIFEST_EVENT, data: { kind: 'update', baseRevision: revision - 1, manifest: registry.manifest() } });
+          deliverUpdate(() => server?.ws.send({ type: 'custom', event: MANIFEST_EVENT, data: { kind: 'update', baseRevision: revision - 1, manifest: registry.manifest() } }));
         }
         const generator = typegen;
         // A valid identical save can repair deleted output without publishing a catalog revision.
@@ -270,7 +277,7 @@ export const timeZone = ${JSON.stringify(timeZone)};`;
         }
         if (JSON.stringify(diagnostic) !== JSON.stringify(nextDiagnostic)) {
           diagnostic = nextDiagnostic;
-          server?.ws.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic });
+          deliverUpdate(() => server?.ws.send({ type: 'custom', event: DIAGNOSTIC_EVENT, data: diagnostic }));
           if (diagnostic.message) server?.config.logger.warn(`[saylo] ${diagnostic.message}`);
         }
       });

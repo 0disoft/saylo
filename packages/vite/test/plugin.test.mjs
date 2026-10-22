@@ -62,6 +62,25 @@ async function setup(t, options = {}) {
   return { root, plugin, events, warnings, ws, change, request, server, disk };
 }
 
+test('a throwing client and logger do not block healthy clients or later catalog saves', async t => {
+  const { ws, server, change, request } = await setup(t);
+  let broken = false;
+  const client = { send() { if (broken) throw new Error('Socket closed'); } };
+  ws.clients.add(client);
+  ws.emit(REQUEST_EVENT, { scope: 'eager', requestId: 'broken', generation: 1, locale: 'ko', namespaces: ['demo'] }, client);
+  const received = [];
+  const healthy = { send: event => received.push(event) };
+  ws.clients.add(healthy);
+  ws.emit(REQUEST_EVENT, { scope: 'eager', requestId: 'healthy', generation: 1, locale: 'ko', namespaces: ['demo'] }, healthy);
+  received.length = 0;
+  broken = true;
+  server.config.logger.warn = () => { throw new Error('Logger closed'); };
+  await change('ko', '{"hello":"First {name}"}');
+  await change('ko', '{"hello":"Second {name}"}');
+  assert.deepEqual(received.map(event => event.data.revision), [1, 2]);
+  assert.equal(request()[0].data.catalogs.find(c => c.locale === 'ko').messages.hello.source, 'Second {name}');
+});
+
 test('completeness enabled for builds still permits partial live translations and fallback', async t => {
   const { change, request } = await setup(t, { requireCompleteTranslations: true });
   await change('en', '{}');
@@ -515,6 +534,7 @@ test('a partially written new locale recovers without a second watcher event', a
 test('disk event bursts retain the 200ms drain bound', async t => {
   const { root, plugin, server, request } = await setup(t);
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 });
+  t.mock.method(performance, 'now', () => Date.now());
   const file = path.join(root, 'en', 'demo.json');
   server.watcher.emit('add', file);
   for (let i = 0; i < 6; i++) {
