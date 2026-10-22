@@ -56,6 +56,14 @@ TypeScript에서는 `createStore<AppSchema>(...)`로, JS에서는 JSDoc `Store<A
 
 브라우저 런타임에서 `parseCatalog`를 빼려면 `@0disoft/saylo-core/runtime` 서브패스 엔트리를 쓴다. 여기에는 `parseCatalog`가 없고 나머지 API는 루트 엔트리와 같다. 루트 엔트리 `@0disoft/saylo-core`는 기존 API를 그대로 유지한다. 이 서브패스는 `0.1.0-alpha.2` 게시본에 포함된다.
 
+## 로케일 해석
+
+`resolveLocale(candidates, supported, fallback)`은 후보를 앱이 정한 순서대로 보고, 지원 목록에 있는 canonical tag를 정확히 일치시킨 뒤 부모 tag로만 넓힌다. 예를 들어 지원 목록에 `en`만 있으면 `en-GB`는 `en`으로 해석하지만, `en-US`만 있으면 `en`이나 `en-GB`를 임의로 `en-US`에 맞추지 않는다. 형식이 잘못된 후보는 건너뛴다. 지원 로케일이 잘못되었거나 canonical tag가 중복되거나 fallback이 지원 목록에 없으면 `RangeError`를 던진다.
+
+`parseAcceptLanguage(header)`는 `{ range, quality }`의 동결된 배열을 품질 내림차순으로 돌려주며 같은 품질은 헤더 순서를 유지한다. 잘못된 항목은 건너뛰고 `q=0` 항목은 제외 정보를 잃지 않도록 남긴다. `resolveAcceptLanguage(header, supported, fallback)`는 가장 구체적인 `q=0` 범위를 제외로 적용한다. 같은 구체성에서 양수와 0이 겹치면 0이 이긴다. wildcard는 명시 범위를 모두 살핀 뒤 기본값을 고른다. 수용 가능한 값이 없으면 HTTP 406 대신 앱 fallback을 반환한다.
+
+세 함수와 `LanguagePreference` 타입은 `@0disoft/saylo-core`와 parser를 포함하지 않는 `@0disoft/saylo-core/runtime` 모두에서 제공한다. 이 API는 로컬 미게시이며 `0.1.0-alpha.4`에는 없다.
+
 ## Rich text parts
 
 `tParts(key, args)`는 `t()`와 같은 메시지·인자 계약을 쓰면서 결과를 읽기 전용 parts 트리로 돌려준다. `t()`는 문자열과 literal 태그를 그대로 유지한다.

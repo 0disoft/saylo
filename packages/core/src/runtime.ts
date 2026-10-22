@@ -1,4 +1,6 @@
 export { CatalogError } from './diagnostics.js';
+export { resolveLocale, parseAcceptLanguage, resolveAcceptLanguage } from './locale.js';
+export type { LanguagePreference } from './locale.js';
 export { freezeCatalogs } from './catalog-freeze.js';
 export { createBaseSchema, validateTranslation } from './schema.js';
 export { createTranslator } from './translator.js';

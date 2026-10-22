@@ -1,6 +1,13 @@
 // @ts-check
 import { createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
-import { freezeCatalogs } from '@0disoft/saylo-core/runtime';
+import { freezeCatalogs, resolveLocale, resolveAcceptLanguage, parseAcceptLanguage } from '@0disoft/saylo-core/runtime';
+
+resolveLocale(['en-GB'], ['ko', 'en'], 'ko');
+resolveAcceptLanguage(undefined, ['ko', 'en'], 'ko');
+// @ts-expect-error parsed preferences are readonly in typed JS too
+parseAcceptLanguage('en')[0].quality = 0;
+// @ts-expect-error locale candidates must be strings in typed JS too
+resolveLocale([42], ['ko'], 'ko');
 
 const parsed = parseCatalog('{"x":"{n, number}"}', { locale: 'ko', namespace: 'cart' });
 const frozenCatalogs = freezeCatalogs([parsed]);

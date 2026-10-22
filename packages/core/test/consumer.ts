@@ -1,6 +1,18 @@
 import { CatalogError, createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
 import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog, RichTextPart } from '@0disoft/saylo-core';
-import { createI18n as createRuntimeI18n, freezeCatalogs } from '@0disoft/saylo-core/runtime';
+import { createI18n as createRuntimeI18n, freezeCatalogs, resolveLocale, resolveAcceptLanguage, parseAcceptLanguage } from '@0disoft/saylo-core/runtime';
+import type { LanguagePreference } from '@0disoft/saylo-core';
+
+const selectedLocale: string = resolveLocale(['en-GB'] as const, ['ko', 'en'] as const, 'ko');
+const httpLocale: string = resolveAcceptLanguage(null, ['ko', 'en'], 'ko');
+const preferences: readonly LanguagePreference[] = parseAcceptLanguage('en;q=0.8');
+void selectedLocale; void httpLocale;
+// @ts-expect-error parsed language preferences are readonly
+preferences.push({ range: 'ko', quality: 0 });
+// @ts-expect-error preference quality is readonly
+preferences[0]!.quality = 0;
+// @ts-expect-error locale candidates must be strings
+resolveLocale([42], ['ko'], 'ko');
 
 const runtimeFactory: typeof createI18n = createRuntimeI18n;
 void runtimeFactory;
