@@ -173,7 +173,13 @@ export default function saylo(options: SayloViteOptions): Plugin {
       }
     },
     async buildStart() {
-      if (!production || !autoKeys || builds++ === 0) return;
+      if (!production) return;
+      this.addWatchFile?.(root);
+      for (const file of files.keys()) {
+        this.addWatchFile?.(path.dirname(file));
+        this.addWatchFile?.(file);
+      }
+      if (builds++ === 0) return;
       const scanned = await scanCatalogs(root);
       files = new Map(scanned.files.map(file => [file.file, file]));
       createStore({ baseLocale, locale: options.requireCompleteTranslations ? baseLocale : initialLocale,
@@ -193,10 +199,13 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (production && options.astRuntime !== false) return astFormatter.resolve(id, importer, this);
     },
     load(id) {
-      if (production && autoKeys && ([RESOLVED, RESOLVED_LAZY, RESOLVED_SERVER].includes(id) || chunks.has(id.startsWith('\0') ? id.slice(1) : id))) {
+      if (production && ([RESOLVED, RESOLVED_LAZY, RESOLVED_SERVER].includes(id) || chunks.has(id.startsWith('\0') ? id.slice(1) : id))) {
         for (const source of keySources) this.addWatchFile?.(source);
         this.addWatchFile?.(root);
-        for (const file of files.keys()) this.addWatchFile?.(file);
+        for (const file of files.keys()) {
+          this.addWatchFile?.(path.dirname(file));
+          this.addWatchFile?.(file);
+        }
       }
       if (production && options.astRuntime !== false) {
         const ast = astFormatter.load(id);

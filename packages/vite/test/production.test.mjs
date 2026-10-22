@@ -20,6 +20,42 @@ const entries = r => r.manifest().catalogs.filter(m => m.status === 'present' &&
   .map(m => ({ key: m.key, load: async () => r.load(m.key.locale, m.key.namespace) }));
 const boot = r => [r.load('ko', 'demo'), r.load('ko', 'help')];
 
+for (const includeKeys of [undefined, ['demo:hello']]) {
+  test(`production watch refreshes catalog-only edits (${includeKeys ? 'manual keys' : 'all keys'})`, { timeout: 20000 }, async t => {
+    const root = await completeFixture(t);
+    await writeFile(path.join(root, 'main.js'), "export { initialCatalogs } from 'virtual:saylo';");
+    const outputs = [], failures = [];
+    const watcher = await build({ configFile: false, root, logLevel: 'silent',
+      plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', includeKeys, typegen: { outFile: 'generated.d.ts' } }),
+        { name: 'watch-output', generateBundle(_options, bundle) {
+          outputs.push(Object.values(bundle).filter(value => value.type === 'chunk').map(value => value.code).join('\n'));
+        } }],
+      resolve: { alias: { '@0disoft/saylo-vite/client': fileURLToPath(new URL('../dist/client.js', import.meta.url)) } },
+      build: { outDir: 'out', watch: {}, minify: false,
+        rolldownOptions: { input: path.join(root, 'main.js'), preserveEntrySignatures: 'strict' } } });
+    watcher.on('event', event => {
+      if (event.code === 'ERROR') failures.push(event.error);
+      if (event.code === 'BUNDLE_END') void event.result.close();
+    });
+    async function waitFor(count) {
+      const deadline = Date.now() + 5000;
+      while (outputs.length < count && !failures.length && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 25));
+      if (failures.length) throw failures[0];
+      assert.ok(outputs.length >= count, `Expected watch build ${count}; got ${outputs.length}`);
+    }
+    try {
+      await waitFor(1);
+      const before = outputs.length;
+      await writeFile(path.join(root, 'locales/ko/demo.json'), '{"hello":"WATCH_REFRESHED","added":"new type"}');
+      await waitFor(before + 1);
+      assert.match(outputs.at(-1), /WATCH_REFRESHED/);
+      assert.doesNotMatch(outputs.at(-1), /ko \{name\}/);
+      assert.match(await readFile(path.join(root, 'generated.d.ts'), 'utf8'), /demo:added/);
+      if (includeKeys) assert.doesNotMatch(outputs.at(-1), /new type/);
+    } finally { await watcher.close(); }
+  });
+}
+
 test('static cancellation is per caller and abandoned imports cannot overwrite a new flight', async () => {
   const r = registry(), clock = scheduler(), loads = [];
   const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: { locale: 'en', namespace: 'demo' },
