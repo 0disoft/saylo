@@ -19,10 +19,12 @@ export interface SayloProjectConfig {
   readonly checkLocales?: readonly string[];
   /** Optional source comparison checkpoint for catalog review. */
   readonly baseline?: string;
+  /** Optional per-locale/message approval ledger, separate from source checkpoints. */
+  readonly reviews?: string;
 }
 
 const fields = new Set(['format', 'localesDir', 'baseLocale', 'initialLocale', 'initialNamespaces', 'timeZone',
-  'richText', 'requireCompleteTranslations', 'typegen', 'checkLocales', 'baseline']);
+  'richText', 'requireCompleteTranslations', 'typegen', 'checkLocales', 'baseline', 'reviews']);
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
 
 function string(value: unknown, name: string): string {
@@ -87,6 +89,7 @@ export function resolveProjectConfig(input: unknown, directory = process.cwd()):
     ...(input.requireCompleteTranslations === undefined ? {} : { requireCompleteTranslations: input.requireCompleteTranslations as boolean }),
     ...(input.checkLocales === undefined ? {} : { checkLocales: list(input.checkLocales, 'checkLocales', locale) }),
     ...(input.baseline === undefined ? {} : { baseline: path.resolve(directory, string(input.baseline, 'baseline')) }),
+    ...(input.reviews === undefined ? {} : { reviews: path.resolve(directory, string(input.reviews, 'reviews')) }),
   });
 }
 

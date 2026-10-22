@@ -46,9 +46,9 @@ export function planCatalogSync(input: CatalogInspection, report: CatalogCheckRe
     if (!catalog) continue;
     const ids = issue.code === 'NAMESPACE_MISMATCH' ? Object.keys(catalog.messages) : issue.id === undefined ? [] : [issue.id];
     for (const id of ids) {
-      if (!['UNKNOWN_MESSAGE', 'NAMESPACE_MISMATCH', 'SOURCE_CHANGED', 'SOURCE_ADDED'].includes(issue.code)) continue;
+      if (!['UNKNOWN_MESSAGE', 'NAMESPACE_MISMATCH', 'SOURCE_CHANGED', 'SOURCE_ADDED', 'TRANSLATION_CHANGED', 'REVIEW_REQUIRED'].includes(issue.code)) continue;
       const original = bases.get(issue.namespace)?.messages[id];
-      changes.push({ action: issue.code.startsWith('SOURCE_') ? 'review' : 'retain', reason: issue.code,
+      changes.push({ action: ['SOURCE_CHANGED', 'SOURCE_ADDED', 'TRANSLATION_CHANGED', 'REVIEW_REQUIRED'].includes(issue.code) ? 'review' : 'retain', reason: issue.code,
         locale: issue.locale, namespace: issue.namespace, id, sourceName: catalog.sourceName,
         ...(original ? { baseSource: original.source } : {}), translation: catalog.messages[id]!.source });
     }

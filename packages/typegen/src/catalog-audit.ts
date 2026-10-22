@@ -5,14 +5,14 @@ import type { CatalogInspection } from './catalog-files.js';
 import type { SayloProjectConfig } from './config.js';
 
 export type CatalogIssue = Omit<CatalogDiagnostic, 'code'> & {
-  readonly code: DiagnosticCode | 'MISSING_BASE_CATALOG' | 'UNKNOWN_RICH_POLICY' | 'SOURCE_CHANGED' | 'SOURCE_ADDED';
+  readonly code: DiagnosticCode | 'MISSING_BASE_CATALOG' | 'UNKNOWN_RICH_POLICY' | 'SOURCE_CHANGED' | 'SOURCE_ADDED' | 'TRANSLATION_CHANGED' | 'REVIEW_REQUIRED';
   readonly severity: 'error' | 'warning';
 };
 export interface CatalogCheckReport {
   readonly format: 'saylo-check/v1';
   readonly baseLocale: string;
   readonly locales: readonly string[];
-  readonly reviewTracking: 'not-configured' | 'baseline';
+  readonly reviewTracking: 'not-configured' | 'baseline' | 'approvals' | 'baseline-and-approvals';
   readonly summary: { readonly errors: number; readonly warnings: number };
   readonly diagnostics: readonly CatalogIssue[];
 }

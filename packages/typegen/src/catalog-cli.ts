@@ -9,6 +9,7 @@ import { isBlockingIssue, planCatalogSync } from './catalog-sync.js';
 import { createTranslationWorkfile, readTranslationWorkfile } from './catalog-workfile.js';
 import { planTranslationImport } from './catalog-import.js';
 import { applyTranslationImport, TranslationApplyError } from './catalog-apply.js';
+import { applyReviewApprovals, readReviewApprovals } from './catalog-approvals.js';
 
 const help = `Usage: saylo <check|sync|snapshot|export|import> [--config saylo.config.json] [--json]
 
@@ -25,6 +26,7 @@ Options:
   --base-locale <locale>     Override the base BCP 47 locale.
   --locales <en,fr>          Completeness targets; otherwise configured/discovered locales.
   --baseline <file.json>     Compare base text/rich contracts with a saved snapshot.
+  --reviews <file.json>      Track explicit approvals per locale and message.
   --dry-run                 Preview sync or import without writing files.
   --apply                   Apply import with per-file atomic replacement (not a multi-file transaction).
   --file <work.json>         Translation workfile input; only supported with import.
@@ -40,7 +42,7 @@ let json = process.argv.includes('--json');
 function printCheckReport(report: CatalogCheckReport): string {
   const lines = report.diagnostics.map(issue => `${issue.severity} ${issue.code} ${issue.sourceName}${issue.id === undefined ? '' : ` [${issue.id}]`}: ${issue.message}`);
   lines.push(`[saylo:check] ${report.summary.errors} error(s), ${report.summary.warnings} warning(s).`);
-  if (report.reviewTracking === 'not-configured') lines.push('Source change review is unavailable without --baseline (or config.baseline).');
+  if (report.reviewTracking === 'not-configured') lines.push('Source change review is unavailable without --baseline or --reviews.');
   return lines.join('\n');
 }
 
@@ -48,7 +50,7 @@ try {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: {
     config: { type: 'string' }, 'locales-dir': { type: 'string' }, 'base-locale': { type: 'string' },
     locales: { type: 'string' }, json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
-    baseline: { type: 'string' }, 'dry-run': { type: 'boolean' },
+    baseline: { type: 'string' }, reviews: { type: 'string' }, 'dry-run': { type: 'boolean' },
     file: { type: 'string' }, apply: { type: 'boolean' },
   } });
   json = values.json ?? false;
@@ -72,10 +74,14 @@ try {
       ...(values['base-locale'] === undefined ? {} : { baseLocale: values['base-locale'] }),
       ...(values.locales === undefined ? {} : { checkLocales: values.locales.split(',') }),
       ...(values.baseline === undefined ? {} : { baseline: values.baseline }),
+      ...(values.reviews === undefined ? {} : { reviews: values.reviews }),
     });
     const baseline = !['snapshot', 'import'].includes(command) && config.baseline ? await readReviewBaseline(config.baseline, config.baseLocale) : undefined;
     const inspected = await inspectProject(config);
-    const report = baseline ? compareReviewBaseline(inspected.inspection, inspected.report, baseline) : inspected.report;
+    const compared = baseline ? compareReviewBaseline(inspected.inspection, inspected.report, baseline) : inspected.report;
+    const approvals = ['check', 'sync', 'export'].includes(command) && config.reviews
+      ? await readReviewApprovals(config.reviews, config.baseLocale, command === 'export') : undefined;
+    const report = approvals ? applyReviewApprovals(inspected.inspection, compared, approvals.approvals) : compared;
     if (command === 'import') {
       const work = await readTranslationWorkfile(values.file!, config.baseLocale);
       const plan = planTranslationImport(inspected.inspection, report, config, work);
