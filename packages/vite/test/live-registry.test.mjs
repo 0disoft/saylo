@@ -24,6 +24,23 @@ function fixture(t, publish = () => {}, operations = {}) {
 
 const flush = async () => { for (let i = 0; i < 25; i++) await Promise.resolve(); };
 
+test('saves arriving during a read coalesce to the latest reader instead of building a serial backlog', async t => {
+  const gate = Promise.withResolvers(), reads = [], publications = [];
+  const f = fixture(t, files => publications.push(files[0].catalog.messages.title.source));
+  const jobs = [f.registry.enqueue(f.file, () => { reads.push('initial'); return gate.promise; })];
+  f.clock.tick(0); await flush();
+  for (let i = 1; i <= 20; i++) {
+    jobs.push(f.registry.enqueue(f.file, () => {
+      reads.push(`save ${i}`); return JSON.stringify({ title: `Save ${i}` });
+    }));
+    f.clock.tick(0); await flush();
+  }
+  gate.resolve('{"title":"Initial"}');
+  await Promise.all(jobs);
+  assert.deepEqual(reads, ['initial', 'save 20']);
+  assert.deepEqual(publications, ['Save 20']);
+});
+
 test('large live batches read at most eight files at once and commit in enqueue order', async t => {
   const clock = scheduler(), root = path.resolve('virtual-locales'), pending = [], published = [];
   const initial = path.join(root, 'ko', 'base.json');

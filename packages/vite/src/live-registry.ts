@@ -68,6 +68,8 @@ export class LiveRegistry {
   private generation = 0;
   private stopped = false;
   private running = Promise.resolve();
+  private draining = false;
+  private drainReady = false;
   // A verified metadata change needs an immediate read, not the add/unlink
   // quiet window. ENOENT during this read still takes the atomic-save retry.
   private rechecks: DiskRechecks;
@@ -181,6 +183,7 @@ export class LiveRegistry {
   }
 
   private schedule() {
+    this.drainReady = false;
     const now = (this.operations.now ?? (() => performance.now()))();
     this.firstQueued ??= now;
     // Vite supplies a guarded reader for ordinary updates. Coalesce those on
@@ -193,6 +196,17 @@ export class LiveRegistry {
   }
 
   private drain() {
+    this.timer = undefined;
+    this.drainReady = true;
+    // A running batch owns the only read slot. Keep later saves in the same
+    // path-indexed map so repeated writes replace their pending reader.
+    if (this.stopped || this.draining || !this.queued.size) return;
+    this.startBatch();
+  }
+
+  private startBatch() {
+    this.draining = true;
+    this.drainReady = false;
     const batch = this.queued;
     const checks = new Map([...batch.keys()].map(file => [file, this.rechecks.token(file)]));
     const stamps = new Map<string, string>();
@@ -202,15 +216,21 @@ export class LiveRegistry {
     this.waiters = [];
     this.firstQueued = undefined;
     this.settleDisk = false;
-    this.timer = undefined;
     this.running = this.running.then(() => this.processBatch(batch, checks, stamps, generation))
       .catch(error => {
         if (this.stopped) return;
         this.errors.set('<registry>', this.failure(error));
         this.emit([...this.accepted.values()], false);
       }).finally(() => {
+        this.draining = false;
         for (const [file, check] of checks) this.rechecks.finish(file, check, stamps.get(file));
         for (const resolve of waiters) resolve();
+        if (!this.stopped && this.queued.size && !this.timer) {
+          // A timer that fired during the old read has already paid the quiet
+          // window. Start its latest readers without another timer turn.
+          if (this.drainReady) this.startBatch();
+          else this.schedule();
+        }
       });
   }
 
@@ -260,11 +280,12 @@ export class LiveRegistry {
 
   private requeueBatch(batch: ReadonlyMap<string, Read | undefined>, checks: Checks, settleMissing = false) {
     if (settleMissing) this.settleDisk = true;
+    let requeued = false;
     for (const file of batch.keys()) {
       if (this.queued.has(file)) continue;
-      if (settleMissing || this.rechecks.token(file) === checks.get(file)) this.requeue(file);
+      if (settleMissing || this.rechecks.token(file) === checks.get(file)) { this.requeue(file); requeued = true; }
     }
-    if (this.queued.size) this.schedule();
+    if (this.queued.size && (settleMissing || requeued || (!this.timer && !this.drainReady))) this.schedule();
   }
 
   private async processBatch(batch: ReadonlyMap<string, Read | undefined>, checks: Checks,
