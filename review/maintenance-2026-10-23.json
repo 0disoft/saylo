@@ -1,0 +1,405 @@
+{
+  "format": "saylo-maintenance-review/v1",
+  "checkedAt": "2026-10-23T10:49:27.507Z",
+  "baseline": "615b083201982172421ae38e0ea5d6820d0253b5",
+  "sourceCommit": "d3e5252b98b975b89b5a86d1f39b363471298e65",
+  "candidate": ".release/candidate-0.1.0-alpha.5-fTJYGI",
+  "validation": ".release/candidate-0.1.0-alpha.5-fTJYGI/validation-1osDCF/validation.json",
+  "validationSha256": "083f81d30a4f494d60e200815d3f7e5195408754d866bb3b0f859ff17dadd2b0",
+  "frozenInputs": 1177,
+  "testGroups": [
+    8,
+    121,
+    21,
+    18,
+    130,
+    206,
+    18,
+    14
+  ],
+  "totalTests": 536,
+  "checks": [
+    {
+      "name": "install",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "durationMs": 17756
+    },
+    {
+      "name": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "durationMs": 14936
+    },
+    {
+      "name": "check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "durationMs": 113224,
+      "reusedFrom": {
+        "sourceCommit": "c6a1ad79631c676ab777809cb0f93ac24b07d466",
+        "validationDirectory": "C:\\Users\\cherr\\Documents\\workspace\\zerodi-wd1\\projects\\hobby\\opensource\\saylo\\.release\\candidate-0.1.0-alpha.5-zyQTHj\\validation-vK8pIo",
+        "logSha256": "776fbfb3ffc2776eb8c8f602e347d1dce169ac685ce6bf5e7efcbcf1b610a9ba",
+        "changedFiles": [
+          "scripts/pack-fixtures/catalog-features.mjs"
+        ],
+        "reason": "Only the pack-only watcher fixture changed. All package sources, tests, dependency locks, check scripts and their inputs match the successful check. The affected pack stage is rerun."
+      }
+    },
+    {
+      "name": "release-metadata",
+      "command": [
+        "npm",
+        "run",
+        "release:check",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 1327
+    },
+    {
+      "name": "pack",
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/pack-smoke.mjs",
+        "--save-release"
+      ],
+      "exitCode": 0,
+      "durationMs": 72987
+    },
+    {
+      "name": "publish-plan",
+      "command": [
+        "npm",
+        "run",
+        "release:publish",
+        "--",
+        "--version",
+        "0.1.0-alpha.5",
+        "--tag",
+        "alpha"
+      ],
+      "exitCode": 0,
+      "durationMs": 1469
+    }
+  ],
+  "review": {
+    "packages": [
+      "core",
+      "react",
+      "svelte",
+      "vue",
+      "typegen",
+      "vite"
+    ],
+    "sourceFilesBefore": 95,
+    "sourceFilesAfter": 98,
+    "methods": [
+      "AST inventory and function-span scan across all six packages",
+      "Manual review of core/store/loading coordination, adapter ownership, CLI orchestration, Vite generation and package verification",
+      "Dependency boundary checks, existing behavior/type tests and independently installed consumers"
+    ],
+    "focusedFiles": [
+      "packages/core/src/i18n.ts",
+      "packages/core/src/store.ts",
+      "packages/core/src/catalog-loader.ts",
+      "packages/react/src/hydration.ts",
+      "packages/svelte/src/index.ts",
+      "packages/vue/src/index.ts",
+      "packages/typegen/src/catalog-cli.ts",
+      "packages/vite/src/index.ts",
+      "packages/vite/src/catalog-source.ts",
+      "scripts/pack-smoke.mjs",
+      "scripts/pack-sveltekit.mjs",
+      "scripts/pack-fixtures/catalog-features.mjs",
+      ".github/workflows/release.yml"
+    ]
+  },
+  "changes": [
+    {
+      "commit": "8190174",
+      "result": "CLI usage/help validation separated from config/catalog I/O; error precedence retained.",
+      "tests": 31
+    },
+    {
+      "commit": "470d7b4",
+      "result": "Vite eager/lazy/server source generation separated from watcher and worker ownership.",
+      "tests": 78
+    },
+    {
+      "commit": "df8ebfe",
+      "result": "Svelte store and selector share initial error cleanup; setup retry, failing teardown and late disposal registration repaired.",
+      "tests": 18
+    },
+    {
+      "commit": "42792c0",
+      "result": "React hydration releases all handlers; React/Vue preserve setup and cleanup errors with original cause.",
+      "tests": {
+        "react": 21,
+        "vue": 18
+      }
+    },
+    {
+      "commit": "c6a1ad7",
+      "result": "Twenty-command CLI smoke retains per-command 20s deadline and uses a 5-minute aggregate budget with phase diagnostics."
+    },
+    {
+      "commit": "d3e5252",
+      "result": "Watcher smoke waits for public file registration before writing and reports observed change events."
+    }
+  ],
+  "regressions": {
+    "reproducedBeforeFix": 7,
+    "passedAfterFix": 7,
+    "cases": [
+      "Svelte initial consumer throw",
+      "Svelte setup failure and resubscription",
+      "Svelte cleanup failure and late disposer",
+      "React cleanup failures",
+      "React setup plus cleanup failure",
+      "React late disposer",
+      "Vue setup plus cleanup failure"
+    ]
+  },
+  "publicTypes": {
+    "baseline": ".release/candidate-0.1.0-alpha.5-DhQ1s3/source",
+    "matches": [
+      {
+        "package": "@0disoft/saylo-core",
+        "entry": ".",
+        "file": "packages/core/dist/index.d.ts",
+        "sha256": "1463dd264287f55ce5ea59adc6fb055b7374bb97de1c787130f1f37a7aae77c5"
+      },
+      {
+        "package": "@0disoft/saylo-core",
+        "entry": "./runtime",
+        "file": "packages/core/dist/runtime.d.ts",
+        "sha256": "dc9c44a0d4b369eefd342d36b0d1ec423c60b83efd172840bf504b361ce5e19f"
+      },
+      {
+        "package": "@0disoft/saylo-react",
+        "entry": ".",
+        "file": "packages/react/dist/index.d.ts",
+        "sha256": "07aa4ef3b81d8847715ad6ba4d638503529d92e76f500953cc41e573621aaa89"
+      },
+      {
+        "package": "@0disoft/saylo-svelte",
+        "entry": ".",
+        "file": "packages/svelte/dist/index.d.ts",
+        "sha256": "25d6f6457628cb880f117e0c978d37c7cde230fb36e36dc3ad292dff2dc18e4b"
+      },
+      {
+        "package": "@0disoft/saylo-svelte",
+        "entry": "./RichText.svelte",
+        "file": "packages/svelte/dist/rich-text-component.d.ts",
+        "sha256": "cb6dcc99cf2412c98661f694cd435f89c8b4fe73f2ebf945374a5b62a0358990"
+      },
+      {
+        "package": "@0disoft/saylo-vue",
+        "entry": ".",
+        "file": "packages/vue/dist/index.d.ts",
+        "sha256": "e240d5a637ea1675553ee5909efd4866b5280760200d0925d9b5ab565a086e75"
+      },
+      {
+        "package": "@0disoft/saylo-typegen",
+        "entry": ".",
+        "file": "packages/typegen/dist/index.d.ts",
+        "sha256": "516fe1555548626365f5b538ca3e2ad4217044d42e6d5d15fccc764ed609f06b"
+      },
+      {
+        "package": "@0disoft/saylo-typegen",
+        "entry": "./config",
+        "file": "packages/typegen/dist/config.d.ts",
+        "sha256": "9623949abec3ae0f5bb7038d71e0ec32d406e1ddb32b98d2200c9c1b02f5434a"
+      },
+      {
+        "package": "@0disoft/saylo-typegen",
+        "entry": "./catalog-files",
+        "file": "packages/typegen/dist/catalog-files.d.ts",
+        "sha256": "dde1645647e4af0133c88ce048f1518eb71cd7e59e3357b2bbcea28f7255973b"
+      },
+      {
+        "package": "@0disoft/saylo-typegen",
+        "entry": "./review-check",
+        "file": "packages/typegen/dist/review-check.d.ts",
+        "sha256": "54e2170c6f7c2ca9b70847d95ef99c4db15534cf70ce124b58e364df2dfafccb"
+      },
+      {
+        "package": "@0disoft/saylo-vite",
+        "entry": ".",
+        "file": "packages/vite/dist/index.d.ts",
+        "sha256": "061212159c79f8f0bbc54b483dab33b57d54f7aed126eb5f5e368cba7dce7dcb"
+      },
+      {
+        "package": "@0disoft/saylo-vite",
+        "entry": "./client",
+        "file": "packages/vite/dist/client.d.ts",
+        "sha256": "7b8e8b6e49d71ca4e5c2d19e27adfe3c3779b0cc5155798ac22e710d2769c2ac"
+      },
+      {
+        "package": "@0disoft/saylo-vite",
+        "entry": "./server",
+        "file": "packages/vite/dist/server-source.d.ts",
+        "sha256": "7407ebc91fd8776b5d6edd2fa34f468a9155fe0176a2d6c54f6eaab0f6df209e"
+      },
+      {
+        "package": "@0disoft/saylo-vite",
+        "entry": "./virtual",
+        "file": "packages/vite/dist/virtual.d.ts",
+        "sha256": "aa58072a2921f160e66a3d0597035c2338edfcc91aab1d9056901b56eed69b21"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-pVj506D3YIFlH6uyeSm+oYw03MiNR0BXQuGCDcdOlENJsAgcj94qjlYHATyvOQRNXTNe4Wg9TY6QhBbzYxB33g=="
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-9m20yWuSw+ltDCXkVJdRTbYtcEjlNLC0ADSl1LTRfZGeDFv7bE4CJ3N84QEIGSYNG+AN5KSFC/K6SZNpYAcwvA=="
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-NDmU16MdCC3usK8BbaL/78VCCtvtUdlvMBo7s/RLnY37PPH1r/aslpP5r/+93/azaF5NbNjLFp4IlAgr89nXfQ=="
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-VU2xdQQ65GnrA+ceAJN3JUCQq9OaHg1M6CuLFPafoCnxtSyqQXlfqslSiWXjlsmvuPadVS5zQoByKvDyRJZzqw=="
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-psKJq2UB1PsSO4puWhiquI9oaqva3aavyTjyNPbk3quHU/q7o96w5ftoABpPdA9oxpK69oqM2cl3pRzuaRDo7Q=="
+    }
+  ],
+  "logs": [
+    {
+      "file": ".release/candidate-0.1.0-alpha.5-fTJYGI/validation-1osDCF/check.log",
+      "sha256": "776fbfb3ffc2776eb8c8f602e347d1dce169ac685ce6bf5e7efcbcf1b610a9ba"
+    },
+    {
+      "file": ".release/candidate-0.1.0-alpha.5-fTJYGI/validation-1osDCF/pack.log",
+      "sha256": "7aaae39079035bd409aea6a50bd6401b059f7d59887d1fe5a0e068199f8af12d"
+    },
+    {
+      "file": ".release/candidate-0.1.0-alpha.5-fTJYGI/validation-1osDCF/sveltekit.log",
+      "sha256": "dc0c4bd918fe2ed9941d64e9c46589566670d25ed6896826d5de9e84f8709024"
+    },
+    {
+      "file": ".release/candidate-0.1.0-alpha.5-fTJYGI/validation-1osDCF/publish-plan.log",
+      "sha256": "b9420aaaf09a064773ba50e203d3b90de6b2d75c5b95a98bd96bb4f70de17b3c"
+    }
+  ],
+  "browser": {
+    "command": [
+      "npm",
+      "exec",
+      "--",
+      "node",
+      "scripts/pack-sveltekit.mjs",
+      "--tarballs-dir",
+      ".release/candidate-0.1.0-alpha.5-fTJYGI/validation-1osDCF"
+    ],
+    "exitCode": 0,
+    "fixture": "examples/sveltekit",
+    "covers": [
+      "concurrent ko/en SSR and boot data",
+      "client/SSR build and independent tarball installation",
+      "Chromium hydration and rich-text input preservation",
+      "locale switching, shared layout, exit/reentry and modal focus",
+      "support report/reset with private form content excluded",
+      "dev listener cleanup and late cancellation"
+    ]
+  },
+  "earlierAttempts": [
+    {
+      "candidate": ".release/candidate-0.1.0-alpha.5-BzTPMG",
+      "state": "check 532 passed; pack failed at the former 60s aggregate CLI deadline"
+    },
+    {
+      "candidate": ".release/candidate-0.1.0-alpha.5-IEMiSx",
+      "state": "prepared only; not validated"
+    },
+    {
+      "candidate": ".release/candidate-0.1.0-alpha.5-zyQTHj",
+      "state": "check 536 passed; pack failed waiting for the real watcher update"
+    }
+  ],
+  "completion": {
+    "structureReview": "verified",
+    "responsibilitySeparation": "verified",
+    "adapterCleanup": "verified",
+    "publicSignatures": "14 declaration files byte-identical",
+    "focusedRegressions": "verified",
+    "packageConsumption": "verified",
+    "browserConsumption": "verified"
+  },
+  "originalPackages": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    {
+      "name": "@0disoft/saylo-vue",
+      "version": "0.1.0-alpha.4",
+      "private": true
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.4",
+      "private": false
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.4",
+      "private": false
+    }
+  ],
+  "limits": [
+    "Local main commits only; no push, source version promotion, npm publication or deployment.",
+    "Full check is explicitly reused from c6a1ad7 after proving the sole diff is the pack-only fixture; all affected pack checks were freshly executed.",
+    "Browser acceptance is local Chromium; no registry acceptance or other-browser claim."
+  ]
+}
