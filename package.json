@@ -44,7 +44,7 @@
     "verify:sveltekit": "npm --prefix examples/sveltekit run verify:ssr",
     "verify:pack:sveltekit": "npm run build && node scripts/pack-sveltekit.mjs",
     "test": "npm run build && npm run test --workspaces",
-    "check": "npm run verify:boundaries && npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json && node --test scripts/test/verify-oidc.test.mjs scripts/test/registry-release.test.mjs scripts/test/release-candidate.test.mjs scripts/test/registry-consumer-contract.test.mjs scripts/test/ssr-lifecycle.test.mjs",
+    "check": "npm run verify:boundaries && npm run build && npm run test --workspaces && npm run typecheck:consumers --workspaces && node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts && tsc -p examples/react/tsconfig.json && node --test scripts/test/verify-oidc.test.mjs scripts/test/registry-release.test.mjs scripts/test/release-candidate.test.mjs scripts/test/registry-consumer-contract.test.mjs scripts/test/pack-tarballs.test.mjs scripts/test/ssr-lifecycle.test.mjs",
     "release:check": "node scripts/release-check.mjs",
     "release:candidate": "node scripts/prepare-release-candidate.mjs",
     "release:candidate:verify": "node scripts/verify-release-candidate.mjs",

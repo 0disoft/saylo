@@ -10,9 +10,11 @@ import { parseArgs, promisify } from 'node:util';
 import { packageIds, repository } from './release-check.mjs';
 import { approvedRegistryRelease } from './registry-release.mjs';
 import { registryConsumerContract } from './registry-consumer-contract.mjs';
+import { copyVerifiedTarballs } from './pack-tarballs.mjs';
 
 const { values } = parseArgs({ options: { browser: { type: 'string' }, 'registry-version': { type: 'string' },
-  'consumer-fixture': { type: 'string' } } });
+  'consumer-fixture': { type: 'string' }, 'tarballs-dir': { type: 'string' } } });
+assert.ok(!values['registry-version'] || !values['tarballs-dir'], 'Choose registry artifacts or a local tarball directory.');
 const approved = values['registry-version'] ? await approvedRegistryRelease(values['registry-version']) : undefined;
 assert.ok(!approved || !values['consumer-fixture'], 'Registry contracts cannot be overridden.');
 assert.ok(!values['consumer-fixture'] || ['legacy', 'support'].includes(values['consumer-fixture']), 'Unknown consumer fixture.');
@@ -79,7 +81,8 @@ try {
   await mkdir(packs);
   const source = approved ? ['--workspaces=false', ...approved.map(pack => `${pack.name}@${pack.version}`),
     '--registry', 'https://registry.npmjs.org/'] : packageIds.map(id => `--workspace=@0disoft/saylo-${id}`);
-  const metadata = JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
+  const metadata = values['tarballs-dir'] ? await copyVerifiedTarballs(path.resolve(values['tarballs-dir']), packs)
+    : JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
   assert.deepEqual(packed.map(pack => pack.name).sort(), packageIds.map(id => `@0disoft/saylo-${id}`).sort());
   if (approved) for (const pack of packed) {
@@ -106,7 +109,7 @@ try {
     manifest[section][pack.name] = `file:../packs/${pack.filename}`;
   }
   await writeFile(path.join(app, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');
-  console.log(`[pack:sveltekit] Installing five ${approved ? 'approved registry' : 'local'} tarballs and declared tool/peer major ranges outside the workspace.`);
+  console.log(`[pack:sveltekit] Installing five ${approved ? 'approved registry' : values['tarballs-dir'] ? 'integrity-verified candidate' : 'local'} tarballs and declared tool/peer major ranges outside the workspace.`);
   await npm(['install', '--workspaces=false', '--ignore-scripts', '--no-audit', '--no-fund'], app);
   const resolvedApp = await realpath(app);
   for (const pack of packed) {
