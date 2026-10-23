@@ -11,7 +11,8 @@ import { readCatalogFile, scanCatalogs } from './catalog-files.js';
 import type { CatalogFile } from './catalog-files.js';
 import { LiveRegistry } from './live-registry.js';
 import { diagnosticMessage } from './diagnostic-observers.js';
-import { catalogId } from './catalog-outcome.js';
+import { VIRTUAL, RESOLVED, LAZY, RESOLVED_LAZY, SERVER, RESOLVED_SERVER, CHUNK,
+  renderCatalogChunk, renderVirtualModule } from './virtual-modules.js';
 import { createAstFormatter } from './ast-formatter.js';
 import { requireCompleteTranslations } from './complete-translations.js';
 import { readIncludedKeys, selectBuildCatalogs } from './build-keys.js';
@@ -23,20 +24,6 @@ import { registerServerSource } from './server-source.js';
 import { CATALOG_EVENT, CATALOG_PUSH_EVENT, CATALOG_SCOPE_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT,
   REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest, isSnapshotRequest } from './types.js';
 import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './types.js';
-
-const VIRTUAL = 'virtual:saylo';
-const RESOLVED = `\0${VIRTUAL}`;
-const LAZY = 'virtual:saylo/lazy';
-const RESOLVED_LAZY = `\0${LAZY}`;
-const SERVER = 'virtual:saylo/server';
-const RESOLVED_SERVER = `\0${SERVER}`;
-const CHUNK = 'virtual:saylo/catalog/';
-const encode = (value: unknown) => {
-  const json = JSON.stringify(value).replace(/</g, '\\u003c');
-  // A literal __proto__ property sets an object's prototype in emitted JS.
-  // JSON parsing preserves it as an own message key without ICU reparsing.
-  return json.includes('"__proto__":') ? `JSON.parse(${JSON.stringify(json)})` : json;
-};
 
 export default function saylo(options: SayloViteOptions): Plugin {
   const autoKeys = readAutoKeys(options.includeKeys);
@@ -249,43 +236,11 @@ export default function saylo(options: SayloViteOptions): Plugin {
         if (ast) return ast;
       }
       const chunk = chunks.get(id.startsWith('\0') ? id.slice(1) : id);
-      if (chunk) return `export default ${encode(chunk)};`;
+      if (chunk) return renderCatalogChunk(chunk);
       if (id === RESOLVED_SERVER && this.environment?.name === 'client') throw new Error('virtual:saylo/server is a server-only entry.');
-      if (id === RESOLVED_SERVER && !production) return `import { getServerCatalogSource } from '@0disoft/saylo-vite/server';
-import { createServerI18n } from '@0disoft/saylo-core';
-export const catalogSource = getServerCatalogSource(${encode(sessionId)});
-export const createRequestI18n = (options = {}) => createServerI18n({
-  locale: ${encode(initialLocale)}, timeZone: ${encode(timeZone)},
-  initialNamespaces: ${options.initialNamespaces ? encode(options.initialNamespaces) : 'catalogSource.readManifest().availableNamespaces'},
-  ...options, catalogSource });`;
-      if (id === RESOLVED_LAZY || id === RESOLVED_SERVER) {
-        const manifest = registry.manifest();
-        const locale = manifest.availableLocales.includes(initialLocale) ? initialLocale : baseLocale;
-        const namespaces = [...new Set(options.initialNamespaces ?? manifest.availableNamespaces)].sort();
-        if (namespaces.length !== (options.initialNamespaces?.length ?? namespaces.length) || namespaces.some(n => !manifest.availableNamespaces.includes(n)))
-          throw new RangeError('initialNamespaces must be unique available base namespaces.');
-        const outcomes = namespaces.flatMap(namespace => [...new Set([baseLocale, locale])].map(locale => registry.load(locale, namespace)));
-        const bootPairs = new Set(outcomes.map(outcome => catalogId(outcome.key)));
-        const loaders = [...chunks].filter(([, outcome]) => !bootPairs.has(catalogId(outcome.key)))
-          .map(([moduleId, outcome]) => `{ key: ${encode(outcome.key)}, load: () => import(${encode(moduleId)}).then(module => module.default) }`);
-        return `import { ${production ? 'createStaticCatalogSource' : 'createDevCatalogSource'} } from '@0disoft/saylo-vite/client';
-export const initialCatalogs = ${encode(outcomes)};
-export const initialLocale = ${encode(locale)};
-export const initialNamespaces = ${encode(namespaces)};
-export const timeZone = ${encode(timeZone)};
-export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, initialCatalogs, [${loaders.join(',\n')}])`
-          : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot, push: true })`};
-${id === RESOLVED_SERVER ? `import { createServerI18n } from '@0disoft/saylo-core';
-export const createRequestI18n = (options = {}) => createServerI18n({ locale: initialLocale, timeZone,
-  initialNamespaces, ...options, catalogSource });` : ''}`;
-      }
-      if (id !== RESOLVED) return;
-      const catalogs = encode(buildCatalogs ?? snapshot().catalogs);
-      return `import { freezeCatalogs } from '@0disoft/saylo-vite/client';
-export const initialCatalogs = freezeCatalogs(${catalogs});
-export const baseLocale = ${JSON.stringify(baseLocale)};
-export const initialLocale = ${JSON.stringify(snapshot().catalogs.some(c => c.locale === initialLocale) ? initialLocale : baseLocale)};
-export const timeZone = ${JSON.stringify(timeZone)};`;
+      if (![RESOLVED, RESOLVED_LAZY, RESOLVED_SERVER].includes(id)) return;
+      return renderVirtualModule(id, { production, sessionId, baseLocale, initialLocale, timeZone,
+        initialNamespaces: options.initialNamespaces, registry, chunks, catalogs: snapshot().catalogs, buildCatalogs });
     },
     async configureServer(devServer) {
       if (options.typegen) {
