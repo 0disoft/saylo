@@ -91,9 +91,9 @@ export function registerRuntimeProbe(enabled) {
     const loaded = nextLoad(url, context);
     if (url !== target) return loaded;
     let source = String(loaded.source);
-    const before = 'await Promise.all(bases.map(f => stat(f.file).then(s => s.isFile(), () => false)))';
-    if (source.split(before).length !== 2) throw new Error('Missing or ambiguous base-stat probe boundary.');
-    source = source.replace(before, "await measureRuntimeAsync('baseStatMs', () => Promise.all(bases.map(f => stat(f.file).then(s => s.isFile(), () => false))))");
+    const boundary = /const existing = await (this\.bounded\('Base catalog existence check',[\s\S]*?\}, \{ signal \}\)\));/g;
+    if ([...source.matchAll(boundary)].length !== 1) throw new Error('Missing or ambiguous base-stat probe boundary.');
+    source = source.replace(boundary, (_, work) => `const existing = await measureRuntimeAsync('baseStatMs', () => ${work});`);
     transformed = true;
     return { ...loaded, source: `import { measureRuntimeAsync } from '${import.meta.url}';\n${source}` };
   } });

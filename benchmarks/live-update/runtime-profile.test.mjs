@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { execFileSync } from 'node:child_process';
 import { union, intersect, remainder, observeWindows, runtimeMetrics } from './runtime-profile.mjs';
+
+test('runtime probe loads the current bounded base existence check', () => {
+  const probe = new URL('./runtime-profile.mjs', import.meta.url).href;
+  const registry = new URL('../../packages/vite/dist/live-registry.js', import.meta.url).href;
+  execFileSync(process.execPath, ['--input-type=module', '-e', `
+    import { registerRuntimeProbe } from ${JSON.stringify(probe)};
+    const probe = registerRuntimeProbe(true);
+    try { await import(${JSON.stringify(registry)}); probe.start(); }
+    finally { probe.dispose(); }
+  `]);
+});
 
 test('runtime windows clip boundaries and count overlapping events without double-counting duration', () => {
   const windows = Object.fromEntries(runtimeMetrics.map(metric => [metric, [[10, 20], [30, 40]]]));
