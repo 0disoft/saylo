@@ -374,11 +374,13 @@ test('shared validation contracts still check every ID, changed base types and f
 
 test('complete validation reuse requires both trusted immutable identities and only successful results', () => {
   const base = createBaseSchema(catalog({ x: '{n, number}' }));
-  const translated = catalog({ x: '{n}' }, 'en');
-  const entries = Object.entries;
+  const parsed = catalog({ x: '{n}' }, 'en');
   let scans = 0;
-  Object.entries = value => { if (value === translated.messages) scans++; return entries(value); };
-  try {
+  const translated = freeze({ ...parsed, messages: new Proxy(parsed.messages, {
+    ownKeys(target) { scans++; return Reflect.ownKeys(target); },
+  }) });
+  scans = 0;
+  {
     validateTranslation(base, translated);
     validateTranslation(base, translated);
     assert.equal(scans, 1, 'The same immutable pair needs one complete scan.');
@@ -390,7 +392,7 @@ test('complete validation reuse requires both trusted immutable identities and o
     validateTranslation(base, shallowTranslation);
     shallowTranslation.messages.extra = translated.messages.x;
     rejectsCode(() => validateTranslation(base, shallowTranslation), 'UNKNOWN_MESSAGE');
-  } finally { Object.entries = entries; }
+  }
   const added = freeze({ ...translated, messages: { ...translated.messages, extra: translated.messages.x } });
   for (let attempt = 0; attempt < 2; attempt++) rejectsCode(() => validateTranslation(base, added), 'UNKNOWN_MESSAGE');
   const removedBaseKey = createBaseSchema(catalog({ other: '{n, number}' }));

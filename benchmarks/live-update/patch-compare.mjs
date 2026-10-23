@@ -7,7 +7,7 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { parseCatalog } from '@0disoft/saylo-core';
-import { createCatalogPatch as after } from '../../packages/vite/dist/catalog-patch.js';
+import { createCatalogPatch as after, applyCatalogPatch as applyAfter } from '../../packages/vite/dist/catalog-patch.js';
 import { summarize } from './statistics.mjs';
 
 const repository = fileURLToPath(new URL('../..', import.meta.url));
@@ -17,10 +17,10 @@ const { values } = parseArgs({ options: {
 } });
 const baseline = execFileSync('git', ['rev-parse', values.baseline], { cwd: repository, encoding: 'utf8' }).trim();
 const source = execFileSync('git', ['show', `${baseline}:packages/vite/src/catalog-patch.ts`], { cwd: repository, encoding: 'utf8' });
-const { createCatalogPatch: before } = await import('data:text/javascript;base64,' +
+const { createCatalogPatch: before, applyCatalogPatch: applyBefore } = await import('data:text/javascript;base64,' +
   Buffer.from(stripTypeScriptTypes(source)).toString('base64'));
 const messages = Object.fromEntries(Array.from({ length: 10000 }, (_, i) => [`m${i}`, `Message ${i} {name}`]));
-const parse = input => parseCatalog(JSON.stringify(input), { locale: 'en', namespace: 'bench' });
+const parse = (input, previous) => parseCatalog(JSON.stringify(input), { locale: 'en', namespace: 'bench' }, previous);
 const original = parse(messages);
 const base = { sessionId: 'bench', catalogVersion: 1 };
 const inputs = {
@@ -31,7 +31,9 @@ const inputs = {
 const results = [];
 for (const [scenario, input] of Object.entries(inputs)) {
   const outcome = { status: 'present', key: { locale: 'en', namespace: 'bench' }, sessionId: 'bench',
-    catalogVersion: 2, namespaceSchemaFingerprint: 'bench', catalog: parse(input) };
+    catalogVersion: 2, namespaceSchemaFingerprint: 'bench', catalog: parse(input, original) };
+  const originalOutcome = { ...outcome, catalogVersion: 1, catalog: original };
+  const wire = JSON.parse(JSON.stringify(after(original, outcome, base)));
   const samples = [];
   for (let index = 0; index < 120; index++) {
     const functions = index % 2 ? { after, before } : { before, after };
@@ -43,13 +45,21 @@ for (const [scenario, input] of Object.entries(inputs)) {
       sample[variant + 'Ms'] = performance.now() - start;
     }
     assert.deepEqual(patches.before, patches.after);
+    const applications = {};
+    for (const variant of Object.keys(functions)) {
+      const started = performance.now();
+      applications[variant] = (variant === 'before' ? applyBefore : applyAfter)(originalOutcome, wire);
+      sample[variant + 'ApplyMs'] = performance.now() - started;
+    }
+    assert.deepEqual(applications.before, applications.after);
     sample.diffMs = sample.afterMs - sample.beforeMs;
     samples.push(sample);
   }
   const measured = samples.filter(s => !s.warmup);
   const diffs = measured.map(s => s.diffMs).sort((a, b) => a - b);
   const summary = { before: summarize(measured.map(s => s.beforeMs)), after: summarize(measured.map(s => s.afterMs)),
-    diffMedianMs: diffs[49], diffP95Ms: diffs[94], improved: measured.filter(s => s.diffMs < 0).length };
+    diffMedianMs: diffs[49], diffP95Ms: diffs[94], improved: measured.filter(s => s.diffMs < 0).length,
+    applyBefore: summarize(measured.map(s => s.beforeApplyMs)), applyAfter: summarize(measured.map(s => s.afterApplyMs)) };
   results.push({ scenario, summary, samples });
   console.log(scenario, summary);
 }
@@ -59,8 +69,8 @@ const files = ['packages/vite/src/catalog-patch.ts', 'packages/vite/src/catalog-
 const hash = value => createHash('sha256').update(value).digest('hex');
 const codeHashes = Object.fromEntries(await Promise.all(files.map(async file =>
   [file, hash(await readFile(path.join(repository, file)))])));
-await writeFile(path.resolve(repository, values.out), JSON.stringify({ schema: 'saylo-patch-allocation-comparison-v1',
+await writeFile(path.resolve(repository, values.out), JSON.stringify({ schema: 'saylo-patch-allocation-comparison-v2',
   measuredAt: new Date().toISOString(), baseline, baselineSourceHash: hash(source),
   environment: { node: process.version, platform: process.platform }, settings: { messages: 10000, samples: 100, warmup: 20 },
-  scope: 'Alternating same-process calls on the same parsed input, deepEqual each pair. No randomization, forced GC or browser measurements. CatalogRegistry threshold change is excluded from timed calls.',
+  scope: 'Alternating same-process create/apply calls, incremental parser-owned inputs and a JSON-round-tripped patch; deepEqual each pair. No randomization, forced GC or browser measurements. CatalogRegistry thresholds and core schema changes are excluded from timed calls.',
   codeHashes, results }, null, 2) + '\n');

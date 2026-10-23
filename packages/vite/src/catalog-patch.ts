@@ -35,15 +35,15 @@ export function createCatalogPatch(before: ParsedCatalog, after: PresentCatalog,
   let uniform = true;
   let count = 0;
   const remove: string[] = [];
-  for (const id in before.messages) {
-    if (Object.hasOwn(before.messages, id) && !Object.hasOwn(after.catalog.messages, id)) remove.push(id);
+  for (const id of Object.keys(before.messages)) {
+    if (!Object.hasOwn(after.catalog.messages, id)) remove.push(id);
   }
-  for (const id in after.catalog.messages) {
-    if (!Object.hasOwn(after.catalog.messages, id)) continue;
+  for (const id of Object.keys(after.catalog.messages)) {
     const message = after.catalog.messages[id]!;
     count++;
     const previous = Object.hasOwn(before.messages, id) ? before.messages[id] : undefined;
-    if (!previous || previous.source !== message.source || JSON.stringify(previous.richTextTags) !== JSON.stringify(message.richTextTags)) upsert.push([id, message]);
+    if (!previous || (previous !== message && (previous.source !== message.source ||
+        (previous.richTextTags !== message.richTextTags && JSON.stringify(previous.richTextTags) !== JSON.stringify(message.richTextTags))))) upsert.push([id, message]);
     else {
       const offsetDelta = message.position.offset - previous.position.offset;
       const lineDelta = message.position.line - previous.position.line;
@@ -72,7 +72,10 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
       typeof patch.sourceName !== 'string' || !Number.isSafeInteger(patch.messageCount) || patch.messageCount < 0 ||
       !Array.isArray(patch.upsert) || !Array.isArray(patch.remove) || !Array.isArray(patch.positions))
     throw new Error('Catalog patch has no matching immutable baseline.');
-  const messages: Record<string, ParsedMessage> = Object.assign(Object.create(null), before.catalog.messages);
+  const messages: Record<string, ParsedMessage> = Object.create(null);
+  const ids = Object.keys(before.catalog.messages);
+  for (const id of ids) messages[id] = before.catalog.messages[id]!;
+  let count = ids.length;
   const seen = new Set<string>();
   const claim = (id: string) => {
     if (typeof id !== 'string' || !id || id.includes(':') || seen.has(id)) throw new Error('Invalid or duplicate catalog patch ID.');
@@ -82,6 +85,7 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
     claim(id);
     if (!Object.hasOwn(messages, id)) throw new Error('Catalog patch removes an unknown message.');
     delete messages[id];
+    count--;
   }
   for (const entry of patch.upsert) {
     if (!Array.isArray(entry) || entry.length !== 2) throw new Error('Invalid catalog patch message entry.');
@@ -90,6 +94,7 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
     if (!message || typeof message.source !== 'string' || !position(message.position) ||
         !Array.isArray(message.ast) || !message.arguments || typeof message.arguments !== 'object' || Array.isArray(message.arguments))
       throw new Error('Invalid catalog patch message.');
+    if (!Object.hasOwn(messages, id)) count++;
     messages[id] = message;
   }
   for (const entry of patch.positions) {
@@ -103,14 +108,15 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
     const shift = patch.positionShift;
     if (!shift || !Number.isSafeInteger(shift.offsetDelta) || !Number.isSafeInteger(shift.lineDelta) || !Number.isSafeInteger(shift.columnDelta))
       throw new Error('Invalid uniform catalog position shift.');
-    for (const [id, message] of Object.entries(messages)) if (!seen.has(id)) {
+    for (const id of Object.keys(messages)) if (!seen.has(id)) {
+      const message = messages[id]!;
       const next = { offset: message.position.offset + shift.offsetDelta, line: message.position.line + shift.lineDelta,
         column: message.position.column + shift.columnDelta };
       if (!position(next)) throw new Error('Catalog position shift moves outside the source.');
       messages[id] = { ...message, position: next };
     }
   }
-  if (Object.keys(messages).length !== patch.messageCount) throw new Error('Catalog patch message count differs.');
+  if (count !== patch.messageCount) throw new Error('Catalog patch message count differs.');
   return { status: 'present', sessionId: patch.sessionId, key: patch.key, catalogVersion: patch.catalogVersion,
     namespaceSchemaFingerprint: patch.namespaceSchemaFingerprint,
     catalog: { locale: patch.key.locale, namespace: patch.key.namespace, sourceName: patch.sourceName, messages } };

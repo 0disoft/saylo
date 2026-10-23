@@ -126,7 +126,11 @@ export function validateTranslation(base: CatalogSchema, translation: ParsedCata
     throw new CatalogError([{ ...context, code: 'NAMESPACE_MISMATCH', message: `Expected namespace ${JSON.stringify(base.namespace)}.` }]);
   }
   const diagnostics: CatalogDiagnostic[] = [];
-  for (const [id, message] of Object.entries(translation.messages)) {
+  // Reused messages dominate live edits. Avoid allocating an entry tuple for
+  // every unchanged message before checking its already validated contract.
+  for (const id in translation.messages) {
+    if (!Object.hasOwn(translation.messages, id)) continue;
+    const message = translation.messages[id]!;
     const original = Object.hasOwn(base.keys, id) ? base.keys[id] : undefined;
     if (!original) {
       diagnostics.push({ ...context, id, position: message.position, code: 'UNKNOWN_MESSAGE', message: 'Translation introduces a key absent from the base catalog.' });
