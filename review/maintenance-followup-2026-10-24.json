@@ -1,0 +1,158 @@
+{
+  "schema": "saylo-maintenance-followup/v1",
+  "checkedAt": "2026-10-23T19:58:10.145Z",
+  "sourceCommit": "19640b9ec45b1b0c15ee1966f3bf87cd12bb10cb",
+  "changes": [
+    "Resend server subscriptions after locale/namespace cache eviction.",
+    "Observe catalog push and pull receipts, reject pre-selection pushed catalogs.",
+    "Measure actual startBatch/processBatch windows with boundaryVersion 3.",
+    "Keep browser acceptance probes aligned with immutableSnapshot."
+  ],
+  "checks": {
+    "workspaceBuild": "passed before product fix",
+    "viteBuild": "passed after product fix",
+    "targetedTests": {
+      "passed": 62,
+      "failed": 0,
+      "files": [
+        "packages/vite/test/push.test.mjs",
+        "packages/vite/test/lazy.test.mjs",
+        "packages/vite/test/sync-state.test.mjs",
+        "benchmarks/live-update/catalog-receipt.test.mjs",
+        "benchmarks/live-update/enqueue-origin.test.mjs",
+        "benchmarks/live-update/server-file-profile.test.mjs",
+        "benchmarks/live-update/runtime-profile.test.mjs",
+        "benchmarks/live-update/browser-profile.test.mjs"
+      ]
+    },
+    "freshFullSuite": false
+  },
+  "measurements": [
+    {
+      "file": "benchmarks/results/maintenance-edit-2026-10-24.json",
+      "scenario": "1k-3-locales",
+      "mode": "edit",
+      "sourceCommit": "19640b9ec45b1b0c15ee1966f3bf87cd12bb10cb",
+      "instrumentation": {
+        "cpuProfile": false,
+        "browserStages": false,
+        "serverFileStages": false,
+        "replyStages": false,
+        "clientStages": false
+      },
+      "samples": 50,
+      "metric": "saveToAckMs",
+      "p95Ms": 53.117400000001
+    },
+    {
+      "file": "benchmarks/results/maintenance-edit-2026-10-24.json",
+      "scenario": "10k-20-locales",
+      "mode": "edit",
+      "sourceCommit": "19640b9ec45b1b0c15ee1966f3bf87cd12bb10cb",
+      "instrumentation": {
+        "cpuProfile": false,
+        "browserStages": false,
+        "serverFileStages": false,
+        "replyStages": false,
+        "clientStages": false
+      },
+      "samples": 50,
+      "metric": "saveToAckMs",
+      "p95Ms": 866.0051999999996
+    },
+    {
+      "file": "benchmarks/results/maintenance-locale-add-2026-10-24.json",
+      "scenario": "1k-3-locales",
+      "mode": "locale-add",
+      "sourceCommit": "19640b9ec45b1b0c15ee1966f3bf87cd12bb10cb",
+      "instrumentation": {
+        "cpuProfile": false,
+        "browserStages": false,
+        "serverFileStages": false,
+        "replyStages": false,
+        "clientStages": false
+      },
+      "samples": 50,
+      "metric": "saveToListAckMs",
+      "p95Ms": 282.33450000000084
+    },
+    {
+      "file": "benchmarks/results/maintenance-locale-add-2026-10-24.json",
+      "scenario": "10k-20-locales",
+      "mode": "locale-add",
+      "sourceCommit": "19640b9ec45b1b0c15ee1966f3bf87cd12bb10cb",
+      "instrumentation": {
+        "cpuProfile": false,
+        "browserStages": false,
+        "serverFileStages": false,
+        "replyStages": false,
+        "clientStages": false
+      },
+      "samples": 50,
+      "metric": "saveToListAckMs",
+      "p95Ms": 1969.5822000000044
+    },
+    {
+      "file": "benchmarks/results/maintenance-locale-stages-2026-10-24.json",
+      "scenario": "10k-20-locales",
+      "mode": "locale-add",
+      "sourceCommit": "a9e8b80c313c32f089fdf5e713203f7d523326e7",
+      "instrumentation": {
+        "cpuProfile": false,
+        "browserStages": false,
+        "serverFileStages": true,
+        "replyStages": false,
+        "clientStages": false
+      },
+      "samples": 10,
+      "metric": "saveToListAckMs",
+      "p95Ms": 401.7625000000007
+    }
+  ],
+  "evidence": [
+    {
+      "file": "benchmarks/results/maintenance-edit-2026-10-24.json",
+      "sha256": "029ece25db9baa4964a3eaa7508dd8bc45bffefa7afeb474c5057ac054ca1bd4"
+    },
+    {
+      "file": "benchmarks/results/maintenance-edit-2026-10-24.1k-3-locales.samples.json",
+      "sha256": "b93a1c457902e0aa124ea23255006c3c003ca2e5105dce926798d16be8536600"
+    },
+    {
+      "file": "benchmarks/results/maintenance-edit-2026-10-24.10k-20-locales.samples.json",
+      "sha256": "b90a8a415264477f453d4ca53574aef68081af1f3232c41677d18dffcb307ffc"
+    },
+    {
+      "file": "benchmarks/results/maintenance-locale-add-2026-10-24.json",
+      "sha256": "0942feb6341603e8dab543a83f3d1906da2fb5bc7256db271a6a42fb5296213a"
+    },
+    {
+      "file": "benchmarks/results/maintenance-locale-add-2026-10-24.1k-3-locales.samples.json",
+      "sha256": "7fc0af8a73545e64b751f9824865fcccbb2a109c4013c7dd35d0595657450118"
+    },
+    {
+      "file": "benchmarks/results/maintenance-locale-add-2026-10-24.10k-20-locales.samples.json",
+      "sha256": "a55de189a838b6c81770353d86eb35d49a73b56d08fcd0ffaaa044f091a6d690"
+    },
+    {
+      "file": "benchmarks/results/maintenance-locale-stages-2026-10-24.json",
+      "sha256": "0cff1c3aa8b50e2b7b4b1b4a145da904851b892e6fdf53b59083ec1b1d8139b0"
+    },
+    {
+      "file": "benchmarks/results/maintenance-locale-stages-2026-10-24.10k-20-locales.samples.json",
+      "sha256": "bc95f1b3f7c207a584ee653068adb50d48a8597fbe088dd6e86eb3c6a2c4f5b8"
+    }
+  ],
+  "limits": [
+    "Single-machine development browser runs; no controlled before/after comparison or general performance guarantee.",
+    "Initial locale run ignored push transfers and is retained only under .release as rejected evidence.",
+    "Frozen candidate d3e5252/fTJYGI excludes the a9e8b80 product fix; refresh validation before promotion/publication."
+  ],
+  "release": {
+    "packageVersions": "0.1.0-alpha.4",
+    "vuePrivate": true,
+    "pushed": false,
+    "published": false,
+    "workflowDispatched": false
+  }
+}
