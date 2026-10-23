@@ -1,0 +1,512 @@
+{
+  "schema": "saylo-remaining-edit-bottlenecks/v1",
+  "checkedAt": "2026-10-23T21:09:29.056Z",
+  "sourceCommits": {
+    "sparsePatch": "35b13504ccfb14098c54f51f55863361514bbd29",
+    "runtimeProbe": "14cea4c852e074bf1e6ccaa9da8b346c7f21c841",
+    "ownedPatch": "7ccfdba6ca9a0628246620eba13d7c98f82f0bd9"
+  },
+  "changes": [
+    "Reduce frozen-map copying and per-message tuple/stringification overhead in sparse patch creation/application.",
+    "Validate translation messages without allocating all entry tuples.",
+    "Snapshot only mutable patch children; seal owned result containers and share recognized immutable baseline messages.",
+    "Stop registry equivalence checks at the first changed message before allocating complete key lists.",
+    "Restore runtime profiling for the current bounded base existence check."
+  ],
+  "checks": {
+    "coreBuild": "passed",
+    "viteBuild": "passed",
+    "coreTests": {
+      "passed": 122,
+      "failed": 0
+    },
+    "targetedTests": {
+      "passed": 102,
+      "failed": 0,
+      "files": [
+        "packages/vite/test/client.test.mjs",
+        "packages/vite/test/lazy.test.mjs",
+        "packages/vite/test/patch.test.mjs",
+        "packages/vite/test/push.test.mjs",
+        "packages/vite/test/wire.test.mjs",
+        "packages/vite/test/live-registry.test.mjs",
+        "packages/vite/test/sync-state.test.mjs",
+        "benchmarks/live-update/comparison-policy.test.mjs",
+        "benchmarks/live-update/runtime-profile.test.mjs"
+      ]
+    },
+    "freshFullWorkspaceSuite": false,
+    "benchmarkTemporaryProcessesRemoved": true
+  },
+  "finalAcceptance": {
+    "file": "benchmarks/results/remaining-edit-final-2026-10-24.json",
+    "sourceRevision": "7ccfdba6ca9a0628246620eba13d7c98f82f0bd9",
+    "settings": {
+      "samples": 50,
+      "warmup": 5,
+      "calibrations": 25,
+      "timeoutMs": 30000
+    },
+    "instrumentation": {
+      "cpuProfile": false,
+      "browserStages": false,
+      "serverFileStages": false,
+      "replyStages": false,
+      "clientStages": false
+    },
+    "scenario": "10k-20-locales",
+    "messagesPerLocale": 10000,
+    "localeCount": 20,
+    "renderedMessages": 2,
+    "changedKeysPerSave": 1,
+    "summary": {
+      "saveToAckMs": {
+        "count": 50,
+        "p50Ms": 62.49109999999928,
+        "p95Ms": 89.16500000000087,
+        "minMs": 42.80630000000019,
+        "maxMs": 149.02469999999994
+      },
+      "saveToManifestBroadcastMs": {
+        "count": 50,
+        "p50Ms": 27.210399999999936,
+        "p95Ms": 42.2541999999994,
+        "minMs": 16.73619999999937,
+        "maxMs": 113.35239999999976
+      },
+      "receiveToCommitMs": {
+        "count": 50,
+        "p50Ms": 31.30000001192093,
+        "p95Ms": 36.29999999701977,
+        "minMs": 20.799999997019768,
+        "maxMs": 47.79999999701977
+      },
+      "commitToAckDispatchMs": {
+        "count": 50,
+        "p50Ms": 0,
+        "p95Ms": 0.10000000894069672,
+        "minMs": 0,
+        "maxMs": 0.10000000894069672
+      },
+      "fileWriteMs": {
+        "count": 50,
+        "p50Ms": 9.760299999999916,
+        "p95Ms": 12.332699999999022,
+        "minMs": 6.641599999999016,
+        "maxMs": 12.608899999999267
+      }
+    },
+    "serverStages": {
+      "boundaryVersion": 3,
+      "scope": "Benchmark-only method wrappers. Boundary v3: queueToDrain includes the wait until actual startBatch, including serialization; all waits are retained in drainWaitMs. Candidate duration is the union of actual batch windows ending at their own prepareTranslations or processBatch settlement for superseded/error batches. v1/v2 used drain timers instead of actual batch starts; candidate and queue metrics are not directly comparable. Preparation/validation/registry/delta retain their prior boundaries; do not add nested p95s.",
+      "queueToDrainMs": {
+        "count": 50,
+        "p50Ms": 3.83140000000094,
+        "p95Ms": 5.443199999999706,
+        "minMs": 0.13450000000011642,
+        "maxMs": 7.095000000001164
+      },
+      "readAndCandidateMs": {
+        "count": 50,
+        "p50Ms": 11.066799999998693,
+        "p95Ms": 21.55659999999989,
+        "minMs": 5.795799999999872,
+        "maxMs": 98.14329999999973
+      },
+      "translationPreparationMs": {
+        "count": 50,
+        "p50Ms": 5.649699999999939,
+        "p95Ms": 7.85280000000057,
+        "minMs": 3.7943000000013853,
+        "maxMs": 9.543799999999464
+      },
+      "validationMs": {
+        "count": 50,
+        "p50Ms": 0.019999999998617568,
+        "p95Ms": 0.03320000000167056,
+        "minMs": 0.0067000000017287675,
+        "maxMs": 0.0974000000005617
+      },
+      "registryReplaceMs": {
+        "count": 50,
+        "p50Ms": 2.4483000000000175,
+        "p95Ms": 3.0709999999999127,
+        "minMs": 1.7718000000022585,
+        "maxMs": 3.6612999999997555
+      },
+      "catalogDeltaMs": {
+        "count": 50,
+        "p50Ms": 6.94550000000163,
+        "p95Ms": 10.455100000001039,
+        "minMs": 4.502899999999499,
+        "maxMs": 25.293900000000576
+      },
+      "maxFileEvents": 2,
+      "maxDrains": 2
+    },
+    "wire": {
+      "patchReplies": 50,
+      "pushReplies": 50,
+      "requestReplies": 0,
+      "fullReplies": 0,
+      "maxChangedMessages": 1,
+      "maxPositionUpdates": 0,
+      "catalogReplyBytes": {
+        "p50Bytes": 5120,
+        "p95Bytes": 5120,
+        "minBytes": 5115,
+        "maxBytes": 5120
+      }
+    },
+    "declarationRewritten": false,
+    "goal": {
+      "metric": "saveToAckMs",
+      "percentile": 95,
+      "limitMs": 100,
+      "observedMs": 89.16500000000087,
+      "passed": true,
+      "samplesWithin100Ms": 49,
+      "totalSamples": 50
+    },
+    "scope": "Loaded English namespace edits; one rendered changed key, one rendered unchanged key; Chromium headless, React development mode; no paint timing.",
+    "acknowledgement": "Includes HTTP acknowledgement cost. Control round trip is reported separately, never subtracted or added to stage p95s."
+  },
+  "firstSliceComparison": {
+    "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.json",
+    "revisions": {
+      "before": "d0483a63ef088d0a03e53d63257d790698963a1e",
+      "after": "35b13504ccfb14098c54f51f55863361514bbd29"
+    },
+    "settings": {
+      "samples": 10,
+      "warmup": 2,
+      "calibrations": 10
+    },
+    "pooled": {
+      "before": {
+        "samples": 20,
+        "runFiles": [
+          "sparse-patch-edit-comparison-2026-10-24.1-before.json",
+          "sparse-patch-edit-comparison-2026-10-24.4-before.json"
+        ],
+        "withinGoal": {
+          "goalMs": 100,
+          "samples": 14
+        },
+        "summary": {
+          "saveToAckMs": {
+            "count": 20,
+            "p50Ms": 93.21639999999934,
+            "p95Ms": 118.7416000000012,
+            "minMs": 74.93479999999909,
+            "maxMs": 118.80289999999877
+          },
+          "saveToManifestBroadcastMs": {
+            "count": 20,
+            "p50Ms": 47.64890000000014,
+            "p95Ms": 56.17740000000049,
+            "minMs": 36.197400000000926,
+            "maxMs": 75.53779999999824
+          },
+          "receiveToCommitMs": {
+            "count": 20,
+            "p50Ms": 39.19999998807907,
+            "p95Ms": 46.20000000298023,
+            "minMs": 35.599999994039536,
+            "maxMs": 47.69999998807907
+          },
+          "commitToAckDispatchMs": {
+            "count": 20,
+            "p50Ms": 0,
+            "p95Ms": 0.10000000894069672,
+            "minMs": 0,
+            "maxMs": 0.20000000298023224
+          },
+          "fileWriteMs": {
+            "count": 20,
+            "p50Ms": 11.495199999999386,
+            "p95Ms": 14.297899999997753,
+            "minMs": 7.526599999999235,
+            "maxMs": 268.5753000000004
+          }
+        },
+        "control": {
+          "count": 20,
+          "p50Ms": 3.781699999999546,
+          "p95Ms": 5.8215000000000146,
+          "minMs": 2.2386999999998807,
+          "maxMs": 6.089900000000853
+        }
+      },
+      "after": {
+        "samples": 20,
+        "runFiles": [
+          "sparse-patch-edit-comparison-2026-10-24.2-after.json",
+          "sparse-patch-edit-comparison-2026-10-24.3-after.json"
+        ],
+        "withinGoal": {
+          "goalMs": 100,
+          "samples": 18
+        },
+        "summary": {
+          "saveToAckMs": {
+            "count": 20,
+            "p50Ms": 67.04570000000058,
+            "p95Ms": 121.78159999999843,
+            "minMs": 62.21419999999853,
+            "maxMs": 204.5600000000013
+          },
+          "saveToManifestBroadcastMs": {
+            "count": 20,
+            "p50Ms": 31.64179999999942,
+            "p95Ms": 75.10699999999997,
+            "minMs": 28.16150000000016,
+            "maxMs": 159.33539999999994
+          },
+          "receiveToCommitMs": {
+            "count": 20,
+            "p50Ms": 34.70000000298023,
+            "p95Ms": 40.29999999701977,
+            "minMs": 29.099999994039536,
+            "maxMs": 40.80000001192093
+          },
+          "commitToAckDispatchMs": {
+            "count": 20,
+            "p50Ms": 0,
+            "p95Ms": 0.09999999403953552,
+            "minMs": 0,
+            "maxMs": 0.10000000894069672
+          },
+          "fileWriteMs": {
+            "count": 20,
+            "p50Ms": 9.934199999999691,
+            "p95Ms": 14.455799999999726,
+            "minMs": 7.398600000000442,
+            "maxMs": 40.712799999997515
+          }
+        },
+        "control": {
+          "count": 20,
+          "p50Ms": 3.421599999997852,
+          "p95Ms": 5.7062000000005355,
+          "minMs": 2.6422999999995227,
+          "maxMs": 6.654099999999744
+        }
+      }
+    },
+    "finalOwnedPatchIncluded": false
+  },
+  "cpuComparison": {
+    "file": "benchmarks/results/sparse-patch-cpu-2026-10-24.json",
+    "baseline": "d0483a63ef088d0a03e53d63257d790698963a1e",
+    "settings": {
+      "messages": 10000,
+      "samples": 100,
+      "warmup": 20
+    },
+    "scope": "Alternating same-process create/apply calls, incremental parser-owned inputs and a JSON-round-tripped patch; deepEqual each pair. No randomization, forced GC or browser measurements. CatalogRegistry thresholds and core schema changes are excluded from timed calls.",
+    "results": [
+      {
+        "scenario": "sameLength",
+        "summary": {
+          "before": {
+            "count": 100,
+            "p50Ms": 11.875100000000202,
+            "p95Ms": 20.43029999999999,
+            "minMs": 8.288899999999558,
+            "maxMs": 60.36850000000004
+          },
+          "after": {
+            "count": 100,
+            "p50Ms": 7.4823999999998705,
+            "p95Ms": 11.339700000000448,
+            "minMs": 4.738600000000133,
+            "maxMs": 34.03200000000015
+          },
+          "diffMedianMs": -4.496399999999994,
+          "diffP95Ms": -0.8890000000001237,
+          "improved": 97,
+          "applyBefore": {
+            "count": 100,
+            "p50Ms": 10.390200000000277,
+            "p95Ms": 16.971300000000156,
+            "minMs": 7.652999999999338,
+            "maxMs": 63.97479999999996
+          },
+          "applyAfter": {
+            "count": 100,
+            "p50Ms": 3.7112000000006446,
+            "p95Ms": 6.394600000000082,
+            "minMs": 2.6721999999999753,
+            "maxMs": 13.492600000000039
+          }
+        }
+      },
+      {
+        "scenario": "uniform",
+        "summary": {
+          "before": {
+            "count": 100,
+            "p50Ms": 12.919299999999566,
+            "p95Ms": 24.237200000001394,
+            "minMs": 8.462199999999939,
+            "maxMs": 40.17740000000049
+          },
+          "after": {
+            "count": 100,
+            "p50Ms": 9.063500000000204,
+            "p95Ms": 16.2400000000016,
+            "minMs": 6.157700000001569,
+            "maxMs": 22.789700000001176
+          },
+          "diffMedianMs": -4.092800000000352,
+          "diffP95Ms": -0.6952999999994063,
+          "improved": 96,
+          "applyBefore": {
+            "count": 100,
+            "p50Ms": 20.543299999999363,
+            "p95Ms": 32.3184999999994,
+            "minMs": 15.386800000000221,
+            "maxMs": 67.22510000000148
+          },
+          "applyAfter": {
+            "count": 100,
+            "p50Ms": 9.866900000000896,
+            "p95Ms": 13.329999999999927,
+            "minMs": 7.010200000000623,
+            "maxMs": 22.256100000000515
+          }
+        }
+      },
+      {
+        "scenario": "mixed",
+        "summary": {
+          "before": {
+            "count": 100,
+            "p50Ms": 11.12579999999798,
+            "p95Ms": 18.779600000001665,
+            "minMs": 8.2983000000022,
+            "maxMs": 21.755300000000716
+          },
+          "after": {
+            "count": 100,
+            "p50Ms": 7.809900000000198,
+            "p95Ms": 12.826600000000326,
+            "minMs": 5.444700000000012,
+            "maxMs": 16.664600000000064
+          },
+          "diffMedianMs": -3.1441999999951804,
+          "diffP95Ms": 0.7721999999957916,
+          "improved": 93,
+          "applyBefore": {
+            "count": 100,
+            "p50Ms": 12.170999999998457,
+            "p95Ms": 17.10320000000138,
+            "minMs": 9.463200000001962,
+            "maxMs": 21.280399999999645
+          },
+          "applyAfter": {
+            "count": 100,
+            "p50Ms": 6.160899999998946,
+            "p95Ms": 8.831399999999121,
+            "minMs": 4.417199999999866,
+            "maxMs": 14.865999999998166
+          }
+        }
+      }
+    ],
+    "finalOwnedPatchIncluded": false
+  },
+  "diagnostic": {
+    "file": "benchmarks/results/remaining-edit-stages-2026-10-24.json",
+    "sourceRevision": "d0483a63ef088d0a03e53d63257d790698963a1e",
+    "scope": "Pre-change 10-sample diagnostic with file profiling; IO/scheduler outliers. Not an uninstrumented causal before/after comparison."
+  },
+  "limits": [
+    "Final acceptance is one local Chromium headless / React development run with 50 measured edits, one edited key and two rendered messages.",
+    "DOM commit and HTTP acknowledgement are observed; paint time is not measured.",
+    "The first-slice ABBA comparison still missed p95 100ms. It does not include the final owned-patch optimization.",
+    "Final p95 passes for these inputs and this machine, not a guarantee under other machine load, rendering work or IO conditions.",
+    "Different-run stage p95 values are not summed or used as causal proof."
+  ],
+  "release": {
+    "packageVersionsChanged": false,
+    "newCandidateFrozen": false,
+    "gitPush": false,
+    "npmPublish": false,
+    "deployment": false,
+    "adminApplied": false
+  },
+  "evidenceFiles": [
+    {
+      "file": "benchmarks/results/remaining-edit-final-2026-10-24.json",
+      "bytes": 11319,
+      "sha256": "c16d4c11a6a1eab93949473f8aa92c63f387e8a0183ee60b7b68493f2a46a4cf"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.json",
+      "bytes": 10441,
+      "sha256": "0e69ea5d3e928e1fd86a491518f42488eeb76bf68b93b6cd324908d7662a4bc4"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-cpu-2026-10-24.json",
+      "bytes": 106592,
+      "sha256": "7848a3e298b1560d254f46a2c5d721a1f19a9a42833cbdf706f9b535b9a400e2"
+    },
+    {
+      "file": "benchmarks/results/remaining-edit-stages-2026-10-24.json",
+      "bytes": 11513,
+      "sha256": "564a12631d98990afefcd5a2d9e958841f3b91d04cf8cb9d7b3c65efc5305b17"
+    },
+    {
+      "file": "benchmarks/results/remaining-edit-final-2026-10-24.10k-20-locales.samples.json",
+      "bytes": 68788,
+      "sha256": "5f231130d57c98e00e635d9dbebb1f62ab0b08e03721c691098a53182e183b16"
+    },
+    {
+      "file": "benchmarks/results/remaining-edit-stages-2026-10-24.10k-20-locales.samples.json",
+      "bytes": 27658,
+      "sha256": "d453cb3841395b7ba68bd17648a2c3f71a5a18f3203484abd4e63bed84a98fd5"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.1-before.json",
+      "bytes": 10257,
+      "sha256": "834fcf1ab1167b63b285d5112720813a12e208e6ff391e5389a059d228d4e4df"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.1-before.10k-20-locales.samples.json",
+      "bytes": 15001,
+      "sha256": "b0959345561a52bad3d1abea0835b906002e26f16fdb5cfb34fb2e41c0258e16"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.2-after.json",
+      "bytes": 10418,
+      "sha256": "7d283cbf9f84c6f19277b375e259f997c65efda1bc079942c33bc78b412dc444"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.2-after.10k-20-locales.samples.json",
+      "bytes": 14671,
+      "sha256": "4b488437d02e96540628870b97729201dd05bec3092fbc9fbfb85ed8ab639949"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.3-after.json",
+      "bytes": 10572,
+      "sha256": "769b77f2b9c1aeecd9ecab007e98de8883db83370f8592ac2ea7cc24c677e898"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.3-after.10k-20-locales.samples.json",
+      "bytes": 15688,
+      "sha256": "f07863a863330611e14c7e2d6259e3489ff5aadb6946efb8846039dd6696e0b2"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.4-before.json",
+      "bytes": 10751,
+      "sha256": "168dafc81781d363bc915c5687857aa813f279cd2ff31f61b452fb041054198d"
+    },
+    {
+      "file": "benchmarks/results/sparse-patch-edit-comparison-2026-10-24.4-before.10k-20-locales.samples.json",
+      "bytes": 15480,
+      "sha256": "b2af83ddccc247d4deb7a129c11437c53f5559e483c2d7e1b3438ff2de27082f"
+    }
+  ]
+}
