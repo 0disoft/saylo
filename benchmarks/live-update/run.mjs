@@ -84,6 +84,7 @@ const measuredFiles = ['packages/core/dist/catalog.js', 'packages/core/dist/cata
   'packages/core/dist/catalog-freeze.js', 'packages/core/dist/snapshot-signature.js', 'packages/core/dist/translator.js',
   'packages/vite/dist/catalog-source.js', 'packages/vite/dist/catalog-wire.js', 'packages/vite/dist/index.js', 'packages/vite/dist/freeze.js'];
 measuredFiles.push('benchmarks/live-update/server-file-profile.mjs');
+measuredFiles.push('benchmarks/live-update/catalog-receipt.mjs');
 measuredFiles.push('benchmarks/live-update/runtime-profile.mjs');
 measuredFiles.push('benchmarks/live-update/reply-profile.mjs', 'benchmarks/live-update/reply-receipt.mjs');
 measuredFiles.push('benchmarks/live-update/client-profile.mjs', 'benchmarks/live-update/client-probe.mjs');
@@ -157,16 +158,16 @@ async function runScenario(scenario) {
       return { count: summary.count, p50Bytes: summary.p50Ms, p95Bytes: summary.p95Ms, minBytes: summary.minMs, maxBytes: summary.maxMs };
     };
     const serverFileStages = values['server-file-stages'] ? {
-      boundaryVersion: 2,
+      boundaryVersion: 3,
       scope: 'Benchmark-only in-memory Node module transform. Multiple completed reads and failed attempts are retained. Each file stage is the union of its operation intervals; all operations must fit the candidate union. candidateOther is the candidate interval union minus the union of all file operations. Unfinished/missing operations fail. Do not add nested quantiles or treat wall times as CPU times.',
       ...Object.fromEntries(fileMetrics.map(metric => [metric, summarize(measured.map(sample => sample.serverStages.fileStages.timings[metric]))])),
       maxCalls: Object.fromEntries(fileMetrics.slice(0, -1).map(metric => [metric, Math.max(...measured.map(sample => sample.serverStages.fileStages.calls[metric]))])),
     } : undefined;
     const serverStages = stageProbe ? {
-      boundaryVersion: 2,
+      boundaryVersion: 3,
       scope: values.mode === 'locale-add'
-        ? 'Benchmark-only method wrappers before list DOM ack. queueToDrain is the first batch queue wait; per-batch waits are retained in drainWaitMs. readAndCandidate is the union of all batch windows, including serialized wait; each closes at its own prepareTranslations, or promise settlement for superseded/error batches. Excludes boot, locale selection and removal. translationPreparation includes schema lookup, validation and quarantine. Boundary v1 overwrote the start on later drains; do not compare those candidate or queue metrics directly. Do not add nested p95s.'
-        : 'Benchmark-only method wrappers. queueToDrain is the first batch wait, with all waits in drainWaitMs. Candidate duration is the interval union of every batch from drain to its own prepareTranslations or settlement for superseded/error batches, including serialized wait. v1 overwrote starts on later drains; candidate and queue metrics are not directly comparable. Preparation/validation/registry/delta retain their prior boundaries; do not add nested p95s.',
+        ? 'Benchmark-only method wrappers before list DOM ack. Boundary v3: queueToDrain includes the wait until actual startBatch, including serialization; per-batch waits are retained in drainWaitMs. readAndCandidate is the union of actual batch windows, ending at their own prepareTranslations or processBatch settlement for superseded/error batches. Excludes boot, locale selection and removal. translationPreparation includes schema lookup, validation and quarantine. v1/v2 used drain timers instead of actual batch starts; candidate and queue metrics are not directly comparable. Do not add nested p95s.'
+        : 'Benchmark-only method wrappers. Boundary v3: queueToDrain includes the wait until actual startBatch, including serialization; all waits are retained in drainWaitMs. Candidate duration is the union of actual batch windows ending at their own prepareTranslations or processBatch settlement for superseded/error batches. v1/v2 used drain timers instead of actual batch starts; candidate and queue metrics are not directly comparable. Preparation/validation/registry/delta retain their prior boundaries; do not add nested p95s.',
       ...Object.fromEntries(['queueToDrainMs', 'readAndCandidateMs', 'translationPreparationMs', 'validationMs', 'registryReplaceMs', 'catalogDeltaMs']
         .map(metric => [metric, summarize(measured.map(sample => sample.serverStages[metric]))])),
       maxFileEvents: Math.max(...measured.map(sample => sample.serverStages.fileEvents)),
@@ -212,6 +213,8 @@ async function runScenario(scenario) {
       renderedMessages: 2, editedLocale: 'en', editedNamespace: 'bench', changedKeysPerSave: 1,
       typegenEnabled: !values['no-typegen'], declarationRewritten: false, browser, serverStartupMs,
       wire: { patchReplies: measured.filter(s => s.catalogReplyKind === 'patch').length,
+        pushReplies: measured.filter(s => s.catalogReplyTransport === 'push').length,
+        requestReplies: measured.filter(s => s.catalogReplyTransport === 'request').length,
         fullReplies: measured.filter(s => s.catalogReplyKind === 'present' || s.catalogReplyKind === 'compact').length,
         maxChangedMessages: Math.max(...measured.map(s => s.changedMessages)),
         maxPositionUpdates: Math.max(...measured.map(s => s.positionUpdates)),

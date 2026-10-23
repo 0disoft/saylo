@@ -69,7 +69,9 @@ test('real serialized superseded reads preserve publication and both candidate w
       const result = probe.finish(); hooks.assertTransformed();
       assert.equal(publications, 1); assert.equal(active[0].catalog.messages.hello.source, 'Latest {name}');
       assert.equal(result.drains, 2); assert.equal(result.candidateIntervals.length, 2);
-      assert.equal(result.boundaryVersion, 2); assert.equal(result.drainWaitMs.length, 2);
+      assert.equal(result.boundaryVersion, 3); assert.equal(result.drainWaitMs.length, 2);
+      assert.ok(result.candidateIntervals[1][0] >= result.candidateIntervals[0][1],
+        'Serialized read windows must start at actual batches, not overlapping drain timers.');
       assert.deepEqual(result.fileStages.calls, { pathCheckMs: 2, fileReadMs: 2, catalogParseMs: 2 });
       const parses = result.fileStages.operations.filter(op => op.metric === 'catalogParseMs');
       assert.ok(parses.every(op => op.hasPrevious));

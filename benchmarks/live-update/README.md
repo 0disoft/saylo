@@ -31,6 +31,8 @@ npm run bench:live
 | `--client-stages` | 꺼짐 | locale-add 전용. 정상 prebundle을 유지하며 client 수신→첫 publication→DOM commit과 Vite 동결·core 수락·snapshot 구간을 나눠 잰다. `--reply-stages`가 필요하다 |
 | `--timeout-ms` | `30000` | 단계별 대기 timeout |
 
+`edit` 모드의 wire receipt는 별도 옵션 없이 `saylo:catalog` request와 `saylo:catalog-push` push를 모두 받는다. push receipt는 Vite가 JSON을 파싱한 뒤 등록한 hot listener에 들어온 시점에서 시작한다.
+
 ## 픽스처와 측정
 
 ### 로케일 추가 모드
@@ -39,7 +41,7 @@ npm run bench:live
 npm run bench:live -- --mode locale-add --out benchmarks/results/locale-add.json
 ```
 
-`locale-app.jsx`·`locale-channel.mjs`가 회차마다 새 en-GB 디렉터리와 bench.json을 추가하고, select option 표시→자동 setLocale→최초 번역→en 복귀→파일/디렉터리 삭제·option 제거를 확인한다. 초기 규모는 edit와 같은 1k×3/10k×20이며 namespace는 1개다. target 선택 전 응답 0개, 선택 뒤 known baseline 없는 full 응답 1개를 요구한다. 추가로 schema를 바꾸지 않으므로 생성 타입 파일이 다시 쓰이지 않아야 한다.
+`locale-app.jsx`·`locale-channel.mjs`가 회차마다 새 en-GB 디렉터리와 bench.json을 추가하고, select option 표시→자동 setLocale→최초 번역→en 복귀→파일/디렉터리 삭제·option 제거를 확인한다. 초기 규모는 edit와 같은 1k×3/10k×20이며 namespace는 1개다. target 선택 전 catalog transfer는 0건이어야 한다. `saylo:catalog` request뿐 아니라 `saylo:catalog-push` push도 receipt로 세므로, 선택 전 push가 오면 0건으로 접지 않고 transfer로 집계해 검증을 실패시킨다. 선택 뒤에는 known baseline 없는 full 응답 1개를 요구한다. 추가로 schema를 바꾸지 않으므로 생성 타입 파일이 다시 쓰이지 않아야 한다.
 
 이 모드는 `--server-file-stages`, `--browser-stages`, `--reply-stages`와 `--client-stages`를 지원하고 `--cpu-profile`은 받지 않는다. `--client-stages`는 `--reply-stages`가 필요하며 두 옵션은 `--browser-stages`와 병용하지 않는다. 기본 warmup 5·측정 50·control 25다. Node 저장→목록/첫 번역 ack, Node 선택 준비→번역 ack와 브라우저 setter→commit을 분리하며 clock을 섞지 않는다. 디렉터리 생성·내용 준비는 파일 저장 latency에서 제외한다. 정의·결과·바이트·한계는 [../../docs/12-locale-add-measurements.md](../../docs/12-locale-add-measurements.md)를 따른다. 기본 edit 모드의 입력·구간 정의는 아래와 같다.
 
@@ -53,23 +55,26 @@ node benchmarks/live-update/run.mjs --mode locale-add --server-file-stages --sce
 - 앱은 loaded base `ko` + target `en`을 싣고 `en`의 `bench` namespace에서 바뀐 키 1개와 바뀌지 않은 키 1개를 렌더한다. 매 저장마다 `en` 본문 키 1개만 수정한다.
 - warm은 변경하지 않은 메시지의 formatter가 준비된 상태다. 수정된 메시지의 formatter 비용은 편집 비용에 포함한다.
 - 종단 간 값은 하나의 Node `performance.now` clock으로 잰다. `writeFile` 완료 시점부터 브라우저가 DOM commit 뒤 보낸 HTTP ack body를 받은 시점까지다. 서버가 manifest를 broadcast한 시점과 브라우저가 카탈로그를 받아 commit한 시점은 별도 단계로 기록한다.
-- 서버 단계는 manifest의 `ws.send` 호출 직전까지다. 브라우저 단계는 Vite가 JSON을 decode한 뒤 `saylo:catalog` 콜백을 호출한 시점부터 `useLayoutEffect`의 DOM 확인까지다. 문자열화·전송·Vite JSON decode 비용은 종단 간 값에는 포함되지만 두 단계 값에는 포함되지 않는다.
+- 서버 단계는 manifest의 `ws.send` 호출 직전까지다. 브라우저 단계는 Vite가 JSON을 decode한 뒤 request `saylo:catalog` 또는 push `saylo:catalog-push` hot listener에 들어온 시점부터 `useLayoutEffect`의 DOM 확인까지다. 문자열화·전송·Vite JSON decode 비용은 종단 간 값에는 포함되지만 두 단계 값에는 포함되지 않는다.
 - ack 전달 비용은 종단 간 값에 포함한다. 단계별 p95를 더하거나 서버·브라우저 clock을 서로 빼서 종단 간 값을 만들지 않는다.
 - no-op control 왕복도 따로 기록하며 전체 latency에서 빼지 않는다.
 - 통계는 정렬 후 nearest-rank `ceil(n * p) - 1`이다.
 - 문구만 수정한 편집 뒤에도 생성 `.d.ts`의 mtime과 size가 그대로인지 확인한다. 기본값에서 typegen은 켜져 있고 초기 `generated.d.ts`를 만든다.
-- 서버가 `client.send`에 넘긴 catalog 응답 객체를 캡처해 ack clock을 잡은 뒤 `JSON.stringify` UTF-8 크기로 `wire.catalogReplyBytes`를 계산한다. ack 뒤에 계산하므로 latency에 넣지 않는다. 이 값은 catalog 응답 JSON이고 WS 헤더·압축·manifest 패킷은 포함하지 않으며 실제 물리 네트워크 전체 바이트가 아니다. `wire.patchReplies`·`wire.fullReplies`는 응답 종류이고, `wire.maxChangedMessages`는 patch의 upsert 수(전체 응답이면 메시지 수), `wire.maxPositionUpdates`는 positionShift면 `messageCount - upsert` 수 아니면 positions 수다.
+- 서버가 `client.send`에 넘긴 해당 hot event를 캡처해 ack clock을 잡은 뒤 `JSON.stringify` UTF-8 크기로 `wire.catalogReplyBytes`를 계산한다. 이 값은 event JSON 전체이며 push는 manifest와 outcomes를 모두 포함하고 request는 그 event의 result를 포함한다. 따라서 push 바이트는 예전 단일 조회 응답과 직접 비교하지 않는다. WS 헤더·압축은 포함하지 않으며 실제 물리 네트워크 전체 바이트가 아니다. `wire.pushReplies`·`wire.requestReplies`는 전송 경로별 응답 수이고, `wire.patchReplies`·`wire.fullReplies`는 상태별 응답 수다. `wire.maxChangedMessages`는 patch의 upsert 수(전체 응답이면 메시지 수), `wire.maxPositionUpdates`는 positionShift면 `messageCount - upsert` 수 아니면 positions 수다.
 - 실행이 끝나면 임시 fixture·프로필을 지우고 브라우저 프로세스와 그 자식, Vite를 함께 종료한다.
 
 ## 서버 단계 계측
 
-`profile.mjs`는 benchmark 전용 prototype wrapper다. 라이브러리에 clock이나 profiling API가 없으므로, run 중 `LiveRegistry.prototype`의 `enqueue`·`drain`·`prepareTranslations`·`validate`와 `CatalogRegistry.prototype`의 `replace`·`loadDelta`를 임시로 감싸 stage 시간을 모으고 끝나면 원래 메서드로 되돌린다. 결과의 `serverStages`가 이 값이다.
+`profile.mjs`는 benchmark 전용 prototype wrapper다. 라이브러리에 clock이나 profiling API가 없으므로, run 중 `LiveRegistry.prototype`의 `enqueue`·`startBatch`·`processBatch`·`prepareTranslations`·`validate`와 `CatalogRegistry.prototype`의 `replace`·`loadDelta`를 임시로 감싸 stage 시간을 모으고 끝나면 원래 메서드로 되돌린다. 결과의 `serverStages`가 이 값이다.
 
-- `queueToDrainMs`는 첫 파일 이벤트부터 drain 직전까지다. quiet window를 포함한다.
-- `readAndCandidateMs`는 drain 호출부터 `prepareTranslations` 진입까지로, 경로 검증·파일 읽기·파싱, candidate 정리, base stat, 직렬화된 drain 대기를 함께 담는다. read와 parse를 따로 뗀 값이 아니다.
+현재 결과는 `boundaryVersion: 3`이다. v3는 실제 직렬 처리에 들어간 batch의 `startBatch` 진입에서 시작하고, 정상 batch는 `prepareTranslations` 진입에서, superseded·오류 batch는 `processBatch` 정착에서 끝낸다. running 중 발화한 drain timer는 새 batch가 아니므로 v3는 이를 batch 시작으로 쓰지 않는다. superseded batch 뒤에는 drain 호출 없이 다음 `startBatch`가 직접 시작될 수 있으므로 v3는 `startBatch` 진입을 기준으로 잡는다.
+
+- `queueToDrainMs`는 이름을 유지한 역사적 필드명이다. v3에서는 첫 파일 이벤트부터 첫 실제 `startBatch` 진입까지이며 quiet window와 직렬화 대기를 포함한다.
+- `readAndCandidateMs`는 v3의 실제 batch 구간 union이다. 각 batch는 `startBatch` 진입부터 `prepareTranslations` 진입까지이며, superseded·오류 batch는 `processBatch` 정착까지다. 경로 검증·파일 읽기·파싱, candidate 정리, base stat을 포함하고 read와 parse를 따로 뗀 값이 아니다.
 - `translationPreparationMs`는 `LiveRegistry.prepareTranslations`의 schema 조회·번역 검증·격리 준비 시간이다. 정상 문구 수정에서는 실제로 부적합 번역을 격리하지 않으므로 격리 오류 처리 성능을 측정하는 값이 아니다.
 - `validationMs`는 준비 뒤 active catalog의 최종 `LiveRegistry.validate`, `registryReplaceMs`는 `CatalogRegistry.replace`, `catalogDeltaMs`는 `CatalogRegistry.loadDelta` 시간이다.
 - 격리 구현 전 결과의 `readAndCandidateMs`는 `validate` 진입까지였고 `translationPreparationMs`는 없었다. 그 당시 번역 검증은 `validationMs`에 들어갔다. 새 구간 수치와 과거 구간 수치를 직접 비교하지 않는다. save→DOM ack의 clock·구간 정의는 그대로다.
+- v2의 경계는 drain callback이었다. running 중 발화한 drain timer를 batch로 오인할 수 있었고 superseded batch 뒤의 직접 `startBatch`를 놓칠 수 있었다. 따라서 `boundaryVersion` 2 이하의 `candidateIntervals`·`queueToDrainMs`·`readAndCandidateMs`를 v3 값과 직접 비교하지 않는다. 기존 결과 수치는 역사 기록으로 유지한다.
 - stage p95는 서로 더하거나 종단 간 값으로 환산하지 않는다.
 
 ## 서버 파일 구간 계측
@@ -79,7 +84,7 @@ node benchmarks/live-update/run.mjs --mode locale-add --server-file-stages --sce
 - `pathCheckMs`: `assertInside`의 realpath 기반 경로 확인. 비동기 wall time이다.
 - `fileReadMs`: 실제 `read()`(UTF-8 readFile)의 Promise 완료까지. 디스크·OS cache·디코딩·스케줄링 대기가 섞이며 디스크 I/O나 CPU만의 값이 아니다.
 - `catalogParseMs`: `parseCatalog`의 동기 호출과 sourceName 등 인자 구성. JSON 처리·ICU·이전 메시지 재사용·위치·동결을 포함하며 CPU profiler 값이 아니다.
-- `candidateOtherMs`: 각 sample의 `readAndCandidateMs`에서 위 세 구간의 시간을 뺀 나머지. candidate map·필터·base stat·직렬화된 drain 대기와 clock wrapper overhead를 포함할 수 있다. 원시 sample별로 계산한 뒤 요약하며 구간별 p95를 서로 빼거나 더하지 않는다.
+- `candidateOtherMs`: 각 sample의 `readAndCandidateMs`에서 위 세 구간의 시간을 뺀 나머지. candidate map·필터·base stat과 clock wrapper overhead를 포함할 수 있다. 원시 sample별로 계산한 뒤 요약하며 구간별 p95를 서로 빼거나 더하지 않는다.
 
 네 값은 모두 `readAndCandidateMs` 안에 포함된다. clock·추가 Promise wrapper 비용이 있으므로 이전 계측 없는 run 대비 성능 변화나 최적화 효과를 주장하지 않는다. 이 옵션은 브라우저 prebundle 설정을 바꾸지 않는다. 삭제·오류 경로·다중 파일 편집은 이 단일 파일 정상 편집 측정의 범위가 아니다.
 

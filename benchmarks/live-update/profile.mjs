@@ -37,7 +37,9 @@ export function createStageProbe() {
     }
     return original.apply(this, args);
   });
-  wrap(LiveRegistry.prototype, 'drain', function (original, args) {
+  // A drain timer may fire while another batch still owns the read slot.
+  // startBatch also runs directly after a superseded batch, without a new drain.
+  wrap(LiveRegistry.prototype, 'startBatch', function (original, args) {
     if (!current || !this.queued.size) return original.apply(this, args);
     const runtimeWindow = startRuntimeWindow('readAndCandidateMs');
     const batch = { start: runtimeWindow?.start ?? performance.now(), runtimeWindow };
@@ -47,9 +49,14 @@ export function createStageProbe() {
     current.drainWaitMs.push(wait);
     current.queuedAt = undefined;
     current.drains++;
-    const result = context.run(batch, () => original.apply(this, args));
-    // Superseded/error batches may never reach prepareTranslations.
-    void this.running.then(() => finishCandidate(batch), () => finishCandidate(batch));
+    return context.run(batch, () => original.apply(this, args));
+  });
+  wrap(LiveRegistry.prototype, 'processBatch', function (original, args) {
+    const batch = context.getStore();
+    const result = original.apply(this, args);
+    // Close superseded/error reads before the registry's finally starts the
+    // next batch; the enclosing running promise also includes that finally.
+    void result.then(() => finishCandidate(batch), () => finishCandidate(batch));
     return result;
   });
   wrap(LiveRegistry.prototype, 'prepareTranslations', function (original, args) {
@@ -85,7 +92,7 @@ export function createStageProbe() {
       const { firstEventAt, queuedAt, startedAt, batches, runtimeWindow, ...result } = current;
       result.candidateIntervals = batches.map(batch => [batch.start - startedAt, batch.end - startedAt]);
       result.readAndCandidateMs = union(result.candidateIntervals).reduce((total, [a, b]) => total + b - a, 0);
-      result.boundaryVersion = 2;
+      result.boundaryVersion = 3;
       let fileStages;
       try { fileStages = finishFileSample(result.candidateIntervals); }
       catch (error) { error.message += ` Server stages: ${JSON.stringify(result)}`; throw error; }

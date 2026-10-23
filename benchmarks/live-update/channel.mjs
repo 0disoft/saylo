@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import { browserMetrics } from './browser-profile.mjs';
+import { catalogReceipt } from './catalog-receipt.mjs';
 
 export function createChannel({ scenario, target, samples, warmup, calibrations, timeoutMs, stageProbe, cpuProbe, browserStages, runtimeProbe }) {
   const results = [];
@@ -41,8 +42,13 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
         const original = client.send;
         const instrumented = function (...args) {
           const frame = args[0];
-          if (current?.kind === 'edit' && frame?.event === 'saylo:catalog' &&
-              frame.data.result?.key?.locale === 'en' && frame.data.result.key.namespace === 'bench') current.catalogReply = frame;
+          if (current?.kind === 'edit') {
+            const receipt = catalogReceipt(frame?.event, frame?.data);
+            if (receipt?.source === current.expected) {
+              current.catalogReply = frame;
+              current.catalogReceipt = receipt;
+            }
+          }
           return original.apply(this, args);
         };
         clients.set(client, { original, instrumented });
@@ -76,7 +82,7 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
             !Number.isFinite(current.broadcastAt) || !Number.isFinite(data.receiveToCommitMs) || data.receiveToCommitMs < 0 ||
             !Number.isFinite(data.commitToAckDispatchMs) || data.commitToAckDispatchMs < 0 || !current.catalogReply) throw new Error('Invalid sample timing or DOM text.');
         // Serialize only after the ack clock is captured, keeping size accounting out of latency.
-        const catalog = current.catalogReply.data.result;
+        const catalog = current.catalogReceipt.result;
         if (browserStages && browserMetrics.some(metric => !Number.isFinite(data.browserStages?.timings?.[metric]) ||
             data.browserStages.timings[metric] < 0 || !Number.isSafeInteger(data.browserStages?.calls?.[metric]) ||
             data.browserStages.calls[metric] < 1)) throw new Error('Invalid browser stage timings.');
@@ -87,7 +93,8 @@ export function createChannel({ scenario, target, samples, warmup, calibrations,
           receiveToCommitMs: data.receiveToCommitMs, commitToAckDispatchMs: data.commitToAckDispatchMs,
           serverStages: stageProbe.finish(),
           ...(browserStages ? { browserStages: data.browserStages } : {}),
-          catalogReplyKind: catalog.status, catalogReplyBytes: Buffer.byteLength(JSON.stringify(current.catalogReply)),
+          catalogReplyKind: catalog.status, catalogReplyTransport: current.catalogReceipt.transport,
+          catalogReplyBytes: Buffer.byteLength(JSON.stringify(current.catalogReply)),
           changedMessages: catalog.status === 'patch' ? catalog.upsert.length : Object.keys(catalog.catalog.messages).length,
           positionUpdates: catalog.status === 'patch' ? (catalog.positionShift ? catalog.messageCount - catalog.upsert.length : catalog.positions.length) : 0 });
         if (results.length % 10 === 0) console.log(`[bench] ${scenario.id}: ${results.length}/${warmup + samples} edits acknowledged`);

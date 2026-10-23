@@ -5,6 +5,7 @@ import { validateLocaleBrowserStages } from './browser-profile.mjs';
 import { beginReplySample, measureReplySync, finishReplySample } from './reply-profile.mjs';
 import { validateReplyStages } from './reply-receipt.mjs';
 import { validateClientStages } from './client-profile.mjs';
+import { catalogReceipt } from './catalog-receipt.mjs';
 
 export const localeMetrics = ['saveToListAckMs', 'selectToTranslationAckMs', 'saveToTranslationAckMs',
   'selectToCommitMs', 'saveToBroadcastMs', 'fileWriteMs'];
@@ -38,7 +39,9 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
         const original = client.send;
         const instrumented = function (...args) {
           const frame = args[0];
-          const targetReply = current?.kind === 'add' && frame?.event === 'saylo:catalog' && frame.data?.result?.key?.locale === addedLocale;
+          // A pushed target before selection is a transfer too; do not report
+          // zero pre-selection replies merely because no pull request was sent.
+          const targetReply = current?.kind === 'add' && catalogReceipt(frame?.event, frame?.data, addedLocale);
           if (targetReply) {
             current.replies++;
             current.catalogReply = frame;
@@ -87,7 +90,8 @@ export function createLocaleChannel({ scenario, target, samples, warmup, calibra
       expect(data, 'selecting');
       const frame = current.catalogReply;
       if (data.text !== current.expected || !Number.isFinite(data.selectToCommitMs) || data.selectToCommitMs < 0 ||
-          current.replies !== 1 || !['present', 'compact'].includes(frame?.data.result.status) || frame.data.result.key.namespace !== 'bench' || frame.data.request.known)
+          current.replies !== 1 || frame?.event !== 'saylo:catalog' || !['present', 'compact'].includes(frame.data.result.status) ||
+          frame.data.result.key.namespace !== 'bench' || frame.data.request.known)
         throw new Error('Missing fresh full catalog or incorrect first translation.');
       if (browserStages) validateLocaleBrowserStages(data.browserStages, data.selectToCommitMs);
       let replyStageSample;

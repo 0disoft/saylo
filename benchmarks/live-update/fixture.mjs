@@ -12,6 +12,7 @@ export async function createFixture(root, scenario, app = 'app.jsx') {
   await mkdir(root, { recursive: true });
   await writeFile(path.join(root, 'package.json'), '{"type":"module"}');
   await copyFile(fileURLToPath(new URL(app, import.meta.url)), path.join(root, 'app.jsx'));
+  await copyFile(fileURLToPath(new URL('catalog-receipt.mjs', import.meta.url)), path.join(root, 'catalog-receipt.mjs'));
   await copyFile(fileURLToPath(new URL('index.html', import.meta.url)), path.join(root, 'index.html'));
   let catalogBytes = 0;
   let target;

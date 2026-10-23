@@ -108,7 +108,7 @@ test('acceptance split fails closed on changed dist and edit/disabled modes leav
   const code = await readFile(registryUrl, 'utf8');
   const plugin = browserStagePlugin(true, 'locale-add');
   assert.throws(() => plugin.assertTransformed(), /Incomplete/);
-  assert.throws(() => plugin.transform(code.replace('return freeze({ ...outcome, key: { ...key } });', 'return outcome;'), registryUrl.pathname), /acceptance split/);
+  assert.throws(() => plugin.transform(code.replace('return immutableSnapshot({ ...outcome, key: { ...key } });', 'return outcome;'), registryUrl.pathname), /acceptance split/);
   assert.equal(plugin.transformed.size, 0);
   const edit = browserStagePlugin(true).transform(code, registryUrl.pathname).code;
   assert.ok(edit.includes('export function acceptOutcome(manifest, key, outcome)'));

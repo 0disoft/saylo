@@ -5,6 +5,7 @@ import { createSayloReact } from '@0disoft/saylo-react';
 import { connectDev } from '@0disoft/saylo-vite/client';
 import { catalogSource, initialCatalogs, initialLocale, initialNamespaces } from 'virtual:saylo/lazy';
 import { beginBrowserSample, finishBrowserSample } from 'virtual:saylo-benchmark/browser-profile';
+import { catalogReceipt } from './catalog-receipt.mjs';
 
 const instance = createI18n({ catalogSource, initialCatalogs, locale: initialLocale, initialNamespaces });
 const { SayloProvider, useI18n } = createSayloReact();
@@ -19,15 +20,15 @@ async function request(route, data) {
   return response.json();
 }
 const fail = error => { void request('fail', { message: String(error) }).catch(() => {}); };
-import.meta.hot.on('saylo:catalog', reply => {
+const receive = event => payload => {
   const receivedAt = performance.now();
-  const result = reply?.result;
-  if (['present', 'compact', 'patch'].includes(result?.status) && result.key.locale === 'en' && result.key.namespace === 'bench') {
-    const source = result.status === 'compact' ? result.catalog.messages.find(([id]) => id === 'probe')?.[1] :
-      (result.status === 'patch' ? result.upsert.find(([id]) => id === 'probe')?.[1] : result.catalog.messages.probe)?.source;
-    if (source !== undefined) receipts.set(source, receivedAt);
-  }
-});
+  const receipt = catalogReceipt(event, payload);
+  if (receipt?.source === active?.expected && !receipts.has(receipt.source)) receipts.set(receipt.source, receivedAt);
+};
+const receiveCatalog = receive('saylo:catalog');
+const receivePush = receive('saylo:catalog-push');
+import.meta.hot.on('saylo:catalog', receiveCatalog);
+import.meta.hot.on('saylo:catalog-push', receivePush);
 connectDev(instance, { catalogSource, onDiagnostic: diagnostic => { if (diagnostic.message) fail(diagnostic.message); } });
 
 async function control() {
@@ -75,6 +76,10 @@ function Probe() {
 
 const root = createRoot(document.getElementById('root'));
 root.render(<SayloProvider instance={instance}><Probe /></SayloProvider>);
-function cleanup() { root.unmount(); instance.dispose(); }
+function cleanup() {
+  import.meta.hot.off('saylo:catalog', receiveCatalog);
+  import.meta.hot.off('saylo:catalog-push', receivePush);
+  receipts.clear(); root.unmount(); instance.dispose();
+}
 window.addEventListener('pagehide', cleanup, { once: true });
 if (import.meta.hot) import.meta.hot.dispose(cleanup);

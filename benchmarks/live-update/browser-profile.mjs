@@ -63,12 +63,12 @@ export function browserStagePlugin(enabled, mode = 'edit', { probeSpecifier = vi
           next = next.replace(signature, (_, expression) => `const signature = measureBrowserStage('signatureMs', () => (${expression}));\n`);
         } else if (metric === 'acceptMs') {
           // Restrict the split to this function and fail if its built shape changes.
-          const acceptance = /function __bench_acceptOutcome\(manifest, key, outcome\) \{\r?\n([\s\S]*?)    return freeze\(\{ \.\.\.outcome, key: \{ \.\.\.key \} \}\);\r?\n\}/g;
+          const acceptance = /function __bench_acceptOutcome\(manifest, key, outcome\) \{\r?\n([\s\S]*?)    return immutableSnapshot\(\{ \.\.\.outcome, key: \{ \.\.\.key \} \}\);\r?\n\}/g;
           if ([...next.matchAll(acceptance)].length !== 1) throw new Error('Missing or ambiguous outcome acceptance split.');
           next = next.replace(acceptance, (_, checks) => `function __bench_acceptOutcome(manifest, key, outcome) {\n` +
             (trust ? `    observeCoreTrust(outcome, isDeepFrozen);\n` : '') +
             `    measureBrowserStage('acceptCheckMs', () => {\n${checks}    });\n` +
-            `    return measureBrowserStage('acceptFreezeMs', () => freeze({ ...outcome, key: { ...key } }));\n}`);
+            `    return measureBrowserStage('acceptFreezeMs', () => immutableSnapshot({ ...outcome, key: { ...key } }));\n}`);
         }
         next += `\nexport function ${name}(...args) { const result = measureBrowserStage('${metric}', () => __bench_${name}(...args)); ${trust && metric === 'freezeMs' ? 'observeViteFrozen(result); ' : ''}return result; }\n`;
         completed.push(metric);
