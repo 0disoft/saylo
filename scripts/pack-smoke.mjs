@@ -211,6 +211,9 @@ try {
       await cp(path.join(fixtures, 'catalog-features.mjs'), path.join(app, 'catalog-features.mjs'));
       console.log((await exec(process.execPath, ['catalog-features.mjs'],
         { cwd: app, windowsHide: true, env: childEnv, maxBuffer: 1024 * 1024 })).stdout.trim());
+      await cp(path.join(fixtures, 'catalog-workflow.mjs'), path.join(app, 'catalog-workflow.mjs'));
+      console.log((await exec(process.execPath, ['catalog-workflow.mjs'],
+        { cwd: app, windowsHide: true, env: childEnv, timeout: 60000, maxBuffer: 1024 * 1024 })).stdout.trim());
     }
     console.log((await npm(['run', 'typegen'], app)).trim());
     assert.match(await readFile(path.join(app, 'generated.d.ts'), 'utf8'), /"demo:items": \{ "count": number;/);
