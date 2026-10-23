@@ -176,3 +176,24 @@ test('reconnection restores the push subscription and old or duplicate patches c
   assert.equal(f.instance.t('demo:title'), 'After reconnect');
   assert.equal(f.sent.filter(frame => frame.event === CATALOG_REQUEST_EVENT).length, count);
 });
+
+test('removing a locale drops evicted push pairs until that locale is selected again', async t => {
+  const f = await fixture(t);
+  await f.instance.setLocale('ko');
+  await f.remove('en', 'demo');
+  await f.remove('en', 'help'); await tick();
+  assert.ok(!f.source.readManifest().availableLocales.includes('en'));
+  const subscription = f.sent.filter(frame => frame.event === CATALOG_SCOPE_EVENT).at(-1);
+  assert.ok(subscription, 'Cache eviction must publish the reduced server subscription.');
+  const scope = subscription.data;
+  assert.ok(scope.catalogs.every(meta => meta.key.locale !== 'en'), 'Evicted pairs must leave the server subscription.');
+  f.frames.length = 0; f.sent.length = 0;
+  await f.restore('en', { title: 'Select to load recreated English' }); await tick();
+  assert.equal(f.instance.getSnapshot().locale, 'ko');
+  assert.ok(f.frames.filter(frame => frame.event === CATALOG_PUSH_EVENT)
+    .every(frame => frame.data.outcomes.every(outcome => outcome.key.locale !== 'en')));
+  assert.equal(f.sent.filter(frame => frame.event === CATALOG_REQUEST_EVENT).length, 0);
+  await f.instance.setLocale('en');
+  assert.equal(f.instance.t('demo:title'), 'Select to load recreated English');
+  assert.equal(f.sent.filter(frame => frame.event === CATALOG_REQUEST_EVENT).length, 1);
+});

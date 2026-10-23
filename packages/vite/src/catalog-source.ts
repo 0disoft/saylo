@@ -166,7 +166,11 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
           manifest = next;
           ready = true;
           for (const [key, result] of replacements) cache.set(key, result);
-          for (const key of planCacheRemovals(manifest, cache, options.push === true)) cache.delete(key);
+          const removals = planCacheRemovals(manifest, cache, options.push === true);
+          for (const key of removals) cache.delete(key);
+          // The server retains a scope until explicitly replaced. Evicted
+          // locales/namespaces must not receive full pushes on recreation.
+          if (removals.length) sendScope();
           for (const entry of [...pending.values()]) {
             const accepted = cache.get(id(entry.key));
             if (accepted && matches(manifest, accepted)) { entry.cleanup(); entry.resolve(accepted); }
