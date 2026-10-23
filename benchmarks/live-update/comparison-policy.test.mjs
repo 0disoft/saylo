@@ -5,6 +5,8 @@ import { comparisonSources } from './comparison-policy.mjs';
 test('snapshot policy accepts the exact experiment while rejecting unrelated source, API and package changes', () => {
   const catalog = 'packages/core/src/catalog.ts', diagnostics = 'packages/core/src/diagnostics.ts';
   assert.deepEqual(comparisonSources('ast-seal', [diagnostics], [diagnostics]), [diagnostics]);
+  assert.deepEqual(comparisonSources('snapshot-copy', [diagnostics, 'packages/core/test/catalog.test.mjs'], []), [diagnostics]);
+  assert.throws(() => comparisonSources('snapshot-copy', [diagnostics, 'packages/core/src/index.ts'], []));
   assert.deepEqual(comparisonSources('owned-map', [catalog, diagnostics, 'packages/core/test/catalog.test.mjs'], []), [catalog, diagnostics]);
   assert.deepEqual(comparisonSources('owned-map', [catalog, diagnostics], [catalog, diagnostics]), [catalog, diagnostics]);
   const schema = 'packages/core/src/schema.ts';

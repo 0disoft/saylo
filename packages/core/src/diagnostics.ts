@@ -24,12 +24,26 @@ export function immutableSnapshot<T>(value: T): DeepReadonly<T> {
     if (input === null || typeof input !== 'object' || frozen.has(input)) return input;
     const previous = copies.get(input);
     if (previous) return previous;
-    const copy = Array.isArray(input) ? input.map(snapshot) :
-      Object.fromEntries(Object.entries(input).map(([key, child]) => [key, snapshot(child)]));
-    // Message/argument maps can have a null prototype and literal __proto__ keys.
-    if (Object.getPrototypeOf(input) === null) Object.setPrototypeOf(copy, null);
+    let copy: object;
+    if (Array.isArray(input)) copy = input.map(snapshot);
+    else {
+      const record: Record<string, unknown> = Object.create(Object.getPrototypeOf(input) === null ? null : Object.prototype);
+      // Preserve getter evaluation order while avoiding a second entry array
+      // for every object in a transported catalog's AST.
+      for (const [key, child] of Object.entries(input)) {
+        const value = snapshot(child);
+        if (key === '__proto__') Object.defineProperty(record, key,
+          { value, enumerable: true, writable: true, configurable: true });
+        else record[key] = value;
+      }
+      copy = record;
+    }
     copies.set(input, copy);
-    return freeze(copy);
+    // Every child came through snapshot: mutable data was copied and sealed,
+    // and recognized immutable subtrees were shared. Do not walk it again.
+    Object.freeze(copy);
+    frozen.add(copy);
+    return copy;
   }
   return snapshot(value) as DeepReadonly<T>;
 }

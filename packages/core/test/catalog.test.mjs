@@ -515,5 +515,21 @@ test('copying catalogs preserves shared schemas and literal keys without trustin
   assert.equal(snapshot.messages.__proto__, snapshot.messages.a);
   assert.equal(Object.getPrototypeOf(snapshot.messages), null);
   assert.deepEqual(snapshot.messages.a.arguments.name.acceptedTypes, ['string', 'number']);
+  const visited = new Set();
+  function verify(value) {
+    if (value === null || typeof value !== 'object' || visited.has(value)) return;
+    visited.add(value);
+    assert.ok(Object.isFrozen(value));
+    assert.ok(isDeepFrozen(value));
+    for (const child of Object.values(value)) verify(child);
+  }
+  verify(snapshot);
+  assert.ok(!Object.isFrozen(mutable.messages.a.ast));
   assert.equal(freezeCatalogs([parsed], { copy: true })[0], parsed);
+  const normal = structuredClone(parsed);
+  Object.defineProperty(normal.messages, '__proto__', { value: normal.messages.a, enumerable: true });
+  const [normalCopy] = freezeCatalogs([normal], { copy: true });
+  assert.equal(Object.getPrototypeOf(normalCopy.messages), Object.prototype);
+  assert.equal(normalCopy.messages.__proto__, normalCopy.messages.a);
+  verify(normalCopy);
 });
