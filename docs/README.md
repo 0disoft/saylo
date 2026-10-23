@@ -111,9 +111,10 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 76. [78-rich-text-parts.md](78-rich-text-parts.md) — 첫 rich text core API 슬라이스의 `tParts` 계약·마커 문법·오류
 77. [79-react-rich-text.md](79-react-rich-text.md) — React rich text render helper `renderRichText`의 계약·키 규칙·데모·검증 범위
 78. [80-svelte-rich-text.md](80-svelte-rich-text.md) — Svelte rich text 컴포넌트 `RichText.svelte`의 계약·키 규칙·데모·검증 범위
-79. [81-implementation-status.md](81-implementation-status.md) — 2026-10-24 `main` `19640b9`, 제품 소스 `a9e8b80`, 동결 후보 `d3e5252`, 후보·버전 승격·npm 게시·registry 소비 인수 구분
+79. [81-implementation-status.md](81-implementation-status.md) — 2026-10-24 `main` `7a84418`, 제품 소스 `7a84418`, 동결 후보 `d3e5252`, 후보·버전 승격·npm 게시·registry 소비 인수 구분
 80. [82-admin-support-pilot.md](82-admin-support-pilot.md) — admin 고객 지원 화면의 Saylo production typegen 잠금 수정과 부분 번역 pilot 결과
 81. [83-push-subscription-maintenance.md](83-push-subscription-maintenance.md) — locale cache eviction 뒤 push 구독 갱신, targeted 회귀 검증과 현재 benchmark 결과
+82. [84-large-catalog-performance.md](84-large-catalog-performance.md) — `9a20620` snapshot 복사 단일 순회, `7a84418` 단일 문자열 편집 재사용, parser 100쌍과 edit·locale-add browser ABBA 결과
 
 개발 클라이언트의 handshake 상태 계약은 [dev-sync-state.md](dev-sync-state.md)에 있다.
 빈 폴더에서 npm 게시본으로 시작하는 React 안내는 [getting-started-react.md](getting-started-react.md)에 있다.
