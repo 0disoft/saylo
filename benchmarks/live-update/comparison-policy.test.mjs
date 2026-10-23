@@ -14,6 +14,9 @@ test('snapshot policy accepts the exact experiment while rejecting unrelated sou
   assert.deepEqual(comparisonSources('owned-map', [catalog, diagnostics], [catalog, diagnostics]), [catalog, diagnostics]);
   const schema = 'packages/core/src/schema.ts';
   const patch = 'packages/vite/src/catalog-patch.ts';
+  const registry = 'packages/vite/src/catalog-registry.ts';
+  assert.deepEqual(comparisonSources('owned-patch', [patch, registry, 'packages/vite/test/patch.test.mjs'], []), [patch, registry]);
+  assert.throws(() => comparisonSources('owned-patch', [patch, registry, schema], []));
   assert.deepEqual(comparisonSources('sparse-patch', [patch, schema], []), [patch, schema]);
   assert.throws(() => comparisonSources('sparse-patch', [patch, schema, catalog], []));
   assert.deepEqual(comparisonSources('plain-contracts', [schema, 'packages/core/test/catalog.test.mjs'], []), [schema]);

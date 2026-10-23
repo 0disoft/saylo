@@ -8,15 +8,18 @@ const PATCH_DENSITY_POLICY = Object.freeze({ changedCountFloor: 8, changedFracti
 
 // Positions belong to the version too, so a delta always has an exact baseline.
 function equivalent(before: ParsedCatalog, after: ParsedCatalog) {
-  if (before.sourceName !== after.sourceName || Object.keys(before.messages).length !== Object.keys(after.messages).length) return false;
+  if (before.sourceName !== after.sourceName) return false;
+  let count = 0;
   for (const key in after.messages) {
     if (!Object.hasOwn(after.messages, key)) continue;
+    count++;
     const previous = Object.hasOwn(before.messages, key) ? before.messages[key] : undefined;
     const message = after.messages[key]!;
-    if (!previous || previous.source !== message.source || JSON.stringify(previous.richTextTags) !== JSON.stringify(message.richTextTags) || previous.position.offset !== message.position.offset ||
+    if (previous === message) continue;
+    if (!previous || previous.source !== message.source || (previous.richTextTags !== message.richTextTags && JSON.stringify(previous.richTextTags) !== JSON.stringify(message.richTextTags)) || previous.position.offset !== message.position.offset ||
         previous.position.line !== message.position.line || previous.position.column !== message.position.column) return false;
   }
-  return true;
+  return count === Object.keys(before.messages).length;
 }
 
 /** Accepted registry only. Missing tombstones survive deletion and re-creation. */

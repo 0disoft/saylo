@@ -7,6 +7,29 @@ import { isCatalogRequest } from '../dist/types.js';
 const parse = source => parseCatalog(source, { locale: 'ko', namespace: 'demo' });
 const stamp = outcome => ({ sessionId: outcome.sessionId, catalogVersion: outcome.catalogVersion });
 
+test('patch sealing copies mutable caller data and shares only trusted immutable messages', () => {
+  const before = parse('{"keep":"{name}","edit":"old"}');
+  const after = parse('{"keep":"{name}","edit":"new"}');
+  const baseline = { status: 'present', sessionId: 'owned', catalogVersion: 1,
+    key: { locale: 'ko', namespace: 'demo' }, namespaceSchemaFingerprint: 'schema', catalog: before };
+  const outcome = { ...baseline, catalogVersion: 2, catalog: after };
+  const wire = JSON.parse(JSON.stringify(createCatalogPatch(before, outcome, stamp(baseline))));
+  const merged = applyCatalogPatch(baseline, wire);
+  assert.equal(merged.catalog.messages.keep, before.messages.keep);
+  assert.ok(Object.isFrozen(merged.catalog));
+  assert.ok(Object.isFrozen(merged.catalog.messages));
+  assert.ok(Object.isFrozen(merged.catalog.messages.edit.ast));
+  assert.equal(Object.isFrozen(wire.upsert[0][1]), false);
+  const external = JSON.parse(JSON.stringify(baseline));
+  const independent = applyCatalogPatch(external, wire);
+  assert.equal(Object.isFrozen(external.catalog.messages.keep), false);
+  external.catalog.messages.keep.ast[0].value = 'caller changed';
+  wire.upsert[0][1].source = 'caller changed';
+  assert.equal(independent.catalog.messages.keep.ast[0].value, 'name');
+  assert.equal(independent.catalog.messages.edit.source, 'new');
+  assert.equal(merged.catalog.messages.edit.source, 'new');
+});
+
 test('policy-only changes increment catalog versions and carry their rich contract in a delta', () => {
   const before = parse('{"x":"<link>Terms</link>"}');
   const after = parseCatalog('{"x":"<link>Terms</link>"}', { locale: 'ko', namespace: 'demo', richText: { x: ['link'] } });

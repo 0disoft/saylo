@@ -1,4 +1,5 @@
 import type { CatalogOutcome, ParsedCatalog, ParsedMessage, SourcePosition } from '@0disoft/saylo-core';
+import { freezeCatalogs } from './freeze.js';
 
 export type PresentCatalog = Extract<CatalogOutcome, { status: 'present' }>;
 export interface CatalogStamp {
@@ -72,9 +73,12 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
       typeof patch.sourceName !== 'string' || !Number.isSafeInteger(patch.messageCount) || patch.messageCount < 0 ||
       !Array.isArray(patch.upsert) || !Array.isArray(patch.remove) || !Array.isArray(patch.positions))
     throw new Error('Catalog patch has no matching immutable baseline.');
+  // Snapshot untrusted baselines, while library-owned immutable catalogs stay
+  // shared. Only owned containers and copied transport children are sealed below.
+  const baseline = freezeCatalogs([before.catalog], { copy: true })[0]!;
   const messages: Record<string, ParsedMessage> = Object.create(null);
-  const ids = Object.keys(before.catalog.messages);
-  for (const id of ids) messages[id] = before.catalog.messages[id]!;
+  const ids = Object.keys(baseline.messages);
+  for (const id of ids) messages[id] = baseline.messages[id]!;
   let count = ids.length;
   const seen = new Set<string>();
   const claim = (id: string) => {
@@ -87,6 +91,7 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
     delete messages[id];
     count--;
   }
+  const upsert: Record<string, ParsedMessage> = Object.create(null);
   for (const entry of patch.upsert) {
     if (!Array.isArray(entry) || entry.length !== 2) throw new Error('Invalid catalog patch message entry.');
     const [id, message] = entry;
@@ -95,14 +100,19 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
         !Array.isArray(message.ast) || !message.arguments || typeof message.arguments !== 'object' || Array.isArray(message.arguments))
       throw new Error('Invalid catalog patch message.');
     if (!Object.hasOwn(messages, id)) count++;
-    messages[id] = message;
+    upsert[id] = message;
+  }
+  const details = { locale: patch.key.locale, namespace: patch.key.namespace, sourceName: patch.sourceName };
+  if (patch.upsert.length) {
+    const copied = freezeCatalogs([{ ...details, messages: upsert }], { copy: true })[0]!;
+    for (const id of Object.keys(copied.messages)) messages[id] = copied.messages[id]!;
   }
   for (const entry of patch.positions) {
     if (!Array.isArray(entry) || entry.length !== 2) throw new Error('Invalid catalog patch position entry.');
     const [id, nextPosition] = entry;
     claim(id);
     if (!Object.hasOwn(messages, id) || !position(nextPosition)) throw new Error('Invalid catalog patch source position.');
-    messages[id] = { ...messages[id]!, position: nextPosition };
+    messages[id] = { ...messages[id]!, position: { ...nextPosition } };
   }
   if (patch.positionShift !== undefined) {
     const shift = patch.positionShift;
@@ -119,5 +129,8 @@ export function applyCatalogPatch(before: PresentCatalog | undefined, patch: Cat
   if (count !== patch.messageCount) throw new Error('Catalog patch message count differs.');
   return { status: 'present', sessionId: patch.sessionId, key: patch.key, catalogVersion: patch.catalogVersion,
     namespaceSchemaFingerprint: patch.namespaceSchemaFingerprint,
-    catalog: { locale: patch.key.locale, namespace: patch.key.namespace, sourceName: patch.sourceName, messages } };
+    // All shared baseline children were recognized or copied; upserts were
+    // snapshotted and position replacements are ours. Seal without copying 10k
+    // unchanged map entries again in the source's subsequent immutable step.
+    catalog: freezeCatalogs([{ ...details, messages }])[0]! };
 }

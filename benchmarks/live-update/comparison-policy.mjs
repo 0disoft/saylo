@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 const policies = {
+  'owned-patch': { sources: ['packages/vite/src/catalog-patch.ts', 'packages/vite/src/catalog-registry.ts'], tests: ['packages/vite/test/patch.test.mjs'] },
   'sparse-patch': { sources: ['packages/vite/src/catalog-patch.ts', 'packages/core/src/schema.ts'], tests: ['packages/core/test/catalog.test.mjs'] },
   'snapshot-copy': { sources: ['packages/core/src/diagnostics.ts'], tests: ['packages/core/test/catalog.test.mjs'] },
   'single-value': { sources: ['packages/core/src/catalog.ts', 'packages/core/src/catalog-json.ts'], tests: ['packages/core/test/catalog.test.mjs'] },
