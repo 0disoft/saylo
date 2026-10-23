@@ -43,6 +43,7 @@ try {
   await write('locales/ko/common.json', base);
   await write('locales/en/common.json', '{\r\n\t"empty": ""\r\n}\r\n');
   const before = await snapshot();
+  console.log('[pack] Catalog workflow: starting read-only check, sync and context export.');
   const checked = await json(['check'], 1);
   assert.ok(checked.diagnostics.some(issue => issue.code === 'MISSING_MESSAGE'));
   const sync = await json(['sync', '--dry-run']);
@@ -56,6 +57,7 @@ try {
   assert.deepEqual(work.entries.find(entry => entry.id === 'greeting').context.arguments.name, ['number', 'string']);
   for (const entry of work.entries) entry.translation = entry.id === 'title' ? 'Title' : 'Hello {name}';
   await write('work.json', work);
+  console.log('[pack] Catalog workflow: starting import diff, validation and format-preserving apply.');
   const staged = await snapshot();
   const preview = await json(['import', '--file', 'work.json', '--dry-run', '--diff']);
   assert.equal(preview.blocked, false); assert.equal(preview.changes.length, 2);
@@ -79,6 +81,7 @@ try {
   await json(['check']);
   await json(['snapshot', '--out-file', 'baseline.json']);
   const baseline = await read('baseline.json');
+  console.log('[pack] Catalog workflow: starting stale source rejection and refresh.');
 
   await write('locales/ko/common.json', { ...base, title: '새 원문' });
   const staleBefore = await snapshot();
@@ -96,6 +99,7 @@ try {
   await json(['import', '--file', 'resolved.json', '--apply']);
   const unapproved = await json(['check', '--baseline', 'baseline.json'], 1);
   assert.ok(unapproved.diagnostics.some(issue => issue.code === 'SOURCE_CHANGED'));
+  console.log('[pack] Catalog workflow: starting explicit approval, reopening and declaration generation.');
 
   const reviewWork = await json(['export', '--reviews', 'reviews.json']);
   await write('review-work.json', reviewWork);
