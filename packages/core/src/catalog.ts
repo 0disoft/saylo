@@ -1,13 +1,21 @@
 import { parse } from '@formatjs/icu-messageformat-parser';
 import { CatalogError, freeze, freezeMessageAst, freezeOwnedMessageMap, createPositionLocator, isDeepFrozen } from './diagnostics.js';
 import { messageOffset } from './json.js';
-import { hasSameCatalogSource, readCatalogJson, rememberCatalogJson } from './catalog-json.js';
+import { hasSameCatalogSource, readCatalogEdit, readCatalogJson, rememberCatalogEdit, rememberCatalogJson } from './catalog-json.js';
 import { inferArguments } from './schema.js';
 import { createSimplePositionPool, parseSimpleMessage } from './simple-message.js';
 import { readRichTextPolicy, validateRichMessage } from './rich-contract.js';
-import type { CatalogDiagnostic, CatalogOptions, MessageSchema, ParsedCatalog, ParsedMessage } from './types.js';
+import type { CatalogDiagnostic, CatalogOptions, MessageSchema, ParsedCatalog, ParsedMessage, SourcePosition } from './types.js';
 
 const richPolicies = new WeakMap<ParsedCatalog, string>();
+
+function catalogPositionLocator(source: string, editedPosition?: SourcePosition): (offset: number) => SourcePosition {
+  if (!editedPosition) return createPositionLocator(source);
+  // Only positions inside the validated replacement string are queried. JSON
+  // strings cannot contain physical LF, so its prior line start remains valid.
+  return offset => ({ offset, line: editedPosition.line,
+    column: editedPosition.column + offset - editedPosition.offset });
+}
 
 /** An immutable previous catalog lets live readers reuse unchanged ICU messages. */
 export function parseCatalog(source: string, options: CatalogOptions, previous?: ParsedCatalog): ParsedCatalog {
@@ -24,11 +32,27 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
   } catch {
     throw new CatalogError([{ ...context, code: 'INVALID_LOCALE', message: 'Locale must be a valid BCP 47 language tag.' }]);
   }
-  if (previous && richPolicies.get(previous) === policySignature && hasSameCatalogSource(source, context, previous)) return previous;
-  const entries = readCatalogJson(source, context, previous);
-  const positionAt = createPositionLocator(source);
+  const samePolicy = previous && richPolicies.get(previous) === policySignature;
+  if (samePolicy && hasSameCatalogSource(source, context, previous)) return previous;
+  const edited = samePolicy ? readCatalogEdit(source, context, previous!) : undefined;
+  const entries = edited ? [edited.entry] : readCatalogJson(source, context, previous);
+  const positionAt = catalogPositionLocator(source, edited && previous!.messages[edited.entry.id]!.position);
   const diagnostics: CatalogDiagnostic[] = [];
   const messages: Record<string, ParsedMessage> = Object.create(null);
+  if (edited) {
+    const editedLine = previous!.messages[edited.entry.id]!.position.line;
+    // Reuse physical-order IDs instead of enumerating frozen property descriptors
+    // through Object.assign; combine copying and any suffix position adjustment.
+    for (let i = 0; i < edited.ids.length; i++) {
+      const id = edited.ids[i]!, before = previous!.messages[id]!;
+      if (edited.shift && i > edited.index) {
+        // Valid JSON strings contain no physical LF; later lines stay fixed.
+        const position = before.position;
+        messages[id] = freeze({ ...before, position: { offset: position.offset + edited.shift,
+          line: position.line, column: position.column + (position.line === editedLine ? edited.shift : 0) } });
+      } else messages[id] = before;
+    }
+  }
   const locale = new Intl.Locale(context.locale);
   const argumentSchemas = new Map<string, MessageSchema>();
   const simplePosition = createSimplePositionPool();
@@ -70,7 +94,8 @@ export function parseCatalog(source: string, options: CatalogOptions, previous?:
   }
   if (diagnostics.length) throw new CatalogError(diagnostics);
   const catalog = freeze({ ...context, messages: freezeOwnedMessageMap(messages) });
-  rememberCatalogJson(catalog, source, entries);
+  if (edited) rememberCatalogEdit(catalog, source, previous!, edited);
+  else rememberCatalogJson(catalog, source, entries);
   richPolicies.set(catalog, policySignature);
   return catalog;
 }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 const policies = {
   'snapshot-copy': { sources: ['packages/core/src/diagnostics.ts'], tests: ['packages/core/test/catalog.test.mjs'] },
+  'single-value': { sources: ['packages/core/src/catalog.ts', 'packages/core/src/catalog-json.ts'], tests: ['packages/core/test/catalog.test.mjs'] },
   'ast-seal': { sources: ['packages/core/src/diagnostics.ts'], tests: [] },
   'owned-map': { sources: ['packages/core/src/catalog.ts', 'packages/core/src/diagnostics.ts'],
     tests: ['packages/core/test/catalog.test.mjs'] },

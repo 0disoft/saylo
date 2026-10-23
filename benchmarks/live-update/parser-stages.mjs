@@ -67,7 +67,7 @@ try {
           messageFreezeOtherMs: residual(stages.messageFreezeMs, messageFreezeMetrics.map(metric => stages[metric])),
           messageLoopOtherMs: residual(stages.messageLoopMs, [stages.astMs, stages.argumentsMs, stages.messageFreezeMs, stages.reusedMessageFreezeMs]),
         } : {}),
-        unattributedMs: residual(endTimeMs - startTimeMs, [stages.jsonMs, stages.positionIndexMs, stages.messageLoopMs, stages.freezeMs]),
+        unattributedMs: residual(endTimeMs - startTimeMs, [stages.jsonMs, stages.positionIndexMs, stages.messageCopyMs, stages.messageLoopMs, stages.freezeMs]),
       });
       if (!detailed) previous = next; // Cold samples never retain a prior catalog.
     }
@@ -91,7 +91,7 @@ try {
       samplesFile: path.basename(samplesFile) });
     console.log(JSON.stringify({ mode, messagesPerLocale, summary, samplesWithGc: gcSummary.samplesWithGc }));
   }
-  await writeFile(out, `${JSON.stringify({ schema: 'saylo-parser-stages-v3', measuredAt: new Date().toISOString(),
+  await writeFile(out, `${JSON.stringify({ schema: 'saylo-parser-stages-v4', measuredAt: new Date().toISOString(),
     gitRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     workingTreeStatus: execFileSync('git', ['status', '--short'], { encoding: 'utf8' }).trim(),
     node: process.version, environment: { platform: platform(), arch: arch(), cpu: cpus()[0]?.model },

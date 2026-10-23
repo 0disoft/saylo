@@ -73,6 +73,37 @@ test('string token shortcuts retain full-parser diagnostics and structural fallb
     parseCatalog('{"x":"repaired","tail":"tail"}', options));
 });
 
+test('isolated value edits preserve physical positions, branching provenance and old snapshots', () => {
+  for (const indent of [undefined, 2, '\t']) {
+    const source = JSON.stringify({ first: 'one', 20: 'numeric', middle: 'Hello {name}',
+      ['__proto__']: 'literal', last: '😀 tail' }, null, indent).replaceAll('\n', '\r\n');
+    const initial = parseCatalog(source, options);
+    let current = source, previous = initial;
+    for (const [before, after] of [['one', 'new'], ['Hello {name}', 'Short {name}'],
+      ['literal', 'an escaped " string'], ['😀 tail', '😀\nend'], ['new', '']]) {
+      current = current.replace(JSON.stringify(before), JSON.stringify(after));
+      const next = parseCatalog(current, options, previous);
+      assert.deepEqual(next, parseCatalog(current, options));
+      assert.equal(next.messages['20'].ast, initial.messages['20'].ast);
+      assert.equal(next.messages['20'].position.line, initial.messages['20'].position.line);
+      previous = next;
+    }
+    const branch = source.replace('one', 'a longer first value');
+    assert.deepEqual(parseCatalog(branch, options, initial), parseCatalog(branch, options));
+    assert.deepEqual(initial, parseCatalog(source, options));
+    for (const invalid of ['{broken', '😀\n{broken', '{n, number} {n, select, other {text}}']) {
+      const broken = source.replace(JSON.stringify('Hello {name}'), JSON.stringify(invalid));
+      const diagnostics = baseline => {
+        try { parseCatalog(broken, options, baseline); assert.fail('Expected an invalid ICU message'); }
+        catch (error) { assert.ok(error instanceof CatalogError); return error.diagnostics; }
+      };
+      assert.deepEqual(diagnostics(initial), diagnostics(undefined));
+    }
+    assert.deepEqual(parseCatalog(current, { ...options, marker: 'new' }, previous),
+      parseCatalog(current, { ...options, marker: 'new' }));
+  }
+});
+
 test('JSON provenance is scoped to successful parses and catalog context', () => {
   const source = '{"x":"value"}';
   const previous = parseCatalog(source, options);

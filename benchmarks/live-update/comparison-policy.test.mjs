@@ -7,6 +7,9 @@ test('snapshot policy accepts the exact experiment while rejecting unrelated sou
   assert.deepEqual(comparisonSources('ast-seal', [diagnostics], [diagnostics]), [diagnostics]);
   assert.deepEqual(comparisonSources('snapshot-copy', [diagnostics, 'packages/core/test/catalog.test.mjs'], []), [diagnostics]);
   assert.throws(() => comparisonSources('snapshot-copy', [diagnostics, 'packages/core/src/index.ts'], []));
+  const json = 'packages/core/src/catalog-json.ts';
+  assert.deepEqual(comparisonSources('single-value', [catalog, json, 'packages/core/test/catalog.test.mjs'], []), [catalog, json]);
+  assert.throws(() => comparisonSources('single-value', [catalog, json, diagnostics], []));
   assert.deepEqual(comparisonSources('owned-map', [catalog, diagnostics, 'packages/core/test/catalog.test.mjs'], []), [catalog, diagnostics]);
   assert.deepEqual(comparisonSources('owned-map', [catalog, diagnostics], [catalog, diagnostics]), [catalog, diagnostics]);
   const schema = 'packages/core/src/schema.ts';

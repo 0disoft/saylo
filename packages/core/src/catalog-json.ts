@@ -45,7 +45,39 @@ export function readCatalogJson(source: string, context: Required<Omit<CatalogOp
   return edited ?? readJson(source, context);
 }
 
-function editValue(spans: JsonSpans, source: string, previous: ParsedCatalog): JsonEntry[] | undefined {
+export interface CatalogJsonEdit {
+  readonly entry: JsonEntry;
+  readonly index: number;
+  readonly shift: number;
+  readonly ids: readonly string[];
+}
+
+/** A strict, successful prior parse proves every byte outside this value token. */
+export function readCatalogEdit(source: string, context: Required<Omit<CatalogOptions, 'richText'>>, previous: ParsedCatalog): CatalogJsonEdit | undefined {
+  const spans = prior(previous, context);
+  if (typeof source !== 'string' || source.length > 0xffffffff || !spans) return;
+  const edited = changedValue(spans, source);
+  if (!edited) return;
+  const { index, shift, value, valueLength } = edited;
+  return { index, shift, ids: spans.ids, entry: { id: spans.ids[index]!, value,
+    keyOffset: spans.offsets[index * 3]!, valueOffset: spans.offsets[index * 3 + 1]!, valueLength } };
+}
+
+/** Share IDs and same-width spans; shifted offsets belong only to the new parse. */
+export function rememberCatalogEdit(catalog: ParsedCatalog, source: string, previous: ParsedCatalog, edited: CatalogJsonEdit): void {
+  const spans = accepted.get(previous)!;
+  const offsets = edited.shift ? spans.offsets.slice() : spans.offsets;
+  if (edited.shift) {
+    offsets[edited.index * 3 + 2] = edited.entry.valueLength;
+    for (let i = edited.index + 1; i < spans.ids.length; i++) {
+      offsets[i * 3] = offsets[i * 3]! + edited.shift;
+      offsets[i * 3 + 1] = offsets[i * 3 + 1]! + edited.shift;
+    }
+  }
+  accepted.set(catalog, { source, ids: spans.ids, offsets });
+}
+
+function changedValue(spans: JsonSpans, source: string) {
   const before = spans.source;
   let start = 0;
   const commonLength = Math.min(before.length, source.length);
@@ -70,13 +102,20 @@ function editValue(spans: JsonSpans, source: string, previous: ParsedCatalog): J
   // Parsing the entire replacement token excludes quote/escape edits that
   // turn a string value into JSON structure. Those edits use the full parser.
   if (typeof value !== 'string') return;
+  return { index, shift, value, valueLength: rawValue.length };
+}
+
+function editValue(spans: JsonSpans, source: string, previous: ParsedCatalog): JsonEntry[] | undefined {
+  const edited = changedValue(spans, source);
+  if (!edited) return;
+  const { index, shift, value, valueLength } = edited;
   const next = new Array<JsonEntry>(spans.ids.length);
   for (let i = 0; i < next.length; i++) {
     const id = spans.ids[i]!;
     const delta = i > index ? shift : 0;
     next[i] = { id, value: i === index ? value : previous.messages[id]!.source,
       keyOffset: spans.offsets[i * 3]! + delta, valueOffset: spans.offsets[i * 3 + 1]! + delta,
-      valueLength: i === index ? rawValue.length : spans.offsets[i * 3 + 2]! };
+      valueLength: i === index ? valueLength : spans.offsets[i * 3 + 2]! };
   }
   return next;
 }
