@@ -137,6 +137,25 @@ test('mount-time registration failure releases the already acquired subscription
   assert.equal(f.store.getSnapshot().locale, 'ko');
 });
 
+test('mount errors retain their cause when subscription cleanup also throws', t => {
+  const f = fixture(t), errors = [];
+  const setup = new Error('registration failed'), cleanup = new Error('cleanup failed');
+  const ui = mount(t, { setup() {
+    const state = useVueStore({ ...f.instance,
+      subscribe(listener) { const off = f.instance.subscribe(listener); return () => { off(); throw cleanup; }; },
+      onDispose() { throw setup; },
+    });
+    return () => h('p', state.value.locale);
+  } });
+  ui.app.config.errorHandler = error => errors.push(error);
+  ui.start();
+  assert.equal(f.subscriptions.size, 0);
+  assert.equal(errors.length, 1);
+  assert.ok(errors[0] instanceof AggregateError);
+  assert.deepEqual(errors[0].errors, [setup, cleanup]);
+  assert.equal(errors[0].cause, setup);
+});
+
 test('app plugins isolate mounted roots and leave instance disposal to the caller', async t => {
   const bindings = createSayloVue();
   const ko = fixture(t, 'ko'), en = fixture(t, 'en');

@@ -37,7 +37,10 @@ export function useVueStore<S extends Schema>(instance: SayloInstance<S>): Saylo
     stopped = true;
     const off = unsubscribe, dispose = offDispose;
     unsubscribe = offDispose = undefined;
-    try { off?.(); } finally { dispose?.(); }
+    const errors: unknown[] = [];
+    for (const release of [off, dispose]) try { release?.(); } catch (error) { errors.push(error); }
+    if (errors.length === 1) throw errors[0];
+    if (errors.length > 1) throw new AggregateError(errors, 'Vue store cleanup failed.', { cause: errors[0] });
   };
   const publish = (snapshot: StoreSnapshot<S>) => {
     if (stopped || snapshot === previous) return;
@@ -50,12 +53,16 @@ export function useVueStore<S extends Schema>(instance: SayloInstance<S>): Saylo
     if (stopped) return;
     try {
       unsubscribe = instance.subscribe(publish);
-      if (stopped) { unsubscribe(); unsubscribe = undefined; return; }
+      if (stopped) { const off = unsubscribe; unsubscribe = undefined; off(); return; }
       offDispose = instance.onDispose?.(stop);
-      if (stopped) { offDispose?.(); offDispose = undefined; return; }
+      if (stopped) { const off = offDispose; offDispose = undefined; off?.(); return; }
       // Include changes committed between setup and mount, after installing the listener.
       publish(instance.getSnapshot());
-    } catch (error) { stop(); throw error; }
+    } catch (error) {
+      try { stop(); }
+      catch (cleanupError) { throw new AggregateError([error, cleanupError], 'Vue store setup and cleanup failed.', { cause: error }); }
+      throw error;
+    }
   });
   return shallowReadonly(state);
 }

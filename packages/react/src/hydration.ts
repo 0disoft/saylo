@@ -46,10 +46,26 @@ export function createHydrationAdapter<S extends Schema = Schema>(instance: Sayl
     if (disposed) return;
     disposed = true;
     pending.length = 0;
-    off(); offDispose?.(); listeners.clear();
+    listeners.clear();
+    const unregister = offDispose;
+    offDispose = undefined;
+    const errors: unknown[] = [];
+    for (const release of [off, unregister]) try { release?.(); } catch (error) { errors.push(error); }
+    if (errors.length === 1) throw errors[0];
+    if (errors.length > 1) throw new AggregateError(errors, 'Hydration adapter cleanup failed.', { cause: errors[0] });
   }
-  try { offDispose = instance.onDispose?.(dispose); }
-  catch (error) { dispose(); throw error; }
+  try {
+    offDispose = instance.onDispose?.(dispose);
+    if (disposed) {
+      const unregister = offDispose;
+      offDispose = undefined;
+      unregister?.();
+    }
+  } catch (error) {
+    try { dispose(); }
+    catch (cleanupError) { throw new AggregateError([error, cleanupError], 'Hydration setup and cleanup failed.', { cause: error }); }
+    throw error;
+  }
   return Object.freeze({
     getSnapshot: () => current,
     // Keep this fixed even after the barrier, so a late hydrating subtree still reads the server's S1.

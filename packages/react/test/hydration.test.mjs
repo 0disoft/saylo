@@ -215,3 +215,48 @@ test('selector hydration reads fixed server data even after the client barrier h
   assert.equal(document.activeElement, input);
   assert.equal(input.selectionStart, 2);
 });
+
+test('hydration cleanup attempts both releases, retains errors and stays idempotent', () => {
+  const released = [], upstream = new Error('unsubscribe failed'), disposal = new Error('dispose hook failed');
+  const snapshot = {};
+  const adapter = createHydrationAdapter({ getSnapshot: () => snapshot, setLocale() {},
+    subscribe: () => () => { released.push('subscription'); throw upstream; },
+    onDispose: () => () => { released.push('disposal'); throw disposal; },
+  });
+  adapter.subscribe(() => assert.fail('disposed adapter published'));
+  assert.throws(() => adapter.dispose(), error => {
+    assert.ok(error instanceof AggregateError);
+    assert.deepEqual(error.errors, [upstream, disposal]);
+    assert.equal(error.cause, upstream);
+    return true;
+  });
+  assert.deepEqual(released, ['subscription', 'disposal']);
+  assert.doesNotThrow(() => adapter.dispose());
+  assert.throws(() => adapter.subscribe(() => {}), /disposed/);
+});
+
+test('hydration setup retains its original error when acquired cleanup also fails', () => {
+  const setup = new Error('registration failed'), cleanup = new Error('cleanup failed');
+  let releases = 0;
+  assert.throws(() => createHydrationAdapter({ getSnapshot: () => ({}), setLocale() {},
+    subscribe: () => () => { releases++; throw cleanup; }, onDispose() { throw setup; },
+  }), error => {
+    assert.ok(error instanceof AggregateError);
+    assert.deepEqual(error.errors, [setup, cleanup]);
+    assert.equal(error.cause, setup);
+    return true;
+  });
+  assert.equal(releases, 1);
+});
+
+test('synchronous hydration disposal also releases the registration returned afterward', () => {
+  let subscriptions = 0, disposers = 0;
+  const snapshot = {};
+  const adapter = createHydrationAdapter({ getSnapshot: () => snapshot, setLocale() {},
+    subscribe() { subscriptions++; return () => { subscriptions--; }; },
+    onDispose(stop) { stop(); disposers++; return () => { disposers--; }; },
+  });
+  assert.equal(subscriptions, 0); assert.equal(disposers, 0);
+  adapter.dispose();
+  assert.equal(subscriptions, 0); assert.equal(disposers, 0);
+});
