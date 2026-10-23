@@ -3,6 +3,7 @@ import { EventEmitter } from 'node:events';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { setTimeout as delay } from 'node:timers/promises';
 import { build, createServer } from 'vite';
 import saylo from '@0disoft/saylo-vite';
 import { createServerI18n } from '@0disoft/saylo-core';
@@ -11,6 +12,7 @@ import { connectDev, createDevCatalogSource } from '@0disoft/saylo-vite/client';
 const root = await mkdtemp(path.join(process.cwd(), '.catalog-features-'));
 let server, socket, source, instance;
 const hot = new EventEmitter(), sent = [], received = [];
+const watchedChanges = [];
 hot.dispose = hot.prune = () => {};
 hot.send = (event, data) => { sent.push({ event, data }); socket.send(JSON.stringify({ type: 'custom', event, data })); };
 function waitFor(event, predicate, action) {
@@ -21,6 +23,16 @@ function waitFor(event, predicate, action) {
     hot.on(event, receive);
     try { action?.(); } catch (error) { cleanup(); reject(error); }
   });
+}
+async function waitForWatchedFile(watcher, file) {
+  const deadline = Date.now() + 5000;
+  const registered = () => Object.entries(watcher.getWatched()).some(([directory, files]) =>
+    path.relative(path.dirname(file), directory) === '' && files.includes(path.basename(file)));
+  // HTTP listen does not wait for Chokidar's initial file registration.
+  while (!registered()) {
+    if (Date.now() >= deadline) throw new Error(`Vite did not start watching ${path.relative(root, file)}.`);
+    await delay(25);
+  }
 }
 try {
   await writeFile(path.join(root, 'package.json'), '{"type":"module"}');
@@ -47,6 +59,9 @@ export const title = () => store.t('demo:title');`);
   server = await createServer({ configFile: false, root, logLevel: 'silent', plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko' })],
     server: { host: '127.0.0.1', port: 0 } });
   await server.listen();
+  const target = path.join(root, 'locales/en/demo.json');
+  await waitForWatchedFile(server.watcher, target);
+  server.watcher.on('change', file => watchedChanges.push(path.relative(root, file)));
   const address = server.httpServer.address();
   socket = new WebSocket(`ws://127.0.0.1:${address.port}/?token=${server.config.webSocketToken}`, 'vite-hmr');
   await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }); });
@@ -68,6 +83,7 @@ export const title = () => store.t('demo:title');`);
     const timer = setTimeout(() => {
       off(); reject(new Error(`Real watcher/socket push did not reach the instance: ${JSON.stringify({
         state: source.getSyncState(), title: instance.t('demo:title'),
+        watchedChanges,
         sent: sent.map(frame => frame.event),
         received: received.map(frame => ({ event: frame.event, kind: frame.data.kind,
           revision: frame.data.manifest?.registryRevision, diagnostic: frame.data.message })),
@@ -77,7 +93,7 @@ export const title = () => store.t('demo:title');`);
       if (snapshot.t('demo:title') === 'PACK_PUSH_CHANGED') { clearTimeout(timer); off(); resolve(); }
     });
   });
-  await writeFile(path.join(root, 'locales/en/demo.json'), '{"title":"PACK_PUSH_CHANGED","unused":"PACK_UNUSED_MARKER"}');
+  await writeFile(target, '{"title":"PACK_PUSH_CHANGED","unused":"PACK_UNUSED_MARKER"}');
   await updated;
   assert.equal(sent.filter(frame => frame.event === 'saylo:request-catalog').length, before,
     'The real watcher must deliver the changed catalog without a lookup request.');
