@@ -1,0 +1,146 @@
+{
+  "format": "saylo-candidate-consumption/v1",
+  "checkedAt": "2026-10-23T09:56:09.883Z",
+  "sourceCommit": "109afe749a2bf7728394b70796eef396e9891aab",
+  "verifierCommit": "478adce383e14d2077f7d3be72e495bf0d1c74f9",
+  "candidate": ".release/candidate-0.1.0-alpha.5-DhQ1s3",
+  "validation": ".release/candidate-0.1.0-alpha.5-DhQ1s3/validation-pAOEjE/validation.json",
+  "validationSha256": "fbc7522b3249f0c08778397ad67775f6d8c6d6f891970c09d24090eb81c6c0cd",
+  "frozenInputs": 1169,
+  "originalValidationUnchanged": true,
+  "candidateInputsUnchanged": true,
+  "artifacts": [
+    {
+      "name": "@0disoft/saylo-core",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-core-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-pVj506D3YIFlH6uyeSm+oYw03MiNR0BXQuGCDcdOlENJsAgcj94qjlYHATyvOQRNXTNe4Wg9TY6QhBbzYxB33g=="
+    },
+    {
+      "name": "@0disoft/saylo-react",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-react-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-w7603HJhT2PO/0N9Su8N73hINo/iuaeEoSTxs5mV7KRseyvGHU7tKA+qBZjMH/rSPuY1qNcs5lpTt4lWG2BlZg=="
+    },
+    {
+      "name": "@0disoft/saylo-svelte",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-svelte-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-/1S9yIO+cTn6mc8BQAxrSOKg7Z2LDlq7AP7Reu099EiY66Erg2rqzdzzV3lI62IOCeiSGAj99CvAoj6MpSWP0g=="
+    },
+    {
+      "name": "@0disoft/saylo-typegen",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-typegen-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-Rq2vBNtBz7YMVq+hJea2edCe9KCQ04N7VTIwBN+25wFSkjbDFWWHPCCOJwUoHYCyTINPwO/ovWIoizV9XjlGSQ=="
+    },
+    {
+      "name": "@0disoft/saylo-vite",
+      "version": "0.1.0-alpha.5",
+      "filename": "0disoft-saylo-vite-0.1.0-alpha.5.tgz",
+      "integrity": "sha512-8HZIZZXlgRa1QUw7qXdsH+PPAyUK76iG+KBNVNwkyCvLDiyrnW7UY/0douT0x4VUcXrzeOWjRe0drWtfTDDGmQ=="
+    }
+  ],
+  "scriptInputs": [
+    {
+      "file": "scripts/pack-sveltekit.mjs",
+      "sha256": "338204c2035e68c4343c77d8599a3e8168f5dc5828ea82ba81a307567da3a440"
+    },
+    {
+      "file": "scripts/pack-tarballs.mjs",
+      "sha256": "27a36f8f1b4c65319ad78df7e31d83d7fcfe6b856bcc56ba8b12600a40e6c7c1"
+    },
+    {
+      "file": "scripts/test/pack-tarballs.test.mjs",
+      "sha256": "4f4b459bb673648e28d564ddb506a470dbeaf20b78a9bb9a8b9c3812ac15a71a"
+    },
+    {
+      "file": "scripts/pack-fixtures/catalog-workflow.mjs",
+      "sha256": "ad077e132698247bc676edfc085c3c511bd5917302d171d8b28373a115acef28"
+    },
+    {
+      "file": "scripts/pack-smoke.mjs",
+      "sha256": "b93c539929bff0a1780249b80578e23470a08168b49509df605096426b8ebde9"
+    }
+  ],
+  "logs": [
+    {
+      "file": ".release/candidate-0.1.0-alpha.5-DhQ1s3/validation-pAOEjE/sveltekit-candidate.log",
+      "sha256": "d48c36e50865b4251a9e62173110fc119f8a5a15f79db2d4ae63f7b1e38db3b9"
+    },
+    {
+      "file": ".release/candidate-0.1.0-alpha.5-DhQ1s3/validation-pAOEjE/catalog-workflow.log",
+      "sha256": "19529b7ba7c91eb43b1173fac9c118416463063b7b539f37006e28c99411f4c6"
+    }
+  ],
+  "runner": {
+    "file": ".release/candidate-0.1.0-alpha.5-DhQ1s3/validation-pAOEjE/catalog-workflow-runner.mjs",
+    "sha256": "fce456fa25bf4a8ebbafb76963427f6d150d243c318296240f9b5acafa10cebf"
+  },
+  "checks": [
+    {
+      "name": "frozen-tarball-integrity",
+      "command": [
+        "node",
+        "--test",
+        "scripts/test/pack-tarballs.test.mjs"
+      ],
+      "exitCode": 0,
+      "tests": 3,
+      "covers": [
+        "exact byte copy",
+        "corruption blocks all copies",
+        "missing/duplicate packages, mixed versions and path overrides"
+      ]
+    },
+    {
+      "name": "candidate-sveltekit",
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        "scripts/pack-sveltekit.mjs",
+        "--tarballs-dir",
+        ".release/candidate-0.1.0-alpha.5-DhQ1s3/validation-pAOEjE",
+        "--consumer-fixture",
+        "support"
+      ],
+      "exitCode": 0,
+      "covers": [
+        "five SHA-512-verified candidate tarballs, no repack",
+        "independent install, svelte-check 0 errors/0 warnings, client and SSR builds",
+        "concurrent ko/en SSR, matching boot and base fallback",
+        "dev callback, listener cleanup, idempotent stop and late cancellation",
+        "Chromium 155 hydration, ko/en/ko, modal focus, shared layout and exit/reentry",
+        "support report excludes form content and preserves input"
+      ]
+    },
+    {
+      "name": "candidate-catalog-workflow",
+      "command": [
+        "npm",
+        "exec",
+        "--",
+        "node",
+        ".release/check-candidate-catalog.mjs"
+      ],
+      "exitCode": 0,
+      "covers": [
+        "independent install of candidate core/typegen, installed bin targets",
+        "check/sync read-only behavior, v2 export/context, import diff/apply",
+        "CRLF/tab/empty-string preservation and idempotent import",
+        "invalid arguments and stale source block writes, refresh retains conflicting draft",
+        "import does not approve; approval preview/apply/idempotency and reopening on changed translation",
+        "installed saylo-typegen declaration generation"
+      ]
+    }
+  ],
+  "automation": "Future local JS pack smoke runs catalog-workflow.mjs; SvelteKit frozen-byte acceptance is an explicit --tarballs-dir command.",
+  "limits": [
+    "Local supplemental acceptance only; not registry acceptance or publication.",
+    "Product tarballs and the original candidate validation were not regenerated.",
+    "Original package versions remain alpha.4, Vue remains private, no push, version promotion, workflow dispatch or deployment.",
+    "Browser proof covers the support fixture on local Chromium 155; no screen-reader or other-browser claim."
+  ]
+}
