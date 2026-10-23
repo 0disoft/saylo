@@ -111,7 +111,7 @@ SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-
 76. [78-rich-text-parts.md](78-rich-text-parts.md) — 첫 rich text core API 슬라이스의 `tParts` 계약·마커 문법·오류
 77. [79-react-rich-text.md](79-react-rich-text.md) — React rich text render helper `renderRichText`의 계약·키 규칙·데모·검증 범위
 78. [80-svelte-rich-text.md](80-svelte-rich-text.md) — Svelte rich text 컴포넌트 `RichText.svelte`의 계약·키 규칙·데모·검증 범위
-79. [81-implementation-status.md](81-implementation-status.md) — `464392f` 기준 기능별 현행 소스와 잔여·후보·게시 상태 구분
+79. [81-implementation-status.md](81-implementation-status.md) — 2026-10-24 시작 HEAD `247d116`, 검증 제품 소스 `d3e5252`, 후보·버전 승격·npm 게시·registry 소비 인수 구분
 80. [82-admin-support-pilot.md](82-admin-support-pilot.md) — admin 고객 지원 화면의 Saylo production typegen 잠금 수정과 부분 번역 pilot 결과
 
 개발 클라이언트의 handshake 상태 계약은 [dev-sync-state.md](dev-sync-state.md)에 있다.
@@ -136,7 +136,7 @@ React 19와 Svelte 5의 로컬 tarball을 독립 프로젝트로 내보내는 �
 
 ## 작성 원칙
 
-다음 릴리스 후보의 변경 범위·로컬 검증·게시 전 작업은 [alpha.5 후보 계획](../releases/0.1.0-alpha.5-plan.md)에 있다. 후보 상태와 npm 게시 상태를 구분해 읽는다.
+다음 릴리스 후보의 변경 범위·로컬 검증·게시 전 작업은 [alpha.5 후보 계획](../releases/0.1.0-alpha.5-plan.md)에 있다. 후보 검증, 버전 승격, npm 게시, registry 소비 인수 상태를 구분해 읽는다.
 
 - 문서 본문은 명료한 한국어 `-한다/-이다` 문체로 쓴다.
 - 아직 만들지 않은 기능을 제공한다고 쓰지 않는다.
