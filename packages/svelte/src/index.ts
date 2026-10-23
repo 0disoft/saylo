@@ -2,6 +2,8 @@ import { getContext, setContext } from 'svelte';
 import { derived, readable } from 'svelte/store';
 import type { Readable } from 'svelte/store';
 import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
+import { unwrapReadableResult } from './readable-result.js';
+import type { ReadableResult } from './readable-result.js';
 export type { RichTextProps, RichTextRenderers } from './rich-text.js';
 
 export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
@@ -23,25 +25,39 @@ export function createSvelteStore<S extends Schema>(instance: SayloInstance<S>):
     ...(instance.setNamespaces ? { setNamespaces: instance.setNamespaces } : {}),
   });
   let current = bind(previous);
-  return Object.freeze(readable(current, set => {
-    // Refresh after a period with no subscribers, including Svelte's SSR subscription.
-    const publish = (snapshot: StoreSnapshot<S>) => {
-      if (snapshot !== previous) { previous = snapshot; current = bind(snapshot); }
-      set(current);
-    };
-    publish(instance.getSnapshot());
-    const unsubscribe = instance.subscribe(snapshot => {
-      if (snapshot !== previous) publish(snapshot);
-    });
+  return unwrapReadableResult(() => readable<ReadableResult<SayloSvelteSnapshot<S>>>({ kind: 'value', value: current }, set => {
     let active = true;
+    let unsubscribe: (() => void) | undefined;
     let offDispose: (() => void) | undefined;
     const stop = () => {
       if (!active) return;
       active = false;
-      unsubscribe();
-      offDispose?.();
+      const releases = [unsubscribe, offDispose];
+      unsubscribe = offDispose = undefined;
+      const errors: unknown[] = [];
+      for (const release of releases) try { release?.(); } catch (error) { errors.push(error); }
+      if (errors.length === 1) throw errors[0];
+      if (errors.length > 1) throw new AggregateError(errors, 'Svelte store cleanup failed.', { cause: errors[0] });
     };
-    offDispose = instance.onDispose?.(stop);
+    const publish = (snapshot: StoreSnapshot<S>) => {
+      if (!active) return;
+      if (snapshot !== previous) { previous = snapshot; current = bind(snapshot); }
+      set({ kind: 'value', value: current });
+    };
+    try {
+      unsubscribe = instance.subscribe(snapshot => { if (snapshot !== previous) publish(snapshot); });
+      offDispose = instance.onDispose?.(stop);
+      if (!active) {
+        // onDispose may synchronously stop us before returning its own release handle.
+        const release = offDispose;
+        offDispose = undefined;
+        release?.();
+      } else publish(instance.getSnapshot()); // Refresh after dormancy, with the listener already installed.
+    } catch (error) {
+      try { stop(); }
+      catch (cleanupError) { error = new AggregateError([error, cleanupError], 'Svelte store setup and cleanup failed.', { cause: error }); }
+      set({ kind: 'error', error });
+    }
     return stop;
   }));
 }
@@ -51,18 +67,15 @@ export interface SayloSelectorOptions {
   readonly onError?: (error: unknown) => void;
 }
 
-type Selection<T> = { kind: 'value'; value: T } | { kind: 'error'; error: unknown };
-
 /** Pure selection; only Object.is changes invalidate or notify downstream subscribers. */
 export function selectSvelteStore<S extends Schema, T>(source: SayloSvelteStore<S>,
   selector: (snapshot: SayloSvelteSnapshot<S>) => T, options: SayloSelectorOptions = {}): Readable<T> {
-  let previous: Selection<T> | undefined;
-  let subscribers = 0;
-  const selected = derived<SayloSvelteStore<S>, Selection<T>>(source, (snapshot, set) => {
+  let previous: ReadableResult<T> | undefined;
+  return unwrapReadableResult(hasSubscribers => derived<SayloSvelteStore<S>, ReadableResult<T>>(source, (snapshot, set) => {
     let value: T;
     try { value = selector(snapshot); }
     catch (error) {
-      if (!subscribers) {
+      if (!hasSubscribers()) {
         // Return normally so derived can install its upstream cleanup before subscribe throws.
         previous = { kind: 'error', error };
         set(previous);
@@ -79,38 +92,7 @@ export function selectSvelteStore<S extends Schema, T>(source: SayloSvelteStore<
       previous = { kind: 'value', value };
       set(previous);
     }
-  });
-  const store: Readable<T> = {
-    subscribe(run, invalidate) {
-      let starting = true;
-      const first: { state?: Selection<T> } = {};
-      const unsubscribe = selected.subscribe(state => {
-        if (starting) first.state = state;
-        else if (state.kind === 'value') run(state.value);
-      }, () => { if (!starting) invalidate?.(); });
-      starting = false;
-      const state = first.state;
-      if (!state) {
-        unsubscribe();
-        throw new Error('Selector did not produce an initial value.');
-      }
-      if (state.kind === 'error') {
-        unsubscribe();
-        throw state.error;
-      }
-      subscribers++;
-      let active = true;
-      const stop = () => {
-        if (!active) return;
-        active = false;
-        subscribers--;
-        unsubscribe();
-      };
-      try { run(state.value); } catch (error) { stop(); throw error; }
-      return stop;
-    },
-  };
-  return Object.freeze(store);
+  }));
 }
 
 export interface SayloSvelteBindings<S extends Schema> {

@@ -76,3 +76,58 @@ test('lazy instance methods return the original async result and publish only co
   assert.equal(values.at(-1).locale, 'en');
   assert.equal(values[0].locale, 'ko');
 });
+
+test('failed initial consumers release their subscription without disturbing healthy consumers', t => {
+  const { store, instance, subscriptions, disposers } = fixture(t);
+  const i18n = createSvelteStore(instance), failure = new Error('consumer failed');
+  assert.throws(() => i18n.subscribe(() => { throw failure; }), error => error === failure);
+  assert.equal(subscriptions.size, 0); assert.equal(disposers.size, 0);
+  const values = [];
+  const off = i18n.subscribe(snapshot => values.push(snapshot.locale));
+  assert.throws(() => i18n.subscribe(() => { throw failure; }), error => error === failure);
+  assert.equal(subscriptions.size, 1);
+  assert.doesNotThrow(() => store.setLocale('en'));
+  assert.deepEqual(values, ['ko', 'en']);
+  off();
+  assert.equal(subscriptions.size, 0); assert.equal(disposers.size, 0);
+});
+
+test('setup errors release acquired listeners and the same readable can retry', t => {
+  const { store, instance, subscriptions, disposers } = fixture(t);
+  const failure = new Error('dispose registration failed');
+  let broken = true;
+  const i18n = createSvelteStore({ ...instance, onDispose(listener) {
+    if (broken) throw failure;
+    return instance.onDispose(listener);
+  } });
+  assert.throws(() => i18n.subscribe(() => assert.fail('failed setup published')), error => error === failure);
+  assert.equal(subscriptions.size, 0); assert.equal(disposers.size, 0);
+  broken = false;
+  const values = [], off = i18n.subscribe(snapshot => values.push(snapshot.locale));
+  store.setLocale('en');
+  assert.deepEqual(values, ['ko', 'en']);
+  off();
+  assert.equal(subscriptions.size, 0); assert.equal(disposers.size, 0);
+});
+
+test('cleanup attempts both releases and synchronous disposal retires a late registration', t => {
+  const { instance, subscriptions, disposers } = fixture(t);
+  const failure = new Error('unsubscribe failed');
+  const failing = createSvelteStore({ ...instance, subscribe(listener) {
+    const off = instance.subscribe(listener);
+    return () => { off(); throw failure; };
+  } });
+  const off = failing.subscribe(() => {});
+  assert.throws(off, error => error === failure);
+  assert.equal(subscriptions.size, 0); assert.equal(disposers.size, 0);
+  assert.doesNotThrow(off);
+  let registrations = 0;
+  const immediate = createSvelteStore({ ...instance, onDispose(listener) {
+    listener(); registrations++;
+    return () => { registrations--; };
+  } });
+  const stop = immediate.subscribe(() => {});
+  assert.equal(registrations, 0); assert.equal(subscriptions.size, 0);
+  stop(); stop();
+  assert.equal(registrations, 0);
+});
