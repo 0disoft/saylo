@@ -1,0 +1,583 @@
+{
+  "schema": "saylo-large-catalog-performance/v1",
+  "checkedAt": "2026-10-23T20:40:28.671Z",
+  "sourceCommits": {
+    "snapshotCopy": "9a206208cab6d806ba4e83db76088587c574ac30",
+    "singleValue": "7a844187661c062cf3d3d2726db53de8df7c9ac6"
+  },
+  "changes": [
+    "Copy and freeze mutable snapshot children once, sharing recognized immutable subtrees.",
+    "Parse one changed JSON string token using successful parser-owned provenance and an unchanged rich policy.",
+    "Copy messages by physical-order IDs and adjust only suffix positions when token length changes.",
+    "Reuse the edited token line start instead of indexing every line again."
+  ],
+  "checks": {
+    "coreBuild": "passed",
+    "coreTests": {
+      "passed": 122,
+      "failed": 0
+    },
+    "targetedTests": {
+      "passed": 67,
+      "failed": 0,
+      "files": [
+        "packages/core/test/catalog.test.mjs",
+        "packages/core/test/rich-text.test.mjs",
+        "packages/vite/test/patch.test.mjs",
+        "packages/vite/test/live-registry.test.mjs",
+        "benchmarks/live-update/comparison-policy.test.mjs",
+        "benchmarks/live-update/parser-probe.test.mjs"
+      ],
+      "overlapsCoreTests": true
+    },
+    "earlierSnapshotPushLazyPolicyTests": {
+      "passed": 35,
+      "failed": 0,
+      "reusedForUnchangedInputs": true
+    },
+    "freshFullWorkspaceSuite": false
+  },
+  "measurements": {
+    "parser": {
+      "file": "benchmarks/results/single-value-parser-comparison-2026-10-24.json",
+      "baselineRevision": "9a206208cab6d806ba4e83db76088587c574ac30",
+      "measuredPairs": 100,
+      "before": {
+        "count": 100,
+        "p50Ms": 16.809000000001106,
+        "p95Ms": 38.70130000000063,
+        "minMs": 10.257200000007288,
+        "maxMs": 170.65059999999357
+      },
+      "after": {
+        "count": 100,
+        "p50Ms": 8.203300000001036,
+        "p95Ms": 25.45130000000063,
+        "minMs": 4.442499999997381,
+        "maxMs": 78.46950000000652
+      },
+      "pairedDifference": {
+        "medianMs": -8.475599999990663,
+        "p95Ms": -2.343699999997625,
+        "improvedPairs": 97
+      }
+    },
+    "snapshotLocale": {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.json",
+      "revisions": {
+        "before": "046fa4dab045622d1af0d4258fda0959efd49fba",
+        "after": "9a206208cab6d806ba4e83db76088587c574ac30"
+      },
+      "settings": {
+        "samples": 5,
+        "warmup": 1,
+        "calibrations": 5
+      },
+      "pooled": {
+        "before": {
+          "samples": 10,
+          "runFiles": [
+            "snapshot-copy-locale-comparison-2026-10-24.1-before.json",
+            "snapshot-copy-locale-comparison-2026-10-24.4-before.json"
+          ],
+          "within250Ms": 2,
+          "withinGoal": {
+            "goalMs": 250,
+            "samples": 2
+          },
+          "summary": {
+            "saveToListAckMs": {
+              "count": 10,
+              "p50Ms": 394.12460000000283,
+              "p95Ms": 996.6582999999991,
+              "minMs": 232.4923000000017,
+              "maxMs": 996.6582999999991
+            },
+            "selectToTranslationAckMs": {
+              "count": 10,
+              "p50Ms": 624.546500000004,
+              "p95Ms": 1136.5445999999974,
+              "minMs": 526.1402999999991,
+              "maxMs": 1136.5445999999974
+            },
+            "saveToTranslationAckMs": {
+              "count": 10,
+              "p50Ms": 994.741399999999,
+              "p95Ms": 2155.5741999999955,
+              "minMs": 832.7856000000029,
+              "maxMs": 2155.5741999999955
+            },
+            "selectToCommitMs": {
+              "count": 10,
+              "p50Ms": 620.5,
+              "p95Ms": 1132.9000000059605,
+              "minMs": 522,
+              "maxMs": 1132.9000000059605
+            },
+            "saveToBroadcastMs": {
+              "count": 10,
+              "p50Ms": 378.9979999999996,
+              "p95Ms": 949.4480000000003,
+              "minMs": 226.071899999999,
+              "maxMs": 949.4480000000003
+            },
+            "fileWriteMs": {
+              "count": 10,
+              "p50Ms": 43.759500000000116,
+              "p95Ms": 145.86880000000383,
+              "minMs": 19.10239999999976,
+              "maxMs": 145.86880000000383
+            }
+          },
+          "control": {
+            "count": 10,
+            "p50Ms": 10.673200000001088,
+            "p95Ms": 69.45820000000094,
+            "minMs": 3.3830999999991036,
+            "maxMs": 69.45820000000094
+          }
+        },
+        "after": {
+          "samples": 10,
+          "runFiles": [
+            "snapshot-copy-locale-comparison-2026-10-24.2-after.json",
+            "snapshot-copy-locale-comparison-2026-10-24.3-after.json"
+          ],
+          "within250Ms": 3,
+          "withinGoal": {
+            "goalMs": 250,
+            "samples": 3
+          },
+          "summary": {
+            "saveToListAckMs": {
+              "count": 10,
+              "p50Ms": 350.0737000000008,
+              "p95Ms": 818.3317999999999,
+              "minMs": 214.3021000000008,
+              "maxMs": 818.3317999999999
+            },
+            "selectToTranslationAckMs": {
+              "count": 10,
+              "p50Ms": 502.71670000000086,
+              "p95Ms": 869.9943999999996,
+              "minMs": 379.83759999999893,
+              "maxMs": 869.9943999999996
+            },
+            "saveToTranslationAckMs": {
+              "count": 10,
+              "p50Ms": 812.8122999999978,
+              "p95Ms": 1709.988300000001,
+              "minMs": 689.9613000000027,
+              "maxMs": 1709.988300000001
+            },
+            "selectToCommitMs": {
+              "count": 10,
+              "p50Ms": 499.1000000089407,
+              "p95Ms": 865.2000000029802,
+              "minMs": 376.20000000298023,
+              "maxMs": 865.2000000029802
+            },
+            "saveToBroadcastMs": {
+              "count": 10,
+              "p50Ms": 340.42879999999786,
+              "p95Ms": 799.8938999999991,
+              "minMs": 207.00630000000092,
+              "maxMs": 799.8938999999991
+            },
+            "fileWriteMs": {
+              "count": 10,
+              "p50Ms": 33.41779999999926,
+              "p95Ms": 633.9344000000019,
+              "minMs": 21.969499999999243,
+              "maxMs": 633.9344000000019
+            }
+          },
+          "control": {
+            "count": 10,
+            "p50Ms": 6.034199999998236,
+            "p95Ms": 20.28280000000086,
+            "minMs": 3.9877999999989697,
+            "maxMs": 20.28280000000086
+          }
+        }
+      }
+    },
+    "singleValueEdit": {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.json",
+      "revisions": {
+        "before": "9a206208cab6d806ba4e83db76088587c574ac30",
+        "after": "7a844187661c062cf3d3d2726db53de8df7c9ac6"
+      },
+      "settings": {
+        "samples": 10,
+        "warmup": 2,
+        "calibrations": 10
+      },
+      "pooled": {
+        "before": {
+          "samples": 20,
+          "runFiles": [
+            "single-value-edit-comparison-2026-10-24.1-before.json",
+            "single-value-edit-comparison-2026-10-24.4-before.json"
+          ],
+          "withinGoal": {
+            "goalMs": 100,
+            "samples": 2
+          },
+          "summary": {
+            "saveToAckMs": {
+              "count": 20,
+              "p50Ms": 148.20240000000194,
+              "p95Ms": 245.15519999999742,
+              "minMs": 90.58060000000114,
+              "maxMs": 246.40539999999964
+            },
+            "saveToManifestBroadcastMs": {
+              "count": 20,
+              "p50Ms": 93.17450000000099,
+              "p95Ms": 193.33959999999934,
+              "minMs": 41.27230000000054,
+              "maxMs": 200.71939999999813
+            },
+            "receiveToCommitMs": {
+              "count": 20,
+              "p50Ms": 42.6000000089407,
+              "p95Ms": 47.70000000298023,
+              "minMs": 38.70000000298023,
+              "maxMs": 47.900000005960464
+            },
+            "commitToAckDispatchMs": {
+              "count": 20,
+              "p50Ms": 0,
+              "p95Ms": 0.09999999403953552,
+              "minMs": 0,
+              "maxMs": 0.10000000894069672
+            },
+            "fileWriteMs": {
+              "count": 20,
+              "p50Ms": 19.68789999999717,
+              "p95Ms": 42.23440000000119,
+              "minMs": 10.945999999999913,
+              "maxMs": 73.2602999999981
+            }
+          },
+          "control": {
+            "count": 20,
+            "p50Ms": 4.43210000000181,
+            "p95Ms": 6.8804999999993015,
+            "minMs": 3.20509999999922,
+            "maxMs": 15.554599999999482
+          }
+        },
+        "after": {
+          "samples": 20,
+          "runFiles": [
+            "single-value-edit-comparison-2026-10-24.2-after.json",
+            "single-value-edit-comparison-2026-10-24.3-after.json"
+          ],
+          "withinGoal": {
+            "goalMs": 100,
+            "samples": 2
+          },
+          "summary": {
+            "saveToAckMs": {
+              "count": 20,
+              "p50Ms": 114.07749999999942,
+              "p95Ms": 198.4887000000017,
+              "minMs": 89.61440000000039,
+              "maxMs": 250.17209999999977
+            },
+            "saveToManifestBroadcastMs": {
+              "count": 20,
+              "p50Ms": 55.434400000000096,
+              "p95Ms": 118.0490000000027,
+              "minMs": 43.82239999999911,
+              "maxMs": 146.72710000000006
+            },
+            "receiveToCommitMs": {
+              "count": 20,
+              "p50Ms": 46,
+              "p95Ms": 59,
+              "minMs": 41.1000000089407,
+              "maxMs": 60.099999994039536
+            },
+            "commitToAckDispatchMs": {
+              "count": 20,
+              "p50Ms": 0,
+              "p95Ms": 0.10000000894069672,
+              "minMs": 0,
+              "maxMs": 0.10000000894069672
+            },
+            "fileWriteMs": {
+              "count": 20,
+              "p50Ms": 13.415499999999156,
+              "p95Ms": 32.88429999999971,
+              "minMs": 8.084899999998015,
+              "maxMs": 121.16890000000058
+            }
+          },
+          "control": {
+            "count": 20,
+            "p50Ms": 3.9336999999995896,
+            "p95Ms": 6.78099999999904,
+            "minMs": 3.310699999999997,
+            "maxMs": 7.2246999999988475
+          }
+        }
+      }
+    },
+    "clientBefore": {
+      "file": "benchmarks/results/large-catalog-before-client-stages.json",
+      "gitRevision": "046fa4dab045622d1af0d4258fda0959efd49fba",
+      "settings": {
+        "samples": 5,
+        "warmup": 1,
+        "calibrations": 5,
+        "timeoutMs": 30000
+      },
+      "instrumentation": {
+        "cpuProfile": false,
+        "browserStages": false,
+        "serverFileStages": false,
+        "replyStages": true,
+        "clientStages": true
+      },
+      "clientStages": {
+        "scope": "Normal Saylo prebundling retained; in-memory transforms in Vite and optimizer. Starts at the reply hot listener after Vite JSON parsing. Synchronous decode/freeze/accept/snapshot (snapshot includes translator/signature); receive-to-publication ends at the first store subscriber, before React subscription; publication-to-layout-effect includes React scheduling/render/commit and probe overhead, not paint or pure React CPU. Per-sample residuals; no nested p95 addition. Trust observes core isDeepFrozen and the exact Vite-frozen catalog reference before core acceptance. Benchmark helper state is shared separately from product freeze caches.",
+        "decodeMs": {
+          "count": 5,
+          "p50Ms": 12.099999994039536,
+          "p95Ms": 18.30000001192093,
+          "minMs": 9.400000005960464,
+          "maxMs": 18.30000001192093
+        },
+        "freezeMs": {
+          "count": 5,
+          "p50Ms": 460.70000000298023,
+          "p95Ms": 517.2000000029802,
+          "minMs": 405.6000000089407,
+          "maxMs": 517.2000000029802
+        },
+        "acceptMs": {
+          "count": 5,
+          "p50Ms": 0.09999999403953552,
+          "p95Ms": 0.5,
+          "minMs": 0.09999999403953552,
+          "maxMs": 0.5
+        },
+        "acceptCheckMs": {
+          "count": 5,
+          "p50Ms": 0,
+          "p95Ms": 0.09999999403953552,
+          "minMs": 0,
+          "maxMs": 0.09999999403953552
+        },
+        "acceptFreezeMs": {
+          "count": 5,
+          "p50Ms": 0,
+          "p95Ms": 0.19999998807907104,
+          "minMs": 0,
+          "maxMs": 0.19999998807907104
+        },
+        "snapshotMs": {
+          "count": 5,
+          "p50Ms": 28,
+          "p95Ms": 33.29999999701977,
+          "minMs": 25.799999997019768,
+          "maxMs": 33.29999999701977
+        },
+        "translatorMs": {
+          "count": 5,
+          "p50Ms": 21,
+          "p95Ms": 28.099999994039536,
+          "minMs": 19.69999998807907,
+          "maxMs": 28.099999994039536
+        },
+        "signatureMs": {
+          "count": 5,
+          "p50Ms": 5.700000002980232,
+          "p95Ms": 7.5,
+          "minMs": 5.200000002980232,
+          "maxMs": 7.5
+        },
+        "acceptOtherMs": {
+          "count": 5,
+          "p50Ms": 0.09999999403953552,
+          "p95Ms": 0.20000001788139343,
+          "minMs": 0,
+          "maxMs": 0.20000001788139343
+        },
+        "snapshotOtherMs": {
+          "count": 5,
+          "p50Ms": 0,
+          "p95Ms": 0.10000000894069672,
+          "minMs": 0,
+          "maxMs": 0.10000000894069672
+        },
+        "receiveToPublishMs": {
+          "count": 5,
+          "p50Ms": 502,
+          "p95Ms": 565.2000000029802,
+          "minMs": 442.79999999701977,
+          "maxMs": 565.2000000029802
+        },
+        "clientOtherMs": {
+          "count": 5,
+          "p50Ms": 0.7000000029802322,
+          "p95Ms": 0.8999999910593033,
+          "minMs": 0.5,
+          "maxMs": 0.8999999910593033
+        },
+        "publishToCommitMs": {
+          "count": 5,
+          "p50Ms": 1.9000000059604645,
+          "p95Ms": 3.3999999910593033,
+          "minMs": 1.5999999940395355,
+          "maxMs": 3.3999999910593033
+        },
+        "maxCalls": {
+          "decodeMs": 1,
+          "freezeMs": 1,
+          "acceptMs": 1,
+          "acceptCheckMs": 1,
+          "acceptFreezeMs": 1,
+          "snapshotMs": 1,
+          "translatorMs": 1,
+          "signatureMs": 1
+        },
+        "trust": {
+          "observed": 5,
+          "sameCatalog": 5,
+          "trusted": 5
+        },
+        "optimizerTransformed": [
+          "packages/core/dist/loading-registry.js",
+          "packages/core/dist/translator.js"
+        ]
+      }
+    }
+  },
+  "limits": [
+    "One local machine; browser runs use fixed ABBA blocks, not randomized causal experiments.",
+    "Browser variant sample counts are 10 for snapshot-copy and 20 for single-value.",
+    "Parser comparison excludes file IO, watcher, translation validation and browser rendering.",
+    "The edit p95 100ms and locale-list p95 250ms goals remain unmet.",
+    "The edit receive-to-commit segment increased in this sample despite lower total time.",
+    "No additional 50-sample browser acceptance or fresh frozen-candidate acceptance was run."
+  ],
+  "release": {
+    "packageVersionsChanged": false,
+    "frozenCandidateIncludesChanges": false,
+    "gitPush": false,
+    "npmPublish": false,
+    "deployment": false,
+    "adminApplied": false
+  },
+  "evidenceFiles": [
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.json",
+      "bytes": 11875,
+      "sha256": "86086bdec96fc96895a0865160007322b00624da87a6292c1ca08292484f7b8c"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.json",
+      "bytes": 10397,
+      "sha256": "5c92e628d1d6273649d71026e619e019a2e267292b90a7a1ac04ceb6bf98bce3"
+    },
+    {
+      "file": "benchmarks/results/single-value-parser-comparison-2026-10-24.json",
+      "bytes": 14834,
+      "sha256": "7544792fac7f020a0ceeebe4aec15f676719d7b63c304d23c092b516a237912c"
+    },
+    {
+      "file": "benchmarks/results/large-catalog-before-client-stages.json",
+      "bytes": 15596,
+      "sha256": "f6bbbb325a7ce75b72e062a371427cb729746790e161b6c1a9e9dd2dab960b32"
+    },
+    {
+      "file": "benchmarks/results/large-catalog-before-client-stages.10k-20-locales.samples.json",
+      "bytes": 14984,
+      "sha256": "3c826d920bf793557892c6307a837e09b8dd16d75f857b5d3407f70b563df8c9"
+    },
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.1-before.json",
+      "bytes": 8967,
+      "sha256": "9bfe302615cbef7e42065f64e68e3311399e5588302316a210224979db88e6ce"
+    },
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.1-before.10k-20-locales.samples.json",
+      "bytes": 3252,
+      "sha256": "ffd4f8a2ddcf43820065a1ea368195a22fdef324e7372ddaabdc4af24cc81de8"
+    },
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.2-after.json",
+      "bytes": 9273,
+      "sha256": "4cbecf0f8999b83854cc597a6fefd10194b531789b47fa78f1b0c0d8832c457d"
+    },
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.2-after.10k-20-locales.samples.json",
+      "bytes": 3250,
+      "sha256": "083e521742ffd93f2d59db75f021d8696696984cf74a4d1e4f664bee15a61a19"
+    },
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.3-after.json",
+      "bytes": 9503,
+      "sha256": "cf652e62147bc67b297060969308479ae51e9420602e24ba7fb708f6aa937da0"
+    },
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.3-after.10k-20-locales.samples.json",
+      "bytes": 3218,
+      "sha256": "d93917d749cf00ee64f07eb578d998c35d170155cb95481a9d7f4bd2821bfecf"
+    },
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.4-before.json",
+      "bytes": 9691,
+      "sha256": "7b910eaeab4d97b921004c7ea26b9111549a7dc0ee2b9ea50986f2166938d7a3"
+    },
+    {
+      "file": "benchmarks/results/snapshot-copy-locale-comparison-2026-10-24.4-before.10k-20-locales.samples.json",
+      "bytes": 3222,
+      "sha256": "c44e14fb1ac2343d9bafdd354a30ce16e89f67e97caf9863506c8c23286b01a3"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.1-before.json",
+      "bytes": 11031,
+      "sha256": "877b90fd990df92274977266da7334e1049a4f24310cdfb1ad91b45ef1a73ce3"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.1-before.10k-20-locales.samples.json",
+      "bytes": 15012,
+      "sha256": "3949b8b8c318aeb0608c8204a0fece34a5251bd6696dfd233b80efc181558292"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.2-after.json",
+      "bytes": 11168,
+      "sha256": "3ccecb181918b643ea3be27c62608b8fb26fdab549d28cc3b312b0419d5a642e"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.2-after.10k-20-locales.samples.json",
+      "bytes": 15431,
+      "sha256": "9f9ce3dd0b6af0185de206baa244bfeef7a0f44d3c422c994d848eff0ac90862"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.3-after.json",
+      "bytes": 11372,
+      "sha256": "a25a1a8f19b6d1dc509635795ac3bd8512907193aeb3f500d46b9ac9e17dbc09"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.3-after.10k-20-locales.samples.json",
+      "bytes": 14977,
+      "sha256": "f599ea533451b2503f53170854f702e3d42cddc68723ed7cb6b2597dcc2b3834"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.4-before.json",
+      "bytes": 11659,
+      "sha256": "38309699c8dadfbacfad133cc42d7b8e4fdc2c27377f26cdadd39e873909b116"
+    },
+    {
+      "file": "benchmarks/results/single-value-edit-comparison-2026-10-24.4-before.10k-20-locales.samples.json",
+      "bytes": 15332,
+      "sha256": "615000dde69a343242be6d6352ec04c41a8b3675c67e8c6f1d4de095b322952e"
+    }
+  ]
+}

@@ -1,0 +1,393 @@
+{
+  "schema": "saylo-locale-add-comparison-v1",
+  "measuredAt": "2026-10-23T20:25:48.820Z",
+  "revisions": {
+    "before": "046fa4dab045622d1af0d4258fda0959efd49fba",
+    "after": "9a206208cab6d806ba4e83db76088587c574ac30"
+  },
+  "order": [
+    "before",
+    "after",
+    "after",
+    "before"
+  ],
+  "settings": {
+    "samples": 5,
+    "warmup": 1,
+    "calibrations": 5
+  },
+  "scenario": "10k-20-locales",
+  "mode": "locale-add",
+  "experiment": "snapshot-copy",
+  "replacedSources": [
+    "packages/core/src/diagnostics.ts"
+  ],
+  "serverFileStages": false,
+  "comparisonCodeHashes": {
+    "locale-compare.mjs": "7a38edd37999466f528d50847e8fa3e418942b2a689c127296e2e2e055532a8f",
+    "comparison-policy.mjs": "3b0ec34fbf3a86c821fc91edeac7b7eab0994b110644f8166c3e39e4352502a4"
+  },
+  "scope": "Sequential independent fresh Vite/browser runs, reversed block order (before/after, after/before). Same current harness/dependencies with isolated workspace snapshots; only the explicitly selected experiment sources differ. Pooled quantiles use measured samples, not averages of run p95s. No sample-level pairing, randomization, forced GC or subtraction of GC/control/cross-process clocks; not causal proof.",
+  "runs": [
+    {
+      "index": 1,
+      "variant": "before",
+      "sourceRevision": "046fa4dab045622d1af0d4258fda0959efd49fba",
+      "file": "snapshot-copy-locale-comparison-2026-10-24.1-before.json",
+      "measuredAt": "2026-10-23T20:23:58.037Z",
+      "summary": {
+        "saveToListAckMs": {
+          "count": 5,
+          "p50Ms": 779.0069999999978,
+          "p95Ms": 996.6582999999991,
+          "minMs": 374.3455000000031,
+          "maxMs": 996.6582999999991
+        },
+        "selectToTranslationAckMs": {
+          "count": 5,
+          "p50Ms": 632.4557000000059,
+          "p95Ms": 1136.5445999999974,
+          "minMs": 577.7021000000022,
+          "maxMs": 1136.5445999999974
+        },
+        "saveToTranslationAckMs": {
+          "count": 5,
+          "p50Ms": 1421.4167000000016,
+          "p95Ms": 2155.5741999999955,
+          "minMs": 959.1860000000015,
+          "maxMs": 2155.5741999999955
+        },
+        "selectToCommitMs": {
+          "count": 5,
+          "p50Ms": 628.5999999940395,
+          "p95Ms": 1132.9000000059605,
+          "minMs": 573.7999999970198,
+          "maxMs": 1132.9000000059605
+        },
+        "saveToBroadcastMs": {
+          "count": 5,
+          "p50Ms": 761.6187999999966,
+          "p95Ms": 949.4480000000003,
+          "minMs": 357.2681999999986,
+          "maxMs": 949.4480000000003
+        },
+        "fileWriteMs": {
+          "count": 5,
+          "p50Ms": 53.929700000000594,
+          "p95Ms": 145.86880000000383,
+          "minMs": 23.765599999998813,
+          "maxMs": 145.86880000000383
+        }
+      },
+      "control": {
+        "count": 5,
+        "p50Ms": 13.777899999997317,
+        "p95Ms": 69.45820000000094,
+        "minMs": 10.673200000001088,
+        "maxMs": 69.45820000000094
+      }
+    },
+    {
+      "index": 2,
+      "variant": "after",
+      "sourceRevision": "9a206208cab6d806ba4e83db76088587c574ac30",
+      "file": "snapshot-copy-locale-comparison-2026-10-24.2-after.json",
+      "measuredAt": "2026-10-23T20:24:33.083Z",
+      "summary": {
+        "saveToListAckMs": {
+          "count": 5,
+          "p50Ms": 350.0737000000008,
+          "p95Ms": 804.7869000000028,
+          "minMs": 214.3021000000008,
+          "maxMs": 804.7869000000028
+        },
+        "selectToTranslationAckMs": {
+          "count": 5,
+          "p50Ms": 471.8133000000016,
+          "p95Ms": 869.9943999999996,
+          "minMs": 406.6808999999994,
+          "maxMs": 869.9943999999996
+        },
+        "saveToTranslationAckMs": {
+          "count": 5,
+          "p50Ms": 793.9097000000002,
+          "p95Ms": 1709.988300000001,
+          "minMs": 689.9613000000027,
+          "maxMs": 1709.988300000001
+        },
+        "selectToCommitMs": {
+          "count": 5,
+          "p50Ms": 453.09999999403954,
+          "p95Ms": 865.2000000029802,
+          "minMs": 377.20000000298023,
+          "maxMs": 865.2000000029802
+        },
+        "saveToBroadcastMs": {
+          "count": 5,
+          "p50Ms": 340.42879999999786,
+          "p95Ms": 772.077500000003,
+          "minMs": 207.00630000000092,
+          "maxMs": 772.077500000003
+        },
+        "fileWriteMs": {
+          "count": 5,
+          "p50Ms": 32.54949999999735,
+          "p95Ms": 72.00400000000081,
+          "minMs": 21.969499999999243,
+          "maxMs": 72.00400000000081
+        }
+      },
+      "control": {
+        "count": 5,
+        "p50Ms": 5.09059999999954,
+        "p95Ms": 6.034199999998236,
+        "minMs": 3.9877999999989697,
+        "maxMs": 6.034199999998236
+      }
+    },
+    {
+      "index": 3,
+      "variant": "after",
+      "sourceRevision": "9a206208cab6d806ba4e83db76088587c574ac30",
+      "file": "snapshot-copy-locale-comparison-2026-10-24.3-after.json",
+      "measuredAt": "2026-10-23T20:25:14.770Z",
+      "summary": {
+        "saveToListAckMs": {
+          "count": 5,
+          "p50Ms": 615.6192999999985,
+          "p95Ms": 818.3317999999999,
+          "minMs": 235.51450000000114,
+          "maxMs": 818.3317999999999
+        },
+        "selectToTranslationAckMs": {
+          "count": 5,
+          "p50Ms": 513.2275999999983,
+          "p95Ms": 697.8678,
+          "minMs": 379.83759999999893,
+          "maxMs": 697.8678
+        },
+        "saveToTranslationAckMs": {
+          "count": 5,
+          "p50Ms": 998.6205999999984,
+          "p95Ms": 1528.8462,
+          "minMs": 744.8436000000002,
+          "maxMs": 1528.8462
+        },
+        "selectToCommitMs": {
+          "count": 5,
+          "p50Ms": 508.59999999403954,
+          "p95Ms": 694.0999999940395,
+          "minMs": 376.20000000298023,
+          "maxMs": 694.0999999940395
+        },
+        "saveToBroadcastMs": {
+          "count": 5,
+          "p50Ms": 608.5292999999983,
+          "p95Ms": 799.8938999999991,
+          "minMs": 216.0699999999997,
+          "maxMs": 799.8938999999991
+        },
+        "fileWriteMs": {
+          "count": 5,
+          "p50Ms": 91.26830000000336,
+          "p95Ms": 633.9344000000019,
+          "minMs": 30.97940000000017,
+          "maxMs": 633.9344000000019
+        }
+      },
+      "control": {
+        "count": 5,
+        "p50Ms": 14.029200000000856,
+        "p95Ms": 20.28280000000086,
+        "minMs": 7.8166999999994005,
+        "maxMs": 20.28280000000086
+      }
+    },
+    {
+      "index": 4,
+      "variant": "before",
+      "sourceRevision": "046fa4dab045622d1af0d4258fda0959efd49fba",
+      "file": "snapshot-copy-locale-comparison-2026-10-24.4-before.json",
+      "measuredAt": "2026-10-23T20:25:48.150Z",
+      "summary": {
+        "saveToListAckMs": {
+          "count": 5,
+          "p50Ms": 356.1755000000012,
+          "p95Ms": 509.85310000000027,
+          "minMs": 232.4923000000017,
+          "maxMs": 509.85310000000027
+        },
+        "selectToTranslationAckMs": {
+          "count": 5,
+          "p50Ms": 579.9619000000021,
+          "p95Ms": 722.3991999999998,
+          "minMs": 526.1402999999991,
+          "maxMs": 722.3991999999998
+        },
+        "saveToTranslationAckMs": {
+          "count": 5,
+          "p50Ms": 959.9618999999984,
+          "p95Ms": 1195.1773999999969,
+          "minMs": 832.7856000000029,
+          "maxMs": 1195.1773999999969
+        },
+        "selectToCommitMs": {
+          "count": 5,
+          "p50Ms": 576.5,
+          "p95Ms": 718.2000000029802,
+          "minMs": 522,
+          "maxMs": 718.2000000029802
+        },
+        "saveToBroadcastMs": {
+          "count": 5,
+          "p50Ms": 348.6177000000025,
+          "p95Ms": 496.40179999999964,
+          "minMs": 226.071899999999,
+          "maxMs": 496.40179999999964
+        },
+        "fileWriteMs": {
+          "count": 5,
+          "p50Ms": 37.67540000000008,
+          "p95Ms": 63.52850000000035,
+          "minMs": 19.10239999999976,
+          "maxMs": 63.52850000000035
+        }
+      },
+      "control": {
+        "count": 5,
+        "p50Ms": 4.192099999996572,
+        "p95Ms": 13.865099999999074,
+        "minMs": 3.3830999999991036,
+        "maxMs": 13.865099999999074
+      }
+    }
+  ],
+  "pooled": {
+    "before": {
+      "samples": 10,
+      "runFiles": [
+        "snapshot-copy-locale-comparison-2026-10-24.1-before.json",
+        "snapshot-copy-locale-comparison-2026-10-24.4-before.json"
+      ],
+      "within250Ms": 2,
+      "withinGoal": {
+        "goalMs": 250,
+        "samples": 2
+      },
+      "summary": {
+        "saveToListAckMs": {
+          "count": 10,
+          "p50Ms": 394.12460000000283,
+          "p95Ms": 996.6582999999991,
+          "minMs": 232.4923000000017,
+          "maxMs": 996.6582999999991
+        },
+        "selectToTranslationAckMs": {
+          "count": 10,
+          "p50Ms": 624.546500000004,
+          "p95Ms": 1136.5445999999974,
+          "minMs": 526.1402999999991,
+          "maxMs": 1136.5445999999974
+        },
+        "saveToTranslationAckMs": {
+          "count": 10,
+          "p50Ms": 994.741399999999,
+          "p95Ms": 2155.5741999999955,
+          "minMs": 832.7856000000029,
+          "maxMs": 2155.5741999999955
+        },
+        "selectToCommitMs": {
+          "count": 10,
+          "p50Ms": 620.5,
+          "p95Ms": 1132.9000000059605,
+          "minMs": 522,
+          "maxMs": 1132.9000000059605
+        },
+        "saveToBroadcastMs": {
+          "count": 10,
+          "p50Ms": 378.9979999999996,
+          "p95Ms": 949.4480000000003,
+          "minMs": 226.071899999999,
+          "maxMs": 949.4480000000003
+        },
+        "fileWriteMs": {
+          "count": 10,
+          "p50Ms": 43.759500000000116,
+          "p95Ms": 145.86880000000383,
+          "minMs": 19.10239999999976,
+          "maxMs": 145.86880000000383
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 10.673200000001088,
+        "p95Ms": 69.45820000000094,
+        "minMs": 3.3830999999991036,
+        "maxMs": 69.45820000000094
+      }
+    },
+    "after": {
+      "samples": 10,
+      "runFiles": [
+        "snapshot-copy-locale-comparison-2026-10-24.2-after.json",
+        "snapshot-copy-locale-comparison-2026-10-24.3-after.json"
+      ],
+      "within250Ms": 3,
+      "withinGoal": {
+        "goalMs": 250,
+        "samples": 3
+      },
+      "summary": {
+        "saveToListAckMs": {
+          "count": 10,
+          "p50Ms": 350.0737000000008,
+          "p95Ms": 818.3317999999999,
+          "minMs": 214.3021000000008,
+          "maxMs": 818.3317999999999
+        },
+        "selectToTranslationAckMs": {
+          "count": 10,
+          "p50Ms": 502.71670000000086,
+          "p95Ms": 869.9943999999996,
+          "minMs": 379.83759999999893,
+          "maxMs": 869.9943999999996
+        },
+        "saveToTranslationAckMs": {
+          "count": 10,
+          "p50Ms": 812.8122999999978,
+          "p95Ms": 1709.988300000001,
+          "minMs": 689.9613000000027,
+          "maxMs": 1709.988300000001
+        },
+        "selectToCommitMs": {
+          "count": 10,
+          "p50Ms": 499.1000000089407,
+          "p95Ms": 865.2000000029802,
+          "minMs": 376.20000000298023,
+          "maxMs": 865.2000000029802
+        },
+        "saveToBroadcastMs": {
+          "count": 10,
+          "p50Ms": 340.42879999999786,
+          "p95Ms": 799.8938999999991,
+          "minMs": 207.00630000000092,
+          "maxMs": 799.8938999999991
+        },
+        "fileWriteMs": {
+          "count": 10,
+          "p50Ms": 33.41779999999926,
+          "p95Ms": 633.9344000000019,
+          "minMs": 21.969499999999243,
+          "maxMs": 633.9344000000019
+        }
+      },
+      "control": {
+        "count": 10,
+        "p50Ms": 6.034199999998236,
+        "p95Ms": 20.28280000000086,
+        "minMs": 3.9877999999989697,
+        "maxMs": 20.28280000000086
+      }
+    }
+  }
+}
