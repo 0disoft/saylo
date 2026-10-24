@@ -1,6 +1,6 @@
 # Documentation guide
 
-Alpha.6 is the current release for the five public packages; Vue stays private at alpha.4. Publication and registry acceptance are tracked in the [alpha.6 release record](../releases/0.1.0-alpha.6.md). The published alpha.5 [release record](../releases/0.1.0-alpha.5.md) and [manifest](../releases/0.1.0-alpha.5.json) remain as historical evidence.
+Alpha.6 was published on 2026-10-25. The five public packages use `0.1.0-alpha.6`; Vue stays private at alpha.4. The [CI release](https://github.com/0disoft/saylo/actions/runs/40131860171) and [CI-approved manifest](../releases/0.1.0-alpha.6.json) record publication and artifact integrity. The [alpha.6 release record](../releases/0.1.0-alpha.6.md) records the completed registry acceptance. The published alpha.5 [release record](../releases/0.1.0-alpha.5.md) and [manifest](../releases/0.1.0-alpha.5.json) remain as historical evidence.
 
 This directory holds Saylo's design contracts and local validation records. Design drafts are mixed with current behavior that has already been implemented and validated, so if the documents and the actual code disagree, the current code in `packages/*/README.md` and `packages/*/src` takes precedence. In this directory, `proposal`, `goal`, `unresolved`, and `unvalidated` describe design intent, while labels such as `local implementation complete` indicate the scope of validation that was run. [08-update-protocol.md](08-update-protocol.md) is the single source of truth for the update wire, and measured and directly verified records are in [06-validation-and-roadmap.md](06-validation-and-roadmap.md).
 
@@ -141,7 +141,7 @@ The existing detailed history of validation and the roadmap is preserved in [06-
 
 ## Writing principles
 
-The current release scope is in the [alpha.6 release record](../releases/0.1.0-alpha.6.md). The earlier [alpha.5 candidate plan](../releases/0.1.0-alpha.5-plan.md) remains historical evidence. Read candidate validation, version promotion, npm publication, and registry consumer acceptance as separate states.
+The current release is documented in the [alpha.6 release record](../releases/0.1.0-alpha.6.md). The earlier [alpha.5 candidate plan](../releases/0.1.0-alpha.5-plan.md) remains historical evidence. Read candidate validation, version promotion, npm publication, and registry consumer acceptance as separate states.
 
 - Write document prose in clear English.
 - Do not state that a feature is available before it has been built.
