@@ -303,7 +303,9 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (isTypegenFile(file)) return [];
       if (!live?.owns(file)) return;
       if (this.environment && this.environment.name !== 'client') return [];
-      if (context.modules.length) context.server.config.logger.warn(`[saylo] Managed catalog is directly imported: ${file}. Use virtual:saylo.`);
+      // Watch-only nodes (for example CSS content scans) have no resolved import ID.
+      const directlyImported = context.modules.some(module => module.id !== null && module.file !== null && path.resolve(module.file) === file);
+      if (directlyImported) context.server.config.logger.warn(`[saylo] Managed catalog is directly imported: ${file}. Use virtual:saylo.`);
       if (context.type === 'create') await live.enqueueAdded(file);
       else await live.enqueue(file, context.type === 'update' ? context.read : undefined);
       return [];

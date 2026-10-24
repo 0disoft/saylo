@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
-import { build, createServer } from 'vite';
+import { build, createServer, normalizePath } from 'vite';
 import saylo from '../dist/index.js';
 
 async function fixture(t) {
@@ -50,6 +50,35 @@ test('Vite SSR dev requests see current catalogs without invalidating the server
   assert.ok(ko.boot.includes('ko_SSR') && !ko.boot.includes('ko_UPDATED'));
   await server.close();
   await assert.rejects(module.render('ko'), /unavailable|closed/);
+});
+
+test('catalog watch-only nodes do not warn, but resolved JSON imports still do', async t => {
+  const { root, config } = await fixture(t);
+  const server = await createServer({ ...config, server: { middlewareMode: true, watch: null },
+    optimizeDeps: { noDiscovery: true } });
+  t.after(() => server.close());
+  const warnings = [];
+  server.config.logger.warn = message => warnings.push(message);
+  const plugin = config.plugins[0];
+  const environment = server.environments.client;
+  const file = path.join(root, 'locales', 'ko', 'demo.json');
+  const watched = environment.moduleGraph.createFileOnlyEntry(normalizePath(file));
+  assert.equal(watched.id, null);
+  const change = modules => plugin.hotUpdate.call({ environment }, {
+    type: 'update', file, modules, server, read: () => '{"title":"ko_UPDATED"}',
+  });
+  assert.deepEqual(await change([watched]), []);
+  assert.deepEqual(warnings, []);
+  // Exercise Vite's actual JSON module resolution, including query variants.
+  for (const query of ['', '?raw', '?url']) {
+    await server.transformRequest(`/locales/ko/demo.json${query}`);
+    const modules = [...environment.moduleGraph.getModulesByFile(normalizePath(file))];
+    const imported = modules.find(module => module.id === normalizePath(file) + query);
+    assert.ok(imported);
+    assert.deepEqual(await change([watched, imported]), []);
+    assert.match(warnings.at(-1), /Managed catalog is directly imported/);
+  }
+  assert.equal(warnings.length, 3);
 });
 
 test('Vite production SSR bundle prepares independent requests using static catalog imports', async t => {
