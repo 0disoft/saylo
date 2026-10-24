@@ -1,20 +1,20 @@
-# Saylo Svelte 스타터
+# Saylo Svelte starter
 
-Saylo의 Svelte 5 + Vite 8 스타터다. Saylo 저장소가 이 폴더를 저장소 밖 빈 폴더로 내보내고, 소비 앱은 저장소 workspace 없이 `vendor/`의 로컬 tarball만으로 설치·실행한다. Node 24.x가 필요하다.
+A Svelte 5 + Vite 8 starter for Saylo. The Saylo repository exports this folder to an empty folder outside the repository, and the consuming app installs and runs it using only the local tarballs in `vendor/`, without the repository workspace. Node 24.x is required.
 
-## 내보내기
+## Export
 
-Saylo 저장소 루트에서 실행한다.
+Run from the Saylo repository root.
 
 ```sh
-npm run prepare:starter:svelte -- --out-dir <저장소 밖 빈 폴더>
+npm run prepare:starter:svelte -- --out-dir <empty folder outside the repository>
 ```
 
-대상은 저장소 밖의 빈 폴더여야 한다. 파일이 있으면 덮어쓰지 않고 거부한다. 내보내기는 저장소를 먼저 빌드한 뒤 이 폴더를 복사하고 `vendor/`에 tarball 네 개와 `vendor/manifest.json`을 만든다.
+The target must be an empty folder outside the repository. If it contains files, the export refuses instead of overwriting. The export builds the repository first, copies this folder, and creates four tarballs and `vendor/manifest.json` in `vendor/`.
 
-## 설치와 실행
+## Install and run
 
-내보낸 폴더에서 실행한다.
+Run inside the exported folder.
 
 ```sh
 npm install --ignore-scripts --no-audit --no-fund
@@ -23,25 +23,25 @@ npm run build    # typegen -> svelte-check -> vite build
 npm run preview  # 빌드 결과 127.0.0.1:5200 (strictPort)
 ```
 
-`svelte-check` 4의 peer 범위에 맞춰 TypeScript 6을 사용한다.
+It uses TypeScript 6 to match the peer range of `svelte-check` 4.
 
-## vendor/와 버전
+## vendor/ and versions
 
-`saylo-core.tgz`·`saylo-svelte.tgz`·`saylo-vite.tgz`·`saylo-typegen.tgz`는 로컬 workspace를 `npm pack`으로 묶은 tarball이고 `package.json`이 `file:`로 참조한다.
+`saylo-core.tgz`, `saylo-svelte.tgz`, `saylo-vite.tgz`, and `saylo-typegen.tgz` are local workspace packages packed with `npm pack`, and `package.json` references them with `file:`.
 
-- `vendor/manifest.json`의 `source`는 `local-unpublished`이고 패키지별 `version`·`integrity`가 기록된다.
-- 버전 문자열은 게시본 `0.1.0-alpha.4`와 같지만 바이트는 게시본과 다르다. 로컬 빌드 산출물이라 게시하지 않는다.
+- `source` in `vendor/manifest.json` is `local-unpublished`, and each package's `version` and `integrity` are recorded.
+- The version string matches the published `0.1.0-alpha.4`, but the bytes differ from the published build. These are local build artifacts and are not published.
 
-## 화면 구성
+## Screen structure
 
-- `i18n.ts`가 store와 `setSayloContext`·`getI18nSelector`를 만든다. `App.svelte`는 context로 받은 `$i18n`에서 문구를 읽고, `SelectedLocale.svelte`가 `getI18nSelector(snapshot => snapshot.locale)`로 로케일만 구독한다.
-- `#rich-preview`는 `<RichText parts={text.rich} renderers={{ strong, link }} />`를 그린다. `strong`·`link`는 `App.svelte`의 snippet이고 `link`의 `href`는 `#order-form`이다.
-- `demo-messages.ts`의 `projectMessages`가 rich까지 전부 계산한 뒤 화면을 바꾼다. rich 마커가 어긋나면 `#render-error`에 진단을 띄우고 마지막 정상 문구를 현재 이름으로 다시 보간한다.
-- 첫 화면 로케일은 `en`, 기준 로케일은 `ko`이고 `generated.d.ts`는 `npm run typegen`이 만든다. 이름 인자는 `name || 'Saylo'`다.
-- `main.ts`가 mount한 app과 store를 소유한다. `pagehide`가 `persisted`면 BFCache 복귀를 위해 남기고, 실제 종료면 `unmount(app)` 뒤 `store.dispose()`로 정리한다. Vite HMR dispose도 같은 cleanup을 탄다. `App.svelte`는 `onDestroy`에서 개발 연결을 끊고 세대 번호를 올려 늦은 응답을 버린다.
+- `i18n.ts` creates the store and `setSayloContext` and `getI18nSelector`. `App.svelte` reads messages from `$i18n` received through context, and `SelectedLocale.svelte` subscribes only to the locale through `getI18nSelector(snapshot => snapshot.locale)`.
+- `#rich-preview` renders `<RichText parts={text.rich} renderers={{ strong, link }} />`. `strong` and `link` are snippets in `App.svelte`, and `link` has `href` set to `#order-form`.
+- `projectMessages` in `demo-messages.ts` changes the screen only after computing everything, including rich text. If a rich marker is mismatched, it shows a diagnostic in `#render-error` and re-interpolates the last good message with the current name.
+- The initial screen locale is `en`, the base locale is `ko`, and `npm run typegen` creates `generated.d.ts`. The name argument is `name || 'Saylo'`.
+- `main.ts` owns the mounted app and store. If `pagehide` has `persisted`, it keeps them for BFCache restoration; on a real shutdown it calls `unmount(app)` and then `store.dispose()`. Vite HMR dispose runs the same cleanup. `App.svelte` disconnects development in `onDestroy` and increments a generation number to discard late replies.
 
-## 저장소 검증
+## Repository validation
 
-루트에서 `npm run verify:starter:svelte:local`이 저장소 밖 export, symlink 없는 설치, 타입 템플릿 검사, build, dev·production 브라우저 확인을 한 번에 돌린다. 임시 폴더를 만들어 검사하고 끝나면 지운다.
+At the root, `npm run verify:starter:svelte:local` runs export outside the repository, link-free installation, type template checks, build, and dev and production browser verification in one pass. It creates a temporary folder, checks it, and deletes it when finished.
 
-게시본 설치 안내는 Saylo 저장소의 docs/getting-started-svelte.md를 따른다.
+For published-build installation, see docs/getting-started-svelte.md in the Saylo repository.

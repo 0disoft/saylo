@@ -1,12 +1,12 @@
-# 개발 동기화 상태 (`onSyncState`)
+# Development sync state (`onSyncState`)
 
-## 범위
+## Scope
 
-[`@0disoft/saylo-vite/client`](../packages/vite/README.md)의 `connectDev`가 개발 서버와의 handshake 상태를 `onSyncState(state)`로 알린다. eager 경로(`ConnectDevOptions`)와 lazy 경로(`ConnectLazyDevOptions`)가 같은 `DevSyncState`를 쓴다.
+`connectDev` in [`@0disoft/saylo-vite/client`](../packages/vite/README.md) reports handshake state with the development server through `onSyncState(state)`. The eager path (`ConnectDevOptions`) and lazy path (`ConnectLazyDevOptions`) use the same `DevSyncState`.
 
-이 API는 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에서 제공한다. 현재 npm 게시본 `0.1.0-alpha.4`에는 포함되지 않는다. 후보는 아직 npm에 게시하지 않았다.
+This API is provided in the current checkout and in the `0.1.0-alpha.5` candidate tarball. It is not included in the current npm release `0.1.0-alpha.4`. The candidate has not been published to npm yet.
 
-## 타입
+## Types
 
 ```ts
 interface DevSyncState {
@@ -16,9 +16,9 @@ interface DevSyncState {
 }
 ```
 
-각 state는 `Object.freeze`된 새 객체다. `attempt`는 `connecting`에서 1, `retrying`에서 2·3, `failed`에서 마지막 시도값이고 `idle`·`connected`·`disconnected`·`stopped`에서는 0이다.
+Each state is a new `Object.freeze`d object. `attempt` is 1 in `connecting`, 2 or 3 in `retrying`, and the last attempt value in `failed`; it is 0 in `idle`, `connected`, `disconnected`, and `stopped`.
 
-## 예제
+## Example
 
 ```ts
 import { connectDev } from '@0disoft/saylo-vite/client';
@@ -34,32 +34,32 @@ const disconnect = connectDev(store, {
 });
 ```
 
-## 상태
+## States
 
-| status | 언제 | attempt |
+| status | When | attempt |
 | --- | --- | --- |
-| `idle` | 아직 첫 요청 전 | 0 |
-| `connecting` | 첫 시도 진행 중 | 1 |
-| `retrying` | 재시도 진행 중 | 2·3 |
-| `connected` | 클라이언트가 서버 snapshot(manifest) 수락 | 0 |
-| `disconnected` | 개발 서버 소켓 끊김 | 0 |
-| `failed` | 시도 소진 또는 첫 전송 실패 | 마지막 시도 |
-| `stopped` | stop·dispose 뒤 | 0 |
+| `idle` | Before the first request | 0 |
+| `connecting` | First attempt in progress | 1 |
+| `retrying` | Retry in progress | 2 or 3 |
+| `connected` | Client accepted the server snapshot (manifest) | 0 |
+| `disconnected` | Development server socket closed | 0 |
+| `failed` | Attempts exhausted or the initial send failed | Last attempt |
+| `stopped` | After stop or dispose | 0 |
 
-## 의미와 책임 한계
+## Meaning and responsibility boundaries
 
-`DevSyncState`는 handshake 상태이지 앱 렌더 상태가 아니다. `connected`는 클라이언트가 서버의 eager snapshot 또는 lazy manifest를 수락했다는 뜻이고, 개별 lazy catalog `loadCatalog` 성공이나 화면에 번역이 그려졌다는 뜻이 아니다. 로케일 파일 진단은 `onDiagnostic`이 계속 맡고 `onSyncState`와 별개다.
+`DevSyncState` describes handshake state, not app render state. `connected` means the client accepted the server's eager snapshot or lazy manifest; it does not mean that an individual lazy catalog `loadCatalog` succeeded or that translations were painted on screen. Locale file diagnostics remain the responsibility of `onDiagnostic` and are separate from `onSyncState`.
 
-eager 경로는 production에 hot context가 없으면 `connectDev`가 noop을 돌려주고 상태 콜백을 부르지 않는다. lazy 경로에서 `createDevCatalogSource`가 만든 source는 `getSyncState()`·`subscribeSyncState()`를 제공한다. `DevCatalogSource` 인터페이스에서는 이 둘이 선택 메서드라서 이 API 이전에 작성한 외부 source와 타입 호환이 유지된다. bridge는 `source.getSyncState?.()`·`source.subscribeSyncState?.()`로 접근하므로 두 메서드가 없는 source에서도 동작한다.
+The eager path returns a noop from `connectDev` when there is no hot context in production and does not call the state callback. On the lazy path, the source created by `createDevCatalogSource` provides `getSyncState()` and `subscribeSyncState()`. Both are optional methods on the `DevCatalogSource` interface, preserving type compatibility with external sources written before this API. The bridge accesses them through `source.getSyncState?.()` and `source.subscribeSyncState?.()`, so it works with sources that lack both methods.
 
-`subscribeSyncState`는 구독 시점에 현재 상태를 재생하지 않는다. `connectDev`의 lazy bridge는 구독을 건 뒤 `getSyncState()`로 현재 상태를 한 번 전달하고 그 뒤 변경만 전달한다. `stop()`·`dispose()` 뒤에는 bridge가 콜백을 더 부르지 않는다. source의 `subscribeSyncState`를 직접 건 소비자는 `stopped`를 받을 수 있다.
+`subscribeSyncState` does not replay the current state at subscription time. The lazy bridge in `connectDev` subscribes, passes the current state once from `getSyncState()`, and then forwards only changes. After `stop()` or `dispose()`, the bridge does not call the callback again. Consumers that subscribe directly to the source's `subscribeSyncState` may receive `stopped`.
 
-상태 observer가 던진 예외는 `onDiagnostic`으로 보고하고 handshake·타이머 정리·다른 observer는 계속 진행한다. 첫 전송에서 던지면 상태는 `failed`(attempt 1)가 되고 기존과 같이 `connectDev`가 예외를 다시 던지며 binding을 해제한다.
+Exceptions thrown by a state observer are reported through `onDiagnostic`; the handshake, timer cleanup, and other observers continue. If the observer throws on the initial send, the state becomes `failed` (attempt 1), `connectDev` rethrows the exception as before, and the binding is released.
 
-`LiveDiagnostic`에는 `operation?: 'handshake' | 'observer'`가 있다. `handshake`는 동기화 처리 오류, `observer`는 상태 관측 콜백·eager 갱신 구독자·eager/lazy `onUpdate` 콜백의 오류다. lazy bridge는 `source.getCatalogs()`를 콜백 보호 밖에서 읽고 `onUpdate`만 감싸므로, 최초 `onUpdate`가 던져도 binding이 유지되고 완료된 로케일 전환을 reject하지 않는다. 그 오류를 보고하는 `onDiagnostic`이 던져도 갱신은 이어진다. lazy instance의 다른 직접 구독자(`I18n.subscribe`) 오류는 기존 코어 경로로 전달된다. eager store 갱신에서 발생한 구독자 `AggregateError`는 bridge가 `observer`로 분류한다. 서버가 보내는 카탈로그 진단에는 이 필드가 없다. 예제 UI는 `handshake` 문구만 `connected`에서 해제하고 카탈로그 진단은 따로 유지한다.
+`LiveDiagnostic` has `operation?: 'handshake' | 'observer'`. `handshake` covers synchronization processing errors; `observer` covers errors in state observation callbacks, eager update subscribers, and eager/lazy `onUpdate` callbacks. The lazy bridge reads `source.getCatalogs()` outside callback protection and wraps only `onUpdate`, so a throwing initial `onUpdate` keeps the binding and does not reject a completed locale switch. If `onDiagnostic`, which reports that error, also throws, the update still continues. Errors from other direct subscribers of the lazy instance (`I18n.subscribe`) go through the existing core path. The bridge classifies an `AggregateError` from an eager store update subscriber as `observer`. Catalog diagnostics sent by the server do not have this field. The example UI clears only the `handshake` text on `connected` and keeps catalog diagnostics separate.
 
-현재 checkout에서는 `onDiagnostic`의 동기 예외가 동기화를 중단하지 않도록 격리한다. eager의 첫 갱신·store 구독자 오류 보고 중 진단 콜백이 던져도 이미 커밋한 revision과 binding을 유지한다. 같은 소켓의 다른 eager store와 `DevCatalogSource.subscribeDiagnostic`의 다른 구독자도 원래 진단을 계속 받는다. lazy bridge는 외부 source가 stop 뒤 이미 예약된 진단 콜백을 호출해도 해제된 binding에서는 무시한다. 진단 콜백 자신의 오류를 같은 콜백으로 다시 보고하거나 콘솔에 자동 출력하지 않는다. async 콜백의 rejected Promise는 이 동기 예외 보호 범위 밖이므로 소비자가 처리해야 한다. 이 격리는 게시본 alpha.4 이후 변경이며 최종 릴리스 후보에 포함해 검증해야 한다.
+In the current checkout, synchronous exceptions from `onDiagnostic` are isolated so they do not stop synchronization. If the diagnostic callback throws while reporting an eager initial update or store subscriber error, the committed revision and binding are preserved. Other eager stores on the same socket and other subscribers of `DevCatalogSource.subscribeDiagnostic` still receive the original diagnostic. When an external source on the lazy bridge invokes an already scheduled diagnostic callback after stop, it is ignored on the released binding. Errors from the diagnostic callback itself are not reported back through the same callback or printed automatically to the console. Rejected Promises from async callbacks are outside this synchronous exception protection and must be handled by the consumer. This isolation is a change after the alpha.4 published build and must be validated before the final release candidate.
 
-`DevCatalogSource.subscribeManifest`의 동기 예외도 `observer` 진단으로 보고한다. 정상 manifest 수락을 취소하거나 재요청하지 않고, 다른 구독자 알림과 처음 대기하던 카탈로그 요청을 계속 처리한다. 알림 도중 구독을 해제하거나 source를 폐기하면 아직 호출하지 않은 해당 구독자는 건너뛴다. manifest 내용 자체의 검증 실패는 기존 `handshake` 오류 처리로 남는다.
+A synchronous exception from `DevCatalogSource.subscribeManifest` is also reported as an `observer` diagnostic. It does not cancel acceptance of a valid manifest or trigger a new request; other subscriber notifications and the initially awaited catalog request continue. If a subscription is removed or the source is disposed during notification, that subscriber is skipped if it has not been called yet. Validation failures in the manifest contents themselves remain under the existing `handshake` error handling.
 
-재시도 정책은 바뀌지 않았다. 요청당 기본 타임아웃 5000ms(`requestTimeoutMs`), 최대 3회 시도, 새 소켓 연결이나 응답 갭에서 재시도한다. 수동 재시도 API는 없다.
+The retry policy is unchanged. The default per-request timeout is 5000 ms (`requestTimeoutMs`), with up to 3 attempts; retries happen on a new socket connection or a response gap. There is no manual retry API.

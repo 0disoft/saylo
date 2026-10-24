@@ -1,23 +1,23 @@
-# Saylo npm 예제 (Vite + vanilla JS)
+# Saylo npm example (Vite + vanilla JS)
 
-프레임워크 없이 Vite 8 위에서 게시된 npm 패키지를 그대로 설치해 쓰는 standalone 예제다. `@0disoft/saylo-core`와 `@0disoft/saylo-vite`를 npm registry에서 받아 쓰며, 개발 서버에서 로케일 JSON만 고치면 화면 문구가 즉시 바뀐다. Saylo 패키지를 다시 컴파일하지 않는다.
+A standalone example that installs the published npm packages as-is and uses them on Vite 8 without a framework. It gets `@0disoft/saylo-core` and `@0disoft/saylo-vite` from the npm registry, and editing only the locale JSON in the development server updates the on-screen text immediately. It does not recompile the Saylo packages.
 
-## 요구 사항
+## Requirements
 
-- Node.js 24.x, npm
+- Node.js 24.x and npm
 
-## 의존성
+## Dependencies
 
-| 구분 | 패키지 |
+| Kind | Package |
 | --- | --- |
 | dependencies | `@0disoft/saylo-core@alpha` |
 | devDependencies | `@0disoft/saylo-vite@alpha`, `vite@8` |
 
-이 예제는 루트 workspace에 속하지 않는 독립 `private` 패키지다. `workspaces`를 쓰지 않고, `file:`·`workspace:`·alias 링크 없이 npm registry에 게시된 실물 패키지를 설치한다. 그래서 루트 빌드가 필요 없다.
+This example is an independent `private` package that does not belong to the root workspace. It does not use `workspaces` and installs the actual packages published on the npm registry without `file:`, `workspace:`, or alias links. A root build is therefore not required.
 
-`package.json`은 `alpha` tag를 사용하고, 현재 lockfile은 core·Vite·Vite의 전이 의존성 typegen을 `0.1.0-alpha.4`로 잠근다. `npm ci --workspaces=false`는 이 lockfile을 재현한다. tag가 이동한 뒤 새 게시본을 받으려면 `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false`를 실행한다.
+`package.json` uses the `alpha` tag. The current lockfile pins core, Vite, and Vite's transitive dependency typegen to `0.1.0-alpha.4`. `npm ci --workspaces=false` reproduces this lockfile. After the tag moves, run `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false` to install new published builds.
 
-## 실행
+## Run
 
 ```sh
 cd examples/npm
@@ -27,85 +27,85 @@ npm run build    # production 빌드
 npm run preview  # 빌드 결과 미리보기 (127.0.0.1:5189)
 ```
 
-`npm run dev`는 127.0.0.1:5188에서 고정 포트로 뜬다.
+`npm run dev` starts on the fixed port 127.0.0.1:5188.
 
-## 화면 구성
+## Screen structure
 
-Vite 플러그인은 `saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', timeZone: 'UTC' })`로 붙이고, 앱은 `virtual:saylo`의 eager 값으로 store를 만든다.
+The Vite plugin is attached with `saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', timeZone: 'UTC' })`, and the app creates the store from eager values in `virtual:saylo`.
 
-개발 연결은 앱 모듈의 `import.meta.hot`을 `connectDev(store, { hot: import.meta.hot, onUpdate, onDiagnostic })`로 넘겨 현재 앱 모듈의 Vite hot context를 보장한다. 런타임은 설치된 npm 패키지를 쓰므로 Saylo를 다시 빌드하지 않고 JSON만 수정하면 된다.
+The development connection passes the app module's `import.meta.hot` to `connectDev(store, { hot: import.meta.hot, onUpdate, onDiagnostic })` to ensure the current app module's Vite hot context. The runtime uses the installed npm packages, so you only need to edit JSON, not rebuild Saylo.
 
-화면 요소는 `#locale` 선택, 기본값 `Saylo`인 `#name` 입력, `#note` textarea, `#open-dialog` 버튼, `#confirmation` dialog와 그 안의 `#dialog-note`, `#close-dialog` 버튼, `role="status"`인 `#status`다. 번역할 문구는 `h1`·`h2`·`p`·`label` 안의 `span`·`button`의 `data-i18n`에 `demo:heading` 같은 완전 키로 붙는다.
+The screen elements are the `#locale` selector, the `#name` input defaulting to `Saylo`, the `#note` textarea, the `#open-dialog` button, the `#confirmation` dialog with its `#dialog-note` and `#close-dialog` button, and `#status` with `role="status"`. Translated text is attached to `data-i18n` on `span` and `button` elements inside `h1`, `h2`, `p`, and `label` with fully qualified keys such as `demo:heading`.
 
-## 로케일 키
+## Locale keys
 
-`locales/ko/demo.json`과 `locales/en/demo.json`은 같은 8개 키를 쓴다.
+`locales/ko/demo.json` and `locales/en/demo.json` use the same eight keys.
 
-| 키 | 쓰임 |
+| Key | Use |
 | --- | --- |
-| `heading` | 페이지 제목 `h1` |
-| `greeting` | 이름을 넣는 인사 문구 (`{name}`) |
-| `nameLabel` | 이름 입력 라벨 |
-| `noteLabel` | 메모 입력 라벨 |
-| `openDialog` | 확인 창 열기 버튼 |
-| `dialogTitle` | dialog 제목 (`{name}`) |
-| `dialogNoteLabel` | dialog 메모 라벨 |
-| `closeDialog` | 닫기 버튼 |
+| `heading` | Page title `h1` |
+| `greeting` | Greeting with a name argument (`{name}`) |
+| `nameLabel` | Name input label |
+| `noteLabel` | Note input label |
+| `openDialog` | Button that opens the confirmation dialog |
+| `dialogTitle` | Dialog title (`{name}`) |
+| `dialogNoteLabel` | Dialog note label |
+| `closeDialog` | Close button |
 
-`greeting`과 `dialogTitle`만 `{name}` 인자를 쓴다. 앱은 모든 `data-i18n` 노드를 `snapshot.t(key, { name: nameInput.value || 'Saylo' })`로 채우므로, 인자가 없는 키에는 여분의 `name`이 무시되고 `{name}`을 쓰는 키에는 항상 값이 들어간다.
+Only `greeting` and `dialogTitle` use the `{name}` argument. The app fills every `data-i18n` node with `snapshot.t(key, { name: nameInput.value || 'Saylo' })`, so the extra `name` is ignored for keys without arguments, and keys using `{name}` always receive a value.
 
-## 라이브 수정 확인
+## Verify live edits
 
-1. `npm run dev`로 연 뒤 `#name`에 이름을 입력한다.
-2. `locales/en/demo.json`의 `heading`을 `"Live update from npm"`으로 바꾸고 저장한다. 페이지는 처음부터 `en`으로 뜨므로 `h1` 문구가 즉시 바뀌고 `#name` 입력값은 그대로 남는다.
-3. `#open-dialog`로 dialog를 열고 `#dialog-note`에 값을 입력한 채로 같은 JSON을 다시 저장한다. 열린 dialog 안의 문구가 갱신되고 입력값과 dialog 열림 상태는 유지된다.
-4. `locales/ja/demo.json`을 추가하고 `en`과 같은 키를 넣는다. `#locale` 선택에 `ja`가 나타나고, 고르면 넣은 키 값대로 문구가 바뀐다.
+1. Start `npm run dev` and enter a name in `#name`.
+2. Change `heading` in `locales/en/demo.json` to `"Live update from npm"` and save. The page initially loads in `en`, so the `h1` text changes immediately and the `#name` input value stays as it is.
+3. Open the dialog with `#open-dialog`, enter a value in `#dialog-note`, and save the same JSON again. The text inside the open dialog updates, and the input value and dialog open state are preserved.
+4. Add `locales/ja/demo.json` with the same keys as `en`. `ja` appears in the `#locale` selector, and selecting it changes the text to the values you added.
 
-키를 지우거나 필수 인자를 추가하지 않는 정상 편집은 기준 스키마를 유지하므로 위처럼 폼·dialog 상태가 보존된다. 키 삭제나 필수 인자 추가처럼 스키마를 깨는 편집은 이 보존 범위 밖이다.
+A normal edit that does not delete keys or add required arguments preserves the base schema, so form and dialog state are preserved as described above. Edits that break the schema, such as deleting a key or adding a required argument, are outside this preservation scope.
 
-## 검증 범위
+## Validation scope
 
-### 예제 오류 안내와 뒤로가기 캐시 수명 (2026-10-11, checkout)
+### Example error guidance and back-forward cache lifetime (2026-10-11, checkout)
 
-게시된 Saylo 패키지는 바뀌지 않았다. 아래 두 항목은 이 예제 checkout의 변경이고 library API·패키지 버전은 그대로다. 첫 항목은 실브라우저 관측이고, 두 번째 항목만 `npm run verify:demo:npm` 자동 회귀 대상이다.
+The published Saylo packages did not change. The two items below are changes in this example's checkout; the library API and package versions are unchanged. The first item is a real-browser observation, and only the second is covered by the automated `npm run verify:demo:npm` regression.
 
-- 오류 안내 유지(`1336aa5`): 실브라우저에서 `locales/en/demo.json`을 깨뜨리고, 겹치지 않는 정상 `locales/ko/demo.json`을 저장한 뒤 `en`을 복구했다. 수정 전에는 무관한 저장 뒤 안내가 `Connected`로 덮였고, 수정 후에는 진단이 파일을 고칠 때까지 남았다가 복구하면 `Connected`로 돌아온다. 열린 dialog 안 `role="status"` 안내, dialog `aria-labelledby`, last-good 문구·입력·포커스 유지가 모두 PASS다. 근거는 [npm 예제 오류 복구 검증 기록](../../review/npm-demo-error-recovery-2026-10-11.json)에 있다. 이 오류 안내 관측은 실브라우저 기록이며 자동화 회귀 검사가 아니다.
-- 뒤로가기 캐시 수명: production 번들과 jsdom에서 `PageTransitionEvent(persisted: true)` → `pageshow` → `#locale` change를 재현했을 때, 기존 `pagehide` cleanup이 선택은 `ko`인데 화면은 `en`으로 남는 상태를 만들었고 exit 1로 재현했다. `pagehide`에서 `event.persisted`가 false일 때만 cleanup하도록 고쳤다.
+- Error guidance retention (`1336aa5`): In a real browser, broke `locales/en/demo.json`, saved a non-overlapping valid `locales/ko/demo.json`, and then restored `en`. Before the fix, saving the unrelated file overwrote the guidance with `Connected`; after the fix, the diagnostic remained until the file was fixed and returned to `Connected` on recovery. Guidance in the open dialog with `role="status"`, the dialog `aria-labelledby`, last-good text, input, and focus all PASS. Evidence is in [npm example error recovery validation](../../review/npm-demo-error-recovery-2026-10-11.json). This error-guidance observation is a real-browser record, not an automated regression test.
+- Back-forward cache lifetime: When reproducing `PageTransitionEvent(persisted: true)` → `pageshow` → `#locale` change in the production bundle and jsdom, the existing `pagehide` cleanup produced a state where the selection was `ko` but the screen remained `en`, and it reproduced with exit 1. The fix cleans up only when `event.persisted` is false in `pagehide`.
 
-`npm run verify:demo:npm`이 캐시 수명 회귀 2사례를 확인한다. 루트 `npm ci`(jsdom용)와 `examples/npm`의 `npm ci --workspaces=false`가 각각 필요하고, `examples/npm` 의존성이 있어야 standalone build가 돈다. `scripts/test/npm-demo-lifecycle.test.mjs`가 모델 DOM 검사 2개를 돌린다. 검사는 (1) 캐시된 history 복귀 뒤에도 `ko` 문구와 `#name` 입력이 계속 동작하는지, (2) non-persisted disposal이 반복돼도 안전한지다. 현재 PASS 2 tests다.
+`npm run verify:demo:npm` checks two cache-lifetime regression cases. It requires the root `npm ci` (for jsdom) and `examples/npm`'s `npm ci --workspaces=false`; the standalone build requires the dependencies in `examples/npm`. `scripts/test/npm-demo-lifecycle.test.mjs` runs two model DOM checks. The checks are (1) whether `ko` text and the `#name` input keep working after returning through cached history, and (2) whether repeated non-persisted disposal is safe. Currently PASS 2 tests.
 
-실제 브라우저의 BFCache 채택 여부, 새로고침 뒤 draft 영속 저장, 라이브 연결의 BFCache 동작은 확인하지 않았다.
+Whether real browsers adopt BFCache, draft persistence across reload, and live-connection behavior under BFCache were not checked.
 
-### alpha.4 설치·빌드·라이브 수정 (2026-10-11)
+### alpha.4 install, build, and live edits (2026-10-11)
 
-Windows, Node 24.18.0, Vite 8.3.3에서 실행했다. 이 예제가 쓰는 core·Vite·typegen은 `0.1.0-alpha.4`다.
+Run on Windows, Node 24.18.0, Vite 8.3.3. The core, Vite, and typegen used by this example are `0.1.0-alpha.4`.
 
-- `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false --ignore-scripts --no-audit --no-fund`가 exit 0으로 끝났다. `package.json`의 `alpha` tag는 그대로이고, Saylo 세 패키지 밖 서드파티 lockfile 항목과 키는 갱신 전후가 완전히 같다.
-- 같은 옵션의 `npm ci --workspaces=false --ignore-scripts --no-audit --no-fund`가 exit 0이다. 세 패키지는 registry 실물 tarball로 설치되고 symlink가 아니며, realpath는 예제의 `node_modules` 안쪽이다. 설치본 integrity는 [승인 manifest](../../releases/0.1.0-alpha.4.json)와 일치했다.
-- `npm run build`가 exit 0이다. 45 modules, 출력 JavaScript 28.23 kB(gzip 10.09 kB). 루트 workspace 빌드 없이 게시본만 사용했다.
-- IAB 실브라우저(`http://127.0.0.1:5188`)에서 dialog를 열고 `#name`에 `Alpha4`, `#note`에 `keep note alpha4`, `#dialog-note`에 `PreserveAlpha4`를 넣었다. 첫 저장 뒤 5ms를 기다려 서로 다른 내용으로 두 번째 저장을 했다. 화면 문구는 `Rapid2 final save`, dialog 제목은 `Rapid2 final, Alpha4`로 최종 반영됐고, 세 입력값과 dialog 열림·포커스는 유지됐다.
-- `locales/ja/demo.json`을 추가했을 때 `#locale` 목록이 `en`·`ja`·`ko`가 됐고, 열린 dialog의 입력값과 열림·포커스는 유지됐다. `#close-dialog`로 닫고 `ja`를 고른 뒤 다시 열면 `h1`이 `Alpha4 Japanese catalog`, dialog 제목이 `Japanese catalog, Alpha4`로 뜨고 세 입력값도 유지됐다. console warn/error는 없었다.
-- 사전 첫 visible 관측과 복원 중 `#dialog-note`가 입력 간섭처럼 변한 관측은 상태 보존 판정에 넣지 않았다. 복원 과정에서 본 `ja` 삭제 후 `ko` fallback도 관측으로만 남긴다. 임시로 고친 `en` JSON은 원래 bytes로 되돌리고 `ja` 파일 삭제, 브라우저 탭 close, 개발 서버 stop까지 마쳤다.
+- `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false --ignore-scripts --no-audit --no-fund` exited 0. The `alpha` tag in `package.json` stayed the same, and third-party lockfile entries and keys outside the three Saylo packages were exactly the same before and after.
+- `npm ci --workspaces=false --ignore-scripts --no-audit --no-fund` with the same options exited 0. The three packages were installed as real registry tarballs, not symlinks, and realpath is inside the example's `node_modules`. Installed integrity matched the [approved manifest](../../releases/0.1.0-alpha.4.json).
+- `npm run build` exited 0. 45 modules, output JavaScript 28.23 kB (gzip 10.09 kB). It used only published builds, without a root workspace build.
+- In the IAB real browser (`http://127.0.0.1:5188`), opened the dialog and put `Alpha4` in `#name`, `keep note alpha4` in `#note`, and `PreserveAlpha4` in `#dialog-note`. After the first save, waited 5 ms and saved different content a second time. The screen text finally reflected `Rapid2 final save`, and the dialog title `Rapid2 final, Alpha4`; all three input values and the dialog open state and focus were preserved.
+- After adding `locales/ja/demo.json`, the `#locale` list became `en`, `ja`, `ko`, and the open dialog's input value, open state, and focus were preserved. After closing with `#close-dialog`, selecting `ja`, and reopening, `h1` showed `Alpha4 Japanese catalog` and the dialog title `Japanese catalog, Alpha4`, and all three input values were preserved. There were no console warnings or errors.
+- Observations where `#dialog-note` appeared to change as if by input interference before the first visible check and during restoration were not counted in the state-preservation verdict. The `ja` deletion followed by `ko` fallback seen during restoration is also recorded only as an observation. The temporarily modified `en` JSON was restored to its original bytes, the `ja` file was deleted, the browser tab was closed, and the development server was stopped.
 
-근거는 [npm 예제 alpha.4 검증 기록](../../review/npm-example-alpha4-2026-10-11.json)에 있다. `npm run preview`는 실행하지 않았고 새 성능 수치도 측정하지 않았다.
+Evidence is in [npm example alpha.4 validation record](../../review/npm-example-alpha4-2026-10-11.json). `npm run preview` was not run, and no new performance numbers were measured.
 
-### alpha.2 설치·빌드 (2026-10-09)
+### alpha.2 install and build (2026-10-09)
 
-Windows, Node 24.18.0, npm 12.0.2, Vite 8.3.3에서 실행했다.
+Run on Windows, Node 24.18.0, npm 12.0.2, Vite 8.3.3.
 
-- `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false --ignore-scripts --no-audit --no-fund`로 Saylo 세 패키지만 alpha.2로 갱신했다. `package.json`의 `alpha` tag와 서드파티 lockfile 항목은 유지했다.
-- 갱신한 lockfile로 `npm ci --workspaces=false --ignore-scripts --no-audit --no-fund`를 통과했다. core·Vite·typegen의 설치 버전은 모두 `0.1.0-alpha.2`이고, registry tarball URL·integrity가 [승인 manifest](../../releases/0.1.0-alpha.2.json)와 일치했다. 세 패키지 모두 symlink가 아니며 realpath는 예제의 `node_modules` 안쪽이다.
-- `npm run build` 통과: 44 modules, 출력 JavaScript 28.11 kB(gzip 10.05 kB). 루트 workspace 빌드 없이 게시본만 사용했다.
-- 이번에는 개발 서버·브라우저·preview를 실행하지 않았다. 아래 라이브 수정 기록은 alpha.1에서 수행한 과거 검증이다. 별도 alpha.2 외부 소비·SvelteKit 브라우저 검증은 [릴리스 기록](../../releases/0.1.0-alpha.2.md)을 따른다.
+- `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false --ignore-scripts --no-audit --no-fund` updated only the three Saylo packages to alpha.2. The `alpha` tag in `package.json` and third-party lockfile entries were preserved.
+- `npm ci --workspaces=false --ignore-scripts --no-audit --no-fund` passed with the updated lockfile. The installed versions of core, Vite, and typegen were all `0.1.0-alpha.2`, and the registry tarball URLs and integrity matched the [approved manifest](../../releases/0.1.0-alpha.2.json). All three packages were not symlinks, and realpath was inside the example's `node_modules`.
+- `npm run build` passed: 44 modules, output JavaScript 28.11 kB (gzip 10.05 kB). It used only published builds, without a root workspace build.
+- The development server, browser, and preview were not run this time. The live-edit record below is past validation performed on alpha.1. See the [release record](../../releases/0.1.0-alpha.2.md) for separate alpha.2 external consumer and SvelteKit browser validation.
 
-### alpha.1 라이브 수정 (2026-10-06)
+### alpha.1 live edits (2026-10-06)
 
-2026-10-06 Windows, Node 24.18.0, Vite 8.3.3에서 실행한 결과다.
+Results from Windows, Node 24.18.0, Vite 8.3.3 on 2026-10-06.
 
-- 설치: `npm install --workspaces=false --ignore-scripts --no-audit --no-fund` 성공. `@0disoft/saylo-core`·`saylo-vite`·`saylo-typegen` 모두 registry의 `0.1.0-alpha.1`로 들어왔고, symlink가 아니라 realpath가 `examples/npm/node_modules` 안쪽이다.
-- 빌드: `npm run build` 성공.
-- 브라우저: IAB 실브라우저에서 `locales/en/demo.json`의 `heading`을 고치면 화면이 즉시 갱신되고 `#name`·메모 입력값은 유지됐다. dialog를 연 채 `dialogTitle`을 고치면 문구가 바뀌고 dialog 열림 상태와 `#dialog-note` 입력값이 유지됐다. `locales/ja/demo.json`을 추가하면 `#locale` 선택 목록에 `ja`가 나타나고, 전환해도 입력값이 유지됐다. console warn/error는 없었다.
-- 이 검증의 `ja` 카탈로그는 `heading`·`dialogTitle`에 일본어를 넣고 나머지 키는 `en` 값을 복제했다.
-- 임시로 고친 `en` 파일과 추가한 `ja` 파일은 원래대로 복원·삭제했다.
+- Install: `npm install --workspaces=false --ignore-scripts --no-audit --no-fund` succeeded. `@0disoft/saylo-core`, `saylo-vite`, and `saylo-typegen` all came from the registry at `0.1.0-alpha.1`, and they were not symlinks; realpath was inside `examples/npm/node_modules`.
+- Build: `npm run build` succeeded.
+- Browser: In the IAB real browser, editing `heading` in `locales/en/demo.json` updated the screen immediately and preserved the `#name` and note input values. Editing `dialogTitle` with the dialog open changed the text and preserved the dialog open state and the `#dialog-note` input value. Adding `locales/ja/demo.json` made `ja` appear in the `#locale` selector, and switching preserved the input values. There were no console warnings or errors.
+- The `ja` catalog in this validation used Japanese for `heading` and `dialogTitle` and copied the `en` values for the other keys.
+- The temporarily modified `en` file and the added `ja` file were restored and deleted.
 
-`npm run preview`는 실행하지 않았다.
+`npm run preview` was not run.

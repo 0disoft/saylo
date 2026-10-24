@@ -1,37 +1,37 @@
-# React 데모
+# React demo
 
-Saylo Vite 플러그인을 React 19와 TypeScript로 쓰는 예제다. `examples/vanilla/locales`의 같은 카탈로그와 기존 스타일을 공유하고, 입력값·수량·모달은 React state로 관리한다. 명령은 저장소 루트에서 실행한다.
+An example that uses the Saylo Vite plugin with React 19 and TypeScript. It shares the same catalogs and existing styles as `examples/vanilla/locales`, and manages input values, count, and the modal with React state. Run commands from the repository root.
 
-## 개발 서버
+## Development server
 
 ```sh
 npm run dev:react
 ```
 
-전체 스키마와 전체 카탈로그를 쓰고, `examples/vanilla/locales/`의 파일을 저장하면 화면에 바로 반영한다. 개발 서버는 `--mode`를 주지 않으므로 `includeKeys` 없이 전체 카탈로그를 제공한다.
+It uses the full schema and full catalog, and saving files in `examples/vanilla/locales/` applies them to the screen immediately. The development server is run without `--mode`, so it serves the full catalog without `includeKeys`.
 
-## 운영 빌드
+## Production build
 
-기본 빌드는 메시지를 모두 담아 `examples/react/dist/`에 쓴다.
+The default build includes all messages and writes to `examples/react/dist/`.
 
 ```sh
 npm run build:react
 ```
 
-선택 빌드는 `selected-keys.mts`의 `demoKeys`에 있는 키만 담아 `examples/react/dist-selected/`에 쓴다.
+The selective build includes only the keys in `demoKeys` from `selected-keys.mts` and writes to `examples/react/dist-selected/`.
 
 ```sh
 npm run build:react:selected
 npm run preview:react:selected
 ```
 
-`preview:react:selected`는 `examples/react/dist-selected/`를 127.0.0.1에서 띄운다. 두 빌드 모두 `npm run typegen:react`로 전체 base schema를 생성하고, `tsc -p examples/react/tsconfig.json`으로 데모 TS를 검사한 뒤 Vite로 번들한다.
+`preview:react:selected` serves `examples/react/dist-selected/` on 127.0.0.1. Both builds generate the full base schema with `npm run typegen:react`, check the demo TypeScript with `tsc -p examples/react/tsconfig.json`, and then bundle with Vite.
 
-이 화면은 `demoKeys`의 14개 키를 모두 쓴다. 기본 빌드와 선택 빌드 모두 그 14개를 담고, fixture가 쓰지 않는 키를 하나 더해 선택 빌드가 그 키를 빼는지 확인한다.
+This screen uses all 14 keys in `demoKeys`. Both the default and selective builds include those 14; the fixture adds one key the screen does not use to confirm that the selective build drops it.
 
-## 선택 키 관리
+## Selective key management
 
-`demoKeys`는 이 화면이 실제로 쓰는 키를 손으로 적어 둔 목록이다. `examples/react/selected-keys.mts`에서 `readonly` tuple로 두고 `satisfies readonly (keyof AppSchema)[]`로 생성 타입과 맞춘다. 여기서 `AppSchema`는 `generated.d.ts`의 전체 base schema다. 파일을 `.mts`로 둬서 Node 24의 native TS stripping과 Vite native config 모듈 경고를 피한다.
+`demoKeys` is a hand-written list of the keys this screen actually uses. It is a `readonly` tuple in `examples/react/selected-keys.mts` and is matched to the generated types with `satisfies readonly (keyof AppSchema)[]`. Here `AppSchema` is the full base schema from `generated.d.ts`. Keeping the file as `.mts` avoids Node 24 native TypeScript stripping and the Vite native config module warning.
 
 ```ts
 // examples/react/selected-keys.mts
@@ -47,7 +47,7 @@ export const demoKeys = Object.freeze([
 export type DemoSchema = Pick<AppSchema, typeof demoKeys[number]>;
 ```
 
-`vite.config.mjs`는 같은 `demoKeys`를 `./selected-keys.mts`에서 import해 `--mode selected`일 때만 `includeKeys`로 넘긴다. 기본 빌드와 개발 서버는 `includeKeys`를 넘기지 않아 전체 카탈로그를 그대로 쓴다.
+`vite.config.mjs` imports the same `demoKeys` from `./selected-keys.mts` and passes them as `includeKeys` only when `--mode selected`. The default build and development server do not pass `includeKeys`, so they use the full catalog unchanged.
 
 ```mjs
 // examples/react/vite.config.mjs
@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => createDemoConfig({
 }));
 ```
 
-화면 타입도 같은 목록으로 좁힌다. `i18n.ts`가 `createI18n<DemoSchema>`와 `createSayloReact<DemoSchema>`로 store와 hook을 만든다. 타입 import·export 경로는 `./selected-keys.mjs`로 적는다(tsc가 `.mts` 소스로 해석한다).
+The screen types are narrowed with the same list. `i18n.ts` creates the store and hooks with `createI18n<DemoSchema>` and `createSayloReact<DemoSchema>`. Type import and export paths use `./selected-keys.mjs` (tsc resolves it to the `.mts` source).
 
 ```ts
 // examples/react/i18n.ts
@@ -70,26 +70,26 @@ export const store = createI18n<DemoSchema>({ catalogSource, locale: initialLoca
 export const { SayloProvider, useI18n } = createSayloReact<DemoSchema>();
 ```
 
-`tsc`는 Vite `--mode`와 무관하게 돈다. 그래서 이 화면 계약은 개발·기본·선택 빌드에 모두 적용되고, `demoKeys`에 없는 키를 코드에서 부르면 선택 빌드가 아니어도 거부된다. `generated.d.ts`는 선택 빌드에서도 전체 base schema 그대로이고, `typegen:react`는 `includeKeys`를 받지 않는다.
+`tsc` runs independently of Vite `--mode`. This screen contract therefore applies to development, default, and selective builds; calling a key not in `demoKeys` from code is rejected even outside a selective build. `generated.d.ts` remains the full base schema in selective builds, and `typegen:react` does not receive `includeKeys`.
 
-동적 키는 `keyof DemoSchema`로만 다룬다. 키를 `string`으로 넓혀 넘기면 컴파일에서 거부된다. `as keyof DemoSchema`처럼 캐스팅하면 그 검사를 건너뛰므로, 캐스팅으로 넘긴 키가 선택 빌드에서 빠져 있으면 런타임 `UnknownMessageError`로만 드러난다. 화면에 키를 더하거나 빼면 `demoKeys`도 같이 고치고 다시 빌드한다. `includeKeys`는 게시본 `0.1.0-alpha.4`에는 없고, 이 기능이 추가되기 전 커밋 `2037f9a` 기준으로 동결한 `0.1.0-alpha.5` 후보 tarball에도 없다. 아직 게시되지 않은 기능이다.
+Handle dynamic keys only as `keyof DemoSchema`. Passing a key widened to `string` is rejected at compile time. A cast such as `as keyof DemoSchema` skips that check, so a cast key missing from a selective build is exposed only as a runtime `UnknownMessageError`. When adding or removing screen keys, update `demoKeys` and rebuild. `includeKeys` is not in the published `0.1.0-alpha.4`, and it is also absent from the `0.1.0-alpha.5` candidate tarball frozen at commit `2037f9a`, before this feature was added. It is not published yet.
 
-## rich text 미리보기
+## Rich text preview
 
-공유 카탈로그 `examples/vanilla/locales/ko/demo.json`과 `en/demo.json`에 rich 키를 더한다. 한국어는 `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`이고, 영어는 `<strong>{name}</strong>, review <link>your order</link>.`이다.
+Add rich keys to the shared catalogs `examples/vanilla/locales/ko/demo.json` and `en/demo.json`. Korean is `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`, and English is `<strong>{name}</strong>, review <link>your order</link>.`.
 
-화면은 이 parts를 `renderRichText`로 그린다. `strong`을 `<strong>`에, `link`를 `<a href="#order-form">`에 매핑하고, 미리보기 노드의 id는 `rich-preview`다. 링크는 같은 화면의 주문 폼으로 간다. 이름 입력이 비어 있으면 `Saylo`를 쓴다.
+The screen renders these parts with `renderRichText`. It maps `strong` to `<strong>` and `link` to `<a href="#order-form">`, and the preview node id is `rich-preview`. The link goes to the order form on the same screen. If the name input is empty, `Saylo` is used.
 
-`projectDemoMessages`는 전체 번역 투영과 마지막 정상 상태 fallback 모두에 rich parts를 담는다. malformed 태그 뒤에도 이름·수량·입력 변경은 마지막 정상 snapshot을 다시 포맷한다.
+`projectDemoMessages` includes rich parts in both the full translation projection and the last-good fallback. After a malformed tag, changes to name, count, or input also reformat the last good snapshot.
 
-`demoKeys`에 `demo:rich`를 더하고, 생성 타입은 `"demo:rich": { "name": number | string; }`이다. 개발 서버·운영 빌드·선택 빌드·검증 명령은 앞의 절차를 그대로 쓴다.
+Add `demo:rich` to `demoKeys`; the generated type is `"demo:rich": { "name": number | string; }`. Use the same procedure above for the development server, production build, selective build, and verification commands.
 
-이 helper는 아직 npm 게시본에 없다. 로컬 변경이며 버전 승격과 게시를 하지 않는다. 로컬 rich renderer 테스트 3개와 전체 `npm run check`(293개), HeadlessChrome recovery 검사(warm 11·cold 3, browser 오류 없음, 로그 `.release/react-rich-recovery.log`), React 선택 빌드 검증(로그 `.release/react-rich-selected.log`), vanilla full·selected Chromium 검사 각 11개(로그 `.release/react-rich-vanilla-selected.log`)를 통과했고 독립 tarball 검사만 남았다.
+This helper is not in an npm release yet. It is a local change, with no version promotion or publication. Three local rich renderer tests, the full `npm run check` (293), HeadlessChrome recovery checks (warm 11, cold 3, no browser errors, log `.release/react-rich-recovery.log`), React selective build validation (log `.release/react-rich-selected.log`), and 11 vanilla full and selected Chromium checks each (log `.release/react-rich-vanilla-selected.log`) passed; only independent tarball validation remains.
 
-## 선택 빌드 검증
+## Selective build validation
 
 ```sh
 npm run verify:demo:react:selected
 ```
 
-React·vanilla·shared 예제를 `.release/` 아래 임시 복사본으로 만들고, 로케일마다 쓰지 않는 키 1개를 카탈로그에 더한 뒤 전체 base schema로 타입을 다시 생성한다. 이 fixture에서 TypeScript 부정·긍정 계약을 검사한다. 전체 `AppSchema` 번역기는 그 unused 키를 그대로 받고, `DemoSchema`로 좁힌 번역기·store·hook은 그 키와 `string`으로 넓힌 키, 어긋난 인자, 빠진 필수 인자를 거부해야 한다. 이어서 선택 빌드의 실제 production 출력에서 unused 문구가 어떤 chunk에도 남지 않고 영어용 동적 chunk는 그대로 lazy인지, `generated.d.ts`가 빌드 뒤에도 전체 타입을 유지하는지 확인한다. 마지막으로 기존 React lifecycle 검사를 임시 fixture의 선택 빌드 출력에 실행해 lazy 언어 전환과 폼·dialog 상태 유지를 확인한다. 이 검사들은 jsdom에서 번들을 실행하며 Chromium을 쓰지 않는다.
+The check makes temporary copies of the React, vanilla, and shared examples under `.release/`, adds one unused key per locale to the catalog, and regenerates types from the full base schema. It checks negative and positive TypeScript contracts in this fixture. The full `AppSchema` translator accepts the unused key, while the translator, store, and hook narrowed to `DemoSchema` must reject that key, a key widened to `string`, a mismatched argument, and a missing required argument. Next it checks that the unused message appears in no chunk of the actual selective build output, that the English-only dynamic chunk remains lazy, and that `generated.d.ts` retains all types after the build. Finally, it runs the existing React lifecycle checks against the selective build output from the temporary fixture to verify lazy locale switching and form and dialog state preservation. These checks run bundles in jsdom and do not use Chromium.

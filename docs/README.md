@@ -1,148 +1,148 @@
-# 문서 안내
+# Documentation guide
 
-이 디렉터리는 Saylo의 설계 계약과 로컬 검증 기록을 함께 담는다. 설계 초안과 이미 구현·검증한 현행 동작이 섞여 있으므로, 문서와 실제 코드가 어긋나면 `packages/*/README.md`와 `packages/*/src`의 현행 코드가 우선이다. 이 디렉터리에서 `제안`·`목표`·`미해결`·`미검증`은 설계 의도이고, `로컬 구현 완료` 같은 표기는 실행한 검증 범위를 가리킨다. 갱신 wire의 단일 출처는 [08-update-protocol.md](08-update-protocol.md)이고, 실측·직접 검증 기록은 [06-validation-and-roadmap.md](06-validation-and-roadmap.md)에 있다.
+This directory holds Saylo's design contracts and local validation records. Design drafts are mixed with current behavior that has already been implemented and validated, so if the documents and the actual code disagree, the current code in `packages/*/README.md` and `packages/*/src` takes precedence. In this directory, `proposal`, `goal`, `unresolved`, and `unvalidated` describe design intent, while labels such as `local implementation complete` indicate the scope of validation that was run. [08-update-protocol.md](08-update-protocol.md) is the single source of truth for the update wire, and measured and directly verified records are in [06-validation-and-roadmap.md](06-validation-and-roadmap.md).
 
-로컬 검증을 마친 항목은 이 디렉터리와 `packages/*/README.md`에 함께 적는다. 아직 구현하지 않은 기능은 문서가 완료를 주장하지 않는다.
+Items that have passed local validation are recorded both in this directory and in `packages/*/README.md`. Documents do not claim completion for features that have not been implemented yet.
 
-문의와 기능 제안은 [지원 안내](../SUPPORT.md), 비공개 보안 제보는 [보안 안내](../SECURITY.md)를 따른다.
+See [support guide](../SUPPORT.md) for questions and feature proposals, and [security guide](../SECURITY.md) for private security reports.
 
-의존성의 패치 갱신·Renovate 승인·릴리스 audit 절차는 [의존성 갱신](dependency-updates.md)에 있다.
+Dependency patch updates, Renovate approvals, and the release audit procedure are in [dependency updates](dependency-updates.md).
 
-개발 예제의 모달·언어별 자동 접근성 검사는 [데모 접근성 검사](demo-accessibility.md)에 있다.
+Automated accessibility checks for the development examples' modals and locales are in [demo accessibility checks](demo-accessibility.md).
 
-## 읽는 순서
+## Reading order
 
-빈 폴더에서 게시 패키지를 설치해 시작하는 절차는 [getting-started.md](getting-started.md)에 있다.
+The procedure for starting from an empty folder with a published package is in [getting-started.md](getting-started.md).
 
-Svelte 어댑터와 데모의 현행 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 정리했다. 기존 성능 측정 기록은 그대로 유지한다.
-SvelteKit의 실제 요청·페이지 이동·종료와 재진입 연결은 [39-sveltekit-example.md](39-sveltekit-example.md)에 정리했다.
+The current scope of the Svelte adapter and demo is summarized in [38-svelte-adapter.md](38-svelte-adapter.md). Existing performance measurement records are preserved as they are.
+The SvelteKit example's real request, page navigation, shutdown, and re-entry connections are summarized in [39-sveltekit-example.md](39-sveltekit-example.md).
 
-1. [01-product-and-scope.md](01-product-and-scope.md) — 왜 만드는지, 무엇을 하지 않는지, DOM 보존 범위
-2. [02-architecture.md](02-architecture.md) — 개발 반영 경로, 계층 구조, 상태 모델, 소유권
-3. [03-catalog-and-api.md](03-catalog-and-api.md) — 카탈로그 형식, argument 계약, 공개 API
-4. [04-live-update-and-types.md](04-live-update-and-types.md) — 갱신 판정, 복구, 타입 생성 규칙
-5. [05-build-and-ssr.md](05-build-and-ssr.md) — 운영 빌드, SSR, 보안
-6. [06-validation-and-roadmap.md](06-validation-and-roadmap.md) — 성능 목표와 측정 정의, 인수 사례, 로드맵
-7. [07-decisions.md](07-decisions.md) — 결정 대장과 미해결 항목
-8. [08-update-protocol.md](08-update-protocol.md) — 갱신 wire 프로토콜의 단일 출처
-9. [10-performance-measurements.md](10-performance-measurements.md) — 로컬 벤치마크 결과와 프로파일 기록
-10. [11-parser-measurements.md](11-parser-measurements.md) — 파서 내부 비용과 최적화 검증
-11. [12-locale-add-measurements.md](12-locale-add-measurements.md) — 새 로케일 목록·최초 번역 반영 측정
-12. [13-paraglide-comparison.md](13-paraglide-comparison.md) — Paraglide 동일 규모 측정과 초기 준비 실패 관측
-13. [14-locale-add-server-measurements.md](14-locale-add-server-measurements.md) — 대규모 로케일 추가의 서버 읽기·파싱·검증 비용
-14. [15-simple-message-parser.md](15-simple-message-parser.md) — 단순 메시지 파싱 최적화와 cold 교차 비교
-15. [16-compact-catalog-transport.md](16-compact-catalog-transport.md) — lazy full 카탈로그의 compact 개발 전송과 검증
-16. [17-cold-parser-measurements.md](17-cold-parser-measurements.md) — 새 카탈로그 파싱의 내부 구간과 GC 관측
-17. [18-shared-argument-schemas.md](18-shared-argument-schemas.md) — 동일 인자 스키마 공유와 cold 교차 비교
-18. [19-ast-freeze-measurements.md](19-ast-freeze-measurements.md) — 파서 소유 AST 동결 최적화와 cold·incremental 비교
-19. [20-locale-add-remeasurement.md](20-locale-add-remeasurement.md) — 최적화 후 로케일 추가·선택의 종단 간 재측정
-20. [21-locale-add-server-remeasurement.md](21-locale-add-server-remeasurement.md) — 현행 대규모 로케일 추가의 서버 구간과 다음 파서 후보
-21. [22-relative-position-sharing.md](22-relative-position-sharing.md) — 단순 AST 상대 좌표·구간 공유와 파서 비교
-22. [23-position-sharing-locale-add.md](23-position-sharing-locale-add.md) — 상대 위치 공유 후 목록·첫 번역 반영 재측정
-23. [24-full-selection-browser-stages.md](24-full-selection-browser-stages.md) — 첫 언어 선택의 full 디코딩·동결·snapshot 계측
-24. [25-core-outcome-acceptance-stages.md](25-core-outcome-acceptance-stages.md) — core 응답 검증·동결 분리와 중복 순회 최적화 후보
-25. [26-shared-catalog-freeze.md](26-shared-catalog-freeze.md) — Vite/core 깊은 동결 경로 공유와 같은 조건의 전후 비교
-26. [27-shared-freeze-locale-add.md](27-shared-freeze-locale-add.md) — 일반 prebundle 설정의 목록·첫 번역 반영 50회 재측정
-27. [28-full-reply-stages.md](28-full-reply-stages.md) — 기본 prebundle의 full 응답 준비·수신 이후 구간 계측
-28. [29-prebundle-client-stages.md](29-prebundle-client-stages.md) — 기본 prebundle의 client 수신 이후·publication·commit 구간 계측
-29. [30-prebundle-freeze-sharing.md](30-prebundle-freeze-sharing.md) — core root import로 정상 prebundle의 동결 신뢰 공유
-30. [31-prebundle-freeze-locale-add.md](31-prebundle-freeze-locale-add.md) — 상세 계측을 끈 로케일 목록·첫 번역 반영 50회 재측정
-31. [32-prebundle-server-measurements.md](32-prebundle-server-measurements.md) — 현행 large 목록의 서버 파일 구간과 파서 비용 재계측
-32. [33-owned-message-freeze-trial.md](33-owned-message-freeze-trial.md) — 메시지·위치 직접 동결 실험의 비교 결과와 원복
-33. [34-message-freeze-stages.md](34-message-freeze-stages.md) — AST·절대 위치·레코드 동결 구간 분리와 다음 후보
-34. [35-shared-ast-seal.md](35-shared-ast-seal.md) — AST 동결 `seal` 헬퍼 모듈화와 cold·incremental 교차 비교
-35. [36-shared-ast-seal-locale-add.md](36-shared-ast-seal-locale-add.md) — AST 동결 seal 공유 후 상세 계측을 끈 large 로케일 목록·첫 번역 반영 재측정
-36. [37-seal-locale-add-comparison.md](37-seal-locale-add-comparison.md) — seal 공유 전후 locale-add 격리 비교와 원복 결정
-37. [40-simple-argument-trial.md](40-simple-argument-trial.md) — 단순 파싱·인자 수집 통합 실험의 cold·incremental 비교와 원복
-38. [41-json-entry-visitor-trial.md](41-json-entry-visitor-trial.md) — JSON 임시 entry 배열 제거 실험의 cold·incremental 비교와 원복
-39. [42-complete-translations.md](42-complete-translations.md) — Vite 운영 빌드의 선택적 번역 키·namespace 완역 검사
-40. [43-react-selectors.md](43-react-selectors.md) — React 선택자 미세구독의 계약·로컬 검증과 현행 게시 상태
-41. [44-svelte-selectors.md](44-svelte-selectors.md) — Svelte 선택자 구독의 계약·로컬 검증과 현행 게시 상태
-42. [45-review-fixes-performance-baseline.md](45-review-fixes-performance-baseline.md) — 리뷰 수정 커밋 `9cfb844`의 편집 반영·로케일 추가 현행 성능 기준값
-43. [46-review-fixes-server-file-stages.md](46-review-fixes-server-file-stages.md) — 리뷰 수정 기준 large 읽기·후보 구간 분리 계측
-44. [47-json-field-scanner-trial.md](47-json-field-scanner-trial.md) — JSON 항목 정규식 통합을 교차 비교하고 원복한 기록
-45. [48-parser-cpu-profile.md](48-parser-cpu-profile.md) — 현행 파서의 CPU 표본·줄 귀속과 다음 맵 동결 후보
-46. [49-owned-message-map-freeze.md](49-owned-message-map-freeze.md) — 파서 소유 메시지 맵 재순회 생략과 편집·신규 파싱 교차 비교
-47. [50-owned-message-map-live-measurements.md](50-owned-message-map-live-measurements.md) — 맵 동결 최적화 뒤 실제 편집·로케일 추가 측정과 목표 미달
-48. [51-owned-message-map-comparison.md](51-owned-message-map-comparison.md) — 맵 동결 최적화 전후 종단 간 교차 비교와 목표 미달
-49. [52-server-runtime-tail.md](52-server-runtime-tail.md) — read/candidate 잔여 구간·GC·타이머 지연 진단과 신규 파싱 후보
-50. [53-completion-audit.md](53-completion-audit.md) — 원래 명시 요구사항·로드맵 대조 완료 감사와 남은 작업
-51. [54-plain-argument-contracts.md](54-plain-argument-contracts.md) — plain argument contract 재사용의 cold·incremental 교차 비교와 로컬 채택
-52. [55-next-turn-edits.md](55-next-turn-edits.md) — 다음 턴 편집 병합의 Vite·브라우저 교차 비교와 편집 목표 미달
-53. [56-thin-layer-contract-probe.md](56-thin-layer-contract-probe.md) — i18next·Wuchale 공개 확장점 위 계약 프로브 36개 관측과 전체 계층 평가 보류
-54. [57-thin-layer-browser-probe.md](57-thin-layer-browser-probe.md) — 얇은 계층 브라우저 기능 스모크 8개 시나리오와 상태 보존, 성능·SSR·lazy 판정 보류
-55. [58-trailing-disk-rechecks.md](58-trailing-disk-rechecks.md) — 첫 게시 뒤 60ms 꼬리 디스크 재확인으로 watcher throttle 복구, 편집 목표 미달 기록
-56. [59-json-leaf-edits.md](59-json-leaf-edits.md) — JSON leaf 단일 문자열 편집의 파서·브라우저 측정과 로케일 추가 목표 미달 기록
-57. [60-next-turn-additions.md](60-next-turn-additions.md) — 다음 턴 신규 로케일 파일 즉시 읽기, 서버 파일 구간·파서 trial 원복·최신 단일 run 기록
-58. [61-superseded-parse-reuse.md](61-superseded-parse-reuse.md) — superseded 성공 파싱 재사용, 직전 60 single-read 단정 실패 재현과 성능 안정성 미달 기록
+1. [01-product-and-scope.md](01-product-and-scope.md) — why it exists, what it does not do, and the DOM preservation scope
+2. [02-architecture.md](02-architecture.md) — development propagation path, layer structure, state model, and ownership
+3. [03-catalog-and-api.md](03-catalog-and-api.md) — catalog format, argument contracts, and public API
+4. [04-live-update-and-types.md](04-live-update-and-types.md) — update decisions, recovery, and type generation rules
+5. [05-build-and-ssr.md](05-build-and-ssr.md) — production builds, SSR, and security
+6. [06-validation-and-roadmap.md](06-validation-and-roadmap.md) — performance targets and measurement definitions, acceptance cases, and roadmap
+7. [07-decisions.md](07-decisions.md) — decision log and open items
+8. [08-update-protocol.md](08-update-protocol.md) — single source of truth for the update wire protocol
+9. [10-performance-measurements.md](10-performance-measurements.md) — local benchmark results and profile records
+10. [11-parser-measurements.md](11-parser-measurements.md) — parser internal costs and optimization validation
+11. [12-locale-add-measurements.md](12-locale-add-measurements.md) — measurements of new locale listing and first-translation propagation
+12. [13-paraglide-comparison.md](13-paraglide-comparison.md) — same-scale Paraglide measurements and observations of initial preparation failures
+13. [14-locale-add-server-measurements.md](14-locale-add-server-measurements.md) — server read, parse, and validation costs for adding locales at scale
+14. [15-simple-message-parser.md](15-simple-message-parser.md) — simple message parsing optimization and cold cross-comparison
+15. [16-compact-catalog-transport.md](16-compact-catalog-transport.md) — compact development transport and validation for lazy full catalogs
+16. [17-cold-parser-measurements.md](17-cold-parser-measurements.md) — internal phases and GC observations when parsing a new catalog
+17. [18-shared-argument-schemas.md](18-shared-argument-schemas.md) — sharing identical argument schemas and cold cross-comparison
+18. [19-ast-freeze-measurements.md](19-ast-freeze-measurements.md) — parser-owned AST freeze optimization and cold/incremental comparison
+19. [20-locale-add-remeasurement.md](20-locale-add-remeasurement.md) — end-to-end remeasurement of locale addition and selection after optimization
+20. [21-locale-add-server-remeasurement.md](21-locale-add-server-remeasurement.md) — server phases for the current large-scale locale addition and next parser candidates
+21. [22-relative-position-sharing.md](22-relative-position-sharing.md) — simple AST relative coordinate and range sharing, and parser comparison
+22. [23-position-sharing-locale-add.md](23-position-sharing-locale-add.md) — remeasurement of listing and first-translation propagation after relative position sharing
+23. [24-full-selection-browser-stages.md](24-full-selection-browser-stages.md) — full decoding, freezing, and snapshot instrumentation for the first language selection
+24. [25-core-outcome-acceptance-stages.md](25-core-outcome-acceptance-stages.md) — separating core response validation and freezing, and candidates for removing duplicate traversals
+25. [26-shared-catalog-freeze.md](26-shared-catalog-freeze.md) — sharing the Vite/core deep-freeze path and before/after comparison under the same conditions
+26. [27-shared-freeze-locale-add.md](27-shared-freeze-locale-add.md) — 50-run remeasurement of listing and first-translation propagation under general prebundle settings
+27. [28-full-reply-stages.md](28-full-reply-stages.md) — instrumentation of phases after full response preparation and receipt in the default prebundle
+28. [29-prebundle-client-stages.md](29-prebundle-client-stages.md) — instrumentation of post-client-receipt, publication, and commit phases in the default prebundle
+29. [30-prebundle-freeze-sharing.md](30-prebundle-freeze-sharing.md) — sharing freeze trust for a normal prebundle through a core root import
+30. [31-prebundle-freeze-locale-add.md](31-prebundle-freeze-locale-add.md) — 50-run remeasurement of locale listing and first-translation propagation with detailed instrumentation off
+31. [32-prebundle-server-measurements.md](32-prebundle-server-measurements.md) — remeasurement of server file phases and parser costs for the current large listing
+32. [33-owned-message-freeze-trial.md](33-owned-message-freeze-trial.md) — comparison results and rollback of an experiment that froze messages and positions directly
+33. [34-message-freeze-stages.md](34-message-freeze-stages.md) — separation of AST, absolute position, and record freeze phases, plus next candidates
+34. [35-shared-ast-seal.md](35-shared-ast-seal.md) — modularizing the AST freeze `seal` helper and cold/incremental cross-comparison
+35. [36-shared-ast-seal-locale-add.md](36-shared-ast-seal-locale-add.md) — remeasurement of large locale listing and first-translation propagation after sharing the AST freeze seal, with detailed instrumentation off
+36. [37-seal-locale-add-comparison.md](37-seal-locale-add-comparison.md) — isolated before/after locale-add comparison of seal sharing and the rollback decision
+37. [40-simple-argument-trial.md](40-simple-argument-trial.md) — cold/incremental comparison and rollback of an experiment integrating simple parsing and argument collection
+38. [41-json-entry-visitor-trial.md](41-json-entry-visitor-trial.md) — cold/incremental comparison and rollback of an experiment removing the temporary JSON entry array
+39. [42-complete-translations.md](42-complete-translations.md) — optional translation key and namespace completeness checks for Vite production builds
+40. [43-react-selectors.md](43-react-selectors.md) — contract and local validation for React selector fine-grained subscriptions, plus current publication status
+41. [44-svelte-selectors.md](44-svelte-selectors.md) — contract and local validation for Svelte selector subscriptions, plus current publication status
+42. [45-review-fixes-performance-baseline.md](45-review-fixes-performance-baseline.md) — current performance baseline for edit propagation and locale addition from review-fix commit `9cfb844`
+43. [46-review-fixes-server-file-stages.md](46-review-fixes-server-file-stages.md) — instrumentation separating large read and candidate phases under the review-fix baseline
+44. [47-json-field-scanner-trial.md](47-json-field-scanner-trial.md) — record of cross-comparing and rolling back JSON item regex consolidation
+45. [48-parser-cpu-profile.md](48-parser-cpu-profile.md) — CPU samples and line attribution for the current parser, plus the next map-freeze candidate
+46. [49-owned-message-map-freeze.md](49-owned-message-map-freeze.md) — skipping re-traversal of the parser-owned message map and cross-comparing edits and new parsing
+47. [50-owned-message-map-live-measurements.md](50-owned-message-map-live-measurements.md) — real edit and locale-add measurements after map freeze optimization, and the missed target
+48. [51-owned-message-map-comparison.md](51-owned-message-map-comparison.md) — end-to-end before/after cross-comparison of map freeze optimization, and the missed target
+49. [52-server-runtime-tail.md](52-server-runtime-tail.md) — diagnosis of remaining read/candidate phases, GC, and timer delays, plus new parsing candidates
+50. [53-completion-audit.md](53-completion-audit.md) — completion audit against the original explicit requirements and roadmap, and remaining work
+51. [54-plain-argument-contracts.md](54-plain-argument-contracts.md) — cold/incremental cross-comparison of plain argument contract reuse and local adoption
+52. [55-next-turn-edits.md](55-next-turn-edits.md) — Vite/browser cross-comparison of merging edits in the next turn, and the missed edit target
+53. [56-thin-layer-contract-probe.md](56-thin-layer-contract-probe.md) — 36 contract probes observed on i18next/Wuchale public extension points, and deferral of the full layer assessment
+54. [57-thin-layer-browser-probe.md](57-thin-layer-browser-probe.md) — eight thin-layer browser feature smoke scenarios, state preservation, and deferral of performance, SSR, and lazy decisions
+55. [58-trailing-disk-rechecks.md](58-trailing-disk-rechecks.md) — recovery of watcher throttle through 60 ms trailing disk rechecks after the first publication, and a record of the missed edit target
+56. [59-json-leaf-edits.md](59-json-leaf-edits.md) — parser and browser measurements for single-string edits of JSON leaves, and a record of the missed locale-add target
+57. [60-next-turn-additions.md](60-next-turn-additions.md) — immediate reading of new locale files in the next turn, server file phases, parser trial rollback, and the latest single-run record
+58. [61-superseded-parse-reuse.md](61-superseded-parse-reuse.md) — reuse of superseded successful parses, reproduction of the immediately preceding 60 single-read assertion failure, and failure to reach performance stability
 
-59. [62-multi-read-measurements.md](62-multi-read-measurements.md) — 다중 읽기 batch 소유권·interval union 계측과 상세 조건 25회 재측정
+59. [62-multi-read-measurements.md](62-multi-read-measurements.md) — ownership and interval union instrumentation for multi-read batches, and 25-run remeasurement under detailed conditions
 
-60. [63-thin-layer-timezone.md](63-thin-layer-timezone.md) — 얇은 계층 시간대 프로브의 호스트 시간대 누출과 named style 우회 gap 기록
+60. [63-thin-layer-timezone.md](63-thin-layer-timezone.md) — host timezone leakage in the thin layer timezone probe and the named-style bypass gap
 
-61. [64-thin-layer-timezone-adapter.md](64-thin-layer-timezone-adapter.md) — i18nFormat 직접 구현 어댑터의 시간대 고정, Node 336·브라우저 8단계 결과와 production parser 경계 위험
+61. [64-thin-layer-timezone-adapter.md](64-thin-layer-timezone-adapter.md) — timezone pinning in an adapter that implements i18nFormat directly, results for Node 336 and eight browser steps, and production parser boundary risks
 
-62. [65-thin-layer-ast-production.md](65-thin-layer-ast-production.md) — benchmark 전용 AST runtime helper로 layer-ast production build의 parser emission 제거 검증
+62. [65-thin-layer-ast-production.md](65-thin-layer-ast-production.md) — validation that the benchmark-only AST runtime helper removes parser emission from the layer-ast production build
 
-63. [66-thin-layer-ssr-production.md](66-thin-layer-ssr-production.md) — 실제 production client의 host 시간대 매트릭스 12페이지 SSR hydration과 누락 pair bug 수정 검증
+63. [66-thin-layer-ssr-production.md](66-thin-layer-ssr-production.md) — SSR hydration of a 12-page host-timezone matrix from a real production client, and validation of a missing-pair bug fix
 
-64. [67-thin-layer-lazy-contracts.md](67-thin-layer-lazy-contracts.md) — 독립 i18next lazy coordinator의 14 시나리오 교차 검증과 production 부분 로딩
+64. [67-thin-layer-lazy-contracts.md](67-thin-layer-lazy-contracts.md) — cross-validation of 14 scenarios for the standalone i18next lazy coordinator and partial production loading
 
-65. [68-thin-layer-lazy-browser.md](68-thin-layer-lazy-browser.md) — 실제 Chromium/Vite dev에서 core·layer 두 fixture의 compact·patch wire 12단계와 실제 소켓 종료 뒤 Vite 기본 reload 상태 초기화
+65. [68-thin-layer-lazy-browser.md](68-thin-layer-lazy-browser.md) — 12 compact and patch wire steps for the core and layer fixtures in a real Chromium/Vite dev environment, and resetting Vite's default reload state after the real socket closes
 
-66. [69-thin-layer-typegen.md](69-thin-layer-typegen.md) — 실제 Vite dev typegen worker와 strict·checkJs 소비자 9단계, any-return 대조 선언으로 오류 검사 확인
+66. [69-thin-layer-typegen.md](69-thin-layer-typegen.md) — real Vite dev typegen worker and nine consumer steps with strict and checkJs, confirming error checks with an any-return control declaration
 
-67. [70-thin-layer-lazy-production-browser.md](70-thin-layer-lazy-production-browser.md) — 실제 Vite production build 두 개의 static HTTP·headless Chromium lazy 부분 로딩 12단계와 parser marker 부재 관측
+67. [70-thin-layer-lazy-production-browser.md](70-thin-layer-lazy-production-browser.md) — 12 steps of static HTTP and headless Chromium lazy partial loading for two real Vite production builds, and observation of a missing parser marker
 
-68. [71-thin-layer-lazy-session-browser.md](71-thin-layer-lazy-session-browser.md) — 실제 Vite 개발 서버 두 fixture에서 product reply 보류·순서 변경, locale supersede, 세션 교체 뒤 늦은 응답 무시 12단계×2
+68. [71-thin-layer-lazy-session-browser.md](71-thin-layer-lazy-session-browser.md) — 12 steps × 2 covering deferred and reordered product replies, locale supersession, and ignoring late replies after session replacement in two real Vite dev server fixtures
 
-69. [72-thin-layer-sync-construction.md](72-thin-layer-sync-construction.md) — 동기 생성자 계약, unit 64개와 typegen·production browser --sync 재확인
+69. [72-thin-layer-sync-construction.md](72-thin-layer-sync-construction.md) — synchronous constructor contracts, 64 unit tests, and rechecking typegen and production browser with --sync
 
-70. [73-thin-layer-runtime-cost.md](73-thin-layer-runtime-cost.md) — 동기 layer와 core의 격리 런타임 비용과 snapshot 보유 heap delta 1k·10k
+70. [73-thin-layer-runtime-cost.md](73-thin-layer-runtime-cost.md) — isolated runtime costs of the synchronous layer and core, and snapshot-retained heap deltas at 1k and 10k
 
-71. [74-immutable-validation-reuse.md](74-immutable-validation-reuse.md) — deep-frozen identity pair 검증 재사용, 격리 비용·CPU 표본과 편집 small 미달 기록
-72. [75-early-disk-rechecks.md](75-early-disk-rechecks.md) — 10ms 이른 재확인 단독 미채택과 30ms 보완 채택, enqueue origin 분해·small·large ABBA
+71. [74-immutable-validation-reuse.md](74-immutable-validation-reuse.md) — reuse of deep-frozen identity pair validation, isolated costs and CPU samples, and a record of the missed small edit target
+72. [75-early-disk-rechecks.md](75-early-disk-rechecks.md) — rejection of a 10 ms early recheck on its own and adoption of a 30 ms complement, enqueue origin breakdown, and small/large ABBA
 
-73. [76-runtime-decision.md](76-runtime-decision.md) — 런타임 형태 결정: 독립 런타임 유지, FormatJS parser·IMF 재사용 지속, i18next prototype 미채택
+73. [76-runtime-decision.md](76-runtime-decision.md) — runtime form decision: keep an independent runtime, continue reusing the FormatJS parser and IMF, and do not adopt the i18next prototype
 
 
-74. [77-local-release-readiness.md](77-local-release-readiness.md) — 사전 로컬 check·tarball·SvelteKit browser 검증과 alpha.4 게시 후속
-75. [alpha.4 릴리스](../releases/0.1.0-alpha.4.md) — CI·OIDC 게시·승인 integrity·registry JS/TS 및 SvelteKit 소비 인수
-76. [78-rich-text-parts.md](78-rich-text-parts.md) — 첫 rich text core API 슬라이스의 `tParts` 계약·마커 문법·오류
-77. [79-react-rich-text.md](79-react-rich-text.md) — React rich text render helper `renderRichText`의 계약·키 규칙·데모·검증 범위
-78. [80-svelte-rich-text.md](80-svelte-rich-text.md) — Svelte rich text 컴포넌트 `RichText.svelte`의 계약·키 규칙·데모·검증 범위
-79. [81-implementation-status.md](81-implementation-status.md) — 2026-10-24 `main` `7ccfdba`, 제품 소스 `7ccfdba`, 동결 후보 `d3e5252`, 후보·버전 승격·npm 게시·registry 소비 인수 구분
-80. [82-admin-support-pilot.md](82-admin-support-pilot.md) — admin 고객 지원 화면의 Saylo production typegen 잠금 수정과 부분 번역 pilot 결과
-81. [83-push-subscription-maintenance.md](83-push-subscription-maintenance.md) — locale cache eviction 뒤 push 구독 갱신, targeted 회귀 검증과 현재 benchmark 결과
-82. [84-large-catalog-performance.md](84-large-catalog-performance.md) — `9a20620` snapshot 복사 단일 순회, `7a84418` 단일 문자열 편집 재사용, parser 100쌍과 edit·locale-add browser ABBA 결과
-83. [85-remaining-edit-bottlenecks.md](85-remaining-edit-bottlenecks.md) — `35b1350` sparse patch·검증 순회, `7ccfdba` owned patch 재복사 제거와 최종 edit large 50회 100ms p95 판정
+74. [77-local-release-readiness.md](77-local-release-readiness.md) — pre-release local check, tarball, and SvelteKit browser validation, plus follow-up to alpha.4 publication
+75. [alpha.4 release](../releases/0.1.0-alpha.4.md) — CI, OIDC publication, approval integrity, and consumer acceptance for registry JS/TS and SvelteKit
+76. [78-rich-text-parts.md](78-rich-text-parts.md) — `tParts` contract, marker syntax, and errors for the first rich text core API slice
+77. [79-react-rich-text.md](79-react-rich-text.md) — contract, key rules, demo, and validation scope for the React rich text render helper `renderRichText`
+78. [80-svelte-rich-text.md](80-svelte-rich-text.md) — contract, key rules, demo, and validation scope for the Svelte rich text component `RichText.svelte`
+79. [81-implementation-status.md](81-implementation-status.md) — 2026-10-24 `main` `7ccfdba`, product source `7ccfdba`, freeze candidate `d3e5252`; distinction between candidate, version promotion, npm publication, and registry consumer acceptance
+80. [82-admin-support-pilot.md](82-admin-support-pilot.md) — fix for the Saylo production typegen lock in the admin customer support screen and results of the partial translation pilot
+81. [83-push-subscription-maintenance.md](83-push-subscription-maintenance.md) — push subscription renewal after locale cache eviction, targeted regression validation, and current benchmark results
+82. [84-large-catalog-performance.md](84-large-catalog-performance.md) — `9a20620` snapshot copy in a single traversal, `7a84418` single-string edit reuse, parser 100 pairs, and edit/locale-add browser ABBA results
+83. [85-remaining-edit-bottlenecks.md](85-remaining-edit-bottlenecks.md) — `35b1350` sparse patch and validation traversal, `7ccfdba` removal of owned patch recopy, and the final edit large 50-run 100 ms p95 decision
 
-개발 클라이언트의 handshake 상태 계약은 [dev-sync-state.md](dev-sync-state.md)에 있다.
-빈 폴더에서 npm 게시본으로 시작하는 React 안내는 [getting-started-react.md](getting-started-react.md)에 있다.
-Svelte 5 안내는 [getting-started-svelte.md](getting-started-svelte.md)에 있다.
-Vue 3의 로컬 tarball을 독립 프로젝트로 내보내는 안내는 [getting-started-vue.md](getting-started-vue.md)에 있다.
-React 19와 Svelte 5의 로컬 tarball을 독립 프로젝트로 내보내는 안내는 [examples/react-starter](../examples/react-starter/README.md)·[examples/svelte-starter](../examples/svelte-starter/README.md)에 있다. `npm run prepare:starter:react -- --out-dir <저장소 밖 빈 폴더>`·`npm run prepare:starter:svelte -- --out-dir <저장소 밖 빈 폴더>`로 내보내고, 로컬 검증은 `npm run verify:starter:react:local`·`npm run verify:starter:svelte:local`로 한다.
-요청별 SSR·hydration·layout 수명까지 포함하는 SvelteKit 3 안내는 [getting-started-sveltekit.md](getting-started-sveltekit.md)에 있다.
-문의용 진단 JSON의 수집·검토·초기화와 제출 절차는 [support-report.md](support-report.md)에 있다. 두 API 모두 현재 로컬 미게시 변경이다.
+Development client handshake state contracts are in [dev-sync-state.md](dev-sync-state.md).
+The React guide for starting from an empty folder with the npm release is in [getting-started-react.md](getting-started-react.md).
+The Svelte 5 guide is in [getting-started-svelte.md](getting-started-svelte.md).
+The Vue 3 guide for exporting a local tarball into a standalone project is in [getting-started-vue.md](getting-started-vue.md).
+The React 19 and Svelte 5 guides for exporting a local tarball into a standalone project are in [examples/react-starter](../examples/react-starter/README.md) and [examples/svelte-starter](../examples/svelte-starter/README.md). Export with `npm run prepare:starter:react -- --out-dir <empty folder outside the repository>` and `npm run prepare:starter:svelte -- --out-dir <empty folder outside the repository>`, and run local validation with `npm run verify:starter:react:local` and `npm run verify:starter:svelte:local`.
+The SvelteKit 3 guide, including per-request SSR, hydration, and layout lifetimes, is in [getting-started-sveltekit.md](getting-started-sveltekit.md).
+The collection, review, reset, and submission procedure for support diagnostic JSON is in [support-report.md](support-report.md). Both APIs are currently unpublished local changes.
 
-검증과 로드맵의 기존 상세 이력은 [06-validation-history.md](06-validation-history.md)에 보존한다.
+The existing detailed history of validation and the roadmap is preserved in [06-validation-history.md](06-validation-history.md).
 
-## 상태 표기 규칙
+## Status labels
 
-| 표기 | 의미 |
+| Label | Meaning |
 | --- | --- |
-| 확정 | 사용자 목표로 확인된 항목 |
-| 설계 선택 | 구현 방향으로 제안한 기술 결정. 검증 전이며 바뀔 수 있다. |
-| 목표 | 측정하지 않은 성능 수치. 달성 주장이 아니다. |
-| 미해결 | 아직 정하지 않았거나 확인하지 않은 항목 |
-| 미검증 | 외부 사실(배포 여부, 생태계 지원 등)을 확인하지 않은 상태 |
+| Confirmed | Item confirmed as a user goal |
+| Design choice | Technical decision proposed as an implementation direction. Not yet validated; may change. |
+| Target | Performance number that has not been measured. This is not a claim of achievement. |
+| Unresolved | Item not yet decided or confirmed |
+| Unvalidated | External fact (deployment status, ecosystem support, etc.) has not been confirmed |
 
-## 작성 원칙
+## Writing principles
 
-다음 릴리스 후보의 변경 범위·로컬 검증·게시 전 작업은 [alpha.5 후보 계획](../releases/0.1.0-alpha.5-plan.md)에 있다. 후보 검증, 버전 승격, npm 게시, registry 소비 인수 상태를 구분해 읽는다.
+The scope, local validation, and pre-publication work for the next release candidate are in the [alpha.5 candidate plan](../releases/0.1.0-alpha.5-plan.md). Read candidate validation, version promotion, npm publication, and registry consumer acceptance as separate states.
 
-- 문서 본문은 명료한 한국어 `-한다/-이다` 문체로 쓴다.
-- 아직 만들지 않은 기능을 제공한다고 쓰지 않는다.
-- 근거 없는 수치, 버전, 생태계 주장을 넣지 않는다. 확인한 사실과 제안을 구분한다.
-- 검증하지 않은 항목은 미검증으로 표시한다.
-- 각 문서는 40KB를 넘기지 않는다. 넘기기 시작하면 분리 후보다.
+- Write document prose in clear English.
+- Do not state that a feature is available before it has been built.
+- Do not include unsupported numbers, versions, or ecosystem claims. Separate confirmed facts from proposals.
+- Mark items that have not been validated as unvalidated.
+- Keep each document under 40 KB. A document that starts exceeding that size is a candidate for splitting.

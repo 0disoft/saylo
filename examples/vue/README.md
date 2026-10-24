@@ -1,39 +1,39 @@
-# Vue 3 데모
+# Vue 3 demo
 
-Vue 3 어댑터의 라이브 카탈로그 동작을 브라우저에서 확인하는 예제다. 게시본이 아니라 루트 workspace의 `@0disoft/saylo-vue`·`@0disoft/saylo-vite`를 그대로 연결해 쓴다. 브라우저 전용이고 SSR 라우트는 두지 않는다.
+An example that verifies the Vue 3 adapter's live catalog behavior in a browser. It is not a published build; it uses `@0disoft/saylo-vue` and `@0disoft/saylo-vite` directly from the root workspace. It is browser-only and has no SSR routes.
 
-저장소 루트에서 설치한 뒤 실행한다.
+Install from the repository root, then run it.
 
 ```sh
 npm ci --ignore-scripts
 npm run dev:vue
 ```
 
-`dev:vue`는 workspace 패키지를 먼저 빌드하고 `examples/vue/vite.config.mjs`로 개발 서버를 띄운다. 기본 주소는 `http://127.0.0.1:5192`이고 `strictPort`라서 포트가 사용 중이면 실패한다.
+`dev:vue` builds the workspace packages first and starts the development server with `examples/vue/vite.config.mjs`. The default address is `http://127.0.0.1:5192`; `strictPort` makes it fail if the port is in use.
 
-## 파일 구성
+## File structure
 
-`i18n.ts`가 `createI18n`으로 store를 만들고 `createSayloVue`의 `createPlugin`·`useI18n`을 낸다. `main.ts`가 `createApp(App).use(createPlugin(store))`로 plugin을 설치하며 이 store를 소유한다. `App.vue`는 `useI18n` snapshot과 `connectDev` 개발 연결을 구독한다. 기준 로케일은 `ko`, 초기 namespace는 `demo`, timeZone은 `UTC`다.
+`i18n.ts` creates the store with `createI18n` and exposes `createPlugin` and `useI18n` from `createSayloVue`. `main.ts` installs the plugin with `createApp(App).use(createPlugin(store))` and owns this store. `App.vue` subscribes to the `useI18n` snapshot and the `connectDev` development connection. The base locale is `ko`, the initial namespace is `demo`, and the time zone is `UTC`.
 
-## 라이브 수정 확인
+## Verify live edits
 
-1. 이름·요청 사항·상품 수를 입력하고 확인 창 열기로 dialog를 연다. 실제 `<dialog>`가 열린다.
-2. dialog가 열린 채 확인 메모에 포커스가 있는 상태에서 `examples/vue/locales/ko/demo.json`의 `heading`과 `dialogTitle`을 고치고 저장한다.
-3. 화면 제목과 열린 dialog 문구가 즉시 바뀌고, 입력값·dialog 열림·포커스는 그대로 남는다.
+1. Enter a name, request note, and item count, then open the dialog with the open confirmation button. A native `<dialog>` opens.
+2. With the dialog open and focus in the confirmation note, edit `heading` and `dialogTitle` in `examples/vue/locales/ko/demo.json` and save.
+3. The screen title and open dialog text change immediately, while input values, dialog open state, and focus stay as they are.
 
-## 로케일
+## Locales
 
-로케일은 `examples/vue/locales`만 쓴다. react 데모가 쓰는 `examples/vanilla/locales`와 공유하지 않는다.
+Locales use only `examples/vue/locales`. They are not shared with `examples/vanilla/locales`, which the React demo uses.
 
-- `examples/vue/locales/<locale>/demo.json`을 기준 로케일과 같은 키로 추가하면 언어 선택 목록에 나타나고, 고를 때 지연 로딩한다.
-- 키 구성과 ICU 인자는 기준 스키마에 맞춘다. `summary`의 `count` 인자를 유지하고 번역만 바꾼다. `heading`·`dialogTitle`은 인자가 없는 문자열이다.
-- 지금 고른 로케일 파일을 지우면 기준 언어 `ko` 화면으로 돌아간다.
-- JSON이 깨지면 마지막 정상 화면을 유지하고 진단을 띄운다.
-- 키가 빠지면 수정 안내와 함께 마지막으로 번역된 화면을 유지한다.
+- Adding `examples/vue/locales/<locale>/demo.json` with the same keys as the base locale adds it to the language selector and lazy-loads it when selected.
+- Match the key structure and ICU arguments to the base schema. Keep the `count` argument in `summary` and change only the translation. `heading` and `dialogTitle` are strings without arguments.
+- Deleting the currently selected locale file returns the screen to the base language `ko`.
+- If JSON becomes invalid, keep the last good screen and show a diagnostic.
+- If a key is missing, keep the last translated screen and show fix guidance.
 
-## rich text 미리보기
+## Rich text preview
 
-`App.vue`가 `rich-preview` 문단을 더한다. `renderRichText`를 감싼 `RichPreview`를 같은 파일에서 만들고 템플릿의 `rich-preview` 문단에 `<RichPreview />`를 둔다. `strong`은 `<strong>`에, `link`는 같은 화면의 주문 폼(`#order-form`)으로 가는 링크에 매핑하고, 이름 입력이 비어 있으면 `Saylo`를 쓴다.
+`App.vue` adds a `rich-preview` paragraph. It defines a `RichPreview` wrapper around `renderRichText` in the same file and places `<RichPreview />` in the template's `rich-preview` paragraph. It maps `strong` to `<strong>` and `link` to a link to the order form on the same screen (`#order-form`), and uses `Saylo` when the name input is empty.
 
 ```ts
 const richRenderers: RichTextRenderers = {
@@ -43,35 +43,35 @@ const richRenderers: RichTextRenderers = {
 const RichPreview = () => renderRichText(text.value.rich, richRenderers);
 ```
 
-helper는 형제 tag를 key 있는 `Fragment`로 그리므로, 문구를 편집하거나 literal을 삽입해도 매핑한 요소의 identity와 state가 유지된다.
+The helper renders sibling tags as keyed `Fragment` nodes, so editing the text or inserting a literal preserves the identity and state of the mapped elements.
 
-`examples/vue/locales/ko/demo.json`·`en/demo.json`에 rich 키를 더한다. 한국어는 `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`이고, 영어는 `<strong>{name}</strong>, review <link>your order</link>.`로 React·Svelte 데모와 같다. 생성 타입에도 `demo:rich`가 더해진다.
+Add rich keys to `examples/vue/locales/ko/demo.json` and `en/demo.json`. Korean is `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`, and English is `<strong>{name}</strong>, review <link>your order</link>.`, the same as the React and Svelte demos. `demo:rich` is added to the generated types as well.
 
-`projectDemoMessages`는 마지막 정상 전체 번역 투영에 rich parts를 담는다. rich markup이 잘못된 뒤에도 이름·수량·입력 변경은 마지막 정상 snapshot을 현재 인자로 다시 포맷한다.
+`projectDemoMessages` includes rich parts in the last good full translation projection. After rich markup becomes invalid, changes to name, count, or input reformat the last good snapshot with the current arguments.
 
-로컬 검증에서 데모 template 검사와 production 빌드, HeadlessChrome 155 recovery warm 16개·cold 3개(오류 없음)를 확인했다. 이 미리보기는 게시본에 없는 로컬 변경이고, 계약은 [Vue 패키지 안내](../../packages/vue/README.md)를 따른다.
+Local validation confirmed the demo template check, production build, and HeadlessChrome 155 recovery warm 16 and cold 3 (no errors). This preview is a local change not present in published builds, and the contract follows the [Vue package guide](../../packages/vue/README.md).
 
-## 문의용 진단 자료
+## Support diagnostics
 
-지원 패널은 `createSupportRecorder`로 관측만 모은다. `진단 자료 만들기`로 JSON을 직접 생성해 검토하고, `오류 기록 지우기`로 기록과 상태를 비운다. 자동 전송은 하지 않는다. 보고서에는 오류 코드·숫자 위치·연결 상태·허용한 환경 버전만 들어가고, 번역 원문·파일 경로·입력값은 제외한다.
+The support panel collects observations only with `createSupportRecorder`. The `진단 자료 만들기` button generates JSON for direct review, and `오류 기록 지우기` clears the records and state. It does not send anything automatically. The report contains only error codes, numeric positions, connection state, and allowlisted environment versions; raw translation text, file paths, and input values are excluded.
 
-## 빌드
+## Build
 
 ```sh
 npm run setup:vue
 npm run build:vue
 ```
 
-첫 빌드 전에 `setup:vue`로 독립 템플릿 검사 도구를 설치한다. workspace 패키지 빌드에 이어 기준 카탈로그 타입 생성, Vue 템플릿 검사, Vite production 빌드를 순서대로 실행한다. `tools/vue`는 TypeScript 6·vue-tsc 3을 쓰며 본체의 TypeScript 7 컴파일러와 분리돼 있다. 도구 의존성을 바꾸지 않았다면 다음 빌드에서 setup을 반복할 필요는 없다.
+Install the independent template checking tools with `setup:vue` before the first build. After the workspace package build, it generates base catalog types, checks Vue templates, and runs the Vite production build in that order. `tools/vue` uses TypeScript 6 and vue-tsc 3 and is separate from the repository's TypeScript 7 compiler. If tool dependencies have not changed, you do not need to repeat setup on the next build.
 
-## 복구 검증
+## Recovery validation
 
 ```sh
 npm run verify:demo:vue:recovery
 ```
 
-`.release` 아래에 fixture를 복사해 임시 앱을 만들고 headless Chromium으로 확인한 뒤 폴더를 정리한다. 정상 라이브 편집·깨진 JSON·로케일 추가/선택/삭제·빈 카탈로그·누락 namespace 복구 12단계에 rich 4단계(rich 편집·무효 markup·fallback 입력·복구)를 더한 warm 16단계와 새 서버의 빈 첫 실행·입력·복구 cold 3단계를 확인한다. 입력값·열린 모달·포커스·생성한 진단 자료를 유지하며, 정상 저장에서는 확인 메모의 선택 범위도 검사한다. 원본 번역 파일은 고치지 않는다.
+It copies the fixture under `.release` to create a temporary app, checks it in headless Chromium, then removes the folder. It checks 12 steps for normal live editing, broken JSON, locale add/select/delete, an empty catalog, and missing namespace recovery, plus 4 rich steps (rich edit, invalid markup, fallback input, and recovery), for a warm total of 16; and 3 cold steps for empty first run, input, and recovery on a new server. It preserves input values, an open modal, focus, and generated diagnostic data, and on valid saves it also checks the selected range in the confirmation note. It does not modify the original translation files.
 
-## 정리
+## Cleanup
 
-`main.ts`가 instance를 소유한다. `app.use(createPlugin(store))`로 설치한 plugin은 구독을 만들지 않고 instance도 폐기하지 않으므로 정리는 `main.ts`가 맡는다. `pagehide`가 `persisted`면 BFCache 복귀를 위해 구독을 남기고, 실제 페이지 종료면 `app.unmount()` 뒤 `store.dispose()`로 정리한다. Vite HMR dispose에서도 같은 cleanup을 탄다. `App.vue`는 `onScopeDispose`에서 개발 연결을 끊고 세대 번호를 올려 늦게 도착한 응답을 버린다.
+`main.ts` owns the instance. A plugin installed with `app.use(createPlugin(store))` does not create subscriptions and does not dispose the instance, so `main.ts` performs cleanup. If `pagehide` has `persisted`, it keeps subscriptions for BFCache restoration; on a real page shutdown it calls `app.unmount()` and then `store.dispose()`. Vite HMR dispose runs the same cleanup. `App.vue` disconnects development in `onScopeDispose` and increments a generation number to discard late replies.

@@ -1,45 +1,45 @@
-# SvelteKit 3 예제
+# SvelteKit 3 example
 
-요청마다 Saylo 번역을 준비해 SSR하고, 같은 boot snapshot으로 브라우저를 초기화하는 독립 `private` 예제이다. 로컬 Saylo 패키지를 `file:` 의존성으로 설치한다. `.npmrc`의 `install-links=true`로 패키지 내용을 복사하므로 workspace 링크나 서로 다른 Svelte runtime에 의존하지 않는다. npm에 게시된 새 Svelte 어댑터를 사용하는 예제는 아니다.
+An independent `private` example that prepares Saylo translations for SSR on each request and initializes the browser with the same boot snapshot. It installs local Saylo packages as `file:` dependencies. `install-links=true` in `.npmrc` copies package contents, so the example does not depend on workspace links or another Svelte runtime. It is not an example that uses a new Svelte adapter published to npm.
 
-## 실행
+## Run
 
-Node 24.x와 npm이 필요하다. 저장소 루트에서 실행한다.
+Node 24.x and npm are required. Run from the repository root.
 
 ```sh
 npm run setup:sveltekit
 npm run dev:sveltekit
 ```
 
-개발 주소는 `http://127.0.0.1:5191/?locale=en`이다. `?locale=ko`는 한국어이며, 잘못되거나 지원하지 않는 locale은 다음 입력원으로 넘어간다. 요청 locale은 URL query, `saylo-locale` cookie, `Accept-Language`, manifest 기준 locale 순서로 정한다. Saylo 패키지 소스를 변경했다면 `setup:sveltekit`을 다시 실행해 빌드와 예제의 복사본 설치를 갱신한다.
+The development address is `http://127.0.0.1:5191/?locale=en`. `?locale=ko` is Korean, and an invalid or unsupported locale falls through to the next input source. The request locale is chosen in this order: URL query, the `saylo-locale` cookie, `Accept-Language`, then the manifest base locale. If you changed Saylo package source, run `setup:sveltekit` again to update the build and the example's copied installation.
 
-예제는 cookie를 읽기만 한다. cookie로 언어를 기억하려면 앱이 `saylo-locale` 값을 직접 설정한다. query나 cookie에 지원 locale을 명시하면 `Accept-Language`의 `q=0` 제외보다 우선한다. 둘 다 없거나 쓸 수 없는 값이면 헤더 해석 결과를 쓰고, 헤더에서도 고를 수 없으면 manifest 기준 locale로 돌아간다.
+The example only reads the cookie. To remember a language with a cookie, the app must set the `saylo-locale` value itself. An explicitly specified supported locale in the query or cookie takes precedence over `q=0` exclusions in `Accept-Language`. If neither is present or usable, it uses the header resolution result, and if the header also cannot choose, it returns to the manifest base locale.
 
-예제는 SvelteKit 3·Svelte 5·Vite 8·adapter-node 6·TypeScript 6·svelte-check 4를 사용한다. SvelteKit과 checker의 현재 peer 조건에 맞춰 예제만 TypeScript 6을 사용하며 Saylo 본체의 TypeScript 7은 유지한다. [SvelteKit 3 공식 변경 안내](https://svelte.dev/docs/kit/migrating-to-sveltekit-3)를 따른다.
+The example uses SvelteKit 3, Svelte 5, Vite 8, adapter-node 6, TypeScript 6, and svelte-check 4. To match the current peer conditions of SvelteKit and the checker, only the example uses TypeScript 6; Saylo itself remains on TypeScript 7. It follows the [official SvelteKit 3 migration guide](https://svelte.dev/docs/kit/migrating-to-sveltekit-3).
 
-## SSR과 hydration
+## SSR and hydration
 
-- `hooks.server.ts`가 query·cookie·`Accept-Language`·manifest 기준값 순서로 로케일을 해석하고 해당 요청의 `locals`에 보관한다. HTML `lang`도 이 값으로 설정한다.
-- `(saylo)/+layout.server.ts`가 `virtual:saylo/server`의 `createRequestI18n`으로 번역을 준비한다. boot를 JSON 문자열로 반환한 뒤 준비 instance를 `finally`에서 폐기한다. 응답은 `no-store`이다. load가 query locale을 직접 읽어 페이지 이동 중 query 변경도 다시 처리한다.
-- `(saylo)/+layout.svelte`는 boot에서 새로운 instance를 만들어 context에 전달한다. 서버·브라우저 첫 렌더는 같은 locale·카탈로그·시간대를 사용한다. 공유 모듈에는 context factory만 둔다.
-- `onMount`에서 개발 모드면 해당 요청 boot로 `createDevCatalogSource`를 새로 만든다. 이 source는 layout이 소유하고 폐기한다. 운영 모드면 `virtual:saylo/lazy`를 동적 import해 generated static source를 연결한다. SSR에서는 브라우저 전용 source를 실행하지 않는다. 첫 snapshot은 연결 전에 boot로 고정하고, 연결 후 최신 manifest를 갱신한다.
-- layout 해제 시 개발 연결과 instance를 정리한다. 지연 import가 해제 뒤에 끝나도 새 연결을 만들지 않는다.
+- `hooks.server.ts` resolves the locale in the order query, cookie, `Accept-Language`, then the manifest base value, and stores it in that request's `locals`. It also sets the HTML `lang` from this value.
+- `(saylo)/+layout.server.ts` prepares translations with `createRequestI18n` from `virtual:saylo/server`. It returns boot as a JSON string and disposes the prepared instance in `finally`. The response uses `no-store`. The load reads the query locale directly so a query change during page navigation is processed again.
+- `(saylo)/+layout.svelte` creates a new instance from boot and passes it through context. The server and first browser render use the same locale, catalogs, and time zone. Shared modules contain only the context factory.
+- In `onMount`, development mode creates a new `createDevCatalogSource` from that request's boot. The layout owns and disposes this source. In production mode, it dynamically imports `virtual:saylo/lazy` and attaches the generated static source. It does not run browser-only sources during SSR. The first snapshot is fixed from boot before connection, and the latest manifest is refreshed after connection.
+- Layout teardown cleans up the development connection and instance. If a lazy import finishes after cleanup, it does not create a new connection.
 
-공식 [서버 상태·context 지침](https://svelte.dev/docs/kit/state-management)에 따라 사용자 locale을 서버 전역 instance에 공유하지 않는다.
+Following the official [server state and context guidance](https://svelte.dev/docs/kit/state-management), it does not share the user locale in a server-global instance.
 
-## 리치 텍스트 미리보기
+## Rich text preview
 
-`demo:rich` 문구는 `snapshot.tParts('demo:rich', { name })`로 조각을 만들고 `@0disoft/saylo-svelte/RichText.svelte`가 그린다. 조각의 태그는 앱이 넘긴 renderer 이름과 맞춰지며, 예제는 `strong`과 `link` 두 snippet을 준다. `link`는 `href="#order-form"`인 앵커로 폼을 가리키므로 링크 주소는 앱이 정하고 카탈로그는 문구와 태그만 정한다.
+The `demo:rich` message is turned into parts with `snapshot.tParts('demo:rich', { name })` and rendered by `@0disoft/saylo-svelte/RichText.svelte`. Part tags are matched against renderer names supplied by the app, and the example provides two snippets, `strong` and `link`. `link` is an anchor with `href="#order-form"` that points to the form, so the app decides the link address and the catalog decides only the text and tags.
 
-이름은 `(saylo)` layout이 소유한다. layout은 `Workbench`에 `bind:name`으로 내려보내고 `projectDemoMessages(snapshot, previous, name || 'Saylo')`가 제목·본문·폼과 rich 조각을 한 번에 계산한다. 그래서 입력한 이름이 폼 값과 rich 문구의 `{name}` 자리에서 같이 바뀐다. `{name}` 인자는 텍스트로만 들어가므로 입력한 이름이 태그로 해석되지 않는다. SSR과 최초 hydration은 이름이 비어 있으므로 양쪽 모두 `Saylo`로 같은 출력을 만든다.
+The name is owned by the `(saylo)` layout. The layout passes it to `Workbench` with `bind:name`, and `projectDemoMessages(snapshot, previous, name || 'Saylo')` computes the title, body, form, and rich parts together. The entered name therefore changes both the form value and the `{name}` slot in the rich message. The `{name}` argument enters as text only, so the entered name is not parsed as a tag. SSR and initial hydration have an empty name, so both produce the same `Saylo` output.
 
-번역을 표시할 수 없으면 마지막 정상 snapshot에 현재 이름을 다시 넣어 계산하고, 오류가 없던 snapshot만 다음 기준으로 남긴다. 어긋난 마커를 저장해도 입력과 마지막 정상 rich 출력은 그대로 남고 진단만 표시된다. `ko/demo.json`의 `rich` 값은 `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`이다.
+If a translation cannot be displayed, it recomputes with the current name on the last good snapshot and keeps only snapshots without errors as the next baseline. Saving a mismatched marker keeps the input and the last good rich output and shows only a diagnostic. The `rich` value in `ko/demo.json` is `<strong>{name}</strong>님, <link>입력한 주문</link>을 확인해 주세요.`.
 
-rich 출력은 `#rich-preview` 안에 들어가고 폼·모달과 같은 layout에 있다. 문구를 다시 그려도 열린 모달의 입력 값과 포커스는 그대로 유지된다.
+Rich output goes inside `#rich-preview` in the same layout as the form and modal. Redrawing the text keeps the open modal's input value and focus.
 
-`/`와 `/about`은 같은 layout 노드를 쓰므로 rich 문구·입력·모달 상태가 유지된다. `/plain`으로 이동했다가 돌아오면 새 instance와 함께 이름이 초기화되고, rich 출력도 SSR 기본값 `Saylo`로 돌아간다.
+`/` and `/about` use the same layout node, so rich text, input, and modal state are preserved. Navigating to `/plain` and back creates a new instance, resets the name, and returns rich output to the SSR default `Saylo`.
 
-## 검증 명령
+## Verification commands
 
 ```sh
 npm run build:sveltekit
@@ -49,22 +49,22 @@ npm run verify:pack:sveltekit
 npm run verify:registry:sveltekit
 ```
 
-`build`는 typegen·SvelteKit sync·템플릿과 TS 검사·client/SSR 빌드·Node adapter 생성을 수행한다. `verify:ssr`는 임시 개발 서버를 직접 시작해 한국어·영어 동시 요청의 SSR과 boot 일치, 로케일 정규화와 기준 언어 fallback을 확인한다. SSR HTML에서는 이름이 비어 있을 때의 rich 첫 출력(`<strong>Saylo</strong>`)과 앱 소유 링크(`href="#order-form"`)도 확인한다. 실제 client 연결 함수에 hot context를 제공해 등록된 listener의 해제, 중복 stop, 해제 뒤 지연 연결 취소도 검사하고 서버를 닫는다. 이미 실행 중인 서버를 검사하려면 `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5191`로 주소를 넘긴다. 주소를 넘긴 실행은 HTTP 검증만 수행한다.
+`build` runs typegen, SvelteKit sync, template and TypeScript checks, client and SSR builds, and Node adapter generation. `verify:ssr` starts a temporary development server itself and verifies SSR and boot consistency for concurrent Korean and English requests, locale normalization, and base-language fallback. In SSR HTML it also checks the first rich output when the name is empty (`<strong>Saylo</strong>`) and the app-owned link (`href="#order-form"`). It provides a hot context to the real client connection function and checks listener cleanup, duplicate stop, and cancellation of a late connection after cleanup, then closes the server. To check an already running server, pass the address with `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5191`. A run with an address performs HTTP validation only.
 
-`verify:pack:sveltekit`은 다섯 Saylo 패키지를 tarball로 만들어 저장소 밖 임시 앱에 설치한다. 예제의 소스·설정·카탈로그만 복사하고 기존 lockfile·node_modules·빌드 출력은 가져오지 않는다. 타입 검사·client/SSR 빌드·개발 연결 수명·Node 운영 HTTP와 실제 Chromium의 hydration, rich hydration과 rich 입력, ko/en/ko 전환, 입력과 열린 모달 유지, layout 종료와 재진입을 검사한다. 브라우저 probe는 임시 앱에만 넣고 종료 시 브라우저·서버·임시 폴더를 정리한다. 설치된 Chrome 또는 Edge가 필요하며 자동 탐색되지 않으면 `npm run verify:pack:sveltekit -- --browser <실행파일>`로 지정한다. rich 검사가 붙기 전 실행은 2026-10-08 Windows·Node 24.18.0·HeadlessChrome 154에서 통과했다. 이 검사는 자동으로 CI에 추가하지 않았다.
+`verify:pack:sveltekit` creates tarballs for all five Saylo packages and installs them into a temporary app outside the repository. It copies only the example's source, configuration, and catalogs; it does not bring the existing lockfile, node_modules, or build output. It checks type checking, client and SSR builds, development connection lifetime, Node production HTTP, hydration in actual Chromium, rich hydration and rich input, ko/en/ko switching, input and open modal preservation, and layout teardown and re-entry. The browser probe is added only to the temporary app, and cleanup removes the browser, server, and temporary folder. It requires an installed Chrome or Edge; if they are not found automatically, specify one with `npm run verify:pack:sveltekit -- --browser <executable>`. The run before rich checks were added passed on 2026-10-08 on Windows, Node 24.18.0, and HeadlessChrome 154. This check is not automatically added to CI.
 
-`verify:demo:sveltekit:recovery`는 예제를 임시 폴더로 복사해 headless Chromium으로 복구 흐름을 검사한다. 따뜻한 실행은 rich live 편집·잘못된 rich 마커·fallback 입력 유지·rich 복구 4개와 로케일 제거·복원, 빈 기준 카탈로그, 오류 중 페이지 이동, base 복원, namespace 제거·복원 7개를 확인한다. 차가운 실행은 빈 카탈로그에서 hydration·상호작용·복구 3개를 본다. SSR은 정상·빈·복구 상태마다 `/?locale=ko`, `/?locale=en`, `/about?locale=ko`, `/about?locale=en` 네 주소의 HTML과 렌더 언어를 확인한다. Windows에서는 `C:/Program Files/Google/Chrome/Application/chrome.exe` 경로를 그대로 사용하므로 다른 위치에 설치했다면 스크립트의 실행 경로도 함께 맞춘다.
+`verify:demo:sveltekit:recovery` copies the example to a temporary folder and checks recovery in headless Chromium. The warm run checks four rich cases (rich live edit, invalid rich marker, fallback input preservation, and rich recovery) plus seven cases for locale removal and restoration, an empty base catalog, navigation during an error, base restoration, and namespace removal and restoration. The cold run checks three cases: hydration, interaction, and recovery from an empty catalog. For each normal, empty, and recovered state, SSR checks the HTML and rendered language at `/?locale=ko`, `/?locale=en`, `/about?locale=ko`, and `/about?locale=en`. On Windows it uses the path `C:/Program Files/Google/Chrome/Application/chrome.exe` as is; if Chrome is installed elsewhere, update the executable path in the script as well.
 
-`verify:registry:sveltekit`은 [승인된 alpha.2 manifest](../../releases/0.1.0-alpha.2.json)의 다섯 파일을 npm registry에서 내려받아 SHA-512를 대조한 뒤 같은 앱 검증을 수행한다. 로컬 패키지를 빌드하거나 `file:` 디렉터리를 설치하지 않는다. 승인된 게시본의 검증을 그대로 유지하려고 이 실행에는 rich 검사를 켜지 않는다. 2026-10-09 실제 게시본에서 전체 검증을 통과했다. 기존 `verify:pack:sveltekit`은 로컬 후보 tarball 검사로 유지한다.
+`verify:registry:sveltekit` downloads the five files from the [approved alpha.2 manifest](../../releases/0.1.0-alpha.2.json) from the npm registry, compares their SHA-512, and then performs the same app validation. It does not build local packages or install a `file:` directory. To keep validation aligned with the approved published build, rich checks are not enabled for this run. The full validation passed against actual published builds on 2026-10-09. The existing `verify:pack:sveltekit` remains the check for local candidate tarballs.
 
-## 페이지 이동과 live 갱신
+## Page navigation and live updates
 
-`/`와 `/about`은 `(saylo)` layout을 공유한다. 이름·요청 사항·모달 메모는 이 layout의 `Workbench`에 있으므로 두 페이지 사이에서 유지된다. 모달 안의 연결 설명 링크로 열린 창을 유지한 채 페이지를 이동할 수 있다. 언어 선택은 URL query를 갱신하며 locale 로드가 완료될 때까지 선택 중인 값을 표시한다.
+`/` and `/about` share the `(saylo)` layout. The name, request note, and modal note live in this layout's `Workbench`, so they are preserved between the two pages. The connection explanation link inside the modal allows page navigation while keeping the window open. Locale selection updates the URL query and displays the pending value until the locale load completes.
 
-`/plain`은 이 layout 밖에 있으므로 이동하면 개발 연결·source·instance가 정리된다. 돌아오면 최신 SSR boot로 새 instance를 만들고 폼은 초기화한다. 일반 페이지 이동의 포커스·스크롤 정책은 SvelteKit 기본값을 따르고, 언어 전환은 `goto(..., { reset: false })`를 사용한다.
+`/plain` is outside this layout, so navigating there cleans up the development connection, source, and instance. Returning creates a new instance from the latest SSR boot and resets the form. Focus and scroll policy for ordinary page navigation follows SvelteKit defaults, and locale switching uses `goto(..., { reset: false })`.
 
-개발 중 `locales/en/demo.json` 또는 `ko/demo.json`을 수정한다. 정상 문구 저장은 페이지를 다시 로드하지 않고 반영한다. 잘못된 JSON은 마지막 정상 번역을 유지하며 진단을 표시한다. 오류를 수정하면 진단이 사라진다. 운영 빌드는 정적 카탈로그와 lazy loader를 사용한다.
+During development, edit `locales/en/demo.json` or `ko/demo.json`. Saving valid messages applies them without reloading the page. Invalid JSON keeps the last good translation and shows a diagnostic. Fixing the error clears the diagnostic. Production builds use static catalogs and the lazy loader.
 
-2026-10-08 개발 서버와 실제 Node adapter 빌드에서 HTTP SSR·boot 일치와 브라우저 hydration을 확인했다. 개발 브라우저에서 열린 모달의 페이지 이동, 저장 후 입력·포커스·커서 유지, 잘못된 JSON의 마지막 정상 상태와 복구, URL 언어 전환, layout 종료·최신 boot 재진입과 live 재연결을 확인했다. 운영 브라우저에서도 언어 전환·페이지 이동 후 입력 유지와 console 오류·경고 없음을 확인했다. 이 기록은 rich 미리보기가 붙기 전 범위이다. 상세 범위는 [39-sveltekit-example.md](../../docs/39-sveltekit-example.md)에 있다.
+On 2026-10-08, HTTP SSR and boot consistency and browser hydration were confirmed in the development server and an actual Node adapter build. In the development browser, the check confirmed navigation with an open modal, input, focus, and cursor preservation after saving, the last good state and recovery for invalid JSON, URL locale switching, layout teardown, latest boot re-entry, and live reconnection. In the production browser it confirmed locale switching and input preservation after navigation, with no console errors or warnings. This record predates the rich preview. Full scope is in [39-sveltekit-example.md](../../docs/39-sveltekit-example.md).
 
-RichText 연결 후 Node 24.18.0·Vite 8.3.4·HeadlessChrome 155에서 템플릿·타입 검사 오류 0·경고 0, 복구 브라우저 11단계와 빈 첫 실행 3단계, 정상·빈·복구 상태의 SSR 12건을 통과했다. 독립 설치한 다섯 tarball의 client/SSR 빌드·개발 연결 정리와 Node 운영 브라우저 8단계도 통과했다. 강조·링크 DOM, 입력·열린 모달·포커스 유지와 layout 재진입 시 초기화를 확인했고 브라우저 오류·경고는 없었다. 로그는 `.release/sveltekit-rich-check.log`, `.release/sveltekit-rich-recovery.log`, `.release/sveltekit-rich-pack.log`다. 게시와 원격 CI는 실행하지 않았다.
+After RichText integration, on Node 24.18.0, Vite 8.3.4, and HeadlessChrome 155, template and type checks passed with 0 errors and 0 warnings; 11 recovery browser steps and 3 empty first-run steps passed; and 12 SSR cases across normal, empty, and recovered states passed. Client and SSR builds and development connection cleanup for five independently installed tarballs also passed, as did 8 Node production browser steps. The check confirmed emphasis and link DOM, input, open modal, and focus preservation, and reset on layout re-entry, with no browser errors or warnings. The logs are `.release/sveltekit-rich-check.log`, `.release/sveltekit-rich-recovery.log`, and `.release/sveltekit-rich-pack.log`. No publication or remote CI was run.

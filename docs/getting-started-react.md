@@ -1,20 +1,20 @@
-# 빈 폴더에서 React로 Saylo 시작하기
+# Start Saylo with React from an empty folder
 
-Saylo 저장소를 clone하지 않고 npm registry만으로 Vite 8 + React 19 앱에 Saylo를 붙인다. 빈 폴더에 파일 8개를 만들고 개발 서버를 띄우면, 로케일 JSON을 고치는 즉시 문구가 바뀌고 폼·모달 상태는 그대로 남는다. 이 문서는 게시본 `0.1.0-alpha.4`의 공개 API만 쓴다. 로컬 미게시 API(`onSyncState`, 문의용 진단 보고서)는 쓰지 않는다.
+This guide adds Saylo to a Vite 8 + React 19 app using only the npm registry, without cloning the Saylo repository. Create eight files in an empty folder and start the development server; the text changes as soon as you edit the locale JSON, and form and modal state stay as they are. This document uses only the public API of the published `0.1.0-alpha.4`. It does not use unpublished local APIs (`onSyncState` or the diagnostic support report).
 
-Saylo 저장소를 clone한 상태에서 로컬 미게시 tarball로 별도의 React 스타터를 저장소 밖 빈 폴더에 내보내려면 [examples/react-starter/README.md](../examples/react-starter/README.md)를 따른다.
+To export a separate React starter from a Saylo repository clone into an empty folder outside the repository using a local unpublished tarball, see [examples/react-starter/README.md](../examples/react-starter/README.md).
 
-## 전제
+## Prerequisites
 
-- Node.js 24.x와 npm이 필요하다. 게시 패키지의 `engines.node`는 `24.x`다.
-- Saylo 저장소는 private이지만 게시 패키지는 npm public registry에 있다. clone, GitHub 로그인, `file:`·`workspace:`·alias 링크가 필요 없다.
-- Saylo 패키지의 `latest`는 등록용 placeholder다. 설치할 때 `@alpha`를 붙인다.
-- React는 peer이고 조건은 19, Vite는 `@0disoft/saylo-vite`의 peer이며 조건은 8이다.
-- 대조한 게시본은 `0.1.0-alpha.4`다. alpha는 게시마다 올라가므로 새 게시본에서는 아래 절차를 다시 확인한다.
+- Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
+- The Saylo repository is private, but the published packages are on the npm public registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
+- The `latest` tag for the Saylo packages is a placeholder for registration. Add `@alpha` when installing.
+- React is a peer dependency whose condition is 19, and Vite is a peer dependency of `@0disoft/saylo-vite` whose condition is 8.
+- The published build checked against this document is `0.1.0-alpha.4`. Each alpha publication increases the version, so recheck the procedure below against a new build.
 
-## 파일 8개
+## Eight files
 
-빈 폴더에 아래 8개 파일을 만든다. `locales/ko`, `locales/en` 폴더를 먼저 만든다.
+Create the following eight files in the empty folder. Create the `locales/ko` and `locales/en` folders first.
 
 ### package.json
 
@@ -46,7 +46,7 @@ Saylo 저장소를 clone한 상태에서 로컬 미게시 tarball로 별도의 R
 }
 ```
 
-React 플러그인은 넣지 않는다. Vite가 TSX를 변환하고 JSX 런타임은 아래 tsconfig의 `react-jsx`를 따른다.
+Do not add the React plugin. Vite transforms TSX, and the JSX runtime follows `react-jsx` in the tsconfig below.
 
 ### vite.config.mjs
 
@@ -61,7 +61,7 @@ export default defineConfig({
 });
 ```
 
-`localesDir`는 Vite root 기준이고 카탈로그는 `locales/<locale>/<namespace>.json`이다. `baseLocale`은 기준 스키마, `initialLocale`은 첫 화면 로케일, `timeZone`은 날짜·시간 인자 포맷 기준이다.
+`localesDir` is relative to the Vite root, and catalogs are at `locales/<locale>/<namespace>.json`. `baseLocale` defines the base schema, `initialLocale` is the locale shown on first load, and `timeZone` is the basis for formatting date and time arguments.
 
 ### tsconfig.json
 
@@ -82,7 +82,7 @@ export default defineConfig({
 }
 ```
 
-`types`에 `@0disoft/saylo-vite/virtual`을 넣어야 `virtual:saylo` 선언을 본다. `jsx: react-jsx`가 자동 런타임을 켜므로 React를 import하지 않아도 된다.
+You must add `@0disoft/saylo-vite/virtual` to `types` to see the `virtual:saylo` declaration. `jsx: react-jsx` enables the automatic runtime, so importing React is not required.
 
 ### index.html
 
@@ -101,7 +101,7 @@ export default defineConfig({
 </html>
 ```
 
-화면 요소는 React가 만들고 `index.html`은 mount 지점만 제공한다.
+React creates the screen elements, and `index.html` only provides the mount point.
 
 ### main.tsx
 
@@ -217,9 +217,9 @@ window.addEventListener('pagehide', pagehide);
 if (import.meta.hot) import.meta.hot.dispose(cleanup);
 ```
 
-`createStore`는 `virtual:saylo`가 넘긴 eager 카탈로그로 만든다. `useI18n`은 그 렌더의 불변 snapshot과 `setLocale`을 돌려주고, eager store의 `setLocale`은 `void`라 Promise 처리가 필요 없다. store 구독은 react 패키지가 맡으므로 앱은 `store.subscribe`를 직접 걸지 않는다.
+`createStore` is created with the eager catalogs passed by `virtual:saylo`. `useI18n` returns the immutable snapshot for that render and `setLocale`; `setLocale` on an eager store returns `void`, so no Promise handling is needed. The React package manages the store subscription, so the app does not call `store.subscribe` directly.
 
-`name`·`note`는 React state다. 카탈로그가 갱신돼도 컴포넌트가 다시 mount되지 않으므로 입력값과 열어 둔 모달이 남는다. `#dialog-note`는 `#note`와 같은 state를 쓰고, 진단 문자열은 `#error`(`role="alert"`)와 모달 안 `#dialog-status`(`role="status"`)에 함께 보인다.
+`name` and `note` are React state. When the catalog updates, the component does not mount again, so input values and an open modal remain. `#dialog-note` uses the same state as `#note`, and diagnostic strings appear in both `#error` (`role="alert"`) and `#dialog-status` (`role="status"`) inside the modal.
 
 ### demo-messages.ts
 
@@ -254,7 +254,7 @@ export function projectMessages(snapshot: StoreSnapshot<AppSchema>, previous: St
 }
 ```
 
-컴포넌트에 번역을 넘기기 전에 필요한 문구를 전부 계산한다. 키가 삭제되거나 기준 카탈로그가 비면 마지막 정상 snapshot으로 현재 이름을 다시 보간하고, 처음부터 번역이 없으면 수정 안내와 입력 화면을 표시한다. snapshot은 컴포넌트별로 보관하므로 다른 화면의 번역을 공유하지 않는다.
+Compute all required messages before passing translations to components. If a key is deleted or the base catalog becomes empty, interpolate the current name into the last good snapshot again; if there was no translation from the start, show the fix guidance and the input screen. Snapshots are kept per component, so translations are not shared with another screen.
 
 ### locales/ko/demo.json
 
@@ -284,22 +284,22 @@ export function projectMessages(snapshot: StoreSnapshot<AppSchema>, previous: St
 }
 ```
 
-기준 로케일 `ko`의 키와 인자가 기준 스키마가 된다. 번역 파일은 기준에 있는 키와 인자만 쓴다.
+The keys and arguments in the base locale `ko` form the base schema. Translation files use only keys and arguments that are present in the base.
 
-## 실행
+## Run
 
 ```sh
 npm install --ignore-scripts --no-audit --no-fund
 npm run dev
 ```
 
-개발 서버는 `http://127.0.0.1:5193`에서 뜬다. `initialLocale: 'en'`이라 첫 화면은 `en` 문구로 뜬다. `#heading`은 `Saylo React starter`, `#greeting`은 `#name` 값으로 `Hello {name}`, `#locale`에는 플러그인이 찾은 로케일 목록이 들어간다.
+The development server starts at `http://127.0.0.1:5193`. Because `initialLocale: 'en'`, the first screen uses `en` text. `#heading` is `Saylo React starter`, `#greeting` uses the `#name` value to produce `Hello {name}`, and `#locale` is populated with the locale list discovered by the plugin.
 
-## 라이브 수정 확인
+## Verify live edits
 
-1. `#name`에 이름을 넣고 `#note`에 메모를 적고 `#open-dialog`로 모달을 연다.
-2. `locales/en/demo.json`의 `greeting`을 `"Updated {name}"`으로 고치고 저장한다. 문구만 즉시 바뀌고 이름·메모 입력값과 열어 둔 모달은 그대로 남는다.
-3. `locales/ja/demo.json`을 기준과 같은 키로 만든다.
+1. Enter a name in `#name`, write a note in `#note`, and open the modal with `#open-dialog`.
+2. Change `greeting` in `locales/en/demo.json` to `"Updated {name}"` and save. Only the text changes immediately; the name and note input values and the open modal stay as they are.
+3. Create `locales/ja/demo.json` with the same keys as the base.
 
 ```json
 {
@@ -313,37 +313,37 @@ npm run dev
 }
 ```
 
-`#locale` 목록에 `ja`가 나타나고, 고르면 `#heading`이 `Saylo React 日本語`, `#greeting`이 `こんにちは {name}`이 된다.
+`ja` appears in the `#locale` list; selecting it changes `#heading` to `Saylo React 日本語` and `#greeting` to `こんにちは {name}`.
 
-4. `locales/en/demo.json`의 `greeting`을 `"{name"` 처럼 ICU가 깨진 값으로 저장하면 그 파일은 게시되지 않고 마지막 정상 문구가 유지되며 `#error`에 진단이 뜬다. 값을 되돌리면 진단이 해제된다.
+4. If you save `greeting` in `locales/en/demo.json` with an ICU-broken value such as `"{name"`, that file is not published, the last good text remains, and a diagnostic appears in `#error`. Restoring the value clears the diagnostic.
 
-5. `locales/ko/demo.json`에서 `greeting` 키를 지우거나 파일 내용을 `{}`로 바꾸면 `#render-error`와 열린 모달에 수정 안내가 뜬다. 입력값과 마지막 정상 번역은 유지되고, 이름을 고치면 이전 번역으로 새 이름을 보간한다. 키를 복원하면 안내가 해제된다.
-6. ko/en 파일이 처음부터 `{}`인 상태로 개발 서버를 켜면 번역 준비 안내와 입력 화면이 나온다. 파일을 채워 저장하면 입력을 유지한 채 번역 화면으로 복구된다.
+5. If you delete the `greeting` key from `locales/ko/demo.json` or replace the file contents with `{}`, fix guidance appears in `#render-error` and in the open modal. Input values and the last good translation remain, and changing the name interpolates the new name using the previous translation. Restoring the key clears the guidance.
+6. If you start the development server with both ko/en files at `{}`, the translation setup guidance and input screen appear. After you fill in the files and save, the app recovers to the translated screen while preserving input.
 
-기준에 없는 키나 인자는 기존 카탈로그 진단으로 처리하고, 기준 키 삭제·빈 카탈로그로 생긴 렌더 실패는 `projectMessages`가 처리한다. 새로운 키·인자를 쓰려면 앱 호출부와 타입도 함께 갱신한다.
+Keys or arguments that are not in the base are handled by existing catalog diagnostics, and render failures caused by deleting a base key or by an empty catalog are handled by `projectMessages`. To use a new key or argument, update the app call site and the types together.
 
-## 빌드와 미리보기
+## Build and preview
 
 ```sh
 npm run build
 npm run preview
 ```
 
-`build`는 `tsc --noEmit`으로 타입을 검사한 뒤 Vite 생산 빌드를 만든다. 빌드는 Saylo AST 경계에서 parser 런타임을 제거하므로(`astRuntime` 기본값 `true`) 운영 번들에 ICU parser가 실리지 않는다. 미리보기는 `http://127.0.0.1:5194`이고 라이브 갱신 대신 빌드 시점 카탈로그를 쓴다.
+`build` checks types with `tsc --noEmit` and then creates a Vite production build. The build removes the parser runtime at the Saylo AST boundary (`astRuntime` defaults to `true`), so the production bundle does not include the ICU parser. The preview server is at `http://127.0.0.1:5194` and uses build-time catalogs instead of live updates.
 
-## 타입 생성 (선택)
+## Type generation (optional)
 
-`AppSchema`를 손으로 적어도 된다. 자동 생성은 typegen을 한 번 돌린다.
+You can write `AppSchema` by hand. For automatic generation, run typegen once.
 
 ```sh
 npm exec --package=@0disoft/saylo-typegen@alpha -- saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
 ```
 
-`latest`가 placeholder이므로 `@alpha`를 명시한다. 생성 타입은 `createStore<AppSchema>`의 제네릭에 연결한다. 새 키를 추가하거나 인자를 바꾸면 스키마와 typegen이 함께 갱신돼야 타입이 맞고, `greeting` 값만 바꾸는 편집은 스키마를 바꾸지 않으므로 타입 컴파일을 기다리지 않고 반영된다.
+`latest` is a placeholder, so specify `@alpha`. Connect generated types to the `createStore<AppSchema>` generic. Adding a new key or changing an argument requires updating both the schema and typegen; editing only the `greeting` value does not change the schema, so it is applied without waiting for a type compile.
 
-## 다음
+## Next
 
-- 카탈로그 형식과 `createStore` API는 [카탈로그와 API](03-catalog-and-api.md)를 따른다.
-- `useI18n`·`useI18nSelector`와 Provider 계약은 [@0disoft/saylo-react README](../packages/react/README.md)에 있다.
-- 지연 로딩·SSR은 [@0disoft/saylo-vite README](../packages/vite/README.md)의 `virtual:saylo/lazy`와 `virtual:saylo/server`를 본다.
+- For the catalog format and the `createStore` API, see [catalog and API](03-catalog-and-api.md).
+- For `useI18n`, `useI18nSelector`, and the Provider contract, see the [@0disoft/saylo-react README](../packages/react/README.md).
+- For lazy loading and SSR, see `virtual:saylo/lazy` and `virtual:saylo/server` in the [@0disoft/saylo-vite README](../packages/vite/README.md).
 

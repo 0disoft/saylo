@@ -1,16 +1,16 @@
-# 빈 폴더에서 SvelteKit으로 Saylo 시작하기
+# Start Saylo with SvelteKit from an empty folder
 
-Saylo 저장소를 clone하지 않고 npm registry만으로 SvelteKit 3 + Svelte 5 앱에 Saylo를 붙인다. 빈 폴더에 파일 19개를 만들고 설치하면 로케일 JSON을 고치는 즉시 문구가 바뀐다. 파일 편집과 빈 카탈로그 복구 중 폼과 확인 창의 입력·포커스를 유지한다. 이 문서는 게시본 alpha의 공개 API만 쓴다. 로컬 미게시 API(`onSyncState`, 문의용 진단 보고서)는 쓰지 않는다.
+This guide adds Saylo to a SvelteKit 3 + Svelte 5 app using only the npm registry, without cloning the Saylo repository. Create 19 files in an empty folder and install them; the text changes as soon as you edit the locale JSON. Input and focus in forms and the confirmation dialog are preserved during file edits and empty-catalog recovery. This document uses only the public API of the published alpha. It does not use unpublished local APIs (`onSyncState` or the diagnostic support report).
 
-## 전제
+## Prerequisites
 
-- Node.js 24.x와 npm이 필요하다. 게시 패키지의 `engines.node`는 `24.x`다.
-- Saylo 패키지는 npm public registry에 있다. Saylo 저장소는 private이지만 clone, GitHub 로그인, `file:`·`workspace:` 링크가 필요 없다.
-- `latest`는 placeholder라 설치할 때 `@alpha`를 붙인다. 대조한 게시본은 `0.1.0-alpha.4`다.
-- 도구는 메이저 범위만 적는다. SvelteKit 3, Svelte 5, `@sveltejs/vite-plugin-svelte` 7, `@sveltejs/adapter-node` 6, TypeScript 6, `svelte-check` 4, `@types/node` 24, Vite 8이다.
-- `svelte-check` 4가 받는 TypeScript는 5와 6뿐이라 지금은 6에서 멈춘다.
+- Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
+- The Saylo packages are on the npm public registry. The Saylo repository is private, but you do not need to clone it, sign in to GitHub, or use `file:` or `workspace:` links.
+- `latest` is a placeholder, so add `@alpha` when installing. The published build checked against this document is `0.1.0-alpha.4`.
+- Tool versions list only major ranges: SvelteKit 3, Svelte 5, `@sveltejs/vite-plugin-svelte` 7, `@sveltejs/adapter-node` 6, TypeScript 6, `svelte-check` 4, `@types/node` 24, and Vite 8.
+- `svelte-check` 4 accepts only TypeScript 5 and 6, so this example stays on 6 for now.
 
-## 파일 19개
+## 19 files
 
 ### package.json
 
@@ -237,7 +237,7 @@ export const setDemoView = (view: DemoView) => setContext(key, view);
 export const getDemoView = () => getContext<DemoView>(key);
 ```
 
-layout이 필요한 문구를 모두 계산해 페이지와 입력 화면에 공유한다. 마지막 정상 snapshot과 context 값은 layout마다 따로 보관한다. 새 SSR 요청에는 이전 요청의 번역을 재사용하지 않는다.
+The layout computes all messages it needs and shares them with pages and the input screen. Each layout keeps its own last good snapshot and context value. A new SSR request does not reuse translations from a previous request.
 
 ### src/lib/Workbench.svelte
 
@@ -281,7 +281,7 @@ layout이 필요한 문구를 모두 계산해 페이지와 입력 화면에 공
 </dialog>
 ```
 
-모달 안의 링크에는 `data-sveltekit-reset="false"`를 붙인다. 공통 layout의 모달은 페이지 이동 뒤에도 열려 있으므로, 링크에 있던 키보드 포커스를 유지해야 한다. 이 속성은 스크롤 위치도 유지하므로 모달 안의 링크에만 적용한다. 자세한 동작은 [SvelteKit 링크 옵션](https://svelte.dev/docs/kit/link-options#data-sveltekit-reset)을 참고한다.
+Add `data-sveltekit-reset="false"` to links inside the modal. The modal belongs to the common layout and stays open across page navigation, so keyboard focus on the link must be preserved. This attribute also preserves scroll position, so apply it only to links inside the modal. For details, see [SvelteKit link options](https://svelte.dev/docs/kit/link-options#data-sveltekit-reset).
 
 ### src/lib/style.css
 
@@ -642,7 +642,7 @@ try {
 } finally { await server?.close(); }
 ```
 
-## 설치와 실행
+## Install and run
 
 ```sh
 npm install --ignore-scripts
@@ -653,49 +653,49 @@ npm run build
 npm run preview
 ```
 
-`--ignore-scripts`는 의존성만 받고 설치 스크립트는 돌리지 않는다. `npm run check`는 typegen, `svelte-kit sync`, `svelte-check` 순으로 돌아 생성 타입을 만들고 검사한다. 개발 서버는 `127.0.0.1:5197`, preview는 `127.0.0.1:5198`이고 둘 다 strictPort다.
+`--ignore-scripts` installs dependencies only and does not run install scripts. `npm run check` runs typegen, `svelte-kit sync`, and `svelte-check` in that order to generate types and check them. The development server is at `127.0.0.1:5197` and preview is at `127.0.0.1:5198`; both use strictPort.
 
-`npm run verify:ssr`은 인자 없이 돌면 Vite 개발 서버를 직접 띄워 SSR HTML, `cache-control: no-store`, boot 데이터 일치를 확인한다. origin을 인자로 주면 이미 떠 있는 서버만 검사한다.
+`npm run verify:ssr` starts a Vite development server itself when run without arguments and verifies SSR HTML, `cache-control: no-store`, and matching boot data. If you pass an origin, it checks only an already running server.
 
-## SSR과 요청 로케일
+## SSR and request locale
 
-layout load는 요청마다 `createRequestI18n({ locale: locals.locale })`로 instance를 만들고 `serializeBootSnapshot`으로 직렬화해 내려준 뒤 `finally`에서 바로 `dispose()`한다. 그래서 SSR instance가 요청 사이에 남지 않는다.
+The layout load creates an instance for each request with `createRequestI18n({ locale: locals.locale })`, serializes it with `serializeBootSnapshot`, sends it down, and calls `dispose()` immediately in `finally`. This keeps SSR instances from surviving between requests.
 
-클라이언트는 layout에서 `decodeBootSnapshot`으로 그 boot를 풀어 쓴다. 초기값이 SSR과 같은 값이라 하이드레이션 때 문구가 흔들리지 않는다.
+On the client, the layout decodes that boot with `decodeBootSnapshot`. The initial values match SSR, so text does not flicker during hydration.
 
-요청 로케일은 hooks에서 `Intl.getCanonicalLocales`로 정규화한다. `EN`은 `en`이 되고, 잘못된 태그 `en_US`와 카탈로그가 없는 `fr`은 기준 로케일 `ko`를 사용한다.
+The request locale is normalized in hooks with `Intl.getCanonicalLocales`. `EN` becomes `en`; the malformed tag `en_US` and `fr`, which has no catalog, use the base locale `ko`.
 
-### 로컬 다음 버전 참고
+### Note on the next local version
 
-앞의 alpha.4 코드와 실행 순서는 query locale만 사용하는 게시본 기준을 유지한다. 로컬 다음 버전의 `examples/sveltekit`은 `resolveLocale`과 `resolveAcceptLanguage`로 query, `saylo-locale` cookie, `Accept-Language`, manifest 기준 locale 순서를 해석한다. 잘못되었거나 지원하지 않는 query·cookie는 다음 입력원으로 넘어가며, 명시한 query나 cookie가 있으면 `Accept-Language`의 `q=0` 제외를 덮는다. cookie는 읽기만 하고, 서버 hooks는 고른 locale을 `event.locals`에 둔 뒤 같은 boot를 `no-store`로 내려보낸다.
+The alpha.4 code and execution order above keep the published behavior that uses only the query locale. The next local version in `examples/sveltekit` uses `resolveLocale` and `resolveAcceptLanguage` to resolve inputs in this order: query, the `saylo-locale` cookie, `Accept-Language`, then the manifest base locale. Invalid or unsupported query and cookie values fall through to the next input source, and an explicit query or cookie overrides `q=0` exclusions in `Accept-Language`. The server reads the cookie but does not write it; hooks store the chosen locale in `event.locals` and return the same boot with `no-store`.
 
-이 helper는 로컬 미게시 API라 `0.1.0-alpha.4`에 없다. 위의 실행 가능한 alpha.4 예제에 새 import를 추가하지 않는다.
+These helpers are unpublished local APIs and are not in `0.1.0-alpha.4`. Do not add new imports to the runnable alpha.4 example above.
 
-화면의 로케일 선택은 `goto(url, { reset: false, refreshAll: true })`로 쿼리와 서버 데이터를 갱신한다. 삭제했던 언어를 다시 추가했을 때 URL이 같아도 요청별 boot를 다시 읽는다. 주소의 `locale`이 따라오고 폼은 공유 layout에서 관리한다. 라우트 이동의 포커스 처리는 SvelteKit 라우터가 맡는다.
+The on-screen locale selector calls `goto(url, { reset: false, refreshAll: true })` to refresh the query and server data. If you remove a language and then add it again, the request-specific boot is read again even when the URL is unchanged. The `locale` in the address follows the selection, and the form is managed by the shared layout. SvelteKit's router handles focus for route navigation.
 
-## 연결과 layout 수명
+## Connection and layout lifetime
 
-layout은 `onMount`에서 연결을 붙인다. 모듈이 공유하는 것은 context key뿐이고 instance는 layout마다 새로 만든다.
+The layout connects in `onMount`. Modules share only the context key; each layout creates a new instance.
 
-개발에서는 boot에서 시드한 소스를 layout이 직접 소유하고, 게시 빌드에서는 `virtual:saylo/lazy`의 정적 소스를 붙인다. 붙인 뒤 `refresh()`까지 마쳐야 준비가 끝난다.
+In development, the layout owns the source seeded from boot; in a published build, it attaches the static source from `virtual:saylo/lazy`. Readiness is complete only after the source is attached and `refresh()` finishes.
 
-홈과 about은 같은 layout 아래라 페이지를 옮겨도 폼과 열어 둔 모달이 유지된다. `/plain`은 그룹 밖이라 그쪽으로 가면 연결과 instance가 해제되고, 돌아오면 새 instance가 서고 폼은 빈 상태에서 시작한다.
+Home and about are under the same layout, so the form and an open modal survive page navigation. `/plain` is outside the group, so navigating there disposes the connection and instance; returning creates a new instance and starts with an empty form.
 
-## 라이브 수정 확인
+## Verify live edits
 
-`locales/en/demo.json`의 `heading`을 `Updated words. Same input.`으로 저장하면 그 자리에서 제목만 바뀌고 입력과 열어 둔 모달은 그대로다. 한국어 문구는 그대로 둔다.
+Saving `heading` in `locales/en/demo.json` as `Updated words. Same input.` changes only the title in place, while input and an open modal stay as they are. Leave the Korean messages as they are.
 
-`locales/ja/demo.json`은 `en`과 같은 키로 만들고 `heading`만 `Saylo 日本語`로 둔다. 로케일 목록에 `ja`가 나타나고 고르면 그 문구가 뜬다.
+Create `locales/ja/demo.json` with the same keys as `en` and set only `heading` to `Saylo 日本語`. `ja` appears in the locale list, and selecting it shows that message.
 
-`heading`을 `{name`처럼 ICU가 깨진 값으로 저장하면 그 파일은 게시되지 않고 마지막 정상 문구가 유지되며 진단이 뜬다. 값을 되돌리면 진단이 사라지고 원래 문구가 돌아온다.
+If you save `heading` with an ICU-broken value such as `{name`, that file is not published, the last good text remains, and a diagnostic appears. Restoring the value clears the diagnostic and brings back the original text.
 
-기준 파일 `locales/ko/demo.json`에서 `heading` 키를 지우거나 내용을 `{}`로 바꿔도 입력과 모달은 남는다. 마지막 정상 번역을 표시하고 `#render-error`와 모달에 파일 수정 안내가 나온다. 파일을 복원하면 안내가 해제된다.
+Deleting the `heading` key from the base file `locales/ko/demo.json` or replacing its contents with `{}` also leaves input and the modal in place. The last good translation is shown, and file fix guidance appears in `#render-error` and in the modal. Restoring the file clears the guidance.
 
-ko/en 카탈로그를 처음부터 `{}`로 두고 개발 서버에 접속하면 SSR과 hydration 모두 번역 준비 안내와 입력 화면을 표시한다. 필요한 키를 채워 저장하면 입력을 유지한 채 번역 화면으로 복구된다. 파일 편집이 아니라 파일 자체가 없어 기준 카탈로그를 만들 수 없으면 플러그인의 서버 시작 진단을 먼저 해결한다.
+If you start the development server with both ko/en catalogs at `{}`, both SSR and hydration show the translation setup guidance and the input screen. After you fill in the required keys and save, the app recovers to the translated screen while preserving input. If the base catalog cannot be created because the files are missing rather than being edited, resolve the plugin's server startup diagnostic first.
 
-## 생산 빌드
+## Production build
 
-`npm run build`는 `npm run check` 뒤에 Vite 생산 빌드를 돌리고 `@sveltejs/adapter-node` 6으로 `build/`를 남긴다. 그 서버를 직접 띄우려면 다음처럼 실행한다.
+`npm run build` runs `npm run check` and then a Vite production build, and `@sveltejs/adapter-node` 6 writes `build/`. To start that server directly, run the following.
 
 ```sh
 HOST=127.0.0.1 PORT=5198 ORIGIN=http://127.0.0.1:5198 node build/index.js
@@ -705,12 +705,12 @@ HOST=127.0.0.1 PORT=5198 ORIGIN=http://127.0.0.1:5198 node build/index.js
 $env:HOST='127.0.0.1'; $env:PORT='5198'; $env:ORIGIN='http://127.0.0.1:5198'; node build/index.js
 ```
 
-`ORIGIN`은 CSRF 검사 기준이라 실제 접속 주소와 맞춘다. preview와 이 서버는 둘 다 5198을 쓰므로 동시에 띄우지 않는다.
+`ORIGIN` is the basis for the CSRF check, so match it to the actual access address. Preview and this server both use 5198, so do not run them at the same time.
 
-## 보장 범위
+## Guaranteed scope
 
-- 기준 키 삭제·빈 카탈로그의 렌더 실패는 수정 안내와 마지막 정상 번역으로 처리한다. 새 키·인자를 쓰려면 앱 호출부와 생성 타입도 갱신한다.
-- 빈 카탈로그의 복구 검사는 개발 서버 기준이다. 생산 빌드에는 정상 카탈로그와 맞는 생성 타입을 준비한다.
-- SSR에서 instance를 전역으로 공유하는 구성은 보장하지 않는다. 기준은 요청별 instance다.
-- 파일 편집 중 입력·모달·포커스는 유지한다. `/plain`으로 나갔다 돌아오면 새 layout과 빈 폼으로 시작한다.
+- Render failures from deleting a base key or from an empty catalog are handled with fix guidance and the last good translation. To use a new key or argument, update the app call site and generated types too.
+- Empty-catalog recovery validation is for the development server. Prepare a valid catalog and matching generated types for production builds.
+- Configurations that share an instance globally across SSR are not guaranteed. The baseline is one instance per request.
+- Input, modal, and focus are preserved during file edits. Navigating to `/plain` and back starts a new layout with an empty form.
 
