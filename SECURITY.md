@@ -1,44 +1,44 @@
-# 보안 정책
+# Security Policy
 
-Saylo의 보안 문제는 공개 이슈가 아니라 비공개 이메일로 제보한다. 일반 문의·기능 제안·일반 버그는 [SUPPORT.md](SUPPORT.md)를 따른다.
+Report Saylo security issues by private email, not through public issues. For general questions, feature requests, and ordinary bug reports, see [SUPPORT.md](SUPPORT.md).
 
-## 창구
+## Contact
 
-- 이메일: <mailto:rodisoft1@gmail.com>
-- 제목 형식: `Saylo security · <패키지> <버전> · <한 줄 요약>`
-- 프로필: <https://github.com/0disoft>
+- Email: <mailto:rodisoft1@gmail.com>
+- Subject format: `Saylo security · <package> <version> · <one-line summary>`
+- Profile: <https://github.com/0disoft>
 
-GitHub 저장소와 보안 권고(advisory) 작성 폼은 외부에 공개되어 있지 않고, 인증 없는 요청에 404를 반환한다(2026-10-11 확인). 그래서 위 이메일을 제보 연락처로 안내한다. 이 문서와 패키지 연락처 변경은 로컬 준비 상태이고 기존 alpha.4 tarball에는 없다.
+The GitHub repository and the security advisory form are not publicly available, and unauthenticated requests return 404 (confirmed 2026-10-11). That is why this email address is listed as the reporting contact. The changes to this document and to the package contact details exist only in local preparation and are not included in the existing alpha.4 tarballs.
 
-## 제보에 담을 것
+## What to include
 
-- 영향받는 패키지와 버전: `@0disoft/saylo-core`·`saylo-react`·`saylo-svelte`·`saylo-vite`·`saylo-typegen` 중 무엇인지.
-- 환경: OS, Node 버전, Vite 버전, 프레임워크·브라우저 버전.
-- 도달 경로와 영향: 어떤 입력·설정·호출이 어떤 결과로 이어지는지.
-- 최소 재현: 합성 카탈로그와 설정으로 줄인 절차.
+- Affected package and version: which of `@0disoft/saylo-core`, `saylo-react`, `saylo-svelte`, `saylo-vite`, or `saylo-typegen`.
+- Environment: OS, Node version, Vite version, framework and browser versions.
+- Reachability and impact: which input, configuration, or call leads to which result.
+- Minimal reproduction: a procedure reduced with synthetic catalogs and configuration.
 
-credential, API 키, 세션 쿠키, 실제 사용자의 번역 문구와 개인 입력은 보내지 않는다. 재현에 그런 값이 필요해 보이면 같은 구조를 합성 값으로 바꿔 적는다.
+Do not send credentials, API keys, session cookies, real users' translation strings, or personal input. If reproducing the issue seems to require such values, replace them with synthetic values that keep the same shape.
 
-## 대상
+## Scope
 
-Saylo는 JavaScript·TypeScript i18n 라이브러리 다섯 패키지다.
+Saylo is a JavaScript and TypeScript i18n library made of five packages.
 
-| 패키지 | 역할 |
+| Package | Role |
 | --- | --- |
-| `@0disoft/saylo-core` | 카탈로그 파싱·검증, 번역과 포맷, 불변 store |
-| `@0disoft/saylo-vite` | Vite 개발 플러그인, 운영 빌드 변환, SSR boot, 개발 연결 |
-| `@0disoft/saylo-react` | React context와 snapshot-bound hook |
-| `@0disoft/saylo-svelte` | Svelte 5 어댑터 |
-| `@0disoft/saylo-typegen` | 기준 스키마의 타입 선언 생성 CLI와 worker |
+| `@0disoft/saylo-core` | Catalog parsing and validation, translation and formatting, immutable store |
+| `@0disoft/saylo-vite` | Vite development plugin, production build transforms, SSR boot, development connection |
+| `@0disoft/saylo-react` | React context and snapshot-bound hook |
+| `@0disoft/saylo-svelte` | Svelte 5 adapter |
+| `@0disoft/saylo-typegen` | CLI and worker that generate type declarations from the base schema |
 
-## 입력과 노출 경계
+## Inputs and exposure boundaries
 
-- 카탈로그와 메시지는 앱이 지정한 로케일·namespace 경로에서 읽는다. 로케일·namespace allowlist와 경로 검증은 그 범위 밖 파일을 읽지 않기 위한 경계다. 이 경계를 우회할 수 있는 경로가 있으면 재현과 함께 제보한다.
-- 메시지 값은 문자열이고, 임의 HTML이나 코드를 자동 주입하지 않는다. 이스케이프는 쓰는 프레임워크에 맡긴다.
-- 개발 경로(파일 watch, 커스텀 이벤트, websocket)는 개발 서버 전용이고, 운영 빌드는 상시 채널을 열지 않는다.
-- SSR boot 데이터를 HTML에 넣으면 브라우저에서 읽을 수 있다. 비밀값을 넣지 않으며, 직렬화·HTML 삽입 경계의 문제는 사용하는 어댑터와 삽입 방법을 함께 제보한다.
-- Saylo 패키지는 계정, 원격 업로드, 자체 서버를 두지 않는다. 카탈로그를 어디서 읽고 무엇을 노출하는지는 앱이 정한다.
+- Catalogs and messages are read from the locale and namespace paths the app specifies. The locale and namespace allowlist and path validation form the boundary that keeps files outside that scope from being read. If a path can bypass this boundary, report it with a reproduction.
+- Message values are strings, and Saylo does not inject arbitrary HTML or code automatically. Escaping is left to the framework you use.
+- Development paths (file watching, custom events, websocket) are for the development server only; production builds do not open a persistent channel.
+- SSR boot data placed in HTML can be read in the browser. Do not put secrets in it. For issues at the serialization or HTML insertion boundary, report the adapter and insertion method you use.
+- Saylo packages have no accounts, remote upload, or server of their own. The app decides where catalogs are read from and what is exposed.
 
-## 위험 판단 기준
+## How risk is assessed
 
-도달 경로와 영향으로 판단한다. 같은 코드라도 어떤 앱에 어떻게 붙었는지에 따라 노출 범위가 달라지므로, 재현 절차와 영향 범위를 함께 적어 준다. 카탈로그·메시지 입력, SSR boot, Vite 개발 플러그인 관련 제보는 그 경로를 짚어 주면 확인이 빠르다.
+Assessment is based on reachability and impact. The same code can expose different things depending on how it is attached to an app, so include both the reproduction steps and the impact scope. Reports about catalog or message input, SSR boot, or the Vite development plugin are faster to confirm if you point to that path.

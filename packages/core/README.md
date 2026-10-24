@@ -1,26 +1,26 @@
 # @0disoft/saylo-core
 
-Saylo 코어 패키지다. 카탈로그 파싱과 스키마 검증, 동기 번역기, eager store, 지연 로딩 i18n, SSR boot 직렬화를 제공한다. DOM이나 특정 프레임워크에 의존하지 않는다.
+The Saylo core package. It provides catalog parsing and schema validation, a synchronous translator, an eager store, lazy-loading i18n, and SSR boot serialization. It does not depend on the DOM or a specific framework.
 
-## 상태
+## Status
 
-마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 이 저장소의 workspace에서 쓰거나 `npm pack`으로 만든 tarball을 설치할 수도 있다.
+The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.
 
-React·Svelte selector 미세구독(`useI18nSelector`, `selectSvelteStore`·`getI18nSelector`)은 `0.1.0-alpha.4` 게시본에 포함된다.
+React and Svelte selector fine-grained subscriptions (`useI18nSelector`, `selectSvelteStore`, `getI18nSelector`) are included in the `0.1.0-alpha.4` release.
 
-이 README 수정은 다음 배포에 포함된다.
+The changes to this README will be included in the next release.
 
-## 설치
+## Installation
 
 ```sh
 npm install @0disoft/saylo-core@alpha
 ```
 
-`latest`는 아직 등록용 placeholder를 가리키므로 `@alpha`를 지정한다. 앱 런타임 의존성(`dependencies`)으로 설치한다.
+`latest` still points to a registration placeholder, so specify `@alpha`. Install it as an app runtime dependency (`dependencies`).
 
-## 사용
+## Usage
 
-`parseCatalog`로 로케일별 카탈로그를 파싱하고 `createStore`로 즉시 쓸 수 있는 store를 만든다.
+Use `parseCatalog` to parse the catalog for each locale, and `createStore` to create a store you can use immediately.
 
 ```js
 import { parseCatalog, createStore } from '@0disoft/saylo-core';
@@ -40,35 +40,35 @@ store.setLocale('ko');
 store.dispose();
 ```
 
-메시지는 ICU MessageFormat이다. `{count, number}` 같은 변수는 호출 인자로 채운다. 기준 스키마에 없는 키는 `UnknownMessageError`, 인자 누락이나 타입 오류는 `InvalidArgumentError`다. 없는 번역은 기준 로케일 문구로 폴백한다. `createStore`는 카탈로그를 게시 전에 검증하고, 표시 상태가 같으면 `getSnapshot()`이 같은 객체를 돌려준다.
+Messages use ICU MessageFormat. Variables such as `{count, number}` are filled from call arguments. A key missing from the base schema raises `UnknownMessageError`; a missing argument or type error raises `InvalidArgumentError`. A missing translation falls back to the base locale text. `createStore` validates catalogs before publishing, and `getSnapshot()` returns the same object when the displayed state is unchanged.
 
-`store.subscribe(snapshot => ...)`로 변경을 구독하고 `onDispose(cleanup)`으로 소유 자원 정리를 등록한다. 더 이상 쓰지 않으면 `store.dispose()`를 호출한다.
+Subscribe to changes with `store.subscribe(snapshot => ...)` and register cleanup of owned resources with `onDispose(cleanup)`. Call `store.dispose()` when the store is no longer used.
 
-TypeScript에서는 `createStore<AppSchema>(...)`로, JS에서는 JSDoc `Store<AppSchema>`로 키와 인자 타입을 연결한다. `AppSchema`는 [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme)으로 생성하거나 직접 작성한다. 타입을 지정하지 않아도 동작한다.
+In TypeScript, connect key and argument types with `createStore<AppSchema>(...)`; in JavaScript, use the JSDoc `Store<AppSchema>`. Generate `AppSchema` with [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme) or write it by hand. It works without specifying types.
 
-지연 로딩은 `createI18n`이 담당하고 카탈로그 전송 source는 [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme)가 제공한다. 요청별 SSR은 `createServerI18n`, boot 직렬화는 `serializeBootSnapshot`·`decodeBootSnapshot`이다.
+Lazy loading is handled by `createI18n`, and catalog transport sources are provided by [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme). Per-request SSR uses `createServerI18n`; boot serialization uses `serializeBootSnapshot` and `decodeBootSnapshot`.
 
-미게시 소스는 `setLocale(locale, { signal })`, `loadNamespace(namespace, { signal })`, `refresh({ signal })`을 지원한다. 이 signal은 해당 호출자의 대기만 취소하며, 공유 catalog load와 요청한 화면 상태 전환은 계속된다. 실패는 `CatalogLoadError`의 `code: 'ABORTED'`, `cause: signal.reason`으로 전달된다. 인스턴스 전체를 정리하려면 `dispose()`를 호출하거나 `createI18n`·`createServerI18n`의 options에 수명용 `signal`을 넘긴다. 수명 취소로 진행 중인 API 호출은 `I18nDisposedError`로 끝나고, SSR 준비 중 취소는 `ABORTED`로 끝난다.
+The unpublished source supports `setLocale(locale, { signal })`, `loadNamespace(namespace, { signal })`, and `refresh({ signal })`. This signal cancels only that caller's wait; shared catalog loads and the requested screen state transition continue. Failures are reported through `CatalogLoadError` with `code: 'ABORTED'` and `cause: signal.reason`. To tear down the whole instance, call `dispose()` or pass a lifetime `signal` in the options of `createI18n` or `createServerI18n`. Cancellation of the lifetime ends in-flight API calls with `I18nDisposedError`, while cancellation during SSR preparation ends with `ABORTED`.
 
-미게시 소스는 i18n 인스턴스마다 `loadCatalog`를 최대 8개 동시 실행한다. 로케일·화면 범위·manifest가 바뀌어도 같은 실행 제한을 공유한다. `requestTimeoutMs`(기본 5초)는 실행 대기도 포함하며, 대기 중 취소된 로딩은 source를 호출하지 않는다. source가 취소를 무시하면 실제 Promise가 끝날 때까지 실행 칸을 유지한다. 8개가 모두 멈춘 경우 새 요청도 대기하다 타임아웃으로 끝나므로, source에서도 전달받은 `AbortSignal`에 따라 I/O를 정리해야 한다. 여러 i18n 인스턴스를 사용하는 서버의 전체 연결 수는 source의 공유 풀에서도 제한한다.
+The unpublished source runs at most 8 `loadCatalog` calls concurrently per i18n instance. The same execution limit is shared even when the locale, screen scope, or manifest changes. `requestTimeoutMs` (default 5 seconds) includes time spent waiting for an execution slot, and a load canceled while waiting does not call the source. If the source ignores cancellation, the slot stays occupied until the actual Promise settles. If all 8 slots are stuck, new requests also wait and then end with a timeout, so the source must also clean up I/O according to the `AbortSignal` it receives. On servers that use multiple i18n instances, the source's shared pool also limits the total number of connections.
 
-미게시 `setNamespaces(namespaces, { signal })`은 현재 화면의 필수 namespace 전체를 교체한다. `await i18n.setNamespaces(['common', 'editor'])`처럼 호출하면 이전 화면의 namespace는 언어 전환의 대기 대상에서 빠지고, 이미 받은 카탈로그는 캐시에 남는다. `[]`도 허용한다. 교체로 제외된 namespace 요청과 이전 범위 요청은 `SCOPE_SUPERSEDED`로 거부한다. 배열 순서는 무관하고, 중복·없는 namespace는 상태 변경 전에 거부한다. React·Svelte·Vue 바인딩과 React hydration adapter에서도 이 메서드를 전달한다.
+The unpublished `setNamespaces(namespaces, { signal })` replaces every required namespace for the current screen. Calling it as `await i18n.setNamespaces(['common', 'editor'])` removes the previous screen's namespaces from the language-switch wait, and catalogs already received stay in the cache. `[]` is allowed. Requests for namespaces excluded by the replacement and requests from the previous scope are rejected with `SCOPE_SUPERSEDED`. Array order does not matter, and duplicate or missing namespaces are rejected before the state changes. The React, Svelte, and Vue bindings and the React hydration adapter also forward this method.
 
-두 factory의 선택적 `schedule(milliseconds, callback)`은 테스트에서 타이머를 제어할 때 쓴다. callback을 나중에 실행하고 여러 번 호출해도 안전한 취소 함수를 반환해야 한다. `requestTimeoutMs`는 유한한 양수부터 `2,147,483,647`까지 허용하며 소수는 올림한다. 표시 상태가 바뀌어 revision이 안전 정수 범위를 넘게 되면 `REVISION_OVERFLOW`로 거부하고 기존 snapshot과 boot를 유지한다.
+The optional `schedule(milliseconds, callback)` on both factories is used to control timers in tests. It must run the callback later and return a cancel function that is safe to call repeatedly. `requestTimeoutMs` accepts finite positive numbers up to `2,147,483,647`; fractional values are rounded up. If a displayed-state change pushes the revision beyond the safe integer range, the change is rejected with `REVISION_OVERFLOW` and the existing snapshot and boot data are kept.
 
-브라우저 런타임에서 `parseCatalog`를 빼려면 `@0disoft/saylo-core/runtime` 서브패스 엔트리를 쓴다. 여기에는 `parseCatalog`가 없고 나머지 API는 루트 엔트리와 같다. 루트 엔트리 `@0disoft/saylo-core`는 기존 API를 그대로 유지한다. 이 서브패스는 `0.1.0-alpha.2` 게시본에 포함된다.
+To omit `parseCatalog` from the browser runtime, use the `@0disoft/saylo-core/runtime` subpath entry. It does not include `parseCatalog`, and the other APIs match the root entry. The root entry `@0disoft/saylo-core` keeps the existing API unchanged. This subpath is included in the `0.1.0-alpha.2` release.
 
-## 로케일 해석
+## Locale resolution
 
-`resolveLocale(candidates, supported, fallback)`은 후보를 앱이 정한 순서대로 보고, 지원 목록에 있는 canonical tag를 정확히 일치시킨 뒤 부모 tag로만 넓힌다. 예를 들어 지원 목록에 `en`만 있으면 `en-GB`는 `en`으로 해석하지만, `en-US`만 있으면 `en`이나 `en-GB`를 임의로 `en-US`에 맞추지 않는다. 형식이 잘못된 후보는 건너뛴다. 지원 로케일이 잘못되었거나 canonical tag가 중복되거나 fallback이 지원 목록에 없으면 `RangeError`를 던진다.
+`resolveLocale(candidates, supported, fallback)` examines candidates in the order the app provides, matches canonical tags in the supported list exactly, and then widens only through parent tags. For example, if the supported list contains only `en`, `en-GB` resolves to `en`; if it contains only `en-US`, `en` and `en-GB` are not arbitrarily mapped to `en-US`. Malformed candidates are skipped. It throws `RangeError` if a supported locale is malformed, canonical tags are duplicated, or the fallback is not in the supported list.
 
-`parseAcceptLanguage(header)`는 `{ range, quality }`의 동결된 배열을 품질 내림차순으로 돌려주며 같은 품질은 헤더 순서를 유지한다. 잘못된 항목은 건너뛰고 `q=0` 항목은 제외 정보를 잃지 않도록 남긴다. `resolveAcceptLanguage(header, supported, fallback)`는 가장 구체적인 `q=0` 범위를 제외로 적용한다. 같은 구체성에서 양수와 0이 겹치면 0이 이긴다. wildcard는 명시 범위를 모두 살핀 뒤 기본값을 고른다. 수용 가능한 값이 없으면 HTTP 406 대신 앱 fallback을 반환한다.
+`parseAcceptLanguage(header)` returns a frozen array of `{ range, quality }` in descending quality order, preserving header order for equal quality. Malformed entries are skipped, and entries with `q=0` are kept so the exclusion information is not lost. `resolveAcceptLanguage(header, supported, fallback)` applies the most specific `q=0` range as an exclusion. When a positive value and 0 have the same specificity, 0 wins. A wildcard selects the default after all explicit ranges have been examined. If no acceptable value exists, it returns the app fallback instead of HTTP 406.
 
-세 함수와 `LanguagePreference` 타입은 `@0disoft/saylo-core`와 parser를 포함하지 않는 `@0disoft/saylo-core/runtime` 모두에서 제공한다. 이 API는 로컬 미게시이며 `0.1.0-alpha.4`에는 없다.
+All three functions and the `LanguagePreference` type are provided by both `@0disoft/saylo-core` and `@0disoft/saylo-core/runtime`, which does not include the parser. This API is local and unpublished and is not in `0.1.0-alpha.4`.
 
 ## Rich text parts
 
-`tParts(key, args)`는 `t()`와 같은 메시지·인자 계약을 쓰면서 결과를 읽기 전용 parts 트리로 돌려준다. `t()`는 문자열과 literal 태그를 그대로 유지한다.
+`tParts(key, args)` uses the same message and argument contract as `t()` and returns the result as a read-only parts tree. `t()` keeps strings and literal tags as they are.
 
 ```js
 import { parseCatalog, createStore } from '@0disoft/saylo-core';
@@ -87,41 +87,41 @@ richStore.tParts('common:bold', { name: '제로디' });
 richStore.dispose();
 ```
 
-parts는 `{ type: 'text', value }`와 `{ type: 'tag', name, children }` 두 형태이고 깊게 동결된다. attribute 없는 짝 마커(`<name>`·`</name>`)만 구조로 해석한다. attribute가 붙은 마커와 self-closing 마커는 literal text로 남고, 어긋나거나 닫히지 않거나 ICU 분기 경계를 가로지르는 구조는 `InvalidRichTextError`를 던진다(`richText` 사전 검증을 지정하지 않은 경우 `tParts`에만 적용). `richText`를 지정한 메시지는 수용 단계에서 `INVALID_RICH_TEXT` 진단으로 거부하며, 기준 rich 계약은 번역 검증에도 적용한다. 인자 값에 들어온 `<`·`>`는 text로 남는다. 링크·HTML attribute는 앱이 허용 목록에 넣은 tag 이름만 자기 element로 매핑할 때 붙인다. 번역에서 온 이름으로 임의의 HTML element를 만들지 않는다. 마커 문법·오류·예제는 [rich text parts 기록](../../docs/78-rich-text-parts.md)에 있다. 이 API는 `0.1.0-alpha.4` 게시본에 없고 로컬 `npm run check`로 검증했다.
+Parts have two shapes, `{ type: 'text', value }` and `{ type: 'tag', name, children }`, and are deeply frozen. Only paired markers without attributes (`<name>` and `</name>`) are parsed as structure. Markers with attributes and self-closing markers stay literal text, and mismatched, unclosed, or ICU-branch-crossing structures raise `InvalidRichTextError` (only in `tParts` when no `richText` pre-validation is specified). Messages with `richText` are rejected during catalog acceptance with an `INVALID_RICH_TEXT` diagnostic, and the base rich-text contract also applies to translation validation. `<` and `>` inside argument values remain text. Links and HTML attributes are added only when the app maps tag names on its allowlist to its own elements. Do not create arbitrary HTML elements from names that come from translations. The marker grammar, errors, and examples are in [rich text parts notes](../../docs/78-rich-text-parts.md). This API is not in the `0.1.0-alpha.4` release and was verified with the local `npm run check`.
 
-## 전송 카탈로그 동결
+## Freezing transported catalogs
 
-`freezeCatalogs(catalogs)`는 JSON 전송 뒤 카탈로그 배열·AST·위치·인자 스키마를 깊게 동결하고 같은 배열을 반환한다. 루트와 `/runtime` 엔트리에서 제공한다. 같은 core 모듈이 이미 깊게 동결한 객체는 재순회하지 않으며, 외부에서 겉만 동결한 객체는 내부까지 순회한다. 유효성 검사는 기존 decoder·store·i18n에서 수행한다. 이 함수는 `0.1.0-alpha.2` 게시본에 포함되며 구현과 측정은 [동결 경로 공유 기록](../../docs/26-shared-catalog-freeze.md)과 [개발 prebundle 공유 기록](../../docs/30-prebundle-freeze-sharing.md)에 있다.
+`freezeCatalogs(catalogs)` deeply freezes the catalog array, ASTs, positions, and argument schemas after JSON transport, and returns the same array. It is available from the root and `/runtime` entries. Objects already deeply frozen by the same core module are not traversed again, while objects frozen only on the surface by other code are traversed through. Validation is still performed by the existing decoder, store, and i18n. This function is included in the `0.1.0-alpha.2` release; the implementation and measurements are in [shared catalog freeze notes](../../docs/26-shared-catalog-freeze.md) and [dev prebundle sharing notes](../../docs/30-prebundle-freeze-sharing.md).
 
-## 로컬 파싱 최적화
+## Local parsing optimization
 
-`parseCatalog`는 일반 텍스트와 ASCII `{name}` 보간에 내부 빠른 경로를 쓴다. AST·위치·인자 추론·불변성은 기존 계약을 유지하며, 아포스트로피·복잡한 ICU·범위 밖 인자는 FormatJS가 처리한다. 공개 API 옵션은 추가하지 않았다. 이 최적화는 `0.1.0-alpha.2` 게시본에 포함되며, 측정과 한계는 [설계 기록](../../docs/15-simple-message-parser.md)에 있다.
+`parseCatalog` uses an internal fast path for plain text and ASCII `{name}` interpolation. The AST, positions, argument inference, and immutability keep the existing contract; apostrophes, complex ICU, and out-of-range arguments are handled by FormatJS. No public API options were added. This optimization is included in the `0.1.0-alpha.2` release, and the measurements and limits are in [the design notes](../../docs/15-simple-message-parser.md).
 
-## 관련 패키지
+## Related packages
 
-- [@0disoft/saylo-react](https://github.com/0disoft/saylo/tree/main/packages/react#readme) — React 19 바인딩
-- [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme) — 기준 카탈로그 타입 선언 생성
-- [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme) — Vite 플러그인과 dev client
+- [@0disoft/saylo-react](https://github.com/0disoft/saylo/tree/main/packages/react#readme) — React 19 bindings
+- [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme) — generates type declarations from the base catalog
+- [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme) — Vite plugin and dev client
 
-## 문서
+## Documentation
 
-- [카탈로그와 API](https://github.com/0disoft/saylo/blob/main/docs/03-catalog-and-api.md)
-- [라이브 반영과 타입](https://github.com/0disoft/saylo/blob/main/docs/04-live-update-and-types.md)
-- [운영 빌드와 SSR](https://github.com/0disoft/saylo/blob/main/docs/05-build-and-ssr.md)
-- 저장소 [README](https://github.com/0disoft/saylo#readme)
+- [Catalogs and API](https://github.com/0disoft/saylo/blob/main/docs/03-catalog-and-api.md)
+- [Live updates and types](https://github.com/0disoft/saylo/blob/main/docs/04-live-update-and-types.md)
+- [Production builds and SSR](https://github.com/0disoft/saylo/blob/main/docs/05-build-and-ssr.md)
+- Repository [README](https://github.com/0disoft/saylo#readme)
 
-## 버전
+## Versions
 
-Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환경은 Node 24.18.0이다. TypeScript 7을 기준으로 검증하지만 `typescript`를 peer로 강제하지 않는다.
+Supports Node.js 24.x. `engines.node` is `24.x`, and the local verification environment is Node 24.18.0. It is verified against TypeScript 7, but `typescript` is not enforced as a peer dependency.
 
-런타임 target은 ES2022이고 브라우저 대상이라 Node API에 의존하지 않는다. 이 패키지에는 런타임 peer 의존성이 없다.
+The runtime target is ES2022, and because it targets browsers it does not depend on Node APIs. This package has no runtime peer dependencies.
 
-## 문의와 보안 제보
+## Questions and security reports
 
-일반 문의·기능 제안·버그는 [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com)으로 보낸다. 패키지·버전, 환경, 기대한 동작과 실제 동작, 합성 데이터로 만든 최소 재현을 적는다. 보안 문제도 같은 이메일에 `Saylo security` 제목으로 비공개 제보한다. 토큰·키·쿠키·실제 사용자 데이터는 보내지 않는다.
+Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-Vite 패키지를 설치했다면 `node_modules/@0disoft/saylo-vite/docs/support.md`와 `security.md`에서 자세한 안내를 읽을 수 있다. 이 안내와 연락처 변경은 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에 포함하며 기존 alpha.4 tarball에는 없다. 후보는 아직 npm에 게시하지 않았다.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
 
-## 라이선스
+## License
 
-Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.
+Apache-2.0. The distribution tarball includes the repository root `LICENSE` and `NOTICE`.

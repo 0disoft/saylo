@@ -1,22 +1,22 @@
 # @0disoft/saylo-react
 
-Saylo의 React 19 바인딩이다. `createSayloReact`가 typed Provider와 hook `useI18n`·`useI18nSelector`를 만들고, 둘 다 `useSyncExternalStore`로 store snapshot을 구독한다.
+The React 19 binding for Saylo. `createSayloReact` creates a typed Provider and the `useI18n` and `useI18nSelector` hooks, both of which subscribe to the store snapshot with `useSyncExternalStore`.
 
-## 상태
+## Status
 
-마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)이다. `0.1.0-alpha.1`은 2026-10-06, `0.1.0-alpha.2`는 2026-10-09에 게시했다. 아래 `useI18nSelector`는 `0.1.0-alpha.4` 게시본에 포함된다. 이 저장소의 workspace나 `npm pack` tarball로도 쓸 수 있다.
+The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11. `0.1.0-alpha.1` was published on 2026-10-06 and `0.1.0-alpha.2` on 2026-10-09. `useI18nSelector` below is included in the `0.1.0-alpha.4` release. You can also use the package from this repository's workspace or from an `npm pack` tarball.
 
-## 설치
+## Installation
 
 ```sh
 npm install @0disoft/saylo-react@alpha @0disoft/saylo-core@alpha react@19 react-dom@19
 ```
 
-Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `@alpha`를 지정한다. `react`는 peer 의존성이며 현재 조건은 React 19다. `react-dom`은 앱에서 렌더링할 때 필요하고, `@0disoft/saylo-core`는 런타임 의존성이다.
+The `latest` tag of Saylo packages still points to a registration placeholder, so specify `@alpha`. `react` is a peer dependency and the current requirement is React 19. `react-dom` is needed when rendering in an app, and `@0disoft/saylo-core` is a runtime dependency.
 
-## 사용
+## Usage
 
-factory는 모듈에서 한 번만 만들고, Provider와 hook을 같은 factory에서 꺼내 쓴다. Provider에는 앱이 소유한 instance를 넘기며 이 instance는 렌더 사이에 바뀌면 안 된다. 아래 예제는 Vite나 typegen 없이 코어만으로 동작한다.
+Create the factory once per module, and take the Provider and hook from the same factory. Pass the instance owned by the app to the Provider; this instance must not change between renders. The example below works with only the core package, without Vite or typegen.
 
 ```tsx
 import { createRoot } from 'react-dom/client';
@@ -48,13 +48,13 @@ createRoot(document.getElementById('root')!).render(
 );
 ```
 
-`useI18n`은 그 렌더의 불변 snapshot과 `setLocale`을 돌려준다. 같은 snapshot·instance에서는 hook 결과가 유지되고, 같은 문구나 비활성 로케일 수정은 다시 렌더하지 않는다. Provider는 instance의 수명을 소유하지 않으므로 앱이 `store.dispose()`로 정리한다. lazy instance(`createI18n`)를 쓰면 `setLocale`이 `Promise<void>`가 되고 `loadNamespace`가 함께 온다.
+`useI18n` returns the immutable snapshot for that render and `setLocale`. With the same snapshot and instance, the hook result stays stable, and edits to unchanged copy or an inactive locale do not re-render. The Provider does not own the instance's lifetime, so the app cleans it up with `store.dispose()`. With a lazy instance (`createI18n`), `setLocale` returns `Promise<void>` and `loadNamespace` is provided as well.
 
-파일 저장 즉시 반영, `virtual:saylo`, SSR hydration은 아래 관련 패키지의 Vite 연결로 넘긴다. 저장소의 [React 예제](https://github.com/0disoft/saylo/tree/main/examples/react)와 [SSR 예제](https://github.com/0disoft/saylo/tree/main/examples/ssr)도 참고할 수 있다.
+Applying a saved file immediately, `virtual:saylo`, and SSR hydration are covered by the Vite connection in the related packages below. You can also refer to the repository's [React example](https://github.com/0disoft/saylo/tree/main/examples/react) and [SSR example](https://github.com/0disoft/saylo/tree/main/examples/ssr).
 
-## 선택자 구독 (useI18nSelector)
+## Selector subscriptions (useI18nSelector)
 
-`createSayloReact<S>()`는 `useI18n`에 더해 `useI18nSelector`를 제공한다. selector는 그 렌더의 `SayloReactSnapshot<S>`를 받고 필요한 값만 골라 낸다.
+`createSayloReact<S>()` provides `useI18nSelector` in addition to `useI18n`. The selector receives that render's `SayloReactSnapshot<S>` and picks out only the values it needs.
 
 ```tsx
 export const { SayloProvider, useI18nSelector } = createSayloReact<AppSchema>();
@@ -74,39 +74,39 @@ function LocaleButton() {
 }
 ```
 
-계약은 다음과 같다.
+The contract is as follows.
 
-- 시그니처는 `useI18nSelector<T>(selector: (snapshot: SayloReactSnapshot<S>) => T): T`다.
-- 내부는 `useSyncExternalStore`로 선택 결과를 구독한다. 같은 instance·selector·raw snapshot의 반복 읽기에서는 selector 결과를 캐시하므로, selector가 새 객체를 반환해도 반복 읽기 루프에 빠지지 않는다.
-- 결과는 `Object.is`로 비교한다. 선택 결과 값이나 참조가 `Object.is`로 같으면 store 갱신으로 인한 렌더를 생략한다. 부모나 자기 state 변경으로 인한 렌더는 그대로 일어난다.
-- hook은 기존과 같은 snapshot-bound `t`·`setLocale`·선택적 `loadNamespace`를 유지하고, SSR에서는 `getServerSnapshot`을 쓴다.
-- 기존 `useI18n`은 그대로 남아 있다. snapshot 전체가 필요하면 `useI18n`을 쓴다.
+- The signature is `useI18nSelector<T>(selector: (snapshot: SayloReactSnapshot<S>) => T): T`.
+- Internally it subscribes to the selection result with `useSyncExternalStore`. It caches the selector result for repeated reads with the same instance, selector, and raw snapshot, so a selector that returns a new object does not fall into a repeated read loop.
+- Results are compared with `Object.is`. If the selected value or reference is equal by `Object.is`, the render caused by a store update is skipped. Renders caused by parent or local state changes still happen.
+- The hook keeps the same snapshot-bound `t`, `setLocale`, and optional `loadNamespace`, and uses `getServerSnapshot` during SSR.
+- `useI18n` remains unchanged. Use `useI18n` when you need the whole snapshot.
 
-제약은 다음과 같다.
+The constraints are as follows.
 
-- selector는 매 snapshot마다 다시 실행될 수 있고, 렌더의 props/state를 캡처할 수 있다. 다만 부수 효과 없이 값을 계산하고, 구독되지 않은 변경 가능한 전역값에 의존하지 않는다.
-- 변경되지 않은 객체 참조를 그대로 돌려주면 다시 렌더하지 않는다. selector가 매번 새 객체·새 배열을 만들면 snapshot이 바뀔 때마다 다시 렌더된다. 파생 목록이 필요하면 원본 참조를 그대로 돌려주고 렌더에서 필요한 계산만 한다.
-- `0.1.0-alpha.4` 게시본에 포함된다. 게시 이력은 [릴리스 기록](https://github.com/0disoft/saylo/tree/main/releases)에 있다.
+- The selector may run again for each snapshot and may capture the render's props and state. It must compute values without side effects and must not depend on mutable globals that are not subscribed.
+- Returning an unchanged object reference skips the re-render. If the selector creates a new object or array every time, it re-renders whenever the snapshot changes. When you need a derived list, return the original references and do the needed calculation in the render.
+- Included in the `0.1.0-alpha.4` release. Publication history is in the [release records](https://github.com/0disoft/saylo/tree/main/releases).
 
-## rich text 렌더 (renderRichText)
+## Rich text rendering (renderRichText)
 
-`renderRichText`는 `snapshot.tParts(key, args)`가 돌려준 읽기 전용 parts를 React 노드로 그린다. 순수 함수이며, 어떤 tag를 어떤 element로 그릴지는 앱이 넘긴 `renderers`가 정한다. Saylo는 HTML이나 attribute를 만들지 않는다.
+`renderRichText` renders the read-only parts returned by `snapshot.tParts(key, args)` as React nodes. It is a pure function, and the `renderers` passed by the app decide which element each tag becomes. Saylo does not create HTML or attributes.
 
 ```ts
 type RichTextRenderers = Readonly<Record<string, (children: ReactNode) => ReactNode>>;
 function renderRichText(parts: readonly RichTextPart[], renderers?: RichTextRenderers): ReactNode;
 ```
 
-계약은 다음과 같다.
+The contract is as follows.
 
-- text part는 그대로 React text가 된다. React가 escape하므로 HTML로 해석되지 않는다.
-- tag part는 그 이름이 `renderers`의 own property이고 값이 함수일 때만 그 함수 결과로 바뀐다. 없거나 함수가 아니면 태그를 만들지 않고 자식만 이어 그린다.
-- 카탈로그에서 온 이름으로 임의의 DOM 태그, HTML, attribute, URL을 만들지 않는다. 링크와 attribute는 앱이 자기 목록에 넣은 이름에만 붙인다.
-- 중첩 태그를 지원한다.
-- Fragment key는 tag 이름과 그 이름의 등장 순번을 합쳐 만든다(`link:0`, `link:1`). literal을 삽입·편집해도 매핑된 컴포넌트 identity가 유지된다. renderers 콜백은 같은 tag에 같은 element·component 타입을 돌려줘야 한다. 타입이 바뀌면 React가 다시 mount해 입력·포커스·state가 사라진다.
-- 파싱 오류는 core `tParts`가 던진다. helper는 유효한 parts만 받는다.
+- Text parts become React text as-is. React escapes it, so it is not interpreted as HTML.
+- A tag part becomes the result of a function only when its name is an own property of `renderers` and the value is a function. If it is missing or not a function, no tag is created and only the children are rendered in sequence.
+- Saylo does not create arbitrary DOM tags, HTML, attributes, or URLs from names that come from the catalog. Links and attributes are added only to names the app has put on its own list.
+- Nested tags are supported.
+- Fragment keys combine the tag name with that name's occurrence number (`link:0`, `link:1`). Editing or inserting literals keeps the identity of mapped components. Renderer callbacks must return the same element or component type for the same tag. If the type changes, React remounts and input, focus, and state are lost.
+- Parsing errors are thrown by the core `tParts`. The helper accepts only valid parts.
 
-앞 예제와 별개로 자체 store를 쓰는 예다.
+This example uses its own store, separate from the earlier example.
 
 ```tsx
 import { createRoot } from 'react-dom/client';
@@ -135,26 +135,26 @@ createRoot(document.getElementById('root')!).render(
 );
 ```
 
-이 helper는 아직 npm 게시본에 없다. 로컬 변경이며 버전 승격과 게시를 하지 않는다. 사용법과 검증 범위는 [React rich text 기록](../../docs/79-react-rich-text.md)을 따른다.
+This helper is not yet in an npm release. It is a local change; no version bump or publication has been made. Follow the [React rich text notes](../../docs/79-react-rich-text.md) for usage and verification scope.
 
-## 관련 패키지
+## Related packages
 
-- [@0disoft/saylo-core](https://github.com/0disoft/saylo/tree/main/packages/core#readme) — 파싱·검증·store
-- [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme) — `virtual:saylo`·dev 연결·SSR
-- [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme) — `AppSchema` 생성
+- [@0disoft/saylo-core](https://github.com/0disoft/saylo/tree/main/packages/core#readme) — parsing, validation, and store
+- [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme) — `virtual:saylo`, dev connection, SSR
+- [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme) — generates `AppSchema`
 
-## 버전
+## Versions
 
-Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환경은 Node 24.18.0이다. TypeScript 7을 기준으로 검증하며 `typescript`를 peer로 강제하지 않는다.
+Supports Node.js 24.x. `engines.node` is `24.x`, and the local verification environment is Node 24.18.0. It is verified against TypeScript 7, and `typescript` is not enforced as a peer.
 
-런타임 target은 ES2022이고 브라우저 대상이라 Node API에 의존하지 않는다. peer 조건은 React 19이고, Vite 8은 [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme)의 조건이다.
+The runtime target is ES2022, and because it targets browsers it does not depend on Node APIs. The peer requirement is React 19; Vite 8 is a requirement of [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme).
 
-## 문의와 보안 제보
+## Questions and security reports
 
-일반 문의·기능 제안·버그는 [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com)으로 보낸다. 패키지·버전, 환경, 기대한 동작과 실제 동작, 합성 데이터로 만든 최소 재현을 적는다. 보안 문제도 같은 이메일에 `Saylo security` 제목으로 비공개 제보한다. 토큰·키·쿠키·실제 사용자 데이터는 보내지 않는다.
+Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-Vite 패키지를 설치했다면 `node_modules/@0disoft/saylo-vite/docs/support.md`와 `security.md`에서 자세한 안내를 읽을 수 있다. 이 안내와 연락처 변경은 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에 포함하며 기존 alpha.4 tarball에는 없다. 후보는 아직 npm에 게시하지 않았다.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
 
-## 라이선스
+## License
 
-Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.
+Apache-2.0. The distribution tarball includes the repository root `LICENSE` and `NOTICE`.
