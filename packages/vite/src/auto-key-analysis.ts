@@ -17,6 +17,8 @@ export interface SourceFacts {
 }
 const wrappers = new Set(['TSAsExpression', 'TSTypeAssertion', 'TSNonNullExpression', 'TSSatisfiesExpression',
   'TSInstantiationExpression', 'TypeCastExpression', 'ParenthesizedExpression']);
+// Stored callbacks escape local alias tracking, including public/private class fields.
+const storedValueParents = new Set(['ObjectProperty', 'ClassProperty', 'ClassPrivateProperty']);
 /** Type-only wrappers do not change the runtime value or break translator aliases. */
 const expression = (value: unknown): SourceNode | undefined => {
   let current = node(value);
@@ -136,7 +138,7 @@ export function analyzeSource(source: string, file: string, available: ReadonlyS
       parent.type === 'AwaitExpression' || parent.type === 'YieldExpression' || parent.type === 'SpreadElement' ||
       parent.type === 'AssignmentPattern' && parent.right === current ||
       parent.type === 'ArrowFunctionExpression' && parent.body === current ||
-      parent.type === 'ObjectProperty' && parent.value === current && !bindings.has(parent) ||
+      storedValueParents.has(parent.type) && parent.value === current && !bindings.has(parent) ||
       parent.type === 'AssignmentExpression' && parent.right === current && node(parent.left)?.type !== 'Identifier')) facts.escapes.push(ref);
     const value = literal(current);
     if (value !== undefined && available.has(value)) facts.literals.add(value);

@@ -120,6 +120,60 @@ async function fixture(t) {
 const messages = { title: 'Hello', rich: '<b>Rich</b>', one: 'One', two: 'Two', fallback: 'Base only', unused: 'UNUSED_AUTO_KEY_MARKER' };
 const catalogs = [parseCatalog(JSON.stringify(messages), { locale: 'ko', namespace: 'demo' })];
 
+test('class field translator references require explicit dynamic preservation', async t => {
+  const root = await fixture(t);
+  const file = path.join(root, 'src/main.ts');
+  for (const source of [
+    'class View { translate = i18n.t; render(key) { return this.translate(key); } }',
+    'class View { parts = i18n.tParts; render(key) { return this.parts(key); } }',
+    'class View { #translate = i18n.t; render(key) { return this.#translate(key); } }',
+    'class View { static translate = i18n.t; static render(key) { return this.translate(key); } }',
+    'class View { readonly translate = (i18n.t as typeof i18n.t)!; render(key) { return this.translate(key); } }',
+    'const message = i18n.t; class View { translate = message; render(key) { return this.translate(key); } }',
+    'class View { [field] = i18n.t; render(key) { return this[field](key); } }',
+  ]) {
+    await writeFile(file, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/, source);
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'], dynamicKeys: ['demo:two'] }), ['demo:two']);
+  }
+  await writeFile(file, 'class View { translate = helper.format; render(key) { return this.translate(key); } }');
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), []);
+});
+
+test('production class field aliases fail before typegen and explicit keys preserve runtime translation', async t => {
+  const root = await fixture(t);
+  for (const locale of ['ko', 'en']) {
+    await mkdir(path.join(root, 'locales', locale), { recursive: true });
+    await writeFile(path.join(root, 'locales', locale, 'demo.json'),
+      JSON.stringify({ two: locale === 'ko' ? '기준 문구' : 'Second', unused: 'CLASS_UNUSED_MARKER' }));
+  }
+  await writeFile(path.join(root, 'src/main.ts'), `import { createStore } from '@0disoft/saylo-core/runtime';
+import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
+export const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale });
+class View { #translate = store.t; render(key: string) { return this.#translate(key); } }
+export const view = new View();`);
+  const generated = path.join(root, 'generated.d.ts');
+  await writeFile(generated, '// Preserve previous types');
+  const bundle = includeKeys => build({ configFile: false, root, logLevel: 'silent',
+    plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'en', includeKeys,
+      typegen: { outFile: 'generated.d.ts' } })],
+    resolve: { alias: { '@0disoft/saylo-core/runtime': fileURLToPath(new URL('../../core/dist/runtime.js', import.meta.url)) } },
+    build: { outDir: 'out', minify: false,
+      rolldownOptions: { input: path.join(root, 'src/main.ts'), preserveEntrySignatures: 'strict' } } });
+  await assert.rejects(bundle({ from: ['src'] }), /Dynamic translation keys/);
+  assert.equal(await readFile(generated, 'utf8'), '// Preserve previous types');
+  const result = await bundle({ from: ['src'], dynamicKeys: ['demo:two'] });
+  const chunks = result.output.filter(value => value.type === 'chunk');
+  assert.ok(chunks.every(chunk => !chunk.code.includes('CLASS_UNUSED_MARKER')));
+  const entry = chunks.find(chunk => chunk.isEntry);
+  const app = await import(pathToFileURL(path.join(root, 'out', entry.fileName)));
+  t.after(() => app.store.dispose());
+  assert.equal(app.view.render('demo:two'), 'Second');
+  app.store.setLocale('ko');
+  assert.equal(app.view.render('demo:two'), '기준 문구');
+  assert.throws(() => app.view.render('demo:unused'), { name: 'UnknownMessageError' });
+});
+
 test('reverse alias chains and cross-file cycles retain dynamic-call detection', async t => {
   const root = await fixture(t);
   const chain = Array.from({ length: 1500 }, (_, i) => `const alias${i} = ${i === 1499 ? 'i18n.t' : `alias${i + 1}`};`).join('\n');
