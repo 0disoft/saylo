@@ -54,6 +54,66 @@ test('equivalent catalogs and inactive edits do not force a new UI snapshot', ()
   assert.equal(notifications, 1);
 });
 
+test('reselecting an immutable registry locale never enumerates message keys', () => {
+  const catalogs = initial();
+  const i18n = createStore({ baseLocale: 'ko', locale: 'en', catalogs });
+  const before = i18n.getSnapshot();
+  const messageMaps = new Set(catalogs.map(c => c.messages));
+  const nativeKeys = Object.keys;
+  let enumerations = 0, notifications = 0;
+  i18n.subscribe(() => notifications++);
+  try {
+    Object.keys = value => {
+      if (messageMaps.has(value)) enumerations++;
+      return nativeKeys(value);
+    };
+    for (let i = 0; i < 25; i++) i18n.setLocale('EN');
+  } finally { Object.keys = nativeKeys; i18n.dispose(); }
+  assert.equal(enumerations, 0);
+  assert.equal(notifications, 0);
+  assert.equal(i18n.getSnapshot(), before);
+});
+
+test('same-locale selections still detect changes in mutable catalog inputs', () => {
+  const mutable = structuredClone(catalog('Before'));
+  const i18n = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [mutable] });
+  let notifications = 0;
+  i18n.subscribe(() => notifications++);
+  const selectAfterEdit = title => {
+    mutable.messages.title = structuredClone(catalog(title).messages.title);
+    i18n.setLocale('ko');
+    assert.equal(i18n.t('cart:title'), title);
+  };
+  selectAfterEdit('After');
+  // A shallow freeze is not proof that child messages are immutable.
+  Object.freeze(mutable);
+  i18n.replaceCatalogs([mutable]);
+  selectAfterEdit('Still mutable');
+  // Registry replacement must refresh the eligibility of the fast path.
+  i18n.replaceCatalogs([catalog('Immutable')]);
+  i18n.replaceCatalogs([mutable]);
+  selectAfterEdit('Mutable again');
+  assert.equal(notifications, 5);
+  i18n.dispose();
+});
+
+test('same-locale optimization compares the planned locale during reentrant selections', () => {
+  const i18n = store();
+  const seen = [];
+  i18n.subscribe(snapshot => {
+    seen.push(snapshot.locale);
+    if (snapshot.stateRevision === 1) {
+      i18n.setLocale('ko');
+      i18n.setLocale('fr');
+      i18n.setLocale('fr');
+    }
+  });
+  i18n.setLocale('fr');
+  assert.deepEqual(seen, ['fr', 'ko', 'fr']);
+  assert.equal(i18n.getSnapshot().stateRevision, 3);
+  i18n.dispose();
+});
+
 test('locale and namespace lists change atomically; removal selects base fallback', () => {
   const i18n = store();
   const seen = [];

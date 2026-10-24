@@ -1,0 +1,26 @@
+{
+  "node": "v24.18.0",
+  "operation": "setLocale(currentLocale)",
+  "warmup": 5,
+  "samples": 25,
+  "results": [
+    {
+      "keysPerCatalog": 100,
+      "catalogs": 2,
+      "messageEnumerations": 0,
+      "notifications": 0,
+      "snapshotStable": true,
+      "p50Ms": 0.003700000000037562,
+      "p95Ms": 0.019000000000005457
+    },
+    {
+      "keysPerCatalog": 10000,
+      "catalogs": 2,
+      "messageEnumerations": 0,
+      "notifications": 0,
+      "snapshotStable": true,
+      "p50Ms": 0.005100000000084037,
+      "p95Ms": 0.009700000000066211
+    }
+  ]
+}

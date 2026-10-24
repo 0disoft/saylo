@@ -1,4 +1,4 @@
-import { CatalogError } from './diagnostics.js';
+import { CatalogError, isDeepFrozen } from './diagnostics.js';
 import { nextRevision } from './loading-runtime.js';
 import { createTextFormatter } from './formatters.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
@@ -9,6 +9,7 @@ interface Registry {
   readonly catalogs: readonly ParsedCatalog[];
   readonly locales: readonly string[];
   readonly namespaces: readonly string[];
+  readonly immutable: boolean;
 }
 
 function canonicalLocale(locale: string): string {
@@ -35,6 +36,7 @@ function validateRegistry(catalogs: readonly ParsedCatalog[], baseLocale: string
     catalogs: Object.freeze([...catalogs]),
     locales: Object.freeze([...new Set(catalogs.map(c => c.locale))].sort()),
     namespaces: Object.freeze([...schemas.keys()].sort()),
+    immutable: catalogs.every(isDeepFrozen),
   };
 }
 
@@ -120,6 +122,9 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
       assertActive();
       const canonical = canonicalLocale(nextLocale);
       if (!registry.locales.includes(canonical)) throw new RangeError('Locale is outside the eager registry.');
+      // locale includes queued reentrant selections. Only proven immutable
+      // catalogs make an unchanged selection safe without a content scan.
+      if (registry.immutable && canonical === locale) return;
       publish(registry, canonical);
     },
     dispose: () => {
