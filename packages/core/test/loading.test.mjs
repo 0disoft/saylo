@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { acceptOutcome } from '../dist/loading-registry.js';
+import { CatalogLoader } from '../dist/catalog-loader.js';
 import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 import { CatalogLoadError, I18nDisposedError, NamespaceNotLoadedError, SupersededRequestError,
   UnknownMessageError, createBaseSchema, createI18n, parseCatalog, validateCatalogManifest } from '@0disoft/saylo-core';
@@ -8,6 +9,154 @@ import { CatalogLoadError, I18nDisposedError, NamespaceNotLoadedError, Supersede
 const catalog = (text, locale = 'ko', namespace = 'common') => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
 const id = (locale, namespace) => `${locale}/${namespace}`;
 const tick = () => new Promise(resolve => setImmediate(resolve));
+
+test('catalog source concurrency is bounded at the limit and for large scopes', async t => {
+  for (const count of [7, 8, 9, 128]) await t.test(`${count} catalog loads`, async t => {
+    const { loader, calls, keys, active, peak } = queuedLoader(t, count);
+    const pending = keys.map(key => loader.load(key));
+    const complete = Promise.all(pending);
+    await tick();
+    const firstWave = calls.length;
+    while (calls.length < count || active()) {
+      for (const call of calls) call.resolve();
+      await tick();
+    }
+    const outcomes = await complete;
+    assert.equal(firstWave, Math.min(count, 8));
+    assert.equal(peak(), Math.min(count, 8));
+    assert.deepEqual(outcomes.map(outcome => outcome.key), keys);
+    await Promise.all(keys.map(key => loader.load(key)));
+    assert.equal(calls.length, count, 'completed catalogs still reuse the cache');
+  });
+});
+
+test('disposal cancels queued loads before they reach the source and clears timers', async t => {
+  const { loader, calls, keys, clock } = queuedLoader(t);
+  const pending = Promise.allSettled(keys.map(key => loader.load(key)));
+  await tick();
+  const reason = new I18nDisposedError();
+  loader.stop(reason);
+  const results = await pending;
+  assert.ok(results.every(result => result.status === 'rejected' && result.reason === reason));
+  assert.ok(calls.every(call => call.signal.aborted));
+  assert.equal(clock.size, 0);
+  for (const call of calls) call.resolve();
+  await tick();
+  assert.equal(calls.length, 8, 'the queued ninth catalog never starts');
+});
+
+test('timeouts retain source slots until ignored aborts actually settle', async t => {
+  const { loader, calls, keys, clock, peak } = queuedLoader(t);
+  const expired = Promise.allSettled(keys.map(key => loader.load(key)));
+  await tick();
+  clock.tick(100);
+  assert.ok((await expired).every(result => result.status === 'rejected' && result.reason.code === 'TIMEOUT'));
+  assert.equal(clock.size, 0);
+  const retry = loader.load(keys[8]);
+  await tick();
+  assert.equal(calls.length, 8, 'timeout cannot release unfinished physical source calls');
+  calls[0].reject(new Error('late rejection after timeout'));
+  await tick();
+  assert.equal(calls.length, 9);
+  calls[8].resolve();
+  await retry;
+  for (const call of calls) call.resolve();
+  await tick();
+  assert.equal(peak(), 8);
+  assert.equal(clock.size, 0);
+});
+
+test('manifest generations share the same source limit and deduplicate queued loads', async t => {
+  const { loader, calls, keys, restart, peak } = queuedLoader(t);
+  const stale = Promise.allSettled(keys.map(key => loader.load(key)));
+  await tick();
+  restart();
+  assert.ok((await stale).every(result => result.status === 'rejected' && result.reason.code === 'STALE_CATALOG'));
+  const fresh = loader.load(keys[8]);
+  assert.equal(loader.load(keys[8]), fresh);
+  await tick();
+  assert.equal(calls.length, 8);
+  for (const call of calls) call.resolve();
+  await tick();
+  assert.equal(calls.length, 9, 'only the new-generation queued call starts');
+  calls[8].resolve();
+  assert.equal((await fresh).sessionId, 'two');
+  assert.equal(peak(), 8);
+});
+
+test('synchronous source throws release their slot and keep the original cause', async t => {
+  const { loader, calls, keys, source } = queuedLoader(t);
+  const load = source.loadCatalog;
+  const cause = new Error('source failed synchronously');
+  source.loadCatalog = (locale, namespace, signal) => {
+    if (namespace === keys[0].namespace) throw cause;
+    return load(locale, namespace, signal);
+  };
+  const failed = assert.rejects(loader.load(keys[0]), error => error.code === 'LOAD_FAILED' && error.cause === cause);
+  const successful = Promise.all(keys.slice(1).map(key => loader.load(key)));
+  await tick();
+  assert.equal(calls.length, 8);
+  for (const call of calls) call.resolve();
+  await Promise.all([failed, successful]);
+});
+
+test('i18n scope and locale changes keep one source budget and publish only complete catalogs', async t => {
+  const { i18n, change, handlers, calls } = fixture(t);
+  const namespaces = Array.from({ length: 16 }, (_, index) => `page${index}`);
+  let active = 0, peak = 0, completed = false;
+  const releases = [];
+  for (const namespace of namespaces) for (const locale of ['ko', 'en']) {
+    change(locale, namespace, `${locale}:${namespace}`);
+    handlers.set(id(locale, namespace), outcome => {
+      active++; peak = Math.max(peak, active);
+      return new Promise(resolve => releases.push(() => resolve(outcome))).finally(() => { active--; });
+    });
+  }
+  const before = i18n.getSnapshot();
+  const scope = i18n.setNamespaces(namespaces);
+  await tick();
+  assert.equal(calls.length, 8);
+  const ready = Promise.all([scope, i18n.setLocale('en')]).then(() => { completed = true; });
+  await tick();
+  assert.equal(calls.length, 8, 'new generations cannot allocate a second source budget');
+  assert.equal(i18n.getSnapshot(), before, 'partial scopes never reach the UI');
+  while (!completed) {
+    for (const release of releases.splice(0)) release();
+    await tick();
+  }
+  await ready;
+  assert.equal(peak, 8);
+  assert.equal(calls.length, 32, 'each base/target catalog is loaded once across generations');
+  assert.equal(i18n.getSnapshot().locale, 'en');
+  assert.deepEqual(i18n.getSnapshot().loadedNamespaces, [...namespaces].sort());
+  for (const namespace of namespaces) assert.equal(i18n.t(`${namespace}:title`), `en:${namespace}`);
+});
+
+function queuedLoader(t, count = 9) {
+  const clock = scheduler();
+  const namespaces = Array.from({ length: count }, (_, index) => `scope${index}`);
+  const keys = namespaces.map(namespace => ({ locale: 'en', namespace }));
+  let manifest = validateCatalogManifest({ sessionId: 'one', registryRevision: 0, baseLocale: 'ko',
+    availableLocales: ['ko', 'en'], availableNamespaces: namespaces,
+    catalogs: namespaces.map(namespace => ({ key: { locale: 'ko', namespace }, catalogVersion: 1,
+      status: 'present', namespaceSchemaFingerprint: 'test-schema' })) });
+  let active = 0, peak = 0;
+  const calls = [];
+  const source = {
+    readManifest: () => manifest,
+    loadCatalog(locale, namespace, signal) {
+      active++; peak = Math.max(peak, active);
+      return new Promise((resolve, reject) => {
+        const outcome = { sessionId: manifest.sessionId, status: 'missing', key: { locale, namespace }, catalogVersion: 0 };
+        calls.push({ signal, resolve: () => resolve(outcome), reject });
+      }).finally(() => { active--; });
+    },
+  };
+  const loader = new CatalogLoader(source, () => manifest, 100, clock.schedule);
+  t.after(() => loader.stop(new I18nDisposedError()));
+  return { loader, source, calls, keys, clock, active: () => active, peak: () => peak,
+    restart() { manifest = validateCatalogManifest({ ...manifest, sessionId: 'two' }); loader.invalidate(); } };
+}
 
 test('replacing required scope releases a locale switch from a previous screen and keeps cached pairs', { timeout: 2000 }, async t => {
   const { i18n, calls, defer } = fixture(t);

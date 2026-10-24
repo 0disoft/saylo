@@ -50,6 +50,8 @@ TypeScript에서는 `createStore<AppSchema>(...)`로, JS에서는 JSDoc `Store<A
 
 미게시 소스는 `setLocale(locale, { signal })`, `loadNamespace(namespace, { signal })`, `refresh({ signal })`을 지원한다. 이 signal은 해당 호출자의 대기만 취소하며, 공유 catalog load와 요청한 화면 상태 전환은 계속된다. 실패는 `CatalogLoadError`의 `code: 'ABORTED'`, `cause: signal.reason`으로 전달된다. 인스턴스 전체를 정리하려면 `dispose()`를 호출하거나 `createI18n`·`createServerI18n`의 options에 수명용 `signal`을 넘긴다. 수명 취소로 진행 중인 API 호출은 `I18nDisposedError`로 끝나고, SSR 준비 중 취소는 `ABORTED`로 끝난다.
 
+미게시 소스는 i18n 인스턴스마다 `loadCatalog`를 최대 8개 동시 실행한다. 로케일·화면 범위·manifest가 바뀌어도 같은 실행 제한을 공유한다. `requestTimeoutMs`(기본 5초)는 실행 대기도 포함하며, 대기 중 취소된 로딩은 source를 호출하지 않는다. source가 취소를 무시하면 실제 Promise가 끝날 때까지 실행 칸을 유지한다. 8개가 모두 멈춘 경우 새 요청도 대기하다 타임아웃으로 끝나므로, source에서도 전달받은 `AbortSignal`에 따라 I/O를 정리해야 한다. 여러 i18n 인스턴스를 사용하는 서버의 전체 연결 수는 source의 공유 풀에서도 제한한다.
+
 미게시 `setNamespaces(namespaces, { signal })`은 현재 화면의 필수 namespace 전체를 교체한다. `await i18n.setNamespaces(['common', 'editor'])`처럼 호출하면 이전 화면의 namespace는 언어 전환의 대기 대상에서 빠지고, 이미 받은 카탈로그는 캐시에 남는다. `[]`도 허용한다. 교체로 제외된 namespace 요청과 이전 범위 요청은 `SCOPE_SUPERSEDED`로 거부한다. 배열 순서는 무관하고, 중복·없는 namespace는 상태 변경 전에 거부한다. React·Svelte·Vue 바인딩과 React hydration adapter에서도 이 메서드를 전달한다.
 
 두 factory의 선택적 `schedule(milliseconds, callback)`은 테스트에서 타이머를 제어할 때 쓴다. callback을 나중에 실행하고 여러 번 호출해도 안전한 취소 함수를 반환해야 한다. `requestTimeoutMs`는 유한한 양수부터 `2,147,483,647`까지 허용하며 소수는 올림한다. 표시 상태가 바뀌어 revision이 안전 정수 범위를 넘게 되면 `REVISION_OVERFLOW`로 거부하고 기존 snapshot과 boot를 유지한다.

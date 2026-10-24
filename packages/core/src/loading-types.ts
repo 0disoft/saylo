@@ -33,7 +33,7 @@ export type CatalogLoadResult = CatalogOutcome | { readonly status: 'failed'; re
 
 export interface CatalogSource {
   readManifest(): CatalogManifest;
-  /** An ignored AbortSignal is still guarded by core timeout and disposal. */
+  /** At most eight unsettled calls per i18n instance. Ignored aborts retain their slots. */
   loadCatalog(locale: string, namespace: string, signal?: AbortSignal): Promise<CatalogLoadResult>;
 }
 
@@ -48,7 +48,7 @@ export interface I18nRequestOptions {
 interface SharedI18nOptions {
   readonly catalogSource: CatalogSource;
   readonly timeZone?: string;
-  /** Per-catalog timeout, defaults to 5000ms. */
+  /** Per-catalog timeout including queue wait, defaults to 5000ms. */
   readonly requestTimeoutMs?: number;
   /** Optional per-instance scheduler; defaults to setTimeout/clearTimeout. */
   readonly schedule?: CatalogSchedule;

@@ -2,6 +2,7 @@ import { CatalogLoadError } from './loading-errors.js';
 import { acceptOutcome, keyId, metadata, stamp } from './loading-registry.js';
 import type { CatalogKey, CatalogManifest, CatalogOutcome, CatalogSchedule, CatalogSource } from './loading-types.js';
 import { scheduleCatalog } from './loading-runtime.js';
+import { CatalogLoadQueue } from './loading-queue.js';
 
 interface Flight {
   readonly key: CatalogKey;
@@ -14,6 +15,7 @@ interface Flight {
 export class CatalogLoader {
   private readonly cache = new Map<string, CatalogOutcome>();
   private readonly flights = new Map<string, Flight>();
+  private readonly queue = new CatalogLoadQueue();
 
   constructor(private readonly source: CatalogSource, private readonly manifest: () => CatalogManifest,
     private readonly timeoutMs: number, private readonly schedule: CatalogSchedule = scheduleCatalog) {}
@@ -62,11 +64,8 @@ export class CatalogLoader {
     const cancelTimer = this.schedule(this.timeoutMs, () => flight.cancel(new CatalogLoadError('TIMEOUT',
       `Catalog ${key.locale}/${key.namespace} did not load within ${this.timeoutMs}ms.`)));
     this.flights.set(version, flight);
-    // Also catches a synchronous source throw, without delaying newer desired scopes.
-    Promise.resolve().then(() => {
-      if (done) return undefined;
-      return this.source.loadCatalog(key.locale, key.namespace, controller.signal);
-    }).then(result => {
+    // The queue retains physical source slots across timeouts and invalidation.
+    this.queue.run(() => this.source.loadCatalog(key.locale, key.namespace, controller.signal), controller.signal).then(result => {
       if (done) return;
       try {
         if (!result || result.status === 'failed') throw new CatalogLoadError(result?.code ?? 'INVALID_RESULT', result?.message ?? 'Invalid catalog load result.');
