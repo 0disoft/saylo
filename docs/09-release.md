@@ -1,16 +1,16 @@
 # 09. Release
 
-Alpha.5 release preparation is authorized on 2026-10-25. The five public package versions are promoted to `0.1.0-alpha.5`; Vue stays private at alpha.4. Publication and registry acceptance are tracked in the [release record](../releases/0.1.0-alpha.5.md). Historical candidate evidence below remains unchanged.
+Alpha.5 was published on 2026-10-25. The five public packages use `0.1.0-alpha.5`; Vue stays private at alpha.4. Publication and registry acceptance are tracked in the [release record](../releases/0.1.0-alpha.5.md), and the [CI-approved manifest](../releases/0.1.0-alpha.5.json) records artifact integrity. Historical candidate evidence below remains unchanged.
 
 This is the runbook for Saylo's distribution targets and release process. The first version, `0.1.0-alpha.1`, was published on 2026-10-06. A pre-publication workflow dry-run dispatch succeeded on GitHub `main` at `3953f24` (run [37467769385](https://github.com/0disoft/saylo/actions/runs/37467769385), 46 seconds, Ubuntu 24.04, Node 24.21.0); the actual publish step was skipped then.
 
 ## Confirmed details
 
-The current published version is `0.1.0-alpha.4`. On 2026-10-11, all five packages passed CI OIDC authentication and publishing, comparison with approved tarball SHA-512 values, and external JS/TS, selector SSR, and SvelteKit Chromium consumption. Changes and verification are in the [release record](../releases/0.1.0-alpha.4.md); approved integrity is in the [manifest](../releases/0.1.0-alpha.4.json). Earlier releases and the publication and authentication results below are retained as records from their respective times.
+The previous published version was `0.1.0-alpha.4`. On 2026-10-11, all five packages passed CI OIDC authentication and publishing, comparison with approved tarball SHA-512 values, and external JS/TS, selector SSR, and SvelteKit Chromium consumption. Changes and verification are in the [release record](../releases/0.1.0-alpha.4.md); approved integrity is in the [manifest](../releases/0.1.0-alpha.4.json). Earlier releases and the publication and authentication results below are retained as records from their respective times.
 
-The change scope, promotion, publication, and rollback procedure for the next distribution candidate are in the [alpha.5 plan](../releases/0.1.0-alpha.5-plan.md). Source version remains alpha.4, and alpha.5 was verified only in temporary candidates. The 2026-10-12 [documentation check](../review/release-alpha5-documentation-acceptance-2026-10-12.json) covers a local pack of the latest source containing candidate guidance; it distinguishes that work from the earlier alpha.5 candidate and the actual registry alpha.4. Registry checks after alpha.5 must also verify the new synchronization-state and support-diagnostic APIs and the accompanying documentation. The new SvelteKit check uses the pinned `sveltekit-registry-alpha5` example, while existing alpha.1–4 verification paths remain ([readiness verification](../review/registry-consumer-contract-acceptance-2026-10-12.json)). After alpha.5 is actually published and its CI-approved manifest is available, run `verify:registry:alpha5` and `verify:registry:sveltekit:alpha5`.
+The change scope, promotion, publication, and rollback procedure for the alpha.5 release are in the [alpha.5 plan](../releases/0.1.0-alpha.5-plan.md). Before promotion, source versions stayed at alpha.4 while alpha.5 was validated in temporary candidates; the 2026-10-25 release supersedes that preparation state. The 2026-10-12 [documentation check](../review/release-alpha5-documentation-acceptance-2026-10-12.json) covers a local pack of the latest source containing candidate guidance; it distinguishes that work from the earlier alpha.5 candidate and the actual registry alpha.4. Registry checks after alpha.5 must also verify the new synchronization-state and support-diagnostic APIs and the accompanying documentation. The new SvelteKit check uses the pinned `sveltekit-registry-alpha5` example, while existing alpha.1–4 verification paths remain ([readiness verification](../review/registry-consumer-contract-acceptance-2026-10-12.json)). After alpha.5 is actually published and its CI-approved manifest is available, run `verify:registry:alpha5` and `verify:registry:sveltekit:alpha5`.
 
-Full-translation checking has been present since `0.1.0-alpha.3`, and React and Svelte selectors since `alpha.4`. The local commands and default workflow version below are based on alpha.4. Local `.release/npm/` candidates are gitignored, and approved records come from successful CI artifacts. Current consumption commands are `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`.
+Full-translation checking has been present since `0.1.0-alpha.3`, and React and Svelte selectors since `alpha.4`. The local commands and default workflow version below use alpha.5. Local `.release/npm/` candidates are gitignored, and approved records come from successful CI artifacts. Current consumption commands are `npm run verify:registry:alpha5` and `npm run verify:registry:sveltekit:alpha5`.
 
 On 2026-10-08, `@0disoft/saylo-svelte` was added to the local release list. The four-package publication and authentication record below is from the original release on 2026-10-06. The current local pack, publication plan, and OIDC targets cover five packages, while `verify:registry` checks only the four packages in the existing `alpha.1` manifest. Detailed scope is in [38-svelte-adapter.md](38-svelte-adapter.md).
 
@@ -40,7 +40,7 @@ On 2026-10-06, four packages were published as `0.1.0-alpha.1` with dist-tag `al
 ## Local verification commands
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.4 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.5 --tag alpha
 npm run check
 npm run release:pack
 ```

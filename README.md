@@ -10,7 +10,7 @@ Saylo is an i18n (internationalization) library that aims to show translation co
 
 ## Current status
 
-- This checkout targets `0.1.0-alpha.5` with dist-tag `alpha`. It includes rich text, catalog translation workflows, synchronization diagnostics, cancellation controls, large-catalog optimizations, and English install-time documentation. Publication and registry acceptance are tracked in the [release record](releases/0.1.0-alpha.5.md). Vue remains private.
+- The five public packages are published as `0.1.0-alpha.5` with dist-tag `alpha`. It includes rich text, catalog translation workflows, synchronization diagnostics, cancellation controls, large-catalog optimizations, and English install-time documentation. Publication and registry acceptance are tracked in the [release record](releases/0.1.0-alpha.5.md); the [CI-approved manifest](releases/0.1.0-alpha.5.json) records the five artifact integrities. Vue remains private.
 
 - The previous five-package release was `0.1.0-alpha.4` with dist-tag `alpha`. The 2026-10-11 [CI release](https://github.com/0disoft/saylo/actions/runs/38088660390) passed five Trusted Publisher OIDC authentications, 229 tests, consumer type checks, and publication. CI and the registry tarball SHA-512 checks, published JS/TS, React and Svelte selector SSR, and SvelteKit browser verification also passed. Changes and verification are in the [release record](releases/0.1.0-alpha.4.md), and approved integrity is in the [manifest](releases/0.1.0-alpha.4.json). Re-check with `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`.
 - The complete translation check and the publication and consumer verification for the previous `0.1.0-alpha.3` are preserved in the [release record](releases/0.1.0-alpha.3.md). The approval manifests and verification commands for past versions are kept as well.
@@ -240,7 +240,7 @@ The runnable SSR fixture is in `examples/ssr/`; `npm run demo:ssr` runs renderTo
 
 ## Release
 
-The release target is `0.1.0-alpha.5` for the five packages with dist-tag `alpha`; see the [release record](releases/0.1.0-alpha.5.md) for publication status. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
+The current published version is `0.1.0-alpha.5` for the five packages with dist-tag `alpha`; see the [release record](releases/0.1.0-alpha.5.md) for publication and verification. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
 
 ```sh
 npm run release:check -- --version 0.1.0-alpha.5 --tag alpha
@@ -250,7 +250,7 @@ npm run release:pack
 
 `@0disoft/saylo-svelte` was added to the current release targets. `release:check` checks the version, license, `engines`, `publishConfig`, and internal dependency versions of the five packages. `release:pack` installs the five tarballs into a consumer app outside the repository, verifies them, and leaves the tarballs and `manifest.json` in `.release/npm/`. `verify:registry` compares the existing four `alpha.1` packages, `verify:registry:alpha2` the five `alpha.2` packages, and `verify:registry:alpha3` the five `alpha.3` packages against their approval manifests. `verify:registry:sveltekit` verifies a SvelteKit app with the approved `alpha.2` release, and `verify:registry:sveltekit:alpha3` with the `alpha.3` release. The GitHub Actions [release.yml](.github/workflows/release.yml) runs on manual dispatch, authenticates first regardless of whether it will publish when `verify_oidc=true`, and publishes only when `publish=true`. OIDC authentication, publication, download, and installation verification for the five packages are complete.
 
-After publication, run `npm run verify:registry:alpha5` and `npm run verify:registry:sveltekit:alpha5` using the CI-approved manifest recorded in the release notes.
+Recheck with `npm run verify:registry:alpha5` and `npm run verify:registry:sveltekit:alpha5`, using the [CI-approved manifest](releases/0.1.0-alpha.5.json).
 
 ## Design direction summary
 
