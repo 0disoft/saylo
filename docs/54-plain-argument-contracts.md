@@ -1,128 +1,128 @@
-# 54. plain argument contract 재사용
+# 54. Reusing plain argument contracts
 
-이 문서는 로컬 커밋 `169e72b`의 core `schema.ts` 최적화를 기록한다. 파서가 만드는 plain 인자 스키마를 이름별로 memo한다. cold 교차 비교 근거로 로컬 채택했고, 실제 Vite·브라우저 ABBA 비교에서 로케일 목록의 large 목표 통과를 관측했다. 편집 반영 목표는 미달이다.
+This document records the core `schema.ts` optimization in local commit `169e72b`. It memoizes plain argument schemas produced by the parser by name. The change was adopted locally based on a cold cross-comparison, and a real Vite and browser ABBA comparison observed a passing large target for the locale list. The edit-propagation target failed.
 
-## 배경: 현행 cold 파서 프로파일
+## Background: current cold parser profile
 
-관측은 2026-10-10(KST), revision `ae40ba6`에서 cold 25회로 수집했다.
+Observations were collected from 25 cold runs at revision `ae40ba6` on 2026-10-10 (KST).
 
-| 항목 | 값 |
+| Item | Value |
 | --- | --- |
-| cold 25회 p50 / p95 | 73.66ms / 159.48ms |
-| CPU 표본 | 전체 1334 = parserStack 281 + coreWithoutParserStack 489(합산 귀속 770) + GC 95 + outside 469 + idle 0 |
-| 상위 self 비중 | readJson 30.78%, inferArguments 23.90%, parseSimple 16.75%, freeze 13.12% |
-| 입력 | 10k 단순 ASCII 명칭 1파일 |
-| profiler 표본 간격 / forcedGC | 1000µs / false |
+| Cold 25 runs p50 / p95 | 73.66 ms / 159.48 ms |
+| CPU samples | Total 1334 = parserStack 281 + coreWithoutParserStack 489 (combined attribution 770) + GC 95 + outside 469 + idle 0 |
+| Top self shares | readJson 30.78%, inferArguments 23.90%, parseSimple 16.75%, freeze 13.12% |
+| Input | One file with 10k simple ASCII names |
+| Profiler sample interval / forcedGC | 1000 µs / false |
 
-self 비중은 귀속 표본 중 비율이고 CPU 시간이나 할당량이 아니다. 장비·JIT·인라인 상태에 따라 순위가 달라질 수 있다.
+Self shares are percentages of attributed samples, not CPU time or allocation volume. Rankings can change with hardware, JIT, and inlining state.
 
-## 구현 범위 (core/schema.ts만)
+## Implementation scope (core/schema.ts only)
 
-- literal 또는 동일한 하나의 plain argument가 반복되는 경우만 shortcut한다.
-- canonical per-parse Map에서 이름별 schema를 WeakMap에 memo해 반복되는 Map 생성을 생략한다. 반복되는 JSON signature는 최초에 한 번만 계산하고 이후 memo를 재사용한다.
-- AST 분류 loop는 그대로 남는다.
-- 다인자·nested ICU는 일반 walk와 충돌 검사를 그대로 유지한다.
-- canonical signature·identity·accepted type order·null prototype·깊은 불변성을 그대로 둔다.
-- `parseSimpleMessage`와 파싱+수집 통합 실험([40](40-simple-argument-trial.md))은 변경하지 않는다.
-- 비교 baseline은 `4aacb93`이다.
+- Apply the shortcut only to literals or cases where the same single plain argument repeats.
+- Memoize schemas by name in a `WeakMap` keyed by the canonical per-parse `Map`, avoiding repeated `Map` construction. Compute the repeated JSON signature once, then reuse the memo.
+- Keep the AST classification loop unchanged.
+- Keep the normal walk and conflict checks for multi-argument and nested ICU messages.
+- Preserve canonical signature, identity, accepted type order, null prototype, and deep immutability.
+- Leave `parseSimpleMessage` and the combined parse-and-collect experiment ([40](40-simple-argument-trial.md)) unchanged.
+- The comparison baseline is `4aacb93`.
 
-## 측정 결과
+## Measurement results
 
-단위는 ms이고 diff는 after−before다.
+Units are milliseconds, and diff is after−before.
 
-| 구간 | before p50 / p95 | after p50 / p95 | diff median | diff p95 | improved |
+| Segment | before p50 / p95 | after p50 / p95 | diff median | diff p95 | improved |
 | --- | ---: | ---: | ---: | ---: | --- |
-| paired cold 첫 20쌍 | 84.02 / 163.97 | 62.92 / 125.31 | -27.81 | -0.26 | 19/20 |
-| cold confirm 20쌍 | 86.10 / 163.90 | 72.41 / 133.11 | -14.67 | +54.71 | 18/20 |
-| incremental 100 | 27.24 / 38.98 | 25.16 / 38.01 | -1.16 | +6.00 | 61/100 |
+| Paired cold, first 20 pairs | 84.02 / 163.97 | 62.92 / 125.31 | -27.81 | -0.26 | 19/20 |
+| Cold confirmation, 20 pairs | 86.10 / 163.90 | 72.41 / 133.11 | -14.67 | +54.71 | 18/20 |
+| Incremental, 100 | 27.24 / 38.98 | 25.16 / 38.01 | -1.16 | +6.00 | 61/100 |
 
-| 최장값 | before | after |
+| Maximum | before | after |
 | --- | ---: | ---: |
 | cold | 208.32 | 127.41 |
-| cold 재확인 | 189.92 | 165.31 |
+| cold confirmation | 189.92 | 165.31 |
 | edit | 100.01 | 88.20 |
 
-## 해석과 한계
+## Interpretation and limitations
 
-- cold는 p50과 중앙값이 두 run 모두 개선됐다. diff p95 부호는 run마다 다르다(첫 20쌍 -0.26, confirm +54.71).
-- incremental은 median -1.16ms로 개선 폭이 작고 diff p95는 +6.00ms로 커졌다. 일반 편집 개선은 확인하지 않았다.
-- 같은 입력의 두 파서를 동일 프로세스에서 순서를 교대해 호출하고 표본별로 짝지었다. 무작위 배정·강제 GC·부하 통제는 없어 인과 증명으로 해석하지 않는다.
-- cold 근거로 로컬 채택했으나, 이 수치만으로 종단 간 개선이나 목표 달성을 주장하지 않는다.
+- Cold p50 and median improved in both runs. The sign of diff p95 varies by run (-0.26 for the first 20 pairs and +54.71 for the confirmation).
+- Incremental improved only slightly, with median -1.16 ms, while diff p95 increased by 6.00 ms. No general edit improvement was confirmed.
+- The two parsers processed the same input in the same process, alternating order and pairing samples. There was no randomization, forced GC, or load control, so this is not treated as proof of causation.
+- The change was adopted locally based on cold evidence, but these numbers alone do not establish an end-to-end improvement or target achievement.
 
-## 검증
+## Validation
 
-- 78개 core 테스트와 소비자 typecheck가 통과했다.
-- 5개 typegen, 9개 Vite patch·wire, 1개 probe가 통과해 합계 93개다.
-- 별도 검증에서 profile의 25 wall 표본·1334 CPU 표본과 9개 hash를 확인했고, comparison의 140 measured 쌍(warmup 포함 총 250 deepEqual 쌍)과 3개 run의 nearest-rank 요약·쌍별 차이·현행 dist 5개 hash 일치를 확인했다.
+- All 78 core tests and the consumer typecheck passed.
+- Five typegen tests, nine Vite patch/wire tests, and one probe passed, for 93 total.
+- A separate validation check confirmed the profile's 25 wall samples, 1334 CPU samples, and nine hashes. It also confirmed the comparison's 140 measured pairs (250 total deepEqual pairs including warmups), the nearest-rank summaries and pairwise differences for three runs, and matching hashes for all five current dist files.
 
-## 원본
+## Raw sources
 
 - [parser-cpu-cold-2026-10-10.json](../benchmarks/results/parser-cpu-cold-2026-10-10.json) · [.cpuprofile](../benchmarks/results/parser-cpu-cold-2026-10-10.cpuprofile)
 - [plain-contracts-cold-2026-10-10.json](../benchmarks/results/plain-contracts-cold-2026-10-10.json)
 - [plain-contracts-cold-confirm-2026-10-10.json](../benchmarks/results/plain-contracts-cold-confirm-2026-10-10.json)
 - [plain-contracts-incremental-2026-10-10.json](../benchmarks/results/plain-contracts-incremental-2026-10-10.json)
 
-## 상태
+## Status
 
-로컬 커밋 `169e72b`의 최종 로컬 채택이고 미푸시다. 버전 bump·게시·배포는 없다.
+The final local adoption is local commit `169e72b`, which has not been pushed. There was no version bump, publication, or deployment.
 
-라이브 전후 교차 비교는 측정 전·후 ABBA, 각 mode·variant 50 measured로 실행했다. 도구 policy는 plain-contracts `40bfa5a`이고 `schema.ts`만 대체한다.
+The live before/after comparison used ABBA ordering with 50 measured runs per mode and variant. The tool policy is plain-contracts at `40bfa5a`, replacing only `schema.ts`.
 
-## 실제 Vite·브라우저 전후 비교
+## Real Vite and browser before/after comparison
 
-같은 의존성과 하네스에서 4aacb93 → 169e72b의 schema.ts만 바꾼 격리 스냅샷을 실행했다. 편집과 로케일 추가 각각 before/after/after/before 순서이고, 매 run measured 25·warmup 5·control 10이다. 일반 prebundle·typegen을 유지하고 CPU·GC·파일·브라우저 상세 계측은 껐다. edit → locale-add 순서로 실행했다. 아래 p50/p95(ms)는 각 variant의 measured 50개를 합친 nearest-rank 값이다.
+Isolated snapshots changing only `schema.ts` from `4aacb93` to `169e72b` ran with the same dependencies and harness. Edits and locale additions each followed before/after/after/before order, with 25 measured runs, 5 warmups, and 10 controls per run. Normal prebundling and typegen remained enabled, while detailed CPU, GC, file, and browser instrumentation was disabled. Edits ran before locale additions. The p50/p95 values (ms) below are nearest-rank results across the 50 measured runs for each variant.
 
-| 구간 | before p50 / p95 | after p50 / p95 |
+| Segment | before p50 / p95 | after p50 / p95 |
 | --- | ---: | ---: |
-| 편집 저장→DOM ack | 136.94 / 259.15 | 143.58 / 197.22 |
-| 로케일 저장→목록 ack | 201.50 / 536.37 | 151.79 / 193.56 |
-| 로케일 저장→첫 번역 ack | 406.65 / 784.11 | 323.79 / 491.51 |
-| 선택 준비→번역 ack (Node) | 193.28 / 258.73 | 164.72 / 279.53 |
+| Edit save→DOM ack | 136.94 / 259.15 | 143.58 / 197.22 |
+| Locale save→list ack | 201.50 / 536.37 | 151.79 / 193.56 |
+| Locale save→first-translation ack | 406.65 / 784.11 | 323.79 / 491.51 |
+| Selection ready→translation ack (Node) | 193.28 / 258.73 | 164.72 / 279.53 |
 | setLocale→commit (Browser) | 190.30 / 256.10 | 161.90 / 217.50 |
 
 | ABBA run p95 | 1 before | 2 after | 3 after | 4 before |
 | --- | ---: | ---: | ---: | ---: |
-| 편집 | 284.54 | 199.98 | 153.54 | 153.66 |
-| 로케일 목록 | 536.37 | 193.56 | 184.78 | 445.72 |
+| Edit | 284.54 | 199.98 | 153.54 | 153.66 |
+| Locale list | 536.37 | 193.56 | 184.78 | 445.72 |
 
-이번 조건의 로케일 after 두 run은 목록 250ms 목표에 들어왔다. 250ms 이내 표본은 before 36/50·after 48/50이고, 편집 100ms 이내는 전후 모두 0/50이다. 편집은 pooled p95가 낮았지만 p50은 커졌고 두 번째 블록의 p95 차이는 거의 없다. 선택 준비→번역 ack의 p95도 높아졌다. 모든 구간이 일관되게 빨라졌다고 판단하지 않는다. 순차 독립 블록이며 표본별 짝짓기·무작위 배정·GC·부하 통제가 없다. 이 결과를 코드 변경의 인과 증명으로 쓰거나 Node·Browser 시계를 서로 빼거나 구간 quantile을 더하지 않는다.
+For this condition, both locale after runs met the 250 ms list target. Samples within 250 ms were 36/50 before and 48/50 after; no samples met the 100 ms edit target in either variant (0/50 each). The pooled edit p95 was lower, but p50 rose and the second block showed almost no p95 difference. Selection ready→translation ack p95 also rose. The results do not establish that every segment became consistently faster. These were independent sequential blocks without per-sample pairing, randomization, GC, or load control. Do not use this result as proof that the code change caused an improvement, subtract Node and browser clocks from each other, or add quantiles across segments.
 
-control RTT p95는 편집 4.80→4.72ms·로케일 4.01→4.89ms다. raw 240개(measured 200·warmup 40), control 80개, timing 요약 78개를 원시와 대조했다. 비교 policy·runner를 포함한 39개 파일 hash가 현재 dist·하네스와 일치하고 variant 사이 차이는 schema.js 하나다. 전 run의 입력 노드·입력값·React state·번역 DOM·로케일 복귀/삭제 검사가 통과했고 .d.ts mtime·size도 유지됐다. measured 편집은 한 메시지 patch·position 갱신 0, 로케일은 선택 전 응답 0·선택 후 compact full 1개다. 임시 스냅샷은 정리됐다.
+Control RTT p95 changed from 4.80 to 4.72 ms for edits and from 4.01 to 4.89 ms for locales. Raw comparison covered 240 raw samples (200 measured and 40 warmup), 80 controls, and 78 timing summaries. Hashes for 39 files, including the comparison policy and runner, match the current dist and harness, and the only difference between variants is `schema.js`. All runs passed input-node, input-value, React-state, translated-DOM, and locale revert/delete checks; `.d.ts` mtime and size were also unchanged. Measured edits produced one-message patches and zero position updates; locale runs had zero responses before selection and one compact full response after selection. Temporary snapshots were cleaned up.
 
-원본: [편집 비교](../benchmarks/results/plain-contracts-edit-comparison-2026-10-10.json), [로케일 비교](../benchmarks/results/plain-contracts-locale-comparison-2026-10-10.json). 각 비교의 runs[].file과 run의 results[].samplesFile이 같은 디렉터리의 독립 실행 결과·원시 표본을 가리킨다.
+Raw sources: [edit comparison](../benchmarks/results/plain-contracts-edit-comparison-2026-10-10.json) and [locale comparison](../benchmarks/results/plain-contracts-locale-comparison-2026-10-10.json). Each comparison's `runs[].file` and each run's `results[].samplesFile` point to independent run results and raw samples in the same directory.
 
-재현 명령:
+Reproduction commands:
 
 ```sh
 node benchmarks/live-update/locale-compare.mjs --experiment plain-contracts --mode edit --baseline 4aacb93 --current 169e72b --samples 25 --warmup 5 --calibrations 10 --out benchmarks/results/plain-contracts-edit-comparison-2026-10-10.json
 node benchmarks/live-update/locale-compare.mjs --experiment plain-contracts --mode locale-add --baseline 4aacb93 --current 169e72b --samples 25 --warmup 5 --calibrations 10 --out benchmarks/results/plain-contracts-locale-comparison-2026-10-10.json
 ```
 
-남은 편집 경로에서는 after 서버 queueToDrain p50/p95가 47.56/55.64ms, readAndCandidate가 33.63/52.86ms, catalogDelta가 15.09/23.21ms다. 다음은 대기 정책과 이미 최신인 pair의 불필요한 delta 생성·적용을 실제 요청 범위에서 확인해 개선 후보를 정한다.
+On the remaining edit path, the after server's queueToDrain p50/p95 is 47.56/55.64 ms, readAndCandidate is 33.63/52.86 ms, and catalogDelta is 15.09/23.21 ms. The next step is to examine wait policy and unnecessary delta generation and application for already-current pairs across real request scopes, then choose improvement candidates.
 
-## 후속: patch 할당 절감 (2026-10-11 KST)
+## Follow-up: reducing patch allocations (2026-10-11 KST)
 
-기준은 `ed2bc8c` → `49b260f`다. 현행 소스 hash는 catalog-patch.ts `c9e96e12`·catalog-registry.ts `2e034408`, dist는 `911c60fe`·`86938035`이고 artifact 값이 현재 파일과 일치한다.
+The baseline is `ed2bc8c` → `49b260f`. Current source hashes are `c9e96e12` for `catalog-patch.ts` and `2e034408` for `catalog-registry.ts`; dist hashes are `911c60fe` and `86938035`. The artifact values match the current files.
 
-`createCatalogPatch`에서 `Object.entries` tuple 배열과 메시지마다 만들던 shift 객체를 없애고 delta를 지역 변수로 계산한다. `remove`는 for...in과 `Object.hasOwn`으로 상속 메시지를 거르고, dense 판정은 이미 계산된 `patch.messageCount`를 재사용한다.
+`createCatalogPatch` no longer allocates the `Object.entries` tuple array or a shift object per message, and calculates deltas with local variables. `remove` uses `for...in` and `Object.hasOwn` to exclude inherited messages, and the dense check reuses the already-computed `patch.messageCount`.
 
-micro는 같은 입력에 before·after를 교대 호출하고 쌍마다 deepEqual로 대조했다. measured 300 + warmup 60쌍의 patch 내용이 모두 일치했다. 표의 시간 단위는 ms이다.
+The micro benchmark alternated before and after on the same input and compared each pair with deepEqual. All 300 measured pairs plus 60 warmup pairs produced identical patch content. Table times are in milliseconds.
 
-| 시나리오 | before p50 / p95 | after p50 / p95 | diff median |
+| Scenario | before p50 / p95 | after p50 / p95 | diff median |
 | --- | ---: | ---: | ---: |
 | sameLength | 14.19 / 16.69 | 10.00 / 12.61 | -3.96 |
 | uniform | 14.73 / 22.39 | 10.09 / 15.67 | -4.53 |
 | mixed | 11.24 / 16.16 | 7.66 / 10.75 | -3.50 |
 
-live는 current 단독 edit 실행이다(10k-20-locales, measured 25·warmup 5·calibration 10). 저장→ack는 p50 131.71ms·p95 161.53ms이고, wire는 patch 25·full 0·응답 크기 p50/p95 935B(범위 931~935B), changedMessages 1·positionUpdates 0이며 DOM·state·typegen·wire 검사가 통과했다.
+The live run measured current alone for edits (10k-20-locales, 25 measured runs, 5 warmups, and 10 calibrations). Save→ack measured p50 131.71 ms and p95 161.53 ms. Wire results were 25 patches, 0 full responses, response size p50/p95 935 B (range 931–935 B), 1 changed message, and 0 position updates; DOM, state, typegen, and wire checks passed.
 
-겹쳐 돌린 초기 두 프로세스 출력은 버리고 각 실험을 단독 재실행한 최종 artifact만 근거로 쓴다. before 브라우저 대조가 없어 live는 현행 단독 측정이고 micro 짝 비교는 브라우저 인과가 아니다. 편집 100ms 목표는 미달이다.
+The output from two initially overlapping processes was discarded; only the final artifacts from separately rerunning each experiment are used as evidence. With no before browser comparison, the live result is a current-only measurement, and the paired micro comparison does not establish browser causation. The 100 ms edit target failed.
 
-기능 회귀 테스트 43개와 Vite typecheck, 전체 check의 206개 테스트와 all typecheck, 독립 JS·TS pack 검증이 부모에서 통과했다. `49b260f`는 소스 2개·`test/patch.test.mjs`·`patch-compare.mjs`·results 3개를 담는다.
+The parent passed 43 functional regression tests, the Vite typecheck, all 206 tests and all typechecks in the full check, and independent JS/TS pack validation. `49b260f` contains two source files, `test/patch.test.mjs`, `patch-compare.mjs`, and three result files.
 
-원본: [micro](../benchmarks/results/patch-allocations-2026-10-11.json), [live](../benchmarks/results/patch-allocations-live-2026-10-11.json), [live raw](../benchmarks/results/patch-allocations-live-2026-10-11.10k-20-locales.samples.json).
+Raw sources: [micro](../benchmarks/results/patch-allocations-2026-10-11.json), [live](../benchmarks/results/patch-allocations-live-2026-10-11.json), and [live raw](../benchmarks/results/patch-allocations-live-2026-10-11.10k-20-locales.samples.json).
 
-재현 명령:
+Reproduction commands:
 
 ```sh
 node benchmarks/live-update/patch-compare.mjs --baseline ed2bc8c --out benchmarks/results/patch-allocations-2026-10-11.json

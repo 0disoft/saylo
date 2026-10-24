@@ -1,84 +1,84 @@
-# 60. 새 카탈로그의 대기창 제거
+# 60. Removing the wait window for new catalogs
 
-## 범위
+## Scope
 
-`32e120c`에서 `packages/vite`의 `LiveRegistry.enqueueAdded(file)`가 desired·accepted에 없는 새 경로만 `readFile`로 enqueue해 0ms 타이머로 다음 이벤트 루프 턴에 읽기를 예약한다. 경로 검사·stat·파일 읽기·파싱에 드는 시간은 남는다.
+In `32e120c`, `LiveRegistry.enqueueAdded(file)` in `packages/vite` queues only a new path that is absent from desired and accepted for `readFile`, scheduling the read for the next event-loop turn with a 0 ms timer. Path checks, stat, file reads, and parsing still take time.
 
-- 기존 경로 add·교체, unlink, pending `settleDisk: true`는 기존 40ms quiet window를 유지한다.
-- ENOENT는 기존 40ms 재시도, 첫 게시 뒤 60ms 꼬리 metadata 재확인도 그대로 둔다.
-- 원래 large 로케일 추가 목표는 250ms다.
-- 본체 API·의존성·버전은 그대로이고 push·publish는 없다.
+- Adds and replacements for existing paths, unlinks, and pending `settleDisk: true` entries retain the existing 40 ms quiet window.
+- ENOENT keeps the existing 40 ms retry, and the trailing metadata recheck 60 ms after the first publish remains.
+- The original large locale-add goal is 250 ms.
+- The main API, dependencies, and versions are unchanged, and nothing was pushed or published.
 
-## 서버 파일 구간
+## Server file stages
 
-[서버 파일 구간 원본](../benchmarks/results/locale-add-json-leaf-stages-2026-10-11.json)은 source `6927064` 기준 기록이다.
+The [server file-stage source data](../benchmarks/results/locale-add-json-leaf-stages-2026-10-11.json) was recorded against source `6927064`.
 
-- queue p50 49.94ms·p95 54.05ms.
-- 파일 구간 10개 중 catalogParse가 10/10회 최대이고 최대 302.30ms다.
+- Queue p50 was 49.94 ms and p95 was 54.05 ms.
+- `catalogParse` was the longest of the ten file stages in all 10 runs, with a maximum of 302.30 ms.
 
-## 최초 로딩 파서 최적화 trial 원복
+## Reverting initial-load parser optimization trials
 
-cold 비교에서 이득을 확인하지 못해 두 건 모두 원복했다.
+Neither trial showed a benefit in the cold comparison, so both were reverted.
 
-| trial | 파일 | p50 before→after | p95 before→after | faster |
+| Trial | File | p50 before→after | p95 before→after | Faster |
 | --- | --- | --- | --- | --- |
-| argument-node-pool | [원본](../benchmarks/results/argument-node-pool-cold-compare-2026-10-11.json) | 77.55→88.26ms | 117.49→133.63ms | 4/20 |
-| lazy-parser-diagnostics | [원본](../benchmarks/results/lazy-parser-diagnostics-cold-compare-2026-10-11.json) | 64.46→73.85ms | 133.46→152.34ms | 5/20 |
+| argument-node-pool | [source](../benchmarks/results/argument-node-pool-cold-compare-2026-10-11.json) | 77.55→88.26ms | 117.49→133.63ms | 4/20 |
+| lazy-parser-diagnostics | [source](../benchmarks/results/lazy-parser-diagnostics-cold-compare-2026-10-11.json) | 64.46→73.85ms | 133.46→152.34ms | 5/20 |
 
-패치(`*-trial-2026-10-11.patch`)와 원시 자료는 `19dab47`에 보존했고 현재 core는 `6927064`와 동일하다. 메모리 사용량은 정량 측정하지 않았다. 최초 로딩 파서 최적화 trial들은 제거됐으므로 최초 파싱 개선을 주장하지 않는다. 채택한 source는 `32e120c` 하나다.
+The patches (`*-trial-2026-10-11.patch`) and raw data are preserved in `19dab47`, and core is currently identical to `6927064`. Memory use was not measured quantitatively. The initial-load parser trials were removed, so no improvement to initial parsing is claimed. `32e120c` is the only adopted source change.
 
-## 종단 간 단일 run
+## Single end-to-end run
 
-[로케일 추가 원본](../benchmarks/results/next-turn-locale-add-2026-10-11.json)은 sample 25·warmup 5·calibration 10, typegen ON 조건이다.
+The [locale-add source data](../benchmarks/results/next-turn-locale-add-2026-10-11.json) uses 25 samples, 5 warmups, 10 calibrations, and typegen enabled.
 
-| 조건 | p50 | p95 | 목표 이내 |
+| Scenario | p50 | p95 | Within goal |
 | --- | --- | --- | --- |
 | small 1k×3 | 72.27ms | 91.62ms | 25/25 |
 | large 10k×20 | 135.88ms | 189.30ms | 24/25 |
 
-large는 최대 402.11ms 1건이라 tail 안정을 주장하지 않는다. 한 run 성공이지 안정 달성이나 인과 증명이 아니며, 이 기록은 single current 조건의 통과이고 다른 환경을 보장하지 않는다.
+The large scenario includes one maximum of 402.11 ms, so it does not establish stable tail latency. One successful run is not stable achievement or causal proof; this record shows one passing current-condition run and does not guarantee other environments.
 
-## 검증과 테스트
+## Validation and tests
 
-- `npm run check` PASS(`32e120c`): 전체 build·workspace test, core 81·React 14·Svelte 14·typegen 9·Vite 95·script 5, 소비 타입 검사.
-- 추가 tests-only로 malformed 신규 파일 복구를 확인한 뒤 `node --test packages/vite/test/plugin.test.mjs` 43 PASS.
-- full root check와 별도 plugin 43이며 Vite 96개 full suite는 다시 돌리지 않았다.
-- 새 경로에는 별도 40ms 대기창 없이 읽기를 예약하고, 유효하지 않은 신규 JSON 뒤 유효 쓰기가 watcher event 없이 와도 60ms recheck로 복구한다.
-- 기존 40ms atomic·paired namespace 수렴은 계속 PASS다.
-- 이 기능은 Saylo 실제 Vite 새 파일 경로다.
+- `npm run check` passed (`32e120c`): all builds and workspace tests, including core 81, React 14, Svelte 14, typegen 9, Vite 95, and scripts 5, plus consumer typechecks.
+- After an additional tests-only run verified recovery from a malformed new file, `node --test packages/vite/test/plugin.test.mjs` passed all 43 tests.
+- These plugin tests are separate from the full root check; the full 96-test Vite suite was not rerun.
+- New paths schedule a read without a separate 40 ms wait. If a valid write follows an invalid new JSON file without a watcher event, the 60 ms recheck recovers it.
+- Existing 40 ms atomic and paired-namespace convergence tests still pass.
+- This path handles real Saylo Vite new-file events.
 
-## 재현
+## Reproduction
 
 ```sh
 npm run build
 node benchmarks/live-update/run.mjs --scenario all --mode locale-add --samples 25 --warmup 5 --calibrations 10 --out benchmarks/results/next-turn-locale-add-2026-10-11.json
 ```
 
-## 비교 환경
+## Comparison environment
 
-브라우저 ABBA 비교는 `packages/vite/src/index.ts`·`live-registry.ts` 두 소스만 스냅샷에서 치환한다. baseline은 `6927064`, current는 `32e120c`다. 매 run은 fresh Vite·브라우저, 측정 25·warmup 5·control 10이고 typegen을 켠다. 표본을 짝지은 비교가 아니며 실행 순서는 before/after/after/before다.
+The browser ABBA comparison replaces only `packages/vite/src/index.ts` and `live-registry.ts` in the snapshot. The baseline is `6927064` and the current source is `32e120c`. Each run uses a fresh Vite server and browser, 25 measurements, 5 warmups, 10 controls, and typegen enabled. Samples are not paired; the order is before/after/after/before.
 
-상세 계측 ABBA는 before 1 run 뒤 after 2 run에서 `finishFileSample`의 `exactly 1` path check·read·parse assertion으로 exit 1이 났다(`next-turn-locale-add-stages-failure-2026-10-11.json`, 완료된 before run은 `next-turn-locale-add-compare-2026-10-11.1-before.json`). 호출 수가 출력되지 않아 원인을 확정하지 못했고 after·pooled 결과는 없다. 파싱 1회 조건은 임의로 완화하지 않았다. 상세 계측을 끈 별도 [교차 비교](../benchmarks/results/next-turn-locale-add-comparison-2026-10-11.json)는 완료했다. 이 비교는 로케일 목록 반영 시간을 검증하며 파일 구간의 원인은 확정하지 않는다.
+The detailed-instrumentation ABBA run exited 1 during the second after run, after the first before run, because `finishFileSample` asserted the `exactly 1` path check, read, and parse condition (`next-turn-locale-add-stages-failure-2026-10-11.json`; the completed before run is `next-turn-locale-add-compare-2026-10-11.1-before.json`). Call counts were not printed, so the cause was not established, and no after or pooled result exists. The single-parse condition was not relaxed. A separate [cross comparison](../benchmarks/results/next-turn-locale-add-comparison-2026-10-11.json) with detailed instrumentation disabled completed. It validates locale-list propagation time and does not establish the cause within file stages.
 
-## 교차 측정 결과
+## Cross-measurement results
 
-| 지표 | before 50개 | after 50개 |
+| Metric | before, 50 samples | after, 50 samples |
 | --- | ---: | ---: |
-| 목록 p50(ms) | 214.09 | 150.97 |
-| 목록 p95(ms) | 417.47 | 642.02 |
-| 250ms 이내 | 31/50 | 40/50 |
-| 목록 최대(ms) | 1042.45 | 2499.83 |
-| control 왕복 p95(ms) | 17.29 | 33.27 |
-| 파일 쓰기 p95(ms) | 54.90 | 104.35 |
+| List p50 (ms) | 214.09 | 150.97 |
+| List p95 (ms) | 417.47 | 642.02 |
+| Within 250 ms | 31/50 | 40/50 |
+| List maximum (ms) | 1042.45 | 2499.83 |
+| Control round-trip p95 (ms) | 17.29 | 33.27 |
+| File-write p95 (ms) | 54.90 | 104.35 |
 
-run p95는 before 427.52·241.77ms, after 642.02·463.31ms다. 중앙값과 목표 이내 표본은 개선됐으나 p95·최대는 커졌고 로케일 목표는 미달이다. 파일 쓰기는 비동기 쓰기 완료 콜백을 기다리는 시간이며 순수 디스크 시간으로 해석하지 않는다. control·파일 쓰기 시간도 달라졌으므로 코드의 tail 퇴행이나 전체 성능 개선을 단정하지 않는다. `32e120c`의 성능 채택은 잠정 상태로 두며, 단일 run 189.30ms를 안정 달성의 근거로 사용하지 않는다.
+Per-run p95 was 427.52 and 241.77 ms before, and 642.02 and 463.31 ms after. The median and count within goal improved, but p95 and the maximum grew, and the locale goal remains unmet. File-write timing measures waiting for the asynchronous completion callback, not pure disk time. Because control and file-write timings also changed, the result does not establish a tail regression in the code or an overall performance gain. Performance adoption for `32e120c` remains provisional, and the single 189.30 ms run is not evidence of stable achievement.
 
-fresh Vite SSR [복구 5개](../benchmarks/results/next-turn-additions-recovery-2026-10-11.json)가 모두 `recovered: true`이고, 무간격 [얇은 계층 브라우저 스모크 8개](../benchmarks/results/next-turn-additions-browser-2026-10-11.json)가 PASS다. 후자는 프로토타입 비교 범위이며 전체 어댑터 검증으로 확대하지 않는다. current 단일 run의 코드 hash·표본 집계, 교차 비교 pooled 표본 재계산, 두 프로브의 hash를 확인했다.
+All five fresh Vite SSR [recovery cases](../benchmarks/results/next-turn-additions-recovery-2026-10-11.json) report `recovered: true`, and the gap-free [eight-case thin-layer browser smoke test](../benchmarks/results/next-turn-additions-browser-2026-10-11.json) passes. The latter covers a prototype comparison and does not validate the full adapter. The code hashes and sample aggregates for the current single run, the pooled cross-comparison recalculation, and hashes for both probes were verified.
 
 ```sh
 node benchmarks/live-update/locale-compare.mjs --baseline 6927064 --current 32e120c --experiment fast-additions --mode locale-add --samples 25 --warmup 5 --calibrations 10 --out benchmarks/results/next-turn-locale-add-comparison-2026-10-11.json
 ```
 
-## 남은 작업
+## Remaining work
 
-상세 계측의 다중 읽기 한계·긴 표본 원인 확인과 대기창 제거의 채택 판단, owned-map 잠정 채택 결정, 얇은 계층 전체 비교, 미게시 변경 릴리스 결정이 남아 있다. 장기 목표의 완료를 주장하지 않는다.
+Remaining work includes diagnosing the detailed-instrumentation multi-read limitation and long samples, deciding whether to adopt the wait-window removal, deciding provisionally adopted owned-map behavior, completing the full thin-layer comparison, and choosing a release for unpublished changes. This does not claim completion of the long-term goal.

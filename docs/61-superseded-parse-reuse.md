@@ -1,85 +1,85 @@
-# 61. superseded 파싱 재사용과 다중 읽기 재현
+# 61. Superseded parse reuse and multi-read reproduction
 
-이 문서는 [60-next-turn-additions.md](60-next-turn-additions.md)의 single-read 단정이 실제로 실패한 사례와, 그 실패를 재현하면서 넣은 superseded 파싱 재사용을 기록한다. 새 경로의 성공 파싱을 generation mismatch에서 폐기하던 동작이 같은 파일의 중복 cold parse를 만들었고, 이를 파일별 map으로 넘겨 최신 읽기에서 재사용하도록 바꿨다. 초기 cold parse 자체를 빠르게 만든 최적화는 아니다.
+This document records the case where the single-read assertion in [60-next-turn-additions.md](60-next-turn-additions.md) actually failed and the superseded-parse reuse added while reproducing that failure. Discarding a successful parse of a new path on a generation mismatch caused duplicate cold parses of the same file; the result is now passed through a per-file map for reuse by the latest read. This is not an optimization that makes the initial cold parse itself faster.
 
-## 재현 (직전 60의 단정 실패)
+## Reproduction (the assertion failure in 60)
 
-[실패 trace](../benchmarks/results/new-additions-read-trace-2026-10-11.log)와 [메타데이터](../benchmarks/results/new-additions-read-trace-metadata-2026-10-11.json) 기준이다.
+This is based on the [failure trace](../benchmarks/results/new-additions-read-trace-2026-10-11.log) and [metadata](../benchmarks/results/new-additions-read-trace-metadata-2026-10-11.json).
 
-| 항목 | 값 |
+| Item | Value |
 | --- | --- |
-| watcher 이벤트 | 2 |
+| Watcher events | 2 |
 | drain | 2 |
 | pathcheck | 2 |
 | read | 2 |
 | parse | 2 |
-| sourceLength | 두 읽기 모두 387783 |
-| parse 결과 | 두 번 모두 정상 |
-| hasPrevious | 두 읽기 모두 `false` |
+| sourceLength | 387783 in both reads |
+| Parse result | Valid in both runs |
+| hasPrevious | `false` in both reads |
 
-- 60의 파일 계측은 after가 1회만 읽는다고 가정했다. 실제로는 2회 읽고 2회 파싱했다.
-- 표본 시작점 기준 첫 parse 구간은 34.4474→151.0838 = 116.6364ms다.
-- 둘째 parse 구간은 154.1388→284.511 = 130.3722ms다. 즉 117ms와 130ms 두 경계가 실제로 관측됐다.
+- The file instrumentation in 60 assumed that after read only once. It actually read twice and parsed twice.
+- Relative to the sample start, the first parse interval was 34.4474→151.0838, or 116.6364 ms.
+- The second parse interval was 154.1388→284.511, or 130.3722 ms. Two actual boundaries, 117 ms and 130 ms, were observed.
 
-## 원인
+## Cause
 
-새 파일 처리 중 후속 이벤트가 들어오면 최신 generation이 아닌 첫 읽기의 결과는 게시되지 않는다. 성공한 파싱 결과도 버려져 다음 읽기에 전달할 이전 카탈로그가 없었다. 이 trace에서는 정상·동일 길이의 입력을 두 번 모두 이전 카탈로그 없이 파싱했다.
+When a follow-up event arrives while a new file is being processed, the first read's result is not published because its generation is no longer current. The successful parse result was also discarded, leaving no previous catalog for the next read. In this trace, both reads parsed valid input of the same length without a previous catalog.
 
-- 최초 파싱 비용은 남는다. 이번 변경은 폐기된 성공 파싱을 다음 읽기의 재사용 후보로 전달한다.
-- 동일 길이와 정상 파싱만으로 텍스트 동일성을 판정하지 않는다. 실제 재사용은 최신 source와 이전 성공 파싱의 provenance를 대조한 결과에 따른다.
+- The initial parse cost remains. This change passes a discarded successful parse to the next read as a reuse candidate.
+- Equal length and successful parsing alone do not prove text identity. Actual reuse depends on comparing the latest source with provenance from the earlier successful parse.
 
-## 제품 변경 (`c19ca34`)
+## Product change (`c19ca34`)
 
-- `pendingParses` map에 superseded된 성공 `ParsedCatalog`만 파일별로 저장한다.
-- 다음 읽기 전에 꺼내고 map에서 제거한다.
-- 최신 파일 텍스트를 반드시 다시 읽어 `parseCatalog(source, options, previous)`에 넘긴다.
-- 최신 source·정규화된 context가 이전 성공 파싱의 provenance와 정확히 일치할 때만 core provenance fastpath를 쓴다.
-- 텍스트가 바뀌면 ICU/JSON과 translation 스키마 검증을 기존대로 수행한다.
-- 캐시된 결과가 직접 accepted/publish로 들어가지 않는다. 최신 읽기와 스키마 검증을 거쳐야 한다.
-- `.accepted` 게시는 최신 generation에서만 일어난다. stop은 map을 비운다.
-- 새 읽기가 invalid이면 superseded된 구버전 결과를 게시하지 않는다.
-- 테스트는 동일 내용의 객체 identity 재사용, 변경된 최신 내용 반영, invalid JSON의 last-good 유지, 동일 schema-invalid 내용의 unknown argument 거부 네 경우를 확인한다.
+- The `pendingParses` map stores only superseded successful `ParsedCatalog` values, keyed by file.
+- The next read removes the value from the map before using it.
+- The latest file text is always read again and passed to `parseCatalog(source, options, previous)`.
+- The core provenance fast path is used only when the latest source and normalized context exactly match provenance from the earlier successful parse.
+- If the text changed, ICU/JSON and translation-schema validation run as before.
+- A cached result never goes directly to acceptance or publication; it must pass through the latest read and schema validation.
+- `.accepted` publication happens only in the latest generation. Stop clears the map.
+- If the newest read is invalid, the superseded older result is not published.
+- Tests cover four cases: object identity reuse for identical content, propagation of changed latest content, last-good retention for invalid JSON, and rejection of an unknown argument in schema-invalid content that is otherwise unchanged.
 
-## 검증
+## Validation
 
-- 제품 `c19ca34`에서 루트 `npm run check`가 통과했다. 총 223개다.
-- 내역은 core 81, React 14, Svelte 14, typegen 9, Vite 100, script 5다.
-- 소비 타입 검사와 React 예제 타입 검사도 함께 수행했다.
-- 루트 `npm run check` 이후 tests-only schema 케이스를 추가한 plugin 48개가 통과했다. 추가 뒤 전체 루트 파이프라인은 반복하지 않았고 제품 소스는 동일하다.
-- [native after trace](../benchmarks/results/superseded-parses-read-trace-2026-10-11.log)([metadata](../benchmarks/results/superseded-parses-read-trace-metadata-2026-10-11.json))도 여전히 2 read 2 parse다. first `hasPrevious` `false` 약 139.71ms, second `true` 0.3935ms다.
-- 두 trace 모두 single-read 단정 조건 때문에 exit 1이다. 집계 p95는 없고 스키마 검증 실패가 아니다.
-- assertion은 완화하지 않고 실패 자료를 그대로 보존한다.
-- [정상 벤치](../benchmarks/results/superseded-parses-locale-add-2026-10-11.json)(sample 25·warmup 5·control 10·typegen ON) 결과다.
+- The root `npm run check` passed on product source `c19ca34`: 223 tests in total.
+- The breakdown is core 81, React 14, Svelte 14, typegen 9, Vite 100, and scripts 5.
+- Consumer typechecks and the React example typecheck also ran.
+- After the root `npm run check`, all 48 plugin tests, including an added tests-only schema case, passed. The full root pipeline was not repeated after that addition; product source is unchanged.
+- The [native after trace](../benchmarks/results/superseded-parses-read-trace-2026-10-11.log) ([metadata](../benchmarks/results/superseded-parses-read-trace-metadata-2026-10-11.json)) still reads twice and parses twice. The first `hasPrevious: false` parse took about 139.71 ms; the second, with `hasPrevious: true`, took 0.3935 ms.
+- Both traces exited 1 because they violated the single-read assertion. No aggregate p95 was produced, and this is not a schema-validation failure.
+- The assertion was not relaxed; failed evidence is preserved unchanged.
+- The [normal benchmark](../benchmarks/results/superseded-parses-locale-add-2026-10-11.json) used 25 samples, 5 warmups, 10 controls, and typegen enabled.
 
-| 조건 | p50 | p95 | 250ms 이내 | 최대 |
+| Scenario | p50 | p95 | Within 250 ms | Maximum |
 | --- | --- | --- | --- | --- |
 | small | 93.54ms | 279.47ms | 20/25 | 352.05ms |
 | large | 126.09ms | 247.25ms | 24/25 | 271.94ms |
 
-- 이번에는 large 조건만 250ms 목표에 들어오고 small은 미달이다. 두 조건의 안정적 달성은 미확인이다.
-- before/after 독립 trace의 wall ms로 인과나 전체 p95 속도 개선을 주장하지 않는다.
-- native Vite SSR 복구 5/5 `true`([원본](../benchmarks/results/superseded-parses-recovery-2026-10-11.json)), thin-layer prototype browser-smoke gap 0·8 PASS([원본](../benchmarks/results/superseded-parses-browser-2026-10-11.json))다.
-- browser-smoke는 prototype 범위라 Saylo 어댑터 전체 검증으로 확대하지 않는다.
-- 채택 근거는 최신 reader 텍스트와 스키마를 확인하면서 중복 cold parse를 줄인 것이고, 초기 cold parse 최적화가 아니다.
-- 공개 API·의존성·버전은 그대로이고 커밋만 로컬이며 push·publish는 없다.
+- This time only the large scenario met the 250 ms goal; small did not. Stable achievement across both is unverified.
+- Independent before/after trace wall times do not establish causality or an overall p95 improvement.
+- Native Vite SSR recovered in all 5 cases ([source data](../benchmarks/results/superseded-parses-recovery-2026-10-11.json)), and the thin-layer prototype browser smoke passed all 8 gap-0 cases ([source data](../benchmarks/results/superseded-parses-browser-2026-10-11.json)).
+- The browser smoke covers the prototype only and is not validation of the entire Saylo adapter.
+- The change is supported by reducing duplicate cold parses while checking the latest reader text and schema; it is not an initial cold-parse optimization.
+- The public API, dependencies, and versions are unchanged. The commits are local, with no push or publication.
 
-## 재현
+## Reproduction
 
 ```sh
 npm run build
 node benchmarks/live-update/run.mjs --scenario all --mode locale-add --samples 25 --warmup 5 --calibrations 10 --out benchmarks/results/superseded-parses-locale-add-2026-10-11.json
 ```
 
-단일 읽기 조건이 실패하면 JSON 집계는 생성하지 않는다. stdout·stderr를 남기는 진단 명령은 다음과 같다.
+No JSON aggregate is produced when the single-read condition fails. Use the following diagnostic command to retain stdout and stderr:
 
 ```sh
 node benchmarks/live-update/run.mjs --scenario 10k-20-locales --mode locale-add --samples 25 --warmup 5 --calibrations 10 --server-file-stages --out benchmarks/results/superseded-parses-read-trace-2026-10-11.json > benchmarks/results/superseded-parses-read-trace-2026-10-11.log 2>&1
 ```
 
-## 남은 목표
+## Remaining goals
 
-다음 명시 목표는 성능 안정성이다. stage 다중 읽기 지원과 정확한 계측, owned map·fast additions의 잠정 선택 판정, thin-layer 전체 계약·lazy·SSR·production·timezone·perf 평가, 릴리스 전달 결정이 남아 있다. 장기 목표는 완료가 아니다.
+The next stated goal is stable performance. Remaining work includes support and accurate instrumentation for multiple stage reads, final decisions on the provisional owned-map and fast-additions choices, evaluation of the full thin-layer contracts across lazy loading, SSR, production, time zones, and performance, and the release decision. The long-term goal is not complete.
 
-## 후속 (`a0e47d5`)
+## Follow-up (`a0e47d5`)
 
-위 실패 명령은 harness `df094ba`·`e456` 시점의 기록이고, v2에서는 같은 직렬 superseded 읽기 2회가 publication 1·parent 창 2·operation 2/2/2로 성공 집계됐다. 수정은 benchmark 전용이며 제품 소스 `c19ca34`와 출고 package·dist·clock은 바뀌지 않았다. 상세는 [62-multi-read-measurements.md](62-multi-read-measurements.md)를 따른다.
+The failed command above is a record from harness revisions `df094ba` and `e456`. Under v2, the same two serial superseded reads produced a successful aggregate with 1 publication, 2 parent windows, and operations 2/2/2. The fix is benchmark-only; product source `c19ca34`, shipped packages, dist, and clocks are unchanged. See [62-multi-read-measurements.md](62-multi-read-measurements.md) for details.

@@ -1,72 +1,72 @@
-# 83. push 구독 수명과 locale 재추가 검증
+# 83. Push-subscription lifetime and locale re-addition validation
 
-이 문서는 2026-10-24의 `main` `19640b9`에서 확인한 push 구독 유지보수와 benchmark 결과를 정리한 로컬 검증 기록이다. 제품 수정은 `a9e8b80`, benchmark 계측 수정은 `19640b9`에 있다. `19640b9`는 제품 동작을 바꾸지 않고 receipt와 서버 배치 경계를 보정했다.
+This is a local validation record for push-subscription maintenance and benchmark results verified on `main` at `19640b9` on 2026-10-24. The product fix is `a9e8b80`; the benchmark instrumentation fix is `19640b9`. `19640b9` did not change product behavior and corrected receipt and server batch boundaries.
 
-이 작업의 실행 근거와 원시 결과 8개 파일의 hash는 [유지보수 후속 기록 `59ea8dd`](../review/maintenance-followup-2026-10-24.json)에 모았다.
+The execution evidence and hashes of eight raw-result files are collected in the [maintenance follow-up record at `59ea8dd`](../review/maintenance-followup-2026-10-24.json).
 
-## 재현 경로와 원인
+## Reproduction path and cause
 
-재현은 다음 순서로 일어났다.
+The issue reproduced in this order:
 
-1. 대상 locale를 사용한 뒤 원래 locale로 돌아가 대상 locale의 모든 namespace 파일을 삭제한다.
-2. 캐시에서 대상 locale pair가 제거된 뒤 같은 locale를 다시 추가한다.
-3. 새 pair가 선택되기 전에 이전 서버 scope가 남아 있어 대규모 full catalog push가 도착한다.
-4. benchmark가 request만 receipt로 세던 때는 이 push를 선택 전 transfer로 기록하지 못했다. 그 결과 선택 전 응답이 거짓 0건으로 보여 검증이 불충분했다.
+1. Use the target locale, return to the original locale, and delete all namespace files for the target locale.
+2. After the target locale's pairs are evicted from cache, add the same locale again.
+3. Before the new pair is selected, the old server scope remains, so a large full-catalog push arrives.
+4. When the benchmark counted only request receipts, it did not record this push as a pre-selection transfer. The pre-selection response therefore appeared falsely as zero, making validation incomplete.
 
-원인은 manifest 갱신에서 evicted cache entry를 지운 뒤 서버 구독 scope를 다시 보내지 않은 것이다. 서버는 scope를 명시적으로 교체할 때까지 이전 구독을 유지했다.
+The cause was that manifest updates removed evicted cache entries without resending server subscription scope. The server kept the old subscription until scope was explicitly replaced.
 
-## 제품 수정
+## Product fix
 
-`a9e8b80`은 [catalog-source.ts](../packages/vite/src/catalog-source.ts)에서 evicted pair를 계산해 cache에서 제거한 직후 `sendScope()`를 호출한다. 연결된 push client는 축소된 구독 scope를 받는다. 같은 locale를 다시 만들더라도 선택 전 full push를 받지 않고, 사용자가 선택할 때 fresh full 요청을 한 번 보낸다.
+`a9e8b80` computes evicted pairs in [catalog-source.ts](../packages/vite/src/catalog-source.ts) and calls `sendScope()` immediately after removing them from cache. Connected push clients receive the reduced subscription scope. Recreating the same locale no longer sends a full push before selection; a fresh full request is made once when the user selects it.
 
-[push.test.mjs](../packages/vite/test/push.test.mjs)에 이 경로의 회귀 테스트를 추가했다. 새 테스트는 locale와 두 namespace pair를 제거한 뒤 다음을 확인한다.
+A regression test for this path was added to [push.test.mjs](../packages/vite/test/push.test.mjs). After removing a locale and two namespace pairs, the new test verifies:
 
-- 서버 scope에서 evicted pair가 빠진다.
-- locale를 다시 만들었을 때 선택 전 push에 해당 locale가 없다.
-- 원래 locale를 유지한 채 새 locale를 선택하면 요청이 정확히 한 번 발생하고 새 번역을 읽는다.
+- Evicted pairs are removed from server scope.
+- Recreating the locale produces no pre-selection push for it.
+- Keeping the original locale and selecting the new locale produces exactly one request and reads the new translation.
 
-새 테스트는 수정 전 실패했고 제품 수정 뒤 통과했다.
+The new test failed before the fix and passed after it.
 
-## 검증 범위
+## Validation scope
 
-- push·lazy·sync-state와 receipt·profile 관련 테스트 8개 파일에서 62개 테스트가 통과했다.
-- 수정 전 root 소스에서 `npm run build`가 통과했고, 제품 수정 뒤 `npm run build --workspace=@0disoft/saylo-vite`가 통과했다.
-- 전체 536개 검사 재실행, 새 후보 동결, pack·tarball·registry 소비, 배포는 수행하지 않았다.
+- All 62 tests passed across eight files covering push, lazy, sync-state, receipts, and profiles.
+- `npm run build` passed on root source before the fix, and `npm run build --workspace=@0disoft/saylo-vite` passed after it.
+- The full 536-check suite was not rerun, and no new candidate freeze, pack or tarball or registry consumption, or deployment was performed.
 
-62개 검사는 이 수정 경로와 계측 변경을 확인한 범위다. 전체 suite나 새 후보의 수락 결과로 확대 해석하지 않는다.
+The 62 tests verify this fix path and instrumentation changes. They are not evidence for the full suite or acceptance of a new candidate.
 
-## benchmark 계측 보정
+## Benchmark instrumentation correction
 
-`19640b9`의 benchmark 변경은 성능 수치를 만들기 전에 수신 경로와 배치 경계를 바로잡았다.
+The benchmark changes in `19640b9` corrected receive paths and batch boundaries before producing performance figures.
 
-- edit와 locale-add receipt가 request `saylo:catalog`와 push `saylo:catalog-push`를 모두 인식한다.
-- 선택 전 push도 locale-add transfer로 집계한다. 따라서 기존의 거짓 0건 통과를 재현하지 않는다.
-- 서버 단계는 `boundaryVersion: 3`이다. drain timer 대신 실제 `startBatch` 진입에서 시작하고 `prepareTranslations` 또는 superseded·오류 batch의 `processBatch` 정착에서 끝낸다.
-- browser stage transform은 현재 제품 모듈의 `immutableSnapshot` 경계를 계측한다.
+- Edit and locale-add receipts recognize both request `saylo:catalog` and push `saylo:catalog-push`.
+- Pre-selection pushes are counted as locale-add transfers, so the earlier false zero-count pass is not reproduced.
+- Server stages use `boundaryVersion: 3`, starting at actual `startBatch` entry instead of a drain timer and ending at `prepareTranslations` or `processBatch` settlement for superseded and error batches.
+- The browser stage transform instruments the current product module's `immutableSnapshot` boundary.
 
-이 변경은 benchmark 전용이다. 제품 performance가 개선됐다는 근거로 쓰지 않는다.
+These changes are benchmark-only and are not evidence of product performance improvement.
 
-## 최종 50회 결과
+## Final 50-run results
 
-측정은 warmup 5회, 표본 50회, calibration 25회, 상세 CPU·browser·reply·client 계측을 끈 조건이다. 두 규모 모두 `pushReplies` 50, `requestReplies` 0, `patchReplies` 50이며 한 번에 키 하나를 수정했다. edit의 입력·node·상태 보존과 생성 `.d.ts` 유지가 통과했다. locale-add는 두 규모 모두 선택 전 transfer 0건, 선택 뒤 full 응답 50건, declaration 미재작성을 확인했다.
+The run used 5 warmups, 50 samples, and 25 calibrations with detailed CPU, browser, reply, and client instrumentation disabled. Both sizes had `pushReplies` 50, `requestReplies` 0, and `patchReplies` 50, editing one key at a time. Edits preserved input, nodes, and state and did not rewrite the generated `.d.ts`. Locale-add had zero pre-selection transfers at both sizes, 50 full responses after selection, and no declaration rewrite.
 
-| 모드·규모 | 지표 | p50 | p95 | 목표 | 판정 |
+| Mode and size | Metric | p50 | p95 | Target | Result |
 | --- | --- | ---: | ---: | ---: | --- |
-| edit small(1k×3) | 저장→DOM ack | 22.60ms | 53.12ms | 100ms | 통과 |
-| edit large(10k×20) | 저장→DOM ack | 400.00ms | 866.01ms | 100ms | 미달 |
-| locale-add small(1k×3) | 저장→목록 ack | 56.44ms | 282.33ms | 250ms | 미달 |
-| locale-add large(10k×20) | 저장→목록 ack | 227.13ms | 1,969.58ms | 250ms | 미달 |
-| locale-add large(10k×20) | 선택→DOM commit | 531.80ms | 795.60ms | - | 성능 목표와 별도 기록 |
+| edit small (1k×3) | save→DOM ack | 22.60 ms | 53.12 ms | 100 ms | Passed |
+| edit large (10k×20) | save→DOM ack | 400.00 ms | 866.01 ms | 100 ms | Failed to meet target |
+| locale-add small (1k×3) | save→list ack | 56.44 ms | 282.33 ms | 250 ms | Failed to meet target |
+| locale-add large (10k×20) | save→list ack | 227.13 ms | 1,969.58 ms | 250 ms | Failed to meet target |
+| locale-add large (10k×20) | select→DOM commit | 531.80 ms | 795.60 ms | — | Recorded separately from performance targets |
 
-전송 및 보존 계약은 통과했지만 네 성능 목표 중 edit small만 통과했다. locale-add는 small과 large 모두 p95가 250ms 목표를 넘었다. large p50 227.13ms는 목표 안이었다.
+Transfer and preservation contracts passed, but only edit-small passed among the four performance targets. Locale-add p95 exceeded the 250 ms target for both small and large; large p50, 227.13 ms, was within the target.
 
-locale-add의 file write p95는 small 568.74ms, large 403.51ms였다. wall time에 파일 I/O·스케줄링·장비 부하가 섞여 변동 폭이 크므로 이 값을 이전 결과나 상세 10회 결과와 직접 비교해 최적화 효과나 회귀를 주장하지 않는다.
+Locale-add file-write p95 was 568.74 ms for small and 403.51 ms for large. Wall time includes file I/O, scheduling, and machine load and is highly variable, so these values are not compared directly with earlier or detailed 10-run results to claim optimization or regression effects.
 
-## 상세 10회 진단
+## Detailed 10-run diagnostic
 
-large locale-add에서 server file stage와 boundary v3를 켠 별도 10회 표본이다. warmup 2회, calibration 10회였으며 최종 50회 성능 결과와 같은 실행이 아니다.
+This is a separate 10-sample diagnostic run for large locale-add with server file stages and boundary v3 enabled. It used 2 warmups and 10 calibrations and is not the same execution as the final 50-run performance result.
 
-| 구간 | p50 | p95 |
+| Stage | p50 | p95 |
 | --- | ---: | ---: |
 | `queueToDrainMs` | 4.63ms | 18.52ms |
 | `readAndCandidateMs` | 105.01ms | 356.17ms |
@@ -77,21 +77,21 @@ large locale-add에서 server file stage와 boundary v3를 켠 별도 10회 표�
 | `translationPreparationMs` | 12.14ms | 66.50ms |
 | `validationMs` | 0.03ms | 0.04ms |
 
-이 표본에서는 `readAndCandidateMs`의 대부분이 `catalogParseMs`로 기록됐다. 다만 단일 run이고 계측 overhead가 있으며 파일 구간의 wall time 변동도 크다. 파싱을 원인으로 확정하거나 최적화·회귀 효과를 주장하지 않는다. v3의 candidate·queue 값은 v2 이하와 직접 비교하지 않는다.
+Most of `readAndCandidateMs` in this sample was recorded as `catalogParseMs`. This is a single run with instrumentation overhead and high wall-time variation in file stages. Parsing is not established as the cause, and no optimization or regression effect is claimed. Candidate and queue values under v3 are not compared directly with v2 or earlier.
 
-## 후보와 릴리스 경계
+## Candidate and release boundaries
 
-- `.release/candidate-0.1.0-alpha.5-fTJYGI`는 제품 source `d3e5252`를 대상으로 한 과거 동결 후보와 검증 기록이다. 해당 동결 입력에는 계속 유효하지만 `a9e8b80` 제품 수정을 포함하지 않는다.
-- 현재 `main` package manifest는 공개 패키지 5개가 `0.1.0-alpha.4`, Vue가 `0.1.0-alpha.4`이며 `private: true`다. 버전 승격은 하지 않았다.
-- git push, npm publish, workflow 실행은 하지 않았다. 새 후보 동결과 full suite, pack, 새 후보 tarball의 framework 브라우저 소비 인수, registry 소비 인수도 수행하지 않았다.
-- 현재 source를 배포하려면 eviction 수정을 포함한 새 후보를 동결하고 전체 검증을 다시 통과시켜야 한다.
+- `.release/candidate-0.1.0-alpha.5-fTJYGI` is an earlier frozen candidate and validation record for product source `d3e5252`. It remains valid for that frozen input but does not include product fix `a9e8b80`.
+- Current `main` package manifests remain at `0.1.0-alpha.4` for all five public packages and Vue; Vue is `private: true`. No version promotion was performed.
+- No git push, npm publish, or workflow run was performed. There was also no new candidate freeze, full suite, pack, framework browser consumer acceptance for a new candidate tarball, or registry consumer acceptance.
+- Deploying current source requires freezing a new candidate that includes the eviction fix and passing full validation again.
 
-초기 locale 실행 결과는 push를 선택 전 transfer로 세지 못해 검증이 불충분했다. `.release/maintenance-locale-add-before-fix-2026-10-24.json`은 보존만 하며 정상 역사 결과나 성능 전후 비교에 사용하지 않는다.
+The initial locale run was insufficient because it did not count pushes as pre-selection transfers. `.release/maintenance-locale-add-before-fix-2026-10-24.json` is retained only and is not used as a valid historical result or before/after performance comparison.
 
-## 원시 결과
+## Raw results
 
-- edit: [요약 JSON](../benchmarks/results/maintenance-edit-2026-10-24.json), [small samples](../benchmarks/results/maintenance-edit-2026-10-24.1k-3-locales.samples.json), [large samples](../benchmarks/results/maintenance-edit-2026-10-24.10k-20-locales.samples.json)
-- locale-add: [요약 JSON](../benchmarks/results/maintenance-locale-add-2026-10-24.json), [small samples](../benchmarks/results/maintenance-locale-add-2026-10-24.1k-3-locales.samples.json), [large samples](../benchmarks/results/maintenance-locale-add-2026-10-24.10k-20-locales.samples.json)
-- 상세 locale stages: [요약 JSON](../benchmarks/results/maintenance-locale-stages-2026-10-24.json), [large samples](../benchmarks/results/maintenance-locale-stages-2026-10-24.10k-20-locales.samples.json)
+- Edit: [summary JSON](../benchmarks/results/maintenance-edit-2026-10-24.json), [small samples](../benchmarks/results/maintenance-edit-2026-10-24.1k-3-locales.samples.json), and [large samples](../benchmarks/results/maintenance-edit-2026-10-24.10k-20-locales.samples.json).
+- Locale-add: [summary JSON](../benchmarks/results/maintenance-locale-add-2026-10-24.json), [small samples](../benchmarks/results/maintenance-locale-add-2026-10-24.1k-3-locales.samples.json), and [large samples](../benchmarks/results/maintenance-locale-add-2026-10-24.10k-20-locales.samples.json).
+- Detailed locale stages: [summary JSON](../benchmarks/results/maintenance-locale-stages-2026-10-24.json) and [large samples](../benchmarks/results/maintenance-locale-stages-2026-10-24.10k-20-locales.samples.json).
 
-새 edit와 locale-add 50회 결과는 `19640b9` harness로 측정했다. 이전 run의 edit 수치를 현재 결과로 섞지 않는다. [75](75-early-disk-rechecks.md)의 역사 성능값도 변경하지 않는다.
+The new 50-run edit and locale-add results were measured with the `19640b9` harness. Edit figures from earlier runs are not mixed into current results. Historical performance values in [75](75-early-disk-rechecks.md) remain unchanged.

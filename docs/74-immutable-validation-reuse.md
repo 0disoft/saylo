@@ -1,63 +1,63 @@
-# 74. 불변 검증 재사용 (`5586bf2`)
+# 74. Immutable-validation reuse (`5586bf2`)
 
-## 범위
+## Scope
 
-[73](73-thin-layer-runtime-cost.md) 뒤에 core `validateTranslation`이 이미 통과시킨 불변 schema·catalog pair를 다시 검사하지 않도록 바꾼 기록이다. 제품 source 변경은 `packages/core/src/schema.ts` 하나다.
+This records changing core `validateTranslation` after [73](73-thin-layer-runtime-cost.md) so it does not revalidate immutable schema and catalog pairs that already passed. The only product source change is `packages/core/src/schema.ts`.
 
-확인한 것은 이 변경의 계약과 검증 통과 상태, 최신 조건 스모크 측정이다. 종단 간 목표의 장기 안정, 아키텍처 교체, 남은 작업 완료는 주장하지 않는다. 관측은 2026-10-11(KST)이고 Node v24.18.0·Vite 8.3.2·headless Chromium이다.
+This verifies the change's contracts, test status, and smoke measurements under current conditions. It does not claim long-term stability of the end-to-end goals, an architecture replacement, or completion of remaining work. Observations were made on 2026-10-11 (KST) with Node v24.18.0, Vite 8.3.2, and headless Chromium.
 
-## 코드
+## Code
 
-- `validatedCatalogs = new WeakMap<CatalogSchema, WeakSet<ParsedCatalog>>()`를 두고 `validateTranslation` 진입부에서 `isDeepFrozen(base)`·`isDeepFrozen(translation)`이 모두 참이고 그 identity pair가 이미 수용된 경우에만 즉시 반환한다.
-- 전체 검증을 끝까지 통과한 뒤에만 pair를 기록한다. mutable·shallow frozen 입력은 캐시하지 않고 매번 검사하며, 새 불변 identity는 먼저 검사한 뒤 성공하면 기록한다. 기존 per-argument `validatedArguments` WeakMap은 그대로 둔다. weak 참조라 snapshot을 붙잡지 않는다.
-- 공개 API·의존성·버전은 그대로다. 이 변경과 테스트는 로컬 커밋 `5586bf2`(미푸시)이다.
+- It adds `validatedCatalogs = new WeakMap<CatalogSchema, WeakSet<ParsedCatalog>>()`. At the start of `validateTranslation`, it returns immediately only when both `isDeepFrozen(base)` and `isDeepFrozen(translation)` are true and that identity pair was previously accepted.
+- A pair is recorded only after full validation succeeds. Mutable and shallow-frozen inputs are not cached and are checked every time; a new immutable identity is checked first and recorded only on success. The existing per-argument `validatedArguments` WeakMap remains. Weak references do not retain snapshots.
+- The public API, dependencies, and versions are unchanged. The change and tests are in local commit `5586bf2` (not pushed).
 
-## 검증
+## Validation
 
-부모가 돌린 결과는 core 82·Vite 101·typegen 9(합 192)에 thin-layer contracts 64를 더해 256 PASS이고 core build·consumer typecheck도 PASS다. 이 문서 작성자는 테스트를 재실행하지 않았다.
+The parent ran 256 passing tests: core 82, Vite 101, typegen 9 (192 total), plus 64 thin-layer contract cases. The core build and consumer typecheck also pass. The author of this document did not rerun the tests.
 
-## 관측 결과
+## Observed results
 
-### 격리 런타임 비용
+### Isolated runtime cost
 
-[73](73-thin-layer-runtime-cost.md)과 같은 probe를 `5586bf2`에서 다시 돌렸다. 자식 8개 × 38 commit = 304 commit이고 worker마다 옛 snapshot 8개를 검증해 합계 64개다.
+The same probe as [73](73-thin-layer-runtime-cost.md) ran again on `5586bf2`. Eight children times 38 commits produced 304 commits, and each worker validates eight old snapshots, for 64 total.
 
-| key | variant | commit p50 73→74 | commit p95 73→74 | steady heap | retained heap |
+| key | variant | commit p50 from 73→74 | commit p95 from 73→74 | steady heap | retained heap |
 | --- | --- | --- | --- | --- | --- |
 | 1k | core | 1.48→1.51ms | 2.25→2.41ms | 0.48MB | 0.52~0.55MB |
 | 1k | layer | 4.18→3.43ms | 6.20→5.17ms | 0.79~0.80MB | 1.01MB |
 | 10k | core | 13.01→14.55ms | 16.46→23.49ms | 2.19MB | 4.35~4.57MB |
 | 10k | layer | 30.43→23.23ms | 40.50→34.24ms | 1.49~1.52MB | 7.70~7.72MB |
 
-- 두 raw는 시각 간격이 있어 같은 시점의 paired ABBA가 아니다. 10k core p95는 16.46→23.49ms로 올랐고 layer는 40.50→34.24ms로 내렸다. 그래서 "모두 빨라졌다"고 결론내지 않는다. heap delta는 73과 비슷한 범위이고 크기별 방향도 같다.
+- The two raw results were taken at different times and are not a paired same-time ABBA comparison. At 10k, core p95 rose from 16.46 to 23.49 ms while layer fell from 40.50 to 34.24 ms. The result does not support the conclusion that everything got faster. Heap deltas are within a range similar to 73, with the same direction by size.
 
-### CPU 표본 (`ad7b55e`)
+### CPU samples (`ad7b55e`)
 
-- full-worker 1ms 표본이고 imports·fixture parse·생성자 warm-up·copy/freeze·refresh·단언·보유 snapshot·GC·idle을 포함한다. count와 timeDelta는 정확한 함수 CPU 시간이 아니다.
-- core 1454표본 중 `validateTranslation` self 270(18.6%)·inclusive 274, layer 2205표본 중 self 522(23.7%)·inclusive 529다. 참고 표본으로만 쓰고 원인이나 CPU 시간 귀속에 쓰지 않는다.
-- 이 profile의 `packages/core/dist/schema.js` hash는 변경 전(baseline) 파일이다.
+- Sampling was 1 ms per full worker and includes imports, fixture parsing, constructor warmup, copy/freeze, refresh, assertions, retained snapshots, GC, and idle time. Counts and timeDelta are not exact function CPU time.
+- Among 1454 core samples, `validateTranslation` has self 270 (18.6%) and inclusive 274; among 2205 layer samples, it has self 522 (23.7%) and inclusive 529. These are reference samples, not causal or CPU-time attribution.
+- The profile's `packages/core/dist/schema.js` hash is the pre-change baseline file.
 
-### 종단 간 스모크
+### End-to-end smoke tests
 
-- large 편집(10k×20 locales, 단일 키) 25표본 × 2 run은 saveToAck p95 70.35ms·61.91ms, pooled 66.16ms로 100ms 이내 49/50이다(첫 run 최대 100.54ms).
-- small 편집(1k×3) 25표본은 p95 108.61ms로 100ms 목표에 미달한다(23/25). 느린 두 표본은 108.61·183.96ms이고 receiveToCommit 3.8·3.6ms, queueToDrain 16.04·19.56ms, candidate interval 28.23·107.97ms다. 원인은 확정하지 않는다.
-- 시계는 Node `performance.now`이고 file write resolved → DOM commit ack body received다. HTTP ack 비용을 포함하고 control 왕복은 따로 보고하며 stage p95에 더하거나 빼지 않는다.
-- 편집 fixture가 보는 상태는 input node identity·value, React component state, 정확한 DOM 문구와 wire receipt다. focus·caret·modal 전반 검사는 아니다.
-- locale-add small(1k×3) 목록 p95 84.29ms(250ms 이내 25/25)이고 selectToTranslationAck p95 32.33ms다. large(10k×20) 목록은 run1 137.09ms(24/25)·run2 159.75ms(25/25)이고 50표본 pooled p95 159.75ms로 250ms 이내 49/50이다. large selectToTranslationAck p95는 267.80·262.38ms로 목록 수치와 별개다.
+- Two runs of 25 large-edit samples (10k×20 locales, one key) produced saveToAck p95 of 70.35 and 61.91 ms, with pooled p95 66.16 ms and 49 of 50 samples within 100 ms (first-run maximum 100.54 ms).
+- The 25 small-edit samples (1k×3) had p95 108.61 ms and failed to meet the 100 ms target (23/25). The two slow samples were 108.61 and 183.96 ms, with receiveToCommit 3.8 and 3.6 ms, queueToDrain 16.04 and 19.56 ms, and candidate intervals 28.23 and 107.97 ms. The cause is not established.
+- Timing uses Node `performance.now` from file-write resolution through receipt of the DOM-commit acknowledgement body. It includes HTTP acknowledgement cost; control round trips are reported separately and are not added to or subtracted from stage p95.
+- The edit fixture checks input-node identity and value, React component state, exact DOM text, and wire receipt. It does not check all focus, caret, or modal behavior.
+- The locale-add small list (1k×3) had p95 84.29 ms (25/25 within 250 ms), and selectToTranslationAck p95 was 32.33 ms. The large list (10k×20) had 137.09 ms (24/25) in run 1 and 159.75 ms (25/25) in run 2; pooled p95 across 50 samples was 159.75 ms, with 49 of 50 within 250 ms. Large selectToTranslationAck p95 was 267.80 and 262.38 ms, separate from the list figures.
 
-## 해석과 한계
+## Interpretation and limitations
 
-- 재사용은 깊게 동결된 identity pair에만 적용된다. 새 identity·mutable·shallow 입력은 기존 경로로 재검사한다.
-- 검증 통과는 이 변경의 gate이고 위 수치는 제한된 조건의 측정이다. small 편집이 목표에 미달하므로 편집 목표 전체 충족이나 안정 달성을 주장하지 않는다.
-- 격리 런타임 비용 raw와 73은 같은 시점 쌍 비교가 아니고, CPU 표본은 변경 전 source의 참고 자료다.
-- 후속 browser raw 네 개의 `codeHashes` 152개(37·37·39·39)와 after runtime raw 12개·lazy contracts raw 13개가 현재 파일과 일치함을 확인했다.
+- Reuse applies only to deeply frozen identity pairs. New identities, mutable inputs, and shallow inputs are rechecked through the existing path.
+- Passing validation is the gate for this change, and the figures above are measurements under limited conditions. Because small edits fail to meet the target, this does not claim full or stable achievement of the edit goal.
+- The isolated runtime raw data and 73 are not a paired same-time comparison, and the CPU samples are reference data for the pre-change source.
+- All 152 `codeHashes` across four follow-up browser raw results (37, 37, 39, and 39), 12 in the after-runtime raw result, and 13 in the lazy-contracts raw result matched current files.
 
-## 원본과 재현
+## Source data and reproduction
 
-- 격리 런타임 비용 [thin-layer-runtime-cost-validation-cache-2026-10-11.json](../benchmarks/results/thin-layer-runtime-cost-validation-cache-2026-10-11.json)
-- CPU 표본 [thin-layer-runtime-cpu-2026-10-11.json](../benchmarks/results/thin-layer-runtime-cpu-2026-10-11.json)(core·layer cpuprofile 포함)
-- 편집 [large](../benchmarks/results/validation-cache-edit-large-2026-10-11.json)·[large-repeat](../benchmarks/results/validation-cache-edit-large-repeat-2026-10-11.json)·[small](../benchmarks/results/validation-cache-edit-small-2026-10-11.json), 로케일 [add](../benchmarks/results/validation-cache-locale-add-2026-10-11.json)·[add-large-repeat](../benchmarks/results/validation-cache-locale-add-large-repeat-2026-10-11.json)
-- 두 large 편집 raw의 `gitRevision`은 `ad7b55e`(당시 HEAD, `schema.ts` 수정 중 작업 트리)이고 그 raw의 `schema.js` hash는 `5586bf2` 시점 파일과 같다. small 편집·large locale 반복은 `c5bfabc`, 첫 locale 측정은 `5586bf2`를 기록하며 측정한 제품 코드는 같다.
+- Isolated runtime cost: [thin-layer-runtime-cost-validation-cache-2026-10-11.json](../benchmarks/results/thin-layer-runtime-cost-validation-cache-2026-10-11.json)
+- CPU samples: [thin-layer-runtime-cpu-2026-10-11.json](../benchmarks/results/thin-layer-runtime-cpu-2026-10-11.json) (includes core and layer cpuprofiles)
+- Edits: [large](../benchmarks/results/validation-cache-edit-large-2026-10-11.json), [large-repeat](../benchmarks/results/validation-cache-edit-large-repeat-2026-10-11.json), and [small](../benchmarks/results/validation-cache-edit-small-2026-10-11.json). Locales: [add](../benchmarks/results/validation-cache-locale-add-2026-10-11.json) and [add-large-repeat](../benchmarks/results/validation-cache-locale-add-large-repeat-2026-10-11.json).
+- Both large-edit raw results record `gitRevision` `ad7b55e` (the then-current HEAD with a working tree being modified for `schema.ts`), and their `schema.js` hash equals the file at `5586bf2`. The small edit and large locale repeat record `c5bfabc`; the first locale measurement records `5586bf2`. The measured product code is the same.
 
 ```powershell
 npm run build
@@ -66,8 +66,8 @@ node benchmarks/live-update/run.mjs --mode locale-add --scenario 10k-20-locales 
 node benchmarks/thin-layer/runtime-cost-probe.mjs --iterations 30 --out benchmarks/results/thin-layer-runtime-cost-validation-cache-2026-10-11.json
 ```
 
-## 상태
+## Status
 
-제품 source 변경은 `5586bf2`에 있고 공개 API·의존성·버전은 그대로다. CPU raw는 `ad7b55e`, after runtime·lazy contracts raw는 `5586bf2`, repeat·locale·small raw는 `9093d46`에 있다. 모두 미푸시이고 원격 반영은 없다.
+The product source change is in `5586bf2`; public APIs, dependencies, and versions are unchanged. CPU raw data is in `ad7b55e`; after-runtime and lazy-contract raw data are in `5586bf2`; repeat, locale, and small raw data are in `9093d46`. None has been pushed or reflected remotely.
 
-이어지는 이른 디스크 재확인 시도와 30ms 보완 채택은 [75-early-disk-rechecks.md](75-early-disk-rechecks.md)를 따른다.
+The following early disk-recheck attempt and adoption of the 30 ms addition are covered in [75-early-disk-rechecks.md](75-early-disk-rechecks.md).

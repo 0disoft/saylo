@@ -1,23 +1,23 @@
-# 57. 얇은 계층 브라우저 프로브
+# 57. Thin-layer browser probe
 
-이 문서는 `benchmarks/thin-layer`의 브라우저 기능 스모크를 기록한다. 실제 Vite 8 개발 서버·React 19·headless Chrome 154에서 eager full-registry 연결로 편집·오류 복구·로케일 추가·선택·삭제 흐름이 동작하고 입력·DOM 상태가 보존되는지 확인했다. 확인한 것은 기능 동작뿐이고 성능·메모리·번들·SSR·hydration·시간대·lazy·재연결·세션은 판정하지 않는다.
+This document records the browser feature smoke test in `benchmarks/thin-layer`. It checked whether edit, error recovery, locale addition, selection, and removal flows work and whether input and DOM state is preserved with an eager full-registry connection in a real Vite 8 development server, React 19, and headless Chrome 154. It verifies feature behavior only; it does not assess performance, memory, bundles, SSR, hydration, time zones, lazy loading, reconnection, or sessions.
 
-관측은 2026-10-11(KST)이다.
+The observations were made on 2026-10-11 (KST).
 
-## 실험 범위
+## Experiment scope
 
-- 실행 코드: [browser-smoke.mjs](../benchmarks/thin-layer/browser-smoke.mjs) · [browser-app.jsx](../benchmarks/thin-layer/browser-app.jsx) · [catalog-layer.mjs](../benchmarks/thin-layer/catalog-layer.mjs)
-- 하니스는 임시 fixture에 실제 `@0disoft/saylo-vite` 플러그인으로 Vite 개발 서버를 띄우고 headless Chrome을 붙여 `/__thin` 미들웨어로 명령·ack·trace를 주고받는다.
-- `browser-app.jsx`는 `virtual:saylo`의 `baseLocale`·`initialCatalogs`·`initialLocale`를 받아 `catalog-layer.mjs`의 AST 얇은 계층을 만들고 Saylo eager transport·parser·schema를 재사용한다. 즉 full registry를 eager로 받는 연결이다.
-- 구독은 테스트 전용 serial bridge(React `useSyncExternalStore`)이고 제품 loader·session 구현이 아니다. 브라우저 앱 profile은 watcher 대상에서 제외한다.
-- 시나리오 사이에는 150ms 간격을 둔다.
-- 의존성은 i18next 26.4.3·i18next-icu 2.5.0·intl-messageformat 12.1.3·Vite 8.3.2·React 19.3.0이고 브라우저는 HeadlessChrome/154.0.0.0이다.
+- Executed code: [browser-smoke.mjs](../benchmarks/thin-layer/browser-smoke.mjs) · [browser-app.jsx](../benchmarks/thin-layer/browser-app.jsx) · [catalog-layer.mjs](../benchmarks/thin-layer/catalog-layer.mjs)
+- The harness starts a Vite development server with the real `@0disoft/saylo-vite` plugin in a temporary fixture and connects headless Chrome, exchanging commands, acknowledgements, and traces through the `/__thin` middleware.
+- `browser-app.jsx` receives `baseLocale`, `initialCatalogs`, and `initialLocale` from `virtual:saylo`, creates the AST thin layer from `catalog-layer.mjs`, and reuses Saylo's eager transport, parser, and schema. The connection therefore receives the full registry eagerly.
+- Subscriptions use a serial test-only bridge built on React `useSyncExternalStore`; it is not a product loader or session implementation. The browser app profile is excluded from the watcher target.
+- Scenarios are separated by 150 ms.
+- The dependencies are i18next 26.4.3, i18next-icu 2.5.0, intl-messageformat 12.1.3, Vite 8.3.2, and React 19.3.0. The browser is HeadlessChrome/154.0.0.0.
 
-## 관측 결과
+## Observed results
 
-`npm --prefix benchmarks/thin-layer run browser`는 exit 0으로 끝나고 관측 8개를 남긴다. `codeHashes` 10개는 현재 소스 파일과 모두 일치했다.
+`npm --prefix benchmarks/thin-layer run browser` exits 0 and records eight observations. All ten `codeHashes` values matched the current source files.
 
-| id | 표시 문구 | locale | locales | 진단 |
+| id | Displayed message | locale | locales | Diagnostics |
 | --- | --- | --- | --- | ---: |
 | edit | Updated Ada | fr | en, fr | 0 |
 | invalid-json | Updated Ada | fr | en, fr | 1 |
@@ -28,26 +28,26 @@
 | locale-select | こんにちは Ada | ja | en, fr, ja | 2 |
 | locale-remove-selected | Hello Ada | en | en, fr | 2 |
 
-8개 관측 모두 `preserved`가 `true`이고 이전 snapshot 문구는 `Bonjour Ada`다. invalid-json은 직전 정상 문구(`Updated Ada`)를 유지한 채 진단 1개를 남기고 recover-json이 `Recovered Ada`를 커밋한다. invalid-schema도 직전 snapshot을 유지하고 recover-schema 뒤에 `Ready Ada`가 반영된다.
+All eight observations have `preserved: true`; the previous snapshot message is `Bonjour Ada`. In `invalid-json`, the last good message (`Updated Ada`) remains while one diagnostic is recorded, and `recover-json` commits `Recovered Ada`. `invalid-schema` likewise keeps the previous snapshot, and `Ready Ada` appears after `recover-schema`.
 
-### ack 검사
+### Acknowledgement checks
 
-각 ack에서 `input` DOM identity·value(`typed draft`)·focus, 열린 `dialog`, counter `8`, 이전 snapshot `Bonjour Ada` 유지 검사를 통과했다. `fallbackPlural`은 모든 관측에서 `0 rows`이고, count 0에서 영어 base plural을 선택 로케일(fr) 포맷과 구분하는 값이다. `locale-remove-selected` 뒤 표시는 `Hello Ada`로, 선택 로케일이 없어지면 source 로케일 fallback으로 돌아간다. 진단 문구는 invalid JSON의 `fr/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)`와 schema 오류의 `fr/demo.json [greeting]: Translation introduces argument "unexpected" absent from the base message.`다.
+Every acknowledgement preserved the `input` DOM identity, its value (`typed draft`), focus, the open `dialog`, counter value `8`, and the previous snapshot `Bonjour Ada`. `fallbackPlural` is `0 rows` in every observation, distinguishing the English base plural at count 0 from formatting in the selected locale (fr). After `locale-remove-selected`, the display returns to `Hello Ada`, falling back to the source locale when the selected locale no longer exists. The diagnostics are `fr/demo.json: Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)` for the invalid JSON case and `fr/demo.json [greeting]: Translation introduces argument "unexpected" absent from the base message.` for the schema error.
 
-## 초기 연결 오류
+## Initial connection error
 
-초기 재실행 중에는 브라우저 연결 단계의 fetch 오류로 진행하지 못했다. 하니스가 공개 runtime 엔트리(`@0disoft/saylo-core/runtime`)와 `@0disoft/saylo-vite/client`를 prebundle 대상에 넣고 `catalog-layer.mjs`가 공개 specifier를 쓰도록 바로잡은 뒤, 최종 소스에서 스모크를 연속 2회 PASS로 확인했다. 제품 패키지 코드·의존성은 바꾸지 않았다.
+An early rerun could not pass the browser connection stage because of a fetch error. After the harness added the public runtime entry (`@0disoft/saylo-core/runtime`) and `@0disoft/saylo-vite/client` to the prebundle targets and `catalog-layer.mjs` was corrected to use public specifiers, the smoke test passed twice in succession with the final source. No product package code or dependencies changed.
 
-## 해석과 한계
+## Interpretation and limitations
 
-- eager full-registry 연결이다. lazy·재연결·세션 프로토콜, 운영 빌드, SSR·hydration, 시간대, 메모리, 성능 비교는 확인하지 않았다.
-- 처음에는 시나리오 사이 간격 없이 시도했으나 invalid JSON 복구 단계에서 timeout이 났다. 브라우저 앱 profile을 watcher 대상에서 빼고 150ms 간격을 둔 뒤 8개가 통과했으며 원인은 확정하지 않는다.
-- 무간격 연속 실패·복구에는 결함이 남아 있다. 별도의 실제 Vite SSR source·watcher 실험(gap 0/60/0ms)에서 invalid JSON 진단 직후 valid 저장이 gap 0 두 run에서는 watcher change 1개·`Initial`·revision 0으로 복구되지 않았다. gap 60 run(실제 86.17ms)에서만 change 2개·`Recovered`·revision 1로 복구됐다([원본](../benchmarks/results/rapid-recovery-2026-10-11.json)). 브라우저·i18next 없이 재현돼 watcher 이벤트 단계의 문제로 보인다. 설치된 Vite bundle에는 change 이벤트 50ms throttle이 있지만, 이를 끈 대조 실험을 하지 않아 정확한 인과는 확정하지 않는다.
-- 이 스모크만으로 독립 런타임 필요성이나 전체 얇은 계층 평가를 판정하지 않는다.
+- This is an eager full-registry connection. Lazy loading, reconnection, session protocols, production builds, SSR and hydration, time zones, memory, and performance comparisons were not checked.
+- The first attempt ran without gaps between scenarios and timed out during invalid JSON recovery. All eight cases passed after excluding the browser app profile from the watcher target and adding 150 ms gaps; the cause was not established.
+- A defect remains in gap-free consecutive failure and recovery. In a separate real Vite SSR source and watcher experiment (gaps 0/60/0 ms), a valid save immediately after an invalid-JSON diagnostic did not recover in either gap-0 run: it saw one watcher change, `Initial`, and revision 0. Only the gap-60 run (actual 86.17 ms) recovered with two changes, `Recovered`, and revision 1 ([source data](../benchmarks/results/rapid-recovery-2026-10-11.json)). The issue reproduces without a browser or i18next, so it appears to be in watcher event handling. The installed Vite bundle throttles change events by 50 ms, but no control run disabled that throttle, so exact causality is not established.
+- This smoke test alone does not determine whether an independent runtime is necessary or complete the thin-layer assessment.
 
-## 원본과 재현
+## Source data and reproduction
 
-원본은 [thin-layer-browser-2026-10-11.json](../benchmarks/results/thin-layer-browser-2026-10-11.json), 무간격 복구 재현은 [rapid-recovery-2026-10-11.json](../benchmarks/results/rapid-recovery-2026-10-11.json)이다.
+The source data is [thin-layer-browser-2026-10-11.json](../benchmarks/results/thin-layer-browser-2026-10-11.json). The gap-free recovery reproduction is [rapid-recovery-2026-10-11.json](../benchmarks/results/rapid-recovery-2026-10-11.json).
 
 ```sh
 npm --prefix benchmarks/thin-layer install --ignore-scripts
@@ -55,10 +55,10 @@ npm --prefix benchmarks/thin-layer run browser
 node benchmarks/thin-layer/rapid-recovery.mjs
 ```
 
-## 상태
+## Status
 
-브라우저 스모크와 코드 분리는 로컬 커밋 `f3dd7a1`·`568232f`·`57261fb`에 있고 미푸시다. 제품 패키지의 API·의존성·버전은 변경하지 않았으며 게시·배포는 없다. 무간격 복구 결함은 제품 수정 없이 재현 기록만 남겼다.
+The browser smoke test and code split are in local commits `f3dd7a1`, `568232f`, and `57261fb` and have not been pushed. No product package API, dependency, or version changed, and nothing was published or deployed. The gap-free recovery defect was recorded without a product fix.
 
-## 후속 수정
+## Follow-up fix
 
-`463083e`(2026-10-11)에서 위 무간격 복구 결함을 다뤘다. 첫 게시 뒤 60ms에 metadata를 한 번 더 확인하는 꼬리 디스크 재확인을 추가해, fresh Vite SSR 5개 케이스(JSON 0/60/0·schema 0·valid→valid 0)가 모두 `recovered: true`가 됐고 `--gap-ms 0` 브라우저 스모크도 8개 시나리오를 유지한다. 위 "무간격 연속 실패·복구에는 결함이 남아 있다"는 이 지점에서 해소됐다. 위 문단은 기록 시점의 관측으로 그대로 두고, 변경 내용·비용·한계는 [58](58-trailing-disk-rechecks.md)을 따른다.
+`463083e` (2026-10-11) addressed the gap-free recovery defect. A trailing disk recheck that checks metadata again 60 ms after the first publish made all five fresh Vite SSR cases (`JSON 0/60/0`, `schema 0`, and `valid→valid 0`) report `recovered: true`; the `--gap-ms 0` browser smoke test also continues to pass all eight scenarios. This resolves the earlier statement that a defect remained in gap-free consecutive failure and recovery. The paragraph above is retained as the observation at that point in time; see [58](58-trailing-disk-rechecks.md) for the change, its cost, and its limitations.

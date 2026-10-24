@@ -1,67 +1,67 @@
-# 85. 남은 편집 병목과 100ms 목표
+# 85. Remaining edit bottlenecks and the 100 ms target
 
-이 문서는 2026-10-24의 로컬 `main`에서 대형 catalog의 한 키 편집에 남은 병목을 줄인 기록이다. 제품 소스는 `35b13504ccfb14098c54f51f55863361514bbd29`(`35b1350`)와 `7ccfdba6ca9a0628246620eba13d7c98f82f0bd9`(`7ccfdba`)다. `14cea4c852e074bf1e6ccaa9da8b346c7f21c841`(`14cea4c`)은 성능 계측 경계를 고친 커밋이다. package 버전은 `0.1.0-alpha.4`이며 버전 승격은 하지 않았다.
+This records reducing the remaining bottlenecks in single-key edits of large catalogs on local `main` on 2026-10-24. Product source includes `35b13504ccfb14098c54f51f55863361514bbd29` (`35b1350`) and `7ccfdba6ca9a0628246620eba13d7c98f82f0bd9` (`7ccfdba`). `14cea4c852e074bf1e6ccaa9da8b346c7f21c841` (`14cea4c`) fixes performance instrumentation boundaries. The package version is `0.1.0-alpha.4`; no version promotion was performed.
 
-목표는 10,000 message×20 locale catalog에서 key 하나를 수정할 때 저장→DOM ack p95를 100ms 이내로 낮추는 것이다. 최종 50회 측정은 이 조건의 p95 목표를 통과했다. 한 장비·한 세션의 결과이며 다른 환경, 렌더링 작업, I/O 조건에서 같은 값을 보장하지 않는다.
+The target is to keep save-to-DOM-ack p95 within 100 ms when editing one key in a 10,000-message by 20-locale catalog. The final 50-run measurement met the p95 target under these conditions. It comes from one machine and one session and does not guarantee the same value on other environments, rendering workloads, or I/O conditions.
 
-## 병목과 변경
+## Bottlenecks and changes
 
-`35b1350`은 편집 경로에서 유지 message를 반복 처리하는 비용을 줄였다.
+`35b1350` reduced repeated processing of retained messages in the edit path.
 
-- [schema.ts](../packages/core/src/schema.ts)의 translation 검증은 10,000개 message마다 entry tuple을 만드는 `Object.entries` 대신 `for...in`과 own key 검사를 쓴다. 이미 검증된 message를 순회하기 위해 tuple 배열을 할당하지 않는다.
-- [catalog-patch.ts](../packages/vite/src/catalog-patch.ts)의 patch 생성은 own key 배열로 remove·upsert를 판정한다. 이전 message와 같은 객체이거나 `richTextTags` 참조가 같으면 문자열 직렬화 비교를 생략한다.
-- patch 적용은 전체 message map을 `Object.assign`으로 복사하지 않는다. own key를 직접 복사하고 remove·upsert에서 message 개수를 증분 관리해 마지막에 key 배열을 다시 만들지 않는다.
+- Translation validation in [schema.ts](../packages/core/src/schema.ts) uses `for...in` with own-key checks instead of `Object.entries`, which constructed entry tuples for all 10,000 messages. It does not allocate a tuple array to traverse already validated messages.
+- Patch construction in [catalog-patch.ts](../packages/vite/src/catalog-patch.ts) determines removals and upserts through an own-key array. It skips string-serialization comparisons when a message is the same object as before or its `richTextTags` reference is unchanged.
+- Patch application does not copy the full message map with `Object.assign`. It copies own keys directly and maintains message counts incrementally for removals and upserts, avoiding a final key-array rebuild.
 
-`14cea4c`은 [runtime-profile.mjs](../benchmarks/live-update/runtime-profile.mjs)가 과거 `Promise.all` 코드 모양을 찾던 경계를 현재 `bounded('Base catalog existence check', ...)`의 `mapFileTasks` 존재 검사로 바꿨다. 현재 source의 변환 경계를 확인하는 검사를 포함해 runtime 계측 test 3개가 통과했다.
+`14cea4c` changed the boundary in [runtime-profile.mjs](../benchmarks/live-update/runtime-profile.mjs) from searching for the old `Promise.all` code shape to checking for `mapFileTasks` in the current `bounded('Base catalog existence check', ...)`. All three runtime-instrumentation tests passed, including the check that verifies the current source transformation boundary.
 
-`7ccfdba`는 patch 결과를 다시 동결할 때 생기던 대형 map 재복사를 줄였다. caller가 넘긴 baseline은 `freezeCatalogs(..., { copy: true })`로 snapshot해 외부 mutable 입력과 분리한다. patch의 upsert child도 `copy: true`로 복사·동결한다. position 교체는 새 객체를 쓴다. 새 owned map과 root만 `copy: false`로 동결하므로, 이미 신뢰하는 immutable baseline의 자식 message는 공유하고 결과 생성 뒤 10,000개 map을 다시 복사하지 않는다.
+`7ccfdba` reduced the large map recopy that occurred when freezing patch results again. A caller-supplied baseline is snapshotted with `freezeCatalogs(..., { copy: true })` to isolate it from external mutable input. Patch upsert children are also copied and frozen with `copy: true`. Position replacement uses new objects. Only the new owned map and root are frozen with `copy: false`, so child messages from a trusted immutable baseline are shared and the 10,000-entry map is not copied again after result construction.
 
-[catalog-registry.ts](../packages/vite/src/catalog-registry.ts)의 동등성 검사는 message 차이를 찾는 즉시 종료한다. 양쪽 map 크기를 재기 위해 `Object.keys` 배열을 두 번 만들지 않고, 같은 message 참조는 세부 비교 전에 건너뛴다. caller 입력 불변과 immutable child 공유를 확인하는 test도 추가했다.
+The equality check in [catalog-registry.ts](../packages/vite/src/catalog-registry.ts) exits as soon as it finds a message difference. It avoids creating two `Object.keys` arrays to compare map sizes and skips identical message references before detailed comparison. Tests were also added to verify caller-input immutability and immutable-child sharing.
 
-## 단위 비교
+## Unit comparison
 
-[patch CPU 비교](../benchmarks/results/sparse-patch-cpu-2026-10-24.json)는 10,000 message에서 create/apply를 교대로 100쌍 측정했다. warmup은 20회다. JSON round-trip한 patch를 입력으로 쓰고, 각 쌍의 결과를 deep equality로 확인한다. 입력 준비와 equality 검사는 측정 구간 밖이다. same-process microbenchmark이며 browser, disk, watcher를 포함하지 않는다.
+The [patch CPU comparison](../benchmarks/results/sparse-patch-cpu-2026-10-24.json) measured 100 alternating create/apply pairs over 10,000 messages with 20 warmups. Input patches were JSON round-tripped, and each pair's results were checked with deep equality. Input preparation and equality checks are outside timing. This is a same-process microbenchmark and excludes browser, disk, and watcher effects.
 
-| 시나리오 | before p50 | after p50 | before p95 | after p95 | 개선 pair |
+| Scenario | before p50 | after p50 | before p95 | after p95 | Improved pairs |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| same length | 11.8751ms | 7.4824ms | 20.4303ms | 11.3397ms | 97/100 |
-| uniform shift | 12.9193ms | 9.0635ms | 24.2372ms | 16.2400ms | 96/100 |
-| mixed | 11.1258ms | 7.8099ms | 18.7796ms | 12.8266ms | 93/100 |
+| same length | 11.8751 ms | 7.4824 ms | 20.4303 ms | 11.3397 ms | 97/100 |
+| uniform shift | 12.9193 ms | 9.0635 ms | 24.2372 ms | 16.2400 ms | 96/100 |
+| mixed | 11.1258 ms | 7.8099 ms | 18.7796 ms | 12.8266 ms | 93/100 |
 
-apply만 보면 세 시나리오의 p50이 10.3902→3.7112ms, 20.5433→9.8669ms, 12.1710→6.1609ms였다. 이 표는 patch 함수 비용을 분리한 결과이며 사용자 체감 지연의 인과 증명이 아니다.
+For apply alone, the three scenarios' p50 changed from 10.3902→3.7112 ms, 20.5433→9.8669 ms, and 12.1710→6.1609 ms. This table isolates patch-function cost and does not prove causality for perceived user latency.
 
-## 첫 browser ABBA
+## First browser ABBA
 
-[첫 sparse-patch ABBA](../benchmarks/results/sparse-patch-edit-comparison-2026-10-24.json)는 before `d0483a6`과 after `35b1350`을 before/after/after/before 순서로 비교했다. block마다 10표본, variant별 pooled 20표본, warmup 2, calibration 10이다.
+The [first sparse-patch ABBA](../benchmarks/results/sparse-patch-edit-comparison-2026-10-24.json) compared before `d0483a6` and after `35b1350` in before/after/after/before order, with 10 samples per block, 20 pooled samples per variant, 2 warmups, and 10 calibrations.
 
-| 지표 | before | after `35b1350` |
+| Metric | before | after `35b1350` |
 | --- | ---: | ---: |
-| 저장→ack p50 | 93.2164ms | 67.0457ms |
-| 저장→ack p95 | 118.7416ms | 121.7816ms |
-| 100ms 이내 표본 | 14/20 | 18/20 |
+| save→ack p50 | 93.2164 ms | 67.0457 ms |
+| save→ack p95 | 118.7416 ms | 121.7816 ms |
+| Samples within 100 ms | 14/20 | 18/20 |
 
-p50과 목표 안 표본 수는 늘었지만 p95는 121.7816ms로 목표에 미달했다. 이 비교는 최종 `7ccfdba`를 포함하지 않는다. 최종 50회 통과값과 합쳐 `35b1350`이나 `7ccfdba`의 인과 효과를 주장하지 않는다.
+The p50 and count within target improved, but p95 was 121.7816 ms and failed to meet the target. This comparison does not include final `7ccfdba`. It is not combined with the passing 50-run value to claim a causal effect from `35b1350` or `7ccfdba`.
 
-## 최종 50회
+## Final 50 runs
 
-[최종 측정](../benchmarks/results/remaining-edit-final-2026-10-24.json)은 `7ccfdba`에서 warmup 5회, calibration 25회, 표본 50회로 실행했다. CPU, browser, server file, reply, client 상세 계측은 모두 껐다. Chromium headless의 React development mode에서 10,000 message×20 locale, 한 키 수정, DOM에 보이는 두 message를 관측했다. 저장→ack에는 HTTP acknowledgment가 포함되고 paint 시간은 측정하지 않았다.
+The [final measurement](../benchmarks/results/remaining-edit-final-2026-10-24.json) used `7ccfdba` with 5 warmups, 25 calibrations, and 50 samples, with detailed CPU, browser, server-file, reply, and client instrumentation disabled. It observed one-key edits in a 10,000-message by 20-locale catalog in Chromium headless React development mode, with two messages visible in the DOM. Save→ack includes the HTTP acknowledgement and excludes paint time.
 
-| 지표 | p50 | p95 | 최소 | 최대 |
+| Metric | p50 | p95 | Minimum | Maximum |
 | --- | ---: | ---: | ---: | ---: |
-| 저장→ack | 62.4911ms | 89.1650ms | 42.8063ms | 149.0247ms |
-| 저장→manifest broadcast | 27.2104ms | 42.2542ms | 16.7362ms | 113.3524ms |
-| 수신→commit | 31.3000ms | 36.3000ms | 20.8000ms | 47.8000ms |
-| file write | 9.7603ms | 12.3327ms | 6.6416ms | 12.6089ms |
+| save→ack | 62.4911 ms | 89.1650 ms | 42.8063 ms | 149.0247 ms |
+| save→manifest broadcast | 27.2104 ms | 42.2542 ms | 16.7362 ms | 113.3524 ms |
+| receive→commit | 31.3000 ms | 36.3000 ms | 20.8000 ms | 47.8000 ms |
+| file write | 9.7603 ms | 12.3327 ms | 6.6416 ms | 12.6089 ms |
 
-p95 89.1650ms로 100ms 목표를 통과했다. 50표본 중 49개가 100ms 이내였고 최대값은 149.0247ms였다. patch reply와 push reply는 각각 50건, request와 full reply는 0건이며 선언 파일은 다시 쓰지 않았다.
+The p95 of 89.1650 ms met the 100 ms target. Of 50 samples, 49 were within 100 ms, and the maximum was 149.0247 ms. There were 50 patch replies and 50 push replies, with 0 request or full replies, and declaration files were not rewritten.
 
-측정은 한 로컬 장비의 한 세션에서 50회 실행한 결과다. control 왕복은 stage p95에 더하거나 빼지 않았다. 이 조건의 통과를 다른 장비·부하·렌더링 범위로 일반화하지 않는다.
+This is a 50-run result from one session on one local machine. Control round trips were not added to or subtracted from stage p95. The pass under these conditions does not generalize to other machines, loads, or rendering workloads.
 
-## 검증과 증거
+## Validation and evidence
 
-- `7ccfdba`에서 core test 122/122와 client, lazy, patch, push, wire, live-registry, sync-state, profile·comparison policy test 102/102가 통과했다.
-- core와 Vite build가 통과했다.
-- 전용 review [remaining-edit-bottlenecks-2026-10-24.json](../review/remaining-edit-bottlenecks-2026-10-24.json)에 실행 조건, 판정, 14개 원본 파일의 SHA-256을 기록했고 `b571d71`에 커밋했다.
-- 최초 10회 진단 [remaining-edit-stages-2026-10-24.json](../benchmarks/results/remaining-edit-stages-2026-10-24.json)과 [samples](../benchmarks/results/remaining-edit-stages-2026-10-24.10k-20-locales.samples.json)은 I/O 지연이 큰 before 표본이다. 최종 50회의 인과 증명이나 전후 비교로 쓰지 않는다.
+- Core tests passed 122/122 on `7ccfdba`, and client, lazy, patch, push, wire, live-registry, sync-state, and profile/comparison policy tests passed 102/102.
+- Core and Vite builds passed.
+- The dedicated review [remaining-edit-bottlenecks-2026-10-24.json](../review/remaining-edit-bottlenecks-2026-10-24.json) records execution conditions, determination, and SHA-256 hashes of 14 source files, committed in `b571d71`.
+- The initial 10-run diagnostic [remaining-edit-stages-2026-10-24.json](../benchmarks/results/remaining-edit-stages-2026-10-24.json) and [samples](../benchmarks/results/remaining-edit-stages-2026-10-24.10k-20-locales.samples.json) are before samples with large I/O delays. They are not used to prove causality or compare before and after the final 50 runs.
 
-full workspace suite, 새 후보 동결, pack, tarball 소비, git push, npm publish, deploy, admin 적용은 이번 범위에 포함하지 않았다. [83](83-push-subscription-maintenance.md)과 [84](84-large-catalog-performance.md)의 과거 측정은 변경하지 않는다.
+The full workspace suite, new candidate freeze, pack, tarball consumption, git push, npm publication, deployment, and admin application are outside this scope. Historical measurements in [83](83-push-subscription-maintenance.md) and [84](84-large-catalog-performance.md) remain unchanged.

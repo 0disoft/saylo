@@ -1,14 +1,14 @@
-# 81. 구현 현황과 잔여 범위
+# 81. Implementation status and remaining scope
 
-이 문서는 2026-10-24의 `main` `7ccfdba6ca9a0628246620eba13d7c98f82f0bd9`(`7ccfdba`)에서 현재 구현 위치와 릴리스 경계를 정리한다. 현재 제품 소스는 `7ccfdba`다. `35b13504ccfb14098c54f51f55863361514bbd29`(`35b1350`)가 sparse patch와 검증 순회를 줄였고, `7ccfdba`가 owned patch 결과의 map 재복사를 제거했다. `14cea4c852e074bf1e6ccaa9da8b346c7f21c841`(`14cea4c`)은 profile 경계를 현재 bounded catalog 존재 검사에 맞췄다. 앞선 `9a206208cab6d806ba4e83db76088587c574ac30`(`9a20620`)과 `7a844187661c062cf3d3d2726db53de8df7c9ac6`(`7a84418`)은 snapshot 복사와 단일 문자열 편집 비용을 줄였다. 최신 동결 후보의 제품 소스는 여전히 `d3e5252b98b975b89b5a86d1f39b363471298e65`(`d3e5252`)이며 이 최적화들을 포함하지 않는다.
+This document summarizes implementation status and release boundaries on `main` at `7ccfdba6ca9a0628246620eba13d7c98f82f0bd9` (`7ccfdba`) on 2026-10-24. Current product source is `7ccfdba`. `35b13504ccfb14098c54f51f55863361514bbd29` (`35b1350`) reduced sparse-patch and validation traversal; `7ccfdba` removed a map recopy of owned patch results. `14cea4c852e074bf1e6ccaa9da8b346c7f21c841` (`14cea4c`) aligned profile boundaries with the current bounded-catalog presence check. Earlier, `9a206208cab6d806ba4e83db76088587c574ac30` (`9a20620`) and `7a844187661c062cf3d3d2726db53de8df7c9ac6` (`7a84418`) reduced snapshot-copy and single-string edit costs. The latest frozen candidate's product source remains `d3e5252b98b975b89b5a86d1f39b363471298e65` (`d3e5252`) and does not include these optimizations.
 
-초기 로드맵 1~13단계는 구현 완료 상태이며, 단계별 완료 기준은 [06](06-validation-and-roadmap.md)에 남아 있다. 이 문서는 최근에 1~13단계 전체를 다시 실행했다고 주장하지 않는다.
+Implementation of roadmap stages 1 through 13 is complete, and per-stage completion criteria remain in [06](06-validation-and-roadmap.md). This document does not claim that all 13 stages were recently rerun.
 
-## 기능별 현재 소스
+## Current source by feature
 
 ### core
 
-| 영역 | 현재 소스 |
+| Area | Current source |
 | --- | --- |
 | catalog parsing | [catalog-json.ts](../packages/core/src/catalog-json.ts), [simple-message.ts](../packages/core/src/simple-message.ts), [schema.ts](../packages/core/src/schema.ts), [rich-text.ts](../packages/core/src/rich-text.ts) |
 | runtime | [runtime.ts](../packages/core/src/runtime.ts), [translator.ts](../packages/core/src/translator.ts), [formatters.ts](../packages/core/src/formatters.ts) |
@@ -17,7 +17,7 @@
 
 ### Vite
 
-| 기능 | 현재 소스 |
+| Feature | Current source |
 | --- | --- |
 | dev sync | [dev-sync.ts](../packages/vite/src/dev-sync.ts) |
 | dev catalog source | [catalog-source.ts](../packages/vite/src/catalog-source.ts), [catalog-commit.ts](../packages/vite/src/catalog-commit.ts) |
@@ -28,7 +28,7 @@
 
 ### typegen
 
-| 기능 | 현재 소스 |
+| Feature | Current source |
 | --- | --- |
 | catalog CLI | [catalog-cli.ts](../packages/typegen/src/catalog-cli.ts) |
 | translation workflow | [catalog-sync.ts](../packages/typegen/src/catalog-sync.ts), [catalog-import.ts](../packages/typegen/src/catalog-import.ts) |
@@ -38,42 +38,42 @@
 | format preservation | [catalog-json-edit.ts](../packages/typegen/src/catalog-json-edit.ts) |
 | import diff | [catalog-diff.ts](../packages/typegen/src/catalog-diff.ts) |
 
-## 최신 후보와 검증 기록
+## Latest candidate and validation record
 
-- 후보 원본 커밋은 `d3e5252`, 제안 버전은 `0.1.0-alpha.5`다. 후보 스냅샷은 `.release/candidate-0.1.0-alpha.5-fTJYGI`, 검증 기록은 같은 디렉터리의 `validation-1osDCF`에 있다.
-- [유지보수 검토 기록](../review/maintenance-2026-10-23.json)은 `2026-10-23T10:49:27.507Z`에 `npm ci`, 빌드, 검사, 릴리스 메타데이터, pack, publish dry-run을 확인했다. 전체 `npm run check`의 8개 그룹, 총 536개 테스트는 `c6a1ad7`에서 성공한 결과를 재사용했다. 유일한 변경 파일이 pack 전용 watcher fixture였음을 비교한 뒤 영향받는 pack 단계는 새로 실행했다. 이 숫자는 당시 동결 후보의 검증 기록이며 현재 `7a84418` 소스나 2026-10-24에 다시 실행한 결과가 아니다.
-- 공개 선언 14개는 비교 기준과 바이트 단위로 같다. pack 단계는 로컬 tarball의 독립 설치와 JS·TS 소비를 확인했고, SvelteKit 검증은 별도로 tarball 설치, client·SSR 빌드, Chromium에서 hydration과 언어 전환을 확인했다.
-- 후보 검증은 로컬 tarball 소비까지다. registry에서 후보 버전을 설치하는 소비 인수는 수행하지 않았다.
+- The candidate's source commit is `d3e5252` and the proposed version is `0.1.0-alpha.5`. Candidate snapshots are in `.release/candidate-0.1.0-alpha.5-fTJYGI`, and the validation record is in `validation-1osDCF` in the same directory.
+- The [maintenance review record](../review/maintenance-2026-10-23.json) verified `npm ci`, build, checks, release metadata, pack, and publish dry-run at `2026-10-23T10:49:27.507Z`. The full `npm run check` result of eight groups and 536 tests was reused from a successful run at `c6a1ad7`. After comparing that the only changed file was a pack-only watcher fixture, affected pack stages were rerun. This count is the validation record for the then-frozen candidate; it is not a result for current `7a84418` source or a 2026-10-24 rerun.
+- All 14 public declarations are byte-identical to the comparison baseline. Pack stages verified independent installation and JS/TS consumption of local tarballs; SvelteKit validation separately verified tarball installation, client and SSR builds, and Chromium hydration and language switching.
+- Candidate validation goes as far as local tarball consumption. No consumer acceptance installed the candidate version from the registry.
 
-## 후보 동결 이후 수정
+## Changes after candidate freeze
 
-`a9e8b80`은 push 구독에서 제거된 locale·namespace pair가 서버 scope에 남지 않도록 [catalog-source.ts](../packages/vite/src/catalog-source.ts)의 cache eviction 뒤 subscription scope를 갱신한다. `19640b9`는 이 변경을 포함한 당시 소스에서 push receipt와 batch v3 계측을 보정했다.
+`a9e8b80` updates subscription scope after cache eviction in [catalog-source.ts](../packages/vite/src/catalog-source.ts), preventing locale and namespace pairs removed by push subscriptions from remaining in server scope. `19640b9` corrected push-receipt and batch-v3 instrumentation in the then-current source containing that change.
 
-`9a20620`은 [diagnostics.ts](../packages/core/src/diagnostics.ts)의 `immutableSnapshot`에서 자식 객체를 먼저 복사·동결한 뒤 부모를 `Object.freeze`하는 방식으로 바꿨다. 이미 복사한 새 트리를 `freeze`로 다시 순회하던 경로를 제거했다. `7a84418`은 [catalog-json.ts](../packages/core/src/catalog-json.ts)와 [catalog.ts](../packages/core/src/catalog.ts)에서 성공한 parser가 남긴 ID·offset provenance를 사용해, 같은 rich policy의 단일 문자열 값 편집이면 바뀐 token만 파싱하고 나머지 message record를 재사용한다.
+`9a20620` changed `immutableSnapshot` in [diagnostics.ts](../packages/core/src/diagnostics.ts) to copy and freeze child objects first, then `Object.freeze` the parent. It removed a path that traversed the already-copied new tree again to freeze it. `7a84418` uses ID and offset provenance left by a successful parse in [catalog-json.ts](../packages/core/src/catalog-json.ts) and [catalog.ts](../packages/core/src/catalog.ts), so a single-string value edit under the same rich policy parses only the changed token and reuses the remaining message record.
 
-`35b1350`은 [schema.ts](../packages/core/src/schema.ts)의 translation 검증에서 10,000개 message tuple을 한꺼번에 만들던 `Object.entries`를 own key 순회로 바꿨다. [catalog-patch.ts](../packages/vite/src/catalog-patch.ts)는 변경 없는 message와 같은 `richTextTags` 참조의 직렬화를 생략하고, `Object.assign`과 마지막 key 배열 재계산을 직접 복사·개수 증분으로 바꿨다. `7ccfdba`는 caller-owned baseline과 초기 patch child만 복사·동결하고, 신뢰한 immutable baseline child를 공유한 뒤 새 owned 결과는 재복사 없이 동결한다. [catalog-registry.ts](../packages/vite/src/catalog-registry.ts)의 동등성 검사도 message 차이를 찾은 즉시 종료하고 같은 message 참조를 건너뛴다.
+In translation validation in [schema.ts](../packages/core/src/schema.ts), `35b1350` replaced `Object.entries`, which constructed 10,000 message tuples at once, with iteration over own keys. [catalog-patch.ts](../packages/vite/src/catalog-patch.ts) skips serialization for unchanged messages and unchanged `richTextTags` references, and replaces `Object.assign` plus final key-array recomputation with direct copying and incremental counts. `7ccfdba` copies and freezes only caller-owned baselines and initial patch children, shares trusted immutable baseline children, and freezes new owned results without recopying them. The equality check in [catalog-registry.ts](../packages/vite/src/catalog-registry.ts) also exits as soon as it finds a message difference and skips references to identical messages.
 
-따라서 `d3e5252` 후보의 536개 검증은 그 동결 입력에는 유효하지만 현재 제품 소스의 검증 결과가 아니다. 현재 소스 `7ccfdba`에서 core 122/122와 관련 Vite·benchmark 102/102가 통과했고 core·Vite build도 통과했다. 102개 범위는 client, lazy, patch, push, wire, live-registry, sync-state와 profile·comparison policy다. 이 결과는 full workspace suite나 새 후보 tarball의 framework 브라우저 소비 인수를 뜻하지 않는다. 세부 재현·검증·성능 결과는 [83](83-push-subscription-maintenance.md), [84](84-large-catalog-performance.md), [85](85-remaining-edit-bottlenecks.md)에 있다.
+The candidate's 536-test result for `d3e5252` therefore remains valid for that frozen input but is not a validation result for current product source. Current source `7ccfdba` passed core 122/122 and the relevant Vite and benchmark tests 102/102, plus core and Vite builds. The 102 tests cover client, lazy, patch, push, wire, live-registry, sync-state, and profile/comparison policy. This does not mean the full workspace suite passed or that a new candidate tarball passed framework browser consumer acceptance. Detailed reproduction, validation, and performance results are in [83](83-push-subscription-maintenance.md), [84](84-large-catalog-performance.md), and [85](85-remaining-edit-bottlenecks.md).
 
-## 잔여와 릴리스 경계
+## Remaining work and release boundaries
 
-- core selector API는 선택 후속 항목이다. React·Svelte selector는 현재 소스에 구현돼 있으며, core 공통 selector API의 후속 여부는 별도 결정이다.
-- 다단계 fallback과 component 인자 보간은 비목표다.
-- Vue 어댑터는 구현돼 있지만 `packages/vue`의 `private: true` workspace이며 게시 대상이 아니다.
-- 실제 앱 pilot, 새 후보 동결·검증, 버전 승격과 게시는 이 문서의 검증 결과에 포함되지 않는다.
+- A core selector API is an optional follow-up. React and Svelte selectors are implemented in current source; whether to add a shared core selector API remains a separate decision.
+- Multi-stage fallback and component interpolation through arguments are non-goals.
+- The Vue adapter is implemented but is a `private: true` workspace at `packages/vue` and is not a publication target.
+- A real app pilot, new candidate freeze and validation, version promotion, and publication are not included in this document's validation results.
 
-| 구분 | 현재 상태 |
+| Item | Current state |
 | --- | --- |
-| 추적 중인 `main` 소스 | 공개 패키지 5개는 `0.1.0-alpha.4`, Vue는 `0.1.0-alpha.4`이며 `private: true`다. |
-| alpha.5 후보 스냅샷 | 공개 패키지 5개를 `0.1.0-alpha.5`로 준비했다. Vue는 alpha.4, `private: true`를 유지하며 tarball 대상에 포함하지 않았다. |
-| 버전 승격 | 수행하지 않았다. `main`의 package manifest는 alpha.4다. |
-| npm 게시 | 수행하지 않았다. publish 단계는 dry-run으로 계획만 검증했다. |
-| registry 소비 인수 | 수행하지 않았다. 확인한 소비 경로는 로컬 tarball이다. |
+| Tracked `main` source | Five public packages and Vue are at `0.1.0-alpha.4`; Vue is `private: true`. |
+| alpha.5 candidate snapshot | Five public packages are prepared at `0.1.0-alpha.5`. Vue remains at alpha.4 and `private: true` and was excluded from tarballs. |
+| Version promotion | Not performed. Package manifests on `main` remain at alpha.4. |
+| npm publication | Not performed. The publish stage was verified as a dry-run plan only. |
+| Registry consumer acceptance | Not performed. The verified consumption path used local tarballs. |
 
-## 성능과 검증의 해석
+## Interpreting performance and validation
 
-[75](75-early-disk-rechecks.md)의 성능 수치는 2026-10-11의 역사 측정값이다. 해당 조건을 현재 HEAD에서 그대로 재현한 결과는 아니다. 최신 편집 성능의 측정 조건과 목표 판정은 [85](85-remaining-edit-bottlenecks.md)에 기록한다.
+The performance figures in [75](75-early-disk-rechecks.md) are historical measurements from 2026-10-11, not a reproduction of those conditions at current HEAD. Current edit-performance conditions and target determination are recorded in [85](85-remaining-edit-bottlenecks.md).
 
-현재 성능 측정은 75의 역사값과 분리해 [83](83-push-subscription-maintenance.md), [84](84-large-catalog-performance.md), [85](85-remaining-edit-bottlenecks.md)에 기록한다. 83의 `19640b9` harness 결과는 당시 source의 로컬 benchmark이며 새 후보 수락이나 성능 개선 효과를 뜻하지 않는다. 84의 snapshot-copy 10+10 표본은 locale-add 250ms 목표에 미달했고, edit large 20+20 표본은 100ms 목표에 미달했으며 receive→commit 구간은 늘었다. 84의 single-value parser 100쌍 결과는 same-process microbenchmark다. 85의 첫 sparse-patch ABBA도 p95 100ms 목표에 미달했지만, `7ccfdba` 최종 50회 측정은 p50 62.4911ms·p95 89.165ms로 이 조건의 p95 목표를 통과했다. 이 최종값은 한 장비·한 세션의 결과이며 다른 환경이나 환경 부하를 보장하지 않는다. 이 결과들은 인과 증명이나 새 후보 수락을 뜻하지 않는다. [75](75-early-disk-rechecks.md)의 역사값은 변경하지 않는다.
+Current performance measurements are recorded separately from 75's historical values in [83](83-push-subscription-maintenance.md), [84](84-large-catalog-performance.md), and [85](85-remaining-edit-bottlenecks.md). The `19640b9` harness result in 83 is a local benchmark of the then-current source and does not imply acceptance of a new candidate or a performance improvement. In 84, the 10+10 snapshot-copy samples failed to meet the 250 ms locale-add target, and 20+20 large-edit samples failed to meet the 100 ms target while receive-to-commit time increased. The 100-pair single-value parser result in 84 is a same-process microbenchmark. The first sparse-patch ABBA in 85 also failed to meet the 100 ms p95 target, but the final 50-run measurement for `7ccfdba` had p50 62.4911 ms and p95 89.165 ms, meeting this condition's p95 target. This final value comes from one machine and one session and does not guarantee other environments or loads. These results do not establish causality or accept a new candidate. The historical values in [75](75-early-disk-rechecks.md) remain unchanged.
 
-[82-admin-support-pilot.md](82-admin-support-pilot.md)는 admin 고객 지원 화면의 부분 번역 pilot과 production typegen 잠금 수정 과정을 남긴 역사 기록이다. 후속 적용 범위를 제안하는 문서가 아니며, 이 문서의 최신 후보 기준이나 검증 결과를 바꾸지 않는다.
+[82-admin-support-pilot.md](82-admin-support-pilot.md) is a historical record of the partial-translation pilot for the admin customer-support page and the production typegen lock fix. It does not propose follow-up scope or change this document's latest candidate baseline or validation results.

@@ -1,69 +1,69 @@
-# 59. JSON leaf 편집 fastpath
+# 59. JSON leaf edit fast path
 
-## 배경
+## Background
 
-`packages/core`에 이전 성공 파싱의 JSON leaf 범위를 재사용하는 편집 경로를 넣었다. 커밋은 `5558185`(검증된 JSON span 재사용)와 `432ca35`(provenance를 compact id와 `Uint32Array` span으로 보관)다. `packages/vite`의 `1ab93d5`는 최신 batch가 대기 중일 때 이전 읽기의 token이 이미 최신 batch로 교체됐다면 중복 disk drain을 예약하지 않는 변경이다.
+`packages/core` now has an edit path that reuses JSON leaf ranges from an earlier successful parse. The commits are `5558185` (reuse validated JSON spans) and `432ca35` (store provenance as compact IDs and `Uint32Array` spans). `1ab93d5` in `packages/vite` prevents an earlier read from scheduling a duplicate disk drain when its token has already been replaced by a pending newer batch.
 
-## 적용 범위
+## Applicability
 
-fastpath는 편집된 leaf가 단일 문자열 토큰이고 이전 성공 파싱 provenance와 일치할 때만 cache를 쓴다. 다음은 cache 대상이 아니며 full strict parse로 되돌아간다.
+The fast path uses the cache only when an edited leaf is a single string token that matches provenance from an earlier successful parse. The following cases bypass the cache and return to a full strict parse:
 
-- 키 추가·삭제·이름 변경
-- 값 여러 개 동시 변경
-- 객체·배열 구조 변경
-- 문자열 토큰으로 검증되지 않는 invalid JSON
-- provenance가 없는 foreign catalog
+- adding, deleting, or renaming a key
+- changing multiple values at once
+- changing object or array structure
+- invalid JSON that does not validate as a string token
+- foreign catalogs without provenance
 
-변경된 문자열의 ICU와 인자 계약도 기존 검증 경로를 따른다. ICU·스키마 위반을 cache로 숨기지 않는다. provenance는 성공 파싱만 `WeakMap`에 남기고 실패 파싱은 기록하지 않는다. 보관한 span·id의 메모리 증가량은 정량 측정하지 않았으므로 이득으로 세지 않는다. cold 이득도 주장하지 않는다.
+The changed string still goes through the existing ICU and argument-contract validation. The cache does not conceal ICU or schema violations. Provenance is recorded in a `WeakMap` only for successful parses, never failed ones. The memory cost of retained spans and IDs was not measured quantitatively and is not counted as a benefit. No cold-path benefit is claimed either.
 
-## 파서 paired 비교
+## Parser paired comparison
 
-[../benchmarks/results/json-leaf-compare-2026-10-11.json](../benchmarks/results/json-leaf-compare-2026-10-11.json)는 single-process parser-only 비교다. 메시지 10k, before/after 교차 순서이고 입력 stringify·deep equality는 timing에서 제외한다. 파일의 top-level `codeHashes`는 현행 dist(`packages/core/dist/json.js` `acc8f2e9`, `catalog-json.js` `9012d701`)와 일치하고 `beforeRef`는 `78b23b7`이다.
+[../benchmarks/results/json-leaf-compare-2026-10-11.json](../benchmarks/results/json-leaf-compare-2026-10-11.json) is a single-process parser-only comparison with 10k messages in alternating before/after order. Input stringification and deep equality are excluded from timing. The file's top-level `codeHashes` match the current dist (`packages/core/dist/json.js` `acc8f2e9`, `catalog-json.js` `9012d701`), and `beforeRef` is `78b23b7`.
 
-| 모드 | before p95(ms) | after p95(ms) | faster 쌍 |
+| Mode | before p95 (ms) | after p95 (ms) | Faster pairs |
 | --- | ---: | ---: | ---: |
 | same-length | 44.02 | 12.09 | 100/100 |
 | variable-length | 152.23 | 83.73 | 99/100 |
 | cold | 92.41 | 92.58 | 10/20 |
 
-cold는 after 최대 1011.08ms의 outlier 1건을 포함하고 p95는 사실상 그대로다.
+The cold run includes one after outlier with a maximum of 1011.08 ms; p95 is effectively unchanged.
 
-## 종단 간 편집 run
+## End-to-end edit run
 
-[../benchmarks/results/json-leaf-final-edit-2026-10-11.json](../benchmarks/results/json-leaf-final-edit-2026-10-11.json)는 source `1ab93d5`, 측정 25·warmup 5·calibrations 10, typegen ON의 save→HTTP DOM ack run이다.
+[../benchmarks/results/json-leaf-final-edit-2026-10-11.json](../benchmarks/results/json-leaf-final-edit-2026-10-11.json) is a save-to-HTTP-DOM-ack run against source `1ab93d5` with 25 measurements, 5 warmups, 10 calibrations, and typegen enabled.
 
-| 시나리오 | p50(ms) | p95(ms) | 100ms 이내 |
+| Scenario | p50 (ms) | p95 (ms) | Within 100 ms |
 | --- | ---: | ---: | ---: |
 | small 1k×3 | 16.31 | 80.12 | 25/25 |
 | large 10k×20 | 67.36 | 95.25 | 24/25 |
 
-large p95는 목표 100ms 안이고 최대는 124.11ms다. 두 시나리오 모두 patch 25회만 반영했고 full 응답은 0회이며 `.d.ts`는 다시 쓰지 않았다. 편집 벤치마크가 검사하는 입력 노드·값과 컴포넌트 state도 보존됐다. single run이라 편집 목표의 안정 달성은 주장하지 않는다.
+The large p95 is within the 100 ms goal, with a maximum of 124.11 ms. Both scenarios applied 25 patches and 0 full responses, and neither rewrote the `.d.ts` file. The input nodes and values checked by the edit benchmark, along with component state, were also preserved. Because this was a single run, it does not establish stable achievement of the edit goal.
 
-## 로케일 추가 run
+## Locale-add run
 
-[../benchmarks/results/json-leaf-final-locale-add-2026-10-11.json](../benchmarks/results/json-leaf-final-locale-add-2026-10-11.json)는 같은 옵션의 list save→ack run이다.
+[../benchmarks/results/json-leaf-final-locale-add-2026-10-11.json](../benchmarks/results/json-leaf-final-locale-add-2026-10-11.json) is a list save-to-ack run with the same options.
 
-| 시나리오 | p50(ms) | p95(ms) | 250ms 이내 |
+| Scenario | p50 (ms) | p95 (ms) | Within 250 ms |
 | --- | ---: | ---: | ---: |
 | small 1k×3 | 83.23 | 135.22 | 25/25 |
 | large 10k×20 | 196.64 | 268.58 | 23/25 |
 
-large는 250ms 목표에 미달이다.
+The large scenario does not meet the 250 ms goal.
 
-## 복구·브라우저 프로브
+## Recovery and browser probes
 
-- fresh Vite SSR 복구 5개 케이스가 모두 `recovered: true`다([../benchmarks/results/json-leaf-recovery-2026-10-11.json](../benchmarks/results/json-leaf-recovery-2026-10-11.json)).
-- 얇은 계층 브라우저 스모크는 `--gap-ms 0` 8개 시나리오 PASS다([../benchmarks/results/json-leaf-browser-2026-10-11.json](../benchmarks/results/json-leaf-browser-2026-10-11.json)). 이 프로브는 프로토타입 비교 범위이므로 Saylo adapter 전반 검증으로 확장하지 않는다.
+- All five fresh Vite SSR recovery cases report `recovered: true` ([../benchmarks/results/json-leaf-recovery-2026-10-11.json](../benchmarks/results/json-leaf-recovery-2026-10-11.json)).
+- The thin-layer browser smoke test passes all eight `--gap-ms 0` scenarios ([../benchmarks/results/json-leaf-browser-2026-10-11.json](../benchmarks/results/json-leaf-browser-2026-10-11.json)). It covers a prototype comparison and is not evidence for the entire Saylo adapter.
 
-## 검증 범위
+## Validation scope
 
-현행 `npm run check` PASS 기록은 모든 build, workspace test, 소비자 typecheck, React typecheck, scripts와 Vite 테스트 94개를 포함한다. `parser-probe`도 1 PASS다. 본체 source API와 의존성 버전은 그대로이고 로컬 커밋만 했으며 push·publish는 없다. 원시 결과는 `9743a38`에 함께 커밋됐다.
+The current `npm run check` PASS record includes all builds, workspace tests, consumer typechecks, the React typecheck, scripts, and 94 Vite tests. `parser-probe` also passed once. The main source API and dependency versions are unchanged; the work exists in local commits only, with no push or publication. The raw results were committed together in `9743a38`.
 
-## 남은 작업
+## Remaining work
 
-원래 목표는 아직 닫히지 않았다. 로케일 추가 성능, 얇은 계층 전체 평가, 릴리스 선택이 남아 있다. 이 문서는 완료 판정이 아니다. 시점이 다른 `json-leaf-edit`(large p95 87.04ms)·`json-leaf-compact-edit`(large p95 117.61ms)는 역사 기록으로 남기고 위 최신 run을 우선한다.
+The original goal remains open. Locale-add performance, the complete thin-layer assessment, and the release decision remain. This document is not a completion determination. `json-leaf-edit` (large p95 87.04 ms) and `json-leaf-compact-edit` (large p95 117.61 ms) are retained as historical records from different points in time; the latest runs above take precedence.
 
-## 원본과 재현
+## Source data and reproduction
 
 ```sh
 npm run build
