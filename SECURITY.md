@@ -8,7 +8,7 @@ Report Saylo security issues by private email, not through public issues. For ge
 - Subject format: `Saylo security · <package> <version> · <one-line summary>`
 - Profile: <https://github.com/0disoft>
 
-The GitHub repository and the security advisory form are not publicly available, and unauthenticated requests return 404 (confirmed 2026-10-11). That is why this email address is listed as the reporting contact. The changes to this document and to the package contact details exist only in local preparation and are not included in the existing alpha.4 tarballs.
+The repository is public. Use the private email address above for security reports so sensitive details do not appear in public issues. This policy and the email contact metadata are included in alpha.5.
 
 ## What to include
 

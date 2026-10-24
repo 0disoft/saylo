@@ -4,11 +4,11 @@ The Saylo core package. It provides catalog parsing and schema validation, a syn
 
 ## Status
 
-The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.
+This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.
 
 React and Svelte selector fine-grained subscriptions (`useI18nSelector`, `selectSvelteStore`, `getI18nSelector`) are included in the `0.1.0-alpha.4` release.
 
-The changes to this README will be included in the next release.
+This README is included in the alpha.5 tarball.
 
 ## Installation
 
@@ -48,11 +48,11 @@ In TypeScript, connect key and argument types with `createStore<AppSchema>(...)`
 
 Lazy loading is handled by `createI18n`, and catalog transport sources are provided by [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme). Per-request SSR uses `createServerI18n`; boot serialization uses `serializeBootSnapshot` and `decodeBootSnapshot`.
 
-The unpublished source supports `setLocale(locale, { signal })`, `loadNamespace(namespace, { signal })`, and `refresh({ signal })`. This signal cancels only that caller's wait; shared catalog loads and the requested screen state transition continue. Failures are reported through `CatalogLoadError` with `code: 'ABORTED'` and `cause: signal.reason`. To tear down the whole instance, call `dispose()` or pass a lifetime `signal` in the options of `createI18n` or `createServerI18n`. Cancellation of the lifetime ends in-flight API calls with `I18nDisposedError`, while cancellation during SSR preparation ends with `ABORTED`.
+The alpha.5 source supports `setLocale(locale, { signal })`, `loadNamespace(namespace, { signal })`, and `refresh({ signal })`. This signal cancels only that caller's wait; shared catalog loads and the requested screen state transition continue. Failures are reported through `CatalogLoadError` with `code: 'ABORTED'` and `cause: signal.reason`. To tear down the whole instance, call `dispose()` or pass a lifetime `signal` in the options of `createI18n` or `createServerI18n`. Cancellation of the lifetime ends in-flight API calls with `I18nDisposedError`, while cancellation during SSR preparation ends with `ABORTED`.
 
-The unpublished source runs at most 8 `loadCatalog` calls concurrently per i18n instance. The same execution limit is shared even when the locale, screen scope, or manifest changes. `requestTimeoutMs` (default 5 seconds) includes time spent waiting for an execution slot, and a load canceled while waiting does not call the source. If the source ignores cancellation, the slot stays occupied until the actual Promise settles. If all 8 slots are stuck, new requests also wait and then end with a timeout, so the source must also clean up I/O according to the `AbortSignal` it receives. On servers that use multiple i18n instances, the source's shared pool also limits the total number of connections.
+The alpha.5 source runs at most 8 `loadCatalog` calls concurrently per i18n instance. The same execution limit is shared even when the locale, screen scope, or manifest changes. `requestTimeoutMs` (default 5 seconds) includes time spent waiting for an execution slot, and a load canceled while waiting does not call the source. If the source ignores cancellation, the slot stays occupied until the actual Promise settles. If all 8 slots are stuck, new requests also wait and then end with a timeout, so the source must also clean up I/O according to the `AbortSignal` it receives. On servers that use multiple i18n instances, the source's shared pool also limits the total number of connections.
 
-The unpublished `setNamespaces(namespaces, { signal })` replaces every required namespace for the current screen. Calling it as `await i18n.setNamespaces(['common', 'editor'])` removes the previous screen's namespaces from the language-switch wait, and catalogs already received stay in the cache. `[]` is allowed. Requests for namespaces excluded by the replacement and requests from the previous scope are rejected with `SCOPE_SUPERSEDED`. Array order does not matter, and duplicate or missing namespaces are rejected before the state changes. The React, Svelte, and Vue bindings and the React hydration adapter also forward this method.
+The alpha.5 `setNamespaces(namespaces, { signal })` replaces every required namespace for the current screen. Calling it as `await i18n.setNamespaces(['common', 'editor'])` removes the previous screen's namespaces from the language-switch wait, and catalogs already received stay in the cache. `[]` is allowed. Requests for namespaces excluded by the replacement and requests from the previous scope are rejected with `SCOPE_SUPERSEDED`. Array order does not matter, and duplicate or missing namespaces are rejected before the state changes. The React, Svelte, and Vue bindings and the React hydration adapter also forward this method.
 
 The optional `schedule(milliseconds, callback)` on both factories is used to control timers in tests. It must run the callback later and return a cancel function that is safe to call repeatedly. `requestTimeoutMs` accepts finite positive numbers up to `2,147,483,647`; fractional values are rounded up. If a displayed-state change pushes the revision beyond the safe integer range, the change is rejected with `REVISION_OVERFLOW` and the existing snapshot and boot data are kept.
 
@@ -64,7 +64,7 @@ To omit `parseCatalog` from the browser runtime, use the `@0disoft/saylo-core/ru
 
 `parseAcceptLanguage(header)` returns a frozen array of `{ range, quality }` in descending quality order, preserving header order for equal quality. Malformed entries are skipped, and entries with `q=0` are kept so the exclusion information is not lost. `resolveAcceptLanguage(header, supported, fallback)` applies the most specific `q=0` range as an exclusion. When a positive value and 0 have the same specificity, 0 wins. A wildcard selects the default after all explicit ranges have been examined. If no acceptable value exists, it returns the app fallback instead of HTTP 406.
 
-All three functions and the `LanguagePreference` type are provided by both `@0disoft/saylo-core` and `@0disoft/saylo-core/runtime`, which does not include the parser. This API is local and unpublished and is not in `0.1.0-alpha.4`.
+All three functions and the `LanguagePreference` type are provided by both `@0disoft/saylo-core` and `@0disoft/saylo-core/runtime`, which does not include the parser. This API is included in alpha.5 and is absent from alpha.4.
 
 ## Rich text parts
 
@@ -120,7 +120,7 @@ The runtime target is ES2022, and because it targets browsers it does not depend
 
 Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These guides and the package contact metadata are included in alpha.5. Earlier alpha.4 tarballs do not contain them.
 
 ## License
 

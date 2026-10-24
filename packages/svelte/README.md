@@ -1,6 +1,6 @@
 # @0disoft/saylo-svelte
 
-On Svelte 5, subscribe to Saylo's immutable snapshot with `$i18n`. The package provides ESM JavaScript and TypeScript declaration files. The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11, and Svelte has been included since `0.1.0-alpha.2`. Both selector APIs below are included in the `0.1.0-alpha.4` release.
+On Svelte 5, subscribe to Saylo's immutable snapshot with `$i18n`. The package provides ESM JavaScript and TypeScript declaration files. This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. Svelte has been included since `0.1.0-alpha.2`. Both selector APIs below are included in the `0.1.0-alpha.4` release.
 
 ## Direct subscription
 
@@ -129,6 +129,6 @@ The contract, key rules, demo, and verification status are described in [80-svel
 
 Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These guides and the package contact metadata are included in alpha.5. Earlier alpha.4 tarballs do not contain them.
 
 Licensed under Apache-2.0, and the tarball includes `LICENSE` and `NOTICE`.

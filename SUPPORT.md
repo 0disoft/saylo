@@ -10,7 +10,7 @@ This document describes where to send general questions, feature requests, and b
 
 An example subject is `Saylo · @0disoft/saylo-vite 0.1.0-alpha.4 · screen does not update after saving copy`. Including `Saylo` plus the package and version in the subject keeps the message from being mixed up with mail from other repositories.
 
-The `bugs` field in the existing published alpha.4 points to GitHub issues that return 404 on external access (confirmed 2026-10-11). In the local source, `bugs.email` for all five packages now points to the address above. This document and the metadata changes have not yet been published to npm.
+The five alpha.5 packages use `bugs.email` for the contact above. The earlier alpha.4 packages pointed to GitHub issues while the repository was private.
 
 ## What to send
 
@@ -30,7 +30,7 @@ Whatever the type of request, include the following. You can leave out items you
 ## Diagnostic data (optional)
 
 - Diagnostic JSON is not required. Sending the information above first is enough.
-- If you have a report made with `createSupportRecorder` from the current checkout or from the `0.1.0-alpha.5` candidate tarball, you may attach it. The current npm release `0.1.0-alpha.4` does not have this API. The candidate has not been published yet, and support does not require installing or using it.
+- If you have a report made with `createSupportRecorder` from alpha.5, you may attach it. The API is absent from alpha.4, and submitting a diagnostic report is optional.
 - The format and collection scope are described in the [support diagnostic report](docs/support-report.md). Before attaching anything, check that document to see what is included.
 
 ## Install tag

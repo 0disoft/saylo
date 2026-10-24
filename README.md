@@ -10,7 +10,9 @@ Saylo is an i18n (internationalization) library that aims to show translation co
 
 ## Current status
 
-- The five packages are published as `0.1.0-alpha.4` with dist-tag `alpha`. The 2026-10-11 [CI release](https://github.com/0disoft/saylo/actions/runs/38088660390) passed five Trusted Publisher OIDC authentications, 229 tests, consumer type checks, and publication. CI and the registry tarball SHA-512 checks, published JS/TS, React and Svelte selector SSR, and SvelteKit browser verification also passed. Changes and verification are in the [release record](releases/0.1.0-alpha.4.md), and approved integrity is in the [manifest](releases/0.1.0-alpha.4.json). Re-check with `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`.
+- This checkout targets `0.1.0-alpha.5` with dist-tag `alpha`. It includes rich text, catalog translation workflows, synchronization diagnostics, cancellation controls, large-catalog optimizations, and English install-time documentation. Publication and registry acceptance are tracked in the [release record](releases/0.1.0-alpha.5.md). Vue remains private.
+
+- The previous five-package release was `0.1.0-alpha.4` with dist-tag `alpha`. The 2026-10-11 [CI release](https://github.com/0disoft/saylo/actions/runs/38088660390) passed five Trusted Publisher OIDC authentications, 229 tests, consumer type checks, and publication. CI and the registry tarball SHA-512 checks, published JS/TS, React and Svelte selector SSR, and SvelteKit browser verification also passed. Changes and verification are in the [release record](releases/0.1.0-alpha.4.md), and approved integrity is in the [manifest](releases/0.1.0-alpha.4.json). Re-check with `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`.
 - The complete translation check and the publication and consumer verification for the previous `0.1.0-alpha.3` are preserved in the [release record](releases/0.1.0-alpha.3.md). The approval manifests and verification commands for past versions are kept as well.
 - The publication and verification record for the previous `0.1.0-alpha.2` is kept in the [release record](releases/0.1.0-alpha.2.md) and the [manifest](releases/0.1.0-alpha.2.json). Re-check with `npm run verify:registry:alpha2` and `npm run verify:registry:sveltekit`, and the `alpha.1` verification is kept as well.
 - The [SvelteKit 3 example](examples/sveltekit/README.md) verified per-request SSR, boot, hydration, page navigation in a shared layout, preservation of input and modals after saving translations, and exit and re-entry. SSR and language switching in a real Node production build were also verified. Run it with `npm run dev:sveltekit` after `npm run setup:sveltekit`. The example is an independent private app that uses local package copies and did not change the main project or the public package versions. Detailed scope is in [39](docs/39-sveltekit-example.md).
@@ -18,7 +20,7 @@ Saylo is an i18n (internationalization) library that aims to show translation co
 - `packages/core` contains catalog parsing and schema validation, a translator, and an immutable store. It builds ESM JavaScript and `.d.ts` files in the local npm workspace. Removed `private` from the four public packages and published the first version `0.1.0-alpha.1` (dist-tag `alpha`) to npm on 2026-10-06. The root workspace package remains `private`.
 - The current API is `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`, and the error classes. `packages/vite` supports modifying, adding, and deleting catalog files, eager connection and lazy pair lookup with partial transport, and quarantine of existing translations when the base schema changes. `packages/react` provides typed context and a snapshot-bound hook that accept eager and lazy instances. `packages/typegen` provides a CLI and worker that generate type declarations from the base schema. In the vanilla and React demos, saving a file preserves the form and modal while updating copy and the locale and namespace lists. The lazy production path inlines boot pairs and splits the remaining pairs into static chunk loaders. Implemented the SSR boot serializer, per-request instance, and React hydration adapter, and completed the full check and real browser verification.
 - The `@0disoft/saylo-core/runtime` subpath entry and `astRuntime` in `packages/vite` (default `true`, production only) remove the parser runtime only at the Saylo core formatter boundary. The public runtime entry omits `parseCatalog`, and the root entry keeps the existing API. Quarantine and this parser removal are included in the `0.1.0-alpha.2` release.
-- For the latest features and package status, follow the Vite, React, Svelte, and typegen sections below and the [package READMEs](docs/README.md). `includeKeys` automatic analysis (`{ from, dynamicKeys? }`) and lazy dev push are local implementations and are not in the `0.1.0-alpha.4` release.
+- For the latest features and package status, follow the Vite, React, Svelte, and typegen sections below and the [package READMEs](docs/README.md). `includeKeys` automatic analysis (`{ from, dynamicKeys? }`) and lazy dev push are included in alpha.5 and are absent from alpha.4.
 - The latest representative local performance targets are the conditions in [75](docs/75-early-disk-rechecks.md). The p95 for applying an edit is 49.57ms for small and 80.25ms for large, within the 100ms target; the p95 for a single locale-list request is 77.46ms for small and 177.83ms for large, within the 250ms target. These are not generalized to other environments.
 - Past performance experiments, measurement chronology, and raw results are in the [documentation index](docs/README.md), [validation history](docs/06-validation-history.md), and [live-update benchmark](benchmarks/live-update/README.md). Re-measure with `npm run bench:live`.
 
@@ -238,17 +240,17 @@ The runnable SSR fixture is in `examples/ssr/`; `npm run demo:ssr` runs renderTo
 
 ## Release
 
-The current published version is `0.1.0-alpha.4` for the five packages with dist-tag `alpha`. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
+The release target is `0.1.0-alpha.5` for the five packages with dist-tag `alpha`; see the [release record](releases/0.1.0-alpha.5.md) for publication status. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.4 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.5 --tag alpha
 npm run check
 npm run release:pack
 ```
 
 `@0disoft/saylo-svelte` was added to the current release targets. `release:check` checks the version, license, `engines`, `publishConfig`, and internal dependency versions of the five packages. `release:pack` installs the five tarballs into a consumer app outside the repository, verifies them, and leaves the tarballs and `manifest.json` in `.release/npm/`. `verify:registry` compares the existing four `alpha.1` packages, `verify:registry:alpha2` the five `alpha.2` packages, and `verify:registry:alpha3` the five `alpha.3` packages against their approval manifests. `verify:registry:sveltekit` verifies a SvelteKit app with the approved `alpha.2` release, and `verify:registry:sveltekit:alpha3` with the `alpha.3` release. The GitHub Actions [release.yml](.github/workflows/release.yml) runs on manual dispatch, authenticates first regardless of whether it will publish when `verify_oidc=true`, and publishes only when `publish=true`. OIDC authentication, publication, download, and installation verification for the five packages are complete.
 
-Run the current registry acceptance with `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`. The approval manifest is [releases/0.1.0-alpha.4.json](releases/0.1.0-alpha.4.json).
+After publication, run `npm run verify:registry:alpha5` and `npm run verify:registry:sveltekit:alpha5` using the CI-approved manifest recorded in the release notes.
 
 ## Design direction summary
 
@@ -268,7 +270,7 @@ The example that runs directly in Vite without a framework after installation is
 
 ## Questions and security reports
 
-For general questions, feature proposals, and bugs, see [Support](SUPPORT.md); for private security reports, see [Security](SECURITY.md). The Vite package's install folder also includes these guides. Bundling the documentation and replacing the contact are local unpublished changes.
+For general questions, feature proposals, and bugs, see [Support](SUPPORT.md); for private security reports, see [Security](SECURITY.md). The Vite package's install folder also includes these guides. The documentation bundle and email contact metadata are included in alpha.5.
 
 ## Documentation
 

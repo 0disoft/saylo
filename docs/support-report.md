@@ -4,7 +4,7 @@
 
 This document describes the contract for a diagnostic JSON report that an app using Saylo can attach when reporting a problem. The implementation is in `packages/vite/src/support-report.ts` and is exported from `@0disoft/saylo-vite/client`.
 
-`createSupportReport` and `createSupportRecorder` are available in the current checkout and the `0.1.0-alpha.5` candidate tarball. They are not in the current npm release `0.1.0-alpha.4`. The candidate has not been published to npm yet.
+`createSupportReport` and `createSupportRecorder` are included in alpha.5 and are absent from alpha.4.
 
 ## Design principles
 
@@ -298,7 +298,7 @@ Use generic keys such as `demo` instead of real key names in synthetic examples,
 
 ## Public channels
 
-See [support guide](../SUPPORT.md) for general inquiries and feature proposals, and [security guide](../SECURITY.md) for private security reports. The contact is the email on the maintainer's public GitHub profile, and data is not sent automatically. Review the material for personal information and secrets before submitting. This guide and the metadata changes are unpublished local state.
+See [support guide](../SUPPORT.md) for general inquiries and feature proposals, and [security guide](../SECURITY.md) for private security reports. The contact is the email on the maintainer's public GitHub profile, and data is not sent automatically. Review the material for personal information and secrets before submitting. This guide and the metadata changes are included in alpha.5.
 
 ## Evidence
 

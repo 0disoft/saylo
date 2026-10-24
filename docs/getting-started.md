@@ -5,7 +5,7 @@ This guide adds Saylo to a Vite 8 app using only the npm registry, without cloni
 ## Prerequisites
 
 - Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
-- The Saylo repository is private, but the published packages are on the npm public registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
+- Saylo packages are available on the public npm registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
 - The `latest` tag for the Saylo packages is still a placeholder for registration. To install an actual published build, add `@alpha` when installing.
 - The published build checked against this document is `0.1.0-alpha.4`. Each alpha publication increases the version, so after installing a new build, recheck the run, live-edit, and build procedure below against that version.
 - The app runtime requires `@0disoft/saylo-core`. The plugin and dev client are provided by `@0disoft/saylo-vite`; `vite` is a peer dependency whose condition is 8.

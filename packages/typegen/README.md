@@ -8,9 +8,9 @@ On Windows, if a rename fails with `EPERM`, `EACCES`, or `EBUSY`, the writer ret
 
 Success is determined from the output actually persisted to disk. If a newer request arrives in the middle, a result already written to the file is still recorded as a success, and saving the same catalog again after a generation failure retries instead of skipping the earlier result. This behavior is included in the `0.1.0-alpha.4` release.
 
-`writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the unpublished source lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
+`writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the alpha.5 source lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
 
-The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
+This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
 
 ## Installation
 
@@ -35,7 +35,7 @@ Use the `locales/<locale>/<namespace>.json` structure. For example, `locales/ko/
 
 ## Running
 
-### Shared configuration and catalog checks (unpublished)
+### Shared configuration and catalog checks (alpha.5)
 
 `loadProjectConfig()` and the `saylo` command in the current checkout are not in the npm `alpha.4` release. The existing `saylo-typegen` arguments are preserved, and the new `--config` option reads the same JSON configuration as Vite. Configuration code other than JSON is not executed.
 
@@ -51,7 +51,7 @@ Use the `locales/<locale>/<namespace>.json` structure. For example, `locales/ko/
 
 Save the content above as `saylo.config.json`. Paths are resolved relative to the directory containing the configuration file. `richText` uses the same namespace → message ID → allowed tag list as Vite, and declared keys must exist in the base catalog. `checkLocales` is the set of locales the CLI checks for completeness; it is not a setting that adds locales to Vite. When omitted, it checks the locales it finds, including empty directories. `initialLocale` is also included in the check.
 
-In a project that installed the unpublished tarball, use the following commands. `--no-install` uses the installed executable without downloading other packages.
+In a project that installed alpha.5, use the following commands. `--no-install` uses the installed executable without downloading other packages.
 
 ```sh
 npx --no-install saylo-typegen --config saylo.config.json
@@ -65,7 +65,7 @@ In the repository, after building, you can check the example with `node packages
 
 `sync --dry-run` prints an `add`, `review`, and `retain` plan. `translation: null` on an addition means it has not been translated yet and is not an actual catalog value. Existing translations and keys or namespaces that are not in the base are preserved, and broken files are not proposed for replacement. `export`, `snapshot`, and `refresh` without `--out-file`, and `check` and `sync`, are read-only and do not write catalogs, generated types, or review records. There is no delete or automatic translation feature. The only command that writes translations to catalogs is `import --apply`.
 
-The following `snapshot` and `baseline` examples use the earlier baseline-only review method that does not use `reviews`. If you use an approval ledger, follow [Optional translation approval records](#optional-translation-approval-records-unpublished) later in this document.
+The following `snapshot` and `baseline` examples use the earlier baseline-only review method that does not use `reviews`. If you use an approval ledger, follow [Optional translation approval records](#optional-translation-approval-records-alpha5) later in this document.
 
 To compare source changes, first save the stdout of `snapshot` to a file. The review record stores only the SHA-256 of each message's source text and rich contract, not the source text or translation content.
 
@@ -79,7 +79,7 @@ You can also put the `baseline` path in the shared JSON. If a path is specified 
 
 When updating an existing comparison record without `--out-file`, save stdout to a new file, confirm exit code 0 and the content, and then replace the original. Redirecting directly over an existing baseline can let the shell truncate the existing file before the command fails. A new file can be created with `--out-file`, and existing files are not overwritten.
 
-### Safe file output (unpublished)
+### Safe file output (alpha.5)
 
 `--out-file <new.json>` is supported only for `export`, `snapshot`, and `refresh`. Without it, the existing stdout output and read-only behavior stay the same. A relative path is resolved from the cwd and must have a `.json` extension. The parent directory must actually exist and must not be a symlink, and the path cannot be inside `locales` or point to an input work file, configuration, a baseline that is actually read, or a reviews path. Existing files, directories, and symlinks are rejected, and there is no `--force` or overwrite option.
 
@@ -93,7 +93,7 @@ npx --no-install saylo refresh --file translation-work.json --out-file refresh-r
 
 If JSON validation for `export` or `snapshot` fails, it does not create the outfile; it prints the existing diagnostics to stdout and exits 1. `refresh` does not create a file when `workfile` is `null`, and when there is a conflict but a `workfile` exists, it saves the full report and still exits 1. Usage and output errors exit 2; cancellation is SIGINT 130 and SIGTERM 143. When you need to preserve an existing file, use `--out-file` instead of shell redirection.
 
-### Exporting and importing translation work files (unpublished)
+### Exporting and importing translation work files (alpha.5)
 
 `export` and `import` exist only in the current checkout and are not in npm `alpha.4`. `export` prints only missing `add` jobs and `review` jobs whose source text or rich contract changed or was added relative to the baseline to stdout as JSON. It does not include `retain` entries that keep existing translations. The output format is `saylo-translation-work/v1`.
 
@@ -147,7 +147,7 @@ Specifying `export --with-context` emits `saylo-translation-work/v2` and adds `c
 npx --no-install saylo export --with-context --config saylo.config.json > translation-work-v2.json
 ```
 
-`import`, `approve`, and `refresh` read both v1 and v2 automatically. The `context` structure of v2 is validated, but its content is informational; actual `sourceHash`, ICU, argument, tag, and approval validation uses the current catalog and configuration. Editing `context` cannot change the allowed rules. `--with-context` is accepted only by `export` and `refresh`; other commands exit 2. This option and the v2 format are features of the current checkout that have not been published.
+`import`, `approve`, and `refresh` read both v1 and v2 automatically. The `context` structure of v2 is validated, but its content is informational; actual `sourceHash`, ICU, argument, tag, and approval validation uses the current catalog and configuration. Editing `context` cannot change the allowed rules. `--with-context` is accepted only by `export` and `refresh`; other commands exit 2. This option and the v2 format are included in alpha.5.
 
 `import` requires `--file` and exactly one of `--dry-run` or `--apply`. `--dry-run --json` prints only the validation result and the list of changes, and `--apply --json` writes translations that pass validation to the catalogs.
 
@@ -182,7 +182,7 @@ For a `--json` cancellation of `import --apply` or `approve --apply`, the existi
 
 `import` does not rebuild type declarations or the baseline. After applying, run `saylo check` and type generation (`saylo-typegen`) separately. Updating the baseline is separate from translation approval.
 
-### Refreshing a translation work file (unpublished)
+### Refreshing a translation work file (alpha.5)
 
 `refresh` merges the work file in progress with the latest `export` candidates and prints a `saylo-translation-refresh/v1` report to stdout. With `--out-file`, the actual report is written to that file and stdout gets a receipt. Even without `--json`, the whole stdout is a single JSON document, and the report contains `blocked`, `workfile`, `conflicts`, `alreadyApplied`, and `report`. `workfile` is `saylo-translation-work/v1` or `saylo-translation-work/v2`, and is `null` if the catalog is invalid, such as from a JSON, ICU, argument, or rich policy error. Residual translations for removed source keys or namespaces are still compared and shown as `SOURCE_REMOVED`; `UNKNOWN_MESSAGE` and `NAMESPACE_MISMATCH` are kept in `report` but these two diagnostics alone do not block candidate generation, and catalogs are not deleted. `report` is the catalog check result. If `workfile` is `null`, no `--out-file` is created.
 
@@ -204,7 +204,7 @@ If the current catalog translation equals the written translation and that writt
 
 The whole report is not input to import or approve. Use `refreshed-work.json`, extracted from the top-level `workfile` with `jq`, in the next step. The report remains even on `exit 1`, so check `conflicts[].previous` and `current`, edit the work file by hand, and extract it.
 
-### Optional translation approval records (unpublished)
+### Optional translation approval records (alpha.5)
 
 `reviews` is an optional feature that binds approved locales and keys to the source and translation hashes at that time. Put `{"reviews": "saylo-reviews.json"}` in the shared JSON, or add `--reviews` to `check`, `sync`, `export`, `refresh`, or `approve`. When not specified, the existing baseline-only behavior is kept. The ledger stores only the source and rich contract hash and the translation hash per locale/namespace/id.
 
@@ -276,7 +276,7 @@ Example:
 All catalogs are validated before writing. Invalid catalogs leave existing output unchanged.
 ```
 
-A missing required option, an unknown option, a `--base-locale` that is not in BCP 47 form, or an `--out-file` that does not end in `.d.ts` is a usage error. It writes the message and the hint `Run saylo-typegen --help for options and an example.` to stderr, exits 1, and leaves stdout empty. The `--out-file` extension and `--base-locale` checks run before reading catalogs from disk, so invalid options fail before file I/O. Fix the options and run the same command again. The restriction that the output file must be `.d.ts` and the contract of keeping the last valid output and replacing it atomically are unchanged. This help and early validation are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, and are not in the current npm release `0.1.0-alpha.4`.
+A missing required option, an unknown option, a `--base-locale` that is not in BCP 47 form, or an `--out-file` that does not end in `.d.ts` is a usage error. It writes the message and the hint `Run saylo-typegen --help for options and an example.` to stderr, exits 1, and leaves stdout empty. The `--out-file` extension and `--base-locale` checks run before reading catalogs from disk, so invalid options fail before file I/O. Fix the options and run the same command again. The restriction that the output file must be `.d.ts` and the contract of keeping the last valid output and replacing it atomically are unchanged. This help and early validation are included in alpha.5 and are absent from alpha.4.
 
 ## Build order
 
@@ -303,7 +303,7 @@ It is a CLI and worker that run on Node, and the runtime target is ES2022.
 
 Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These guides and the package contact metadata are included in alpha.5. Earlier alpha.4 tarballs do not contain them.
 
 ## License
 

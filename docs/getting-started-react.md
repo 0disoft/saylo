@@ -7,7 +7,7 @@ To export a separate React starter from a Saylo repository clone into an empty f
 ## Prerequisites
 
 - Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
-- The Saylo repository is private, but the published packages are on the npm public registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
+- Saylo packages are available on the public npm registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
 - The `latest` tag for the Saylo packages is a placeholder for registration. Add `@alpha` when installing.
 - React is a peer dependency whose condition is 19, and Vite is a peer dependency of `@0disoft/saylo-vite` whose condition is 8.
 - The published build checked against this document is `0.1.0-alpha.4`. Each alpha publication increases the version, so recheck the procedure below against a new build.

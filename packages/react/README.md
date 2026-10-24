@@ -4,7 +4,7 @@ The React 19 binding for Saylo. `createSayloReact` creates a typed Provider and 
 
 ## Status
 
-The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11. `0.1.0-alpha.1` was published on 2026-10-06 and `0.1.0-alpha.2` on 2026-10-09. `useI18nSelector` below is included in the `0.1.0-alpha.4` release. You can also use the package from this repository's workspace or from an `npm pack` tarball.
+This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. `0.1.0-alpha.1` was published on 2026-10-06 and `0.1.0-alpha.2` on 2026-10-09. `useI18nSelector` below is included in the `0.1.0-alpha.4` release. You can also use the package from this repository's workspace or from an `npm pack` tarball.
 
 ## Installation
 
@@ -135,7 +135,7 @@ createRoot(document.getElementById('root')!).render(
 );
 ```
 
-This helper is not yet in an npm release. It is a local change; no version bump or publication has been made. Follow the [React rich text notes](../../docs/79-react-rich-text.md) for usage and verification scope.
+This helper is included in alpha.5. Follow the [React rich text notes](../../docs/79-react-rich-text.md) for usage and verification scope.
 
 ## Related packages
 
@@ -153,7 +153,7 @@ The runtime target is ES2022, and because it targets browsers it does not depend
 
 Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These guides and the package contact metadata are included in alpha.5. Earlier alpha.4 tarballs do not contain them.
 
 ## License
 

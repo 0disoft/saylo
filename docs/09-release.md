@@ -1,5 +1,7 @@
 # 09. Release
 
+Alpha.5 release preparation is authorized on 2026-10-25. The five public package versions are promoted to `0.1.0-alpha.5`; Vue stays private at alpha.4. Publication and registry acceptance are tracked in the [release record](../releases/0.1.0-alpha.5.md). Historical candidate evidence below remains unchanged.
+
 This is the runbook for Saylo's distribution targets and release process. The first version, `0.1.0-alpha.1`, was published on 2026-10-06. A pre-publication workflow dry-run dispatch succeeded on GitHub `main` at `3953f24` (run [37467769385](https://github.com/0disoft/saylo/actions/runs/37467769385), 46 seconds, Ubuntu 24.04, Node 24.21.0); the actual publish step was skipped then.
 
 ## Confirmed details

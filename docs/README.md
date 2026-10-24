@@ -1,5 +1,7 @@
 # Documentation guide
 
+Alpha.5 release preparation is authorized on 2026-10-25. The five public package versions are promoted to `0.1.0-alpha.5`; Vue stays private at alpha.4. Publication and registry acceptance are tracked in the [release record](../releases/0.1.0-alpha.5.md). Historical candidate evidence below remains unchanged.
+
 This directory holds Saylo's design contracts and local validation records. Design drafts are mixed with current behavior that has already been implemented and validated, so if the documents and the actual code disagree, the current code in `packages/*/README.md` and `packages/*/src` takes precedence. In this directory, `proposal`, `goal`, `unresolved`, and `unvalidated` describe design intent, while labels such as `local implementation complete` indicate the scope of validation that was run. [08-update-protocol.md](08-update-protocol.md) is the single source of truth for the update wire, and measured and directly verified records are in [06-validation-and-roadmap.md](06-validation-and-roadmap.md).
 
 Items that have passed local validation are recorded both in this directory and in `packages/*/README.md`. Documents do not claim completion for features that have not been implemented yet.

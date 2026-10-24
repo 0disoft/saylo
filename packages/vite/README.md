@@ -4,13 +4,13 @@ The Saylo Vite 8 plugin and development client. It detects catalog file changes 
 
 ## Status
 
-The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
+This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
 
 The lazy development path sends full present responses in a compact form and restores them to the existing catalog shape in the browser. Complex ICU ASTs and error locations are preserved, and there is no re-parsing of ICU in the browser. This change is included in the `0.1.0-alpha.2` release. Scope, verification, and performance measurements are in [compact transport notes](https://github.com/0disoft/saylo/blob/main/docs/16-compact-catalog-transport.md).
 
 ## Starter guide in the install folder
 
-The tarball for the next release will include the [documentation index](docs/README.md), the JavaScript/TypeScript, React, Svelte, and SvelteKit getting-started guides, and the package API documentation. They can be read from the app's `node_modules/@0disoft/saylo-vite/docs/` without a GitHub login. The current public alpha.4 does not include this document bundle; it is a change prepared through local build and pack.
+The alpha.5 tarball includes the [documentation index](docs/README.md), the JavaScript/TypeScript, React, Svelte, and SvelteKit getting-started guides, and the package API documentation. They can be read from the app's `node_modules/@0disoft/saylo-vite/docs/` without a GitHub login. The earlier alpha.4 tarballs do not include this document bundle.
 
 ```sh
 node -e "console.log(require('node:fs').readFileSync('node_modules/@0disoft/saylo-vite/docs/README.md', 'utf8'))"
@@ -33,7 +33,7 @@ The `latest` tag of Saylo packages still points to a registration placeholder, s
 
 ## Configuration
 
-The current unpublished source reads CLI-compatible JSON configuration with `loadProjectConfig()`. File paths are resolved relative to the configuration file's location, so they stay valid when the Vite root differs. The base locale, catalog paths, and rich tag policy can live in one file and are also used by `saylo-typegen --config` and `saylo check --config`. Usage for shared configuration and the review comparison record is in the [typegen guide](../typegen/README.md).
+The alpha.5 source reads CLI-compatible JSON configuration with `loadProjectConfig()`. File paths are resolved relative to the configuration file's location, so they stay valid when the Vite root differs. The base locale, catalog paths, and rich tag policy can live in one file and are also used by `saylo-typegen --config` and `saylo check --config`. Usage for shared configuration and the review comparison record is in the [typegen guide](../typegen/README.md).
 
 ```js
 import { fileURLToPath } from 'node:url';
@@ -66,7 +66,7 @@ export default defineConfig({
 
 The catalog file layout is `locales/<locale>/<namespace>.json`. For example, `locales/ko/demo.json` and `locales/en/demo.json`.
 
-The `richText: { demo: { terms: ['link', 'strong'] } }` option in the unpublished source specifies the allowed tags for each namespace and message. For the specified messages, it checks tag balance in every ICU branch and the allowlist at startup, in production builds, and on edits during development. Invalid edits are diagnosed as `INVALID_RICH_TEXT`, and the development server keeps the last valid catalog. Tag order, nesting, and omission in translations are allowed, and ordinary strings that are not specified keep the existing behavior. This contract also applies to lazy transport and SSR boot data.
+The `richText: { demo: { terms: ['link', 'strong'] } }` option in the alpha.5 source specifies the allowed tags for each namespace and message. For the specified messages, it checks tag balance in every ICU branch and the allowlist at startup, in production builds, and on edits during development. Invalid edits are diagnosed as `INVALID_RICH_TEXT`, and the development server keeps the last valid catalog. Tag order, nesting, and omission in translations are allowed, and ordinary strings that are not specified keep the existing behavior. This contract also applies to lazy transport and SSR boot data.
 
 Production `vite build --watch` watches catalog changes in the default, manual, and automatic `includeKeys` modes and revalidates on every rebuild. It updates translation copy, lazy chunks, and generated types from the new disk contents. This fix also exists only in the current checkout.
 
@@ -92,7 +92,7 @@ The analysis also tracks translation functions wrapped in type assertions, non-n
 
 `from` should include files that define and re-export translators as well. Simple variable aliases of namespace objects and named exports through relative paths within the analysis scope are connected. Cloning a translation export from a confirmed namespace object, passing it outside, or destructuring it with rest requires `dynamicKeys` or a manual `includeKeys` list. Namespaces from unrelated external packages and modules that export only ordinary functions are not counted as translators, and this restriction does not apply to them.
 
-Modules outside `from` are not pulled in automatically. In the current local checkout's production `buildStart`, configured Vite `resolve.alias` entries (strings and regular expressions) are resolved through the Vite plugin resolver to connect named imports and re-exports and namespace imports. Only files already scanned by `includeKeys.from` take part; following a resolution does not widen the scan scope or leave the Vite root. It resolves again on production `build --watch` rebuilds. Aliases that cannot be resolved or remain external, and aliases that point outside the scanned files, stop the build with a diagnostic that names the importer and the path or target involved. The diagnostic suggests fixing `from` or the alias, or using an explicit `includeKeys` list. Official `@0disoft/saylo-*` runtimes and `virtual:saylo` modules keep the existing translator handling, and custom translation exports from other external packages are not followed. This support is a local change that has not been published and is not in `0.1.0-alpha.4`.
+Modules outside `from` are not pulled in automatically. In the current local checkout's production `buildStart`, configured Vite `resolve.alias` entries (strings and regular expressions) are resolved through the Vite plugin resolver to connect named imports and re-exports and namespace imports. Only files already scanned by `includeKeys.from` take part; following a resolution does not widen the scan scope or leave the Vite root. It resolves again on production `build --watch` rebuilds. Aliases that cannot be resolved or remain external, and aliases that point outside the scanned files, stop the build with a diagnostic that names the importer and the path or target involved. The diagnostic suggests fixing `from` or the alias, or using an explicit `includeKeys` list. Official `@0disoft/saylo-*` runtimes and `virtual:saylo` modules keep the existing translator handling, and custom translation exports from other external packages are not followed. This support is included in alpha.5 and is absent from alpha.4.
 
 In Vue and Svelte, real HTML comments and the `<script>` body are read separately. If a template expression or attribute contains a comment marker such as `<!--` or a script marker, the analyzer stops instead of deleting anything arbitrarily. Files that use this syntax must be handled with a manual `includeKeys` list.
 
@@ -114,7 +114,7 @@ For every locale folder except hidden folders (including empty folders) and for 
 
 Missing entries are collected as `MISSING_MESSAGE` and `MISSING_NAMESPACE` in `CatalogError.diagnostics` and fail the build. The diagnostics include the locale, namespace, target file, and missing keys, and give the relative path to create for a missing file. The check runs before the generated type file is updated, so the existing file is kept on failure. The development server and live edits keep the existing partial translation and fallback behavior even with the option enabled. Detailed scope and verification are in [complete translation notes](https://github.com/0disoft/saylo/blob/main/docs/42-complete-translations.md).
 
-## Requiring review approval (unpublished)
+## Requiring review approval (alpha.5)
 
 The current checkout has `requireReviewedTranslations` (default `false`) in the Vite options and in the shared JSON `SayloProjectConfig`. When enabled, the `reviews` path is required; a relative path given directly in the Vite options is resolved from the Vite root, and a path read from JSON by `loadProjectConfig()` is resolved from the JSON file's folder.
 
@@ -159,7 +159,7 @@ TS and checkJs consumers add `["vite/client", "@0disoft/saylo-vite/virtual"]` to
 
 `connectDev` reports the development server handshake state through `onSyncState(state)` on both the eager and lazy paths. `state` is a frozen object `{ status, attempt, maxAttempts: 3 }`, and `status` is one of `idle`, `connecting`, `retrying`, `connected`, `disconnected`, `failed`, or `stopped`. `attempt` is 1 in `connecting`, 2 or 3 in `retrying`, and the last attempt value in `failed`; it is 0 in the other states.
 
-In the unpublished source, eager `connectDev` and `createDevCatalogSource` accept an optional `runtime: { schedule, createId }`. `schedule(milliseconds, callback)` must run the callback later and return an idempotent cancel function, and `createId()` must return a unique string per connection. When omitted, the default timer and cryptographically random values are used. Positive fractional `requestTimeoutMs` values are rounded up, as in core. The lazy bridge's timer is configured on `createDevCatalogSource`.
+In the alpha.5 source, eager `connectDev` and `createDevCatalogSource` accept an optional `runtime: { schedule, createId }`. `schedule(milliseconds, callback)` must run the callback later and return an idempotent cancel function, and `createId()` must return a unique string per connection. When omitted, the default timer and cryptographically random values are used. Positive fractional `requestTimeoutMs` values are rounded up, as in core. The lazy bridge's timer is configured on `createDevCatalogSource`.
 
 ```ts
 connectDev(i18n, {
@@ -170,13 +170,13 @@ connectDev(i18n, {
 
 This state reflects the snapshot and manifest handshake, not the loading of individual lazy catalogs or whether a screen rendered successfully. `onDiagnostic` continues to handle locale file diagnostics. On the lazy path, `getSyncState` and `subscribeSyncState` on `DevCatalogSource` are optional methods, so type compatibility with external sources created before this API is preserved. Production has no hot context, so eager `connectDev` returns a noop and does not call the state callback. The retry policy is unchanged, and the default per-request timeout is 5000ms.
 
-This API is provided in the current checkout and the `0.1.0-alpha.5` candidate tarball. It is not in the current npm release `0.1.0-alpha.4`, and the candidate has not been published yet. The contract is described in [development sync state](https://github.com/0disoft/saylo/blob/main/docs/dev-sync-state.md).
+This API is included in alpha.5 and is absent from alpha.4. The contract is described in [development sync state](https://github.com/0disoft/saylo/blob/main/docs/dev-sync-state.md).
 
 ## Behavior scope
 
-In the current checkout, a synchronous exception from `onDiagnostic` does not stop translation updates or bindings or other diagnostic subscribers. A synchronous exception from `DevCatalogSource.subscribeManifest` is reported to `observer`, and normal manifest acceptance, updates to other subscribers, and pending catalog requests continue. The lazy bridge also ignores diagnostics scheduled after stop. Errors from a diagnostic callback itself are not reported back through the same callback, and the consumer handles a rejected Promise from an async callback. This isolation is a change after the alpha.4 release and is subject to final candidate verification.
+In the current checkout, a synchronous exception from `onDiagnostic` does not stop translation updates or bindings or other diagnostic subscribers. A synchronous exception from `DevCatalogSource.subscribeManifest` is reported to `observer`, and normal manifest acceptance, updates to other subscribers, and pending catalog requests continue. The lazy bridge also ignores diagnostics scheduled after stop. Errors from a diagnostic callback itself are not reported back through the same callback, and the consumer handles a rejected Promise from an async callback. This isolation is a change after the alpha.4 release and is included in alpha.5.
 
-For support material, connect `onDiagnostic` and `onSyncState` from `createSupportRecorder()`, produce `getReport()` as JSON, and review it. The report contains only the error code, numeric position, connection state, and allowed environment versions of the most recent 32 diagnostic events; it excludes error text, file names, translation keys, and request IDs. It does not collect or send anything automatically. `clear()` resets the record and state. This API is also provided in the current checkout and the `0.1.0-alpha.5` candidate tarball, and is not in the current npm release alpha.4. The detailed contract and usage are in [support diagnostics](https://github.com/0disoft/saylo/blob/main/docs/support-report.md).
+For support material, connect `onDiagnostic` and `onSyncState` from `createSupportRecorder()`, produce `getReport()` as JSON, and review it. The report contains only the error code, numeric position, connection state, and allowed environment versions of the most recent 32 diagnostic events; it excludes error text, file names, translation keys, and request IDs. It does not collect or send anything automatically. `clear()` resets the record and state. This API is included in alpha.5 and is absent from alpha.4. The detailed contract and usage are in [support diagnostics](https://github.com/0disoft/saylo/blob/main/docs/support-report.md).
 
 The plugin watches files and publishes only valid catalogs, and the client receives snapshots and passes them to the app. If a base schema change makes existing translations invalid, the plugin removes only the invalid messages from that file's last-good translation and publishes it, and missing messages fall back to the base locale values. An invalid translation edit keeps that file's last-good version while changes to other files continue to apply. A new translation file with no last-good version is not published, and deleting the file also removes its last-good version. When the base or a translation is fixed, it is revalidated and restored automatically. Core `createStore` and `replaceCatalogs` do not isolate automatically; startup and builds validate the whole catalog strictly. Isolation happens only in this plugin. In production, `astRuntime` removes the parser runtime at Saylo AST boundaries when enabled, and the parser is still included if the app calls `parseCatalog` directly. Core and the store do not touch the DOM directly, so the app renders snapshots to update the screen. Vite does not replace app modules.
 
@@ -204,7 +204,7 @@ The runtime target is ES2022, and it runs in the Vite development server and bui
 
 Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These guides and the package contact metadata are included in alpha.5. Earlier alpha.4 tarballs do not contain them.
 
 ## License
 
