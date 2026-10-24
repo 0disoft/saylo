@@ -4,7 +4,7 @@ The React 19 binding for Saylo. `createSayloReact` creates a typed Provider and 
 
 ## Status
 
-This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. `0.1.0-alpha.1` was published on 2026-10-06 and `0.1.0-alpha.2` on 2026-10-09. `useI18nSelector` below is included in the `0.1.0-alpha.4` release. You can also use the package from this repository's workspace or from an `npm pack` tarball.
+This README describes `0.1.0-alpha.6` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.6.md) for publication and registry verification. `0.1.0-alpha.1` was published on 2026-10-06 and `0.1.0-alpha.2` on 2026-10-09. `useI18nSelector` below is included in the `0.1.0-alpha.4` release. You can also use the package from this repository's workspace or from an `npm pack` tarball.
 
 ## Installation
 

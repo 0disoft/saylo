@@ -8,9 +8,9 @@ On Windows, if a rename fails with `EPERM`, `EACCES`, or `EBUSY`, the writer ret
 
 Success is determined from the output actually persisted to disk. If a newer request arrives in the middle, a result already written to the file is still recorded as a success, and saving the same catalog again after a generation failure retries instead of skipping the earlier result. This behavior is included in the `0.1.0-alpha.4` release.
 
-`writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the alpha.5 source lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
+`writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the alpha.6 source lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
 
-This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
+This README describes `0.1.0-alpha.6` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.6.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
 
 ## Installation
 
@@ -51,7 +51,7 @@ Use the `locales/<locale>/<namespace>.json` structure. For example, `locales/ko/
 
 Save the content above as `saylo.config.json`. Paths are resolved relative to the directory containing the configuration file. `richText` uses the same namespace → message ID → allowed tag list as Vite, and declared keys must exist in the base catalog. `checkLocales` is the set of locales the CLI checks for completeness; it is not a setting that adds locales to Vite. When omitted, it checks the locales it finds, including empty directories. `initialLocale` is also included in the check.
 
-In a project that installed alpha.5, use the following commands. `--no-install` uses the installed executable without downloading other packages.
+In a project that installed alpha.5 or later, use the following commands. `--no-install` uses the installed executable without downloading other packages.
 
 ```sh
 npx --no-install saylo-typegen --config saylo.config.json

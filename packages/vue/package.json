@@ -12,7 +12,7 @@
     "test": "node --test test/*.test.mjs",
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
-  "dependencies": { "@0disoft/saylo-core": "0.1.0-alpha.5" },
+  "dependencies": { "@0disoft/saylo-core": "0.1.0-alpha.6" },
   "peerDependencies": { "vue": "3" },
   "license": "Apache-2.0",
   "engines": { "node": "24.x" }

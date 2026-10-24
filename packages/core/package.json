@@ -1,6 +1,6 @@
 {
   "name": "@0disoft/saylo-core",
-  "version": "0.1.0-alpha.5",
+  "version": "0.1.0-alpha.6",
   "type": "module",
   "description": "Core catalog parsing, schema validation, translation and i18n stores for Saylo.",
   "repository": {

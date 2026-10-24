@@ -1,6 +1,6 @@
 # @0disoft/saylo-svelte
 
-On Svelte 5, subscribe to Saylo's immutable snapshot with `$i18n`. The package provides ESM JavaScript and TypeScript declaration files. This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. Svelte has been included since `0.1.0-alpha.2`. Both selector APIs below are included in the `0.1.0-alpha.4` release.
+On Svelte 5, subscribe to Saylo's immutable snapshot with `$i18n`. The package provides ESM JavaScript and TypeScript declaration files. This README describes `0.1.0-alpha.6` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.6.md) for publication and registry verification. Svelte has been included since `0.1.0-alpha.2`. Both selector APIs below are included in the `0.1.0-alpha.4` release.
 
 ## Direct subscription
 

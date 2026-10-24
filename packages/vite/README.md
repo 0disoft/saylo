@@ -4,7 +4,7 @@ The Saylo Vite 8 plugin and development client. It detects catalog file changes 
 
 ## Status
 
-This README describes `0.1.0-alpha.5` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.5.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
+This README describes `0.1.0-alpha.6` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.6.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
 
 The lazy development path sends full present responses in a compact form and restores them to the existing catalog shape in the browser. Complex ICU ASTs and error locations are preserved, and there is no re-parsing of ICU in the browser. This change is included in the `0.1.0-alpha.2` release. Scope, verification, and performance measurements are in [compact transport notes](https://github.com/0disoft/saylo/blob/main/docs/16-compact-catalog-transport.md).
 
@@ -33,7 +33,7 @@ The `latest` tag of Saylo packages still points to a registration placeholder, s
 
 ## Configuration
 
-The alpha.5 source reads CLI-compatible JSON configuration with `loadProjectConfig()`. File paths are resolved relative to the configuration file's location, so they stay valid when the Vite root differs. The base locale, catalog paths, and rich tag policy can live in one file and are also used by `saylo-typegen --config` and `saylo check --config`. Usage for shared configuration and the review comparison record is in the [typegen guide](../typegen/README.md).
+The alpha.6 source reads CLI-compatible JSON configuration with `loadProjectConfig()`. File paths are resolved relative to the configuration file's location, so they stay valid when the Vite root differs. The base locale, catalog paths, and rich tag policy can live in one file and are also used by `saylo-typegen --config` and `saylo check --config`. Usage for shared configuration and the review comparison record is in the [typegen guide](../typegen/README.md).
 
 ```js
 import { fileURLToPath } from 'node:url';
@@ -66,7 +66,7 @@ export default defineConfig({
 
 The catalog file layout is `locales/<locale>/<namespace>.json`. For example, `locales/ko/demo.json` and `locales/en/demo.json`.
 
-The `richText: { demo: { terms: ['link', 'strong'] } }` option in the alpha.5 source specifies the allowed tags for each namespace and message. For the specified messages, it checks tag balance in every ICU branch and the allowlist at startup, in production builds, and on edits during development. Invalid edits are diagnosed as `INVALID_RICH_TEXT`, and the development server keeps the last valid catalog. Tag order, nesting, and omission in translations are allowed, and ordinary strings that are not specified keep the existing behavior. This contract also applies to lazy transport and SSR boot data.
+The `richText: { demo: { terms: ['link', 'strong'] } }` option in the alpha.6 source specifies the allowed tags for each namespace and message. For the specified messages, it checks tag balance in every ICU branch and the allowlist at startup, in production builds, and on edits during development. Invalid edits are diagnosed as `INVALID_RICH_TEXT`, and the development server keeps the last valid catalog. Tag order, nesting, and omission in translations are allowed, and ordinary strings that are not specified keep the existing behavior. This contract also applies to lazy transport and SSR boot data.
 
 Production `vite build --watch` watches catalog changes in the default, manual, and automatic `includeKeys` modes and revalidates on every rebuild. It updates translation copy, lazy chunks, and generated types from the new disk contents. This fix also exists only in the current checkout.
 
@@ -159,7 +159,7 @@ TS and checkJs consumers add `["vite/client", "@0disoft/saylo-vite/virtual"]` to
 
 `connectDev` reports the development server handshake state through `onSyncState(state)` on both the eager and lazy paths. `state` is a frozen object `{ status, attempt, maxAttempts: 3 }`, and `status` is one of `idle`, `connecting`, `retrying`, `connected`, `disconnected`, `failed`, or `stopped`. `attempt` is 1 in `connecting`, 2 or 3 in `retrying`, and the last attempt value in `failed`; it is 0 in the other states.
 
-In the alpha.5 source, eager `connectDev` and `createDevCatalogSource` accept an optional `runtime: { schedule, createId }`. `schedule(milliseconds, callback)` must run the callback later and return an idempotent cancel function, and `createId()` must return a unique string per connection. When omitted, the default timer and cryptographically random values are used. Positive fractional `requestTimeoutMs` values are rounded up, as in core. The lazy bridge's timer is configured on `createDevCatalogSource`.
+In the alpha.6 source, eager `connectDev` and `createDevCatalogSource` accept an optional `runtime: { schedule, createId }`. `schedule(milliseconds, callback)` must run the callback later and return an idempotent cancel function, and `createId()` must return a unique string per connection. When omitted, the default timer and cryptographically random values are used. Positive fractional `requestTimeoutMs` values are rounded up, as in core. The lazy bridge's timer is configured on `createDevCatalogSource`.
 
 ```ts
 connectDev(i18n, {

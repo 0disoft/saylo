@@ -75,7 +75,9 @@
     "verify:docs": "node scripts/build-package-docs.mjs --check",
     "verify:boundaries": "node scripts/check-package-boundaries.mjs && node --test scripts/test/package-boundaries.test.mjs",
     "audit:dependencies": "node scripts/audit-dependencies.mjs",
-    "verify:demo:a11y": "npm run build && node scripts/verify-demo-accessibility.mjs"
+    "verify:demo:a11y": "npm run build && node scripts/verify-demo-accessibility.mjs",
+    "verify:registry:alpha6": "node scripts/pack-smoke.mjs --registry --registry-version 0.1.0-alpha.6",
+    "verify:registry:sveltekit:alpha6": "node scripts/pack-sveltekit.mjs --registry-version 0.1.0-alpha.6"
   },
   "devDependencies": {
     "@babel/parser": "8",
