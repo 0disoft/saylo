@@ -1,12 +1,12 @@
-# 35. AST 동결 헬퍼 모듈화
+# 35. Module-level AST freezing helper
 
-[34](34-message-freeze-stages.md)가 다음 후보로 지목한 `freezeMessageAst` 내부 `seal` 헬퍼의 호출별 생성을 없애는 단일 최적화를 채택했다. `seal`을 `packages/core/src/diagnostics.ts` 모듈 범위로 옮겨 새 AST마다 같은 함수를 재사용한다. 깊은 동결 순회, `WeakSet` 신뢰, FormatJS 복잡한 ICU의 일반 동결, 공개 API는 그대로다.
+I adopted the single optimization identified as the next candidate in [34](34-message-freeze-stages.md): eliminating per-call creation of the `seal` helper inside `freezeMessageAst`. I moved `seal` to module scope in `packages/core/src/diagnostics.ts` so every new AST reuses the same function. Deep-freeze traversal, `WeakSet` trust, generic freezing of complex ICU messages delegated to FormatJS, and the public API remain unchanged.
 
-## 변경 범위
+## Change scope
 
-`freezeMessageAst` 안에 있던 `seal`을 모듈 스코프로 옮겼다. 함수 본문(`Object.freeze`와 `frozen.add`)과 호출 순서는 바뀌지 않는다. 이 경로는 파서가 소유한 새 AST에만 쓰므로 외부 입력의 일반 동결과 오류 의미도 유지한다. 공개 entry·버전·게시본은 변하지 않는다.
+I moved `seal` out of `freezeMessageAst` to module scope. Its body (`Object.freeze` and `frozen.add`) and call order are unchanged. This path is used only for new ASTs owned by the parser, so generic freezing of external input and error semantics remain unchanged. Public entries, versions, and published packages are unchanged.
 
-## 조건과 경계
+## Conditions and boundaries
 
 ```sh
 npm run build --workspace=@0disoft/saylo-core
@@ -14,47 +14,47 @@ node benchmarks/live-update/parse-compare.mjs cbd6871 benchmarks/results/parse-c
 node benchmarks/live-update/parse-compare.mjs cbd6871 benchmarks/results/parse-compare-shared-ast-seal-incremental.json incremental
 ```
 
-기준 리비전은 `cbd6871`이다. 2026-10-08(KST) Node 24.18.0에서 실행했다. 한 파일에 일반 문구·ASCII `{name}` 메시지 10,000개를 두고 같은 프로세스에서 두 파서를 교차 호출한다. 매회 `probe` 값 하나만 같은 길이로 바꾼다. warmup을 포함한 모든 pair에서 두 파서의 파싱 결과 전체를 `deepEqual`로 대조한다(cold 25쌍, incremental 150쌍, 모두 일치). cold는 이전 카탈로그 없이 새로 파싱하고 incremental은 직전 불변 카탈로그를 재사용한다. `stringify`·동등성 검사·디스크·watcher·번역 검증·브라우저는 timing에서 제외한다.
+The baseline revision was `cbd6871`. This ran on 2026-10-08 KST under Node 24.18.0. A file contained 10,000 ordinary-text and ASCII `{name}` messages, and the two parsers were called alternately in the same process. One `probe` value changed to another value of equal length each iteration. Full parsing results from both parsers were checked with `deepEqual` for every pair, including warmups (25 cold and 150 incremental pairs, all equal). Cold mode parses without a previous catalog; incremental mode reuses the immediately preceding immutable catalog. `stringify`, equality checks, disk I/O, the watcher, translation validation, and the browser were excluded from timing.
 
-cold는 warmup 5쌍·측정 20쌍, incremental은 warmup 50쌍·측정 100쌍이다. p50·p95는 nearest-rank다. GC·control을 차감하지 않고 중첩 p95를 합산하지 않는다. 서로 다른 시점의 run과 인과 비교하지 않는다.
+Cold mode had 5 warmup and 20 measured pairs; incremental mode had 50 warmup and 100 measured pairs. p50 and p95 use nearest rank. I do not deduct GC/control or add nested p95 values. I make no causal comparison with runs at different times.
 
-## Cold 교차 비교
+## Cold cross-comparison
 
-| 파서 | p50(ms) | p95(ms) | min(ms) | max(ms) |
+| Parser | p50 (ms) | p95 (ms) | min (ms) | max (ms) |
 | --- | --- | --- | --- | --- |
-| 기준 리비전 | 178.4783 | 332.6223 | 96.3825 | 359.4802 |
-| `seal` 모듈화 | 151.7772 | 323.8107 | 98.7914 | 357.4289 |
+| Baseline revision | 178.4783 | 332.6223 | 96.3825 | 359.4802 |
+| Module-level `seal` | 151.7772 | 323.8107 | 98.7914 | 357.4289 |
 
-20쌍 중 13쌍이 빨랐고 pair별 after−before 중앙값은 -26.1658ms였다. pair차 p95는 +24.8066ms다.
+Thirteen of 20 pairs were faster, and the per-pair after−before median was -26.1658 ms. Per-pair difference p95 was +24.8066 ms.
 
-## Incremental 교차 비교
+## Incremental cross-comparison
 
-| 파서 | p50(ms) | p95(ms) | min(ms) | max(ms) |
+| Parser | p50 (ms) | p95 (ms) | min (ms) | max (ms) |
 | --- | --- | --- | --- | --- |
-| 기준 리비전 | 48.1476 | 88.6328 | 32.1344 | 156.1319 |
-| `seal` 모듈화 | 47.5307 | 80.2430 | 27.5103 | 246.9130 |
+| Baseline revision | 48.1476 | 88.6328 | 32.1344 | 156.1319 |
+| Module-level `seal` | 47.5307 | 80.2430 | 27.5103 | 246.9130 |
 
-100쌍 중 53쌍이 빨랐고 pair별 차이 중앙값은 -0.7381ms다. pair차 p95는 +30.1070ms다.
+Fifty-three of 100 pairs were faster, and the per-pair median difference was -0.7381 ms. Per-pair difference p95 was +30.1070 ms.
 
-## 해석과 한계
+## Interpretation and limitations
 
-두 비교의 파싱 p50·p95가 낮게 관측됐고 구현도 내부 헬퍼 이동으로 작아 이번 변경을 채택했다. cold pair차 중앙값은 -26.1658ms, incremental은 -0.7381ms였다. 두 비교 모두 pair차 p95가 양수이고 incremental 최장 시간은 156.1319→246.9130ms로 늘었다. 단일 장비에서 GC·부하를 통제하지 않아 시간 차이를 헬퍼 생성 비용으로 확정하지 않는다. 안정적 tail 개선이나 일반적인 속도 개선을 주장하지 않는다. 실제 언어 목록 250ms 목표의 개선은 측정하지 않았다.
+Parsing p50 and p95 were observed lower in both comparisons, and the implementation is smaller because it moves an internal helper, so I adopted the change. The cold per-pair median was -26.1658 ms and the incremental median was -0.7381 ms. Per-pair difference p95 was positive in both comparisons, and the longest incremental duration increased from 156.1319 to 246.9130 ms. GC and load were uncontrolled on a single machine, so I do not establish the timing difference as helper-creation cost. I do not claim stable tail improvement or general speedup. I did not measure an improvement toward the 250 ms target for real locale lists.
 
-## 검증
+## Validation
 
-core build, core 테스트 75개, consumer 타입 검사를 통과했다. `node --test benchmarks/live-update/parser-probe.test.mjs` 1개가 통과했다. cold·incremental 원시 표본에서 요약·pair차·dist 5개 hash·임시 디렉터리 정리까지 대조를 마쳤다. 제품 dist 5개 중 `diagnostics.js`만 기준 리비전과 다르고 `catalog.js`·`json.js`·`simple-message.js`·`schema.js`는 이전 baseline과 같다.
+The core build, 75 core tests, and consumer typechecks passed. One `node --test benchmarks/live-update/parser-probe.test.mjs` test passed. I reconciled summaries, per-pair differences, five dist hashes, and temporary-directory cleanup against the cold and incremental raw samples. Of the five product dist files, only `diagnostics.js` differs from the baseline revision; `catalog.js`, `json.js`, `simple-message.js`, and `schema.js` match the earlier baseline.
 
-공개 API·wire 변경이 없어 workspace 전체·pack·브라우저·release 검사는 반복하지 않았다.
+Because the public API and wire format were unchanged, I did not repeat full-workspace, pack, browser, or release checks.
 
-문서 표를 결과 JSON과 대조했다. 변경한 Markdown 여섯 파일의 로컬 링크 186개·코드 fence·40KB 제한과 `git diff --check`가 통과했다.
+I checked the documentation tables against the result JSON. All 186 local links in the six changed Markdown files, code fences, the 40 KB limit, and `git diff --check` passed.
 
-## 다음 작업
+## Next work
 
-다음은 상세 계측을 끈 large locale-add 실제 목록 시간 재측정이다. 제품 변경 후 250ms 목표 충족 여부를 확인한다.
+Next is to remeasure actual large locale-add list rendering time with detailed instrumentation disabled and check whether the product change meets the 250 ms target.
 
-## 자료
+## Data
 
-- [cold 비교](../benchmarks/results/parse-compare-shared-ast-seal-cold.json)
-- [incremental 비교](../benchmarks/results/parse-compare-shared-ast-seal-incremental.json)
+- [Cold comparison](../benchmarks/results/parse-compare-shared-ast-seal-cold.json)
+- [Incremental comparison](../benchmarks/results/parse-compare-shared-ast-seal-incremental.json)
 
-공개 API·버전·게시 변화는 없고 push·publish도 없다.
+The change did not alter the public API, version, or publication, and it was not pushed or published.

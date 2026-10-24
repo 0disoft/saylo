@@ -1,18 +1,18 @@
-# 40. 단순 메시지 인자 수집 실험
+# 40. Simple-message argument collection experiment
 
-[15](15-simple-message-parser.md)의 단순 파싱 경로에서 인자 수집을 합쳐 일반 AST 재순회를 없애는 실험을 했다. cold 신규 파싱의 p50·p95가 모두 증가해 성능 근거가 부족하다고 보고 되돌렸다. 제품 코드와 계측 하네스는 `cbf30aa7b915038efa6b5f7e369142877adad688` 상태로 유지한다. 실험은 [패치](../benchmarks/results/simple-arguments-experiment.patch)로 보존한다.
+I experimented with eliminating the generic AST re-traversal by collecting arguments during the simple parsing path from [15](15-simple-message-parser.md). Both p50 and p95 for cold new parses increased, so I judged the performance evidence insufficient and reverted it. Product code and the measurement harness remain at `cbf30aa7b915038efa6b5f7e369142877adad688`. The experiment is preserved in a [patch](../benchmarks/results/simple-arguments-experiment.patch).
 
-## 실험 범위
+## Experiment scope
 
-`parseSimpleMessage`에 선택적 Set 인자를 추가하고 ASCII 인자 이름을 만나는 순서대로 수집했다. 파싱이 성공했을 때만 `inferSimpleArguments`로 수집 결과를 받아 일반 AST walk를 생략했다. Set은 중복을 제거하고, 기존 일반 ICU 경로와 같은 JSON schema signature와 per-parse 캐시를 공유했다. 단순 경로가 실패하면 수집한 prefix를 버리고 기존 FormatJS 파싱과 `inferArguments`로 되돌아가 충돌과 오류 위치를 그대로 검증했다. 공개 export·버전·wire 형식은 바꾸지 않았고 `parser-probe`의 계측 경계도 함께 수정했다.
+I added an optional Set argument to `parseSimpleMessage` and collected ASCII argument names in encounter order. When parsing succeeded, `inferSimpleArguments` received the collected result and skipped the generic AST walk. The Set removed duplicates and shared the same JSON schema signature and per-parse cache as the existing generic ICU path. If the simple path failed, it discarded the collected prefix and fell back to existing FormatJS parsing and `inferArguments`, preserving conflict and error-position validation. Public exports, versions, and wire format were unchanged, and I also adjusted the measurement boundaries in `parser-probe`.
 
-되돌린 파일은 `packages/core/src/simple-message.ts`, `packages/core/src/schema.ts`, `packages/core/src/catalog.ts`, `packages/core/test/simple-message.test.mjs`, `benchmarks/live-update/parser-probe.mjs` 다섯 개다. 되돌린 뒤 core dist도 다시 빌드했다.
+The reverted files were `packages/core/src/simple-message.ts`, `packages/core/src/schema.ts`, `packages/core/src/catalog.ts`, `packages/core/test/simple-message.test.mjs`, and `benchmarks/live-update/parser-probe.mjs`. I rebuilt core dist after reverting.
 
-## 측정 조건
+## Measurement conditions
 
-Node v24.18.0, Windows x64에서 실행했다. cold는 2026-10-09T07:57:34.713Z, incremental은 2026-10-09T07:58:43.423Z에 기록됐다. 한 파일에 일반 텍스트와 ASCII `{name}` 메시지 10,000개를 두고 probe 하나만 매회 같은 길이 값으로 바꿨다. 기준 커밋 `cbf30aa`의 소스를 임시 디렉터리에서 빌드한 파서와 실험 파서를 같은 프로세스에서 순서를 번갈아 호출했다.
+This ran under Node v24.18.0 on Windows x64. Cold results were recorded at 2026-10-09T07:57:34.713Z and incremental results at 2026-10-09T07:58:43.423Z. A file contained 10,000 ordinary-text and ASCII `{name}` messages, and one probe changed to an equal-length value every iteration. A parser built from baseline commit `cbf30aa` source in a temporary directory and the experimental parser were called alternately in the same process.
 
-cold는 이전 카탈로그 없이 warmup 5쌍·측정 20쌍이다. incremental은 이전 카탈로그를 재사용하고 warmup 50쌍·측정 100쌍이다. 매쌍 파싱 결과 전체를 `assert.deepEqual`로 대조했다. 호출 wall time만 측정하고 입력 stringify·동등성 검사·디스크·watcher·번역 검증·브라우저는 제외했다. p50·p95는 nearest-rank이며 쌍별 차이는 실험−기준이다. p95들을 합산하거나 GC·control 시간을 차감하지 않는다.
+Cold mode had 5 warmup and 20 measured pairs without a previous catalog. Incremental mode reused the previous catalog and had 50 warmup and 100 measured pairs. Every pair's full parsing result was checked with `assert.deepEqual`. Only call wall time was measured; input stringify, equality checks, disk I/O, the watcher, translation validation, and the browser were excluded. p50 and p95 use nearest rank, and per-pair differences are experiment minus baseline. I do not add p95 values or deduct GC/control time.
 
 ```sh
 git apply benchmarks/results/simple-arguments-experiment.patch
@@ -21,7 +21,7 @@ node benchmarks/live-update/parse-compare.mjs cbf30aa benchmarks/results/parse-c
 node benchmarks/live-update/parse-compare.mjs cbf30aa benchmarks/results/parse-compare-simple-arguments-incremental.json incremental
 ```
 
-재현할 때는 기준 커밋의 별도 checkout을 사용하고 보존 패치를 그 checkout의 같은 경로로 복사한다. 결과의 `baselineRevision`은 `cbf30aa7b915038efa6b5f7e369142877adad688`이다. `currentCodeHashes`는 되돌리기 전 실험 dist를 가리키며 cold·incremental이 같다.
+To reproduce, use a separate checkout of the baseline commit and copy the preserved patch to the same paths in that checkout. The result's `baselineRevision` is `cbf30aa7b915038efa6b5f7e369142877adad688`. `currentCodeHashes` refers to the experimental dist before reversion and is the same for cold and incremental runs.
 
 ```text
 catalog.js        fd4f90aabdce544ec23f9f18cfe6929325b9c5da59638de21802f68e47162ea2
@@ -31,25 +31,25 @@ json.js           ab6c3ba9b7a534e453b9468baa8a6513da3e5fc1ab82f660f12df793f0cdf8
 diagnostics.js    3d512b1fba5b545937309dced114bd52da5a67b1e4f2fe01deef33080c923ed7
 ```
 
-## 결과와 채택 판단
+## Results and adoption decision
 
-| 모드 | 기준 p50 | 실험 p50 | 기준 p95 | 실험 p95 | 쌍별 차이 중앙값 | 쌍별 차이 p95 | 빨라진 쌍 |
+| Mode | Baseline p50 | Experiment p50 | Baseline p95 | Experiment p95 | Per-pair difference median | Per-pair difference p95 | Faster pairs |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | cold | 98.46 | 117.02 | 183.20 | 207.63 | +11.62 | +53.64 | 4/20 |
 | incremental | 41.36 | 40.18 | 61.25 | 60.20 | −0.90 | +13.38 | 54/100 |
 
-단위는 ms이다. cold는 신규 파싱 p50·p95가 모두 증가했고 20쌍 중 4쌍만 빨랐다. 최대값은 284.12ms에서 222.94ms로 낮아졌지만 집계는 나빠졌다. incremental은 집계 p50·p95가 소폭 낮고 100쌍 중 54쌍이 빨랐으나, 쌍별 p95가 +13.38ms이고 최대값이 76.56ms에서 140.43ms로 약 1.8배가 됐다. min은 24.12ms에서 21.12ms로 낮아졌다. 집계가 조금 좋아진 모드가 있어도 cold 신규 경로의 증가와 단일 run의 흔들림을 함께 보면 실험 비용을 정당화할 근거가 부족하다. 제품 3개·테스트·probe의 변경을 모두 되돌렸다.
+Units are ms. For cold new parsing, both p50 and p95 increased and only 4 of 20 pairs were faster. The maximum fell from 284.12 to 222.94 ms, but the aggregate result worsened. In incremental mode, aggregate p50 and p95 were slightly lower and 54 of 100 pairs were faster, but the per-pair difference p95 was +13.38 ms and the maximum increased from 76.56 to 140.43 ms, about 1.8 times higher. The minimum decreased from 24.12 to 21.12 ms. Even though aggregate results improved slightly in one mode, the cold-path increase and single-run variability were insufficient to justify the experiment's cost. I reverted all changes across the three product files, test, and probe.
 
-단일 장비의 실행 부하·GC·스케줄링을 통제하지 않았으므로 증가 원인이나 회귀를 코드로 확정하지 않는다. 화면 반영이나 로케일 추가 목표에서 이 실험의 효과를 판단하지도 않는다. 다음 작업은 특정 최적화로 확정하지 않고 다른 구조적 병목 후보를 검토하는 것으로 둔다.
+Run load, GC, and scheduling were uncontrolled on a single machine, so I do not establish the code as the cause of the increase or as a regression. I also do not judge the experiment's effect on UI rendering or locale-add targets. The next step is to review other structural bottleneck candidates without committing to a specific optimization.
 
-## 검증과 보존 자료
+## Validation and preserved data
 
-실험 상태에서 core build·테스트 76개·consumer 타입 검사가 통과했다. catalog·simple·probe 관련 선택 테스트 33개도 통과했으나 서로 겹치므로 합산하지 않는다. generated 121 combinations를 인자 계약 reference와 대조했고 cross-path 공유·수집 순서·prototype 이름·충돌·불변성을 확인했다. cold 25쌍(warmup 5·측정 20)·incremental 150쌍(warmup 50·측정 100) 모든 pair에서 전체 파싱 결과 deepEqual이 성공했다. 새 live·browser·release 검증이나 성능 목표 달성·게시는 하지 않았다.
+In the experimental state, the core build, 76 tests, and consumer typechecks passed. Thirty-three selected catalog, simple, and probe tests also passed, but they overlap with the 76 and are not added separately. I checked 121 generated combinations against argument-contract references and verified cross-path sharing, collection order, prototype names, conflicts, and immutability. Full parsing-result deep equality passed for every pair in 25 cold pairs (5 warmup + 20 measured) and 150 incremental pairs (50 warmup + 100 measured). I did not run new live, browser, or release verification or achieve a performance target or publication.
 
-원복 뒤 core build와 `parser-probe.test.mjs`를 통과했다. 제품·probe 작업 트리에 diff가 없고 변경한 세 dist 모듈의 해시가 실험본과 다르며, 변경하지 않은 JSON·diagnostics 해시는 같음을 확인했다. 원시 쌍의 개수·차이·nearest-rank 요약과 두 run의 코드 해시를 대조했고, `git apply --check`로 보존 패치의 재적용 가능 여부를 검사했다. 임시 parser 디렉터리는 정리됐다.
+After reversion, the core build and `parser-probe.test.mjs` passed. I confirmed that the product and probe worktrees had no diff, that the three changed dist modules had different hashes from the experiment, and that unchanged JSON and diagnostics hashes were equal. I reconciled raw pair counts, differences, nearest-rank summaries, and code hashes for both runs, and used `git apply --check` to verify that the preserved patch can be reapplied. The temporary parser directory was cleaned up.
 
-- [cold 비교와 원시 쌍](../benchmarks/results/parse-compare-simple-arguments-cold.json)
-- [incremental 비교와 원시 쌍](../benchmarks/results/parse-compare-simple-arguments-incremental.json)
-- [되돌린 실험 패치](../benchmarks/results/simple-arguments-experiment.patch)
+- [Cold comparison and raw pairs](../benchmarks/results/parse-compare-simple-arguments-cold.json)
+- [Incremental comparison and raw pairs](../benchmarks/results/parse-compare-simple-arguments-incremental.json)
+- [Reverted experiment patch](../benchmarks/results/simple-arguments-experiment.patch)
 
-버전 변경·push·publish·deploy는 없다.
+No version change, push, publish, or deploy was performed.

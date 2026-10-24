@@ -1,46 +1,46 @@
-# 39. SvelteKit 실제 앱 연결
+# 39. Real SvelteKit app integration
 
-## 범위
+## Scope
 
-[examples/sveltekit](../examples/sveltekit/README.md)에 SvelteKit 3의 SSR·hydration·페이지 이동 예제를 로컬 구현했다. 새 공개 패키지나 Saylo API를 추가하지 않는다. npm 게시와 외부 배포는 수행하지 않았다.
+I implemented a local SSR, hydration, and page-navigation example for SvelteKit 3 in [examples/sveltekit](../examples/sveltekit/README.md). It does not add a new public package or Saylo API. Nothing was published to npm or deployed externally.
 
-예제는 독립 `private` 패키지이며 Saylo core·svelte·typegen·vite를 로컬 `file:` 의존성으로 설치한다. `install-links=true`로 내용을 복사하고, 실제 설치된 core·svelte·vite가 workspace symlink가 아님을 확인했다. 본체는 TypeScript 7을 유지하고 예제는 SvelteKit·checker의 peer 조건에 맞는 TypeScript 6을 사용한다. 서드파티 의존성은 메이저 범위를 지정한다.
+The example is a standalone `private` package and installs Saylo core, svelte, typegen, and vite as local `file:` dependencies. It copies contents with `install-links=true`, and I confirmed that the installed core, svelte, and vite are not workspace symlinks. The main project remains on TypeScript 7, while the example uses TypeScript 6 to match the peer requirements of SvelteKit and its checker. Third-party dependencies specify major-version ranges.
 
-2026-10-08 검증 환경은 Node 24.18.0, SvelteKit 3.0.1, Svelte 5.57.2, Vite 8.3.4, adapter-node 6.0.0이다. `#lib` subpath imports, Vite의 `sveltekit({ adapter })` 설정과 `$app/tsconfig`를 사용한다. SvelteKit 2와 다른 adapter는 이번 범위에 포함하지 않는다.
+The validation environment on 2026-10-08 was Node 24.18.0, SvelteKit 3.0.1, Svelte 5.57.2, Vite 8.3.4, and adapter-node 6.0.0. The example uses `#lib` subpath imports, Vite's `sveltekit({ adapter })` configuration, and `$app/tsconfig`. This scope does not include SvelteKit 2 or other adapters.
 
-## 요청과 소유권
+## Requests and ownership
 
-1. 서버 hook이 URL query locale을 정규화해 요청별 `locals`에 넣는다. 존재하지 않거나 잘못된 locale은 base locale로 처리하고 HTML `lang`도 맞춘다.
-2. `(saylo)/+layout.server.ts`가 `createRequestI18n`으로 요청 scope를 준비한다. boot를 JSON 문자열로 반환하고 준비 instance를 `finally`에서 폐기한다. query를 직접 읽어 client navigation에서 locale query 변경도 추적한다.
-3. `(saylo)/+layout.svelte`가 boot를 decode해 새로운 instance를 만든다. 서버 렌더와 첫 hydration은 같은 snapshot을 사용한다. module scope에는 typed context factory만 있고 사용자 locale을 담은 전역 instance는 없다.
-4. `onMount`에서 개발 source를 요청 boot로 생성하고 layout이 소유한다. layout 재진입마다 fresh boot로 시작해 이전 source의 오래된 manifest를 가져오지 않는다. 운영에서는 generated static source를 동적 import한다.
-5. layout의 instance와 구독은 `/`·`/about` 사이에서 유지된다. `/plain`으로 나가면 연결·소유 source·instance를 해제한다. 지연 연결이 해제 뒤 완료되어도 다시 붙지 않는다. 다시 들어오면 새 instance와 폼을 생성한다.
+1. A server hook normalizes the URL query locale and stores it in per-request `locals`. A locale that is missing or invalid falls back to the base locale, and the HTML `lang` attribute is aligned with it.
+2. `(saylo)/+layout.server.ts` prepares the request scope with `createRequestI18n`. It returns boot as a JSON string and disposes the prepared instance in `finally`. It reads the query directly so locale-query changes are also tracked during client navigation.
+3. `(saylo)/+layout.svelte` decodes boot and creates a new instance. Server rendering and the first hydration use the same snapshot. Module scope contains only a typed context factory, with no global instance holding a user's locale.
+4. `onMount` creates the development source from the request boot and the layout owns it. Every layout re-entry starts from a fresh boot so it does not pick up a stale manifest from the previous source. Production dynamically imports the generated static source.
+5. The layout's instance and subscription persist between `/` and `/about`. Leaving to `/plain` releases the connection, owned source, and instance. A delayed connection that completes after release does not reconnect. Re-entering creates a new instance and form.
 
-source proxy는 처음에 prepared boot scope를 읽고 마운트 뒤 browser source를 사용한다. SSR에서는 websocket source를 실행하지 않는다. 개발 source가 공유하는 Vite socket 자체는 닫지 않고 등록한 listener만 정리한다. UI는 snapshot의 `t`를 사용한다.
+The source proxy initially reads the prepared boot scope and uses the browser source after mount. It does not run the WebSocket source during SSR. It leaves the Vite socket shared by development sources open and cleans up only the listeners it registered. The UI uses `t` from the snapshot.
 
-## 검증
+## Validation
 
-| 확인 | 결과 |
+| Check | Result |
 | --- | --- |
-| Svelte 타입 검사 | 예제의 TS·템플릿·Vite config 진단 0 errors·0 warnings |
-| 빌드 | client·SSR 빌드와 adapter-node 출력 생성 성공 |
-| 외부 tarball 앱 | 다섯 패키지를 저장소 밖에 설치하고 symlink 없음·임시 앱 내부 설치 경로·버전 일치를 확인. 타입 진단 0 errors·0 warnings, client/SSR 빌드·개발 연결 수명·운영 HTTP 검증 통과 |
-| tarball 운영 브라우저 | HeadlessChrome 154에서 hydration·ko/en/ko 전환·공유 layout 입력과 열린 모달 유지·layout 종료와 재진입 통과. 보고된 runtime 오류·경고 없음 |
-| 개발 HTTP | ko/en 동시 요청 4개, 일치하는 SSR 언어·boot·UTC·namespace, `EN` 정규화, malformed·미등록 locale의 base fallback |
-| 운영 HTTP | 실제 `node build/index.js`에서 같은 SSR·boot 검증 통과 |
-| 연결 수명 | 실제 client 연결 함수와 hot context에서 listener 등록·종료 후 0개, 중복 stop, attach 전 종료 시 지연 연결 취소 |
-| 개발 브라우저 | 영어 boot hydration 후 `/about` 이동에서도 이름·요청 사항·모달 메모·열린 창 유지 |
-| 정상 문구 저장 | about 제목과 dialog 제목 변경이 반영되고 입력·열린 창·포커스·커서 위치 8 유지 |
-| 오류와 복구 | 잘못된 JSON은 이전 정상 번역과 revision을 유지하고 진단을 표시. 원복 후 정상 번역과 진단 해제 |
-| 언어 전환 | URL query·HTML lang·문구를 ko로 전환하고 입력 유지 |
-| 종료·재진입 | `/plain`에서 번역 layout 제거. 그동안 수정한 ko 문구가 돌아온 화면의 fresh SSR boot에 반영. 이후 저장도 다시 live 반영 |
-| 운영 브라우저 | 영어 hydration, ko 전환·페이지 이동 후 입력 유지. 검사한 브라우저 console 오류·경고 없음 |
+| Svelte typecheck | 0 errors and 0 warnings across the example's TypeScript, templates, and Vite config |
+| Build | Client and SSR builds succeeded, and adapter-node output was generated |
+| External tarball app | Installed all five packages outside the repository and confirmed no symlinks, installation paths inside the temporary app, and matching versions. Type diagnostics reported 0 errors and 0 warnings; client/SSR builds, development-connection lifetime, and production HTTP checks passed |
+| Tarball production browser | In HeadlessChrome 154, hydration, ko/en/ko switching, preservation of shared-layout input and an open modal, and layout exit/re-entry passed. No reported runtime errors or warnings |
+| Development HTTP | Four concurrent ko/en requests, matching SSR language, boot, UTC, and namespace, normalization of `EN`, and fallback to base for malformed or unregistered locales |
+| Production HTTP | The same SSR and boot checks passed against the actual `node build/index.js` |
+| Connection lifetime | With the actual client connection function and hot context, listeners were registered and then reduced to zero after shutdown; duplicate stop and cancellation of a delayed connection when stopped before attach were also verified |
+| Development browser | After English boot hydration, name, request text, modal note, and the open window were preserved during navigation to `/about` |
+| Valid copy save | The about title and dialog title updated while input, the open window, focus, and cursor position 8 were preserved |
+| Errors and recovery | Invalid JSON retained the previous valid translation and revision and showed diagnostics. After restoration, valid translation resumed and diagnostics cleared |
+| Language switching | URL query, HTML lang, and copy switched to ko while input was preserved |
+| Exit and re-entry | The translated layout was removed at `/plain`. ko copy edited while away was reflected in the fresh SSR boot when returning, and later saves were live again |
+| Production browser | English hydration, switch to ko, and preservation of input after page navigation. No browser console errors or warnings in the inspection |
 
-검증용 en·ko 문구와 잘못된 JSON은 원복했다. route 구조와 컴포넌트를 구현 중 바꿀 때 발생한 HMR reload는 카탈로그 상태 보존 검증에 사용하지 않았다. 카탈로그 검증 시에는 빌드를 병행하지 않았다.
+I restored validation en/ko copy and the malformed JSON. I did not use HMR reloads caused by changing route structure or components during implementation as evidence of catalog-state preservation. I did not run builds concurrently during catalog validation.
 
-이 예제는 로컬 Node 운영 빌드까지 검증했다. 외부 호스팅 배포와 성능 p95 측정은 수행하지 않았다.
+The example was verified through a local Node production build. External hosting and performance p95 measurements were not performed.
 
-## 실행
+## Run
 
 ```sh
 npm run setup:sveltekit
@@ -51,14 +51,14 @@ npm run verify:pack:sveltekit
 npm run verify:registry:sveltekit
 ```
 
-개발 포트는 5191이고 preview 포트는 5192이다. `verify:sveltekit`은 임시 개발 서버를 직접 시작하고 `finally`에서 종료한다. 실제 실행 중인 Node 빌드도 `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5192`로 HTTP 검증할 수 있다.
+The development port is 5191 and the preview port is 5192. `verify:sveltekit` starts its own temporary development server and shuts it down in `finally`. A running Node build can also be checked over HTTP with `npm --prefix examples/sveltekit run verify:ssr -- http://127.0.0.1:5192`.
 
-`verify:pack:sveltekit`은 기존 로컬 `file:` 디렉터리 의존성을 tarball로 바꾼 임시 앱에서 실행한다. 서드파티 도구·peer는 예제의 메이저 범위를 그대로 사용한다. browser probe는 임시 앱에만 주입하며 검사가 끝나면 브라우저·서버·임시 폴더를 정리한다. Chrome·Edge를 자동 탐색하고 `--browser <실행파일>`로 지정할 수도 있다. 이 검사는 수동 실행 명령이며 기존 CI·릴리스 검증 횟수는 변경하지 않았다. 소스는 [pack-sveltekit.mjs](../scripts/pack-sveltekit.mjs)에 있다.
+`verify:pack:sveltekit` runs in a temporary app where the existing local `file:` directory dependencies are replaced by tarballs. Third-party tools and peers use the example's major ranges. A browser probe is injected only into the temporary app, and the browser, server, and temporary directory are cleaned up after the check. It discovers Chrome and Edge automatically and also accepts `--browser <executable>`. This is a manual check command and does not change the number of existing CI or release validations. The source is in [pack-sveltekit.mjs](../scripts/pack-sveltekit.mjs).
 
-## 참고
+## References
 
-2026-10-09 `npm run verify:registry:sveltekit`으로 실제 npm `alpha.2`의 다섯 승인 파일을 검사했다. [CI manifest](../releases/0.1.0-alpha.2.json)의 SHA-512와 다운로드 파일이 일치한다. 이 파일을 임시 앱에 설치해 타입 진단 0 errors·0 warnings, client/SSR 빌드, 개발 연결 수명, 운영 HTTP, HeadlessChrome 154의 hydration·ko/en/ko·공유 layout 입력/모달·종료와 재진입을 통과했다. runtime 오류·경고는 없었고 임시 자원은 정리했다. 앱 소스와 harness는 이전 예제를 재사용하며 local directory 의존성 대신 registry tarball을 사용한다.
+On 2026-10-09, `npm run verify:registry:sveltekit` checked the five approved files for actual npm `alpha.2`. Downloaded files matched the SHA-512 values in the [CI manifest](../releases/0.1.0-alpha.2.json). Installing them in a temporary app passed type diagnostics with 0 errors and 0 warnings, client/SSR builds, development-connection lifetime, production HTTP, and HeadlessChrome 154 hydration, ko/en/ko switching, shared-layout input/modal preservation, and exit/re-entry. There were no runtime errors or warnings, and temporary resources were cleaned up. The app source and harness reuse the earlier example but use registry tarballs instead of local directory dependencies.
 
-- [SvelteKit 3 변경 안내](https://svelte.dev/docs/kit/migrating-to-sveltekit-3)
-- [서버 상태와 context](https://svelte.dev/docs/kit/state-management)
-- [load와 navigation 재실행](https://svelte.dev/docs/kit/load)
+- [SvelteKit 3 migration guide](https://svelte.dev/docs/kit/migrating-to-sveltekit-3)
+- [Server state and context](https://svelte.dev/docs/kit/state-management)
+- [load and navigation reruns](https://svelte.dev/docs/kit/load)

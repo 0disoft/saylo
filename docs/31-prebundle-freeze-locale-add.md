@@ -1,10 +1,10 @@
-# 31. prebundle freeze 공유 이후 locale-add 재측정
+# 31. Locale-add remeasurement after prebundle freeze sharing
 
-## 목적
+## Purpose
 
-[29](29-prebundle-client-stages.md)에서 동결 신뢰 분리를 확인하고 [30](30-prebundle-freeze-sharing.md)에서 root import로 공유한 뒤, 일반 prebundle 경로에서 locale-add 시나리오를 다시 측정했다. 제품과 하네스 코드는 변경하지 않았다. 이번 작업은 측정 결과와 관련 문서 갱신을 포함한다.
+After [29](29-prebundle-client-stages.md) identified separated freeze trust and [30](30-prebundle-freeze-sharing.md) shared it through the root import, I remeasured the locale-add scenario under the normal prebundle path. Product and harness code were unchanged. This work includes measurement results and updates to related documentation.
 
-## 실행
+## Run
 
 ```sh
 node benchmarks/live-update/run.mjs --mode locale-add --scenario all --samples 50 --warmup 5 --calibrations 25 --out benchmarks/results/locale-add-prebundle-shared-freeze.json
@@ -12,63 +12,63 @@ node benchmarks/live-update/run.mjs --mode locale-add --scenario all --samples 5
 
 - revision: 442363a44f62f42a7a08bf260054d260369b731c
 - measuredAt: 2026-10-07T13:38:56.862Z
-- 상세 계측 CPU/browser/server-file/reply/client: 모두 OFF
+- Detailed measurement for CPU/browser/server-file/reply/client: all OFF
 - normal prebundle/typegen: ON
 - Node 24.18.0, Vite 8.3.2, React 19.3.0, Windows x64, Ryzen 5 7430U, HeadlessChrome 154
-- 규모별 55 raw(5 warm + 50 measured), control 25, 고유 raw token 110
+- Per scale, 55 raw runs (5 warmups + 50 measured), 25 controls, and 110 unique raw tokens
 
-## 입력 규모
+## Input scale
 
-| 규모 | 메시지 | 로케일 | JSON | 추가 |
+| Scale | Messages | Locales | JSON | Added |
 | --- | --- | --- | --- | --- |
 | small | 1k | 3 | 110292B | 36781B |
 | large | 10k | 20 | 7755280B | 387783B |
 
-namespace bench는 1이다.
+There is one bench namespace.
 
-## 결과
+## Results
 
-단위는 ms이다. 저장→목록/번역 ack는 Node 파일 쓰기 완료부터 DOM 확인 ack 수신까지이며 ack 전달 비용을 포함한다. Browser 선택→commit은 setLocale 직전부터 번역 DOM을 확인한 useLayoutEffect까지이다.
+Units are ms. Save → list/translation ack spans from completion of the Node file write through receipt of the DOM-verification ack and includes ack delivery. Browser selection → commit spans from immediately before setLocale through the useLayoutEffect that verifies the translated DOM.
 
-| 지표 | small p50 | small p95 | large p50 | large p95 |
+| Metric | small p50 | small p95 | large p50 | large p95 |
 | --- | --- | --- | --- | --- |
-| 목록 saveToListAck | 86.64 | 152.13 | 189.62 | 268.54 |
-| Node 선택준비→번역 ack | 30.06 | 57.73 | 186.70 | 297.57 |
-| Node 저장→번역 ack | 122.14 | 233.38 | 379.11 | 663.07 |
-| Browser 선택→commit | 26.60 | 54.60 | 181.00 | 284.40 |
-| Node 저장→broadcast | 81.38 | 138.26 | 177.71 | 247.95 |
+| List saveToListAck | 86.64 | 152.13 | 189.62 | 268.54 |
+| Node selection preparation → translation ack | 30.06 | 57.73 | 186.70 | 297.57 |
+| Node save → translation ack | 122.14 | 233.38 | 379.11 | 663.07 |
+| Browser selection → commit | 26.60 | 54.60 | 181.00 | 284.40 |
+| Node save → broadcast | 81.38 | 138.26 | 177.71 | 247.95 |
 | fileWrite | 7.64 | 28.70 | 10.39 | 24.71 |
 | control | 4.07 | 5.34 | 4.12 | 8.48 |
 
-목록 250ms 이내 비율은 small 49/50, large 47/50이다. small 목록 p95는 목표를 충족하고 large 목록 p95는 18.54ms 초과한다. 최초 번역 선택에는 목록 250ms와 문구 편집 100ms 목표를 적용하지 않는다.
+The 250 ms list target was met in 49/50 small runs and 47/50 large runs. Small list p95 met the target, while large list p95 exceeded it by 18.54 ms. Neither the 250 ms list target nor the 100 ms copy-edit target applies to first translation selection.
 
-## 이전 run 비교 제한
+## Limits of comparison with earlier runs
 
-이전 일반 run 27의 목록 p95는 small 112.42, large 621.18이고 선택 p95는 small 74.20, large 631.70이다. 두 run은 시점이 다르고 harness 차이와 부하가 있으므로, 관측된 전체 감소를 동결 공유 효과로 확정하지 않는다. 상세 계측을 켠 30과 직접 인과 비교도 하지 않는다.
+In earlier normal run 27, list p95 was 112.42 ms for small and 621.18 ms for large, and selection p95 was 74.20 ms and 631.70 ms. The runs occurred at different times and differed in harness and load, so I do not establish the entire observed reduction as an effect of shared freezing. I also do not make a direct causal comparison with run 30, which had detailed instrumentation enabled.
 
-## Node 동일 clock 분해
+## Node same-clock decomposition
 
-표본별 `saveToListAckMs - saveToBroadcastMs`는 같은 Node clock의 broadcast→목록 ack 구간이다. p50/p95는 small 5.42/17.94ms, large 13.57/16.25ms이다. 전송·브라우저 갱신·HTTP ack 비용이 포함된다. 각 규모에서 50/50회 저장→broadcast 구간이 그 뒤 구간보다 컸다. p95끼리 뺀 값이 아니며, Node와 Browser clock 혼용, control/GC 차감, 중첩 p95 합산은 하지 않는다. 50회 p95는 정렬 48번째 값이다.
+Per sample, `saveToListAckMs - saveToBroadcastMs` is the broadcast → list-ack interval on the same Node clock. p50/p95 was 5.42/17.94 ms for small and 13.57/16.25 ms for large, including transport, browser update, and HTTP ack costs. In each scale, save → broadcast exceeded the following interval in all 50/50 runs. These are not p95-to-p95 subtractions; I do not mix Node and browser clocks, deduct control/GC, or add nested p95 values. The 50-run p95 is the 48th sorted value.
 
-## 시나리오와 제외 범위
+## Scenario and exclusions
 
-매회 새 en-GB 파일 추가 → 목록 DOM 확인 → 자동 선택 → 번역 DOM 확인 → en 복귀 → 파일과 빈 디렉터리 제거를 완료한 뒤 다음 회차로 진행한다. 디렉터리 생성 시간은 제외한다. 앱은 warm 상태이고 새 카탈로그·프로브 formatter는 최초 로딩이다. paint, cold startup, 전체 메시지 렌더는 제외한다. 입력 DOM 노드·값과 React 상태, .d.ts mtime·크기는 유지하고 reload는 없다.
+Each iteration adds a new en-GB file, verifies the list DOM, selects it automatically, verifies the translated DOM, returns to en, and waits for the file and empty directory to be removed before starting the next iteration. Directory creation time is excluded. The app is warm; the new catalog and probe formatter are loaded for the first time. Paint, cold startup, and full-message rendering are excluded. Input DOM node/value, React state, and `.d.ts` mtime/size were preserved, and there was no reload.
 
-raw 110 전부 선택 전 응답은 0이고, 선택 후 saylo-catalog-v1 compact full은 1이며 measured 100도 동일하다. frame JSON p95는 small 119640B, large 1241403B이고 실제 network bytes는 아니다.
+Across all 110 raw runs, target responses before selection were 0, and after selection there was exactly one `saylo-catalog-v1` compact full response; the same held for all 100 measured runs. Frame JSON p95 was 119,640 B for small and 1,241,403 B for large and is not actual network bytes.
 
-## 검증
+## Validation
 
-원시 개수·토큰 고유성·warmup·계측 옵션·시간·control·바이트·통계·현재 코드 hash와 Node 시간 경계를 대조했다. 제품과 하네스 hash는 30 실측과 같다. 이전 27과 공통 제품 hash 차이는 `packages/vite/dist/freeze.js` 하나이다. 임시 fixture와 benchmark browser가 남지 않았다. 제품 테스트·타입 검사·build·pack·release는 입력이 바뀌지 않아 이번에 재실행하지 않았다. 버전 변경·push·publish·deploy는 없다.
+I reconciled raw counts, token uniqueness, warmup status, instrumentation options, timings, controls, bytes, statistics, current code hashes, and the Node timing boundaries. Product and harness hashes match the measured run in 30. The only product hash difference from the earlier 27 is `packages/vite/dist/freeze.js`. No temporary fixture or benchmark browser remained. I did not rerun product tests, typechecks, build, pack, or release checks because inputs were unchanged. No version change, push, publish, or deploy was performed.
 
-## 다음 후보
+## Next candidates
 
-large 목록이 목표에 미달하고 broadcast 전 구간이 크므로, 현행 서버의 경로 검사·읽기·파싱·번역 준비를 재계측해 다음 최적화를 결정한다. 상세 계측을 끈 이번 값만으로 파싱이나 GC를 원인으로 확정하지 않는다.
+Because large list rendering misses the target and the pre-broadcast interval is large, remeasure the current server's path checking, reading, parsing, and translation preparation to choose the next optimization. These values, measured with detailed instrumentation disabled, do not identify parsing or GC as the cause.
 
-## 링크
+## Links
 
 - [locale-add-prebundle-shared-freeze.json](../benchmarks/results/locale-add-prebundle-shared-freeze.json)
 - [locale-add-prebundle-shared-freeze.1k-3-locales.samples.json](../benchmarks/results/locale-add-prebundle-shared-freeze.1k-3-locales.samples.json)
 - [locale-add-prebundle-shared-freeze.10k-20-locales.samples.json](../benchmarks/results/locale-add-prebundle-shared-freeze.10k-20-locales.samples.json)
 - [locale-add-prebundle-shared-freeze-comparison.json](../benchmarks/results/locale-add-prebundle-shared-freeze-comparison.json)
 
-관련 문서: [27](27-shared-freeze-locale-add.md), [30](30-prebundle-freeze-sharing.md).
+Related documents: [27](27-shared-freeze-locale-add.md), [30](30-prebundle-freeze-sharing.md).

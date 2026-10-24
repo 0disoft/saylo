@@ -1,46 +1,46 @@
-# 44. Svelte 선택자 구독과 현행 상태
+# 44. Svelte selector subscriptions and current status
 
-`packages/svelte`의 `selectSvelteStore`·`getI18nSelector`와 이 시점의 구현·게시 상태를 정리한다. 계약과 사용법은 [packages/svelte/README.md](../packages/svelte/README.md)를 따른다.
+This record describes `selectSvelteStore` and `getI18nSelector` in `packages/svelte` and their implementation and publication status at this point. Contracts and usage follow [packages/svelte/README.md](../packages/svelte/README.md).
 
-## 현행 구현·게시 상태
+## Current implementation and publication status
 
-- secondary quarantine과 build-time parser 런타임 제거(`astRuntime`): npm `0.1.0-alpha.2`에 게시했다.
-- Svelte 어댑터: npm `0.1.0-alpha.2`부터 포함한다.
-- Vite `requireCompleteTranslations`(완역 검사): npm `0.1.0-alpha.3`에 게시했다.
-- React `useI18nSelector`와 Svelte `selectSvelteStore`·`getI18nSelector`(selector 미세구독): npm `0.1.0-alpha.4`에 게시했다. CI·registry 소비 검증은 [릴리스 기록](../releases/0.1.0-alpha.4.md)을 따른다.
+- Secondary quarantine and build-time removal of the parser runtime (`astRuntime`): published in npm `0.1.0-alpha.2`.
+- Svelte adapter: included starting with npm `0.1.0-alpha.2`.
+- Vite `requireCompleteTranslations` (complete-translation check): published in npm `0.1.0-alpha.3`.
+- React `useI18nSelector` and Svelte `selectSvelteStore`/`getI18nSelector` (fine-grained selector subscriptions): published in npm `0.1.0-alpha.4`. CI and registry-consumption verification follow the [release record](../releases/0.1.0-alpha.4.md).
 
-선택 후속은 core의 selector 미세구독, Vue 어댑터, unused message 제거, 다른 환경의 성능 측정과 비교 실험이다. 최신 대표 조건의 성능 목표는 [75](75-early-disk-rechecks.md)를 따른다.
+Planned follow-up work includes fine-grained selector subscriptions in core, the Vue adapter, unused-message removal, and performance measurements and comparisons in other environments. Performance targets for the latest representative conditions follow [75](75-early-disk-rechecks.md).
 
-## Svelte 선택자
+## Svelte selector
 
-`selectSvelteStore`는 store에서 필요한 값만 골라 내는 `Readable`을 만들고, `createSayloSvelte<S>()`의 `getI18nSelector`는 같은 selector를 context로 전달한다.
+`selectSvelteStore` creates a `Readable` containing only the values selected from the store, and `getI18nSelector` in `createSayloSvelte<S>()` passes the same selector through context.
 
-- 시그니처는 `selectSvelteStore<S, T>(source: SayloSvelteStore<S>, selector: (snapshot: SayloSvelteSnapshot<S>) => T, options?: SayloSelectorOptions): Readable<T>`다.
-- `createSayloSvelte<S>()`는 `getI18nSelector<T>(selector, options?: SayloSelectorOptions): Readable<T>`를 제공하고, 같은 factory context에서 초기화 중에 호출한다.
-- `SayloSelectorOptions`는 `readonly onError?: (error: unknown) => void` 하나를 갖는다.
-- 결과는 `Object.is`로 비교하고, 값 상자 `{ value }`로 Svelte `derived` 알림을 이어 준다. 같은 객체 참조와 `NaN`은 알림을 생략하고 `+0`·`-0`은 다른 값으로 알림을 전달한다.
-- source와 공유 context의 기존 core 단일 구독과 최종 해제를 유지하고, SSR render가 끝난 뒤 core 구독은 0이다.
-- 첫 구독과 재구독은 동기 최신값을 전달하고, snapshot-bound `t`와 `setLocale`/`loadNamespace`를 유지한다.
-- 기존 `createSvelteStore`·`getI18n`은 그대로 남아 있다.
+- The signature is `selectSvelteStore<S, T>(source: SayloSvelteStore<S>, selector: (snapshot: SayloSvelteSnapshot<S>) => T, options?: SayloSelectorOptions): Readable<T>`.
+- `createSayloSvelte<S>()` provides `getI18nSelector<T>(selector, options?: SayloSelectorOptions): Readable<T>`, which is called during initialization in the same factory context.
+- `SayloSelectorOptions` has one member: `readonly onError?: (error: unknown) => void`.
+- Results are compared with `Object.is`, and a value box `{ value }` forwards Svelte `derived` notifications. The same object reference and `NaN` suppress notifications, while `+0` and `-0` are delivered as different values.
+- The source and shared context retain the existing single core subscription and final release; core subscriptions are zero after the SSR render completes.
+- First subscription and resubscription deliver the latest value synchronously and retain snapshot-bound `t`, `setLocale`, and `loadNamespace`.
+- The existing `createSvelteStore` and `getI18n` remain available.
 
-제약은 다음과 같다. selector는 순수 계산으로 둔다. selector가 props를 캡처해도 prop만 바뀌면 source 알림이 없으므로 자동으로 다시 선택하지 않는다. selector가 매번 새 객체·새 배열을 반환하면 `Object.is`가 다르므로 매 snapshot마다 알림이 발생한다. 동적 컴포넌트 인자는 기존 `$i18n`와 Svelte `$derived`로 조합한다.
+The selector must be a pure calculation. If a selector captures props, changing only a prop does not trigger a source notification and therefore does not automatically reselect. If a selector returns a new object or array every time, `Object.is` sees a different value and a notification occurs for every snapshot. Dynamic component arguments are composed with the existing `$i18n` and Svelte `$derived`.
 
-selector 예외 처리는 시점별로 나눈다. 첫 구독·재구독 실패는 새 구독을 해제한 뒤 selector가 throw한 값을 그대로 동기 throw하고(Error가 아니거나 `undefined`여도 그대로 전달), 이때 `onError`를 부르지 않으며 이전 성공값을 대신 돌려주지 않는다. 활성 구독 갱신 실패는 마지막 성공값을 유지하고 invalidate·알림 없이 다음 snapshot에서 재시도하며, `onError`(미지정 시 `console.error('[saylo:svelte] selector failed', error)`)로 보고한다. `onError` 자체가 던지면 `console.error('[saylo:svelte] selector error reporter failed', reportingError)`로 보고하고 Svelte 알림은 계속한다. `options`도 alpha.4 게시본에 포함한다.
+Selector exception handling differs by timing. If initial subscription or resubscription fails, the adapter releases the new subscription and synchronously rethrows the exact value thrown by the selector (including non-Error values and `undefined`); it does not call `onError` and does not substitute the previous successful value. If an active-subscription update fails, it keeps the last successful value, retries on the next snapshot without invalidation or notification, and reports through `onError` (`console.error('[saylo:svelte] selector failed', error)` when omitted). If `onError` itself throws, it reports through `console.error('[saylo:svelte] selector error reporter failed', reportingError)` and continues Svelte notifications. `options` is also included in the alpha.4 release.
 
-## 검증 기록
+## Validation record
 
-이 절의 195개 전체 `check` 기록은 `98bd3f7`에서 selector를 처음 구현한 시점의 과거 기록이고, 아래 예외 처리 후속 검증과 구분한다.
+The 195-test full `check` record in this section is historical, from the first implementation of the selector at `98bd3f7`, and is distinct from the follow-up exception-handling validation below.
 
-전체 `npm run check`가 exit 0으로 통과했다. 총 195개 테스트(core 75·react 14·svelte 10·typegen 8·vite 83·릴리스 helper 5)이고, Svelte는 새 unit 4개와 SSR 컴파일 selector 1개를 추가했으며 기존 components 테스트가 실행한 JSDOM client 3개 중 새 selector hydration 1개를 포함한다.
+The full `npm run check` passed with exit 0. It ran 195 tests (75 core, 14 React, 10 Svelte, 8 typegen, 83 Vite, and 5 release helpers). Svelte added four new unit tests and one SSR-compiled selector test, including one new selector hydration test among the three JSDOM client tests run by existing component tests.
 
-확인한 동작은 다음과 같다. 무관한 active edit 알림은 0회이고 관련 제목·언어 전환은 최신값을 유지한다. shared source는 core 구독 1개·종료 0개를 지키고 dormant get·restart 뒤 정리된다. 값 비교는 `Object.is` 기준으로 object·function·undefined·`NaN`과 `+0`·`-0`을 구분한다. Svelte `derived` 조합은 동시 locale·text 수렴을 확인했고, SSR은 요청·중첩 context 격리·오류·subscription 0을 확인했다. 컴파일한 client selector는 hydration 마크업이 동일하고 DOM·입력·포커스·커서·dialog·state가 유지된다. JS/checkJs/TS 타입 계약도 통과했다.
+The verified behavior was: zero notifications from unrelated active edits, while related title and language changes retained the latest value; shared sources maintained one core subscription and zero after shutdown and cleaned up after a dormant get and restart; value comparison with `Object.is` distinguished objects, functions, undefined, `NaN`, `+0`, and `-0`; composed Svelte `derived` values converged when locale and text changed together; SSR isolated requests and nested contexts and handled errors with zero subscriptions; and a compiled client selector kept the same hydration markup and preserved DOM, input, focus, cursor, dialog, and state. JS/checkJs/TS type contracts also passed.
 
-selector 타입 fixture는 새 `selector-consumer.ts`·`.js`로 분리했고, 분리 뒤 `npm run typecheck:consumers --workspace=@0disoft/saylo-svelte`도 exit 0으로 통과했다.
+I split selector type fixtures into the new `selector-consumer.ts` and `.js` files; after the split, `npm run typecheck:consumers --workspace=@0disoft/saylo-svelte` also passed with exit 0.
 
-빌드를 재사용한 `npm exec -- node scripts/pack-smoke.mjs`는 exit 0으로 통과했다. 새로 만든 로컬 다섯 tarball을 JS/checkJs/TS 앱에 설치해 `selectSvelteStore`·`getI18nSelector` 타입 fixture(imported declarations)를 검사했고, 컴파일한 Svelte 새 selector SSR이 `<h1>Packed Svelte</h1>`을 렌더했다. React selector SSR과 기존 CLI·runtime/SSR·Vite lazy build·parser 제거·완역 검사도 함께 통과했다. `npm run verify:registry:alpha3`도 exit 0으로 통과했고, 실제 게시된 `alpha.3` 다섯 패키지의 integrity·외부 JS·TS·README·Svelte 컴파일 SSR을 확인했다. selector API가 없는 게시본에서는 declared feature gate로 새 fixture를 제외해 기존 검증을 유지한다. 임시 앱과 서버는 스크립트 finally에서 정리했다.
+`npm exec -- node scripts/pack-smoke.mjs`, reusing the build, passed with exit 0. I installed the five newly created local tarballs in JS/checkJs/TS apps and checked `selectSvelteStore` and `getI18nSelector` type fixtures with imported declarations; the new compiled Svelte selector rendered `<h1>Packed Svelte</h1>` during SSR. React selector SSR and existing CLI, runtime/SSR, Vite lazy-build, parser-removal, and complete-translation checks also passed. `npm run verify:registry:alpha3` passed with exit 0 and checked integrity, external JS, TS, README, and compiled Svelte SSR for the five actually published `alpha.3` packages. In releases that do not have the selector API, a declared feature gate excludes the new fixture while preserving existing verification. Temporary apps and servers were cleaned up in the scripts' finally blocks.
 
-실제 네이티브 브라우저 검증, version bump, push, publish는 예정에 없다.
+No native-browser validation, version bump, push, or publish is scheduled.
 
-### selector 예외 처리 후속 검증
+### Follow-up validation of selector exception handling
 
-2026-10-10 후속 검증은 관련 테스트 108개(typegen 9·Vite 85·Svelte 14)와 typegen/Vite/Svelte 소비자 typecheck, 컴파일한 Svelte client JSDOM hydration을 PASS했다. 전체 `npm run check`, 새 benchmark, 네이티브 브라우저, registry 검증은 이번에 다시 실행하지 않았다.
+The follow-up validation on 2026-10-10 PASSED 108 related tests (9 typegen, 85 Vite, 14 Svelte), typegen/Vite/Svelte consumer typechecks, and JSDOM hydration of the compiled Svelte client. I did not rerun the full `npm run check`, new benchmarks, native browsers, or registry verification in this work.

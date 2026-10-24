@@ -1,12 +1,12 @@
-# 47. JSON 항목 정규식 통합 실험
+# 47. Combined JSON field-regex experiment
 
-키·콜론·문자열 값을 한 번의 정규식 호출로 읽는 후보를 시험했다. 편집 파서의 p95 개선이 재측정에서 유지되지 않아 **채택하지 않고 원복했다**. 제품 소스는 `e76a3a1`과 같으며, JSON 경계·오류 우선순위 회귀 테스트 하나와 실험 기록만 남긴다.
+I tested a candidate that read keys, colons, and string values with one regex call. The edit-parser p95 improvement did not hold on remeasurement, so **I did not adopt the change and reverted it**. Product source matches `e76a3a1`; only one JSON boundary and error-priority regression test and this experiment record remain.
 
-## 후보와 재현
+## Candidate and reproduction
 
-`readJson`의 키·separator·값 정규식 호출 세 번을 캡처 그룹을 가진 호출 한 번으로 합쳤다. 문자열 값 캡처가 없으면 즉시 `INVALID_CATALOG`를 반환한다. 최초 엄격한 `JSON.parse`, 키별 `JSON.parse`, decoded 중복 검사, entry 배열, 원문 값과 위치 계산, ICU 처리·동결은 유지했다. [11](11-parser-measurements.md)의 키 디코딩 생략이나 [41](41-json-entry-visitor-trial.md)의 entry 배열 제거와는 다른 후보다. 할당량·heap 감소는 측정하지 않았다.
+The candidate combined the three regex calls for key, separator, and value in `readJson` into one call with capture groups. It returned `INVALID_CATALOG` immediately when a string value was not captured. It retained the initial strict `JSON.parse`, per-key `JSON.parse`, decoded-duplicate checks, entry array, source-value and position calculations, and ICU handling and freezing. This differs from skipping key decoding in [11](11-parser-measurements.md) and removing the entry array in [41](41-json-entry-visitor-trial.md). I did not measure allocation or heap reduction.
 
-[재현 패치](../benchmarks/results/json-fields-experiment.patch)는 제품 `packages/core/src/json.ts`만 담는다. 기준 커밋 `e76a3a1`의 별도 checkout에 패치를 같은 경로로 복사한 뒤 다음 명령을 실행한다. 마지막 인자를 `incremental`로 바꾸면 기존 불변 메시지를 재사용하는 편집 비교다.
+The [reproduction patch](../benchmarks/results/json-fields-experiment.patch) contains only product `packages/core/src/json.ts`. Copy it to the same path in a separate checkout of baseline commit `e76a3a1` and run the following commands. Change the last argument to `incremental` for an edit comparison that reuses unchanged messages.
 
 ```sh
 git apply benchmarks/results/json-fields-experiment.patch
@@ -14,28 +14,28 @@ npm run build --workspace=@0disoft/saylo-core
 node benchmarks/live-update/parse-compare.mjs e76a3a1 benchmarks/results/parse-compare-json-fields-cold.json cold
 ```
 
-2026-10-10 KST, Node v24.18.0, Windows x64에서 기존 동일 프로세스 교차 비교 도구를 사용했다. 10,000개 literal/ASCII 인자 메시지에서 probe 한 개를 같은 길이로 변경한다. cold는 이전 catalog 없이 warmup 5쌍·측정 20쌍, incremental은 warmup 50쌍·측정 100쌍이다. 호출 순서를 교대하며 매쌍 전체 결과를 `assert.deepEqual`로 비교한다. stringify·동등성 검사·디스크·watcher·번역 검증·브라우저는 timing 밖이다. 상세 clock 계측·강제 GC는 없으며 OS 부하와 GC는 통제하지 않았다.
+On 2026-10-10 KST under Node v24.18.0 on Windows x64, I used the existing same-process cross-comparison tool. One probe among 10,000 literal/ASCII-argument messages changed to an equal-length value. Cold mode had 5 warmup and 20 measured pairs without a previous catalog; incremental had 50 warmup and 100 measured pairs. Call order alternated, and every full result was checked with `assert.deepEqual`. stringify, equality checks, disk I/O, the watcher, translation validation, and the browser were outside timing. There was no detailed clock instrumentation or forced GC, and OS load and GC were uncontrolled.
 
-## 결과
+## Results
 
-단위는 ms, p50·p95는 nearest-rank, 쌍별 차이는 실험−기준이다. 첫 cold run 중 core 테스트를 동시에 실행했으므로 채택 판단에서 제외하고 원시만 보존했다. 나머지 세 run은 이 작업의 테스트·빌드와 겹쳐 실행하지 않았다.
+Units are ms, p50 and p95 use nearest rank, and per-pair differences are experiment minus baseline. I excluded the first cold run from the adoption decision because core tests ran concurrently, and preserved only its raw data. The other three runs did not overlap this work's tests or build.
 
-| 비교 | 기준 p50 | 실험 p50 | 기준 p95 | 실험 p95 | 쌍별 차이 중앙값 | 빨라진 쌍 |
+| Comparison | Baseline p50 | Experiment p50 | Baseline p95 | Experiment p95 | Per-pair difference median | Faster pairs |
 | --- | --- | --- | --- | --- | --- | --- |
-| cold 최초 (판단 제외) | 105.16 | 102.82 | 183.26 | 168.79 | -0.94 | 11/20 |
-| cold 재측정 | 106.61 | 102.74 | 153.35 | 155.12 | -2.54 | 13/20 |
-| incremental 최초 | 39.63 | 37.42 | 68.02 | 56.10 | -2.55 | 67/100 |
-| incremental 재측정 | 48.47 | 47.02 | 68.47 | 74.67 | -0.89 | 58/100 |
+| First cold (excluded from decision) | 105.16 | 102.82 | 183.26 | 168.79 | -0.94 | 11/20 |
+| Cold remeasurement | 106.61 | 102.74 | 153.35 | 155.12 | -2.54 | 13/20 |
+| First incremental | 39.63 | 37.42 | 68.02 | 56.10 | -2.55 | 67/100 |
+| Incremental remeasurement | 48.47 | 47.02 | 68.47 | 74.67 | -0.89 | 58/100 |
 
-중앙값은 모두 낮게 관측됐지만 편집 p95는 재측정에서 증가했고 cold p95도 감소하지 않았다. 안정적인 tail 개선 근거가 부족해 원복했다. 증가 원인을 코드로 확정하지 않으며, 종단 간 성능과 기존 화면 반영 목표 달성은 이번에 측정하지 않았다.
+All medians were observed lower, but edit p95 increased on remeasurement and cold p95 did not decrease. The evidence for a stable tail improvement was insufficient, so I reverted the change. I do not establish the code as the cause of the increase, and this work did not measure end-to-end performance or achievement of existing UI-update targets.
 
-## 검증과 원본
+## Validation and sources
 
-- 실험 상태에서 core build·core 테스트 76개·JS/TS consumer 타입 검사를 통과했다.
-- 모든 비교의 warmup 포함 350쌍에서 전체 catalog 동등성이 통과했다. measured 240쌍의 개수·차이·nearest-rank 통계를 원시에서 재계산했고, 네 run의 실험 코드 hash가 모두 같았다.
-- 원복 후 core build·core 테스트 76개·parser probe 테스트 1개가 통과했다. 제품 source diff는 없고 재빌드한 core 5개 모듈 중 실험본과 다른 것은 `json.js` 하나다. 패치 재적용 검사도 통과했고 임시 parser 디렉터리는 남지 않았다.
-- 유지한 회귀 테스트는 값 안의 escaped quote·가짜 JSON 필드·backslash·Unicode escape·빈 문자열과, 중복 ID/ICU 오류 뒤에 있는 non-string 토큰의 우선순위·정확한 CRLF 소스 위치를 확인한다. 기존 구현에서도 통과한다.
+- In the experimental state, the core build, 76 core tests, and JS/TS consumer typechecks passed.
+- Full catalog equality passed in all 350 pairs, including warmups. I recalculated counts, differences, and nearest-rank statistics for 240 measured pairs from raw data, and all four runs had the same experimental code hash.
+- After reversion, the core build, 76 core tests, and one parser-probe test passed. There was no product source diff, and among the five rebuilt core modules only `json.js` differed from the experimental build. The patch reapplication check passed, and no temporary parser directory remained.
+- The retained regression test covers escaped quotes and fake JSON fields inside values, backslashes, Unicode escapes, empty strings, and precedence plus exact CRLF source positions for a non-string token after duplicate-ID/ICU errors. It also passes on the existing implementation.
 
-원시: [cold 최초](../benchmarks/results/parse-compare-json-fields-cold.json), [cold 재측정](../benchmarks/results/parse-compare-json-fields-cold-confirm.json), [편집 최초](../benchmarks/results/parse-compare-json-fields-incremental.json), [편집 재측정](../benchmarks/results/parse-compare-json-fields-incremental-confirm.json).
+Raw data: [first cold](../benchmarks/results/parse-compare-json-fields-cold.json), [cold remeasurement](../benchmarks/results/parse-compare-json-fields-cold-confirm.json), [first incremental](../benchmarks/results/parse-compare-json-fields-incremental.json), [incremental remeasurement](../benchmarks/results/parse-compare-json-fields-incremental-confirm.json).
 
-버전 변경·push·publish·deploy는 없다. 다음에는 같은 미세 최적화를 반복하기 전에 현행 파서의 CPU profile을 확인해 실제 실행 비용이 큰 함수를 좁힌다. 기존 elapsed 구간 계측만으로 CPU 병목이나 GC 원인을 확정하지 않는다.
+No version change, push, publish, or deploy was performed. Before repeating another micro-optimization, the next step is to inspect the current parser's CPU profile to narrow down functions with real execution cost. Existing elapsed-stage measurements alone do not establish a CPU bottleneck or GC cause.

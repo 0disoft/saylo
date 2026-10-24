@@ -1,63 +1,63 @@
-# 52. read/candidate 잔여 구간과 GC·타이머 지연 계측
+# 52. Measurement of read/candidate remainder and GC/timer delays
 
-[51](51-owned-message-map-comparison.md)은 종단 간 tail 증가를 확인했지만 그 원인이 read/candidate 잔여 구간인지, GC·이벤트 루프 지연인지는 가르지 못했다. 이 문서는 그 구간만 좁게 보기 위해 선택적 벤치 하네스를 확장한 기록이다. 커밋 `6403fab`에서 `--server-file-stages` 옆에 `--runtime-stages` 옵션을 추가해, 같은 표본에서 서버 런타임 window와 GC·타이머 지연 window를 함께 수집한다. 제품 dist와 공개 API는 바꾸지 않았고 일반 prebundle·typegen 설정도 그대로 둔다.
+[51](51-owned-message-map-comparison.md) confirmed an end-to-end tail increase but could not determine whether the cause was the read/candidate remainder or GC/event-loop delay. This document records an extension to the optional benchmark harness that isolates that interval. Commit `6403fab` adds a `--runtime-stages` option next to `--server-file-stages` so the same samples collect both the server runtime window and GC/timer-delay windows. Product dist and the public API were unchanged, and the normal prebundle and typegen settings remained in place.
 
-## 조건과 방법
+## Conditions and method
 
-2026-10-10 KST, Node v24.18.0, Windows x64(10.0.26300), Ryzen 5 7430U, Vite 8.3.2, React 19.3.0 개발 모드, HeadlessChrome 154.0.0.0이다. scenario는 `10k-20-locales`이고 run당 measured 25·warmup 5·calibrations 10이다. mode는 `edit`와 `locale-add` 두 가지이며 edit → locale-add 순서로 각 mode를 단일 run으로 실행했다. GC를 강제하거나 부하를 통제하지 않았다.
+This ran on 2026-10-10 KST under Node v24.18.0, Windows x64 (10.0.26300), Ryzen 5 7430U, Vite 8.3.2, React 19.3.0 in development mode, and HeadlessChrome 154.0.0.0. The scenario was `10k-20-locales` with 25 measured runs, 5 warmups, and 10 calibrations per run. Modes were `edit` and `locale-add`, each run once in edit → locale-add order. GC was not forced and load was uncontrolled.
 
 ```sh
 node benchmarks/live-update/run.mjs --mode edit --scenario 10k-20-locales --server-file-stages --runtime-stages --samples 25 --warmup 5 --calibrations 10 --out benchmarks/results/runtime-tail-edit-2026-10-10.json
 node benchmarks/live-update/run.mjs --mode locale-add --scenario 10k-20-locales --server-file-stages --runtime-stages --samples 25 --warmup 5 --calibrations 10 --out benchmarks/results/runtime-tail-locale-2026-10-10.json
 ```
 
-두 명령의 결과 aggregate는 편집 [runtime-tail-edit-2026-10-10.json](../benchmarks/results/runtime-tail-edit-2026-10-10.json)과 로케일 [runtime-tail-locale-2026-10-10.json](../benchmarks/results/runtime-tail-locale-2026-10-10.json)이고, raw 표본은 각각 [편집 samples](../benchmarks/results/runtime-tail-edit-2026-10-10.10k-20-locales.samples.json), [로케일 samples](../benchmarks/results/runtime-tail-locale-2026-10-10.10k-20-locales.samples.json)이다.
+The aggregates from the two commands are edit [runtime-tail-edit-2026-10-10.json](../benchmarks/results/runtime-tail-edit-2026-10-10.json) and locale [runtime-tail-locale-2026-10-10.json](../benchmarks/results/runtime-tail-locale-2026-10-10.json). Raw samples are [edit samples](../benchmarks/results/runtime-tail-edit-2026-10-10.10k-20-locales.samples.json) and [locale samples](../benchmarks/results/runtime-tail-locale-2026-10-10.10k-20-locales.samples.json).
 
-## 런타임 구간
+## Runtime stages
 
-`runtimeWindows`는 `readAndCandidate`, `pathCheck`, `fileRead`, `catalogParse`, `baseStat`, `candidateOther`를 기록한다. 표본 window(`sample`)는 stage begin이 write 전인 시점부터 stage finish가 ack 수신 뒤인 시점까지이다. 로케일은 목록 ack까지만이라 선택·리셋·삭제 구간은 넣지 않는다. `baseStat`는 `candidateOther` 안에 들어가는 기준 카탈로그 존재 확인 `Promise.all(stat)` 구간이다.
+`runtimeWindows` records `readAndCandidate`, `pathCheck`, `fileRead`, `catalogParse`, `baseStat`, and `candidateOther`. A sample window (`sample`) spans from stage begin before the write through stage finish after ack receipt. Locale mode covers only through the list ack, so it excludes selection, reset, and deletion. `baseStat` is the `Promise.all(stat)` section inside `candidateOther` that checks whether baseline catalogs exist.
 
-## GC와 타이머 지연
+## GC and timer delay
 
-`PerformanceObserver`로 GC 이벤트의 `kind`·`flags`와 시작·끝 시각을 기록하고, 10ms로 재예약하는 타이머의 expected→observed 지연 구간을 함께 기록한다. 이벤트와 서버 window의 타임스탬프 교집합을 계산하고, union으로 겹친 시간을 한 번만 세며 구간 경계에서 clip한다. GC 전달이 비동기이므로 마지막 ack 뒤 저장된 window 밖에서 10ms 대기와 두 번의 `setImmediate` 양보를 거쳐 `takeRecords`로 남은 항목을 수집한다.
+A `PerformanceObserver` records GC event `kind` and `flags` plus start and end times, while a timer rescheduled every 10 ms records expected → observed delay intervals. The tool intersects timestamps for events and server windows, counts union overlap once, and clips at window boundaries. Because GC delivery is asynchronous, after the last ack it waits 10 ms outside the stored window and yields twice through `setImmediate`, then collects remaining entries with `takeRecords`.
 
-`gcOverlapMs`와 `timerDelayOverlapMs`는 서로 겹칠 수 있고 parent·child 구간도 겹친다. 그래서 두 값을 더하거나 wall에서 빼거나 CPU 시간·순수 OS 스케줄러 시간·인과 증명으로 쓰면 안 된다. 타이머 지연에는 동기 JS, GC, I/O 콜백, OS 스케줄링이 섞이고 계측 자체 overhead도 포함된다. 관측 API 정의는 Node 문서의 [`PerformanceObserver`](https://nodejs.org/docs/latest-v24.x/api/perf_hooks.html#class-performanceobserver)를 따른다.
+`gcOverlapMs` and `timerDelayOverlapMs` can overlap each other, and parent and child intervals also overlap. The values therefore must not be added, subtracted from wall time, or treated as CPU time, pure OS scheduler time, or causal proof. Timer delay mixes synchronous JavaScript, GC, I/O callbacks, OS scheduling, and instrumentation overhead itself. The observed API definition follows Node's [`PerformanceObserver`](https://nodejs.org/docs/latest-v24.x/api/perf_hooks.html#class-performanceobserver) documentation.
 
-## 해석 범위
+## Scope of interpretation
 
-이 기록은 계측 지점을 추가한 진단용이다. [51](51-owned-message-map-comparison.md)의 종단 간 수치와 직접 성능 비교하거나 홍보 근거로 쓰지 않는다.
+This record is diagnostic and adds observation points. It is not a direct performance comparison with the end-to-end values in [51](51-owned-message-map-comparison.md) and is not promotional evidence.
 
-## 결과·검증·다음 후보
+## Results, validation, and next candidates
 
-단위는 ms이며 아래 p50/p95는 각 mode의 measured 25개에서 계산했다. sample window는 파일 쓰기를 포함하므로 저장 완료→ack와 경계가 다르다.
+Units are ms; p50/p95 below are calculated from 25 measured runs per mode. The sample window includes file writing, so its boundaries differ from save completion → ack.
 
-| 종단 간 진단 값 | p50 / p95 | 최대 | 목표 이내 표본 |
+| End-to-end diagnostic value | p50 / p95 | max | Samples within target |
 | --- | ---: | ---: | --- |
-| 편집 저장→DOM ack | 148.39 / 168.50 | 174.41 | ≤100ms: 0/25 |
-| 로케일 저장→목록 ack | 267.34 / 479.67 | 526.16 | ≤250ms: 7/25 |
+| Edit save → DOM ack | 148.39 / 168.50 | 174.41 | ≤100 ms: 0/25 |
+| Locale save → list ack | 267.34 / 479.67 | 526.16 | ≤250 ms: 7/25 |
 
-| mode·runtime window | wall p50 / p95 | GC 교집합 p95 | 타이머 지연 교집합 p95 |
+| mode and runtime window | wall p50 / p95 | GC overlap p95 | timer-delay overlap p95 |
 | --- | ---: | ---: | ---: |
-| 편집 catalogParse | 30.55 / 38.94 | 0 | 30.53 |
-| 편집 fileRead | 0.97 / 1.43 | 0 | 0 |
-| 편집 baseStat | 0.22 / 11.56 | 11.20 | 1.55 |
-| 편집 candidateOther | 0.48 / 12.28 | 11.20 | 2.14 |
-| 로케일 catalogParse | 152.08 / 377.88 | 15.36 | 370.96 |
-| 로케일 fileRead | 1.70 / 12.54 | 0 | 2.76 |
-| 로케일 baseStat | 0.60 / 20.10 | 19.33 | 10.03 |
-| 로케일 candidateOther | 0.87 / 20.42 | 19.33 | 10.14 |
+| edit catalogParse | 30.55 / 38.94 | 0 | 30.53 |
+| edit fileRead | 0.97 / 1.43 | 0 | 0 |
+| edit baseStat | 0.22 / 11.56 | 11.20 | 1.55 |
+| edit candidateOther | 0.48 / 12.28 | 11.20 | 2.14 |
+| locale catalogParse | 152.08 / 377.88 | 15.36 | 370.96 |
+| locale fileRead | 1.70 / 12.54 | 0 | 2.76 |
+| locale baseStat | 0.60 / 20.10 | 19.33 | 10.03 |
+| locale candidateOther | 0.87 / 20.42 | 19.33 | 10.14 |
 
-이번 편집은 최대 174.41ms로 [51](51-owned-message-map-comparison.md)의 300~400ms 긴 표본을 재현하지 못했다. 로케일 fileRead도 최대 18.26ms로 이전 실행의 100ms 이상 읽기 지연은 재현되지 않았다. 이전 tail의 원인을 소급 확정하지 않는다.
+This edit run had a maximum of 174.41 ms and did not reproduce the 300–400 ms long samples from [51](51-owned-message-map-comparison.md). Locale fileRead also had a maximum of 18.26 ms, so the more-than-100 ms read delays seen in the previous run did not recur. I do not retroactively identify the cause of the earlier tail.
 
-로케일 최장 표본 `10k-20-locales:36`은 목록 ack 526.16ms, 파싱 window 378.45ms, 파싱과 겹친 타이머 지연 376.15ms이며 수집된 GC 교집합은 0이다. 다음 긴 표본 `:34`도 목록 ack 479.67ms·파싱 233.26ms·파싱 GC 교집합 0이다. 따라서 이번 긴 표본을 GC 하나로 설명할 근거는 없다. 동기 파싱과 타이머 지연이 겹쳤다는 관찰이며 파싱의 순수 CPU 비용과 OS 스케줄링 비중은 구분하지 못한다.
+The longest locale sample, `10k-20-locales:36`, had a 526.16 ms list ack, 378.45 ms parsing window, and 376.15 ms timer delay overlapping parsing; its collected GC overlap was zero. The next longest sample, `:34`, had a 479.67 ms list ack, 233.26 ms parsing, and zero parsing GC overlap. There is therefore no basis for explaining these long samples with GC alone. This is an observation that synchronous parsing overlapped timer delay; I did not distinguish pure CPU cost from OS scheduling share within parsing.
 
-GC가 겹친 기준 파일 대기도 있다. 로케일 `:22`의 baseStat window 23.08ms 중 GC 교집합은 22.28ms이고, 편집 `:18`은 13.80ms 중 13.10ms다. 이 값만으로 파일시스템 자체가 느리다고 판단하지 않는다. 측정 표본 중 파싱 GC 교집합이 있는 표본은 편집 0/25·로케일 4/25, baseStat는 3/25·4/25다.
+Some baseline-file waits did overlap GC. In locale sample `:22`, GC overlapped 22.28 of a 23.08 ms baseStat window; in edit sample `:18`, it overlapped 13.10 of 13.80 ms. These values alone do not show that the filesystem itself is slow. Among measured samples, parsing had GC overlap in edit 0/25 and locale 4/25, while baseStat had GC overlap in 3/25 and 4/25.
 
-- 관련 테스트 4개와 enabled 편집 두 시나리오·enabled 로케일 small·disabled 편집 small 브라우저 스모크가 통과했다. 스모크 수치는 성능 결과에 넣지 않았다.
-- raw 60개(measured 50·warmup 10)와 control 20개를 확인했다. 기존·신규 timing 요약 89개를 원시에서 재계산했고 420개 runtime 관찰을 별도 교집합·구간 합집합 계산으로 대조해 일치했다.
-- 모든 표본의 path·read·parse·baseStat window는 각 1개이고 drain은 1회다. baseStat의 candidateOther 포함 관계와 파일 세 구간·잔여 구간의 readAndCandidate 분할도 확인했다.
-- 37개 unique 하네스·dist hash가 현재 파일과 일치하고 두 mode의 공통 hash도 같다. 제품 dist hash는 51의 변경 후 스냅샷과 그대로다.
-- 하네스가 입력 노드·입력값·React state·번역 DOM을 확인했고 `.d.ts` mtime·size는 유지했다. 측정 편집은 한 메시지 patch·position 갱신 0, 로케일은 선택 전 응답 0·선택 후 compact full 1개이며 복귀·삭제·목록 제거도 마쳤다. 임시 디렉터리·전용 브라우저 프로세스는 남지 않았다.
-- 제품 입력이 그대로이므로 전체 제품 테스트·pack·release는 반복하지 않았다. 버전 변경·push·publish·deploy는 없다.
+- Four related tests and browser smoke tests for two enabled edit scenarios, enabled small locale, and disabled small edit passed. Smoke timings were not used as performance results.
+- I checked 60 raw runs (50 measured + 10 warmup) and 20 controls. I recalculated 89 existing and new timing summaries from raw data and reconciled 420 runtime observations with separate intersection and interval-union calculations; all matched.
+- Every sample had one path, read, parse, and baseStat window and one drain. I verified baseStat's containment within candidateOther and the decomposition of readAndCandidate into three file stages and the remainder.
+- All 37 unique harness and dist hashes matched current files, and hashes common to both modes were equal. Product dist hashes matched the after snapshot in 51 unchanged.
+- The harness verified input node, entered value, React state, and translated DOM and preserved `.d.ts` mtime/size. Measured edits had one message patch and zero position updates; locale had zero responses before selection and one compact full response after selection, and completed return, deletion, and list removal. No temporary directories or dedicated browser processes remained.
+- Because product inputs were unchanged, I did not repeat full product tests, pack, or release checks. No version change, push, publish, or deploy was performed.
 
-다음은 기존 `parser-cpu.mjs`의 `cold` 모드로 신규 파싱 내부 호출을 좁게 프로파일링해 개선 후보 하나를 고르는 것이다. 이번 관찰만으로 기준 파일 존재 검사를 생략하거나 최적화를 자동 원복하지 않는다.
+Next is to use the existing `parser-cpu.mjs` `cold` mode to narrowly profile new parsing's internal calls and choose one optimization candidate. These observations alone do not justify skipping the baseline-file existence check or automatically reverting an optimization.
