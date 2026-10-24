@@ -1,31 +1,31 @@
-# 30. 개발 prebundle에서 Vite/core 깊은 동결 경로 공유
+# 30. Sharing the Vite/core deep-freeze path in the development prebundle
 
-[29](29-prebundle-client-stages.md)에서 같은 Vite 동결 카탈로그 참조가 core 수락에 50/50 전달됐지만 core의 깊은 동결 신뢰는 0/50이었다. core 동결 신뢰가 모듈 지역 WeakSet에 있고, dev의 core root prebundle과 `/runtime` subpath가 다른 graph면 공유되지 않는다. Vite `freeze.ts`가 `/runtime` 대신 core root의 기존 `freezeCatalogs`를 가져오도록 한 줄 바꿨다.
+In [29](29-prebundle-client-stages.md), the same Vite-frozen catalog reference reached core acceptance in 50/50 runs, but core deep-freeze trust was present in 0/50. Core freeze trust lives in a module-local WeakSet and is not shared when the development core root prebundle and the `/runtime` subpath resolve to different graphs. I changed one line so Vite `freeze.ts` imports the existing `freezeCatalogs` from the core root instead of `/runtime`.
 
-## 구현
+## Implementation
 
-- `packages/vite/src/freeze.ts`의 `freezeCatalogs` import를 `@0disoft/saylo-core/runtime`에서 `@0disoft/saylo-core`로 바꾼다. root는 같은 함수를 이미 export한다.
-- 개발 앱의 다른 core import가 root를 쓰므로, 같은 prebundle 모듈에서 Vite 동결 캐시를 공유한다.
-- 깊은 동결 신뢰는 기존 모듈 지역 WeakSet으로 관리한다. 외부에서 겉만 동결한 객체는 계속 내부까지 순회한다.
+- In `packages/vite/src/freeze.ts`, change the `freezeCatalogs` import from `@0disoft/saylo-core/runtime` to `@0disoft/saylo-core`. The root already exports the same function.
+- Because other core imports in the development app use the root, Vite now shares the freeze cache with the same prebundled module.
+- Deep-freeze trust continues to use the existing module-local WeakSet. Externally shallow-frozen objects are still traversed all the way through.
 
-## 범위
+## Scope
 
-- 확인한 사실은 root를 import하는 개발 앱의 정상 prebundle에서 deep-freeze 캐시를 공유한다는 것이다(sameCatalog 50/50, trusted 50/50).
-- `/runtime`만 쓰는 개발 앱과 사용자 optimizer `exclude`/`alias` 설정은 별도로 측정하지 않았다. 전체 번들 모듈 identity를 덤프해 비교하지 않았다.
+- The confirmed fact is that deep-freeze cache is shared in normal prebundling for a development app that imports core root (sameCatalog 50/50, trusted 50/50).
+- I did not separately measure development apps that use `/runtime` only or user optimizer `exclude`/`alias` settings. I did not dump the full bundle graph to compare module identities.
 
-## 실행
+## Run
 
 ```sh
 node benchmarks/live-update/run.mjs --mode locale-add --reply-stages --client-stages --scenario 10k-20-locales --samples 50 --warmup 5 --calibrations 25 --out benchmarks/results/prebundle-freeze-shared.json
 ```
 
-2026-10-07 KST, 리비전 `6ee51ff`의 수정 작업 트리, measuredAt `2026-10-07T13:22:54.610Z`, 기본 prebundle·typegen 켬, warmup 5·측정 50·control 25. 구현은 `3da29d4`에 커밋했다. 50회 nearest-rank p95는 정렬 48번째 값이다.
+This ran on 2026-10-07 KST from the worktree containing the revision `6ee51ff` change, with measuredAt `2026-10-07T13:22:54.610Z`, default prebundle and typegen enabled, 5 warmups, 50 measured runs, and 25 controls. The implementation was committed in `3da29d4`. The 50-run nearest-rank p95 is the 48th sorted value.
 
-## 결과
+## Results
 
-시간 단위는 ms이고 잔여는 표본별로 먼저 계산한다. 중첩 구간의 p95를 더하지 않는다.
+Times are in ms and remainders are calculated per sample before summarization. Nested p95 values are not added.
 
-| 구간 | p50 | p95 |
+| Interval | p50 | p95 |
 | --- | ---: | ---: |
 | decode | 7.70 | 11.60 |
 | Vite freeze | 75.20 | 92.80 |
@@ -34,28 +34,28 @@ node benchmarks/live-update/run.mjs --mode locale-add --reply-stages --client-st
 | receiveToPublish | 102.70 | 126.30 |
 | publishToCommit | 1.20 | 1.40 |
 | receiveToCommit | 103.90 | 127.60 |
-| 선택→commit | 190.00 | 449.70 |
-| 목록 표시 | 205.53 | 479.11 |
-| 표본별 freeze 합(Vite freeze+core acceptFreeze) | 75.20 | 92.80 |
+| Selection → commit | 190.00 | 449.70 |
+| List render | 205.53 | 479.11 |
+| Per-sample combined freeze (Vite freeze + core acceptFreeze) | 75.20 | 92.80 |
 
-- trust sameCatalog 50/50, trusted 50/50이다. [29](29-prebundle-client-stages.md)의 trusted 0/50과 달라졌다.
-- core acceptFreeze는 0.00/0.00ms, 최대 0.10ms, 비zero 표본 2회다. 0은 실제 연산이 0이라는 뜻이 아니고 browser clock에서 측정 가능한 차이가 없었다는 뜻이다.
-- 목록 250ms 이내 37/50이다. typegen 유지, 입력 state·DOM 유지, reload 없음이다.
-- [29](29-prebundle-client-stages.md) run 대비 core 동결은 83.60/281.90→0/0ms, 표본별 freeze 합은 175.80/570.10→75.20/92.80ms로 관측됐다. 두 값은 서로 다른 run이다.
+- Trust: sameCatalog 50/50, trusted 50/50, a change from trusted 0/50 in [29](29-prebundle-client-stages.md).
+- Core acceptFreeze was 0.00/0.00 ms, with a maximum of 0.10 ms and 2 nonzero samples. Zero does not mean no work occurred; it means no difference was measurable at the browser clock's resolution.
+- List rendering finished within 250 ms in 37/50 runs. Typegen remained enabled, input state and DOM were preserved, and there was no reload.
+- Compared with the run in [29](29-prebundle-client-stages.md), core freezing was observed at 83.60/281.90 → 0/0 ms and per-sample combined freezing at 175.80/570.10 → 75.20/92.80 ms. These values come from different runs.
 
-## 해석과 한계
+## Interpretation and limitations
 
-- 별도 run 비교이므로 감소분 전체를 이 변경의 인과 개선으로 확정하지 않는다. 확인한 것은 개발 prebundle에서 신뢰 카탈로그의 중복 깊은 순회가 사라졌다는 기능 사실이다.
-- 정상 prebundle을 유지한 단일 장비 warm 실행이다. 함수 wall time은 일시정지와 프로브 비용을 포함하며 GC를 별도로 관측하지 않았다. Node와 브라우저 clock을 섞지 않는다.
-- 표본별 비교 값은 [prebundle-freeze-comparison.json](../benchmarks/results/prebundle-freeze-comparison.json)에 있다.
-- 다음은 상세 계측을 끈 small/large 50회 종단 간 재측정이다.
+- Because this compares separate runs, I do not establish the entire reduction as a causal improvement from this change. The verified fact is that duplicate deep traversal of trusted catalogs disappeared in the development prebundle.
+- This was a single-machine warm run with normal prebundling. Function wall time includes pauses and probe overhead; GC was not separately observed. Node and browser clocks are not mixed.
+- Per-sample comparisons are in [prebundle-freeze-comparison.json](../benchmarks/results/prebundle-freeze-comparison.json).
+- Next is a 50-run small/large end-to-end remeasurement with detailed instrumentation disabled.
 
-## 검증
+## Validation
 
-- `npm run build`(workspace Vite)와 workspace Vite consumer typecheck가 통과했다.
-- Vite client·lazy·patch·production 테스트 43개와 하네스 14개, 합 57개가 통과했다.
-- production runtime parser 제거는 유지된다. fixture의 압축 전 JS 합은 169,275→118,204 B이고 외부 FormatJS 문자열 소비는 parser를 유지하며 lazy chunk·fallback·오류 테스트가 통과했다.
-- smoke 3종이 exit 0이다. [shared-smoke](../benchmarks/results/prebundle-freeze-shared-smoke.json), [edit-smoke](../benchmarks/results/prebundle-freeze-edit-smoke.json), [disabled-smoke](../benchmarks/results/prebundle-freeze-disabled-smoke.json).
-- 네 패키지 전체 `check`·`pack`·release 검사는 반복하지 않았다.
-- 원시 표본·요약·잔여·호출 수·wire·hash를 대조했다. 29번 실행 대비 측정 코드 hash가 바뀐 파일은 `packages/vite/dist/freeze.js` 하나다. 임시 fixture와 benchmark browser가 남지 않았다.
-- 산출물: [요약](../benchmarks/results/prebundle-freeze-shared.json), [원시](../benchmarks/results/prebundle-freeze-shared.10k-20-locales.samples.json). bump·push·publish·deploy 없음.
+- `npm run build` (workspace Vite) and the workspace Vite consumer typecheck passed.
+- Forty-three Vite client, lazy, patch, and production tests plus 14 harness tests, 57 total, passed.
+- Parser removal from the production runtime is preserved. The fixture's uncompressed JS total changed from 169,275 to 118,204 B; external FormatJS string consumption retains the parser, and lazy-chunk, fallback, and error tests passed.
+- Three smoke runs exited 0: [shared-smoke](../benchmarks/results/prebundle-freeze-shared-smoke.json), [edit-smoke](../benchmarks/results/prebundle-freeze-edit-smoke.json), and [disabled-smoke](../benchmarks/results/prebundle-freeze-disabled-smoke.json).
+- I did not repeat the full `check`, `pack`, or release checks for all four packages.
+- I reconciled raw samples, summaries, remainders, call counts, wire data, and hashes. Compared with run 29, only one measurement-code hash changed, in `packages/vite/dist/freeze.js`. No temporary fixture or benchmark browser remained.
+- Artifacts: [summary](../benchmarks/results/prebundle-freeze-shared.json), [raw samples](../benchmarks/results/prebundle-freeze-shared.10k-20-locales.samples.json). No version bump, push, publish, or deploy was performed.
