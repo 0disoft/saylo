@@ -172,3 +172,47 @@ test('new catalogs retain the default two-space LF output with final newline', a
   const f = await fixture(t);
   assert.equal(f.plan.files[0].nextSource, '{\n  "title": "en title"\n}\n');
 });
+
+async function contractPlan(t, patch) {
+  const f = await fixture(t);
+  const base = JSON.parse('{"title":"Hello {value}","rich":"<link>Terms {name}</link>","__proto__":"Base","constructor":"Base constructor","empty":"Base","2":"Two"}');
+  const original = JSON.stringify({ ...base, title: 'Old', orphan: 'Keep me' }, null, 2);
+  const target = path.join(f.root, 'en/common.json');
+  await writeFile(f.base, JSON.stringify(base, null, 2));
+  await mkdir(path.dirname(target));
+  await writeFile(target, original);
+  const config = { ...f.config, richText: { common: { rich: ['link'] } } };
+  const { inspection, report } = await inspectProject(config);
+  const hashes = createReviewBaseline(inspection, 'ko').messages;
+  const previous = JSON.parse(original);
+  const work = { format: 'saylo-translation-work/v1', baseLocale: 'ko', entries: patch.map(([id, translation]) => ({
+    locale: 'en', namespace: 'common', id, reason: 'review', source: base[id], sourceHash: hashes[`common:${id}`],
+    originalTranslation: previous[id], translation,
+  })) };
+  return { ...f, target, original, plan: planTranslationImport(inspection, report, config, work) };
+}
+
+test('partial import validates merged messages without rejecting retained orphans or prototype-like IDs', async t => {
+  const patch = [['title', 'New {value}'], ['rich', '<link>New {name}</link>'],
+    ['__proto__', 'Prototype'], ['constructor', 'Constructor'], ['empty', '']];
+  const f = await contractPlan(t, patch);
+  assert.equal(f.plan.report.blocked, false);
+  assert.deepEqual(JSON.parse(f.plan.files[0].nextSource), { ...JSON.parse(f.original), ...Object.fromEntries(patch) });
+  await applyTranslationImport(f.plan);
+  assert.equal(await readFile(f.target, 'utf8'), f.plan.files[0].nextSource);
+  await f.assertClean();
+});
+
+for (const [id, translation, code] of [
+  ['title', '{extra}', 'UNKNOWN_ARGUMENT'],
+  ['title', '{value, number}', 'ARGUMENT_TYPE_NARROWING'],
+  ['title', '{', 'INVALID_ICU'],
+  ['rich', '{name, select, ok {<link>Good</link>} other {<bad>Bad</bad>}}', 'INVALID_RICH_TEXT'],
+]) test(`partial import rejects ${code} without changing the target`, async t => {
+  const f = await contractPlan(t, [[id, translation]]);
+  assert.equal(f.plan.report.blocked, true);
+  assert.ok(f.plan.report.diagnostics.some(issue => issue.id === id && issue.code === code));
+  await assert.rejects(applyTranslationImport(f.plan), /Cannot apply a blocked translation import/);
+  assert.equal(await readFile(f.target, 'utf8'), f.original);
+  await f.assertClean();
+});

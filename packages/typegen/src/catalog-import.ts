@@ -69,13 +69,17 @@ export function planTranslationImport(input: CatalogInspection, checked: Catalog
     const options = { locale: patch.locale, namespace: patch.namespace, sourceName,
       richText: config.richText?.[patch.namespace] };
     try {
-      const merged = parseCatalog(source, options); // Check the merged JSON/ICU/rich catalog, preserving orphan keys.
+      // Strictly check merged JSON/ICU/rich text, reusing unchanged parsed messages.
+      const merged = parseCatalog(source, options, current?.catalog);
       if (Object.keys(merged.messages).length !== Object.keys(values).length
         || Object.entries(values).some(([id, value]) => merged.messages[id]?.source !== value)) {
         throw new CatalogError([{ ...options, code: 'INVALID_CATALOG',
           message: 'Catalog edit did not preserve the expected message values; import blocked.' }]);
       }
-      validateTranslation(createBaseSchema(base.catalog), parseCatalog(JSON.stringify(patch.values), options));
+      // Validate only the changed IDs; existing orphan keys remain untouched.
+      // Their merged messages already passed parsing, including rich contracts.
+      const messages = Object.fromEntries(Object.keys(patch.values).map(id => [id, merged.messages[id]!]));
+      validateTranslation(createBaseSchema(base.catalog), { ...merged, messages });
     } catch (error) {
       if (!(error instanceof CatalogError)) throw error;
       diagnostics.push(...error.diagnostics.map(issue => ({ code: issue.code, message: `${sourceName}: ${issue.message}`,
