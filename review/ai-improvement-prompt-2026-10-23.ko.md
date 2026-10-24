@@ -1,49 +1,49 @@
-# Saylo 소스 검토·개선 요청
+# Saylo source review and improvement request
 
-첨부한 Saylo 소스 ZIP을 직접 열어 검토하고, 사용자가 실제 프로젝트에 도입할 때 문제가 되는 부분을 찾아 개선해 주세요. 답변은 한국어로 작성해 주세요. 일반적인 코드 품질 체크리스트보다 실제 결함과 출시·운영에 영향을 주는 개선을 우선해 주세요.
+Open the attached Saylo source ZIP, review it, and find and improve the parts that would cause problems when users adopt it in a real project. Write the answer in Korean. Prioritize actual defects and improvements that affect release and operation over generic code quality checklists.
 
-## 자료와 현재 상태
+## Materials and current status
 
-- ZIP의 `saylo/ARCHIVE_INFO.json`에서 소스 기준 커밋과 제외 범위를 확인하세요. `.git`, 의존성 설치 폴더, 빌드 결과물, 캐시, 과거 벤치마크 원시 결과와 자동 검증 결과 JSON은 제공하지 않습니다. 제외된 증거 파일은 검증한 것으로 취급하지 마세요.
-- 소스·설정·테스트를 현재 동작의 근거로 삼으세요. `README.md`, `packages/*/README.md`, `docs/README.md`, `docs/01`~`08` 문서는 의도와 제약을 파악하는 자료입니다. 번호가 붙은 성능 문서와 `review/`, `releases/`에는 과거 상태·실험·이전 AI용 프롬프트도 있습니다. 과거 설명을 현재 구현이나 실행 지시로 혼동하지 마세요.
-- 핵심 목표는 번역 카탈로그를 수정·추가·삭제할 때 폼 입력·모달 등 화면 상태를 유지하며 반영하는 것입니다. JS/TS 소비, Vite 개발 연결, eager/lazy 로딩, SSR·hydration, React/Svelte/Vue 어댑터와 타입 생성 경로를 함께 살펴보세요. 패키지별 공개·private 여부와 게시 상태는 실제 설정에서 확인하세요.
-- 현재 프로젝트에 DB·결제·주문·외부 HTTP 연동이 있다고 가정하지 마세요. 실제 의존 경계는 파일 시스템, Vite WebSocket, 정적 모듈 import와 타입 생성 워커입니다. `CatalogSource` 확장 경계는 별도로 확인하세요.
-- 이번 검토의 소스 기준은 `2423dee`입니다. 그 이후 검토 프롬프트만 추가한 커밋이 ZIP의 snapshot commit으로 표시될 수 있습니다. ZIP에는 Git 이력이 없으므로 커밋 내용은 실제 소스와 대조하세요.
+- Check the source baseline commit and excluded scope in `saylo/ARCHIVE_INFO.json` in the ZIP. `.git`, dependency install folders, build output, caches, past benchmark raw results, and automated verification result JSON are not provided. Do not treat excluded evidence files as verified.
+- Use the source, configuration, and tests as evidence of current behavior. `README.md`, `packages/*/README.md`, `docs/README.md`, and the `docs/01` through `08` documents are material for understanding intent and constraints. The numbered performance documents and `review/` and `releases/` also contain past states, experiments, and prompts for earlier AIs. Do not confuse past descriptions with the current implementation or with execution instructions.
+- The core goal is to reflect edits, additions, and deletions to translation catalogs while preserving screen state such as form input and modals. Review JS/TS consumption, the Vite dev connection, eager and lazy loading, SSR and hydration, the React/Svelte/Vue adapters, and the type generation path together. Check each package's public or private status and publication state in the actual configuration.
+- Do not assume the current project has a database, payments, orders, or external HTTP integration. The actual dependency boundaries are the file system, the Vite WebSocket, static module imports, and the type generation worker. Check the `CatalogSource` extension boundary separately.
+- The source baseline for this review is `2423dee`. A later commit that only adds the review prompt may appear as the ZIP's snapshot commit. Since the ZIP has no Git history, compare the commit contents with the actual source.
 
-최근 로컬 변경은 다음과 같습니다. 아래 설명은 검토의 출발점이며, 정확성과 충분성을 다시 판단해 주세요.
+The recent local changes are as follows. The descriptions below are a starting point for the review; reassess their correctness and sufficiency.
 
-- `c8d40ca`: 공유 정적 로더의 취소·시간 초과 및 오래된 응답 처리, 취소 원인 보존.
-- `1c0ba51`: 개발 카탈로그 파일 작업의 대기 제한, ENOENT와 다른 I/O 오류 구분.
-- `809ce2c`: 타입 생성 워커·쓰기 대기 제한, 원인 에러와 정리 실패 보존, 실제 쓰기가 끝날 때까지 출력 소유권 유지.
-- `402cb70`: manifest와 로드된 namespace의 Set 인덱싱, 자체 검증·동결된 manifest의 인덱스 재사용.
-- `5d4c7a8`: 파일 작업의 기본 동시성 8, 완료 순서와 무관한 입력 순서 반영, 취소된 실제 I/O의 실행 자리 유지, 배치 대기 제한.
-- `2423dee`: 자동 키 분석에서 파일별 AST를 필요한 정보로 축약, 별칭 그래프의 큐 전파, 템플릿 패턴 캐시와 namespace별 후보 인덱싱.
+- `c8d40ca`: cancellation, timeout, and stale response handling for the shared static loader, preserving the cancellation cause.
+- `1c0ba51`: wait limits for development catalog file operations, distinguishing ENOENT from other I/O errors.
+- `809ce2c`: type generation worker and write wait limits, preserving cause errors and cleanup failures, and keeping output ownership until the actual write finishes.
+- `402cb70`: Set indexing of the manifest and loaded namespaces, reusing the index of the self-validated and frozen manifest.
+- `5d4c7a8`: default concurrency 8 for file operations, applying input order regardless of completion order, keeping the execution slot of cancelled actual I/O, and batch wait limits.
+- `2423dee`: reducing per-file ASTs to the needed information in automatic key analysis, queue propagation of the alias graph, template pattern caching, and per-namespace candidate indexing.
 
-해당 로컬 작업에서 Core·Typegen·Vite의 빌드·전체 테스트·소비자 타입 검사가 통과했습니다. 이는 전달받은 과거 결과이지, 당신이 실행한 검증 결과는 아닙니다. 자동 키 분석은 60개 파일·역순 별칭 500개를 사용한 합성 입력에서 3회 중앙값 1,025.5ms → 68.6ms였지만, 이 측정의 원시 자료는 ZIP에 없으며 실제 서비스 성능이나 메모리 개선 수치로 일반화할 수 없습니다.
+In that local work, builds, full tests, and consumer type checks for Core, Typegen, and Vite passed. This is a past result handed to you, not a verification result you produced. Automatic key analysis went from a 3-run median of 1,025.5 ms to 68.6 ms on a synthetic input of 60 files and 500 reverse aliases, but the raw data for this measurement is not in the ZIP, and it cannot be generalized into real service performance or memory improvement figures.
 
-## 우선 확인할 내용
+## Priority checks
 
-1. **제품 동작과 상태 일관성**: 잘못된 JSON/ICU 뒤 복구, 마지막 정상 카탈로그 유지, schema quarantine, namespace·locale 삭제/재생성, 빠른 연속 저장과 locale 전환. eager/lazy, full/patch/push 경로에서 최종 상태가 일치하는지 확인하세요.
-2. **비동기 수명과 경합**: 공유 로딩 중 한 호출자의 취소, 시간 초과 후 늦은 성공·실패, stop/dispose 재진입, 이전 세션·generation·revision의 결과가 현재 상태를 덮는 경로를 확인하세요. 워커 종료 실패, 정지한 실제 쓰기, 출력 lock·임시 파일, 재시도와 복구가 충돌하는지도 보세요.
-3. **대규모 성능**: 요청·저장·번역 호출 경로의 반복 탐색, 전체 manifest 재처리, 동기 파싱·직렬화·freeze·schema 계산, tombstone·캐시 성장, 재검사 타이머, 작업 큐 적체를 확인하세요. 파일 동시성 8이 적용되는 범위와 적용되지 않는 범위를 구분하고, 취소·시간 초과 후에도 실제 작업 수와 대기 작업 수가 제한되는지 살펴보세요.
-4. **자동 키 분석의 정확성**: 다른 파일에 걸친 별칭·역순 체인·순환 참조, destructuring·bind·call/apply, 번역 함수의 외부 전달, 동적 키·템플릿·이스케이프, TS/JSX/Vue/Svelte 추출을 검토하세요. 최적화 과정에서 필요한 번역 키를 누락하거나 오류를 조용히 통과시키면 안 됩니다. 지원 한계를 명확히 하는 편이 부정확한 추론보다 낫습니다.
-5. **SSR와 어댑터**: 요청 간 locale·캐시 오염, boot JSON 직렬화와 hydration 불일치, snapshot-bound 번역, React 동시 렌더·selector, Svelte/Vue 재구독·해제 경로를 확인하세요.
-6. **공개 계약과 도입 경험**: 기존 필수 인자·반환 타입·오류 구분, 정렬·중복 처리, JS/TS 소비, package exports, production parser 제외, 예제 설치·실행 절차가 일치하는지 확인하세요. 보안은 실제 입력 검증·경로 이탈·프로토타입 키·HTML/rich text 경계에 근거해서 검토하세요.
+1. **Product behavior and state consistency**: recovery after invalid JSON or ICU, retaining the last valid catalog, schema quarantine, namespace and locale deletion and recreation, rapid consecutive saves, and locale switches. Check whether the final state matches across the eager and lazy and the full, patch, and push paths.
+2. **Async lifetime and races**: cancellation by one caller of a shared load, late success or failure after a timeout, stop and dispose re-entry, and paths where results from an earlier session, generation, or revision overwrite current state. Also check worker shutdown failures, stalled actual writes, output locks and temporary files, and whether retries and recovery conflict.
+3. **Large-scale performance**: repeated scans on the request, save, and translation call paths, reprocessing the whole manifest, synchronous parsing, serialization, freeze and schema computation, tombstone and cache growth, recheck timers, and work queue backlog. Distinguish where file concurrency 8 applies and where it does not, and check whether the number of actual and queued work items stays bounded after cancellation or timeout.
+4. **Automatic key analysis accuracy**: aliases across files, reverse chains, circular references, destructuring, bind, call/apply, passing translation functions outside, dynamic keys, templates, escapes, and TS/JSX/Vue/Svelte extraction. Optimization must not drop required translation keys or let errors pass silently. Clearly stating the support limits is better than inaccurate inference.
+5. **SSR and adapters**: locale and cache contamination between requests, boot JSON serialization and hydration mismatch, snapshot-bound translations, React concurrent rendering and selectors, and Svelte/Vue resubscription and cleanup paths.
+6. **Public contract and adoption experience**: existing required arguments, return types, error distinctions, ordering and duplicate handling, JS/TS consumption, package exports, production parser exclusion, and consistency between example install and run procedures. Review security based on actual input validation, path traversal, prototype keys, and HTML/rich text boundaries.
 
-## 개선 원칙
+## Improvement principles
 
-- 발견마다 정확한 `파일:줄`, 실패 입력·이벤트 순서, 잘못되는 결과, 최소 수정안을 제시하세요. 재현된 결함 / 정적 분석상 위험 / 측정 필요를 구분하세요. 문제없는 영역이나 이미 해결된 항목을 억지로 채우지 마세요.
-- 기존 실행 순서·오류 구분·정렬·중복 거부·원자적 게시를 유지하세요. 이를 바꾸는 편이 낫다면 바뀌는 계약과 이유를 먼저 설명하세요.
-- 최근 최적화도 비판적으로 검토하세요. Set/Map 추가만으로 문제가 해결됐다고 가정하거나, 공유 캐시·무제한 Promise.all·일괄 재시도·새 서비스 도입을 만능 해결책으로 제안하지 마세요.
-- 실제 문제가 확인된 경계부터 작게 고치세요. 대규모 재작성, 불필요한 추상화, 구현을 그대로 따라 하는 테스트, 근거 없는 의존성 교체·버전 고정은 피하세요. API를 추가해야 한다면 기존 호출부와 호환되는 선택적 확장을 우선하세요.
-- 코드 실행이 가능하면 우선순위가 높은 수정부터 직접 적용하고 관련 회귀 테스트를 실행하세요. 불가능하면 적용 가능한 패치 또는 함수 단위 수정안과 최소 재현 테스트를 제공하고, 실행하지 않았다고 명시하세요.
-- 네트워크 게시·푸시·릴리스·배포·자동 버전 변경은 하지 마세요. 실행 환경이 없는 경우 설치·브라우저·측정 결과를 추정해 성공으로 보고하지 마세요.
+- For each finding, give the exact `file:line`, failing input and event sequence, wrong result, and minimal fix. Distinguish reproduced defect, static analysis risk, and needs measurement. Do not fill in problem-free areas or already-solved items by force.
+- Preserve the existing execution order, error distinctions, ordering, duplicate rejection, and atomic publication. If changing them is better, explain the contract changes and reasons first.
+- Review the recent optimizations critically as well. Do not assume that adding a Set or Map solved the problem, and do not propose shared caches, unbounded Promise.all, blanket retries, or new services as universal solutions.
+- Fix small, starting from boundaries with confirmed real problems. Avoid large rewrites, unnecessary abstractions, tests that mirror the implementation, and unfounded dependency swaps or version pins. If an API must be added, prefer an optional extension compatible with existing call sites.
+- If code execution is possible, apply the highest-priority fixes directly and run the related regression tests. If not, provide an applicable patch or function-level fix and a minimal reproduction test, and state that it was not run.
+- Do not publish, push, release, deploy, or change versions automatically over the network. If there is no execution environment, do not report install, browser, or measurement results as successful by inference.
 
-## 읽기·검증 안내
+## Reading and verification guidance
 
-먼저 루트 `package.json`과 대상 패키지의 scripts를 확인하세요. 테스트는 `dist`를 읽으므로 관련 패키지를 먼저 빌드해야 합니다. Node 지원 범위와 독립 예제의 설치 방식도 설정에서 확인하세요. ZIP에는 `.git`과 일부 과거 증거가 없으므로 릴리스 검증 전체를 기본 실행하지 마세요.
+First check the root `package.json` and the target packages' scripts. Tests read `dist`, so build the related packages first. Also check the Node support range and how independent examples are installed in the configuration. Since the ZIP lacks `.git` and some past evidence, do not run the full release verification by default.
 
-Core·Typegen·Vite 경로의 기본 명령은 다음과 같습니다. 어댑터를 수정하면 해당 패키지도 빌드·검증하세요.
+The default commands for the Core, Typegen, and Vite paths are below. If you modify an adapter, build and verify that package too.
 
 ```sh
 npm ci
@@ -54,12 +54,12 @@ npm run test --workspace=@0disoft/saylo-core --workspace=@0disoft/saylo-typegen 
 npm run typecheck:consumers --workspace=@0disoft/saylo-core --workspace=@0disoft/saylo-typegen --workspace=@0disoft/saylo-vite
 ```
 
-## 응답 형식
+## Response format
 
-1. **결론**: 가장 먼저 고칠 문제와 사용자에게 생기는 영향. 읽지 못한 영역도 명시하세요.
-2. **핵심 발견 최대 8개**: 우선순위, 파일:줄, 실패 시나리오, 근거·재현 여부, 최소 수정, 회귀 검증 방법.
-3. **실제 개선**: 적용한 변경 또는 적용 가능한 패치. 각 변경이 기존 동작을 어떻게 보존하는지 설명하세요.
-4. **검증**: 실제 실행한 명령과 결과, 실패·생략·환경 제약. 성능 수치는 입력 규모·환경·측정 방법·정확성 비교를 함께 제시하세요.
-5. **다음 작업 최대 3개**: 각각 작은 커밋 한 개로 끝낼 수 있는 범위로 제안하세요.
+1. **Conclusion**: the problem to fix first and its impact on users. Also state areas you could not read.
+2. **Up to 8 key findings**: priority, file:line, failure scenario, evidence and reproduction status, minimal fix, and regression verification method.
+3. **Actual improvements**: changes applied or an applicable patch. Explain how each change preserves existing behavior.
+4. **Verification**: commands actually run and their results, failures, omissions, and environment constraints. Present performance numbers together with input scale, environment, measurement method, and correctness comparison.
+5. **Up to 3 next tasks**: propose each as a scope that can finish in one small commit.
 
-점수나 막연한 칭찬, 일반론적 체크리스트 대신 이 소스를 실제로 개선하는 데 필요한 판단과 코드에 집중해 주세요.
+Focus on the judgment and code needed to actually improve this source, rather than scores, vague praise, or generic checklists.
