@@ -1,14 +1,14 @@
 # @0disoft/saylo-vue
 
-Saylo의 Vue 3 바인딩이다. `createSayloVue<Schema>()`가 `createPlugin`·`provideI18n`·`useI18n`을 만들고, `useVueStore(instance)`가 store snapshot을 읽기 전용 `shallowRef`로 구독한다. `useI18n`·`useVueStore`·`provideI18n`은 컴포넌트 `setup`에서 동기 호출하고, `createPlugin(instance)`은 setup 밖에서 만들어 `app.use`로 설치한다.
+The Vue 3 binding for Saylo. `createSayloVue<Schema>()` creates `createPlugin`, `provideI18n`, and `useI18n`, and `useVueStore(instance)` subscribes to the store snapshot as a read-only `shallowRef`. Call `useI18n`, `useVueStore`, and `provideI18n` synchronously in a component's `setup`; create `createPlugin(instance)` outside setup and install it with `app.use`.
 
-## 상태와 설치
+## Status and installation
 
-로컬 private workspace 전용이고 npm에 게시하지 않았다. `package.json`의 `private`는 `true`, `version`은 `0.1.0-alpha.4`지만 이 버전은 registry에 없고, 게시된 다섯 패키지(`alpha`)와 `0.1.0-alpha.5` 후보 어디에도 들어가지 않는다. 그래서 registry 설치 대신 workspace/file로 연결한다. 저장소 루트의 `workspaces: ["packages/*"]`에 이미 들어 있어 루트 `npm install`로 링크되고, 다른 앱은 `npm install <saylo 경로>/packages/vue`처럼 로컬 경로로 설치한다.
+This package is for the local private workspace only and has not been published to npm. `private` is `true` and `version` is `0.1.0-alpha.4` in `package.json`, but this version is not in the registry, and it is in neither the five published packages (`alpha`) nor the `0.1.0-alpha.5` candidate. Link it through the workspace or a file path instead of installing from the registry. The root `workspaces: ["packages/*"]` already includes it, so a root `npm install` links it; other apps install it from a local path such as `npm install <saylo-checkout>/packages/vue`.
 
-`vue`는 peer이고 조건은 메이저 3(`"vue": "3"`)이다. 저장소 루트도 검증용 devDependency로 같은 메이저 범위를 쓴다. `@0disoft/saylo-core`는 런타임 의존성이고 `dist/`에 ESM JavaScript와 `.d.ts`를 낸다(`tsc -p tsconfig.json`).
+`vue` is a peer and the requirement is major version 3 (`"vue": "3"`). The repository root also uses the same major range as a devDependency for verification. `@0disoft/saylo-core` is a runtime dependency, and `dist/` contains ESM JavaScript and `.d.ts` files (`tsc -p tsconfig.json`).
 
-저장소 루트에서 설치·빌드한 뒤 사용한다. 독립 tarball 소비도 같은 루트에서 검증한다.
+Install and build from the repository root before use. Independent tarball consumption is verified from the same root.
 
 ```sh
 npm ci --ignore-scripts
@@ -16,13 +16,13 @@ npm run build
 npm run verify:pack:vue
 ```
 
-`verify:pack:vue`는 core·Vue tarball을 임시 앱에 설치하고 JS·TS 타입과 동시 ko/en SSR을 확인한 뒤 임시 폴더를 정리한다.
+`verify:pack:vue` installs the core and Vue tarballs into a temporary app, checks JS and TS types and concurrent ko/en SSR, and then removes the temporary folder.
 
-저장소 밖에서 Vue SFC 앱을 시작하려면 [Vue 시작 안내](../../docs/getting-started-vue.md)를 따른다. `prepare:starter:vue`가 네 tarball을 동봉하고, `verify:starter:vue`가 독립 설치·타입 생성·개발 서버·production 화면을 확인한다.
+To start a Vue SFC app outside the repository, follow the [Vue getting-started guide](../../docs/getting-started-vue.md). `prepare:starter:vue` bundles four tarballs, and `verify:starter:vue` checks independent installation, type generation, the development server, and the production screen.
 
-## 사용
+## Usage
 
-factory는 모듈 범위에서 한 번 만들고, 앱은 `createApp(...).use(createPlugin(store))`로 instance를 설치한다. 감싸는 컴포넌트가 필요 없다. 아래는 브라우저 앱 하나가 store를 소유하는 Vue `h` render function 예제다. SSR에서는 요청마다 store를 만든다.
+Create the factory once at module scope, and install an instance in the app with `createApp(...).use(createPlugin(store))`. No wrapper component is needed. Below is a Vue `h` render function example where one browser app owns the store. In SSR, create a store per request.
 
 ```js
 import { createApp, defineComponent, h } from 'vue';
@@ -56,7 +56,7 @@ function stop() {
 }
 ```
 
-하위 트리만 다른 instance로 덮고 싶으면 그 부모 컴포넌트 `setup`에서 `provideI18n(instance)`를 부른다. `useI18n`은 가장 가까운 컴포넌트 provider를 먼저 찾고, 없으면 앱 provider를 쓴다. 앱 전체가 한 instance면 `provideI18n`은 필요 없다.
+To override only a subtree with a different instance, call `provideI18n(instance)` in that parent component's `setup`. `useI18n` looks for the nearest component provider first and uses the app provider if there is none. If the whole app uses one instance, `provideI18n` is not needed.
 
 ```js
 const Subtree = defineComponent({
@@ -68,9 +68,9 @@ const Subtree = defineComponent({
 });
 ```
 
-`useI18n` 대신 같은 instance를 받는 `useVueStore(instance)`를 직접 써도 된다.
+Instead of `useI18n`, you can use `useVueStore(instance)` directly with the same instance.
 
-스키마를 주면 키와 인자, `setLocale` 반환 타입이 어댑터까지 유지된다.
+When you provide a schema, the key and argument types and the `setLocale` return type are preserved through the adapter.
 
 ```ts
 import { createSayloVue } from '@0disoft/saylo-vue';
@@ -79,32 +79,32 @@ type AppSchema = { 'demo:greeting': { name: string } };
 export const { createPlugin, provideI18n, useI18n } = createSayloVue<AppSchema>();
 ```
 
-## 계약
+## Contract
 
-- 반환값은 읽기 전용 `shallowRef`다. script에서는 `.value`로 읽고 템플릿에서는 자동으로 풀린다. 값은 동결된 snapshot 객체다.
-- `useVueStore`와 `provideI18n`·`useI18n`은 `setup` 중에만 부를 수 있고, 밖에서 부르면 동기 오류를 던진다. `createPlugin(instance)`은 setup 밖에서 부를 수 있다. `useI18n`은 같은 factory의 provider가 없으면 오류를 던지고, 메시지가 `provideI18n` 또는 `app.use(createPlugin(instance))`를 안내한다. 다른 factory의 context는 서로 읽히지 않는다.
-- `createPlugin(instance)`의 `install`은 주입 키에 instance를 넣는 `app.provide`만 한다. 구독을 만들지 않고 instance도 폐기하지 않으며, 마운트 전에 설치한다. 같은 앱에 같은 instance로 새로 만든 plugin을 다시 설치하면 아무 일도 하지 않고, 같은 factory인데 다른 instance를 설치하면 오류를 던진다. 실행 중에 설치된 instance를 바꾸는 핫 스왑은 없다.
-- `provideI18n`이나 `createPlugin`에 넘긴 instance는 해당 범위에서 안정적으로 유지한다. 어댑터는 instance를 폐기하지 않으므로 `dispose()`는 호출자가 책임진다.
-- live 구독은 `onMounted`에서 시작한다. listener를 설치한 뒤 `getSnapshot()`을 한 번 더 읽어 setup과 mount 사이의 변경까지 반영하고, `onDispose` 리스너와 구독은 `onScopeDispose`에서 해제한다.
-- snapshot의 `t`는 그 snapshot의 번역에 묶여 있고, `setLocale`은 instance에서 온다. `setLocale`은 동기 `void` 또는 lazy instance의 `Promise<void>`다. lazy instance는 `loadNamespace`도 함께 온다.
+- The return value is a read-only `shallowRef`. Read it with `.value` in script, and it unwraps automatically in templates. The value is a frozen snapshot object.
+- `useVueStore`, `provideI18n`, and `useI18n` can only be called during `setup`; calling them outside throws a synchronous error. `createPlugin(instance)` can be called outside setup. `useI18n` throws if a provider from the same factory is missing, and the message points to `provideI18n` or `app.use(createPlugin(instance))`. Contexts from different factories cannot read each other.
+- `install` on `createPlugin(instance)` only calls `app.provide` with the injection key and the instance. It does not create a subscription or discard the instance, and it is installed before mount. Installing a newly created plugin with the same instance on the same app does nothing, and installing a different instance from the same factory throws an error. There is no hot swap of an installed instance while running.
+- Keep the instance passed to `provideI18n` or `createPlugin` stable within that scope. The adapter does not discard the instance, so the caller is responsible for `dispose()`.
+- The live subscription starts in `onMounted`. After installing the listener, it reads `getSnapshot()` once more to include changes between setup and mount, and releases the `onDispose` listener and the subscription in `onScopeDispose`.
+- A snapshot's `t` is bound to that snapshot's translations, and `setLocale` comes from the instance. `setLocale` is synchronous `void` or `Promise<void>` for a lazy instance. A lazy instance also provides `loadNamespace`.
 
-## 선택자 구독
+## Selector subscriptions
 
-`createSayloVue<S>()`가 돌려주는 `useI18nSelector`와 instance를 직접 받는 `useVueSelector`로 snapshot에서 필요한 값만 골라 읽는다. 둘 다 `setup`에서 동기 호출한다.
+`useI18nSelector` from `createSayloVue<S>()` and `useVueSelector`, which takes an instance directly, read only the values needed from the snapshot. Both are called synchronously in `setup`.
 
 ```ts
 function useVueSelector<S extends Schema, T>(instance: SayloInstance<S>, selector: (snapshot: SayloVueSnapshot<S>) => T): ComputedRef<T>;
 function useI18nSelector<T>(selector: (snapshot: SayloVueSnapshot<S>) => T): ComputedRef<T>;
 ```
 
-먼저 `useVueStore(instance)`로 source를 한 번 만든 뒤 `computed(() => selector(source.value))`로 값을 고른다. 반환값은 읽기 전용 `ComputedRef<T>`이고 script에서는 `.value`로, 템플릿에서는 자동으로 풀린다.
+First create a source once with `useVueStore(instance)`, then select values with `computed(() => selector(source.value))`. The result is a read-only `ComputedRef<T>`; read it with `.value` in script, and it unwraps automatically in templates.
 
-- selector 결과가 `Object.is`로 같으면 downstream 업데이트를 건너뛴다. 매번 새 객체를 만들면 매번 갱신된다.
-- selector가 읽은 reactive ref·prop을 추적한다. selector는 순수해야 한다.
-- lazy `computed`라 처음 읽을 때 계산한다.
-- selector 예외는 Vue `computed`의 일반 처리와 같다. 자동으로 마지막 정상 값을 보관하지 않는다.
+- If the selector result is the same by `Object.is`, downstream updates are skipped. Creating a new object every time updates every time.
+- It tracks the reactive refs and props read by the selector. The selector must be pure.
+- It is a lazy `computed`, so it calculates on first read.
+- Selector exceptions follow Vue's normal `computed` handling. It does not automatically keep the last valid value.
 
-구독은 composable마다 하나 만들고 `onMounted`에서 시작한다. listener를 설치한 뒤 snapshot을 한 번 더 읽어 `setup`과 mount 사이 변경까지 반영하고, scope dispose에서 해제한다. SSR에서는 구독이 생기지 않는다.
+Create one subscription per composable and start it in `onMounted`. After installing the listener, it reads the snapshot once more to include changes between `setup` and mount and releases the subscription on scope dispose. No subscription is created during SSR.
 
 ```js
 import { defineComponent, h, ref } from 'vue';
@@ -120,18 +120,18 @@ const Demo = defineComponent({
 });
 ```
 
-`useI18nSelector` 대신 같은 instance를 받는 `useVueSelector(instance, selector)`를 직접 써도 된다. Vue 바인딩은 여전히 private이고 게시와 버전 승격은 보류한다.
+Instead of `useI18nSelector`, you can use `useVueSelector(instance, selector)` directly with the same instance. The Vue binding is still private, and publication and version promotion are on hold.
 
-## SSR과 소유권
+## SSR and ownership
 
-- 마운트 관련 훅은 서버 렌더에서 실행되지 않으므로 SSR 중에는 구독이 생기지 않는다([컴포넌트 라이프사이클 훅](https://vuejs.org/guide/scaling-up/ssr.html#component-lifecycle-hooks)). 첫 렌더 값은 `setup` 시점의 `getSnapshot()`이다.
-- 서버에서 쓸 때는 요청마다 instance를 따로 만들어 그 요청의 앱에 `createSSRApp(Root).use(createPlugin(instance))`로 설치한다. factory와 주입 키는 공유해도 되지만 instance를 서버 전역에 두면 안 되고, 요청이 끝나면 호출자가 `dispose()`로 정리한다.
-- 서버 HTML과 boot snapshot을 브라우저에서 연결하는 예제는 [Vue SSR 데모](../../examples/vue-ssr/README.md)를 따른다. 클라이언트는 `initialSnapshot`으로 첫 렌더를 맞추고 `app.mount()`가 끝난 뒤 개발 동기화를 연결한다.
-- 어댑터는 컴포넌트 범위가 끝날 때 자신이 건 구독과 disposal 리스너만 해제한다. store의 수명은 앱이 소유한다.
+- Mount-related hooks do not run during server rendering, so no subscription is created during SSR ([component lifecycle hooks](https://vuejs.org/guide/scaling-up/ssr.html#component-lifecycle-hooks)). The first rendered value is `getSnapshot()` at `setup` time.
+- On the server, create a separate instance per request and install it in that request's app with `createSSRApp(Root).use(createPlugin(instance))`. Factories and injection keys can be shared, but do not keep an instance at server scope across the server, and the caller cleans it up with `dispose()` when the request ends.
+- For an example that connects server HTML and the boot snapshot in the browser, follow the [Vue SSR demo](../../examples/vue-ssr/README.md). The client matches the first render with `initialSnapshot` and connects development synchronization after `app.mount()` finishes.
+- When a component scope ends, the adapter releases only the subscriptions and disposal listeners it created. The app owns the store's lifetime.
 
-## rich text 렌더 (renderRichText)
+## Rich text rendering (renderRichText)
 
-`renderRichText`는 `snapshot.tParts(key, args)`가 돌려준 읽기 전용 parts를 Vue 노드로 그린다. 순수 TS 함수이고 `h`와 `Fragment`만 쓰므로 SFC 컴파일이나 별도 서브패스가 필요 없다. 루트 엔트리(`@0disoft/saylo-vue`)가 함수와 타입 `RichTextRenderers`를 함께 내보내고, 어떤 tag를 어떤 element로 그릴지는 앱이 넘긴 renderers가 정한다.
+`renderRichText` renders the read-only parts returned by `snapshot.tParts(key, args)` as Vue nodes. It is a pure TS function and uses only `h` and `Fragment`, so no SFC compilation or separate subpath is needed. The root entry (`@0disoft/saylo-vue`) exports the function and the `RichTextRenderers` type, and the renderers passed by the app decide which element each tag becomes.
 
 ```ts
 type RichTextRenderers = Readonly<Record<string, (children: VNodeChild[]) => VNodeChild>>;
@@ -139,18 +139,18 @@ type RichTextRenderers = Readonly<Record<string, (children: VNodeChild[]) => VNo
 function renderRichText(parts: readonly RichTextPart[], renderers?: RichTextRenderers): VNodeChild[];
 ```
 
-`renderers`를 주지 않으면 빈 객체로 본다.
+If `renderers` is not given, it is treated as an empty object.
 
-계약은 다음과 같다.
+The contract is as follows.
 
-- text part는 그대로 Vue text가 되고 Vue가 escape한다. helper는 `v-html`이나 raw HTML 문자열을 만들지 않는다.
-- tag part는 그 이름이 `renderers`의 own property이고 값이 함수일 때만 그 함수 결과로 바뀐다. 없거나 함수가 아니면 태그를 만들지 않고 자식만 이어 그린다.
-- 조회는 own property만 본다(`Object.hasOwn`). `constructor`·`toString`처럼 prototype에서 상속된 이름은 매핑으로 쓰지 않고 자식만 그린다.
-- 카탈로그에서 온 이름으로 임의의 DOM 태그, HTML, attribute, URL을 만들지 않는다. 링크와 attribute는 앱이 자기 renderers에 넣은 이름에만 붙인다.
-- 중첩 태그를 지원한다. 안쪽 tag도 같은 규칙으로 매핑한다.
-- 형제 tag는 이름과 등장 순번을 합친 key를 가진 `Fragment`로 그린다(`link:0`, `link:1`). 문구를 편집하거나 literal을 삽입해도 매핑한 컴포넌트 identity와 그 state가 유지된다. 같은 tag 종류끼리 순서를 바꿀 때의 의미적 identity는 보장하지 않는다.
-- renderers는 같은 tag에 같은 element·component 타입을 돌려줘야 한다. 타입이 바뀌면 Vue가 다시 mount해 입력·포커스·state가 사라진다.
-- 파싱 오류는 core `tParts`가 던진다. helper는 유효한 parts만 받는다.
+- Text parts become Vue text as-is, and Vue escapes them. The helper does not use `v-html` or create raw HTML strings.
+- A tag part becomes the result of a function only when its name is an own property of `renderers` and the value is a function. If it is missing or not a function, no tag is created and only the children are rendered in sequence.
+- Lookup checks own properties only (`Object.hasOwn`). Names inherited from the prototype, such as `constructor` and `toString`, are not used for mapping and render only their children.
+- Saylo does not create arbitrary DOM tags, HTML, attributes, or URLs from names that come from the catalog. Links and attributes are added only to names the app puts in its own renderers.
+- Nested tags are supported. Inner tags are mapped by the same rules.
+- Sibling tags render as a `Fragment` with a key that combines the name and occurrence number (`link:0`, `link:1`). Editing copy or inserting literals preserves the identity and state of mapped components. Semantic identity when reordering tags of the same kind is not guaranteed.
+- Renderers must return the same element or component type for the same tag. If the type changes, Vue remounts and input, focus, and state are lost.
+- Parsing errors are thrown by the core `tParts`. The helper accepts only valid parts.
 
 ```ts
 import { defineComponent, h } from 'vue';
@@ -171,10 +171,10 @@ const RichPreview = defineComponent({
 });
 ```
 
-이 helper는 로컬 커밋 `4df90a2`에 있고 npm 게시본에는 없다. 버전 승격과 게시는 보류한다. 로컬 검증에서 패키지 테스트 13개, JS·TS 소비 타입 검사와 패키지 경계 검사, 독립 tarball JS·TS 설치와 concurrent SSR·rich SSR 소비, 데모 template 검사와 production 빌드, HeadlessChrome 155 recovery warm 16개·cold 3개(오류 없음), 워크스페이스 전체 `npm run check` exit 0(297개 테스트)까지 확인했다. 데모 연결은 [Vue 데모](../../examples/vue/README.md)를 따른다.
+This helper is in local commit `4df90a2` and is not in an npm release. Version promotion and publication are on hold. Local verification covered 13 package tests, JS and TS consumer type checks and package boundary checks, independent tarball JS and TS installation with concurrent SSR and rich SSR consumption, demo template checks and a production build, HeadlessChrome 155 recovery with 16 warm and 3 cold cases (no errors), and workspace-wide `npm run check` exiting 0 (297 tests). For demo connection, follow the [Vue demo](../../examples/vue/README.md).
 
-## 구현 범위
+## Implementation scope
 
-브라우저 예제는 [Vue 데모](../../examples/vue/README.md)를 따른다. Nuxt 모듈, 게시본 integrity 인수 검사는 구현하지 않았다. 이 패키지는 게시된 `alpha.4`·`alpha.5` 대상이 아니고 대응하는 릴리스 검증 기록도 없다.
+For a browser example, follow the [Vue demo](../../examples/vue/README.md). A Nuxt module and published integrity acceptance checks are not implemented. This package is not part of the published `alpha.4` or `alpha.5` targets and has no corresponding release verification record.
 
-라이선스는 Apache-2.0이고, 배포 tarball의 `files`에 `LICENSE`와 `NOTICE`를 포함한다.
+Licensed under Apache-2.0, and `files` in the distribution tarball includes `LICENSE` and `NOTICE`.

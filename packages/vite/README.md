@@ -1,39 +1,39 @@
 # @0disoft/saylo-vite
 
-Saylo의 Vite 8 플러그인과 개발 클라이언트다. 카탈로그 파일 변경을 감지해 앱 모듈 교체 없이 화면에 반영한다.
+The Saylo Vite 8 plugin and development client. It detects catalog file changes and applies them to the screen without replacing app modules.
 
-## 상태
+## Status
 
-마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 이 저장소의 workspace에서도 쓸 수 있다.
+The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
 
-lazy 개발 경로는 full present 응답을 compact로 보내고 브라우저에서 기존 카탈로그 형태로 복원한다. 복잡한 ICU AST와 오류 위치를 유지하며 브라우저 ICU 재파싱은 없다. 이 변경은 `0.1.0-alpha.2` 게시본에 포함된다. 범위·검증·성능 측정은 [compact 전송 기록](https://github.com/0disoft/saylo/blob/main/docs/16-compact-catalog-transport.md)을 따른다.
+The lazy development path sends full present responses in a compact form and restores them to the existing catalog shape in the browser. Complex ICU ASTs and error locations are preserved, and there is no re-parsing of ICU in the browser. This change is included in the `0.1.0-alpha.2` release. Scope, verification, and performance measurements are in [compact transport notes](https://github.com/0disoft/saylo/blob/main/docs/16-compact-catalog-transport.md).
 
-## 설치 폴더의 시작 안내
+## Starter guide in the install folder
 
-다음 릴리스의 tarball에는 [문서 목차](docs/README.md), JavaScript/TypeScript·React·Svelte·SvelteKit 시작 안내와 패키지 API 문서를 함께 싣는다. GitHub 로그인 없이 앱의 `node_modules/@0disoft/saylo-vite/docs/`에서 읽는다. 현재 공개 alpha.4에는 이 문서 묶음이 없고, 로컬 빌드·pack으로 준비하는 변경이다.
+The tarball for the next release will include the [documentation index](docs/README.md), the JavaScript/TypeScript, React, Svelte, and SvelteKit getting-started guides, and the package API documentation. They can be read from the app's `node_modules/@0disoft/saylo-vite/docs/` without a GitHub login. The current public alpha.4 does not include this document bundle; it is a change prepared through local build and pack.
 
 ```sh
 node -e "console.log(require('node:fs').readFileSync('node_modules/@0disoft/saylo-vite/docs/README.md', 'utf8'))"
 ```
 
-묶음 안의 링크는 같이 설치한 문서를 가리킨다. `manifest.json`은 원본과 묶음의 SHA-256을 기록하며, 시작 안내의 실행 코드 블록은 원본 그대로다. 포함하지 않은 설계·측정 기록은 제목만 남긴다.
+Links inside the bundle point to the documentation installed alongside it. `manifest.json` records the SHA-256 of the originals and the bundle, and the runnable code blocks in the getting-started guides are identical to the originals. Design and measurement notes that are not included are listed by title only.
 
-## 설치
+## Installation
 
-앱 런타임에는 `@0disoft/saylo-core`를 설치하고, 플러그인과 dev client는 개발 의존성으로 넣는다. `vite`는 peer 의존성이며 현재 조건은 Vite 8이다.
+Install `@0disoft/saylo-core` as an app runtime dependency, and the plugin and dev client as development dependencies. `vite` is a peer dependency and the current requirement is Vite 8.
 
-운영 SSR 빌드가 `@0disoft/saylo-vite/client`를 앱 번들에 포함하도록, 플러그인은 `@0disoft/saylo-vite` 패키지를 번들 대상(`ssr.noExternal`)으로 잡는다. 그래서 이 패키지를 운영 런타임 의존성으로 설치할 필요가 없다. 이 처리는 `0.1.0-alpha.4` 게시본에 포함된다.
+So that production SSR builds include `@0disoft/saylo-vite/client` in the app bundle, the plugin adds the `@0disoft/saylo-vite` package to the bundle target (`ssr.noExternal`). You therefore do not need to install this package as a production runtime dependency. This handling is included in the `0.1.0-alpha.4` release.
 
 ```sh
 npm install @0disoft/saylo-core@alpha
 npm install -D @0disoft/saylo-vite@alpha vite@8
 ```
 
-Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `@alpha`를 지정한다.
+The `latest` tag of Saylo packages still points to a registration placeholder, so specify `@alpha`.
 
-## 설정
+## Configuration
 
-현재 미게시 소스는 `loadProjectConfig()`로 CLI와 같은 JSON 설정을 읽는다. 파일 경로는 설정 파일 위치를 기준으로 해석하며 Vite root가 달라도 유지된다. 기준 언어·카탈로그 경로·rich 태그 정책을 한 파일에 두고 `saylo-typegen --config`와 `saylo check --config`에서도 사용할 수 있다. 공통 설정과 검수 비교 기록의 사용법은 [typegen 사용 안내](../typegen/README.md)에 있다.
+The current unpublished source reads CLI-compatible JSON configuration with `loadProjectConfig()`. File paths are resolved relative to the configuration file's location, so they stay valid when the Vite root differs. The base locale, catalog paths, and rich tag policy can live in one file and are also used by `saylo-typegen --config` and `saylo check --config`. Usage for shared configuration and the review comparison record is in the [typegen guide](../typegen/README.md).
 
 ```js
 import { fileURLToPath } from 'node:url';
@@ -44,7 +44,7 @@ const project = loadProjectConfig(fileURLToPath(new URL('./saylo.config.json', i
 const plugins = [saylo(project)];
 ```
 
-기존 객체 설정도 그대로 지원한다.
+The existing object configuration is also supported.
 
 ```js
 // vite.config.mjs
@@ -62,17 +62,17 @@ export default defineConfig({
 });
 ```
 
-`astRuntime`(기본 `true`)은 production build에서만 동작한다. Saylo `core/dist/formatters.js`가 `intl-messageformat`을 import할 때 그 모듈을 별도 virtual 모듈로 해석하고 의존성을 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾼다. 앱 전체 alias는 하지 않으며 외부 `IntlMessageFormat(string)`과 SSR external 의존성은 그대로다. 앱이 직접 `parseCatalog`를 호출하면 parser가 포함되는 것이 정상이고, `false`로 이 경로를 끌 수 있다. 이 옵션은 `0.1.0-alpha.2` 게시본에 포함된다.
+`astRuntime` (default `true`) applies only during production builds. When Saylo `core/dist/formatters.js` imports `intl-messageformat`, it resolves that module as a separate virtual module and replaces the dependency with `@formatjs/icu-messageformat-parser/no-parser.js`. It does not alias the whole app, and an external `IntlMessageFormat(string)` and SSR external dependencies are unchanged. If the app calls `parseCatalog` directly, including the parser is expected, and setting the option to `false` turns this path off. This option is included in the `0.1.0-alpha.2` release.
 
-카탈로그 파일 구조는 `locales/<locale>/<namespace>.json`이다. 예를 들어 `locales/ko/demo.json`, `locales/en/demo.json`이다.
+The catalog file layout is `locales/<locale>/<namespace>.json`. For example, `locales/ko/demo.json` and `locales/en/demo.json`.
 
-미게시 소스의 `richText: { demo: { terms: ['link', 'strong'] } }` 옵션은 namespace·메시지별 허용 태그를 지정한다. 지정한 메시지는 시작·운영 빌드·개발 중 수정 때 모든 ICU 분기의 태그 균형과 허용 목록을 검사한다. 잘못된 편집은 `INVALID_RICH_TEXT`로 진단하고 개발 서버는 마지막 정상 카탈로그를 유지한다. 번역의 태그 순서·중첩·생략은 허용하며, 지정하지 않은 일반 문자열은 기존 동작을 유지한다. 이 계약은 lazy 전송과 SSR boot 데이터에도 포함된다.
+The `richText: { demo: { terms: ['link', 'strong'] } }` option in the unpublished source specifies the allowed tags for each namespace and message. For the specified messages, it checks tag balance in every ICU branch and the allowlist at startup, in production builds, and on edits during development. Invalid edits are diagnosed as `INVALID_RICH_TEXT`, and the development server keeps the last valid catalog. Tag order, nesting, and omission in translations are allowed, and ordinary strings that are not specified keep the existing behavior. This contract also applies to lazy transport and SSR boot data.
 
-운영 `vite build --watch`는 기본·수동·자동 `includeKeys` 모드에서 카탈로그 변경을 감시하고 매 재빌드마다 다시 검증한다. 번역 문구·lazy chunk·생성 타입을 새 디스크 내용으로 갱신한다. 이 수정도 현재 checkout에만 있다.
+Production `vite build --watch` watches catalog changes in the default, manual, and automatic `includeKeys` modes and revalidates on every rebuild. It updates translation copy, lazy chunks, and generated types from the new disk contents. This fix also exists only in the current checkout.
 
-## 선택 빌드(includeKeys)
+## Selective builds (includeKeys)
 
-`includeKeys`는 production에서 내보낼 메시지를 정한다. 기존처럼 정확한 `namespace:messageId` 배열을 넘기거나, `{ from, dynamicKeys? }` 객체로 소스에서 키를 찾게 할 수 있다. 이 기능은 게시본 `0.1.0-alpha.4`에는 없고 현재 로컬 checkout에만 있다.
+`includeKeys` decides which messages are emitted in production. You can pass an exact `namespace:messageId` array as before, or use a `{ from, dynamicKeys? }` object to have the keys found in source. This feature is not in the `0.1.0-alpha.4` release and exists only in the current local checkout.
 
 ```js
 // 수동 목록
@@ -86,23 +86,23 @@ saylo({
 });
 ```
 
-`from`은 Vite root 기준 파일·디렉터리다. 디렉터리는 재귀 스캔하고, `.js`·`.ts`·`.jsx`·`.tsx`·`.vue`·`.svelte` 소스를 Babel로 정적 분석한다. 실행은 하지 않으며 `<script>`와 template 표현식의 `t`·`tParts` 호출, 가져온 별칭, 구조 분해 별칭, template prefix/suffix에 가능한 전체 키를 보존한다. 일치하는 문자열은 여분 키를 남겨도 제거하지 않는다. 해결할 수 없는 동적 호출은 `dynamicKeys`가 없으면 빌드를 실패시킨다. symlink, Vite root 밖 경로, 파싱 오류도 거부한다. 외부 `src`를 쓰는 Vue script/template는 자동 분석을 거부하므로 수동 키 목록을 사용한다.
+`from` is a file or directory relative to the Vite root. Directories are scanned recursively, and `.js`, `.ts`, `.jsx`, `.tsx`, `.vue`, and `.svelte` sources are statically analyzed with Babel. Nothing is executed. The analysis preserves `t` and `tParts` calls in `<script>` and template expressions, imported aliases, destructuring aliases, and every key possible from template prefixes and suffixes. Matching strings are not removed even if extra keys remain. Dynamic calls that cannot be resolved fail the build when `dynamicKeys` is absent. Symlinks, paths outside the Vite root, and parse errors are also rejected. Vue script and template code that uses an external `src` refuses automatic analysis, so use a manual key list.
 
-타입 단언·non-null·`satisfies`로 감싼 번역 함수, 직접 호출하는 `bind` 결과, `call`·`apply`, 함수 인자와 중첩 구조 분해의 `t`·`tParts`도 추적한다. `import * as messages`의 직접 멤버 접근과 구조 분해는 분석 범위에 포함된 named export 별칭을 따른다. 번역 함수를 컴포넌트 prop·생성자 인자·default export로 넘기거나 조건·기본값으로 선택하면 `dynamicKeys`로 필요한 키를 명시해야 한다.
+The analysis also tracks translation functions wrapped in type assertions, non-null assertions, or `satisfies`, directly invoked results of `bind`, `call`, and `apply`, and `t` and `tParts` in function arguments and nested destructuring. Direct member access and destructuring of `import * as messages` follow named export aliases that are within the analysis scope. If you pass a translation function as a component prop, constructor argument, or default export, or choose one through a condition or default value, you must list the required keys in `dynamicKeys`.
 
-`from`에는 번역기를 정의하고 다시 내보내는 파일까지 포함한다. namespace 객체의 단순 변수 별칭과 분석 범위 안의 상대 경로 named export를 연결한다. 번역 export가 확인된 namespace 객체의 복제·외부 전달·rest 구조 분해는 `dynamicKeys` 또는 수동 `includeKeys` 목록이 필요하다. 번역과 무관한 외부 패키지 namespace나 일반 함수만 내보내는 모듈은 번역기로 세지 않으며 이 제한도 적용하지 않는다.
+`from` should include files that define and re-export translators as well. Simple variable aliases of namespace objects and named exports through relative paths within the analysis scope are connected. Cloning a translation export from a confirmed namespace object, passing it outside, or destructuring it with rest requires `dynamicKeys` or a manual `includeKeys` list. Namespaces from unrelated external packages and modules that export only ordinary functions are not counted as translators, and this restriction does not apply to them.
 
-`from` 밖의 모듈을 자동으로 편입하지 않는다. 현재 로컬 checkout의 production `buildStart`에서는 설정한 Vite `resolve.alias`(문자열·정규식)를 Vite plugin resolver로 해석해 named import/reexport와 namespace import를 연결한다. 이때 `includeKeys.from`으로 이미 스캔한 파일만 참여하며, 해석을 따라 스캔 범위를 넓히거나 Vite root 밖으로 나가지 않는다. 운영 `build --watch` 재빌드에서도 다시 해석한다. 해석할 수 없거나 external로 남는 별칭, 스캔 밖 파일을 가리키는 별칭은 importer와 문제가 된 경로·대상을 담은 진단으로 빌드를 멈춘다. 진단은 `from`·alias 수정 또는 명시적 `includeKeys` 목록 사용을 안내한다. 공식 `@0disoft/saylo-*` 런타임과 `virtual:saylo` 모듈은 기존 번역기 처리를 유지하고, 그 밖의 외부 패키지의 사용자 정의 번역 export는 따라가지 않는다. 이 지원은 아직 게시하지 않은 로컬 변경이며 `0.1.0-alpha.4`에는 없다.
+Modules outside `from` are not pulled in automatically. In the current local checkout's production `buildStart`, configured Vite `resolve.alias` entries (strings and regular expressions) are resolved through the Vite plugin resolver to connect named imports and re-exports and namespace imports. Only files already scanned by `includeKeys.from` take part; following a resolution does not widen the scan scope or leave the Vite root. It resolves again on production `build --watch` rebuilds. Aliases that cannot be resolved or remain external, and aliases that point outside the scanned files, stop the build with a diagnostic that names the importer and the path or target involved. The diagnostic suggests fixing `from` or the alias, or using an explicit `includeKeys` list. Official `@0disoft/saylo-*` runtimes and `virtual:saylo` modules keep the existing translator handling, and custom translation exports from other external packages are not followed. This support is a local change that has not been published and is not in `0.1.0-alpha.4`.
 
-Vue·Svelte의 실제 HTML 주석과 `<script>` 본문은 구분해서 읽는다. 템플릿 표현식이나 속성 안에 `<!--` 같은 주석 표식 또는 script 표식이 들어 있으면 임의로 지우지 않고 자동 분석을 중단한다. 이 구문을 사용한 파일은 수동 `includeKeys` 목록으로 처리한다.
+In Vue and Svelte, real HTML comments and the `<script>` body are read separately. If a template expression or attribute contains a comment marker such as `<!--` or a script marker, the analyzer stops instead of deleting anything arbitrarily. Files that use this syntax must be handled with a manual `includeKeys` list.
 
-개발 서버와 hot 갱신은 이 목록으로 거르지 않는다. production eager `virtual:saylo`, lazy boot·chunk, `virtual:saylo/server`(SSR)가 같은 선택을 쓴다. `typegen`이 만드는 `generated.d.ts`는 원본 base schema 전체를 유지한다. 키 분석용 Babel parser는 dev plugin의 Node 쪽 의존성이며 브라우저 번들에 싣지 않는다.
+The development server and hot updates are not filtered by this list. Production eager `virtual:saylo`, lazy boot and chunks, and `virtual:saylo/server` (SSR) all use the same selection. `generated.d.ts` produced by `typegen` keeps the whole original base schema. The Babel parser used for key analysis is a Node-side dependency of the dev plugin and is not included in the browser bundle.
 
-`[]`는 로케일·namespace 목록과 missing 메타데이터를 유지한 채 메시지를 0개로 만든다. 목록은 plugin 생성 시 복사·동결한다. 깨진 번역이나 `requireCompleteTranslations` 실패는 pruning보다 먼저 검사해 숨길 수 없다. 동적으로 정해지는 키는 `dynamicKeys`에 넣거나 옵션을 비운다. 자동 tree-shaking이나 성능 이득을 보장하지는 않는다.
+`[]` keeps the locale and namespace lists and missing metadata while reducing messages to zero. The list is copied and frozen when the plugin is created. Broken translations or `requireCompleteTranslations` failures are checked before pruning, so they cannot be hidden. Put dynamically determined keys in `dynamicKeys` or leave the option empty. No automatic tree-shaking or performance gain is guaranteed.
 
-## 빌드 완역 검사
+## Complete translation check for builds
 
-`requireCompleteTranslations`(기본 `false`)를 켜면 Vite 운영 빌드에서 번역 키와 namespace 누락을 검사한다. `0.1.0-alpha.3`부터 제공하며 기존 `0.1.0-alpha.2` 게시본에는 포함되지 않는다.
+Enabling `requireCompleteTranslations` (default `false`) checks for missing translation keys and namespaces during Vite production builds. It is available from `0.1.0-alpha.3` and is not included in the existing `0.1.0-alpha.2` release.
 
 ```js
 import saylo from '@0disoft/saylo-vite';
@@ -110,13 +110,13 @@ import saylo from '@0disoft/saylo-vite';
 saylo({ localesDir: 'locales', baseLocale: 'ko', requireCompleteTranslations: true });
 ```
 
-숨김 폴더를 제외한 로케일 폴더(빈 폴더 포함)와 `initialLocale`를 대상으로, 모든 기준 namespace·키의 존재를 확인한다. `initialNamespaces`로 초기 로딩 범위를 줄여도 검사 범위는 줄지 않는다. 폴더와 `initialLocale` 어디에도 없는 언어는 검사 대상이 아니다. 빈 번역 문자열은 존재하는 키로 인정하고 번역 문구의 언어나 인자 생략 여부는 완역 조건에 넣지 않는다. 기존 인자 타입·스키마 검사는 그대로 수행한다.
+For every locale folder except hidden folders (including empty folders) and for `initialLocale`, it checks that every base namespace and key exists. Reducing the initial loading scope with `initialNamespaces` does not reduce the check scope. Languages that are in neither a folder nor `initialLocale` are not checked. An empty translation string counts as an existing key, and the language of the translation copy or omission of arguments is not part of the completeness condition. The existing argument type and schema checks still run.
 
-누락은 `CatalogError.diagnostics`의 `MISSING_MESSAGE`·`MISSING_NAMESPACE`로 모아 빌드를 실패시킨다. 진단에 로케일·namespace·대상 파일과 누락 키를 넣고, 없는 파일은 만들어야 할 상대 경로로 안내한다. 생성 타입 파일을 갱신하기 전에 검사하므로 실패 시 기존 파일을 유지한다. 개발 서버와 라이브 수정은 옵션을 켜도 기존 부분 번역·fallback 동작을 유지한다. 상세 범위와 검증은 [완역 검사 기록](https://github.com/0disoft/saylo/blob/main/docs/42-complete-translations.md)에 있다.
+Missing entries are collected as `MISSING_MESSAGE` and `MISSING_NAMESPACE` in `CatalogError.diagnostics` and fail the build. The diagnostics include the locale, namespace, target file, and missing keys, and give the relative path to create for a missing file. The check runs before the generated type file is updated, so the existing file is kept on failure. The development server and live edits keep the existing partial translation and fallback behavior even with the option enabled. Detailed scope and verification are in [complete translation notes](https://github.com/0disoft/saylo/blob/main/docs/42-complete-translations.md).
 
-## 검수 승인 강제 (미게시)
+## Requiring review approval (unpublished)
 
-현재 checkout에는 Vite 옵션과 공통 JSON `SayloProjectConfig`의 `requireReviewedTranslations`(기본 `false`)가 있다. 켜면 `reviews` 경로가 필수이고, Vite 옵션에 직접 준 상대 경로는 Vite root, `loadProjectConfig()`가 읽은 JSON의 경로는 그 JSON 파일 폴더를 기준으로 해석한다.
+The current checkout has `requireReviewedTranslations` (default `false`) in the Vite options and in the shared JSON `SayloProjectConfig`. When enabled, the `reviews` path is required; a relative path given directly in the Vite options is resolved from the Vite root, and a path read from JSON by `loadProjectConfig()` is resolved from the JSON file's folder.
 
 ```js
 saylo({
@@ -127,13 +127,13 @@ saylo({
 });
 ```
 
-운영 빌드에서만 승인 파일을 읽고 `SOURCE_CHANGED`·`TRANSLATION_CHANGED`·`REVIEW_REQUIRED` 상태, 승인 파일 누락·손상을 빌드 실패로 처리한다. 이 옵션을 켜면 완역 검사도 함께 적용하며, `initialNamespaces`나 `includeKeys`와 무관하게 모든 로케일의 기준 키를 검사한다. 번역을 삭제해 승인을 우회할 수 없고, 이 검사는 타입 생성과 키 pruning 전에 끝난다. `vite build --watch`는 승인 파일 변경도 감지해 다시 검사한다.
+It reads the approval file only in production builds and treats `SOURCE_CHANGED`, `TRANSLATION_CHANGED`, and `REVIEW_REQUIRED` states and a missing or corrupted approval file as build failures. Enabling this option also applies the complete translation check and checks base keys in every locale regardless of `initialNamespaces` or `includeKeys`. Deleting a translation cannot bypass approval, and this check finishes before type generation and key pruning. `vite build --watch` also detects approval file changes and checks again.
 
-개발 서버는 승인 파일을 읽지 않고 기존 partial 번역·fallback 동작을 유지한다. 다만 옵션 설정 검사는 개발 중에도 하므로 `requireReviewedTranslations: true`에 `reviews`가 없으면 dev도 거부한다.
+The development server does not read the approval file and keeps the existing partial translation and fallback behavior. However, option validation also runs during development, so `requireReviewedTranslations: true` without `reviews` is rejected in dev as well.
 
-## 지연 로딩 클라이언트
+## Lazy-loading client
 
-`virtual:saylo/lazy`가 초기 pair와 `catalogSource`를 제공한다. 앱은 코어 `createI18n`으로 instance를 만들고 `connectDev`로 개발 서버에 연결한다. `typegen.outFile`은 Vite root 기준이라 아래 `src/i18n.ts`에서는 `../generated.js`를 import한다.
+`virtual:saylo/lazy` provides the initial pairs and the `catalogSource`. The app creates an instance with the core `createI18n` and connects to the development server with `connectDev`. `typegen.outFile` is relative to the Vite root, so `src/i18n.ts` below imports `../generated.js`.
 
 ```ts
 // src/i18n.ts
@@ -149,17 +149,17 @@ export const disconnect = connectDev(i18n, { catalogSource });
 // 정리: disconnect(); i18n.dispose();
 ```
 
-개발 source는 push를 켠 상태로 생성된다. 서버는 `saylo:catalog-scope`로 등록한 캐시 pair 중 바뀐 것만 `saylo:catalog-push`로 보내고, 클라이언트는 revision과 payload를 검증해 manifest와 캐시를 한 번에 적용한다. 수동 `createDevCatalogSource`는 `{ push: true }`로 선택하며 기본값은 `false`다. 불량·gap은 기존 snapshot과 pair 조회로 복구하고, `stop`·`dispose`는 owner 구독만 해제한다. 스스로 만든 source를 쓸 때는 `createDevCatalogSource(manifest, initialCatalogs, { hot, push: true })`로 넘긴다.
+The development source is created with push enabled. The server sends only changed pairs among the cached pairs registered with `saylo:catalog-scope` through `saylo:catalog-push`, and the client validates the revision and payload and applies the manifest and cache in one step. Manual `createDevCatalogSource` opts in with `{ push: true }`; the default is `false`. Bad data and gaps are recovered through the existing snapshot and pair lookups, and `stop` and `dispose` release only the owner's subscription. To use a source you create yourself, pass it as `createDevCatalogSource(manifest, initialCatalogs, { hot, push: true })`.
 
-TS/checkJs 소비자는 `compilerOptions.types`에 `["vite/client", "@0disoft/saylo-vite/virtual"]`을 넣는다.
+TS and checkJs consumers add `["vite/client", "@0disoft/saylo-vite/virtual"]` to `compilerOptions.types`.
 
-`virtual:saylo`는 전체 카탈로그를 한 번에 싣는 eager 경로다. eager store는 `virtual:saylo`의 `initialCatalogs`·`baseLocale`·`initialLocale`·`timeZone`으로 만든다.
+`virtual:saylo` is the eager path that loads the whole catalog at once. Create the eager store from `initialCatalogs`, `baseLocale`, `initialLocale`, and `timeZone` from `virtual:saylo`.
 
-## 동기화 상태
+## Synchronization state
 
-`connectDev`는 eager·lazy 두 경로 모두 `onSyncState(state)`로 개발 서버 handshake 상태를 알린다. `state`는 `{ status, attempt, maxAttempts: 3 }`인 frozen 객체이고 `status`는 `idle`·`connecting`·`retrying`·`connected`·`disconnected`·`failed`·`stopped` 중 하나다. `attempt`는 `connecting`에서 1, `retrying`에서 2·3, `failed`에서 마지막 시도값이고 나머지 상태는 0이다.
+`connectDev` reports the development server handshake state through `onSyncState(state)` on both the eager and lazy paths. `state` is a frozen object `{ status, attempt, maxAttempts: 3 }`, and `status` is one of `idle`, `connecting`, `retrying`, `connected`, `disconnected`, `failed`, or `stopped`. `attempt` is 1 in `connecting`, 2 or 3 in `retrying`, and the last attempt value in `failed`; it is 0 in the other states.
 
-미게시 소스의 eager `connectDev`와 `createDevCatalogSource`는 선택적 `runtime: { schedule, createId }`를 받는다. `schedule(milliseconds, callback)`은 callback을 나중에 실행하고 idempotent 취소 함수를 반환해야 하며, `createId()`는 연결마다 고유한 문자열을 반환해야 한다. 생략하면 기본 타이머와 암호학적 난수를 사용한다. `requestTimeoutMs`의 양수 소수는 코어와 같이 올림한다. lazy bridge의 타이머는 `createDevCatalogSource`에 설정한다.
+In the unpublished source, eager `connectDev` and `createDevCatalogSource` accept an optional `runtime: { schedule, createId }`. `schedule(milliseconds, callback)` must run the callback later and return an idempotent cancel function, and `createId()` must return a unique string per connection. When omitted, the default timer and cryptographically random values are used. Positive fractional `requestTimeoutMs` values are rounded up, as in core. The lazy bridge's timer is configured on `createDevCatalogSource`.
 
 ```ts
 connectDev(i18n, {
@@ -168,44 +168,44 @@ connectDev(i18n, {
 });
 ```
 
-이 상태는 snapshot·manifest handshake의 결과이지 개별 lazy 카탈로그 로딩이나 화면 렌더 성공 여부가 아니다. 로케일 파일 진단은 `onDiagnostic`이 계속 맡는다. lazy 경로에서 `DevCatalogSource`의 `getSyncState`·`subscribeSyncState`는 선택 메서드라서 이 API 이전에 만든 외부 source와 타입 호환이 유지된다. production에는 hot context가 없으므로 eager `connectDev`는 noop을 돌려주고 상태 콜백을 부르지 않는다. 재시도 정책은 그대로이고 요청당 기본 타임아웃은 5000ms다.
+This state reflects the snapshot and manifest handshake, not the loading of individual lazy catalogs or whether a screen rendered successfully. `onDiagnostic` continues to handle locale file diagnostics. On the lazy path, `getSyncState` and `subscribeSyncState` on `DevCatalogSource` are optional methods, so type compatibility with external sources created before this API is preserved. Production has no hot context, so eager `connectDev` returns a noop and does not call the state callback. The retry policy is unchanged, and the default per-request timeout is 5000ms.
 
-이 API는 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에서 제공한다. 현재 npm 게시본 `0.1.0-alpha.4`에는 없고 후보는 아직 게시하지 않았다. 계약 상세는 [개발 동기화 상태](https://github.com/0disoft/saylo/blob/main/docs/dev-sync-state.md)에 있다.
+This API is provided in the current checkout and the `0.1.0-alpha.5` candidate tarball. It is not in the current npm release `0.1.0-alpha.4`, and the candidate has not been published yet. The contract is described in [development sync state](https://github.com/0disoft/saylo/blob/main/docs/dev-sync-state.md).
 
-## 동작 범위
+## Behavior scope
 
-현재 checkout에서는 `onDiagnostic`의 동기 예외가 번역 갱신·binding이나 다른 진단 구독자를 중단하지 않는다. `DevCatalogSource.subscribeManifest`의 동기 예외는 `observer`로 보고하고, 정상 manifest 수락·다른 구독자 갱신·대기 카탈로그 요청을 유지한다. lazy bridge는 stop 뒤 예약된 진단도 무시한다. 진단 콜백 자신의 오류는 같은 콜백으로 다시 보고하지 않으며, async 콜백의 rejected Promise는 소비자가 처리한다. 이 격리는 게시본 alpha.4 이후 변경으로 최종 후보 검증 대상이다.
+In the current checkout, a synchronous exception from `onDiagnostic` does not stop translation updates or bindings or other diagnostic subscribers. A synchronous exception from `DevCatalogSource.subscribeManifest` is reported to `observer`, and normal manifest acceptance, updates to other subscribers, and pending catalog requests continue. The lazy bridge also ignores diagnostics scheduled after stop. Errors from a diagnostic callback itself are not reported back through the same callback, and the consumer handles a rejected Promise from an async callback. This isolation is a change after the alpha.4 release and is subject to final candidate verification.
 
-문의용 자료는 `createSupportRecorder()`의 `onDiagnostic`·`onSyncState`를 연결하고 `getReport()`를 JSON으로 만들어 검토한다. 보고서는 최근 32개 진단 이벤트의 오류 코드·숫자 위치·연결 상태와 허용한 환경 버전만 담으며, 오류 문구·파일 이름·번역 키·요청 ID는 제외한다. 자동 수집·전송은 하지 않는다. `clear()`로 기록과 상태를 비운다. 이 API도 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에서 제공하며 현재 npm 게시본 alpha.4에는 없다. 자세한 계약과 사용법은 [문의용 진단 자료](https://github.com/0disoft/saylo/blob/main/docs/support-report.md)에 있다.
+For support material, connect `onDiagnostic` and `onSyncState` from `createSupportRecorder()`, produce `getReport()` as JSON, and review it. The report contains only the error code, numeric position, connection state, and allowed environment versions of the most recent 32 diagnostic events; it excludes error text, file names, translation keys, and request IDs. It does not collect or send anything automatically. `clear()` resets the record and state. This API is also provided in the current checkout and the `0.1.0-alpha.5` candidate tarball, and is not in the current npm release alpha.4. The detailed contract and usage are in [support diagnostics](https://github.com/0disoft/saylo/blob/main/docs/support-report.md).
 
-플러그인은 파일을 감시해 정상 카탈로그만 게시하고, 클라이언트는 snapshot을 받아 앱에 전달한다. 기준 schema가 바뀌어 기존 번역이 부적합해지면 plugin이 그 파일의 last-good 번역에서 부적합 메시지만 제거해 게시하고, 빠진 메시지는 기준 로케일 값으로 fallback한다. 잘못된 번역 편집은 그 파일의 last-good을 유지하고 다른 파일 변경은 계속 반영한다. last-good이 없는 새 번역 파일은 게시하지 않고, 파일을 삭제하면 그 last-good도 지운다. 기준이나 번역이 복구되면 자동 재검증해 복원한다. 코어 `createStore`·`replaceCatalogs`는 자동 격리를 하지 않고, startup·build는 전체 카탈로그를 엄격 검증한다. 격리는 이 plugin에서만 한다. production에서는 `astRuntime`이 켜져 있으면 Saylo AST 경계의 parser 런타임이 빠지고, 앱이 직접 `parseCatalog`를 쓰면 parser가 그대로 포함된다. 코어와 store는 DOM을 직접 다루지 않으므로 화면 갱신은 앱이 snapshot을 렌더해 처리한다. Vite는 앱 모듈을 교체하지 않는다.
+The plugin watches files and publishes only valid catalogs, and the client receives snapshots and passes them to the app. If a base schema change makes existing translations invalid, the plugin removes only the invalid messages from that file's last-good translation and publishes it, and missing messages fall back to the base locale values. An invalid translation edit keeps that file's last-good version while changes to other files continue to apply. A new translation file with no last-good version is not published, and deleting the file also removes its last-good version. When the base or a translation is fixed, it is revalidated and restored automatically. Core `createStore` and `replaceCatalogs` do not isolate automatically; startup and builds validate the whole catalog strictly. Isolation happens only in this plugin. In production, `astRuntime` removes the parser runtime at Saylo AST boundaries when enabled, and the parser is still included if the app calls `parseCatalog` directly. Core and the store do not touch the DOM directly, so the app renders snapshots to update the screen. Vite does not replace app modules.
 
-SSR은 `@0disoft/saylo-vite/server`와 `virtual:saylo/server`를 쓴다. 예제는 저장소의 [SSR 예제](https://github.com/0disoft/saylo/tree/main/examples/ssr)에 있다.
+SSR uses `@0disoft/saylo-vite/server` and `virtual:saylo/server`. The example is in the repository's [SSR example](https://github.com/0disoft/saylo/tree/main/examples/ssr).
 
-## 관련 패키지
+## Related packages
 
 - [@0disoft/saylo-core](https://github.com/0disoft/saylo/tree/main/packages/core#readme) — `createI18n`
-- [@0disoft/saylo-react](https://github.com/0disoft/saylo/tree/main/packages/react#readme) — React 바인딩
-- [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme) — dev 타입 생성
+- [@0disoft/saylo-react](https://github.com/0disoft/saylo/tree/main/packages/react#readme) — React bindings
+- [@0disoft/saylo-typegen](https://github.com/0disoft/saylo/tree/main/packages/typegen#readme) — dev type generation
 
-## 문서
+## Documentation
 
-- [운영 빌드와 SSR](https://github.com/0disoft/saylo/blob/main/docs/05-build-and-ssr.md)
-- [갱신 프로토콜](https://github.com/0disoft/saylo/blob/main/docs/08-update-protocol.md)
-- 저장소 [README](https://github.com/0disoft/saylo#readme)
+- [Production builds and SSR](https://github.com/0disoft/saylo/blob/main/docs/05-build-and-ssr.md)
+- [Update protocol](https://github.com/0disoft/saylo/blob/main/docs/08-update-protocol.md)
+- Repository [README](https://github.com/0disoft/saylo#readme)
 
-## 버전
+## Versions
 
-Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환경은 Node 24.18.0이다. TypeScript 7을 기준으로 검증하며 `typescript`를 peer로 강제하지 않는다.
+Supports Node.js 24.x. `engines.node` is `24.x`, and the local verification environment is Node 24.18.0. It is verified against TypeScript 7, and `typescript` is not enforced as a peer.
 
-런타임 target은 ES2022이고 Vite 개발 서버·빌드에서 실행한다. peer 조건은 Vite 8이다.
+The runtime target is ES2022, and it runs in the Vite development server and build. The peer requirement is Vite 8.
 
-## 문의와 보안 제보
+## Questions and security reports
 
-일반 문의·기능 제안·버그는 [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com)으로 보낸다. 패키지·버전, 환경, 기대한 동작과 실제 동작, 합성 데이터로 만든 최소 재현을 적는다. 보안 문제도 같은 이메일에 `Saylo security` 제목으로 비공개 제보한다. 토큰·키·쿠키·실제 사용자 데이터는 보내지 않는다.
+Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-Vite 패키지를 설치했다면 `node_modules/@0disoft/saylo-vite/docs/support.md`와 `security.md`에서 자세한 안내를 읽을 수 있다. 이 안내와 연락처 변경은 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에 포함하며 기존 alpha.4 tarball에는 없다. 후보는 아직 npm에 게시하지 않았다.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
 
-## 라이선스
+## License
 
-Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.
+Apache-2.0. The distribution tarball includes the repository root `LICENSE` and `NOTICE`.

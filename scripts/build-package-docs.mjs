@@ -33,17 +33,17 @@ function rewriteLinks(text, source, target) {
       else if (suffix.startsWith('/blob/main/')) reference = suffix.slice('/blob/main/'.length);
       else if (suffix.startsWith('/tree/main/packages/')) {
         reference = suffix.slice('/tree/main/'.length).replace(/#readme$/, '') + '/README.md';
-      } else return `${label} (저장소 참고 기록)`;
+      } else return `${label} (repository reference)`;
     } else if (/^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith('#')) return original;
     else reference = path.posix.normalize(path.posix.join(path.posix.dirname(source), href));
     const [file, ...fragment] = reference.split('#');
     // The guides' catalog/API pointer follows the shipped implementation README,
     // rather than distributing an early design document containing proposed APIs.
     const mapped = file === 'docs/03-catalog-and-api.md' ? 'api/core.md' : targets.get(file);
-    if (!mapped) return `${label} (별도 참고 기록)`;
+    if (!mapped) return `${label} (separate reference)`;
     const relative = path.posix.relative(path.posix.dirname(target), mapped);
     const anchor = fragment.length ? '#' + fragment.join('#') : '';
-    return `[${file === 'docs/03-catalog-and-api.md' ? '코어 사용 API' : label}](${relative}${anchor})`;
+    return `[${file === 'docs/03-catalog-and-api.md' ? 'Core API' : label}](${relative}${anchor})`;
   }));
 }
 
@@ -75,7 +75,7 @@ async function render() {
     files.set(target, bundled);
     entries.push({ source, target, sourceSha256: hash(input), bundledSha256: hash(bundled) });
   }
-  files.set('README.md', `# Saylo 설치 폴더의 사용 안내\n\n이 문서 묶음은 ${manifest.name} ${manifest.version}의 tarball을 만들 때 포함한다. GitHub 로그인 없이 설치 폴더에서 읽을 수 있다.\n\n## 시작하기\n\n- [JavaScript와 TypeScript](getting-started.md)\n- [React](getting-started-react.md)\n- [Svelte](getting-started-svelte.md)\n- [SvelteKit와 SSR](getting-started-sveltekit.md)\n\n## API와 사용 계약\n\n${['core', 'react', 'svelte', 'typegen', 'vite'].map(id => `- [@0disoft/saylo-${id}](api/${id}.md)`).join('\n')}\n- [개발 연결 상태](dev-sync-state.md)\n- [문의용 진단 자료](support-report.md)\n- [문의와 기능 제안](support.md)\n- [비공개 보안 제보](security.md)\n\n시작 안내는 public npm의 alpha.4로 검증한 예제다. API 문서의 게시 버전·후보 표시를 확인하고 설치 버전과 맞춰 사용한다. 개발 동기화 상태·문의용 진단 API와 이 문서 묶음은 alpha.5 후보 tarball에 포함하며 기존 alpha.4 게시본에는 없다. 이 묶음의 버전은 만들 때의 package.json 값이며 registry 게시 완료를 뜻하지 않는다. 포함하지 않은 설계·측정 기록은 제목만 남겼다. 외부 웹 문서와 fragment 목적지는 이 묶음의 파일 검사 범위 밖이다.\n\nmanifest.json은 LF로 정규화한 원본과 묶음 파일의 SHA-256을 기록한다. 실행 코드 블록은 원본과 같다.\n`);
+  files.set('README.md', `# Saylo documentation in your installation\n\nThis documentation bundle is included when the tarball for ${manifest.name} ${manifest.version} is built. You can read it from the installation directory without signing in to GitHub.\n\n## Getting started\n\n- [JavaScript and TypeScript](getting-started.md)\n- [React](getting-started-react.md)\n- [Svelte](getting-started-svelte.md)\n- [SvelteKit and SSR](getting-started-sveltekit.md)\n\n## APIs and usage contracts\n\n${['core', 'react', 'svelte', 'typegen', 'vite'].map(id => `- [@0disoft/saylo-${id}](api/${id}.md)`).join('\n')}\n- [Development synchronization state](dev-sync-state.md)\n- [Diagnostic reports for support](support-report.md)\n- [Support and feature requests](support.md)\n- [Private security reports](security.md)\n\nThe getting-started examples were verified against alpha.4 on the public npm registry. Check the published-version and candidate labels in the API documentation against your installed version. The development synchronization state API, support diagnostics API, and this documentation bundle are included in alpha.5 candidate tarballs; they are absent from the published alpha.4 packages. The version shown here comes from package.json at build time and does not confirm registry publication. References to design and measurement records that are not bundled retain their titles only. External web documents and fragment targets are outside this bundle's file-link checks.\n\nmanifest.json records SHA-256 hashes of the source and bundled files after normalizing line endings to LF. Runnable code blocks are identical to their sources.\n`);
   files.set('manifest.json', JSON.stringify({ schema: 'saylo.package-docs/v1', package: manifest.name,
     version: manifest.version, textNormalization: 'CRLF to LF', documents: entries }, null, 2) + '\n');
   assertLocalLinks(files);

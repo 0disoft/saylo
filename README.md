@@ -1,43 +1,43 @@
 # Saylo
 
-저장소 밖에서 Vue 앱을 시작하는 [Vue 시작 안내](docs/getting-started-vue.md)를 추가했다. `npm run prepare:starter:vue -- --out-dir <빈 폴더>`로 소스 tarball 네 개와 예제를 내보내고, 해당 폴더에서 설치·실행한다.
+Added a [Vue getting-started guide](docs/getting-started-vue.md) for starting a Vue app outside the repository. `npm run prepare:starter:vue -- --out-dir <empty-directory>` exports four source tarballs and an example, and you install and run them in that folder.
 
-React 19와 Svelte 5의 로컬 스타터도 같은 방식으로 저장소 밖 폴더에 내보낸다. `npm run prepare:starter:react -- --out-dir <빈 폴더>`·`npm run prepare:starter:svelte -- --out-dir <빈 폴더>`로 내보내고, 로컬 검증은 `npm run verify:starter:react:local`·`npm run verify:starter:svelte:local`로 한다. 안내는 [React 로컬 스타터](examples/react-starter/README.md)·[Svelte 로컬 스타터](examples/svelte-starter/README.md)에 있다. 빈 폴더에서 npm 게시본 `alpha`로 시작하는 절차는 [React 시작 안내](docs/getting-started-react.md)·[Svelte 시작 안내](docs/getting-started-svelte.md)에 있다.
+The local starters for React 19 and Svelte 5 are exported to folders outside the repository in the same way. Export them with `npm run prepare:starter:react -- --out-dir <empty-directory>` and `npm run prepare:starter:svelte -- --out-dir <empty-directory>`, and verify locally with `npm run verify:starter:react:local` and `npm run verify:starter:svelte:local`. The guides are in [React local starter](examples/react-starter/README.md) and [Svelte local starter](examples/svelte-starter/README.md). The procedure for starting from the published npm `alpha` in an empty folder is in the [React getting-started guide](docs/getting-started-react.md) and the [Svelte getting-started guide](docs/getting-started-svelte.md).
 
-Vue 3의 로컬 어댑터를 추가했다. `app.use()` 연결·typed context·반응형 snapshot·컴포넌트 구독 정리·요청별 SSR을 제공하며, 아직 private workspace이고 게시 대상에는 포함하지 않는다. API는 [Vue 어댑터](packages/vue/README.md), 번역 저장 중 입력·모달 보존 체험은 [Vue 데모](examples/vue/README.md)를 따른다. `npm run dev:vue`로 실행한다. 서버 HTML을 브라우저에 연결하는 [Vue SSR 데모](examples/vue-ssr/README.md)는 `npm run dev:vue:ssr`로 실행한다.
+Added a local adapter for Vue 3. It provides `app.use()` connection, typed context, reactive snapshots, component subscription cleanup, and per-request SSR; it is still a private workspace package and is not part of the published targets. For the API, see the [Vue adapter](packages/vue/README.md); for preserving input and modals while saving translations, see the [Vue demo](examples/vue/README.md). Run it with `npm run dev:vue`. The [Vue SSR demo](examples/vue-ssr/README.md), which connects server HTML in the browser, runs with `npm run dev:vue:ssr`.
 
-Saylo는 개발 중 번역 문구를 고칠 때 재컴파일을 기다리지 않고 화면에 즉시 반영하는 것을 목표로 하는 i18n(국제화) 라이브러리다. JavaScript와 TypeScript 프로젝트를 함께 지원하고, 개발 서버에서 문구 수정, 로케일 추가, namespace 추가가 입력 폼과 모달 같은 기존 DOM 상태를 유지하며 반영되는 것을 목표로 한다. 상태 보존은 기존 호출부의 스키마를 깨뜨리지 않는 편집에 적용한다. 키 삭제·필수 인자 추가와 Vite 서버 재시작의 범위는 [제품과 범위](docs/01-product-and-scope.md)를 따른다.
+Saylo is an i18n (internationalization) library that aims to show translation copy edits on screen immediately during development without waiting for a recompile. It supports JavaScript and TypeScript projects, and aims to reflect copy edits, locale additions, and namespace additions from the development server while preserving existing DOM state such as input forms and modals. State preservation applies to edits that do not break the schema used by existing call sites. The scope of key deletion, adding required arguments, and restarting the Vite server is covered by [Product and scope](docs/01-product-and-scope.md).
 
-## 현재 상태
+## Current status
 
-- 다섯 패키지를 `0.1.0-alpha.4`·dist-tag `alpha`로 게시했다. 2026-10-11 [CI 릴리스](https://github.com/0disoft/saylo/actions/runs/38088660390)에서 다섯 Trusted Publisher OIDC 인증·229개 테스트·소비 타입 검사와 게시를 통과했다. CI와 registry tarball SHA-512, 게시본 JS/TS·React/Svelte selector SSR 및 SvelteKit 브라우저 검증도 통과했다. 변경·검증은 [릴리스 기록](releases/0.1.0-alpha.4.md), 승인 integrity는 [manifest](releases/0.1.0-alpha.4.json)에 있다. `npm run verify:registry:alpha4`와 `npm run verify:registry:sveltekit:alpha4`로 다시 확인한다.
-- 직전 `0.1.0-alpha.3`의 완역 검사와 게시·소비 검증은 [릴리스 기록](releases/0.1.0-alpha.3.md)에 보존한다. 과거 버전의 승인 manifest와 검증 명령도 유지한다.
-- 직전 `0.1.0-alpha.2` 게시·검증 기록은 [릴리스 기록](releases/0.1.0-alpha.2.md)과 [manifest](releases/0.1.0-alpha.2.json)에 남겨둔다. `npm run verify:registry:alpha2`·`npm run verify:registry:sveltekit`으로 다시 확인하고, `alpha.1` 검증도 유지한다.
-- [SvelteKit 3 예제](examples/sveltekit/README.md)에서 요청별 SSR·boot·hydration, 공통 layout의 페이지 이동, 번역 저장 후 입력·모달 유지와 종료·재진입을 확인했다. 실제 Node 운영 빌드의 SSR·언어 전환도 검증했다. `npm run setup:sveltekit` 후 `npm run dev:sveltekit`으로 실행한다. 예제는 로컬 패키지 복사본을 쓰는 독립 private 앱이며 본체와 공개 패키지 버전은 변경하지 않았다. 상세 범위는 [39](docs/39-sveltekit-example.md)에 있다.
-- `packages/svelte`에 Svelte 5 어댑터를 구현했다. `$i18n` 구독·typed context·snapshot-bound 번역과 JS/TS 소비, SSR·hydration을 검증했고 [Svelte 데모](examples/svelte/README.md)에서 파일 저장·로케일 추가·선택·삭제 후 입력과 모달 유지를 확인했다. `npm run dev:svelte`로 실행한다. 구현 범위는 [38-svelte-adapter.md](docs/38-svelte-adapter.md), 현행 게시 상태는 위 릴리스 기록을 따른다.
-- `packages/core`에 카탈로그 파싱·스키마 검증, 번역기와 불변 store가 있다. 로컬 npm workspace에서 ESM JavaScript와 `.d.ts`를 빌드한다. 공개 패키지 네 개에서 `private`를 떼고 첫 버전 `0.1.0-alpha.1`(dist-tag `alpha`)을 2026-10-06 npm에 게시했다. 루트 workspace package는 `private`를 유지한다.
-- 현재 API는 `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`과 오류 클래스들이다. `packages/vite`는 카탈로그 파일 수정·추가·삭제, eager 연결과 lazy pair 조회·부분 전송, 기준 schema 변경 시 기존 번역의 quarantine을 지원한다. `packages/react`는 eager·lazy instance를 받는 typed context와 snapshot-bound hook을 제공한다. `packages/typegen`은 기준 스키마의 타입 선언을 생성하는 CLI와 worker를 제공한다. vanilla와 React 데모에서 파일 저장 후 폼과 모달을 유지하며 문구와 로케일·namespace 목록을 갱신한다. lazy 운영 경로는 boot pair를 inline으로 싣고 나머지 pair를 정적 chunk loader로 분리한다. SSR boot serializer·요청별 instance·React hydration 어댑터를 구현했고 전체 check와 실제 브라우저 검증을 마쳤다.
-- `@0disoft/saylo-core/runtime` 서브패스 엔트리와 `packages/vite`의 `astRuntime`(기본 `true`, production 한정)으로 Saylo core formatter 경계에서만 parser 런타임을 제거한다. 공개 런타임 엔트리는 `parseCatalog`를 빼고 루트 엔트리는 기존 API를 유지한다. quarantine과 이 parser 제거는 `0.1.0-alpha.2` 게시본에 포함된다.
-- 최신 기능과 패키지 상태는 아래 Vite·React·Svelte·typegen 설명과 [패키지 README](docs/README.md)를 따른다. `includeKeys` 자동 분석(`{ from, dynamicKeys? }`)과 lazy dev push는 로컬 구현이며 게시본 `0.1.0-alpha.4`에는 없다.
-- 최신 대표 로컬 성능 목표는 [75](docs/75-early-disk-rechecks.md)의 조건이다. 수정 반영 p95는 small 49.57ms·large 80.25ms로 100ms 목표 안, 로케일 목록 단발 p95는 small 77.46ms·large 177.83ms로 250ms 목표 안이다. 다른 환경으로 일반화하지 않는다.
-- 과거 성능 실험·측정 chronology와 원시 결과는 [문서 목차](docs/README.md)와 [검증 이력](docs/06-validation-history.md), [live-update benchmark](benchmarks/live-update/README.md)에 있다. `npm run bench:live`로 재측정한다.
+- The five packages are published as `0.1.0-alpha.4` with dist-tag `alpha`. The 2026-10-11 [CI release](https://github.com/0disoft/saylo/actions/runs/38088660390) passed five Trusted Publisher OIDC authentications, 229 tests, consumer type checks, and publication. CI and the registry tarball SHA-512 checks, published JS/TS, React and Svelte selector SSR, and SvelteKit browser verification also passed. Changes and verification are in the [release record](releases/0.1.0-alpha.4.md), and approved integrity is in the [manifest](releases/0.1.0-alpha.4.json). Re-check with `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`.
+- The complete translation check and the publication and consumer verification for the previous `0.1.0-alpha.3` are preserved in the [release record](releases/0.1.0-alpha.3.md). The approval manifests and verification commands for past versions are kept as well.
+- The publication and verification record for the previous `0.1.0-alpha.2` is kept in the [release record](releases/0.1.0-alpha.2.md) and the [manifest](releases/0.1.0-alpha.2.json). Re-check with `npm run verify:registry:alpha2` and `npm run verify:registry:sveltekit`, and the `alpha.1` verification is kept as well.
+- The [SvelteKit 3 example](examples/sveltekit/README.md) verified per-request SSR, boot, hydration, page navigation in a shared layout, preservation of input and modals after saving translations, and exit and re-entry. SSR and language switching in a real Node production build were also verified. Run it with `npm run dev:sveltekit` after `npm run setup:sveltekit`. The example is an independent private app that uses local package copies and did not change the main project or the public package versions. Detailed scope is in [39](docs/39-sveltekit-example.md).
+- Implemented the Svelte 5 adapter in `packages/svelte`. Verified `$i18n` subscription, typed context, snapshot-bound translation, JS/TS consumption, and SSR/hydration, and confirmed in the [Svelte demo](examples/svelte/README.md) that input and modals were preserved after file saves, locale addition, selection, and deletion. Run it with `npm run dev:svelte`. Implementation scope is in [38-svelte-adapter.md](docs/38-svelte-adapter.md), and current publication status follows the release record above.
+- `packages/core` contains catalog parsing and schema validation, a translator, and an immutable store. It builds ESM JavaScript and `.d.ts` files in the local npm workspace. Removed `private` from the four public packages and published the first version `0.1.0-alpha.1` (dist-tag `alpha`) to npm on 2026-10-06. The root workspace package remains `private`.
+- The current API is `parseCatalog`, `createBaseSchema`, `validateTranslation`, `createTranslator`, `createStore`, `createI18n`, and the error classes. `packages/vite` supports modifying, adding, and deleting catalog files, eager connection and lazy pair lookup with partial transport, and quarantine of existing translations when the base schema changes. `packages/react` provides typed context and a snapshot-bound hook that accept eager and lazy instances. `packages/typegen` provides a CLI and worker that generate type declarations from the base schema. In the vanilla and React demos, saving a file preserves the form and modal while updating copy and the locale and namespace lists. The lazy production path inlines boot pairs and splits the remaining pairs into static chunk loaders. Implemented the SSR boot serializer, per-request instance, and React hydration adapter, and completed the full check and real browser verification.
+- The `@0disoft/saylo-core/runtime` subpath entry and `astRuntime` in `packages/vite` (default `true`, production only) remove the parser runtime only at the Saylo core formatter boundary. The public runtime entry omits `parseCatalog`, and the root entry keeps the existing API. Quarantine and this parser removal are included in the `0.1.0-alpha.2` release.
+- For the latest features and package status, follow the Vite, React, Svelte, and typegen sections below and the [package READMEs](docs/README.md). `includeKeys` automatic analysis (`{ from, dynamicKeys? }`) and lazy dev push are local implementations and are not in the `0.1.0-alpha.4` release.
+- The latest representative local performance targets are the conditions in [75](docs/75-early-disk-rechecks.md). The p95 for applying an edit is 49.57ms for small and 80.25ms for large, within the 100ms target; the p95 for a single locale-list request is 77.46ms for small and 177.83ms for large, within the 250ms target. These are not generalized to other environments.
+- Past performance experiments, measurement chronology, and raw results are in the [documentation index](docs/README.md), [validation history](docs/06-validation-history.md), and [live-update benchmark](benchmarks/live-update/README.md). Re-measure with `npm run bench:live`.
 
-## 로컬 실행
+## Running locally
 
-Node.js와 npm으로 저장소 루트에서 실행한다. 지원 버전은 Node 24.x이고 검증 환경은 Node.js 24.18.0, TypeScript 7.0.2다.
+Run from the repository root with Node.js and npm. The supported version is Node 24.x; the verification environment is Node.js 24.18.0 and TypeScript 7.0.2.
 
 ```sh
 npm install
 npm run check
 ```
 
-`check`는 ESM·선언 파일 빌드, 카탈로그 검증 테스트, TS와 checkJs 소비 타입 검사를 수행한다. 빌드만 하려면 `npm run build`, 빌드와 실행 테스트는 `npm test`를 쓴다.
+`check` builds ESM and declaration files, runs catalog validation tests, and checks TS and checkJs consumer types. To build only, use `npm run build`; for build and runtime tests, use `npm test`.
 
-pack 소비 검증은 `npm run verify:pack`으로 돌린다. workspace 패키지를 tarball로 묶어 저장소 밖 임시 디렉터리의 JS·TS 앱에 설치하고, 설치된 `saylo-typegen` 타입 생성, JS checkJs와 TS strict 타입 검사, Node 번역·인자 거부·React SSR, public subpath import, Vite production lazy chunk 빌드를 확인한 뒤 임시 디렉터리를 지운다. peer와 도구는 npm registry에서 설치하므로 네트워크가 필요하다.
+Run pack consumer verification with `npm run verify:pack`. It packs the workspace packages into tarballs, installs them into a JS and TS app in a temporary directory outside the repository, checks type generation with the installed `saylo-typegen`, JS checkJs and TS strict type checking, Node translation, argument rejection, React SSR, public subpath imports, and a Vite production lazy chunk build, and then removes the temporary directory. Peers and tools are installed from the npm registry, so the network is required.
 
-폼 데모는 `npm run dev`로 실행한 뒤 터미널에 표시되는 로컬 주소를 연다. 편집기에서 `examples/vanilla/locales/ko/demo.json` 또는 `en/demo.json`의 문구를 수정하고 저장한다. 입력값·포커스·커서·스크롤과 열린 모달이 유지되는지 확인할 수 있다. JSON이 깨지거나 번역 계약이 어긋나면 마지막 정상 상태와 파일별 진단을 유지한다. `npm run build:demo`는 현재 디스크의 카탈로그를 검증해 데모를 빌드한다.
+Run the form demo with `npm run dev` and open the local address shown in the terminal. Edit and save copy in `examples/vanilla/locales/ko/demo.json` or `en/demo.json` in your editor. You can check that input values, focus, cursor, scroll position, and an open modal are preserved. If JSON breaks or the translation contract is violated, the last valid state and per-file diagnostics are kept. `npm run build:demo` validates the catalogs currently on disk and builds the demo.
 
-선택 빌드는 화면이 쓰는 키만 남겨 `npm run build:demo:selected`(출력 `examples/vanilla/dist-selected/`)로 돌리고, 결과는 `npm run preview:demo:selected`로 확인한다. `includeKeys`는 수동 `string[]` 또는 `{ from: ['src'], dynamicKeys?: ['demo:key'] }` 자동 분석을 받는다. 자동 분석은 JS·TS·JSX·TSX·Vue·Svelte 소스를 실행하지 않고 정적으로 읽으며, 해결 불가 동적 호출은 `dynamicKeys`가 없으면 빌드를 실패시킨다.
+Selective builds keep only the keys the screen uses. Run `npm run build:demo:selected` (output `examples/vanilla/dist-selected/`) and check the result with `npm run preview:demo:selected`. `includeKeys` accepts a manual `string[]` or automatic analysis with `{ from: ['src'], dynamicKeys?: ['demo:key'] }`. Automatic analysis reads JS, TS, JSX, TSX, Vue, and Svelte source statically without executing it, and an unresolvable dynamic call fails the build when `dynamicKeys` is absent.
 
 ```js
 // vite.config.mjs
@@ -48,15 +48,15 @@ saylo({
 });
 ```
 
-Vite 설정에는 `saylo({ localesDir: 'locales', baseLocale: 'ko' })` 플러그인을 추가한다. 파일 구조는 `<localesDir>/<locale>/<namespace>.json`이다. 앱은 `virtual:saylo`의 `initialCatalogs`, `baseLocale`, `initialLocale`, `timeZone`으로 store를 만들고, `@0disoft/saylo-vite/client`의 `connectDev(store, { onDiagnostic })`으로 개발 연결을 붙인다. 반환된 해제 함수로 연결을 끊고 다시 연결할 수 있다. `store.dispose()`와 Vite dispose·prune도 연결을 정리한다. TS/checkJs 소비자는 `compilerOptions.types`에 `@0disoft/saylo-vite/virtual`을 포함한다.
+Add the `saylo({ localesDir: 'locales', baseLocale: 'ko' })` plugin to the Vite configuration. The file layout is `<localesDir>/<locale>/<namespace>.json`. The app creates a store from `initialCatalogs`, `baseLocale`, `initialLocale`, and `timeZone` from `virtual:saylo`, and attaches the development connection with `connectDev(store, { onDiagnostic })` from `@0disoft/saylo-vite/client`. The returned release function disconnects and can reconnect. `store.dispose()` and Vite dispose and prune also clean up the connection. TS and checkJs consumers include `@0disoft/saylo-vite/virtual` in `compilerOptions.types`.
 
-개발 전송은 eager와 lazy 경로를 함께 지원한다. `virtual:saylo`는 기존 전체 registry를 제공하며 eager 갱신은 그 연결을 요청한 Vite client에만 보낸다. `virtual:saylo/lazy`는 초기 기준·대상 pair만 싣고, 이후에는 문구 없는 manifest를 받아 변경된 loaded pair만 조회한다. 매니페스트를 적용하면 현재 원하는 범위를 다시 조회하며, 직전에 받은 pair 버전이 서버 기록과 맞으면 그 버전을 기준으로 바뀐 메시지 delta를 받고, 그 외에는 전체 present/missing 응답을 받는다. delta는 메시지 단위 upsert·remove·위치 갱신이고, 클라이언트는 요청마다 기준을 고정해 여러 instance의 응답 순서와 무관하게 한 번에 게시한다. 위치가 일괄로 이동하면 목록 대신 shift 하나로 압축할 수 있다. 아직 캐시하지 않은 pair는 AST를 받지 않고 manifest의 version 갱신만 추적한다. 캐시한 비활성 locale pair가 바뀌어도 UI snapshot은 바꾸지 않는다. 새 namespace는 범용 조회로 로드한다. 처음 연결, revision gap, 새 세션과 재연결은 요청 ID·generation을 가진 manifest handshake로 복구한다. 늦은 pair 응답은 현재 session·version·schema로 판정한다. `virtual:saylo/lazy` 개발 source는 push를 켜서 `saylo:catalog-scope`로 캐시 pair를 등록하고, 서버가 바뀐 pair만 `saylo:catalog-push`로 보낸다. 클라이언트는 payload·revision을 확인하고 manifest와 캐시를 한 번에 적용한다. 라이브 갱신은 앱 모듈을 교체하지 않는다. Vite 서버 재시작은 페이지를 다시 로드할 수 있다.
+Development transport supports both eager and lazy paths. `virtual:saylo` provides the existing full registry, and eager updates go only to the Vite client that requested that connection. `virtual:saylo/lazy` loads only the initial base and target pairs, then receives manifests without copy and looks up only the changed loaded pairs. Applying a manifest re-queries the currently desired scope; if the previously received pair version matches the server record, it receives a delta of changed messages based on that version, and otherwise it receives a full present/missing response. A delta is a message-level upsert, removal, or position update, and the client fixes the baseline per request so it publishes once regardless of the response order across multiple instances. When positions move as a group, they can be compressed into a single shift instead of a list. Pairs not yet cached do not receive an AST and only track the version update in the manifest. Changes to a cached inactive locale pair do not change the UI snapshot. New namespaces are loaded through a general lookup. The first connection, revision gaps, new sessions, and reconnections recover through a manifest handshake with a request ID and generation. Late pair responses are judged against the current session, version, and schema. The `virtual:saylo/lazy` development source enables push, registers cached pairs with `saylo:catalog-scope`, and the server sends only changed pairs with `saylo:catalog-push`. The client validates the payload and revision and applies the manifest and cache in one step. Live updates do not replace app modules. Restarting the Vite server can reload the page.
 
-일반 수정 이벤트는 다음 turn에 합쳐 처리하고, 읽을 때 최종 파일 내용을 다시 확인한다. 감시 이벤트의 add/unlink 라벨을 그대로 믿지 않는다. 이전 상태가 없는 새 경로 추가는 다음 turn에 바로 읽는다. 기존 경로의 add/unlink처럼 디스크 안정화가 필요한 이벤트는 40ms quiet window로 묶고 이벤트가 이어지면 최대 200ms 뒤 읽기를 시작한다. Vite 감시가 짧은 throttle 창에서 삼킨 두 번째 저장은 10/30/60ms 디스크 재확인으로 잡는다(제품 `packages/vite/src/disk-rechecks.ts`). 임시 파일 교체 저장은 최종 경로의 상태로 판단한다. 현재 로케일의 모든 카탈로그를 삭제하면 기준 언어로 전환한다. 기준 namespace 삭제는 목록에서 제거하고 남은 번역 파일은 기준 namespace가 복원될 때 다시 검증한다. 운영 빌드는 기준 없는 번역 파일을 엄격히 거부하므로 namespace를 제거할 때 번역 파일도 함께 정리한다. 기준 로케일의 모든 카탈로그 삭제는 거부하고 마지막 정상 상태를 유지한다. 새 번역 파일이 기준 파일보다 먼저 도착해 검증에 실패해도, 기준 파일이 생기면 후보를 자동 재검증한다. `.d.ts`, 숨김 JSON과 `.json.tmp` 파일은 Saylo 카탈로그 범위에서 제외한다.
+Ordinary change events are coalesced into the next turn, and the final file contents are read again when reading. The add/unlink label on a watch event is not trusted as-is. Adding a new path with no previous state is read immediately in the next turn. Events that need disk stabilization, such as add/unlink of an existing path, are grouped with a 40ms quiet window, and if events continue, reading starts after at most 200ms. A second save swallowed by Vite's short throttle window is caught by disk rechecks at 10, 30, and 60ms (product `packages/vite/src/disk-rechecks.ts`). A save that replaces a temporary file is judged by the state of the final path. Deleting every catalog for the current locale switches to the base language. Deleting a base namespace removes it from the list, and remaining translation files are revalidated when the base namespace is restored. Production builds strictly reject translation files without a base, so remove translation files together when removing a namespace. Deleting every catalog in the base locale is rejected and the last valid state is kept. If a new translation file arrives before the base file and fails validation, the candidate is revalidated automatically once the base file appears. `.d.ts`, hidden JSON, and `.json.tmp` files are excluded from the Saylo catalog scope.
 
-React 데모는 `npm run dev:react`로 실행한다. `examples/vanilla/locales`의 같은 카탈로그와 기존 스타일을 공유하고, 입력값·수량·모달은 React state로 관리한다. 처음에는 한국어 `demo`만 싣고 영어 선택 시 영어 pair를 조회한다. 새 namespace는 목록에 나타나고 버튼을 눌러 명시적으로 로드한다. `npm run typegen:react`는 타입만 생성한다. `npm run build:react`는 패키지 빌드 → 현재 디스크 검증과 타입 생성 → 데모 TS 검사 → Vite production 빌드 순서로 실행한다.
+Run the React demo with `npm run dev:react`. It shares the same catalogs in `examples/vanilla/locales` and the existing styles, and manages input values, quantities, and the modal with React state. It initially loads only the Korean `demo` and looks up the English pair when English is selected. A new namespace appears in the list and is loaded explicitly when its button is pressed. `npm run typegen:react` only generates types. `npm run build:react` runs in the order: package build → current disk validation and type generation → demo TS check → Vite production build.
 
-React 선택 빌드는 화면이 쓰는 키만 남겨 `npm run build:react:selected`(출력 `examples/react/dist-selected/`)로 돌리고, 결과는 `npm run preview:react:selected`로 확인한다. `examples/react/selected-keys.mts`의 `demoKeys`를 빌드와 화면 타입이 함께 쓰며, store·hook 타입은 개발·기본·선택 빌드 모두 `DemoSchema`로 좁히고 생성 타입 `generated.d.ts`는 전체 base schema를 유지한다. 키 목록 관리와 검증은 [React 데모](examples/react/README.md)를 따른다.
+React selective builds keep only the keys the screen uses. Run `npm run build:react:selected` (output `examples/react/dist-selected/`) and check the result with `npm run preview:react:selected`. `demoKeys` in `examples/react/selected-keys.mts` is used by both the build and the screen types; store and hook types are narrowed to `DemoSchema` in the development, default, and selective builds, while the generated `generated.d.ts` type keeps the full base schema. For key list management and verification, follow the [React demo](examples/react/README.md).
 
 ```js
 import { parseCatalog, createBaseSchema, validateTranslation, createTranslator } from '@0disoft/saylo-core';
@@ -76,15 +76,15 @@ const i18n = createTranslator({
 i18n.t('cart:items', { count: 3 }); // "3 items"
 ```
 
-번역은 기준에 없는 키·인자를 추가하거나 기준보다 좁은 타입을 요구할 수 없다. 키·인자 생략은 허용한다. 오류는 `CatalogError.diagnostics`에서 코드, 파일명, ID와 가능한 소스 위치를 확인한다. 현재 파싱 결과와 스키마는 깊게 동결한 객체 형태이며, 같은 깊게 동결된 카탈로그는 `createBaseSchema`가 만든 스키마 객체를 재사용한다. 렌더용 카탈로그 record와 store snapshot은 이후 단계에서 구성한다. 스키마 fingerprint는 namespace와 키·인자 acceptedTypes를 정규화한 JSON의 UTF-8 SHA-256으로, `saylo-schema-v2:sha256:` 접두어에 64자리 16진수를 붙인 총 87자다. 문구나 키 순서만 바뀌면 유지된다.
+Translations cannot add keys or arguments that are not in the base or require a narrower type than the base. Omitting keys and arguments is allowed. Errors report the code, file name, ID, and possible source location in `CatalogError.diagnostics`. Current parse results and schemas are deeply frozen object shapes, and `createBaseSchema` reuses the schema object it created for the same deeply frozen catalog. The catalog record for rendering and store snapshots are built in later stages. The schema fingerprint is the UTF-8 SHA-256 of JSON that normalizes the namespace and the acceptedTypes of keys and arguments, prefixed with `saylo-schema-v2:sha256:` plus 64 hexadecimal digits, 87 characters in total. It stays the same when only copy or key order changes.
 
-`parseCatalog`는 세 번째 인자로 이전 `ParsedCatalog`를 선택적으로 받는다. locale·namespace·sourceName이 같은 깊게 동결된 카탈로그를 넘기면 문구가 그대로인 메시지는 이전 AST와 인자를 재사용하고, JSON 전체와 변경된 메시지는 그대로 검증하며 소스 위치는 새 파일 기준으로 갱신한다. 개발 중 파일을 다시 읽는 Vite registry는 이전 카탈로그를 자동으로 넘긴다.
+`parseCatalog` optionally accepts the previous `ParsedCatalog` as its third argument. If you pass a deeply frozen catalog with the same locale, namespace, and sourceName, messages whose copy is unchanged reuse the previous AST and arguments, while the whole JSON and changed messages are still validated and source locations are updated against the new file. The Vite registry, which re-reads files during development, passes the previous catalog automatically.
 
-번역기는 생성 시 카탈로그·로케일·timeZone을 고정한다. `translations`에는 선택한 로케일의 카탈로그만 넘긴다. 없는 키나 namespace의 번역은 baseLocale 문구로 폴백하고, 그 문구의 출처 로케일로 숫자·날짜를 포맷한다. 빈 문자열 번역은 그대로 유지한다. 호출 인자는 번역의 인자 생략 여부와 관계없이 기준 스키마로 검증하며, 숫자는 유한한 값이고 Date는 유효한 날짜여야 한다. 날짜·시간의 일반 스타일과 skeleton 모두 timeZone을 적용하고, 기본값은 UTC다.
+The translator fixes the catalogs, locale, and timeZone at creation. Pass only the catalogs for the selected locale in `translations`. A missing key or namespace translation falls back to the baseLocale copy, and numbers and dates are formatted with the locale that copy came from. An empty string translation is kept as-is. Call arguments are validated against the base schema regardless of whether the translation omits arguments, numbers must be finite, and Date must be a valid date. Both the general date and time styles and the skeletons apply timeZone, which defaults to UTC.
 
-`UnknownMessageError`는 없는 키, `NamespaceNotLoadedError`는 로드되지 않은 namespace, `InvalidArgumentError`는 필수 인자 누락이나 타입 오류를 나타낸다. `t()`는 순수 텍스트를 돌려준다. 태그 문자열은 literal로 유지하므로 DOM에는 `textContent`나 프레임워크의 텍스트 렌더링으로 넣는다.
+`UnknownMessageError` indicates a missing key, `NamespaceNotLoadedError` a namespace that is not loaded, and `InvalidArgumentError` a missing required argument or a type error. `t()` returns plain text. Tag strings are kept literal, so put them in the DOM with `textContent` or the framework's text rendering.
 
-TypeScript는 `createTranslator<AppSchema>(options)`, JS는 JSDoc의 `Translator<AppSchema>`로 키·인자 타입을 연결할 수 있다. AppSchema는 기준 메시지에서 자동 생성하거나 직접 작성할 수 있다. 인자 종류와 키가 불확실한 union 호출은 먼저 키를 좁혀야 한다.
+In TypeScript, connect key and argument types with `createTranslator<AppSchema>(options)`; in JS, use the JSDoc `Translator<AppSchema>`. AppSchema can be generated from the base messages or written by hand. For union calls where the argument kinds and keys are uncertain, narrow the key first.
 
 ## Eager store
 
@@ -103,19 +103,19 @@ unsubscribe();
 store.dispose();
 ```
 
-`createStore`는 모든 카탈로그를 미리 싣는 동기 프로토타입이다. `getSnapshot()`은 UI 상태가 같으면 같은 객체를 반환한다. `store.t`는 최신 상태를 읽고, 이전 snapshot의 `t`는 이전 상태를 계속 읽는다. `replaceCatalogs`는 registry 전체 교체이며 현재 로케일이 삭제되면 baseLocale로 전환한다. 같은 문구를 다시 전달하거나 기존 비활성 로케일의 문구만 바꾸면 UI를 다시 통지하지 않는다. 로케일·namespace 목록 변경은 통지한다. 카탈로그 수정 후에도 같은 시간대의 메시지·Intl 캐시를 재사용한다.
+`createStore` is a synchronous prototype that loads every catalog up front. `getSnapshot()` returns the same object when the UI state is the same. `store.t` reads the latest state, and `t` on an earlier snapshot keeps reading the earlier state. `replaceCatalogs` replaces the whole registry and switches to baseLocale if the current locale is removed. Passing the same copy again or changing copy only in an existing inactive locale does not notify the UI again. Changes to the locale or namespace list are notified. After catalog changes, messages and Intl caches for the same time zone are reused.
 
-후보는 모든 번역 계약을 검증한 뒤 게시하고, 구독자는 트랜잭션당 한 번 통지한다. 구독 중 요청한 다음 변경은 현재 snapshot의 모든 구독자가 끝난 뒤 게시한다. 구독자 오류는 나머지 구독자 통지를 마친 뒤 `AggregateError`로 전달하며 이미 게시한 상태를 되돌리지 않는다. `unsubscribe`와 `dispose`는 반복 호출해도 안전하다. 어댑터는 `store.onDispose(cleanup)`으로 소유 자원의 정리를 등록하고, 반환된 함수로 등록을 해제한다. 정리 중 오류가 나도 나머지 정리를 마친 뒤 `AggregateError`로 전달한다. 지연 로딩과 부분 전송은 lazy 경로에, secondary quarantine은 Vite plugin에 구현했다. 코어 `createStore` 자체는 자동 격리를 하지 않고 잘못된 후보 전체를 거부한다. 키 삭제·필수 인자 추가로 기존 화면 호출이 깨지는 편집은 DOM 보존 범위에 포함하지 않는다.
+A candidate is published after validating every translation contract, and subscribers are notified once per transaction. A change requested during a subscription is published after every subscriber of the current snapshot finishes. Subscriber errors are delivered as `AggregateError` after notifying the remaining subscribers, and an already published state is not rolled back. `unsubscribe` and `dispose` are safe to call repeatedly. Adapters register cleanup of owned resources with `store.onDispose(cleanup)` and unregister with the returned function. If cleanup raises an error, the remaining cleanup finishes and the error is then delivered as `AggregateError`. Lazy loading and partial transport are implemented in the lazy path, and secondary quarantine in the Vite plugin. Core `createStore` itself does not isolate automatically and rejects the entire invalid candidate. Edits that break existing screen calls by deleting keys or adding required arguments are outside the DOM preservation scope.
 
-## 지연 로딩 코어
+## Lazy-loading core
 
-`createI18n`은 동기 생성자다. 부팅 카탈로그와 manifest로 인스턴스와 초기 snapshot을 즉시 만들고, 로케일·namespace pair 조회는 `setLocale`·`loadNamespace`가 맡는다. 두 메서드는 `Promise<void>`를 반환한다. 필요한 기준·대상 pair가 모두 present 또는 missing으로 확정될 때 한 번에 게시하며, 대기·조회 실패 중에는 이전 snapshot을 유지한다. missing 번역은 기준으로 폴백하고, 조회 실패는 `CatalogLoadError`로 구분한다. 서로 보완하는 언어 전환과 namespace 추가는 함께 완료하고, 실제로 대체된 언어 선택만 `SupersededRequestError`로 취소한다.
+`createI18n` is a synchronous constructor. It immediately creates the instance and initial snapshot from boot catalogs and the manifest, and `setLocale` and `loadNamespace` handle locale and namespace pair lookups. Both methods return `Promise<void>`. They publish once when all required base and target pairs are settled as present or missing, and keep the previous snapshot while waiting or when a lookup fails. Missing translations fall back to the base, and lookup failures are distinguished with `CatalogLoadError`. Complementary language switches and namespace additions complete together, and only a language choice that is actually replaced is canceled with `SupersededRequestError`.
 
-현재 생성 옵션은 `catalogSource`, `locale`, `initialNamespaces`, `initialCatalogs`와 선택적인 `timeZone`·`requestTimeoutMs`다. manifest는 전체 locale·namespace 목록과 알려진 pair별 version·schema fingerprint·missing tombstone을 담는다. 부팅 pair는 결과를 빠짐없이 명시하고, 이후 결과는 현재 session·pair version·schema로 검사한다. `refresh()`는 어댑터가 manifest 변경 후 현재 원하는 범위를 다시 준비할 때 쓴다. 전역 revision만으로 관계없는 namespace의 정상 결과를 폐기하지 않는다. timeout 기본값은 카탈로그당 5초이며 dispose는 요청·timer·소유 listener를 정리한다.
+The current creation options are `catalogSource`, `locale`, `initialNamespaces`, `initialCatalogs`, and optional `timeZone` and `requestTimeoutMs`. The manifest contains the full locale and namespace lists and, for each known pair, the version, schema fingerprint, and missing tombstone. Boot pairs state their results completely, and later results are checked against the current session, pair version, and schema. `refresh()` is used when an adapter re-prepares the currently desired scope after a manifest change. A global revision alone does not discard valid results for unrelated namespaces. The default timeout is 5 seconds per catalog, and dispose cleans up requests, timers, and owned listeners.
 
-`npm run demo:lazy`는 언어 전환과 장바구니 namespace 로드를 동시에 실행하는 Node 데모다. 조회 중 한국어 snapshot을 유지하다가 한 번의 commit으로 영어 공통 문구와 한국어 장바구니 폴백을 게시한다. JS/checkJs와 TS 소비 fixture가 같은 키·인자 타입을 검사한다. 현재 경로는 parsed catalog를 받는 프로토타입이다. 개발에서는 Vite 범용 loader·부분 전송과 React 연결을 지원한다. 운영 경로는 `createStaticCatalogSource(initialManifest, initialCatalogs, entries)`로 boot pair만 inline으로 싣고 나머지 present pair는 생성된 literal `import()` loader entry로 분리한다. 실패나 session·version·fingerprint/key 불일치는 캐시에 반영하지 않고, missing tombstone은 import 없이 반환한다. SSR boot snapshot은 `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`로 로컬 구현했다. 현재 wire는 parsed catalog의 sourceName·locale·AST·인자를 배열로 직렬화한다. 공개 UI snapshot은 `StoreSnapshot`, 전송 단위는 `CatalogOutcome`이다. `CatalogRecord`·`Map` 초안은 쓰지 않는다.
+`npm run demo:lazy` is a Node demo that switches language and loads the cart namespace at the same time. It keeps the Korean snapshot while looking up, then publishes English common copy and the Korean cart fallback in one commit. JS/checkJs and TS consumer fixtures check the same key and argument types. The current path is a prototype that accepts parsed catalogs. In development, Vite supports the general loader, partial transport, and React connection. The production path uses `createStaticCatalogSource(initialManifest, initialCatalogs, entries)` to inline only boot pairs and split the remaining present pairs into generated literal `import()` loader entries. Failures and session, version, fingerprint, or key mismatches are not reflected in the cache, and a missing tombstone is returned without an import. The SSR boot snapshot is implemented locally with `createBootSnapshot`, `serializeBootSnapshot`, and `decodeBootSnapshot`. The current wire format serializes the parsed catalog's sourceName, locale, AST, and arguments as arrays. The public UI snapshot is `StoreSnapshot`, and the transport unit is `CatalogOutcome`. The `CatalogRecord` and `Map` drafts are not used.
 
-lazy 앱은 아래처럼 연결한다. Vite의 `initialNamespaces` 옵션으로 부팅 범위를 정하며, 생략하면 기준 namespace 전체다. source는 여러 instance가 공유할 수 있고 마지막 연결 해제 후 자신이 등록한 HMR listener를 정리한다.
+Connect a lazy app as shown below. The Vite `initialNamespaces` option sets the boot scope; when omitted, it is all base namespaces. A source can be shared by multiple instances and cleans up its own registered HMR listeners after the last connection is released.
 
 ```js
 import { createI18n } from '@0disoft/saylo-core';
@@ -130,9 +130,9 @@ await i18n.setLocale('en');
 // 종료 시 disconnect(), i18n.dispose()로 소유 자원을 정리한다.
 ```
 
-## 타입 자동 생성
+## Automatic type generation
 
-Vite 플러그인에 `typegen: { outFile: 'generated.d.ts' }`를 추가한다. outFile은 Vite root 기준의 `.d.ts` 경로다. React 데모는 `examples/react/generated.d.ts`에서 생성된 `AppSchema`를 import한다.
+Add `typegen: { outFile: 'generated.d.ts' }` to the Vite plugin. outFile is a `.d.ts` path relative to the Vite root. The React demo imports the generated `AppSchema` from `examples/react/generated.d.ts`.
 
 ```js
 saylo({
@@ -142,11 +142,11 @@ saylo({
 });
 ```
 
-기준 namespace·키·인자 스키마만 타입의 입력이다. ICU 분기에서 사용한 인자도 모두 필수로 생성하며, 숫자는 `number`, 일반 보간은 `number | string`, 날짜는 `Date | number`로 표현한다. 기준에서 여러 용도로 사용한 인자는 코어가 판정한 교집합 타입을 따른다. 키와 인자 이름은 문자열 literal로 이스케이프하고 정렬하므로 입력 순서나 문구만 바뀌면 같은 선언이 나온다.
+Only the base namespace, key, and argument schema feed the types. Arguments used in any ICU branch are also generated as required, with numbers as `number`, ordinary interpolation as `number | string`, and dates as `Date | number`. An argument used for several purposes in the base follows the intersection type determined by core. Key and argument names are escaped as string literals and sorted, so changing only input order or copy produces the same declarations.
 
-초기 dev serve는 타입 생성 완료를 기다린다. 라이브 카탈로그 게시 뒤에는 worker를 배경에서 실행하고 화면 반영 경로가 완료를 기다리지 않는다. 연속 저장은 최신 generation으로 합치고 이전 결과의 쓰기를 차단한다. 선언 내용이 바뀔 때만 임시 파일을 최종 경로로 교체하며, 생성 파일과 해당 임시 파일만 Vite 감시에서 제외한다. 타입 생성 실패는 마지막 선언을 유지하고 개발 서버 로그에 진단을 남긴다. 초기 생성 실패는 서버 시작을 중단한다. IDE의 자동 완성은 생성 완료와 IDE의 재검사 이후 갱신된다.
+Initial dev serve waits for type generation to complete. After a live catalog publication, it runs the worker in the background and the screen update path does not wait for completion. Consecutive saves are merged into the latest generation, and writes from earlier results are blocked. It replaces the temporary file with the final path only when the declaration content changes, and excludes only the generated file and its temporary file from Vite watching. A type generation failure keeps the last declaration and writes diagnostics to the development server log. An initial generation failure stops server startup. IDE completion updates after generation completes and the IDE re-checks.
 
-CLI는 저장소에서 다음처럼 실행한다. 현재 디스크의 전체 카탈로그를 검증한 뒤 기준 스키마의 선언을 쓰므로 잘못된 번역 파일도 오류로 종료한다.
+Run the CLI in the repository as follows. It validates all catalogs currently on disk before writing declarations for the base schema, so an invalid translation file also exits with an error.
 
 ```sh
 npm run typegen:react
@@ -154,9 +154,9 @@ npm run typegen:react
 node packages/typegen/dist/cli.js --locales-dir examples/vanilla/locales --base-locale ko --out-file examples/react/generated.d.ts
 ```
 
-## React 연결
+## React connection
 
-React 19에서 검증했다. factory는 모듈에서 한 번 만들고, 같은 factory의 Provider와 hook을 함께 사용한다. AppSchema는 typegen이 만든 선언에서 가져온다.
+Verified on React 19. Create the factory once per module and use the Provider and hook from the same factory together. Get AppSchema from the declaration generated by typegen.
 
 ```tsx
 import { createRoot } from 'react-dom/client';
@@ -185,17 +185,17 @@ const disconnect = connectDev(store);
 // 앱 종료 시 root.unmount(), disconnect(), store.dispose() 순서로 정리한다.
 ```
 
-`useI18n`은 `useSyncExternalStore`로 구독하고, 해당 렌더의 불변 snapshot과 `setLocale`을 반환한다. 이전 렌더의 `t`는 이전 번역을 계속 읽으며 `store.t`는 최신 번역을 읽는다. 같은 snapshot·instance에서는 hook 결과와 `setLocale` 참조가 유지된다. 같은 문구나 비활성 로케일 수정은 구독 컴포넌트를 다시 렌더하지 않는다. Provider는 전달받은 store의 수명을 소유하지 않으므로 unmount 후에도 store를 다른 화면에서 사용할 수 있다. store를 소유한 앱이 React root와 개발 연결을 해제한 뒤 `store.dispose()`를 호출한다.
+`useI18n` subscribes with `useSyncExternalStore` and returns the immutable snapshot for that render and `setLocale`. `t` from an earlier render keeps reading the earlier translations, while `store.t` reads the latest translations. With the same snapshot and instance, the hook result and the `setLocale` reference stay stable. Edits to unchanged copy or an inactive locale do not re-render subscribed components. The Provider does not own the lifetime of the store it receives, so the store can be used in another screen after unmount. The app that owns the store releases the React root and development connection, then calls `store.dispose()`.
 
-Provider는 `createStore`와 `createI18n`을 모두 받는다. hook의 `setLocale` 반환 타입은 `void | Promise<void>`이며 lazy 호출의 실패는 await/catch로 처리한다. lazy instance에서는 `loadNamespace`도 같은 함수 참조로 제공하고 eager instance에는 그 함수가 없다. 필요한 pair를 준비하는 동안 hook은 이전 snapshot을 읽으며, 준비가 끝나면 한 번 게시한다.
+The Provider accepts both `createStore` and `createI18n`. The hook's `setLocale` return type is `void | Promise<void>`, and failures from lazy calls are handled with await/catch. A lazy instance also provides `loadNamespace` with the same function reference, and an eager instance does not have that function. While preparing the required pairs, the hook reads the previous snapshot and publishes once when preparation finishes.
 
-JS/checkJs에서는 `SayloReactBindings<AppSchema>`와 `Store<AppSchema>` JSDoc으로 같은 키·인자 검사를 연결할 수 있다. 소비 예제는 `packages/react/test/consumer-js.js`와 `consumer.tsx`에 있다. `createSayloReact`의 hook은 `useSyncExternalStore` 세 번째 인자로 `getServerSnapshot`을 연결한다. SSR hydration은 `@0disoft/saylo-react`의 `createHydrationAdapter`를 `instance` 대신 Provider에 넘기는 방식으로 지원한다.
+In JS/checkJs, the `SayloReactBindings<AppSchema>` and `Store<AppSchema>` JSDoc can connect the same key and argument checks. Consumer examples are in `packages/react/test/consumer-js.js` and `consumer.tsx`. The hooks from `createSayloReact` pass `getServerSnapshot` as the third argument to `useSyncExternalStore`. SSR hydration is supported by passing `createHydrationAdapter` from `@0disoft/saylo-react` to the Provider instead of `instance`.
 
 ## SSR
 
-서버는 요청마다 instance를 만들고 scope가 준비된 뒤 boot snapshot을 직렬화한다. 클라이언트는 그 JSON을 decode해 같은 boot S1로 hydration하고, live 갱신은 hydration barrier가 끝난 뒤 한 번만 반영한다.
+The server creates an instance per request and serializes the boot snapshot after the scope is ready. The client decodes that JSON and hydrates with the same boot S1, and live updates are applied once after the hydration barrier completes.
 
-서버는 `virtual:saylo/server`의 `createRequestI18n`으로 렌더 전에 요청 scope를 준비한다. 개발에서는 Node registry handle이 최신 read/load를 제공하고 server 종료 시 unregister하며, 운영은 static import source를 쓴다.
+The server prepares the request scope before rendering with `createRequestI18n` from `virtual:saylo/server`. In development, the Node registry handle provides the latest read and load and unregisters when the server exits; production uses a static import source.
 
 ```js
 import { createElement as h } from 'react';
@@ -230,15 +230,15 @@ const root = hydrateRoot(document.getElementById('root'), h(SayloProvider, { ins
 // unmount 시 root.unmount(), adapter.dispose(), client.dispose()를 호출한다.
 ```
 
-`createI18n`은 기존 parsed scope 옵션(`locale`·`initialNamespaces`·`initialCatalogs`) 또는 `initialSnapshot`+`catalogSource` 중 하나를 받는다. boot로 만들면 source가 최신이어도 최초 manifest가 boot에 고정되고, `getServerSnapshot`은 생성 시점 snapshot identity를 유지한다. `getBootSnapshot`은 현재 committed scope만 직렬화한다.
+`createI18n` accepts either the existing parsed scope options (`locale`, `initialNamespaces`, `initialCatalogs`) or `initialSnapshot` plus `catalogSource`. When created from boot, the first manifest is fixed to the boot even if the source is newer, and `getServerSnapshot` keeps the snapshot identity from creation time. `getBootSnapshot` serializes only the currently committed scope.
 
-`createHydrationAdapter(instance)`는 root마다 새로 만든다. adapter는 boot S1을 유지하면서 underlying snapshot은 최신 하나만 buffer하고, `finishHydration()`을 호출해야 그 시점에 한 번 publish한다. `getServerSnapshot`은 이후에도 S1을 반환한다. `adapter.dispose()`는 자신이 건 구독만 해제하므로 원래 instance 정리는 앱이 `client.dispose()`로 따로 한다.
+Create `createHydrationAdapter(instance)` anew for each root. The adapter keeps boot S1 while buffering only the latest underlying snapshot, and it publishes once when `finishHydration()` is called. `getServerSnapshot` keeps returning S1 afterward. `adapter.dispose()` releases only the subscriptions it created, so the app cleans up the original instance separately with `client.dispose()`.
 
-실행용 SSR fixture는 `examples/ssr/`에 있고, `npm run demo:ssr`가 ko/en 동시 요청 renderToString과 boot locale 검사를 수행한 뒤 종료한다. `npm run dev:ssr`는 127.0.0.1:5190/?locale=en에서 실제 SSR 서버를 띄워 client hydrateRoot(StrictMode)와 live connectDev까지 확인한다.
+The runnable SSR fixture is in `examples/ssr/`; `npm run demo:ssr` runs renderToString for simultaneous ko/en requests and checks the boot locale, then exits. `npm run dev:ssr` starts a real SSR server at 127.0.0.1:5190/?locale=en and verifies client hydrateRoot (StrictMode) and live connectDev.
 
-## 릴리스
+## Release
 
-현행 게시 버전은 다섯 패키지의 `0.1.0-alpha.4`·dist-tag `alpha`이다. core·react·typegen·vite의 첫 버전 `0.1.0-alpha.1`은 2026-10-06 게시했고, Svelte는 2026-10-09의 `alpha.2`부터 포함된다. 계약과 절차는 [릴리스](docs/09-release.md)에 있다. `latest`는 등록용 placeholder `0.0.0-stage`를 가리키므로, 현행 alpha 설치에는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 명시한다. 과거 버전 설치에는 `@0disoft/saylo-core@0.1.0-alpha.1`처럼 버전을 지정한다.
+The current published version is `0.1.0-alpha.4` for the five packages with dist-tag `alpha`. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
 
 ```sh
 npm run release:check -- --version 0.1.0-alpha.4 --tag alpha
@@ -246,17 +246,17 @@ npm run check
 npm run release:pack
 ```
 
-현행 릴리스 대상에는 `@0disoft/saylo-svelte`를 추가했다. `release:check`는 다섯 패키지의 버전·라이선스·`engines`·`publishConfig`·내부 의존 버전을 검사한다. `release:pack`은 다섯 tarball을 저장소 밖 소비 앱에 설치해 검증하고 `.release/npm/`에 tarball과 `manifest.json`을 남긴다. `verify:registry`는 기존 네 `alpha.1`을, `verify:registry:alpha2`는 다섯 `alpha.2`를, `verify:registry:alpha3`는 다섯 `alpha.3`를 승인 manifest와 대조한다. `verify:registry:sveltekit`은 승인된 `alpha.2` 게시본으로, `verify:registry:sveltekit:alpha3`는 `alpha.3` 게시본으로 SvelteKit 앱을 검증한다. GitHub Actions [release.yml](.github/workflows/release.yml)은 수동 dispatch이며 `verify_oidc=true`이면 게시 여부와 관계없이 먼저 인증하고 `publish=true`일 때만 게시한다. 다섯 패키지의 OIDC 인증·게시·다운로드·설치 검증을 완료했다.
+`@0disoft/saylo-svelte` was added to the current release targets. `release:check` checks the version, license, `engines`, `publishConfig`, and internal dependency versions of the five packages. `release:pack` installs the five tarballs into a consumer app outside the repository, verifies them, and leaves the tarballs and `manifest.json` in `.release/npm/`. `verify:registry` compares the existing four `alpha.1` packages, `verify:registry:alpha2` the five `alpha.2` packages, and `verify:registry:alpha3` the five `alpha.3` packages against their approval manifests. `verify:registry:sveltekit` verifies a SvelteKit app with the approved `alpha.2` release, and `verify:registry:sveltekit:alpha3` with the `alpha.3` release. The GitHub Actions [release.yml](.github/workflows/release.yml) runs on manual dispatch, authenticates first regardless of whether it will publish when `verify_oidc=true`, and publishes only when `publish=true`. OIDC authentication, publication, download, and installation verification for the five packages are complete.
 
-현행 registry 인수는 `npm run verify:registry:alpha4`와 `npm run verify:registry:sveltekit:alpha4`로 실행한다. 승인 manifest는 [releases/0.1.0-alpha.4.json](releases/0.1.0-alpha.4.json)이다.
+Run the current registry acceptance with `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`. The approval manifest is [releases/0.1.0-alpha.4.json](releases/0.1.0-alpha.4.json).
 
-## 설계 방향 한 줄 요약
+## Design direction summary
 
-개발 서버가 파일 변경을 감지하면 그 파일만 파싱한다. 기준 스키마 변경은 영향받는 번역도 재검증한다. 로케일+namespace 단위의 카탈로그 스냅샷(또는 패치)을 클라이언트 store에 전달하고, UI에 보이는 변화가 있으면 구독자를 다시 렌더링한다. 정상 번역 변경은 JS 코드 생성과 typegen 완료를 기다리지 않고, 전체 앱 모듈 무효화나 full reload도 하지 않는다. 파싱과 검증에 드는 시간은 남는다. 갱신 wire 프로토콜의 단일 출처는 [docs/08-update-protocol.md](docs/08-update-protocol.md)다.
+When the development server detects a file change, it parses only that file. A base schema change also revalidates affected translations. It delivers catalog snapshots (or patches) per locale and namespace to the client store and re-renders subscribers when a visible UI change occurs. A normal translation change does not wait for JS code generation or typegen completion and does not invalidate whole app modules or do a full reload. Time spent on parsing and validation remains. The single source for the update wire protocol is [docs/08-update-protocol.md](docs/08-update-protocol.md).
 
-## 패키지
+## Packages
 
-| 패키지 | npm | README |
+| Package | npm | README |
 | --- | --- | --- |
 | `@0disoft/saylo-core` | [npm](https://www.npmjs.com/package/@0disoft/saylo-core) | [packages/core/README.md](packages/core/README.md) |
 | `@0disoft/saylo-react` | [npm](https://www.npmjs.com/package/@0disoft/saylo-react) | [packages/react/README.md](packages/react/README.md) |
@@ -264,27 +264,27 @@ npm run release:pack
 | `@0disoft/saylo-typegen` | [npm](https://www.npmjs.com/package/@0disoft/saylo-typegen) | [packages/typegen/README.md](packages/typegen/README.md) |
 | `@0disoft/saylo-vite` | [npm](https://www.npmjs.com/package/@0disoft/saylo-vite) | [packages/vite/README.md](packages/vite/README.md) |
 
-설치 후 프레임워크 없이 Vite에서 바로 실행하는 예제는 [examples/npm/README.md](examples/npm/README.md)에 있다.
+The example that runs directly in Vite without a framework after installation is in [examples/npm/README.md](examples/npm/README.md).
 
-## 문의와 보안 제보
+## Questions and security reports
 
-일반 문의·기능 제안·버그는 [지원 안내](SUPPORT.md), 비공개 보안 제보는 [보안 안내](SECURITY.md)를 따른다. Vite 패키지의 설치 폴더에는 이 안내도 동봉한다. 문서 동봉과 연락처 교체는 로컬 미게시 변경이다.
+For general questions, feature proposals, and bugs, see [Support](SUPPORT.md); for private security reports, see [Security](SECURITY.md). The Vite package's install folder also includes these guides. Bundling the documentation and replacing the contact are local unpublished changes.
 
-## 문서
+## Documentation
 
-| 문서 | 내용 |
+| Document | Contents |
 | --- | --- |
-| [docs/README.md](docs/README.md) | 문서 읽는 순서, 상태 표기 규칙, 설계 초안과 현행 코드 구분 |
-| [docs/getting-started.md](docs/getting-started.md) | 빈 폴더에서 게시 패키지로 시작하는 파일 6개, 라이브 수정 확인, 빌드, 선택 typegen |
-| [docs/getting-started-react.md](docs/getting-started-react.md) | React 19 앱을 빈 폴더에서 설치·라이브 수정·로케일 추가·오류 복구·빌드 |
-| [docs/getting-started-svelte.md](docs/getting-started-svelte.md) | Svelte 5 앱을 빈 폴더에서 설치·라이브 수정·로케일 추가·오류 복구·빌드 |
-| [docs/getting-started-sveltekit.md](docs/getting-started-sveltekit.md) | SvelteKit 3 독립 설치·요청별 SSR·hydration·공유 layout·Node 운영 서버 |
-| [docs/01-product-and-scope.md](docs/01-product-and-scope.md) | 문제 정의, 목표, 범위, 비목표, DOM 보존 범위, 용어 |
-| [docs/02-architecture.md](docs/02-architecture.md) | 개발 파이프라인, 코어/어댑터 경계, store 모델, 소유권 |
-| [docs/03-catalog-and-api.md](docs/03-catalog-and-api.md) | 카탈로그 파일, ID/namespace, ICU 정책, argument 계약, 공개 API와 예제 |
-| [docs/04-live-update-and-types.md](docs/04-live-update-and-types.md) | 라이브 반영 판정, desired-state, 실패 복구, 타입 생성, 캐시 |
-| [docs/05-build-and-ssr.md](docs/05-build-and-ssr.md) | 운영 빌드, 지연 로딩, Vite 변환, SSR, 보안 |
-| [docs/06-validation-and-roadmap.md](docs/06-validation-and-roadmap.md) | 성능 목표와 측정 정의, 인수 사례, 로드맵 |
-| [docs/07-decisions.md](docs/07-decisions.md) | 결정 대장, 제품 형태, 미해결 위험, 참고 자료 |
-| [docs/08-update-protocol.md](docs/08-update-protocol.md) | 갱신 wire 프로토콜, 적용·resync, boot 인코딩 |
-| [docs/09-release.md](docs/09-release.md) | 릴리스 계약, 검증 명령, 배포 워크플로, Trusted Publisher |
+| [docs/README.md](docs/README.md) | Reading order, status notation rules, and the distinction between design drafts and current code |
+| [docs/getting-started.md](docs/getting-started.md) | Six files for starting from published packages in an empty folder, live edit checks, build, and selective typegen |
+| [docs/getting-started-react.md](docs/getting-started-react.md) | Installing a React 19 app in an empty folder, live edits, adding a locale, error recovery, and build |
+| [docs/getting-started-svelte.md](docs/getting-started-svelte.md) | Installing a Svelte 5 app in an empty folder, live edits, adding a locale, error recovery, and build |
+| [docs/getting-started-sveltekit.md](docs/getting-started-sveltekit.md) | Independent SvelteKit 3 installation, per-request SSR, hydration, shared layout, and Node production server |
+| [docs/01-product-and-scope.md](docs/01-product-and-scope.md) | Problem definition, goals, scope, non-goals, DOM preservation scope, and terminology |
+| [docs/02-architecture.md](docs/02-architecture.md) | Development pipeline, core/adapter boundary, store model, and ownership |
+| [docs/03-catalog-and-api.md](docs/03-catalog-and-api.md) | Catalog files, ID/namespace, ICU policy, argument contract, public API, and examples |
+| [docs/04-live-update-and-types.md](docs/04-live-update-and-types.md) | Live update decisions, desired state, failure recovery, type generation, and cache |
+| [docs/05-build-and-ssr.md](docs/05-build-and-ssr.md) | Production builds, lazy loading, Vite transforms, SSR, and security |
+| [docs/06-validation-and-roadmap.md](docs/06-validation-and-roadmap.md) | Performance targets and measurement definitions, acceptance cases, and roadmap |
+| [docs/07-decisions.md](docs/07-decisions.md) | Decision log, product shape, unresolved risks, and references |
+| [docs/08-update-protocol.md](docs/08-update-protocol.md) | Update wire protocol, application and resync, and boot encoding |
+| [docs/09-release.md](docs/09-release.md) | Release contract, verification commands, deployment workflow, and Trusted Publisher |

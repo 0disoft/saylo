@@ -1,29 +1,29 @@
 # @0disoft/saylo-typegen
 
-Saylo 기준 카탈로그에서 `AppSchema` 타입 선언(`.d.ts`)을 생성한다. CLI `saylo-typegen`으로 실행하거나, `@0disoft/saylo-vite`가 개발 중 배경에서 실행한다.
+Generate `AppSchema` type declarations (`.d.ts`) from the Saylo base catalog. Run the `saylo-typegen` CLI, or let `@0disoft/saylo-vite` run it in the background during development.
 
-## 상태
+## Status
 
-writer는 Windows에서 `EPERM`·`EACCES`·`EBUSY`로 rename이 실패하면 최대 다섯 번 재시도한다. 재시도 대기 합은 최대 620ms이며, 기다리는 동안 더 최신 작업이 들어오거나 generator가 중단되면 이전 작업의 교체를 취소한다. 기존 파일을 먼저 삭제하지 않는다. 이 변경은 `0.1.0-alpha.2` 게시본에 포함된다.
+On Windows, if a rename fails with `EPERM`, `EACCES`, or `EBUSY`, the writer retries up to five times. The total retry wait is at most 620ms, and if a newer job arrives or the generator is stopped while waiting, replacement of the earlier job is canceled. It does not delete the existing file first. This change is included in the `0.1.0-alpha.2` release.
 
-성공 판정은 디스크에 실제 반영된 출력을 기준으로 한다. 더 새로운 요청이 도중에 들어와도 이미 파일에 반영된 결과는 성공으로 기록하고, 생성이 실패한 뒤 같은 카탈로그를 다시 저장하면 이전 결과를 건너뛰지 않고 다시 시도한다. 이 동작은 `0.1.0-alpha.4` 게시본에 포함된다.
+Success is determined from the output actually persisted to disk. If a newer request arrives in the middle, a result already written to the file is still recorded as a success, and saving the same catalog again after a generation failure retries instead of skipping the earlier result. This behavior is included in the `0.1.0-alpha.4` release.
 
-미게시 소스의 `writeGenerated(outFile, source, isCurrent?, { signal, operations }?)`는 파일 I/O·임시 이름·교체 연산을 선택적으로 주입할 수 있다. 취소는 `cancelled`로 반환하며 I/O 사이와 교체 재시도 중 확인한다. rename 성공 뒤 도착한 취소는 `written`을 바꾸지 않는다. 독점 생성에 성공한 임시 파일만 정리하고, 쓰기 실패와 정리 실패가 겹치면 원래 실패를 우선한다. `new TypeGenerator(outFile, { createWorker, write }?)`는 Worker와 writer를 주입할 수 있으며, 이전 Worker의 늦은 완료·실패는 새 작업에 반영하지 않는다.
+`writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the unpublished source lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
 
-마지막으로 게시를 확인한 버전은 2026-10-11의 `0.1.0-alpha.4`(dist-tag `alpha`)다. 첫 게시 버전은 2026-10-06의 `0.1.0-alpha.1`이다. 저장소 workspace에서 `node packages/typegen/dist/cli.js`로 직접 실행할 수도 있다.
+The last version confirmed as published is `0.1.0-alpha.4` (dist-tag `alpha`) from 2026-10-11. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
 
-## 설치
+## Installation
 
 ```sh
 npm install --save-dev @0disoft/saylo-typegen@alpha
 npm install @0disoft/saylo-core@alpha
 ```
 
-Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `@alpha`를 지정한다. `@0disoft/saylo-core`는 생성한 타입을 코어 제네릭으로 소비할 때 필요하다. 타입 선언만 생성할 때는 필요하지 않다. CLI를 이미 설치했다면 아래 실행 예시의 `npx saylo-typegen`을 그대로 쓴다.
+The `latest` tag of Saylo packages still points to a registration placeholder, so specify `@alpha`. `@0disoft/saylo-core` is needed when you consume the generated types with core generics. It is not needed when you only generate type declarations. If the CLI is already installed, use `npx saylo-typegen` as shown in the examples below.
 
-## 카탈로그
+## Catalog
 
-`locales/<locale>/<namespace>.json` 구조를 쓴다. 예를 들어 `locales/ko/demo.json`과 `locales/en/demo.json`이다.
+Use the `locales/<locale>/<namespace>.json` structure. For example, `locales/ko/demo.json` and `locales/en/demo.json`.
 
 ```json
 { "greeting": "안녕 {name}" }
@@ -33,11 +33,11 @@ Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `
 { "greeting": "Hello {name}" }
 ```
 
-## 실행
+## Running
 
-### 공통 설정과 카탈로그 점검 (미게시)
+### Shared configuration and catalog checks (unpublished)
 
-현재 checkout의 `loadProjectConfig()`와 `saylo` 명령은 npm `alpha.4`에 없다. 기존 `saylo-typegen` 인자는 유지하며, 새 `--config` 옵션으로 Vite와 같은 JSON 설정을 읽을 수 있다. JSON 이외의 설정 코드는 실행하지 않는다.
+`loadProjectConfig()` and the `saylo` command in the current checkout are not in the npm `alpha.4` release. The existing `saylo-typegen` arguments are preserved, and the new `--config` option reads the same JSON configuration as Vite. Configuration code other than JSON is not executed.
 
 ```json
 {
@@ -49,9 +49,9 @@ Saylo 패키지의 `latest`는 아직 등록용 placeholder를 가리키므로 `
 }
 ```
 
-위 내용을 `saylo.config.json`에 저장한다. 경로는 설정 파일의 디렉터리를 기준으로 해석한다. `richText`는 Vite와 같은 namespace → 메시지 ID → 허용 태그 목록이며, 선언한 키는 기준 카탈로그에 있어야 한다. `checkLocales`는 CLI의 완역 검사 대상이고 Vite의 로케일 목록을 추가하는 설정은 아니다. 생략하면 빈 디렉터리를 포함한 발견된 로케일을 검사한다. `initialLocale`도 검사 대상에 포함된다.
+Save the content above as `saylo.config.json`. Paths are resolved relative to the directory containing the configuration file. `richText` uses the same namespace → message ID → allowed tag list as Vite, and declared keys must exist in the base catalog. `checkLocales` is the set of locales the CLI checks for completeness; it is not a setting that adds locales to Vite. When omitted, it checks the locales it finds, including empty directories. `initialLocale` is also included in the check.
 
-미게시 tarball을 설치한 프로젝트에서는 다음 명령을 쓴다. `--no-install`은 다른 패키지를 내려받지 않고 설치된 실행 파일을 사용한다.
+In a project that installed the unpublished tarball, use the following commands. `--no-install` uses the installed executable without downloading other packages.
 
 ```sh
 npx --no-install saylo-typegen --config saylo.config.json
@@ -59,15 +59,15 @@ npx --no-install saylo check --config saylo.config.json --json
 npx --no-install saylo sync --config saylo.config.json --dry-run --json
 ```
 
-저장소에서는 빌드 후 `node packages/typegen/dist/catalog-cli.js check --config examples/vanilla/saylo.config.json --json`으로 예제를 검사할 수 있다. 같은 설정을 vanilla 예제의 Vite 플러그인도 읽는다.
+In the repository, after building, you can check the example with `node packages/typegen/dist/catalog-cli.js check --config examples/vanilla/saylo.config.json --json`. The Vite plugin for the vanilla example reads the same configuration.
 
-`check`는 JSON·ICU·인자·rich 계약 오류, 기준에 없는 번역 키, 누락 namespace·메시지를 모아 보고한다. 명시된 완역 대상에 누락이 있으면 런타임에서 기준 언어로 폴백할 수 있어도 검사에서는 오류다. 빈 번역 문자열은 정상 번역으로 처리한다. 소스에서 실제 사용하지 않는 키를 추측해 삭제하지 않는다.
+`check` reports JSON, ICU, argument, and rich contract errors, translation keys that are not in the base, and missing namespaces and messages together. Missing entries in the explicitly specified completeness targets are errors in the check even though the runtime can fall back to the base locale. An empty translation string is treated as a valid translation. It does not guess and delete keys that are unused in source.
 
-`sync --dry-run`은 `add`·`review`·`retain` 계획을 출력한다. 추가 대상의 `translation: null`은 아직 번역하지 않았다는 뜻이며 실제 카탈로그 값이 아니다. 기존 번역과 기준에 없는 키·namespace는 보존하고, 깨진 파일은 교체 대상으로 제안하지 않는다. `--out-file` 없는 `export`·`snapshot`·`refresh`와 `check`·`sync`는 읽기 전용이며 카탈로그·생성 타입·검수 기록을 쓰지 않는다. 삭제와 자동 번역 기능은 없다. 번역을 카탈로그에 쓰는 명령은 `import --apply`뿐이다.
+`sync --dry-run` prints an `add`, `review`, and `retain` plan. `translation: null` on an addition means it has not been translated yet and is not an actual catalog value. Existing translations and keys or namespaces that are not in the base are preserved, and broken files are not proposed for replacement. `export`, `snapshot`, and `refresh` without `--out-file`, and `check` and `sync`, are read-only and do not write catalogs, generated types, or review records. There is no delete or automatic translation feature. The only command that writes translations to catalogs is `import --apply`.
 
-다음 `snapshot`·`baseline` 예시는 `reviews`를 쓰지 않는 이전 baseline-only 검수 방식이다. 승인 장부를 쓰는 경우에는 뒤의 [선택적 번역 승인 기록](#선택적-번역-승인-기록-미게시)을 따른다.
+The following `snapshot` and `baseline` examples use the earlier baseline-only review method that does not use `reviews`. If you use an approval ledger, follow [Optional translation approval records](#optional-translation-approval-records-unpublished) later in this document.
 
-원문 변경을 비교하려면 먼저 `snapshot`의 stdout을 파일로 저장한다. 검수 기록에는 메시지별 원문·rich 계약의 SHA-256만 담고 원문이나 번역 내용은 저장하지 않는다.
+To compare source changes, first save the stdout of `snapshot` to a file. The review record stores only the SHA-256 of each message's source text and rich contract, not the source text or translation content.
 
 ```sh
 npx --no-install saylo snapshot --config saylo.config.json > saylo-baseline.json
@@ -75,15 +75,15 @@ npx --no-install saylo check --config saylo.config.json --baseline saylo-baselin
 npx --no-install saylo sync --config saylo.config.json --baseline saylo-baseline.json --dry-run --json
 ```
 
-`baseline` 경로를 공통 JSON에 넣어도 된다. 경로를 지정했는데 파일이 없거나 잘못됐으면 실패한다. `snapshot`은 기존 baseline을 읽지 않는다. `--out-file`이 없으면 새 비교 기준을 stdout으로, 지정하면 새 파일로 출력한다. 설정의 `baseline`이 같은 경로를 가리켜도 `snapshot`은 이를 읽지 않으므로 파일이 아직 없으면 최초 baseline으로 만들 수 있다. 기준 기록 생성은 번역 승인 처리가 아니며, 미완성 번역이 있어도 가능하지만 잘못된 카탈로그가 있으면 거부한다. `check`·`sync`는 기록을 갱신하지 않는다. 원문이나 허용 태그가 바뀌면 기존 번역을 `SOURCE_CHANGED`, 새 원문에 이미 번역이 있으면 `SOURCE_ADDED`로 표시한다. `baseline`과 `reviews`를 모두 지정하지 않았을 때만 `reviewTracking: "not-configured"`이며, `baseline`만 쓰면 `baseline`, `reviews`만 쓰면 `approvals`, 둘 다면 `baseline-and-approvals`다. 직접 검수한 뒤 비교 기준을 갱신한다.
+You can also put the `baseline` path in the shared JSON. If a path is specified but the file is missing or invalid, the command fails. `snapshot` does not read an existing baseline. Without `--out-file` it prints the new comparison baseline to stdout; with it, it writes a new file. Even if `baseline` in the configuration points to the same path, `snapshot` does not read it, so you can create the first baseline when the file does not exist yet. Creating a baseline record is not translation approval; it is possible with incomplete translations but is rejected if any catalog is invalid. `check` and `sync` do not update the record. If the source text or allowed tags change, the existing translation is marked `SOURCE_CHANGED`; if the new source text already has a translation, it is marked `SOURCE_ADDED`. `reviewTracking` is `"not-configured"` only when neither `baseline` nor `reviews` is specified; with only `baseline` it is `baseline`, with only `reviews` it is `approvals`, and with both it is `baseline-and-approvals`. After reviewing manually, update the comparison baseline.
 
-`--out-file` 없이 기존 비교 기록을 갱신할 때는 stdout을 새 파일에 저장하고, 종료 코드 0과 내용을 확인한 뒤 교체한다. 기존 baseline에 바로 리다이렉트하면 명령이 실패해도 셸이 기존 파일을 먼저 덮어쓸 수 있다. 새 파일은 `--out-file`로 만들 수 있으며 기존 파일은 덮어쓰지 않는다.
+When updating an existing comparison record without `--out-file`, save stdout to a new file, confirm exit code 0 and the content, and then replace the original. Redirecting directly over an existing baseline can let the shell truncate the existing file before the command fails. A new file can be created with `--out-file`, and existing files are not overwritten.
 
-### 안전한 파일 출력 (미게시)
+### Safe file output (unpublished)
 
-`--out-file <new.json>`은 `export`·`snapshot`·`refresh`에서만 지원한다. 지정하지 않으면 기존 stdout 출력과 read-only 동작이 그대로다. 상대 경로는 cwd 기준이며 확장자는 `.json`이어야 한다. 부모 디렉터리가 실제로 존재하고 symlink가 아니어야 하며, `locales` 안이나 입력 작업 파일·설정·실제로 읽는 baseline·reviews 경로에는 쓸 수 없다. 기존 파일·디렉터리·symlink는 거부하고 `--force`나 덮어쓰기 옵션은 없다.
+`--out-file <new.json>` is supported only for `export`, `snapshot`, and `refresh`. Without it, the existing stdout output and read-only behavior stay the same. A relative path is resolved from the cwd and must have a `.json` extension. The parent directory must actually exist and must not be a symlink, and the path cannot be inside `locales` or point to an input work file, configuration, a baseline that is actually read, or a reviews path. Existing files, directories, and symlinks are rejected, and there is no `--force` or overwrite option.
 
-출력 JSON 전체를 만들고 검증한 뒤 같은 디렉터리의 독점 temp에 쓰고 닫은 다음 hardlink로 새 파일을 게시한다. 기존 파일은 덮어쓰지 않으며 hardlink를 지원하지 않는 파일시스템은 안전하게 실패하고 temp를 정리한다. 성공하면 stdout에는 `{"format":"saylo-file-output/v1","command":"export"|"snapshot"|"refresh","writtenFiles":[절대경로],"blocked":boolean}` 영수증 하나만 나오며 `--json`은 필요 없다. 실제 작업 파일·snapshot·refresh JSON은 지정한 파일에 들어가고 `blocked`는 저장한 내용의 차단 상태다.
+After building and validating the entire output JSON, it writes to an exclusive temp file in the same directory, closes it, and then publishes the new file with a hardlink. Existing files are not overwritten. Filesystems that do not support hardlinks fail safely and clean up the temp file. On success, stdout contains only one receipt, `{"format":"saylo-file-output/v1","command":"export"|"snapshot"|"refresh","writtenFiles":[absolute paths],"blocked":boolean}`, and `--json` is not needed. The actual work file, snapshot, or refresh JSON goes to the specified file, and `blocked` is the blocking state of the saved content.
 
 ```sh
 npx --no-install saylo export --with-context --out-file translation-work.json --config saylo.config.json
@@ -91,19 +91,19 @@ npx --no-install saylo snapshot --out-file saylo-baseline.json --config saylo.co
 npx --no-install saylo refresh --file translation-work.json --out-file refresh-report.json --config saylo.config.json
 ```
 
-`export`·`snapshot`의 JSON 검증이 실패하면 outfile을 만들지 않고 기존 진단을 stdout에 내며 exit 1이다. `refresh`는 `workfile: null`이면 파일을 만들지 않고, 충돌이 있어도 `workfile`이 있으면 전체 보고서를 저장한 뒤 exit 1을 유지한다. 사용법·출력 오류는 2, 취소는 SIGINT 130·SIGTERM 143이다. 기존 파일을 보존해야 할 때 셸 리다이렉트 대신 `--out-file`을 사용한다.
+If JSON validation for `export` or `snapshot` fails, it does not create the outfile; it prints the existing diagnostics to stdout and exits 1. `refresh` does not create a file when `workfile` is `null`, and when there is a conflict but a `workfile` exists, it saves the full report and still exits 1. Usage and output errors exit 2; cancellation is SIGINT 130 and SIGTERM 143. When you need to preserve an existing file, use `--out-file` instead of shell redirection.
 
-### 번역 작업 파일 내보내기와 가져오기 (미게시)
+### Exporting and importing translation work files (unpublished)
 
-`export`와 `import`는 현재 checkout에만 있으며 npm `alpha.4`에는 없다. `export`는 누락된 `add` 작업과 baseline에서 원문·rich 계약이 바뀌거나 추가된 `review` 작업만 stdout에 JSON으로 출력한다. 기존 번역을 유지하는 `retain` 항목은 넣지 않는다. 출력 형식은 `saylo-translation-work/v1`이다.
+`export` and `import` exist only in the current checkout and are not in npm `alpha.4`. `export` prints only missing `add` jobs and `review` jobs whose source text or rich contract changed or was added relative to the baseline to stdout as JSON. It does not include `retain` entries that keep existing translations. The output format is `saylo-translation-work/v1`.
 
 ```sh
 npx --no-install saylo export --config saylo.config.json > translation-work.json
 ```
 
-`reviews`를 쓰지 않는 이전 baseline-only 방식에서 원문 변경 검수를 포함하려면 `--baseline saylo-baseline.json`을 붙이거나 설정에 `baseline`을 둔다. baseline이 없으면 `add` 작업만 나온다. `--out-file`을 지정하지 않았을 때 카탈로그가 잘못되면 작업 파일 대신 `saylo-check/v1` 보고서를 stdout에 내고 exit 1로 끝난다. `--out-file`을 지정해도 검증 실패면 outfile을 만들지 않고 같은 진단을 stdout에 낸다. `--out-file` 없는 export는 디스크를 쓰지 않으므로 stdout을 새 파일에 저장하고 종료 코드와 내용을 확인한 뒤 기존 작업 파일과 교체한다.
+To include source-change reviews in the earlier baseline-only method that does not use `reviews`, add `--baseline saylo-baseline.json` or set `baseline` in the configuration. Without a baseline, only `add` jobs are emitted. If the catalog is invalid when `--out-file` is not specified, it prints a `saylo-check/v1` report to stdout instead of a work file and exits 1. Even with `--out-file`, a validation failure creates no outfile and prints the same diagnostics to stdout. An export without `--out-file` does not write to disk, so save stdout to a new file, confirm the exit code and content, and then replace the existing work file.
 
-각 항목의 `source`·`sourceHash`·`originalTranslation`은 내보낸 시점의 체크포인트다. `translation`만 고치고 나머지 필드는 그대로 둔다. `add` 항목의 `originalTranslation`은 `null`이고, `review` 항목은 기존 번역으로 시작한다. `review` 항목을 손대지 않으면 `translation`이 `originalTranslation`과 같아서 가져올 때 건너뛴다. `translation: null`은 아직 하지 않은 작업이며, `""`는 정상 번역이다.
+The `source`, `sourceHash`, and `originalTranslation` of each entry are checkpoints from the time of export. Change only `translation` and leave the other fields as they are. `originalTranslation` is `null` for an `add` entry, and a `review` entry starts from the existing translation. If you leave a `review` entry untouched, its `translation` equals `originalTranslation`, so it is skipped on import. `translation: null` is work not done yet, and `""` is a valid translation.
 
 ```json
 {
@@ -124,9 +124,9 @@ npx --no-install saylo export --config saylo.config.json > translation-work.json
 }
 ```
 
-예시의 `sourceHash`는 형식만 보여 주는 값이다. 그대로 실행할 파일이 아니라 export 결과에서 `translation`만 바꾸는 모양을 보여 주며, 실제 파일에서는 export가 쓴 값을 그대로 둔다.
+The `sourceHash` in the example only shows the shape. It is not a file to run as-is; it shows the form where you change only `translation` in the export result, and in a real file you keep the value written by export.
 
-`export --with-context`를 명시하면 `saylo-translation-work/v2`를 출력하고 각 entry에 `context`를 더한다. 옵션이 없으면 기존 v1이며 entry는 `context`가 없는 기존 8개 필드를 유지한다.
+Specifying `export --with-context` emits `saylo-translation-work/v2` and adds `context` to each entry. Without the option, it stays v1, and entries keep the existing 8 fields without `context`.
 
 ```json
 {
@@ -141,50 +141,50 @@ npx --no-install saylo export --config saylo.config.json > translation-work.json
 }
 ```
 
-`arguments`는 기준 스키마에서 쓸 수 있는 인자와 타입을 알려 주는 값이며 모든 인자를 번역에 꼭 써야 한다는 뜻은 아니다. 기존처럼 인자를 생략해도 된다. `richTextTags: null`은 rich 정책을 적용하지 않아 태그 모양이 텍스트일 수 있다는 뜻이고, `[]`은 rich 모드지만 허용 태그가 없으며, `["link"]` 같은 배열은 허용 목록이다.
+`arguments` tells you which arguments and types the base schema allows, and it does not mean every argument must be used in the translation. You can omit arguments as before. `richTextTags: null` means the rich policy does not apply, so the tag shape may be text; `[]` means rich mode with no allowed tags; an array such as `["link"]` is the allowlist.
 
 ```sh
 npx --no-install saylo export --with-context --config saylo.config.json > translation-work-v2.json
 ```
 
-`import`·`approve`·`refresh`는 v1과 v2를 자동으로 읽는다. v2의 `context` 구조는 검사하지만 내용은 안내용이며, 실제 `sourceHash`·ICU·인자·태그·승인 검증은 현재 카탈로그와 설정으로 한다. `context`를 고쳐 허용 규칙을 바꿀 수 없다. `--with-context`는 `export`와 `refresh`에서만 받고 다른 명령에서는 exit 2다. 이 옵션과 v2 형식은 아직 게시하지 않은 현재 checkout 기능이다.
+`import`, `approve`, and `refresh` read both v1 and v2 automatically. The `context` structure of v2 is validated, but its content is informational; actual `sourceHash`, ICU, argument, tag, and approval validation uses the current catalog and configuration. Editing `context` cannot change the allowed rules. `--with-context` is accepted only by `export` and `refresh`; other commands exit 2. This option and the v2 format are features of the current checkout that have not been published.
 
-`import`는 `--file`과 `--dry-run`·`--apply` 중 정확히 하나를 요구한다. `--dry-run --json`은 검증 결과와 변경 목록만 출력하고, `--apply --json`은 검증을 통과한 번역을 카탈로그에 쓴다.
+`import` requires `--file` and exactly one of `--dry-run` or `--apply`. `--dry-run --json` prints only the validation result and the list of changes, and `--apply --json` writes translations that pass validation to the catalogs.
 
 ```sh
 npx --no-install saylo import --file translation-work.json --dry-run --json
 npx --no-install saylo import --file translation-work.json --apply --json
 ```
 
-`import --dry-run --diff`는 파일을 바꾸지 않고 `localesDir` 기준 상대 경로를 쓰는 3줄 문맥의 unified diff만 stdout에 낸다. 새 파일은 `--- /dev/null`로 시작하며 파일 끝 개행 누락 표식과 CRLF 줄도 diff에 유지한다. `--diff`는 `import --dry-run`에서만 유효하고 `--apply` 또는 다른 명령에 붙이면 사용법 오류(exit 2)다.
+`import --dry-run --diff` prints a unified diff with 3 lines of context using paths relative to `localesDir`, without changing files. New files start with `--- /dev/null`, and the no-newline-at-end-of-file marker and CRLF line endings are preserved in the diff. `--diff` is valid only with `import --dry-run`, and using it with `--apply` or another command is a usage error (exit 2).
 
 ```sh
 npx --no-install saylo import --file translation-work.json --dry-run --diff
 ```
 
-`--diff --json`은 기존 `saylo-translation-import/v1` 보고서에 `diff` 문자열을 더한다. 차단되면 `diff: null`과 exit 1, 변경이 없으면 `diff: ""`와 exit 0이다. 일반 차단 출력은 기존 진단과 요약만 내며 diff는 출력하지 않는다.
+`--diff --json` adds a `diff` string to the existing `saylo-translation-import/v1` report. When blocked, it returns `diff: null` and exit 1; when there are no changes, it returns `diff: ""` and exit 0. Normal blocked output prints only the existing diagnostics and summary and does not print a diff.
 
-일부 항목만 완료해도 된다. `translation`이 `null`이거나 `originalTranslation`과 같으면 건너뛰고, 이미 적용된 값을 다시 가져와도 쓰기가 없다. 한 항목이라도 검증에 실패하면 전체 적용이 차단된다.
+You can complete only some entries. It skips entries whose `translation` is `null` or equal to `originalTranslation`, and re-importing values that were already applied performs no write. If any single entry fails validation, the whole apply is blocked.
 
-작업 파일의 형식·기준 로케일·locale/namespace/id·중복을 검사한다. 대상 경로는 작업 파일에 적힌 경로를 믿지 않고 루트의 canonical 로케일 디렉터리와 namespace에서 만든다. 원문이나 rich 계약이 export 뒤 바뀌면 `SOURCE_CONFLICT`, 기존 번역이 `originalTranslation`과 달라졌으면 `TRANSLATION_CONFLICT`로 차단하므로 새로 export해서 다시 한다. 병합 결과의 JSON·ICU 인자·rich 태그도 모든 파일에 대해 먼저 검증한다.
+It validates the work file format, base locale, locale/namespace/id, and duplicates. Target paths are built from the canonical locale directories under the root and the namespace rather than trusting paths written in the work file. If the source text or rich contract changed after export, it blocks with `SOURCE_CONFLICT`; if the existing translation differs from `originalTranslation`, it blocks with `TRANSLATION_CONFLICT`, so export again and redo the work. It also validates the JSON, ICU arguments, and rich tags of the merged result for every file first.
 
-`--apply`는 파일마다 임시 파일을 쓰고 rename하며, Windows에서 `EPERM`·`EACCES`·`EBUSY`가 나면 재시도한다. 쓰기 전에 경로를 다시 확인하고 symlink나 junction이 있으면 실패한다. 모든 출력을 스테이징하고 검증한 뒤 첫 교체를 시작하지만 여러 파일을 한 트랜잭션으로 묶지는 않는다. 늦은 I/O·경합 실패가 나면 앞서 쓴 파일은 남을 수 있고, `--json` 오류의 `writtenFiles`에 그 목록이 나온다. 이미 쓴 파일을 되돌리려고 덮어쓰지 않는다.
+`--apply` writes a temp file per file and renames it, retrying when `EPERM`, `EACCES`, or `EBUSY` occurs on Windows. It rechecks paths before writing and fails if a symlink or junction exists. It stages and validates all output before starting the first replacement, but it does not group multiple files into one transaction. If a late I/O or contention failure occurs, files written earlier may remain, and the `writtenFiles` field of the `--json` error lists them. It does not overwrite already written files to roll them back.
 
-루트의 `.saylo-import.lock`이 동시 Saylo 가져오기를 막는다. 프로세스가 강제 종료되면 락이 남을 수 있으므로, 남은 락은 안에 적힌 pid가 실제로 끝났는지 확인한 뒤 직접 지운다.
+`.saylo-import.lock` in the root blocks concurrent Saylo imports. The lock may remain if a process is killed, so after checking that the pid written inside has actually ended, delete the leftover lock manually.
 
-교체 전 바이트 비교와 rename 재시도로 그 사이의 편집을 감지하지만, 마지막 확인과 rename 사이에 다른 편집기가 쓰는 것을 막는 파일시스템 CAS는 아니다.
+A byte comparison before replacement and rename retries detect edits in between, but this is not a filesystem CAS that prevents another editor from writing between the last check and the rename.
 
-`import --apply`·`approve --apply`와 `--out-file`을 쓰는 `export`·`snapshot`·`refresh`는 SIGINT·SIGTERM을 AbortSignal로 받는다. 신호를 받으면 추가 쓰기·게시를 멈추고 진행 중인 I/O와 handle·temp·lock 정리를 기다린 뒤 종료한다. 이미 성공한 atomic rename이나 outfile hardlink publish는 되돌리지 않으며, 신호와 겹쳐 완료된 파일도 `writtenFiles`에 정확히 보고한다. 첫 신호를 우선하고 정리 중 반복 신호로 즉시 강제 종료하지 않는다. 정상 종료와 실패 모두 CLI 신호 리스너를 해제하며, 취소 종료 코드는 SIGINT 130·SIGTERM 143, 그 밖의 일반 오류는 2다.
+`import --apply`, `approve --apply`, and `export`, `snapshot`, and `refresh` with `--out-file` receive SIGINT and SIGTERM as an AbortSignal. On a signal, they stop further writes and publications, wait for in-flight I/O and cleanup of handles, temp files, and locks, and then exit. They do not roll back an atomic rename or an outfile hardlink publish that already succeeded, and files completed concurrently with the signal are still reported accurately in `writtenFiles`. The first signal takes precedence, and repeated signals during cleanup do not force an immediate exit. Both normal exit and failure remove the CLI signal listeners. Cancellation exit codes are SIGINT 130 and SIGTERM 143; other general errors are 2.
 
-`import --apply`·`approve --apply`의 `--json` 취소는 기존 `saylo-command-error/v1`의 `error`에 `cancelled: true`, `signal: "SIGINT"|"SIGTERM"`, `writtenFiles: [...]`를 더하고 원인을 설명하는 `message`를 유지한다. `--out-file`도 같은 취소·`writtenFiles`·cleanup 보장을 따른다. dry-run과 `--out-file` 없는 읽기전용 경로는 대상이 아니다. SIGKILL·Windows 강제 종료·전원 꺼짐은 cleanup을 보장하지 않으므로 기존 stale lock 수동 확인 정책을 유지한다.
+For a `--json` cancellation of `import --apply` or `approve --apply`, the existing `saylo-command-error/v1` `error` gets `cancelled: true`, `signal: "SIGINT"|"SIGTERM"`, and `writtenFiles: [...]`, while the `message` explaining the cause is kept. `--out-file` follows the same cancellation, `writtenFiles`, and cleanup guarantees. Dry runs and read-only paths without `--out-file` are not affected. SIGKILL, a forced Windows termination, or power loss do not guarantee cleanup, so the existing manual stale-lock check policy remains.
 
-`--apply`는 기존 파일에서 바뀐 문자열 토큰만 교체해 키 순서·들여쓰기·줄바꿈·파일 끝 개행·수정하지 않은 이스케이프 표기를 보존하고, 새 키는 기존 콜론 주변 공백·들여쓰기·줄바꿈 방식으로 뒤에 추가한다. 여러 줄로 된 빈 객체는 2칸 들여쓰기를 쓰며 새 파일은 2칸·LF·마지막 개행으로 쓰고, 관련 없는 키와 고아 키는 그대로 둔다.
+`--apply` replaces only the changed string tokens in an existing file, preserving key order, indentation, line endings, final newline, and escape spellings that were not modified, and appends new keys using the existing spacing around colons, indentation, and line-break style. Multi-line empty objects use 2-space indentation, and new files use 2 spaces, LF, and a final newline. Unrelated keys and orphan keys are left as they are.
 
-`import`는 타입 선언과 baseline을 다시 만들지 않는다. 적용 뒤 `saylo check`와 타입 생성(`saylo-typegen`)을 따로 실행한다. baseline 갱신은 번역 승인과 별개다.
+`import` does not rebuild type declarations or the baseline. After applying, run `saylo check` and type generation (`saylo-typegen`) separately. Updating the baseline is separate from translation approval.
 
-### 번역 작업 파일 새로고침 (미게시)
+### Refreshing a translation work file (unpublished)
 
-`refresh`는 작성 중인 작업 파일을 최신 `export` 후보와 합쳐 `saylo-translation-refresh/v1` 보고서로 stdout에 낸다. `--out-file`을 주면 실제 보고서는 그 파일에 쓰고 stdout에는 영수증을 낸다. `--json`을 주지 않아도 stdout 전체가 단일 JSON이며, 보고서는 `blocked`·`workfile`·`conflicts`·`alreadyApplied`·`report`를 담는다. `workfile`은 `saylo-translation-work/v1` 또는 `saylo-translation-work/v2`이며, JSON·ICU·인자·rich 정책 오류처럼 카탈로그가 잘못됐으면 `null`이다. 삭제된 원문 키·namespace의 잔여 번역은 비교를 진행해 `SOURCE_REMOVED`로 보여 주고, `UNKNOWN_MESSAGE`·`NAMESPACE_MISMATCH`는 `report`에 보존하되 이 두 진단만으로 후보 생성을 막지 않으며 카탈로그도 삭제하지 않는다. `report`는 카탈로그 검사 결과다. `workfile: null`이면 `--out-file`도 만들지 않는다.
+`refresh` merges the work file in progress with the latest `export` candidates and prints a `saylo-translation-refresh/v1` report to stdout. With `--out-file`, the actual report is written to that file and stdout gets a receipt. Even without `--json`, the whole stdout is a single JSON document, and the report contains `blocked`, `workfile`, `conflicts`, `alreadyApplied`, and `report`. `workfile` is `saylo-translation-work/v1` or `saylo-translation-work/v2`, and is `null` if the catalog is invalid, such as from a JSON, ICU, argument, or rich policy error. Residual translations for removed source keys or namespaces are still compared and shown as `SOURCE_REMOVED`; `UNKNOWN_MESSAGE` and `NAMESPACE_MISMATCH` are kept in `report` but these two diagnostics alone do not block candidate generation, and catalogs are not deleted. `report` is the catalog check result. If `workfile` is `null`, no `--out-file` is created.
 
 ```sh
 npx --no-install saylo refresh --file translation-work.json --config saylo.config.json > refresh-report.json
@@ -192,25 +192,25 @@ npx --no-install saylo refresh --file translation-work.json --config saylo.confi
 jq '.workfile' refresh-report.json > refreshed-work.json
 ```
 
-`--config`·`--locales`로 카탈로그를 정하고 `--baseline`·`--reviews`를 `export`와 같이 적용한다. 승인 장부가 없으면 `export`처럼 빈 장부로 시작할 수 있지만, `baseline`을 지정했는데 파일이 없으면 실패한다. `refresh`는 `--out-file`로 지정한 보고서 외에는 입력 작업 파일, 카탈로그, baseline, 승인 장부, 생성 타입을 쓰지 않는다. `--apply`와 `--dry-run`은 받지 않으며 사용법 오류다.
+`--config` or `--locales` determines the catalogs, and `--baseline` and `--reviews` apply as they do for `export`. Without an approval ledger, it can start from an empty ledger like `export`, but a specified `baseline` that is missing fails. `refresh` writes no input work file, catalog, baseline, approval ledger, or generated types other than the report specified by `--out-file`. It does not accept `--apply` or `--dry-run`; those are usage errors.
 
-원문·rich 해시와 현재 카탈로그 번역이 작업 파일의 `originalTranslation`에서 바뀌지 않았으면 `translation`에 적어 둔 내용을 보존한다. `null`과 빈 문자열도 작성 중 상태로 유지하고, 최신 export의 새 `add`·`review` 작업도 포함해 locale·namespace·id 순으로 정렬한다.
+If the source and rich hashes and the current catalog translation have not changed from `originalTranslation` in the work file, it keeps the content written in `translation`. `null` and the empty string are kept as in-progress states, and new `add` and `review` jobs from the latest export are included and sorted by locale, namespace, and id.
 
-`refresh`는 입력이 v1이면 v1, v2면 v2를 유지하고 v2의 `context`는 최신 값으로 다시 계산한다. v1 입력에 `--with-context`를 주면 v2로 승격하며, 새 작업과 `conflicts.current`에는 최신 `context`를 넣고 `conflicts.previous`와 `alreadyApplied`는 입력 당시 스냅샷을 보존한다.
+`refresh` keeps v1 for v1 input and v2 for v2 input, and recalculates v2 `context` from the latest values. Giving `--with-context` with v1 input promotes it to v2; new jobs and `conflicts.current` get the latest `context`, while `conflicts.previous` and `alreadyApplied` keep the snapshot from the input.
 
-`SOURCE_REMOVED`·`SOURCE_CONFLICT`·`TRANSLATION_CONFLICT`·`UNKNOWN_TARGET`은 `conflicts`에 `{ code, previous, current }`로 넣는다. `previous`는 원래 entry, `current`는 최신 entry 또는 `null`이며 원문과 작성 번역을 보존한다. `conflicts.current`의 `translation`은 `null`이고 충돌 키는 `workfile.entries`에서 뺀다. `current`가 있는 충돌만 최신 원문을 검토해 `current.translation`을 채운 뒤 후보에 추가한다. `current: null`인 삭제·대상 제외 항목은 이전 항목을 기록으로 보관하거나 원문·대상을 복구한 뒤 다시 `refresh`한다.
+`SOURCE_REMOVED`, `SOURCE_CONFLICT`, `TRANSLATION_CONFLICT`, and `UNKNOWN_TARGET` are placed in `conflicts` as `{ code, previous, current }`. `previous` is the original entry, and `current` is the latest entry or `null`, preserving the source text and the written translation. `translation` in `conflicts.current` is `null`, and conflicting keys are removed from `workfile.entries`. For conflicts with `current`, review the latest source text, fill `current.translation`, and then add it to the candidates. For deleted or excluded-target entries with `current: null`, keep the earlier entry as a record or restore the source and target, then run `refresh` again.
 
-현재 카탈로그 번역이 작성 번역과 같고 그 작성 번역이 `originalTranslation`과 다르면 `alreadyApplied`에 이전 항목을 넣는다. `workfile`에는 `originalTranslation`과 `translation`을 모두 현재 번역으로 둔 검수 가능한 항목을 남긴다. 이 항목의 `import`는 no-op이며 승인은 `approve`로 따로 처리한다. 원문 변경 여부는 `alreadyApplied` 판정보다 먼저 검사한다.
+If the current catalog translation equals the written translation and that written translation differs from `originalTranslation`, the earlier entry is added to `alreadyApplied`. `workfile` keeps a reviewable entry whose `originalTranslation` and `translation` are both the current translation. `import` on this entry is a no-op, and approval is handled separately with `approve`. Whether the source changed is checked before the `alreadyApplied` decision.
 
-보고서 전체는 import·approve 입력이 아니다. `jq`로 최상위 `workfile`을 꺼낸 `refreshed-work.json`을 다음 단계에 쓴다. `exit 1`이어도 보고서는 남으므로 `conflicts[].previous`·`current`를 확인하고 작업 파일을 손으로 고친 뒤 추출한다.
+The whole report is not input to import or approve. Use `refreshed-work.json`, extracted from the top-level `workfile` with `jq`, in the next step. The report remains even on `exit 1`, so check `conflicts[].previous` and `current`, edit the work file by hand, and extract it.
 
-### 선택적 번역 승인 기록 (미게시)
+### Optional translation approval records (unpublished)
 
-`reviews`는 승인한 로케일·키와 그때의 원문·번역 해시를 묶는 선택 기능이다. 공통 JSON에 `"reviews": "saylo-reviews.json"`을 넣거나 `check`·`sync`·`export`·`refresh`·`approve`에 `--reviews`를 붙인다. 지정하지 않으면 기존 baseline-only 동작을 유지한다. 장부에는 locale/namespace/id별 원문·rich 계약 해시와 번역 해시만 저장한다.
+`reviews` is an optional feature that binds approved locales and keys to the source and translation hashes at that time. Put `{"reviews": "saylo-reviews.json"}` in the shared JSON, or add `--reviews` to `check`, `sync`, `export`, `refresh`, or `approve`. When not specified, the existing baseline-only behavior is kept. The ledger stores only the source and rich contract hash and the translation hash per locale/namespace/id.
 
-공통 JSON `SayloProjectConfig`에서 `requireReviewedTranslations: true`와 `reviews`를 함께 두면 같은 설정을 읽는 Vite 운영 빌드도 승인 검사를 강제한다. 이 옵션의 기본값은 `false`이며, `true`인데 `reviews`가 없으면 Vite dev에서도 거부한다.
+If `requireReviewedTranslations: true` and `reviews` are both set in the shared JSON `SayloProjectConfig`, Vite production builds that read the same configuration also enforce approval checks. This option defaults to `false`, and `true` without `reviews` is rejected in Vite dev as well.
 
-처음 켜면 대상 로케일의 기존 번역도 모두 명시 승인이 필요하다. `check`·`sync`는 장부가 없으면 실패하고(exit 2), `export`·`refresh`·`approve`는 없는 장부를 빈 기록으로 시작한다. `export`는 장부를 쓰지 않으며, 번역된 기존 키도 모두 `review` 작업으로 낸다.
+When you first enable it, existing translations in target locales also require explicit approval. `check` and `sync` fail (exit 2) when the ledger is missing, while `export`, `refresh`, and `approve` start from an empty record. `export` does not write the ledger and emits all translated existing keys as `review` jobs.
 
 ```sh
 npx --no-install saylo export --reviews saylo-reviews.json --locales en > review-work.json
@@ -218,23 +218,23 @@ npx --no-install saylo approve --reviews saylo-reviews.json --file review-work.j
 npx --no-install saylo approve --reviews saylo-reviews.json --file review-work.json --apply --json
 ```
 
-작업 파일을 검토한 뒤 확인한 번역 문자열은 그대로 둔다. 아직 확인하지 않은 항목은 `translation`을 `null`로 바꾸거나 파일에서 뺀다. `translation: null`인 항목은 승인하지 않으며, 값이 그대로인 기존 번역도 남기면 명시 승인할 수 있다. 현재 원문·rich 해시나 번역이 export 뒤 달라졌으면 충돌로 막고 일부만 적용하지 않는다. `import --apply`도 번역을 자동 승인하지 않는다.
+Leave translation strings you have verified after reviewing the work file as they are. For entries you have not verified yet, set `translation` to `null` or remove them from the file. Entries with `translation: null` are not approved; keeping an existing translation whose value is unchanged also lets you approve it explicitly. If the current source or rich hash or the translation changed after export, it blocks as a conflict and does not apply partially. `import --apply` also does not approve translations automatically.
 
-`approve --apply`는 확인한 항목의 승인 기록만 추가하고 카탈로그·baseline·타입 선언은 쓰지 않는다. 다른 locale/key의 기존 승인은 보존하며, baseline을 새로 만들어도 승인 장부와 미승인 상태는 바뀌지 않는다. 승인 뒤 원문이 바뀌면 `SOURCE_CHANGED`, 번역이 바뀌면 `TRANSLATION_CHANGED`, 기록이 없는 키는 `REVIEW_REQUIRED`다. `check`·`sync`·`export`·`refresh`는 모두 장부를 적용해 이 상태를 낸다.
+`approve --apply` adds only approval records for verified entries and writes no catalog, baseline, or type declaration. Existing approvals for other locales or keys are preserved, and creating a new baseline does not change the approval ledger or unapproved states. After approval, a changed source is `SOURCE_CHANGED`, a changed translation is `TRANSLATION_CHANGED`, and a key with no record is `REVIEW_REQUIRED`. `check`, `sync`, `export`, and `refresh` all apply the ledger and report these states.
 
-장부는 `locales` 밖의 `.json` 파일이어야 한다. 쓰기 시 부모 디렉터리가 실제로 존재하고 symlink가 아니어야 하며, 장부 경로가 symlink면 거부한다. 같은 장부는 장부별 lock으로 직렬화하고 임시 파일을 atomic rename한다. 강제 종료로 남은 lock은 소유 pid가 끝났는지 확인한 뒤 지운다.
+The ledger must be a `.json` file outside `locales`. When writing, the parent directory must actually exist and must not be a symlink, and a symlink ledger path is rejected. The same ledger is serialized by a per-ledger lock and replaced with an atomic rename. A lock left by a forced termination is deleted after checking that the owning pid has ended.
 
-종료 코드는 `check`가 정상 0·진단 있음 1, `sync`가 계획 생성 0·잘못된 카탈로그 등으로 차단 1, `snapshot`이 정상 0·잘못된 카탈로그 1이다. `export`는 작업 파일 생성 0·잘못된 카탈로그 1, `import`와 `approve`는 미리보기 가능·적용 완료 0·충돌이나 검증 실패로 차단 1이다. `--apply`·`--out-file` 취소는 SIGINT 130, SIGTERM 143이며 다른 일반 오류는 2다. `refresh`는 충돌 없는 후보 0, 충돌 또는 잘못된 카탈로그 1, 사용법·파일시스템·작업 파일 형식 오류 2다. `refresh`는 `--json` 없이도 stdout 전체가 단일 JSON 보고서다. 다른 명령의 `--json` 오류도 stdout의 단일 JSON으로 반환하며, 도움말은 디스크를 읽지 않는다. 기존 `saylo-typegen`의 종료 코드 0·1은 유지한다.
+Exit codes are: `check` 0 when normal and 1 when there are diagnostics; `sync` 0 when the plan is generated and 1 when blocked, for example by an invalid catalog; `snapshot` 0 when normal and 1 for an invalid catalog. `export` exits 0 when the work file is created and 1 for an invalid catalog; `import` and `approve` exit 0 when a preview is available or the apply completes and 1 when blocked by a conflict or validation failure. Cancellation of `--apply` or `--out-file` is SIGINT 130 and SIGTERM 143, and other general errors are 2. `refresh` exits 0 for a candidate with no conflicts, 1 for conflicts or an invalid catalog, and 2 for usage, filesystem, or work file format errors. Without `--json`, the whole stdout of `refresh` is a single JSON report. `--json` errors from other commands are also returned as a single JSON document on stdout, and help does not read the disk. The existing `saylo-typegen` exit codes of 0 and 1 are preserved.
 
-### 기존 인자로 타입 생성
+### Generating types with the existing arguments
 
 ```sh
 npx saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
 ```
 
-`--locales-dir`의 전체 카탈로그를 검증한 뒤 기준 로케일의 선언을 쓴다. 잘못된 번역 파일이 있으면 오류로 종료한다. 위 카탈로그에서 생성되는 `AppSchema`는 `{ "demo:greeting": { "name": number | string } }` 형태이고, 숫자는 `number`, 일반 보간은 `number | string`, 날짜는 `Date | number`로 표현한다. ICU 분기에서 쓴 인자도 필수로 생성한다.
+After validating every catalog under `--locales-dir`, it writes the declarations for the base locale. If an invalid translation file exists, it exits with an error. `AppSchema` generated from the catalog above has the shape `{ "demo:greeting": { "name": number | string } }`; numbers are `number`, ordinary interpolation is `number | string`, and dates are `Date | number`. Arguments used in any ICU branch are also generated as required.
 
-생성한 `AppSchema`는 코어 제네릭에 연결한다.
+Connect the generated `AppSchema` to the core generics.
 
 ```ts
 import { readFile } from 'node:fs/promises';
@@ -254,9 +254,9 @@ console.log(store.t('demo:greeting', { name: 'Saylo' })); // "Hello Saylo"
 store.dispose();
 ```
 
-JS 프로젝트에서는 JSDoc `/** @type {import('@0disoft/saylo-core').Store<import('./generated.js').AppSchema>} */`로 같은 키·인자 검사를 연결한다.
+In a JavaScript project, connect the same key and argument checks with the JSDoc `/** @type {import('@0disoft/saylo-core').Store<import('./generated.js').AppSchema>} */`.
 
-`--help`와 `-h`는 옵션과 예시를 stdout에 출력하고 exit 0으로 끝난다. 도움말은 카탈로그를 읽지 않고 출력 파일도 쓰지 않는다.
+`--help` and `-h` print the options and an example to stdout and exit 0. Help does not read catalogs or write an output file.
 
 ```text
 Usage: saylo-typegen --locales-dir <directory> --base-locale <locale> --out-file <file.d.ts>
@@ -276,35 +276,35 @@ Example:
 All catalogs are validated before writing. Invalid catalogs leave existing output unchanged.
 ```
 
-필수 옵션이 빠졌거나, 모르는 옵션이거나, `--base-locale`이 BCP 47 형식이 아니거나, `--out-file`이 `.d.ts`로 끝나지 않으면 사용 오류다. 메시지와 `Run saylo-typegen --help for options and an example.` 힌트를 stderr에 쓰고 exit 1로 끝나며 stdout은 비어 있다. `--out-file` 확장자와 `--base-locale` 검사는 카탈로그를 디스크에서 읽기 전에 돌아서 잘못된 옵션이 파일 IO 전에 걸린다. 옵션을 고쳐 같은 명령을 다시 실행하면 된다. 출력 파일이 `.d.ts`만 되는 제한과 마지막 정상 출력 유지·원자적 교체 계약은 그대로다. 이 도움말과 조기 검사는 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에 포함하며 현재 npm 게시본 `0.1.0-alpha.4`에는 없다.
+A missing required option, an unknown option, a `--base-locale` that is not in BCP 47 form, or an `--out-file` that does not end in `.d.ts` is a usage error. It writes the message and the hint `Run saylo-typegen --help for options and an example.` to stderr, exits 1, and leaves stdout empty. The `--out-file` extension and `--base-locale` checks run before reading catalogs from disk, so invalid options fail before file I/O. Fix the options and run the same command again. The restriction that the output file must be `.d.ts` and the contract of keeping the last valid output and replacing it atomically are unchanged. This help and early validation are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, and are not in the current npm release `0.1.0-alpha.4`.
 
-## 빌드 순서
+## Build order
 
-순서는 typegen → tsc → vite다. Vite build는 소비자 TS 타입 검사를 하지 않으므로 tsc를 먼저 돌린다. Vite 플러그인에 `typegen: { outFile: 'generated.d.ts' }`를 주면 dev에서 초기 생성 뒤 배경으로 갱신하고, 문구만 바뀌면 선언을 다시 쓰지 않는다.
+The order is typegen → tsc → vite. Because the Vite build does not check consumer TS types, run tsc first. Adding `typegen: { outFile: 'generated.d.ts' }` to the Vite plugin generates initially in dev and then updates in the background, and it does not rewrite declarations when only the copy changes.
 
-## 관련 패키지
+## Related packages
 
-- [@0disoft/saylo-core](https://github.com/0disoft/saylo/tree/main/packages/core#readme) — `AppSchema` 소비
-- [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme) — dev에서 자동 생성
+- [@0disoft/saylo-core](https://github.com/0disoft/saylo/tree/main/packages/core#readme) — consumes `AppSchema`
+- [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme) — automatic generation in dev
 - [@0disoft/saylo-react](https://github.com/0disoft/saylo/tree/main/packages/react#readme) — typed hook
 
-## 문서
+## Documentation
 
-- [라이브 반영과 타입](https://github.com/0disoft/saylo/blob/main/docs/04-live-update-and-types.md)
-- 저장소 [README](https://github.com/0disoft/saylo#readme)
+- [Live updates and types](https://github.com/0disoft/saylo/blob/main/docs/04-live-update-and-types.md)
+- Repository [README](https://github.com/0disoft/saylo#readme)
 
-## 버전
+## Versions
 
-Node.js 24.x를 지원한다. `engines.node`는 `24.x`이고 로컬 검증 환경은 Node 24.18.0이다. TypeScript 7을 기준으로 검증하며 `typescript`를 peer로 강제하지 않는다.
+Supports Node.js 24.x. `engines.node` is `24.x`, and the local verification environment is Node 24.18.0. It is verified against TypeScript 7, and `typescript` is not enforced as a peer.
 
-Node에서 실행하는 CLI·worker이고 런타임 target은 ES2022다.
+It is a CLI and worker that run on Node, and the runtime target is ES2022.
 
-## 문의와 보안 제보
+## Questions and security reports
 
-일반 문의·기능 제안·버그는 [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com)으로 보낸다. 패키지·버전, 환경, 기대한 동작과 실제 동작, 합성 데이터로 만든 최소 재현을 적는다. 보안 문제도 같은 이메일에 `Saylo security` 제목으로 비공개 제보한다. 토큰·키·쿠키·실제 사용자 데이터는 보내지 않는다.
+Send general questions, feature proposals, and bugs to [rodisoft1@gmail.com](mailto:rodisoft1@gmail.com). Include the package and version, the environment, expected and actual behavior, and a minimal reproduction built from synthetic data. Report security issues privately to the same email with a `Saylo security` subject. Do not send tokens, keys, cookies, or real user data.
 
-Vite 패키지를 설치했다면 `node_modules/@0disoft/saylo-vite/docs/support.md`와 `security.md`에서 자세한 안내를 읽을 수 있다. 이 안내와 연락처 변경은 현재 checkout과 `0.1.0-alpha.5` 후보 tarball에 포함하며 기존 alpha.4 tarball에는 없다. 후보는 아직 npm에 게시하지 않았다.
+If you installed the Vite package, you can read the fuller guidance in `node_modules/@0disoft/saylo-vite/docs/support.md` and `security.md`. These notes and the contact change are included in the current checkout and the `0.1.0-alpha.5` candidate tarball, but not in the existing alpha.4 tarball. The candidate has not yet been published to npm.
 
-## 라이선스
+## License
 
-Apache-2.0이다. 배포 tarball에 저장소 루트의 `LICENSE`와 `NOTICE`를 함께 싣는다.
+Apache-2.0. The distribution tarball includes the repository root `LICENSE` and `NOTICE`.
