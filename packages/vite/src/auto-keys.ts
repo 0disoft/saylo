@@ -4,6 +4,7 @@ import type { ParsedCatalog } from '@0disoft/saylo-core';
 import { analyzeSource, resolveAliases, isTranslator } from './auto-key-analysis.js';
 import { mapFileTasks } from './catalog-files.js';
 import { resolveModuleImports } from './auto-key-modules.js';
+import { compileTemplateKey } from './auto-key-pattern.js';
 import type { ImportResolver } from './auto-key-modules.js';
 
 export interface AutoIncludeKeys {
@@ -70,10 +71,10 @@ export async function findIncludedKeys(root: string, catalogs: readonly ParsedCa
       const identity = JSON.stringify(pieces);
       let matched = matchedPatterns.get(identity);
       if (!matched) {
-        const pattern = new RegExp('^' + pieces.map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$', 's');
+        const matches = compileTemplateKey(pieces);
         const first = pieces[0] ?? '', separator = first.indexOf(':');
         const candidates = separator >= 0 ? byNamespace.get(first.slice(0, separator)) ?? [] : available;
-        matched = [...candidates].filter(candidate => pattern.test(candidate));
+        matched = [...candidates].filter(candidate => matches(candidate));
         matchedPatterns.set(identity, matched);
       }
       for (const key of matched) selected.add(key);

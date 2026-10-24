@@ -7,6 +7,52 @@ import { build } from 'vite';
 import { parseCatalog } from '@0disoft/saylo-core';
 import saylo from '../dist/index.js';
 import { findIncludedKeys, readAutoKeys } from '../dist/auto-keys.js';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { compileTemplateKey } from '../dist/auto-key-pattern.js';
+
+test('many template substitutions cannot stall source selection on a short nonmatching key', async t => {
+  const root = await fixture(t);
+  await writeFile(path.join(root, 'src/main.js'),
+    'export const label = (a,b,c,d,e,f,g,h) => t(`demo:${a}${b}${c}${d}${e}${f}${g}${h}missing`);');
+  const source = `
+    import { findIncludedKeys } from ${JSON.stringify(new URL('../dist/auto-keys.js', import.meta.url).href)};
+    import { parseCatalog } from '@0disoft/saylo-core';
+    const messages = { ['a'.repeat(80)]: 'Unused', ['b'.repeat(80) + 'missing']: 'Used' };
+    const catalogs = [parseCatalog(JSON.stringify(messages), { locale: 'ko', namespace: 'demo' })];
+    const started = performance.now();
+    const keys = await findIncludedKeys(process.argv[1], catalogs, 'ko', { from: ['src'] });
+    console.log(JSON.stringify({ keys, elapsedMs: performance.now() - started }));
+  `;
+  // The child deadline also bounds the regression when synchronous regex work blocks the event loop.
+  const { stdout } = await promisify(execFile)(process.execPath, ['--input-type=module', '-e', source, root],
+    { timeout: 10000, windowsHide: true });
+  const result = JSON.parse(stdout);
+  assert.deepEqual(result.keys, ['demo:' + 'b'.repeat(80) + 'missing']);
+  t.diagnostic(`Template selection finished in ${result.elapsedMs.toFixed(3)}ms`);
+});
+
+test('template matching preserves literal order, empty substitutions and non-overlapping anchors', () => {
+  for (const [pieces, key, expected] of [
+    [['ab', 'ab'], 'ab', false], [['ab', 'ab'], 'abab', true],
+    [['', 'x', '', 'x', ''], 'x', false], [['', 'x', '', 'x', ''], 'xx', true],
+    [['demo:', 'a', 'a'], 'demo:aa', true], [['demo:', 'a', 'a'], 'demo:a', false],
+    [['demo:', 'aba', 'ba'], 'demo:ababa', true], [['demo:', 'aba', 'ba'], 'demo:aba', false],
+    [['demo:', '.', '+[x]$'], 'demo:a.b+[x]$', true],
+    [['demo:', 'end'], 'demo:end\n', false],
+    [['demo:', '終'], 'demo:🙂\n終', true],
+  ]) assert.equal(compileTemplateKey(pieces)(key), expected, JSON.stringify({ pieces, key }));
+
+  const literals = ['', 'a', '.', '\n'];
+  for (const first of literals) for (const middle of literals) for (const last of literals) {
+    const pieces = [first, middle, last];
+    const pattern = pieces.map(piece => piece.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*');
+    const oracle = new RegExp('^' + pattern + '$(?![\\s\\S])', 's');
+    const matches = compileTemplateKey(pieces);
+    for (const key of ['', 'a', 'aa', '.', '..', 'a.a', '\n', '\na\n', 'a\n', 'a.\na'])
+      assert.equal(matches(key), oracle.test(key), JSON.stringify({ pieces, key }));
+  }
+});
 
 test('resolved aliases follow named reexports and namespace members while preserving dynamic-call diagnostics', async t => {
   const root = await fixture(t);
