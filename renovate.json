@@ -16,7 +16,6 @@
       "description": "Keep npm ranges and batch compatible updates monthly",
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
-      "rangeStrategy": "in-range-only",
       "groupName": "npm compatible updates",
       "dependencyDashboardApproval": false,
       "schedule": ["* 0-5 1 * *"]
