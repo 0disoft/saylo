@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createBaseSchema, createBootSnapshot, createI18n, createServerI18n, decodeBootSnapshot, parseCatalog, serializeBootSnapshot } from '@0disoft/saylo-core';
+import { validateBootSnapshot } from '../dist/boot.js';
+import { freeze } from '../dist/diagnostics.js';
 
 function fixture() {
   const parse = (locale, namespace, messages) => parseCatalog(JSON.stringify(messages), { locale, namespace, sourceName: `${locale}/${namespace}.json` });
@@ -56,6 +58,36 @@ test('boot pair and schema order do not change canonical hydration data', t => {
   const decoded = decodeBootSnapshot(JSON.stringify(reordered));
   assert.equal(serializeBootSnapshot(decoded), original);
   assert.equal(decoded.catalogOutcomes.find(outcome => outcome.key.locale === 'en' && outcome.key.namespace === 'help').status, 'missing');
+});
+
+test('canonical boot snapshots reuse validated identity without trusting external frozen copies', t => {
+  const server = fixture().create();
+  t.after(() => server.dispose());
+  const boot = server.getBootSnapshot();
+  assert.equal(validateBootSnapshot(boot), boot);
+  const wire = serializeBootSnapshot(boot);
+  const decoded = decodeBootSnapshot(wire);
+  assert.notEqual(decoded, boot);
+  assert.equal(validateBootSnapshot(decoded), decoded);
+  assert.equal(serializeBootSnapshot(decoded), wire);
+  for (const seal of [Object.freeze, freeze]) {
+    const forged = JSON.parse(wire);
+    forged.baseSchemas[0].keys.when = {};
+    assert.throws(() => serializeBootSnapshot(seal(forged)), { code: 'INVALID_BOOT' });
+  }
+});
+
+test('validating mutable boot input never caches the caller-owned identity', t => {
+  const server = fixture().create();
+  t.after(() => server.dispose());
+  const input = JSON.parse(serializeBootSnapshot(server.getBootSnapshot()));
+  const accepted = validateBootSnapshot(input);
+  const expected = serializeBootSnapshot(accepted);
+  assert.notEqual(accepted, input);
+  assert.ok(Object.isFrozen(accepted.baseSchemas[0].keys));
+  input.baseSchemas[0].fingerprint = 'forged-after-validation';
+  assert.throws(() => validateBootSnapshot(input), { code: 'INVALID_BOOT' });
+  assert.equal(serializeBootSnapshot(accepted), expected);
 });
 
 test('boot decode rejects omissions, duplicates, wrong stamps, schema content and version', t => {

@@ -1,0 +1,19 @@
+{
+  "label": "after",
+  "node": "v24.18.0",
+  "messagesPerLocale": 10000,
+  "locales": 2,
+  "warmup": 1,
+  "samplesMs": [
+    270.48109999999997,
+    289.6849000000002,
+    310.59439999999995
+  ],
+  "p50Ms": 289.6849000000002,
+  "snapshotBuilds": [
+    2,
+    2,
+    2
+  ],
+  "wireBytes": 16253568
+}

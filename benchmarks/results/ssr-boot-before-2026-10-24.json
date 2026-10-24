@@ -1,0 +1,19 @@
+{
+  "label": "before",
+  "node": "v24.18.0",
+  "messagesPerLocale": 10000,
+  "locales": 2,
+  "warmup": 1,
+  "samplesMs": [
+    383.7715999999996,
+    435.59860000000026,
+    577.3571000000002
+  ],
+  "p50Ms": 435.59860000000026,
+  "snapshotBuilds": [
+    4,
+    4,
+    4
+  ],
+  "wireBytes": 16253568
+}

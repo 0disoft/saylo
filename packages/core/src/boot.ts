@@ -21,6 +21,10 @@ export interface BootSnapshot {
 
 export type BootSnapshotInput = Omit<BootSnapshot, 'format' | 'baseSchemas'>;
 
+// Only canonical, fully validated snapshots built here may skip validation.
+// External frozen objects and decoded JSON must still pass every check.
+const acceptedSnapshots = new WeakSet<BootSnapshot>();
+
 export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
   const manifest = readManifest(input.manifest);
   const locale = canonicalLocale(input.locale);
@@ -48,8 +52,10 @@ export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
   createLoadedSnapshot(manifest, locale, namespaces, outcomes, timeZone, createTextFormatter(timeZone), input.stateRevision);
   const baseSchemas = outcomes.flatMap(o => o.status === 'present' && o.key.locale === manifest.baseLocale
     ? [createBaseSchema(o.catalog)] : []);
-  return freeze({ format: 'saylo-boot-v1', manifest, locale, timeZone, stateRevision: input.stateRevision,
+  const snapshot: BootSnapshot = freeze({ format: 'saylo-boot-v1', manifest, locale, timeZone, stateRevision: input.stateRevision,
     loadedNamespaces: namespaces, baseSchemas, catalogOutcomes: outcomes });
+  acceptedSnapshots.add(snapshot);
+  return snapshot;
 }
 
 /** HTML-safe JSON text for a script[type=application/json]; does not emit a script element. */
@@ -64,6 +70,7 @@ export function decodeBootSnapshot(json: string): BootSnapshot {
 }
 
 export function validateBootSnapshot(input: BootSnapshot): BootSnapshot {
+  if (acceptedSnapshots.has(input)) return input;
   if (!input || input.format !== 'saylo-boot-v1' || !Array.isArray(input.baseSchemas))
     throw new CatalogLoadError('INVALID_BOOT', 'Unsupported or malformed Saylo boot snapshot.');
   const accepted = createBootSnapshot(input);
