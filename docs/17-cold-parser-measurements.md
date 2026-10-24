@@ -1,53 +1,53 @@
-# 17. Cold 파서 계측 결과
+# 17. Cold Parser Instrumentation Results
 
-이 문서는 제품 최적화가 아니라 benchmark-only cold 내부 계측 추가 결과를 정리한다. 제품 source와 dist는 변경하지 않았고, 계측은 benchmark 하네스 안에서만 동작한다. 모든 수치는 파서 계측 전용이며 watcher, validation, browser 경로는 범위 밖이다.
+This document reports the results of adding benchmark-only instrumentation for the cold internal parser path. It is not a product optimization. Product source and dist were unchanged, and the instrumentation runs only inside the benchmark harness. All numbers apply to parser instrumentation; watcher, validation, and browser paths are out of scope.
 
-## 실행
+## Execution
 
 ```
 node benchmarks/live-update/parser-stages.mjs benchmarks/results/parser-stages-cold-final.json cold
 ```
 
-최종 실행 환경은 Node 24.18.0, Windows x64다. 여기서 cold는 프로세스 cold start가 아니라 previous catalog가 없는 상태를 뜻한다(previous는 항상 undefined).
+The final run used Node 24.18.0 on Windows x64. Here, cold does not mean a cold process start; it means parsing without a previous catalog (previous is always undefined).
 
-## 측정 구성
+## Measurement setup
 
-- cold 설정: warmup 5, samples 20, 입력 1k와 10k 각각, en-GB English literal + ASCII `{name}` 자리표시자.
-- 계측 3 모듈, in-memory Node hook(catalog/json/schema). 제품 source/dist 변경 없음.
-- 계측 지표: per-message AST, 인자 추론(inclusive), 인자 schema freeze, 메시지 freeze, final catalog freeze.
-- jsonMs는 strict parse와 tokenScan을 포함한다. argumentsMs는 argumentFreeze를 포함하고, messageLoop는 AST, arguments, messageFreeze를 포함한다.
-- per-sample residual을 먼저 계산한 뒤 요약한다. p95를 서로 합산하지 않는다.
-- 계측 clock/counter overhead는 측정에 포함된다.
+- Cold settings: warmup 5, samples 20, inputs of 1k and 10k each, and en-GB English literal plus ASCII `{name}` placeholders.
+- Three instrumentation modules and an in-memory Node hook (catalog/json/schema). Product source and dist were not changed.
+- Measured stages: per-message AST, argument inference (inclusive), argument schema freeze, message freeze, and final catalog freeze.
+- jsonMs includes strict parse and tokenScan. argumentsMs includes argumentFreeze, and messageLoop includes AST, arguments, and messageFreeze.
+- Per-sample residuals are calculated first, then summarized. Values at p95 were not added together.
+- Instrumentation clock and counter overhead are included in the measurements.
 
-## 결과
+## Results
 
-최종 결과는 [parser-stages-cold-final.json](../benchmarks/results/parser-stages-cold-final.json), raw는 [1k 표본](../benchmarks/results/parser-stages-cold-final.1000.samples.json)과 [10k 표본](../benchmarks/results/parser-stages-cold-final.10000.samples.json)이다(warmup 포함 각 25행).
+The final results are in [parser-stages-cold-final.json](../benchmarks/results/parser-stages-cold-final.json), with raw data in the [1k samples](../benchmarks/results/parser-stages-cold-final.1000.samples.json) and [10k samples](../benchmarks/results/parser-stages-cold-final.10000.samples.json) (25 rows each, including warmups).
 
-| 입력 | total p50(ms) | total p95(ms) |
+| Input | Total p50 (ms) | Total p95 (ms) |
 | --- | --- | --- |
 | 1k | 24.78 | 77.65 |
 | 10k | 321.21 | 598.09 |
 
-10k 단계별 p95(ms): json 17.82, AST 90.23, argumentInferenceOnly 95.50, argumentFreeze 219.30, messageFreeze 213.98, finalFreeze 6.20.
+Stage p95 for 10k (ms): json 17.82, AST 90.23, argumentInferenceOnly 95.50, argumentFreeze 219.30, messageFreeze 213.98, finalFreeze 6.20.
 
-단일 sample마다 겹치지 않는 동결 3개 합계가 total에서 차지하는 비중은 10k에서 최소 52.16%, 중앙 71.25%, 최대 90.62%다. 이 값은 p95끼리 합친 것이 아니다. 동결 호출의 wall time 비중이며 CPU 사용률이나 GC를 뺀 비용으로 사용하지 않는다.
+For 10k, the combined share of the three non-overlapping freeze stages in each individual sample was at least 52.16%, with a median of 71.25% and a maximum of 90.62%. This is not a sum of p95 values. It is the wall-time share of the freeze calls and should not be treated as CPU utilization or as a cost with GC removed.
 
-10k 입력은 387772 B다. locale add fixture 387783 B와는 probe 차이만큼 다르다.
+The 10k input was 387,772 B. It differs from the locale-add fixture's 387,783 B by the probe difference.
 
-## GC 관측
+## GC observations
 
-GC PerformanceObserver entries의 startTime을 parser perf.now window와 대조해 귀속한다. callback 전달 시점에 귀속하지 않고, 겹친 구간은 union으로 합쳐 중복 계산하지 않는다. forced GC는 쓰지 않는다. 파싱 전후 heapUsed 값은 timing 밖에서 읽는다. 그 차이는 회수 전 쓰레기도 포함하는 사용량 변화이며 총 할당량이나 V8 heap snapshot이 아니다. GC 관측 duration은 실제 stop-the-world pause나 CPU 사용 시간을 측정한 값이 아니므로 파싱 시간에서 차감할 수 없다.
+The startTime of GC PerformanceObserver entries is mapped against the parser perf.now window. Entries are not attributed based on when the callback was delivered, and overlapping intervals are merged into a union so they are not counted twice. No forced GC was used. heapUsed is read before and after parsing outside the timing window. Its difference includes uncollected garbage and is a change in usage, not total allocation or a V8 heap snapshot. GC observation duration does not measure actual stop-the-world pause or CPU time, so it cannot be subtracted from parsing time.
 
-20회 중 GC 겹침이 관측된 표본은 15회, GC interval union p95는 112.89ms다. 겹침이 관측되지 않은 5개 표본도 p95가 585.69ms이므로 tail 원인을 GC만으로 단정할 수 없다. GC 겹침이 관측된 15회의 p95는 648.26ms다. 작은 표본의 분류별 p95를 일반화하지 않는다.
+GC overlap was observed in 15 of 20 samples, and the GC interval union p95 was 112.89 ms. The five samples with no observed overlap had a p95 of 585.69 ms, so GC alone cannot be identified as the cause of the tail. The p95 for the 15 samples with observed GC overlap was 648.26 ms. Do not generalize category p95 values from this small sample.
 
-## Incremental 회귀 확인
+## Incremental regression check
 
-Incremental 회귀 smoke는 [parser-stages-incremental-gc-smoke.json](../benchmarks/results/parser-stages-incremental-gc-smoke.json), raw는 같은 stem의 .1000/.10000.samples.json이다(warmup 10, samples 50). unchanged message ref reuse와 AST 동결 검사는 통과했다. 1k/10k total p95는 2.74/36.12이며, 후속 성능 개선 비교가 아니라 회귀 실행 확인용이다. GC interval clipping·union·경계·빈 구간을 독립 입력으로 확인했고, detailed hook에서도 중첩 ICU·skeleton·동결·중복 ID와 ICU 오류 처리를 확인했다. 원시 표본의 수·요약·잔여 구간·GC window·코드 hash도 대조했다.
+The incremental regression smoke results are in [parser-stages-incremental-gc-smoke.json](../benchmarks/results/parser-stages-incremental-gc-smoke.json), with raw data in the .1000/.10000.samples.json files with the same stem (warmup 10, samples 50). Reuse of unchanged message references and AST freeze checks passed. Total p95 for 1k/10k was 2.74/36.12; this was a regression check run, not a comparison for measuring a later performance improvement. GC interval clipping, union, boundaries, and empty intervals were checked with independent inputs, and the detailed hook was also checked with nested ICU, skeleton, freezing, duplicate IDs, and ICU error handling. Raw sample counts, summaries, residual intervals, GC windows, and code hashes were also compared.
 
-## 한계와 다음 후보
+## Limitations and next candidates
 
-이번 실행은 계측 추가일 뿐 최적화가 아니므로 목록 표시 250ms 목표 달성을 주장할 수 없다. 첫 탐색 run(p95 774.68ms) 뒤 GC 중복 union을 수정하고 raw를 분리했다. 첫 탐색 raw는 보존하지 않았고 전후 성능 비교에 쓰지 않는다.
+This run added instrumentation; it did not optimize anything, so it cannot claim that the 250 ms list-display target was met. After the first exploratory run (p95 774.68 ms), duplicate GC unions were fixed and the raw files were split. The first exploratory raw data was not retained and is not used for before/after performance comparisons.
 
-그 뒤의 [선행 cold run](../benchmarks/results/parser-stages-cold.json)은 10k total p95 1,054.05ms, 동결 비중 최소 51.59%·중앙 58.67%였다. 최종 run 전에 heap metadata의 표현을 바로잡았으며 측정 로직과 제품 코드는 바꾸지 않았다. 두 run의 원시 표본은 각각 보존한다. 부하·GC·스케줄링을 분리하지 않았으므로 1,054.05→598.09ms를 성능 개선으로 해석하지 않는다. 이전 결과의 `heap snapshots`·`live-heap` 표현 역시 실제 수집은 `process.memoryUsage().heapUsed` 전후 값이다.
+The later [preceding cold run](../benchmarks/results/parser-stages-cold.json) had a 10k total p95 of 1,054.05 ms and freeze shares of at least 51.59% with a median of 58.67%. Before the final run, the representation of heap metadata was corrected; the measurement logic and product code were not changed. The raw samples from both runs are retained separately. Because load, GC, and scheduling were not separated, the change from 1,054.05 to 598.09 ms is not interpreted as a performance improvement. The earlier result's `heap snapshots` and `live-heap` labels are also inaccurate: the actual collection used before/after `process.memoryUsage().heapUsed` values.
 
-다음 제품 최적화 후보는 동결 과정의 객체 생성과 순회, 동일 인자 schema 재사용 또는 AST 구조별 동결 경로 검토다. 불변성, ICU, 오류 위치 계약은 유지한다.
+Candidate product optimizations are reducing object creation and traversal during freezing and examining reuse of identical argument schemas or structure-specific AST freeze paths. Immutability, ICU, and error-position contracts remain in place.

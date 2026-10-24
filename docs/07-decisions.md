@@ -1,140 +1,140 @@
-# 07. 결정 대장
+# 07. Decision Register
 
-이 문서는 확정된 목표, 초기 설계 결정, 제품 형태, 미해결 위험을 한곳에 모은다.
+This document collects confirmed goals, initial design decisions, product shape, and unresolved risks.
 
-## 확정된 사용자 목표
+## Confirmed user goals
 
-| 항목 | 상태 |
+| Item | Status |
 | --- | --- |
-| 번역 수정·로케일 추가 시 재컴파일 대기 제거 | 확정 |
-| 개발 서버에서 즉시 반영 | 확정 |
-| 입력 폼·모달·스크롤 상태 유지 | 확정 |
-| JS/TS 동시 지원 | 확정 |
-| 이름 Saylo | 확정 |
+| Eliminate recompilation waits when editing translations or adding locales | Confirmed |
+| Apply changes immediately in the development server | Confirmed |
+| Preserve input-form, modal, and scroll state | Confirmed |
+| Support JS and TS | Confirmed |
+| Name: Saylo | Confirmed |
 
-## 제품 형태
+## Product shape
 
-제품 형태를 결정했다. 현행 Saylo 독립 런타임을 유지하고 FormatJS parser·`intl-messageformat` 재사용을 이어간다. i18next 확장점 위 prototype은 제품으로 채택하지 않는다([76](76-runtime-decision.md)).
+The product shape is decided. Saylo keeps its standalone runtime and continues to reuse the FormatJS parser and `intl-messageformat`. Prototypes built on i18next extension points are not adopted as the product ([76](76-runtime-decision.md)).
 
-- 이 결정은 실무 architecture 결정이며, 독립 런타임만 가능하다는 필요성 정리나 전체 API 동등성 증명이 아니다.
-- prototype 비교 실험은 private이고 제품 package·공개 API·게시본에 넣지 않는다.
-- 초기 계약 프로브는 2026-10-11 실시했다. 공개 i18next·Wuchale 확장점 위 Node 실험으로 36개 관측을 기록했고, 기존 formatter 위에서도 계약 일부는 충족됐다([56](56-thin-layer-contract-probe.md)).
-- 브라우저 기능 프로브도 2026-10-11 실시했다. 실제 Vite 8·React 19·headless Chrome eager 연결에서 편집·오류 복구·로케일 추가·선택·삭제 8개 시나리오와 입력·상태 보존을 확인했다([57](57-thin-layer-browser-probe.md)).
-- 얇은 계층은 시간대를 공개 `i18nFormat` 직접 구현으로 고정해야 했고([64](64-thin-layer-timezone-adapter.md)), parser-free 경로는 private AST rewrite glue가 필요했다([65](65-thin-layer-ast-production.md)). prototype은 lazy source cache·coordinator·hydration barrier·errors·schema·parser·typegen·transport를 자체로 요구한다([67](67-thin-layer-lazy-contracts.md)~[72](72-thin-layer-sync-construction.md)).
-- 재검토 조건은 같은 base argument·old immutable snapshot·source fallback·timezone·atomic lazy·SSR·typegen을 coordinator 중복 없이 제공하면서 같은 scale 비용·가벼운 production 증거가 있을 때다([76](76-runtime-decision.md)).
+- This is a practical architecture decision. It is not a proof that a standalone runtime is the only possible form or a demonstration of full API equivalence.
+- The prototype comparison experiment is private and is not included in product packages, public APIs, or published builds.
+- An initial contract probe was run on 2026-10-11. It recorded 36 observations from Node experiments on public i18next and Wuchale extension points, and some contract requirements were also satisfied on the existing formatter ([56](56-thin-layer-contract-probe.md)).
+- A browser capability probe was also run on 2026-10-11. In an actual Vite 8, React 19, and headless Chrome eager connection, it checked eight scenarios covering editing, error recovery, locale addition, selection, and deletion, along with input and state retention ([57](57-thin-layer-browser-probe.md)).
+- A thin layer had to hard-code the time zone by implementing the public `i18nFormat` directly ([64](64-thin-layer-timezone-adapter.md)), and the parser-free path required private AST-rewrite glue ([65](65-thin-layer-ast-production.md)). The prototype required its own lazy source cache, coordinator, hydration barrier, errors, schema, parser, typegen, and transport ([67](67-thin-layer-lazy-contracts.md) through [72](72-thin-layer-sync-construction.md)).
+- Reconsideration requires a solution that provides the same base argument, old immutable snapshot, source fallback, timezone, atomic lazy loading, SSR, and typegen behavior without duplicating the coordinator, with comparable scale costs and lighter production evidence ([76](76-runtime-decision.md)).
 
-## 초기 설계 결정 (검증 전, 바뀔 수 있음)
+## Initial design decisions (before verification; may change)
 
-| 선택 | 내용 |
+| Choice | Detail |
 | --- | --- |
-| 코어 형태 | 프레임워크 중립 TypeScript, 배포는 ESM JS + `.d.ts` |
-| instance 생성 | 동기 `createI18n<AppSchema>` + `initialSnapshot`(BootSnapshot) + `catalogSource`. schema는 타입 전용, 런타임 schema는 boot 메타에서 |
-| 첫 dev plugin | Vite 8 plugin, `hotUpdate`에서 커스텀 이벤트 + `[]` 반환 |
-| 첫 프레임워크 어댑터 | vanilla subscription과 React. Svelte 5는 alpha.4 게시([38](38-svelte-adapter.md)). Vue 3는 로컬 private workspace 구현 완료, npm 게시 보류 |
-| Svelte 연결 | `createSvelteStore(instance)` readable과 `createSayloSvelte<AppSchema>()` context factory. `$i18n.t`는 불변 스냅샷에 바인딩. instance는 호출자가 소유 |
-| React 연결 | `createSayloReact<AppSchema>()` factory가 Provider와 hook을 같은 context로 생성. hook의 t는 그 렌더가 선택한 UI snapshot에 바인딩 |
-| 상태 구분 | transport 상태(내부), 카탈로그 레코드(불변), UiSnapshot(공개), BootSnapshot(wire) 4종 |
-| 갱신 단위 | 로케일+namespace 카탈로그 스냅샷. React·Svelte selector는 alpha.4 게시, Vue selector는 로컬 구현 |
-| 갱신 프로토콜 | [08-update-protocol.md](08-update-protocol.md)가 단일 출처. wire 타입과 적용·resync 규칙을 이 문서에 중복하지 않는다 |
-| 갱신 적용 | envelope 먼저 원자 반영, 로드된 카탈로그만 payload 적용, 미로드는 dirty |
-| lazy push | `virtual:saylo/lazy` dev source가 scope를 등록하고 바뀐 캐시 pair만 수신한다. payload·revision 검증 뒤 manifest와 캐시를 한 번에 적용하고 core에 한 번 게시한다. 불량·gap은 snapshot+조회로 복구한다 |
-| 로드/전환 조정 | 하나의 desired state(locale + 원하는 namespace)로 조정. generation은 오래된 완료 차단용이며 정상 동시 호출을 서로 reject하지 않는다 |
-| 로더 | core `CatalogSource` 인터페이스. 개발은 범용 `loadCatalog`, 운영은 generated static loader map |
-| ICU 구현 | `@formatjs/icu-messageformat-parser` + `intl-messageformat` 재사용, AST 입력. 지원 범위는 FormatJS가 지원하는 MessageFormat 1 문법 |
-| 태그 처리 | parser `ignoreTag`로 literal 처리. rich text는 MVP 제외 |
-| argument 타입 | 기준 메시지에서만 추론. 번역 인자 이름은 base 부분집합, base 허용 타입은 번역 accepted 타입의 부분집합. 필수 이름은 placeholder 이름의 합집합, 각 이름 타입은 사용 형태 교집합. 생략 번역도 호출 시 base 필수 인자 검증 |
-| 타입 계약 | 키·인자 상관관계를 `TypedCall` tuple로 유지. typed 경로에 넓은 `string` overload를 두지 않는다 |
-| schema 버전 | namespace 단위 `namespaceSchemaFingerprint`. 전역 schemaRevision은 없음 |
-| baseline schema 변경 | 유효한 변경은 커밋, 부적합한 secondary는 quarantine + fallback |
-| 번역 누락 | baseLocale fallback 기본 허용. Vite 운영 빌드의 선택적 완역 검사를 로컬 구현했다. 개발 중에는 fallback을 유지한다([42](42-complete-translations.md)) |
-| fallback 대상 | baseLocale 하나. `fallbackLocale` 옵션은 두지 않는다 |
-| 로케일 목록 타입 | 런타임 `readonly string[]` + 검증된 setter. key·인자 타입은 strict |
-| 캐시 | 메시지 formatter 캐시와 `Intl` 캐시를 분리. 문구 revision 변경이 모든 `Intl` 캐시를 비우지 않는다 |
-| 소유권 | Vite dev server가 watcher/websocket 소유. Saylo는 자신이 등록한 listener·route·channel binding만 소유·해제. `connectDev`는 동일 instance 단일 binding + idempotent disposer |
-| DOM 보존 범위 | 문구 수정·locale 추가·schema-compatible 편집은 보장. schema-breaking 편집은 즉시 적용과 진단·typegen. Vite 서버 재시작 reload는 제외 |
-| revision 구분 | registry revision(전송, 내부)과 instance stateRevision(UI) 분리 |
-| 오류 타입 | UnknownMessageError, NamespaceNotLoadedError, InvalidArgumentError, CatalogLoadError, SupersededRequestError |
-| 시간대 | timeZone 명시 config, 기본 UTC 권장. 생성 시 고정하며 BootSnapshot과 options가 어긋나면 생성 오류 |
+| Core shape | Framework-neutral TypeScript, distributed as ESM JS plus `.d.ts` |
+| Instance creation | Synchronous `createI18n<AppSchema>` plus `initialSnapshot` (BootSnapshot) and `catalogSource`. Schema exists only at the type level; runtime schema comes from boot metadata |
+| First dev plugin | Vite 8 plugin using `hotUpdate`, a custom event, and returning `[]` |
+| First framework adapters | Vanilla subscription and React. Svelte 5 was published in alpha.4 ([38](38-svelte-adapter.md)). The Vue 3 implementation is complete in the local private workspace, with npm publication deferred |
+| Svelte connection | `createSvelteStore(instance)` readable and `createSayloSvelte<AppSchema>()` context factory. `$i18n.t` binds to an immutable snapshot. The caller owns the instance |
+| React connection | The `createSayloReact<AppSchema>()` factory creates the Provider and hook in the same context. The hook's t is bound to the UI snapshot selected by that render |
+| State distinctions | Four types: transport state (internal), catalog records (immutable), UiSnapshot (public), and BootSnapshot (wire) |
+| Update unit | Locale+namespace catalog snapshot. React and Svelte selectors were published in alpha.4; Vue selectors are a local implementation |
+| Update protocol | [08-update-protocol.md](08-update-protocol.md) is the single source. Do not duplicate wire types or application and resync rules here |
+| Applying updates | Atomically apply the envelope first, apply payload only to loaded catalogs, and mark unloaded pairs dirty |
+| Lazy push | The `virtual:saylo/lazy` dev source registers a scope and receives only changed cached pairs. After validating payload and revision, apply manifest and cache together and publish to core once. Recover malformed payloads and gaps through snapshot and lookup |
+| Load/switch reconciliation | Reconcile through one desired state (locale plus desired namespaces). Generation blocks stale completions and does not make normal concurrent calls reject each other |
+| Loader | Core `CatalogSource` interface. Development uses the general `loadCatalog`; production uses a generated static loader map |
+| ICU implementation | Reuse `@formatjs/icu-messageformat-parser` and `intl-messageformat` with AST input. Scope is the MessageFormat 1 grammar supported by FormatJS |
+| Tag handling | Treat tags as literal text through parser `ignoreTag`. Rich text is excluded from the MVP |
+| Argument types | Infer only from base messages. Translation argument names must be a subset of the base, and base-accepted types must be a subset of translation-accepted types. Required names are the union of placeholder names, and each name's type is the intersection of its use forms. Even when a translation is omitted, validate the base message's required arguments at call time |
+| Type contract | Preserve key and argument correlation through a `TypedCall` tuple. Do not add a broad `string` overload to the typed path |
+| Schema version | Per-namespace `namespaceSchemaFingerprint`. No global schemaRevision |
+| Baseline schema changes | Commit valid changes; quarantine incompatible secondary catalogs and use fallback |
+| Missing translations | Allow baseLocale fallback by default. Locally implemented an optional full-translation check for Vite production builds. Retain fallback during development ([42](42-complete-translations.md)) |
+| Fallback target | A single baseLocale. There is no `fallbackLocale` option |
+| Locale-list types | Runtime `readonly string[]` plus a validated setter. Key and argument types remain strict |
+| Caches | Keep message formatter and `Intl` caches separate. Changing copy revisions does not clear every `Intl` cache |
+| Ownership | The Vite dev server owns the watcher and websocket. Saylo owns and releases only listeners, routes, and channel bindings it registers. `connectDev` keeps one binding per instance and returns an idempotent disposer |
+| DOM preservation scope | Guarantee copy edits, locale additions, and schema-compatible edits. Schema-breaking edits apply immediately and emit diagnostics and typegen. Vite server restart reloads are excluded |
+| Revision distinction | Separate registry revision (transport, internal) from instance stateRevision (UI) |
+| Error types | UnknownMessageError, NamespaceNotLoadedError, InvalidArgumentError, CatalogLoadError, SupersededRequestError |
+| Time zone | Explicit timeZone configuration, with UTC recommended as default. Fix it at construction; a mismatch between BootSnapshot and options throws an error |
 
-## 미해결 위험
+## Unresolved risks
 
-| 항목 | 상태 |
+| Item | Status |
 | --- | --- |
-| 라이선스 | Apache-2.0 확정. 배포 tarball에 `LICENSE`·`NOTICE`를 함께 싣는다 |
-| npm 패키지 이름 | `@0disoft/saylo-core`·`saylo-react`·`saylo-svelte`·`saylo-typegen`·`saylo-vite` 다섯 이름으로 `0.1.0-alpha.4` 게시. 2026-10-11 다섯 `alpha` tag·CI/registry tarball SHA-512와 소비를 확인했다. `latest`는 `0.0.0-stage`이고 과거 승인 manifest도 유지한다([릴리스](../releases/0.1.0-alpha.4.md)) |
-| 성능 목표 달성 | [75](75-early-disk-rechecks.md)의 로컬 warmed 대표 조건 통과. 편집 p95는 small 49.57ms·large 80.25ms, 로케일 목록은 77.46ms·177.83ms다. 다른 환경으로 일반화하지 않으며 첫 번역·cold startup·paint는 별도다. 이전 측정은 [검증 이력](06-validation-history.md)과 [10](10-performance-measurements.md)·[12](12-locale-add-measurements.md)에 보존한다 |
-| 지원 버전 범위 | Node 24.x, Vite 8, React 19, Svelte 5, TypeScript 7 기준. 로컬 검증 환경은 Node 24.18.0 |
-| build-time parser 런타임 제거 | Vite plugin에 구현하고 alpha.2로 게시했다(`astRuntime` 기본 `true`, production 한정). Saylo core formatter 경계에서만 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾸고 앱 전체 alias는 하지 않는다. 공개 `@0disoft/saylo-core/runtime`은 `parseCatalog`를 제외한다. 런타임 엔트리만으로 모든 bundler의 제거를 보장하지 않으며 검증 범위는 Vite 8 production build다. alpha.1에는 없으며 alpha.2 게시본에서 외부 소비와 parser 제거를 검증했다([릴리스](../releases/0.1.0-alpha.2.md)) |
-| requireCompleteTranslations(완역 검사) | alpha.3에 게시한 Vite 운영 빌드 전용 옵션. 기본 `false`, 누락 키·namespace를 모아 빌드 실패. 로케일 폴더와 initialLocale 전체를 검사하고 개발 fallback은 유지한다([42](42-complete-translations.md), [릴리스](../releases/0.1.0-alpha.3.md)) |
-| unused message 제거 | `includeKeys` 수동 목록 또는 `{ from, dynamicKeys? }` 정적 소스 분석으로 production eager·lazy·SSR에서 선택한다. 코드 실행은 하지 않고, 해결 불가 동적 호출은 dynamicKeys가 없으면 빌드 실패. typegen은 전체 유지. 로컬 미게시 |
-| selector 미세구독 최적화 | React·Svelte selector를 alpha.4로 게시했다([43](43-react-selectors.md), [44](44-svelte-selectors.md)). 해당 버전의 CI `check`·`release:pack`·OIDC 게시, 승인 registry integrity와 JS/TS·SSR·SvelteKit Chromium 소비를 통과했다([릴리스](../releases/0.1.0-alpha.4.md)) |
-| Svelte 어댑터 | Svelte 5 readable·typed context·SSR·hydration과 데모 구현 완료. alpha.2 게시·외부 소비·SvelteKit 브라우저 검증 완료([38](38-svelte-adapter.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
-| SvelteKit 예제 | SvelteKit 3 요청별 SSR·boot·hydration·페이지 이동·layout 종료와 재진입을 구현. 예제는 로컬 `file:` 의존성을 유지하며, 별도 registry 검증 명령으로 alpha.2 게시본의 Node 운영 빌드·실제 브라우저 검증도 완료했다([39](39-sveltekit-example.md), [릴리스](../releases/0.1.0-alpha.2.md)) |
-| Vue 어댑터 | Vue 3 `createSayloVue`·plugin 주입·snapshot 구독·selector·SSR hydration을 로컬 구현했다. private workspace이며 alpha.4·alpha.5 게시 대상이 아니다 |
-| secondary schema quarantine | Vite plugin에 구현. 기준 schema 변경 시 last-good 번역에서 부적합 메시지만 제거해 게시하고 나머지는 base fallback으로 둔다. 단위·통합 테스트와 2026-10-07 실제 브라우저 검증을 통과했다. schema-breaking 편집이라 입력·dialog 상태 보존은 일반 보장이 아니다. 코어 `createStore`·`replaceCatalogs`에는 격리를 넣지 않는다 |
-| JSON 중복 ID·BCP 47 정규화 | 구현. 중복 ID는 `DUPLICATE_ID`로 거부하고 로케일 태그는 `Intl.getCanonicalLocales`로 canonicalize한다. 그 밖에 별도로 정할 ICU 정규화 항목은 아직 정하지 않았다 |
-| message delta 비용 | request-scoped delta·불변 signature·LF 위치 색인과 후속 검증 재사용을 구현했다. 최신 small·large 편집 교차 비교가 로컬 100ms 목표를 통과했다([75](75-early-disk-rechecks.md)). 이전 2026-10-07의 small 72.66ms·large 165.94ms 계측은 [10](10-performance-measurements.md)·[11](11-parser-measurements.md)의 역사값이다. compact 전체 전송과 첫 언어 선택 비용은 편집 수치와 구분한다 |
-| 런타임 형태 | 현행 독립 런타임 유지 결정: FormatJS parser·`intl-messageformat` 재사용을 이어가며 i18next prototype은 미채택한다([76](76-runtime-decision.md)). 계약 프로브 36개 관측([56](56-thin-layer-contract-probe.md))과 private prototype 검증([64](64-thin-layer-timezone-adapter.md)~[74](74-immutable-validation-reuse.md))을 근거로 한다. 전체 API 동등성이나 독립 런타임만 가능하다는 판정은 아니다 |
+| License | Apache-2.0 confirmed. Include `LICENSE` and `NOTICE` in distributed tarballs |
+| npm package names | Five names—`@0disoft/saylo-core`, `saylo-react`, `saylo-svelte`, `saylo-typegen`, and `saylo-vite`—were published as `0.1.0-alpha.4`. On 2026-10-11, the five `alpha` tags, CI and registry tarball SHA-512, and consumption were checked. `latest` is `0.0.0-stage`, and historical approved manifests remain ([release](../releases/0.1.0-alpha.4.md)) |
+| Meeting performance targets | Passed under the representative local warmed conditions in [75](75-early-disk-rechecks.md). Edit p95 was 49.57 ms for small and 80.25 ms for large; locale-list p95 was 77.46 ms and 177.83 ms. Do not generalize to other environments; first translation, cold startup, and paint are separate. Earlier measurements are retained in [validation history](06-validation-history.md), [10](10-performance-measurements.md), and [12](12-locale-add-measurements.md) |
+| Supported version range | Node 24.x, Vite 8, React 19, Svelte 5, and TypeScript 7. The local verification environment uses Node 24.18.0 |
+| Build-time parser removal from runtime | Implemented in the Vite plugin and published in alpha.2 (`astRuntime` defaults to `true` and applies to production only). It swaps only the Saylo core formatter boundary to `@formatjs/icu-messageformat-parser/no-parser.js` and does not alias the whole app. Public `@0disoft/saylo-core/runtime` excludes `parseCatalog`. Using only the runtime entry does not guarantee removal in every bundler; verified scope is the Vite 8 production build. It was absent from alpha.1, and external consumption and parser removal were verified in the alpha.2 release ([release](../releases/0.1.0-alpha.2.md)) |
+| requireCompleteTranslations (full-translation check) | Vite production-build-only option published in alpha.3. Default `false`; collect missing keys and namespaces and fail the build. It checks all locale folders and initialLocale and retains development fallback ([42](42-complete-translations.md), [release](../releases/0.1.0-alpha.3.md)) |
+| Unused-message removal | Select keys for production eager, lazy, and SSR through a manual `includeKeys` list or `{ from, dynamicKeys? }` static source analysis. Do not execute code; an unresolvable dynamic call fails the build unless dynamicKeys is provided. Typegen retains everything. Unpublished locally |
+| Selector micro-subscription optimization | React and Svelte selectors were published in alpha.4 ([43](43-react-selectors.md), [44](44-svelte-selectors.md)). That version passed CI `check`, `release:pack`, OIDC publishing, approved registry integrity, and JS/TS, SSR, and SvelteKit Chromium consumption ([release](../releases/0.1.0-alpha.4.md)) |
+| Svelte adapter | Completed Svelte 5 readable, typed context, SSR, hydration, and demo implementation. Alpha.2 publication, external consumption, and SvelteKit browser verification are complete ([38](38-svelte-adapter.md), [release](../releases/0.1.0-alpha.2.md)) |
+| SvelteKit example | Implemented SvelteKit 3 per-request SSR, boot, hydration, page navigation, and layout exit/re-entry. The example retains local `file:` dependencies, and a separate registry verification command also completed Node production build and real-browser validation of the alpha.2 release ([39](39-sveltekit-example.md), [release](../releases/0.1.0-alpha.2.md)) |
+| Vue adapter | Locally implemented Vue 3 `createSayloVue`, plugin injection, snapshot subscription, selector, and SSR hydration. It is a private workspace and not an alpha.4 or alpha.5 publication target |
+| Secondary schema quarantine | Implemented in the Vite plugin. When the base schema changes, publish only messages from the last-good translation that fit, and fall back to base for the rest. Passed unit, integration, and real-browser validation on 2026-10-07. Because the tested edit was schema-breaking, preserving input and dialog state is not a general guarantee. Core `createStore` and `replaceCatalogs` do not contain quarantine logic |
+| JSON duplicate IDs and BCP 47 normalization | Implemented. Duplicate IDs are rejected as `DUPLICATE_ID`, and locale tags are canonicalized through `Intl.getCanonicalLocales`. Other ICU normalization items have not been decided separately |
+| Message delta cost | Implemented request-scoped deltas, immutable signatures, LF position indexes, and follow-up validation reuse. The latest small and large edit cross-comparisons met the local 100 ms target ([75](75-early-disk-rechecks.md)). The earlier 2026-10-07 figures of 72.66 ms for small and 165.94 ms for large are historical values in [10](10-performance-measurements.md) and [11](11-parser-measurements.md). Keep compact full-transport and first-locale-selection costs separate from edit figures |
+| Runtime shape | Decision to retain the current standalone runtime: continue reusing FormatJS parser and `intl-messageformat` and do not adopt the i18next prototype ([76](76-runtime-decision.md)). This is based on 36 contract-probe observations ([56](56-thin-layer-contract-probe.md)) and private prototype verification ([64](64-thin-layer-timezone-adapter.md) through [74](74-immutable-validation-reuse.md)). It is not a full API-equivalence or standalone-only determination |
 
-대규모 로케일 추가의 서버 구간 계측([14](14-locale-add-server-measurements.md))에서 cold 파싱을 다음 대상으로 확인했다. 이후 일반 텍스트·ASCII 단순 인자용 경로를 로컬 구현했다. 같은 프로세스 cold 비교 20쌍 중 18쌍이 빨랐지만 parser p95는 개선되지 않았다. 당시 대규모 목록 표시 p95는 514.47ms로 관측했으며 250ms 목표는 미달이다. 조건·원시 결과·부하 한계는 [15-simple-message-parser.md](15-simple-message-parser.md)를 따른다.
+Server-stage instrumentation for large locale addition ([14](14-locale-add-server-measurements.md)) identified cold parsing as the next target. A path for ordinary text and simple ASCII arguments was then implemented locally. Eighteen of 20 same-process cold pairs were faster, but parser p95 did not improve. The large list-display p95 observed at the time was 514.47 ms, failing the 250 ms target. Follow [15-simple-message-parser.md](15-simple-message-parser.md) for conditions, raw results, and load limitations.
 
-full catalog 선택 경로에는 compact 개발 전송을 로컬 구현했다. 반복 필드와 literal·argument AST 위치를 배열로 보내고 같은 인자 스키마를 공유하며 복잡한 ICU AST는 유지한다. 대규모 응답 JSON은 약 71.92% 작아졌다. 새 run의 선택 준비→번역 ack p95는 400.42ms, 목록 표시 p95는 1,128.04ms였고 지연 변화의 원인은 부하·GC를 분리하지 않아 단정하지 않는다. 추가 파싱·선택 비용 최적화와 메모리 overhead 측정은 남아 있다. 현행 wire와 검증은 [08](08-update-protocol.md)·[16](16-compact-catalog-transport.md)을 따른다.
+A compact development transport was locally implemented for the full-catalog selection path. Repeated fields and literal and argument AST positions are sent as arrays, the same argument schema is shared, and complex ICU ASTs are retained. Large response JSON became about 71.92% smaller. In the new run, selection-ready→translation ack p95 was 400.42 ms and list-display p95 was 1,128.04 ms; load and GC were not separated, so the cause of the latency change is not established. Additional parsing and selection-cost optimization and memory-overhead measurement remain. Follow [08](08-update-protocol.md) and [16](16-compact-catalog-transport.md) for the current wire format and verification.
 
-## 다른 도구와의 관계
+## Relationship to other tools
 
-cold 내부 계측에서는 인자 스키마·메시지·최종 카탈로그 동결 구간을 우선 후보로 확인했다([17](17-cold-parser-measurements.md)). 이후 호출 내 동일 인자 스키마 공유와 성공한 불변 계약 쌍의 검증 재사용을 로컬 구현했다. cold 교차 비교는 20쌍 중 17쌍과 중앙값에서 개선됐지만 p95는 증가했다. GC를 tail 지연의 유일한 원인으로 단정하지 않는다. 다음 후보는 메시지·AST 동결 경로이며 불변성·ICU·오류 위치 계약을 유지한다. 조건과 원시 결과는 [18-shared-argument-schemas.md](18-shared-argument-schemas.md)를 따른다.
+Cold-internal instrumentation identified argument-schema, message, and final-catalog freezing as priority candidates ([17](17-cold-parser-measurements.md)). A local implementation then shared identical argument schemas within a call and reused successful validation of immutable contract pairs. Cold cross-comparisons improved in 17 of 20 pairs and in the median, but p95 increased. GC is not established as the sole cause of tail latency. The next candidate is message and AST freezing while retaining immutability, ICU, and error-position contracts. Follow [18-shared-argument-schemas.md](18-shared-argument-schemas.md) for conditions and raw results.
 
-Saylo는 코드 생성 방식 도구가 겪는 재컴파일 대기를 줄이는 것을 목표로 한다. HMR 기반 접근을 쓰는 도구와 방향이 겹친다. 2026-10-07 Paraglide 2.25.4와 같은 fixture의 small 문구 수정·로케일 추가를 각각 10회 측정했다. Paraglide 문구 편집은 Fast Refresh로 입력과 상태를 유지했고, 로케일 추가·기본 setter 선택은 document reload로 최초 상태를 잃었다. Saylo는 두 흐름에서 상태 보존을 확인했다. large는 Paraglide 초기 compile의 하위 SDK timeout으로 비교를 완료하지 못했다. 조건·원시 결과·한계는 [13-paraglide-comparison.md](13-paraglide-comparison.md)를 따른다. i18next/Wuchale 얇은 계층 초기 계약 프로브는 2026-10-11 실시했고, 이후 문서 범위별 검증을 거쳐 제품 형태를 현행 독립 런타임 유지로 결정했다([56](56-thin-layer-contract-probe.md), [76](76-runtime-decision.md)).
+Saylo aims to reduce recompilation waits in codegen-based tools. Its direction overlaps with tools using HMR-based approaches. On 2026-10-07, Paraglide 2.25.4 was measured 10 times each for small copy edits and locale additions with the same fixture. Paraglide copy edits preserved input and state through Fast Refresh, while locale addition and selecting the default setter lost the initial state due to a document reload. Saylo preserved state in both flows. Large comparison could not be completed because the lower-level SDK timed out during Paraglide's initial compile. Follow [13-paraglide-comparison.md](13-paraglide-comparison.md) for conditions, raw results, and limitations. An initial contract probe of thin layers over i18next/Wuchale was run on 2026-10-11; after document-scope validation, the product shape was decided as retaining the current standalone runtime ([56](56-thin-layer-contract-probe.md), [76](76-runtime-decision.md)).
 
-파서 소유 literal·argument AST에는 알려진 구조의 위치·노드를 직접 동결하는 경로를 선택했다. 복잡한 ICU와 외부 입력의 일반 동결은 유지한다. cold 교차 비교 p50·p95는 낮게 관측됐지만 incremental 중앙값에서는 개선을 확인하지 못했다. 일반 동결을 for...in으로 바꾼 실험은 느려져 되돌렸다. 다음은 로케일 추가 종단 간 재측정이며 조건·한계는 [19](19-ast-freeze-measurements.md)에 있다.
+For parser-owned literal and argument ASTs, we chose a path that directly freezes positions and nodes of known structures. General freezing remains for complex ICU and external input. Cold cross-comparison p50 and p95 were observed lower, but no improvement was confirmed in the incremental median. Changing general freezing to `for...in` made it slower and was reverted. The next step is end-to-end locale-addition remeasurement; conditions and limitations are in [19](19-ast-freeze-measurements.md).
 
-후속 종단 간 재측정에서는 large 목록 p95가 1,056.40ms로 250ms 목표를 넘었고 모든 측정이 250ms를 초과했다. 목록→선택 흐름의 상태 보존은 유지했다. 다음 구현 대상을 정하기 전에 현재 코드의 서버 구간을 기존 계측기로 다시 확인한다. 과거 파싱 비용 비중이나 단일 run의 시간 차이로 원인을 확정하지 않는다. 근거는 [20](20-locale-add-remeasurement.md)이다.
+In the follow-up end-to-end remeasurement, large list p95 was 1,056.40 ms, exceeding the 250 ms target, and every measurement exceeded 250 ms. List-to-selection state preservation remained. Before choosing the next implementation target, recheck the current code's server stages with the existing instrumentation. Do not infer the cause from a historical parsing share or a single run's timing difference. Evidence is in [20](20-locale-add-remeasurement.md).
 
-현행 서버 재계측에서도 10회 모두 cold 파싱이 가장 큰 개별 수집 구간이었다. 번역 준비 p50은 13.06ms, 최종 active 검증은 0.04ms였으므로 다음 작은 실험은 파서의 반복 상대 위치 객체 공유로 정한다. 소스 위치·Unicode·ICU·불변성 계약을 유지하고 교차 비교 결과로 채택 여부를 판단한다. 구현 전 후보이며 근거·한계는 [21](21-locale-add-server-remeasurement.md)에 있다.
+In the current server remeasurement, cold parsing was again the largest individual collection stage in all 10 runs. Translation preparation p50 was 13.06 ms and final active validation was 0.04 ms, so the next small experiment is sharing repeated relative-position objects in the parser. Retain source-position, Unicode, ICU, and immutability contracts and decide adoption from cross-comparison results. This is a pre-implementation candidate; evidence and limitations are in [21](21-locale-add-server-remeasurement.md).
 
-호출 내 단순 AST 상대 좌표와 위치 구간 공유를 로컬 채택했다. pool 없는 동일 fixture보다 참조 좌표·구간 객체가 줄었고 cold pair 중앙값에서 개선을 관측했다. cold 최장 시간과 incremental p95는 개선되지 않아 안정적 tail 개선은 주장하지 않는다. 절대 위치·Unicode·ICU·불변성은 유지한다. 초기 좌표만 공유한 실험과 최종 결과·다음 종단 간 재측정은 [22](22-relative-position-sharing.md)를 따른다.
+Sharing ranges for identical relative coordinates and positions in simple ASTs within a call was adopted locally. Compared with the same fixture without a pool, the calls used fewer reference-coordinate and range objects, and cold-pair medians improved. Cold maximum duration and incremental p95 did not improve, so no stable tail improvement is claimed. Absolute positions, Unicode, ICU, and immutability are retained. Follow [22](22-relative-position-sharing.md) for the experiment that initially shared only coordinates, final results, and the next end-to-end remeasurement.
 
-위치 공유 후 50회 재측정에서 large 목록 p95는 878.98ms로 낮게 관측됐지만 250ms 목표는 미달이다. 첫 번역 선택 p95는 486.80ms로 직전 run보다 높게 관측돼 전체 흐름의 일관된 개선은 확인하지 못했다. 다음은 benchmark의 locale-add full 응답 디코딩·동결·snapshot 구간 계측으로 정한다. 브라우저 디코딩을 확정 병목으로 단정하지 않으며 근거는 [23](23-position-sharing-locale-add.md)이다.
+After position sharing, large list p95 was observed at 878.98 ms in 50-run remeasurement, still failing the 250 ms target. First-translation selection p95 was observed at 486.80 ms, higher than the previous run, so a consistent improvement across the full flow was not confirmed. The next step is benchmark instrumentation of full-response decoding, freezing, and snapshot for locale-add. Browser decoding is not established as the definitive bottleneck; evidence is in [23](23-position-sharing-locale-add.md).
 
-첫 선택 계측에서 Vite 동결이 수집한 동기 구간 중 가장 컸지만 선택 잔여가 매회 전체 선택 시간의 64.15% 이상이었다. 다음 구현은 동결 최적화에 바로 귀속하기보다 snapshot 이전 core acceptOutcome의 검증·동결 경계를 추가하는 benchmark 작업으로 정한다. full/patch 모드별 필수 호출을 구분하고 잔여를 네트워크 비용으로 단정하지 않는다. 근거·검증은 [24](24-full-selection-browser-stages.md)를 따른다.
+In the first selection instrumentation, Vite freezing was the largest collected synchronous stage, but the selection residual was at least 64.15% of total selection time in every run. The next implementation step is benchmark work that adds validation and freezing boundaries around core `acceptOutcome` before snapshot, rather than attributing the result directly to freezing. Distinguish required calls in full and patch modes and do not treat the residual as network cost. Follow [24](24-full-selection-browser-stages.md) for evidence and verification.
 
-core 응답 수락 계측에서 동결 p50은 66.00ms였고 검증 p95는 0.10ms였다. Vite가 동결한 객체도 core의 별도 WeakSet에 없으면 다시 순회한다. 다음 제품 작업은 신뢰 가능한 전송 카탈로그가 core의 깊은 동결 경로를 공유하도록 하는 것으로 정한다. 외부의 얕은 동결을 깊은 동결로 간주하지 않고, AST 불변성과 오류 의미를 유지한다. 이번은 계측 작업이며 최적화 효과는 아직 측정하지 않았다. 근거는 [25](25-core-outcome-acceptance-stages.md)를 따른다.
+In core response-acceptance instrumentation, freezing p50 was 66.00 ms and validation p95 was 0.10 ms. Objects frozen by Vite are traversed again by core unless they are in core's separate WeakSet. The next product task is to let a trusted transport catalog share core's deep-freeze path. Do not treat external shallow freezing as deep freezing, and retain AST immutability and error meaning. This was instrumentation work; the optimization effect had not been measured. Evidence is in [25](25-core-outcome-acceptance-stages.md).
 
-Vite의 카탈로그 동결은 core `/runtime`의 `freezeCatalogs`를 사용한다. 같은 core 모듈의 깊은 순회 캐시를 공유하고, `Object.isFrozen`만으로 외부 객체를 신뢰하지 않는다. 전후 표본별 동결 합계 p50은 119.60→84.80ms였으나 일반 설정의 전체 성능은 별도로 재측정한다. 다음은 추가 최적화 없이 계측을 끈 small/large 종단 간 측정이며 근거는 [26](26-shared-catalog-freeze.md)를 따른다.
+Vite catalog freezing uses `freezeCatalogs` from core `/runtime`. It shares the same core module's deep-traversal cache and does not trust external objects based only on `Object.isFrozen`. Per-sample combined freezing p50 before and after was 119.60→84.80 ms, but overall performance under normal settings is remeasured separately. The next step is small and large end-to-end measurement with instrumentation off and no further optimization; evidence is in [26](26-shared-catalog-freeze.md).
 
-일반 prebundle의 규모별 50회 재측정에서 large 목록 p95는 621.18ms로 목표 미달이고 선택 p95는 631.70ms로 이전 일반 run보다 높게 관측됐다. 다음은 기본 prebundle을 유지한 서버 full 응답 준비·브라우저 수신 이후 구간을 나누는 benchmark 작업으로 정한다. 원인을 특정하거나 추가 제품 최적화를 먼저 적용하지 않으며 근거는 [27](27-shared-freeze-locale-add.md)를 따른다.
+In a 50-run remeasurement per scale with normal prebundle, large list p95 was 621.18 ms, failing to meet the target, and selection p95 was 631.70 ms, higher than the previous normal run. The next step is benchmark work that splits preparation of server full responses and browser post-receive stages with default prebundle retained. Do not first identify a cause or apply another product optimization; evidence is in [27](27-shared-freeze-locale-add.md).
 
-기본 prebundle의 full 응답 계측에서 수신 이후→DOM 구간이 50/50회 모두 수신 전 구간보다 컸다. 다음은 같은 설정에서 client 디코딩·검증·동결·snapshot과 React commit 구간 분리로 정한다. 먼저 prebundle 그래프에서도 core 깊은 동결 신뢰가 공유되는지 확인한다. 수신 후 p95 557.80ms를 특정 함수나 GC에 귀속하지 않으며 근거는 [28](28-full-reply-stages.md)를 따른다.
+In full-response instrumentation with default prebundle, the receive→DOM stage was larger than the pre-receive stage in all 50/50 runs. The next step is splitting client decoding, validation, freezing, snapshot, and React commit under the same settings. First verify that core deep-freeze trust is also shared in the prebundle graph. Do not attribute the post-receive p95 of 557.80 ms to a specific function or GC; evidence is in [28](28-full-reply-stages.md).
 
-client 수신 이후 계측에서 같은 Vite 동결 카탈로그 참조가 core 수락에 50/50 전달됐지만 core의 깊은 동결 신뢰는 0/50이었다. core 동결 신뢰가 모듈 지역 WeakSet에 있어 dev의 core root prebundle과 `/runtime` subpath가 다른 graph면 공유되지 않는다. 다음 후보는 Vite `freeze.ts`가 `/runtime` 대신 core root의 기존 `freezeCatalogs`를 가져와 같은 prebundle 경로를 쓰는 것으로 정하고, production `astRuntime` parser 제거를 깨지 않는지 먼저 확인한다. 전역 WeakSet 제품 도입과 `Object.isFrozen` shallow 신뢰는 쓰지 않는다. 이번은 계측 작업이고 제품 최적화는 적용하지 않았다. 근거는 [29](29-prebundle-client-stages.md)를 따른다.
+In client post-receive instrumentation, the same Vite-frozen catalog reference reached core acceptance in 50/50 runs, but core deep-freeze trust was present in 0/50. Core freeze trust lives in a module-local WeakSet, so it is not shared when the development core root prebundle and `/runtime` subpath belong to different graphs. The next candidate is for Vite `freeze.ts` to import the existing core-root `freezeCatalogs` instead of `/runtime`, using the same prebundle path; first verify that this does not break production `astRuntime` parser removal. Do not introduce a process-wide WeakSet or rely on shallow `Object.isFrozen`. This was instrumentation work; no product optimization was applied. Evidence is in [29](29-prebundle-client-stages.md).
 
-Vite 동결 import를 core root로 바꿔 개발 prebundle에서 깊은 동결 신뢰를 공유한다. 대규모 50회 모두 공유했고 production parser 제거도 유지했다. 다음은 상세 계측을 끈 small/large 50회 종단 간 재측정이다. 조건·한계는 [30](30-prebundle-freeze-sharing.md)를 따른다.
+Changing the Vite freeze import to the core root shares deep-freeze trust in the development prebundle. It was shared in all 50 large runs, and production parser removal remained intact. The next step is 50-run small and large end-to-end remeasurement with detailed instrumentation off. Conditions and limitations are in [30](30-prebundle-freeze-sharing.md).
 
-상세 계측을 끈 재측정에서 large 목록 p95는 268.54ms로 250ms 목표를 넘었다. 두 규모의 50회 모두 저장→broadcast 구간이 broadcast→목록 ack보다 컸다. 다음은 현행 large 서버의 경로 검사·파일 읽기·파싱·번역 준비를 재계측한 뒤 최적화를 정한다. 이번 측정만으로 특정 함수나 GC를 원인으로 확정하지 않으며 근거는 [31](31-prebundle-freeze-locale-add.md)를 따른다.
+In remeasurement with detailed instrumentation off, large list p95 was 268.54 ms, exceeding the 250 ms target. In all 50 runs at both scales, save→broadcast was larger than broadcast→list ack. The next step is remeasuring path checks, file reads, parsing, and translation preparation on the current large server path before choosing an optimization. Do not identify a specific function or GC as the cause from this measurement alone; evidence is in [31](31-prebundle-freeze-locale-add.md).
 
-현행 large 서버 재계측에서 파싱이 10/10회 가장 컸다. parser core 5개 파일의 hash가 같은 기존 내부 계측도 재사용하며, 메시지 생성·동결 구간은 17/20회 가장 컸다. 다음 후보는 파서가 만든 메시지·숫자 위치의 구조를 활용해 일반 동결 순회를 줄이는 작은 실험이다. 깊은 불변성·소스 위치·ICU 오류와 외부 입력 처리를 유지하고 cold/incremental 교차 비교로 채택 여부를 정한다. 아직 구현하지 않았으며 근거는 [32](32-prebundle-server-measurements.md)를 따른다.
+In the current large-server remeasurement, parsing was largest in 10/10 runs. The existing internal instrumentation was reused because the hashes of five parser core files were unchanged; message creation and freezing were the largest stage in 17/20 runs. The next candidate is a small experiment that uses the structure of parser-created messages and numeric positions to reduce general freeze traversal. Retain deep immutability, source positions, ICU errors, and external-input handling, and decide adoption through cold and incremental cross-comparisons. It was not implemented yet; evidence is in [32](32-prebundle-server-measurements.md).
 
-파서 소유 메시지·숫자 위치의 직접 동결 실험은 개선을 확인하지 못해 되돌렸다. cold 10/20쌍·incremental 47/100쌍만 빨랐고 두 비교의 p95는 높았다. 결과 원인을 확정하지 않으며 다음은 messageFreeze 내부 비용 분리이다. 재현 패치·원시·검증은 [33](33-owned-message-freeze-trial.md)를 따른다.
+The experiment that directly froze parser-owned messages and numeric positions produced no confirmed improvement and was reverted. Only 10/20 cold pairs and 47/100 incremental pairs were faster, and p95 was higher in both comparisons. The cause is not established; the next step is splitting costs inside `messageFreeze`. Reproduction patch, raw data, and verification are in [33](33-owned-message-freeze-trial.md).
 
-메시지 동결 구간을 분리한 결과 10k의 AST 동결이 하위 구간 중 18/20회 가장 컸다. 다음 작은 실험은 `freezeMessageAst` 내부 `seal` 함수를 모듈 범위로 옮겨 호출별 헬퍼 생성을 없애는 것으로 정한다. 헬퍼 생성만의 비용은 분리하지 않아 효과는 미확인이며, 깊은 동결 신뢰·ICU·위치 계약을 유지하고 cold/incremental 교차 비교로 판단한다. 이번은 계측 작업이며 제품 변경은 없다. 근거는 [34](34-message-freeze-stages.md)이다.
+Splitting message freezing found that AST freezing was the largest substage in 18/20 runs at 10k. The next small experiment is to move the `seal` function inside `freezeMessageAst` to module scope and eliminate per-call helper creation. The cost of helper creation alone was not isolated, so the effect is unconfirmed; retain deep-freeze trust, ICU, and position contracts and decide through cold and incremental cross-comparisons. This was instrumentation work with no product change. Evidence is in [34](34-message-freeze-stages.md).
 
-[35](35-shared-ast-seal.md) 당시에는 `freezeMessageAst` 내부 `seal`을 모듈 범위로 옮기는 단일 최적화를 채택했다. 깊은 동결 순회·`WeakSet` 신뢰·복잡한 ICU 일반 동결·공개 API는 유지했다. 두 비교의 파싱 p50·p95는 낮게 관측됐지만 쌍별 차이 p95는 양수이고 incremental 최장 시간은 늘어 안정적 tail 개선은 주장하지 않았다. 당시 실제 로케일 목록 250ms 목표 개선은 아직 측정하지 않아 상세 계측을 끈 large locale-add 목록 재측정을 다음 작업으로 정했다. 이후 [37](37-seal-locale-add-comparison.md)의 비교에서 이득을 확인하지 못해 원복했다. 현행 소스와 alpha.2 게시본에는 이 실험 변경을 포함하지 않는다.
+At the time of [35](35-shared-ast-seal.md), one optimization was adopted: move `seal` inside `freezeMessageAst` to module scope. Deep-freeze traversal, `WeakSet` trust, general freezing for complex ICU, and public APIs were retained. Parsing p50 and p95 were observed lower in both comparisons, but the paired-difference p95 was positive and the incremental maximum increased, so no stable tail improvement was claimed. The actual improvement toward the 250 ms locale-list target had not been measured, so the next task was a large locale-add list remeasurement with detailed instrumentation off. Later comparison in [37](37-seal-locale-add-comparison.md) found no benefit, so it was reverted. Current source and the alpha.2 release do not include this experimental change.
 
-AST 동결 `seal` 모듈화 뒤 상세 계측을 끈 large locale-add 재측정에서 목록 p95는 767.54ms로 250ms 목표에 미달했고 250ms 이내는 11/50회였다. 직전 31 run의 large 268.54ms보다 p50·p95가 모두 크게 관측됐지만 두 run의 시점이 다르고 부하·GC를 통제하지 않아 파싱·GC나 `seal` 변경의 효과·퇴행으로 확정하지 않는다. 한 run이라 감소 효과도 확인하지 못했고 35 제품 변경 원복이나 추가 최적화는 적용하지 않는다. 다음은 변경 전후를 가까운 시점의 같은 조건으로 직접 대조하는 비교 측정이며 실효성은 미확인이다. 근거는 [36](36-shared-ast-seal-locale-add.md)이다.
+After modularizing AST-freeze `seal`, large locale-add remeasurement with detailed instrumentation off found list p95 of 767.54 ms, failing to meet the 250 ms target; 11/50 runs were within 250 ms. Both p50 and p95 were much larger than the 268.54 ms large result in run 31, but the runs occurred at different times and load and GC were not controlled, so this is not established as an effect or regression from parsing, GC, or the `seal` change. A single run also showed no reduction. The product change from 35 was not reverted and no further optimization was applied. The next step is a close-in-time controlled comparison before and after; its efficacy is unconfirmed. Evidence is in [36](36-shared-ast-seal-locale-add.md).
 
-AST 동결 `seal` 모듈화의 이득을 가까운 시점에서 확인하기 위해 변경 전 `cbd6871`과 공유 헬퍼 실험 `4f6b5cd`를 같은 조건의 격리 스냅샷으로 순차 대조했다. 순서는 before/after/after/before이고 네 run을 합쳐 measured 100·control 40이다. 두 블록(run 1↔2, run 3↔4) 모두 after 목록 p50·p95가 before보다 컸고 pooled 목록 p95는 547.74→682.94ms, 250ms 이내는 38/50→23/50이었다. Browser 선택 p95는 236.40→293.50ms, Node 선택 ack p95는 320.33→296.96ms로 지표별로 엇갈린다. 목록 목표는 두 variant 모두 미달이다. 표본별 paired·무작위 배정이 아니라 코드 퇴행의 인과를 확정하지 않고, 이득도 확인하지 못해 35의 `seal` 공유 제품 변경을 되돌렸다(원복 커밋 `d408500`). `diagnostics.ts`의 `seal`은 다시 `freezeMessageAst` 내부 함수가 되었고, 원복 뒤 명시 역사 ref 스모크와 `node --check`가 통과했다. 이 비교의 before 547.74ms는 현행 일반 단일 run 최신 p95가 아니고 36의 767.54ms와도 직접 비교하지 않는다. 근거는 [37](37-seal-locale-add-comparison.md)이다.
+To check the benefit of modular AST-freeze `seal` near in time, pre-change `cbd6871` and shared-helper experiment `4f6b5cd` were compared sequentially in isolated snapshots under the same conditions. The order was before/after/after/before; across four runs there were 100 measured and 40 control samples. In both blocks (run 1↔2 and run 3↔4), after list p50 and p95 were larger than before. Pooled list p95 was 547.74→682.94 ms, and the count within 250 ms changed from 38/50 to 23/50. Browser selection p95 was 236.40→293.50 ms, while Node selection-ack p95 was 320.33→296.96 ms, mixing directions across metrics. Both variants failed the list target. The design did not use per-sample pairing or random assignment, so it does not establish a causal code regression, and no benefit was confirmed; the `seal` sharing product change from 35 was reverted (revert commit `d408500`). `seal` in `diagnostics.ts` became an internal function of `freezeMessageAst` again, and after the revert an explicit historical-ref smoke test and `node --check` passed. The before value of 547.74 ms in this comparison is not the latest p95 for a normal current single run and is not directly comparable with 767.54 ms from 36. Evidence is in [37](37-seal-locale-add-comparison.md).
 
-단순 메시지 파싱 중 ASCII 인자를 함께 수집해 일반 AST 인자 순회를 생략하는 실험을 수행했으나 신규 파싱 개선을 확인하지 못해 원복했다. 같은 프로세스 10k cold 비교에서 p95는 183.20→207.63ms였고 개선은 4/20쌍이었다. incremental은 p95 61.25→60.20ms·개선 54/100쌍이지만 최장 시간이 늘었으며 안정적 개선을 주장하지 않는다. 공개 API·현행 제품 코드·게시본은 유지하고 재현 패치와 원시는 [40](40-simple-argument-trial.md)에 보존한다. 다음 구조적 최적화 후보는 이번 실험만으로 확정하지 않는다.
+An experiment that collected ASCII arguments during simple message parsing and skipped the general AST argument traversal did not confirm a parsing improvement and was reverted. In same-process 10k cold comparisons, p95 was 183.20→207.63 ms and only 4/20 pairs improved. Incremental p95 was 61.25→60.20 ms with 54/100 pairs improved, but the maximum increased, so no stable improvement is claimed. Public APIs, current product code, and released builds remain unchanged; the reproduction patch and raw data are preserved in [40](40-simple-argument-trial.md). This experiment alone does not settle the next structural optimization candidate.
 
-JSON 항목을 방문 콜백으로 바로 처리해 임시 entry 배열을 제거하는 실험도 개선 근거가 부족해 원복했다. 10k cold p95는 141.77→152.26ms·개선 5/20쌍이었고, incremental은 p95 35.70→35.47ms지만 p50·쌍별 차이 중앙값·최장 시간이 늘었다. 개별 entry·정규식 match 객체는 여전히 생성하며 메모리 감소는 측정하지 않았다. 현행 제품·계측 경로를 유지하고 재현 패치와 원시는 [41](41-json-entry-visitor-trial.md)에 보존한다.
+An experiment that processed JSON entries directly through a visitor callback to remove the temporary entry array also lacked evidence of improvement and was reverted. For 10k cold data, p95 was 141.77→152.26 ms with 5/20 pairs improved; incremental p95 was 35.70→35.47 ms, but p50, the median paired difference, and the maximum increased. Individual entry and regex match objects are still created, and memory reduction was not measured. The current product and instrumentation paths remain; the reproduction patch and raw data are preserved in [41](41-json-entry-visitor-trial.md).
 
-## 참고 자료
+## References
 
-- [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` 커스텀 이벤트와 모듈 무효화
-- [Vite 플러그인 API](https://vite.dev/guide/api-plugin) — `handleHotUpdate` 훅과 커스텀 이벤트 전달
-- [React useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore) — store 구독과 스냅샷 동일성
-- [FormatJS ICU 문법](https://formatjs.github.io/docs/core-concepts/icu-syntax/) — 지원하는 메시지 문법
-- [FormatJS intl-messageformat](https://formatjs.github.io/docs/intl-messageformat/) — AST 입력과 `ignoreTag`
-- [Paraglide 메시지 컴파일](https://paraglidejs.com/compiling-messages) — 코드 생성 방식의 대기 지점
-- [Wuchale 개발 모드](https://wuchale.dev/guides/dev/) — HMR 기반 반영 접근
-- [TypeScript 선언 파일 배포](https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html) — `.d.ts` 배포 형태
+- [Vite HMR API](https://vite.dev/guide/api-hmr) — `handleHotUpdate` custom events and module invalidation
+- [Vite plugin API](https://vite.dev/guide/api-plugin) — the `handleHotUpdate` hook and custom event delivery
+- [React useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore) — store subscription and snapshot identity
+- [FormatJS ICU syntax](https://formatjs.github.io/docs/core-concepts/icu-syntax/) — supported message syntax
+- [FormatJS intl-messageformat](https://formatjs.github.io/docs/intl-messageformat/) — AST input and `ignoreTag`
+- [Paraglide message compilation](https://paraglidejs.com/compiling-messages) — waiting points in the codegen approach
+- [Wuchale development mode](https://wuchale.dev/guides/dev/) — HMR-based update approach
+- [Publishing TypeScript declaration files](https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html) — `.d.ts` distribution shape

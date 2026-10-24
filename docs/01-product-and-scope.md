@@ -1,77 +1,77 @@
-# 01. 제품과 범위
+# 01. Product and Scope
 
-이 문서는 Saylo가 풀려는 문제와 다루지 않는 범위, DOM 상태 보존 범위를 정한다.
+This document defines the problem Saylo aims to solve, the boundaries of that scope, and the extent to which DOM state is preserved.
 
-## 문제
+## Problem
 
-코드 생성(codegen) 방식 i18n은 메시지를 빌드 산출물로 굽는다. 그래서 문구 한 줄을 고치거나 로케일을 추가할 때마다 메시지 컴파일이 다시 돌아야 하고, 그 대기 시간이 개발 흐름을 끊는다. 컴파일이 끝나기 전에는 화면에 바뀐 문구가 나오지 않는다.
+Code generation (codegen) based i18n bakes messages into build artifacts. As a result, every edit to a single line of copy or addition of a locale requires another message compilation, and the wait interrupts the development flow. Until compilation finishes, the changed copy does not appear on screen.
 
-또 다른 불편은 상태 초기화다. 전체 모듈 무효화나 full reload로 새 문구를 반영하면 열어 둔 입력 폼, 모달, 스크롤 위치, 임시 입력값이 사라진다. 번역을 다듬는 작업은 저장을 반복하는 일이라 이 손실이 자주 누적된다.
+Another pain point is state reset. When whole-module invalidation or a full reload applies new copy, open input forms, modals, scroll positions, and draft input values are lost. Refining translations involves repeated saves, so this loss accumulates frequently.
 
-## 목표
+## Goals
 
-- 문구 수정, 로케일 추가, namespace 추가가 개발 서버에서 즉시 반영된다.
-- 반영이 기존 DOM 상태(입력값, 포커스, 모달 열림, 스크롤 위치)를 파괴하지 않는다.
-- JavaScript와 TypeScript 프로젝트를 모두 지원한다.
-- 코어는 프레임워크 중립이고, 프레임워크 어댑터로 확장한다.
-- 개발과 운영이 같은 파싱·검증·포맷·폴백 규칙을 공유한다.
+- Copy edits, locale additions, and namespace additions appear immediately in the development server.
+- Applying updates does not destroy existing DOM state (input values, focus, open modals, or scroll position).
+- Both JavaScript and TypeScript projects are supported.
+- The core is framework-neutral and is extended through framework adapters.
+- Development and production share the same parsing, validation, formatting, and fallback rules.
 
-## 개발 반영 경로
+## Development update path
 
-파일 watch → 수정 파일 parse/validate → 로케일+namespace 단위 catalog transaction → Vite custom event로 snapshot/patch 전달 → 클라이언트 store 갱신 → 프레임워크 구독 재렌더.
+File watch → parse/validate modified files → locale+namespace catalog transaction → send snapshot/patch through a Vite custom event → update the client store → re-render framework subscribers.
 
-이 경로는 JS 산출물 생성 완료, 전체 앱 모듈 무효화, full reload, typegen 완료를 기다리지 않는다. 없애려는 것은 코드 생성 대기와 전체 리로드다. 파싱과 검증에 드는 시간은 남는다.
+This path does not wait for JavaScript output generation, whole-app module invalidation, a full reload, or typegen completion. It eliminates code generation waits and full reloads. Time spent on parsing and validation remains.
 
-## DOM 상태 보존 범위
+## Scope of DOM state preservation
 
-- 문구 값 수정과 로케일 추가는 기존 DOM 상태를 보장한다.
-- schema-compatible 편집(값만 바꾸는 키 편집)은 기존 DOM 상태를 보장한다.
-- schema-breaking 편집(키 삭제, 필수 인자 추가)은 새 schema를 즉시 적용하고 진단과 typegen을 함께 낸다. 기존 호출부는 `InvalidArgumentError`를 낼 수 있고, 그 편집의 DOM 상태는 보장하지 않는다. 자세한 규칙은 [04-live-update-and-types.md](04-live-update-and-types.md)를 따른다.
-- Vite dev server 재시작이나 websocket 재연결에서 Vite client가 스스로 full reload를 하는 경우는 이 보장 범위 밖이다. 자세한 내용은 [05-build-and-ssr.md](05-build-and-ssr.md)를 따른다.
-- Saylo가 DOM을 다시 만들지 않아도 문구 길이 변화로 레이아웃과 스크롤 위치가 달라질 수 있다. 상태 보존 인수 검사는 같은 레이아웃 조건에서 수행한다.
+- Copy value edits and locale additions preserve existing DOM state.
+- Schema-compatible edits (key edits that only change values) preserve existing DOM state.
+- Schema-breaking edits (deleting a key or adding a required argument) apply the new schema immediately and emit diagnostics and typegen together. Existing call sites may throw `InvalidArgumentError`, and DOM state across that edit is not guaranteed. Follow the detailed rules in [04-live-update-and-types.md](04-live-update-and-types.md).
+- Full reloads initiated by the Vite client when the Vite dev server restarts or the websocket reconnects are outside this guarantee. See [05-build-and-ssr.md](05-build-and-ssr.md) for details.
+- Even when Saylo does not recreate the DOM, changed copy length can alter layout and scroll position. State-preservation acceptance checks run under the same layout conditions.
 
-## 비목표
+## Non-goals
 
-| 비목표 | 이유 |
+| Non-goal | Reason |
 | --- | --- |
-| 전체 리로드로 반영 | DOM 상태를 파괴한다. |
-| 화면 컴포넌트 전면 remount | 입력·포커스·스크롤 상태를 잃는다. |
-| Rich text 컴포넌트 보간 MVP (초기 결정) | 처음에는 값 문법과 타입 계약이 복잡해져 순수 텍스트를 먼저 지원하기로 했다. 첫 rich text core API 슬라이스가 순수 텍스트 위에 읽기 전용 parts 투영(`tParts`)을 더한다. 인자로 컴포넌트를 넣는 보간과 자동 HTML 렌더는 그대로 비목표다. [78-rich-text-parts.md](78-rich-text-parts.md)를 따른다. |
-| 컴파일러·번들러 대체 | Saylo는 i18n 계층만 담당한다. |
+| Applying updates through a full reload | It destroys DOM state. |
+| Remounting entire screen components | It loses input, focus, and scroll state. |
+| Interpolating rich text components in the MVP (initial decision) | Initially, the value syntax and type contract would have become complex, so the decision was to support plain text first. The first rich text core API slice adds a read-only parts projection (`tParts`) on top of plain text. Interpolation by passing components as arguments and automatic HTML rendering remain non-goals. Follow [78-rich-text-parts.md](78-rich-text-parts.md). |
+| Replacing compilers or bundlers | Saylo handles only the i18n layer. |
 
-## 구독 범위
+## Subscription scope
 
-React의 `useI18nSelector`, Svelte의 `selectSvelteStore`·`getI18nSelector`는 `0.1.0-alpha.4` 게시본에 있다. Vue의 `useI18nSelector`·`useVueSelector`는 로컬 private workspace 구현이다. selector는 snapshot에서 필요한 값을 골라 `Object.is`로 비교하므로 선택 값이 같으면 하위 갱신을 건너뛴다.
+React's `useI18nSelector`, and Svelte's `selectSvelteStore` and `getI18nSelector`, are in the published `0.1.0-alpha.4` build. Vue's `useI18nSelector` and `useVueSelector` are local private workspace implementations. Selectors choose the values they need from a snapshot and compare them with `Object.is`, so downstream updates are skipped when the selected values are unchanged.
 
-## 선택 빌드
+## Selective builds
 
-운영 빌드는 `includeKeys`의 수동 `string[]` 목록이나 `{ from, dynamicKeys? }` 소스 분석으로 화면이 쓰는 키만 남긴다. 분석은 JS·TS·JSX·TSX·Vue·Svelte 소스를 실행하지 않고 정적으로 읽는다. 개발은 전체 카탈로그를 쓰고, typegen 선언은 전체 base schema를 유지한다.
+Production builds keep only the keys used by the screen, using either a manual `string[]` list in `includeKeys` or source analysis through `{ from, dynamicKeys? }`. The analysis reads JS, TS, JSX, TSX, Vue, and Svelte sources statically without executing them. Development uses the full catalog, and typegen declarations retain the full base schema.
 
-## 대상 사용자
+## Target users
 
-- 문구를 자주 고치며 개발 중 대기를 줄이고 싶은 JS/TS 개발자.
-- 상태를 유지한 채 문구를 반영하고 싶은 폼·대시보드 중심 화면을 만드는 팀.
-- 프레임워크 중립 코어와 프레임워크 어댑터를 함께 쓰려는 프로젝트.
+- JavaScript/TypeScript developers who edit copy often and want to reduce waits during development.
+- Teams building form- and dashboard-heavy screens who want to apply copy changes while preserving state.
+- Projects that want to use a framework-neutral core together with framework adapters.
 
-## 용어
+## Terminology
 
-| 용어 | 정의 |
+| Term | Definition |
 | --- | --- |
-| catalog | 한 로케일 안의 한 namespace에 해당하는 메시지 집합 |
-| namespace | 카탈로그를 나누는 파일 단위. 예: `common`, `cart` |
-| registry revision | 세션 안에서 전송 순서를 식별하는 단조 증가 번호 |
-| catalogVersion | 로케일+namespace별 카탈로그와 삭제 상태의 버전 |
-| stateRevision | 공개 UI snapshot의 변경을 식별하는 번호 |
-| snapshot | 특정 시점의 불변 상태. UI·boot·전송 snapshot은 용도가 다르다. |
-| patch | base revision에서 새 revision으로 가는 변경 묶음 |
-| base locale | 기준 로케일. 키와 argument 스키마의 원본이다. |
-| generated types | 기준 스키마에서 만드는 타입 선언 |
-| typegen | generated types를 만드는 배경 작업 |
+| catalog | A set of messages for one namespace within one locale |
+| namespace | A file-level partition of catalogs. For example, `common` or `cart` |
+| registry revision | A monotonically increasing number that identifies transmission order within a session |
+| catalogVersion | The version of a locale+namespace catalog and its deleted state |
+| stateRevision | A number that identifies changes to the public UI snapshot |
+| snapshot | Immutable state at a particular point in time. UI, boot, and transport snapshots serve different purposes. |
+| patch | A bundle of changes from a base revision to a new revision |
+| base locale | The reference locale. It is the source of keys and argument schemas. |
+| generated types | Type declarations generated from the base schema |
+| typegen | The background task that generates generated types |
 
-## 원칙
+## Principles
 
-1. 텍스트 우선. 값은 문자열이고, 임의 코드 실행이나 자동 HTML 주입을 하지 않는다.
-2. 코어는 프레임워크를 모른다. 프레임워크 의존은 어댑터에만 둔다.
-3. 개발과 운영이 같은 정규화·검증·포맷·폴백 경로를 쓴다.
-4. 실패하면 마지막 정상 카탈로그를 유지하고 진단을 노출한다. 세부 규칙은 [04-live-update-and-types.md](04-live-update-and-types.md)를 따른다.
-5. 검증하지 않은 성능·버전·생태계 주장을 하지 않는다.
+1. Text first. Values are strings, with no arbitrary code execution or automatic HTML injection.
+2. The core does not know about frameworks. Framework dependencies belong only in adapters.
+3. Development and production use the same normalization, validation, formatting, and fallback paths.
+4. On failure, retain the last known-good catalog and expose diagnostics. Follow the detailed rules in [04-live-update-and-types.md](04-live-update-and-types.md).
+5. Do not make performance, version, or ecosystem claims that have not been verified.

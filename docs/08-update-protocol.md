@@ -1,50 +1,50 @@
-# 08. 갱신 프로토콜
+# 08. Update Protocol
 
-이 문서는 Saylo의 개발 갱신과 부팅 wire 프로토콜의 단일 출처다. patch, snapshot, boot 인코딩, 적용과 resync 규칙을 정한다. [03-catalog-and-api.md](03-catalog-and-api.md)의 공개 타입과 [04-live-update-and-types.md](04-live-update-and-types.md)의 정책은 이 문서를 참조한다.
+This document is the single source for Saylo's development update and boot wire protocols. It defines patch and snapshot encoding, boot encoding, application, and resync rules. The public types in [03-catalog-and-api.md](03-catalog-and-api.md) and the policies in [04-live-update-and-types.md](04-live-update-and-types.md) refer to this document.
 
-## 현재 eager 구현 (2026-10-05)
+## Current eager implementation (2026-10-05)
 
-현재 `@0disoft/saylo-vite`는 registry 전체를 교체한다. 실제 타입은 `packages/vite/src/types.ts`, 조정 로직은 `dev-sync.ts`에 있다.
+Current `@0disoft/saylo-vite` replaces the entire registry. The actual types are in `packages/vite/src/types.ts`, and reconciliation logic is in `dev-sync.ts`.
 
-| 이벤트 | 내용 |
+| Event | Content |
 | --- | --- |
-| `saylo:request-eager-snapshot` | `scope: 'eager'`, 고유 `requestId`, 클라이언트 `generation`, 현재 `locale`·`namespaces` |
-| `saylo:eager-snapshot` / `kind: 'snapshot'` | 요청을 echo하고 서버 `sessionId`·`revision`·`baseLocale`·전체 `catalogs` 반환 |
-| `saylo:eager-snapshot` / `kind: 'update'` | 서버 `baseRevision`·`revision`과 전체 registry 반환 |
-| `saylo:eager-diagnostic` | 파일 오류는 broadcast, 요청 진단은 요청 정보를 붙여 해당 client에만 반환 |
+| `saylo:request-eager-snapshot` | `scope: 'eager'`, unique `requestId`, client `generation`, and current `locale` and `namespaces` |
+| `saylo:eager-snapshot` / `kind: 'snapshot'` | Echoes the request and returns server `sessionId`, `revision`, `baseLocale`, and all `catalogs` |
+| `saylo:eager-snapshot` / `kind: 'update'` | Server `baseRevision` and `revision` plus the full registry |
+| `saylo:eager-diagnostic` | File errors are broadcast; request diagnostics include request identity and are returned only to that client |
 
-서버 revision과 클라이언트 요청 generation은 독립적이다. listener 등록 뒤 처음 요청하고, gap·새 세션·재연결은 snapshot으로 복구한다. 유효 요청은 하나이며 복구 중 update는 최신 session·revision 정보 하나로 합친다. 과거 요청과 관측 revision보다 낮은 응답은 게시하지 않는다. 기본 timeout은 요청당 5초, 최대 3회 시도이며 실패 시 마지막 정상 상태를 유지한다. 다음 update·연결 이벤트에서 다시 시도할 수 있다. disconnect·해제·dispose는 요청과 timer를 무효화한다.
+Server revision and client request generation are independent. The first request is made after listener registration, and gaps, new sessions, and reconnections recover through a snapshot. Only one request is active; during recovery, updates are merged into one latest session/revision hint. Responses for stale requests or with a revision lower than the observed revision are not published. The default timeout is 5 seconds per request with up to three attempts; on failure, the last valid state remains. The next update or connection event may trigger another attempt. Disconnect, teardown, and dispose invalidate requests and timers.
 
-요청의 locale·namespace는 현재 상태를 설명하고 `scope: 'eager'` 응답은 전체를 교체한다. pair별 outcome·version·tombstone과 request-scoped 부분 delta는 지연 로딩 경로에서 연결했고, lazy dev source의 opt-in push도 로컬 구현했다. Vite 서버 재시작의 실제 브라우저 경로는 페이지 새로고침을 포함하며 그 경우 DOM 보존을 요구하지 않는다.
+A request's locale and namespaces describe the current state, while a `scope: 'eager'` response replaces everything. Per-pair outcome, version, and tombstone and request-scoped partial deltas were connected on the lazy-loading path, and opt-in push for the lazy dev source was implemented locally. The real-browser path for a Vite server restart includes a page refresh, which does not require DOM preservation.
 
-## wire 타입
+## Wire types
 
-현재 lazy 경로는 manifest 조회와 pair 조회를 분리한다. 전체 present 응답은 compact 인코딩으로 보내고 missing/failed는 기존 outcome이다. 직전 baseline이 맞으면 request-scoped 메시지 delta patch가 된다. push는 이 요청 경로를 대체하지 않고, scope에 등록한 캐시 pair의 변경만 별도 이벤트로 보낸다. 아래 wire 타입은 `packages/vite/src/types.ts`와 `catalog-wire.ts`의 현행 구현이다.
+The current lazy path separates manifest lookup from pair lookup. Full present responses use compact encoding, while missing and failed use the existing outcome format. If the immediately preceding baseline matches, the response becomes a request-scoped message-delta patch. Push does not replace this request path; it sends only changes to cached pairs registered in the scope as a separate event. The wire types below are the current implementation in `packages/vite/src/types.ts` and `catalog-wire.ts`.
 
-| 이벤트 | 현재 lazy 전송 |
+| Event | Current lazy transport |
 | --- | --- |
-| `saylo:request-manifest` | eager handshake의 요청 ID·generation을 사용해 전체 metadata 요청 |
-| `saylo:manifest` | snapshot 응답 또는 `baseRevision`을 가진 update. 전체 목록·pair version·schema fingerprint·missing tombstone이며 AST 없음 |
-| `saylo:request-catalog` | 고유 요청 ID·generation과 locale·namespace 한 pair. 직전에 받은 present pair가 있으면 선택적 `known { sessionId, catalogVersion }`을 함께 보낸다 |
-| `saylo:catalog` | 요청 echo와 결과. baseline이 맞으면 `status: "patch"` delta, 전체 present는 `status: "compact"`, `encoding: "saylo-catalog-v1"`로 보낸다. missing/failed는 기존 outcome이다 |
+| `saylo:request-manifest` | Requests all metadata using the eager handshake's request ID and generation |
+| `saylo:manifest` | Snapshot response or update with `baseRevision`. Contains the full list, pair versions, schema fingerprints, and missing tombstones, with no AST |
+| `saylo:request-catalog` | Unique request ID and generation plus one locale and namespace pair. If a present pair was previously received, include an optional `known { sessionId, catalogVersion }` |
+| `saylo:catalog` | Request echo and result. If the baseline matches, send a `status: "patch"` delta; otherwise, send a full present result with `status: "compact"` and `encoding: "saylo-catalog-v1"`. Missing and failed use the existing outcome format |
 
-`virtual:saylo/lazy`는 초기 범위의 base+target outcome만 싣고 source handle을 내보낸다. 개발 source는 `{ push: true }`로 만들어 owner·session·캐시 pair metadata를 `saylo:catalog-scope`로 등록한다. 서버는 캐시 pair 중 바뀐 것만 `saylo:catalog-push`로 보내고, 없는 pair는 metadata만 받아 나중에 조회한다. manifest 응답을 적용한 뒤 core의 `refresh`가 현재 desired scope를 다시 준비하면 `catalogSource`가 pair마다 직전 baseline을 기준으로 조회한다. 아직 캐시하지 않은 pair의 AST는 받지 않고, 캐시한 비활성 pair는 push를 받을 수 있고, 현재 번역이나 base fallback에 영향이 없으면 UI snapshot은 바꾸지 않는다. 조회 응답은 요청 identity·session·pair version·schema를 검사하고 재연결은 identity를 무효화한 뒤 scope를 다시 등록하고 현재 manifest로 재요청한다. 여러 instance는 source를 공유하며 자신의 연결·구독만 해제한다. 기존 eager 전체 갱신은 eager snapshot을 요청한 Vite client에만 보낸다.
+`virtual:saylo/lazy` includes only the base+target outcomes for the initial scope and exports a source handle. The development source is created with `{ push: true }` and registers owner, session, and cached-pair metadata through `saylo:catalog-scope`. The server sends only changed cached pairs through `saylo:catalog-push`; unknown pairs receive only metadata and are fetched later. After applying the manifest response, core's `refresh` prepares the current desired scope again, and `catalogSource` fetches each pair against the immediately preceding baseline. It does not receive ASTs for pairs not yet cached; cached inactive pairs may receive pushes, and the UI snapshot does not change when they do not affect the current translation or base fallback. Lookup responses validate request identity, session, pair version, and schema. Reconnection invalidates identities, registers the scope again, and re-requests against the current manifest. Multiple instances share the source and release only their own connections and subscriptions. Existing eager full updates are sent only to the Vite client that requested the eager snapshot.
 
-namespace schema fingerprint는 정규화한 namespace·키·인자 acceptedTypes JSON의 UTF-8 SHA-256(`saylo-schema-v2:sha256:` + 64자리 16진수)이다. 로케일·pair마다 큰 스키마 문자열을 반복 전송하지 않도록 고정 길이 digest로 바꿨고, `saylo-schema-v1:` 형식으로 저장된 기존 boot·chunk는 재생성해야 한다.
+The namespace schema fingerprint is the UTF-8 SHA-256 of canonical JSON containing the normalized namespace, keys, and acceptedTypes (`saylo-schema-v2:sha256:` followed by 64 hexadecimal characters). Fixed-length digests replaced repeated transmission of large schema strings per locale and pair. Existing boot and chunk data stored in the `saylo-schema-v1:` format must be regenerated.
 
-### 현행 compact 전체 카탈로그 (2026-10-07)
+### Current compact full catalog (2026-10-07)
 
-실제 타입은 `packages/vite/src/catalog-wire.ts`에 있다. lazy 개발 소켓의 full present 응답만 compact로 인코딩하며, 클라이언트는 decode 뒤 기존 manifest 검사와 immutable 처리를 거쳐 core에 일반 present outcome을 넘긴다. 구현·측정 기록은 [16-compact-catalog-transport.md](16-compact-catalog-transport.md)에 있다.
+The actual types are in `packages/vite/src/catalog-wire.ts`. Only full present responses on the lazy development socket use compact encoding. After decoding, the client runs the existing manifest checks and immutable processing, then passes a normal present outcome to core. Implementation and measurements are recorded in [16-compact-catalog-transport.md](16-compact-catalog-transport.md).
 
-- envelope는 `status: "compact"`, `encoding: "saylo-catalog-v1"`과 현재 `sessionId`, `key`, `catalogVersion`, `namespaceSchemaFingerprint`를 담는다.
-- catalog payload는 `{ sourceName, schemas, messages }`다. 메시지는 `[id, source, offset, line, column, ast, schemaIndex]`이며 같은 arguments JSON은 `schemas`의 항목을 공유한다.
-- AST의 top-level literal·argument 노드는 위치가 없으면 `[type, value]`, 있으면 `[type, value, startOffset, startLine, startColumn, endOffset, endLine, endColumn]`로 보낸다. 복잡한 ICU 노드와 그 중첩 내용은 기존 AST 형태를 유지한다. 파일 위치·AST 위치의 offset/line/column 값은 바꾸지 않으며 클라이언트 ICU 재파싱은 없다.
-- encoding·stamp·tuple·위치·schema 참조·중복 ID 검사 실패는 해당 요청을 거절하고 마지막 정상 UI를 유지한다. 이후 별도의 새 요청으로 회복할 수 있다. 깨진 patch에 대한 기존 timeout 안의 full 재요청 규칙과 구분한다.
-- missing·failed·patch, eager snapshot, 초기 boot, production chunk와 SSR boot wire는 기존 형식이다. 클라이언트는 기존 일반 present 응답도 받는다. 새 compact 응답을 보내는 plugin과 dev client는 같은 패키지 구현을 사용해야 한다.
+- The envelope contains `status: "compact"`, `encoding: "saylo-catalog-v1"`, and the current `sessionId`, `key`, `catalogVersion`, and `namespaceSchemaFingerprint`.
+- The catalog payload is `{ sourceName, schemas, messages }`. A message is `[id, source, offset, line, column, ast, schemaIndex]`, and identical arguments JSON shares an entry in `schemas`.
+- Top-level literal and argument AST nodes are sent as `[type, value]` without a position or `[type, value, startOffset, startLine, startColumn, endOffset, endLine, endColumn]` with one. Complex ICU nodes and their nested content retain the existing AST shape. File and AST offset, line, and column values are unchanged, and the client does not reparse ICU.
+- Invalid encoding, stamps, tuples, positions, schema references, or duplicate IDs reject that request and retain the last valid UI. A later new request may recover. This is distinct from the existing rule that re-requests full data within the timeout for a broken patch.
+- Missing, failed, patch, eager snapshots, initial boot, production chunks, and the SSR boot wire retain existing formats. The client also accepts normal present responses. The plugin and development client that send the new compact response must use the same package implementation.
 
-### 현행 request-scoped delta patch (2026-10-06)
+### Current request-scoped delta patch (2026-10-06)
 
-실제 타입은 `packages/vite/src/catalog-patch.ts`, 서버 판정은 `catalog-registry.ts`의 `loadDelta`에 있다.
+Actual types are in `packages/vite/src/catalog-patch.ts`; server decisions are made by `loadDelta` in `catalog-registry.ts`.
 
 ```ts
 interface CatalogStamp { readonly sessionId: string; readonly catalogVersion: number; }
@@ -64,24 +64,24 @@ interface CatalogPatch extends CatalogStamp {
 }
 ```
 
-- 서버는 pair마다 직전 present version 한 개만 보관한다(삭제·재생성 이력 없음). 요청의 `known`이 현재 version이나 그 직전 version과 맞을 때만 patch를 만든다.
-- patch는 현재 `sessionId`·`key`·`catalogVersion`·`namespaceSchemaFingerprint`·`sourceName`·`messageCount`와 `base` stamp를 담는다. 메시지 `source`가 바뀌면 upsert, 없어진 ID는 remove, 위치만 바뀌면 positions다.
-- unchanged-source 메시지의 delta(offset·line·column)가 모두 같고 실제로 움직인 위치가 2개 이상일 때 `positions` 목록 대신 `positionShift` 하나로 압축한다. 일부는 이동 0이고 다른 일부만 이동했거나 delta가 다르면 압축하지 않고 `positions` 목록을 그대로 보낸다. `positions`에 있는 ID는 개별 위치로 덮어쓴다.
-- 적용 시 `messageCount`와 위치값 유효성(정수, offset ≥ 0, line·column ≥ 1)을 검사한다. 메시지 수가 다르거나 위치값이 유효하지 않으면 거절하고 이전 정상 상태를 유지한다.
-- schema fingerprint만 바뀌어 pair version이 같아도 새 fingerprint를 담은 0메시지 patch가 될 수 있다. 위치만 바뀌는 포매터 JSON 재배치는 version을 올려 baseline을 정확히 맞추고, UI 의미가 같으면 core는 렌더를 건너뛴다.
-- 클라이언트는 요청마다 immutable baseline을 고정해 복수 instance의 역순 응답도 안전하다. 새 전체 `CatalogOutcome`만 core에 넘기고 base+target을 한 commit으로 게시한다. cache는 현재 세션 present pair마다 stale baseline 하나를 두고, `getCatalogs`는 현재 metadata와 맞는 pair만 노출한다.
-- 과거 version gap, 새 세션, 밀집 변경, 삭제·재생성, `known` 없음은 전체 present/missing으로 돌아간다. 깨진 patch는 기존 timeout 안에서 새 `requestId`로 `known` 없는 full을 한 번 재요청하고, 그마저 patch면 거절하고 이전 정상 UI를 유지한다.
-- 기존 eager 전체 snapshot, production chunk loader, SSR boot wire는 그대로 유지한다.
+- The server keeps only the previous present version for each pair (no deletion and recreation history). It creates a patch only when the request's `known` matches the current or immediately previous version.
+- A patch contains the current `sessionId`, `key`, `catalogVersion`, `namespaceSchemaFingerprint`, `sourceName`, `messageCount`, and `base` stamp. Changed message `source` values go in upsert, missing IDs in remove, and position-only changes in positions.
+- If an unchanged-source message has identical delta (offset, line, column) and at least two positions actually moved, compress the `positions` list into one `positionShift`. If some positions do not move, the deltas differ, or fewer than two moved, send the `positions` list as-is. An ID in `positions` overrides the aggregate shift for that ID.
+- Application validates `messageCount` and position values (integers; offset ≥ 0; line and column ≥ 1). A message-count mismatch or invalid position rejects the patch and retains the previous valid state.
+- A zero-message patch may carry a new fingerprint even when the pair version is unchanged if only the schema fingerprint changed. Reformatting formatter JSON that moves positions only increments the version and aligns the baseline precisely; core skips rendering when UI meaning is unchanged.
+- The client fixes an immutable baseline per request, so responses may arrive out of order across multiple instances safely. It passes only new full `CatalogOutcome` values to core and publishes base+target in one commit. The cache keeps one stale baseline per present pair in the current session, and `getCatalogs` exposes only pairs matching current metadata.
+- A past-version gap, new session, dense change set, deletion and recreation, or absent `known` falls back to full present/missing data. A broken patch is retried once within the existing timeout with a new `requestId` and a full request without `known`. If that response is also a patch, it is rejected and the previous valid UI is retained.
+- Existing eager full snapshots, the production chunk loader, and the SSR boot wire remain unchanged.
 
-core는 ID가 기준에 있는지 먼저 확인한 뒤, 깊게 동결한 번역 인자 스키마와 기준 메시지의 인자 스키마가 이전에 검증에 성공한 객체 쌍이면 `validateTranslation` 결과를 재사용한다. 한 번역 스키마에 복수 기준 계약의 성공 기록을 둘 수 있고, mutable 입력·새 계약은 다시 검증한다. 파싱 호출 내 동일 인자 스키마 공유와 검증 기록의 범위는 [18](18-shared-argument-schemas.md)를 따른다. 서버는 pair version 판정에서 정렬·stringify 없이 key·source·position을 직접 비교한다.
+Core first checks whether the ID exists in the base, then reuses a `validateTranslation` result when the deeply frozen translation argument schema and base-message argument schema are an object pair that previously passed validation. One translation schema may retain successful results for multiple base contracts; mutable inputs and new contracts are validated again. Follow [18](18-shared-argument-schemas.md) for sharing identical argument schemas within a parse call and the scope of validation records. When deciding pair versions, the server compares key, source, and position directly without sorting or stringifying.
 
-### 현행 push wire (로컬, 미게시)
+### Current push wire (local, unpublished)
 
-`virtual:saylo/lazy`의 dev source는 `{ push: true }`로 생성한다. 수동 `createDevCatalogSource`는 `push: true`를 opt-in하며 기본값은 `false`라 기존 호출과 호환된다. 게시본 `0.1.0-alpha.4`에는 없다.
+The dev source from `virtual:saylo/lazy` is created with `{ push: true }`. Manual `createDevCatalogSource` uses `push: true` as an opt-in and defaults to `false` for compatibility with existing calls. It is absent from published `0.1.0-alpha.4`.
 
-| 이벤트 | 방향 | 내용 |
+| Event | Direction | Content |
 | --- | --- | --- |
-| `saylo:catalog-scope` | client → server | `{ owner, sessionId, catalogs }`. owner·session과 캐시한 pair metadata를 등록한다 |
+| `saylo:catalog-scope` | client → server | `{ owner, sessionId, catalogs }`. Registers owner, session, and cached pair metadata |
 | `saylo:catalog-push` | server → client | `{ kind: "patch", owner, baseRevision, manifest, outcomes }` |
 
 ```ts
@@ -100,46 +100,46 @@ interface CatalogPush {
 }
 ```
 
-- `outcomes`는 기존 compact/full/missing outcome 또는 `status: "patch"` 메시지 delta다. 서버는 scope에 등록된 pair 중 version·schema가 바뀐 것만 보내고, 캐시에 없는 pair는 metadata만 보낸다.
-- 클라이언트는 payload와 `baseRevision`을 검증하고, 캐시 교체와 manifest 적용을 한 번에 한 뒤 core에 한 atomic UI snapshot으로 게시한다. 이어 오는 기존 metadata broadcast가 같은 revision이면 건너뛴다.
-- 불량·누락·gap이면 기존 snapshot과 pair 조회로 복구한다. `stop`·`dispose`는 그 owner의 구독만 해제하고 공유 Vite socket은 유지한다. reconnect에서는 scope를 다시 등록한다.
-- session·revision 검증은 기존 `EagerSync` 계약을 재사용한다. push는 request delta·compact 전체 응답·boot·서버 요청 경로를 유지한 채 추가된다.
+- `outcomes` contains existing compact, full, or missing outcomes, or `status: "patch"` message deltas. The server sends only pairs registered in the scope whose version or schema changed; pairs absent from the cache receive metadata only.
+- The client validates the payload and `baseRevision`, replaces the cache and applies the manifest together, and publishes one atomic UI snapshot to core. An immediately following metadata broadcast for the same revision is skipped.
+- Malformed, missing, or gap data recovers through the existing snapshot and pair lookup. `stop` and `dispose` release only that owner's subscription and retain the shared Vite socket. Reconnection registers the scope again.
+- Session and revision validation reuses the existing `EagerSync` contract. Push is additive and retains request deltas, compact full responses, boot, and server request paths.
 
-## 적용 규칙
+## Application rules
 
-- payload는 이미 캐시한 (locale, namespace) pair에만 적용한다. 캐시하지 않은 pair는 manifest의 version 갱신만 남겨 cache 불일치로 추적하고 AST payload는 버린다.
-- UI 게시는 하나의 atomic candidate 계산으로 한다. schema는 새것이고 catalog는 옛것인 중간 상태를 구독자에게 노출하지 않는다.
-- metadata 변경과 payload 적용은 같은 commit 안에서 처리하고, 알림은 commit이 끝날 때 한 번만 낸다.
-- 같은 세션이고 이미 적용한 revision 이하인 patch는 버린다.
-- `baseRevision`이 현재 적용 revision과 같고 `revision`이 더 크면 적용한다.
-- 더 미래의 `baseRevision`이거나 적용할 수 없는 겹침이면 gap으로 보고 resync한다. 역순이라는 이유만으로 무조건 버리지 않는다.
+- Apply payloads only to already-cached (locale, namespace) pairs. For uncached pairs, keep only the manifest version update to track a cache mismatch and discard the AST payload.
+- Publish the UI from one atomic candidate computation. Do not expose an intermediate state in which the schema is new but the catalog is old.
+- Process metadata changes and payload application in the same commit, and notify only once when the commit finishes.
+- Discard patches from the same session whose revision is less than or equal to one already applied.
+- Apply when `baseRevision` equals the currently applied revision and `revision` is greater.
+- Treat a future `baseRevision` or an overlap that cannot be applied as a gap and resync. Do not discard solely because of reverse order.
 
-## snapshot 요청과 resync
+## Snapshot requests and resync
 
-- lazy handshake는 metadata-only manifest snapshot이다. lazy source의 요청 scope는 baseLocale과 빈 namespace 목록이다. eager 요청은 현재 로케일과 namespace를 설명하지만, 응답은 전체 registry다.
-- lazy는 manifest를 수락한 뒤 core `refresh`가 필요한 base+target pair를 캐시에서 재사용하거나 `loadCatalog`로 준비하고, 전부 준비되면 한 번의 atomic UI snapshot으로 게시한다. manifest 응답만으로 카탈로그·schema·record를 전부 받는다는 계약은 없다.
-- 아직 캐시하지 않은 pair의 불일치는 별도 dirty flag가 아니라 manifest의 version 갱신과 캐시 version 비교로 추적한다. 캐시한 비활성 pair가 push로 바뀌어도 현재 번역이나 base fallback에 영향이 없으면 UI snapshot은 바꾸지 않는다.
-- `EagerSync`는 patch 배열 buffer를 두지 않는다. 최신 session/revision hint 하나만 보관하고, 응답 revision이 hint와 이어지지 않으면 snapshot을 다시 요청한다.
-- resync 사유는 처음 연결, revision gap, 재연결, 서버가 새 session을 알린 경우다. 재연결은 진행 중인 모든 load와 `requestGeneration`을 무효화한 뒤 새 요청으로 다시 맞춘다.
-- 오래된 요청의 응답은 무시한다. 동시에 여러 snapshot 요청을 보내지 않고 `requestId`와 `generation`으로 늦은 응답을 판정한다.
+- The lazy handshake is a metadata-only manifest snapshot. The lazy source's request scope is baseLocale with an empty namespace list. An eager request describes the current locale and namespaces, but its response is the full registry.
+- After accepting the manifest, lazy reuses required base+target pairs from the cache or prepares them through `loadCatalog` when core `refresh` runs, then publishes one atomic UI snapshot after all are ready. There is no contract that a manifest response alone supplies all catalogs, schemas, and records.
+- Mismatches for uncached pairs are tracked by comparing the manifest version update with the cache version, not by a separate dirty flag. If a cached inactive pair changes through push but does not affect current translation or base fallback, the UI snapshot is not changed.
+- `EagerSync` does not buffer an array of patches. It keeps one latest session/revision hint and requests a new snapshot when a response revision does not connect to that hint.
+- Resync reasons are initial connection, revision gap, reconnection, and the server announcing a new session. Reconnection invalidates every in-progress load and `requestGeneration`, then realigns with new requests.
+- Ignore responses to stale requests. Do not send multiple simultaneous snapshot requests; use `requestId` and `generation` to identify late responses.
 
-## generation과 의도 대체
+## Generation and intent replacement
 
-generation은 transport의 오래된 완료를 차단하는 값이다. generation이 바뀔 때마다 모든 호출자를 취소하지 않는다. 자세한 정책은 [04-live-update-and-types.md](04-live-update-and-types.md)의 desired-state 조정을 따른다.
+Generation is a value that blocks stale transport completions. It does not cancel every caller whenever generation changes. Follow desired-state reconciliation in [04-live-update-and-types.md](04-live-update-and-types.md) for detailed policy.
 
-- 진행 중인 의도는 pending waiter로 남긴다. 그 의도가 최신 desired state에 포함되어 있으면 준비가 끝날 때 resolve한다.
-- `setLocale("en")` 진행 중 `loadNamespace("cart")`가 추가되어도 두 의도는 최신 desired state에 남으므로 둘 다 resolve한다.
-- 앞선 locale 의도가 실제로 대체되었을 때만 `SupersededRequestError`로 reject한다. `dispose`는 별도 사유다.
-- timeout이나 network 실패는 현재 의도를 reject하고 이전 UI를 유지한다.
-- generation이 바뀐 obsolete network 응답은 직접 UI에 게시하지 않는다. version이 맞는 cache 재사용은 허용한다.
+- Keep an in-progress intent in a pending waiter. Resolve it when preparation finishes if it remains in the latest desired state.
+- If `loadNamespace("cart")` is added while `setLocale("en")` is in progress, both intents remain in the latest desired state and both resolve.
+- Reject with `SupersededRequestError` only when an earlier locale intent is actually replaced. `dispose` uses a separate reason.
+- Timeout or network failure rejects the current intent and retains the previous UI.
+- Do not publish an obsolete network response from an earlier generation directly to the UI. Reusing a cache entry with a matching version is allowed.
 
-## boot 인코딩과 dev metadata
+## Boot encoding and dev metadata
 
-- `BootSnapshot`([03-catalog-and-api.md](03-catalog-and-api.md))은 wire로 직렬화한다. 현재 구현한 boot wire v1은 `format: 'saylo-boot-v1'`에 `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas`(`CatalogSchema[]`), `catalogOutcomes`(`CatalogOutcome[]`)를 담는다. `catalogOutcomes`는 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣고 missing outcome도 명시한다. 공개 UI snapshot은 `StoreSnapshot`이고 전송 단위는 `CatalogOutcome`이다.
-- boot에는 locale, baseLocale, resolved timeZone, available manifest, 현재 로드한 namespace, base schema와 카탈로그 record의 version·provenance, loadedNamespaces의 base+target pair 전부에 대한 present/missing 판정과 version이 들어간다. 데이터 누락을 정상 부재로 추정하지 않는다.
-- 개발에서 초기 transport 정보(개발 세션, registry snapshot)는 별도의 고정 opaque handle로 주고받는다. handle은 안정적이며 dev metadata 조회에만 쓴다.
-- `CatalogSource`의 metadata 경로에서 dev session과 registry snapshot을 받아 boot를 decode하고, 그 결과로 core의 `UiSnapshot`을 만든다.
-- 부팅 예(짧게):
+- Serialize `BootSnapshot` ([03-catalog-and-api.md](03-catalog-and-api.md)) into the wire format. Boot wire v1 currently contains `format: 'saylo-boot-v1'`, `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas` (`CatalogSchema[]`), and `catalogOutcomes` (`CatalogOutcome[]`). `catalogOutcomes` contains each parsed catalog's sourceName, locale, AST, and arguments in arrays and explicitly lists missing outcomes. The public UI snapshot is `StoreSnapshot`, and the transport unit is `CatalogOutcome`.
+- Boot contains locale, baseLocale, resolved timeZone, the available manifest, currently loaded namespaces, the version and provenance of base schemas and catalog records, and a present/missing decision and version for every base+target pair in loadedNamespaces. Do not infer missing data to mean normal absence.
+- During development, initial transport information (development session and registry snapshot) is exchanged through a separate fixed opaque handle. The handle is stable and is used only for retrieving dev metadata.
+- The `CatalogSource` metadata path receives the dev session and registry snapshot, decodes boot, and uses the result to construct core's `UiSnapshot`.
+- Short boot example:
 
 ```ts
 // virtual:saylo/server (server-only)

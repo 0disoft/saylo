@@ -1,83 +1,83 @@
-# 05. 빌드와 SSR
+# 05. Build and SSR
 
-이 문서는 운영 빌드 형태, 지연 로딩, Vite 변환, SSR, 보안, 정리를 정한다.
+This document defines the production build shape, lazy loading, Vite transforms, SSR, security, and cleanup.
 
-## 운영 카탈로그 모델
+## Production catalog model
 
-- 운영은 미리 파싱·검증된 AST 카탈로그를 사용하고, 개발과 같은 core formatter를 공유한다.
-- 빌드 시점 parser를 런타임에서 제거하는 경로를 Vite plugin에 로컬 구현했다(옵션 `astRuntime`, 기본 `true`, production 한정). Saylo `core/dist/formatters.js`가 `intl-messageformat`을 import할 때만 그 모듈을 별도 virtual 모듈로 해석하고, 그 모듈의 의존성을 공개 `@formatjs/icu-messageformat-parser/no-parser.js`로 바꾼다. 앱 전체 alias는 걸지 않는다.
-- no-parser 구성은 Saylo의 AST 전용 배포 경계 안에서만 다룬다. 외부에서 `IntlMessageFormat(string)`을 쓰는 소비자는 원본 parser를 그대로 쓴다.
-- 외부로 해석되는 의존성은 건드리지 않으므로 SSR external 의존성도 그대로다. 앱이 런타임에 직접 `parseCatalog`를 호출하면 parser가 포함되는 것이 정상이다. `astRuntime: false`로 이 경로를 끌 수 있다.
-- 공개 `@0disoft/saylo-core/runtime` 엔트리는 `parseCatalog`를 제외하고, 기존 루트 엔트리는 기존 API를 그대로 유지한다.
-- 런타임 엔트리만 쓴다고 모든 bundler에서 parser 제거가 보장되지는 않는다. 검증 범위는 Vite 8 production build다. 런타임에 parser가 남을 수도 있다.
-- core의 브라우저 엔트리에는 파일 시스템 접근이 없고 parser도 필수가 아니다. AST를 받으면 parser 없이 동작한다. 파일 시스템과 parser는 dev plugin과 build 경계에 둔다.
-- 사용하지 않는 메시지 제거는 `includeKeys`로 로컬 구현했다. 기존 `string[]` 또는 `{ from, dynamicKeys? }`를 받는다. 객체 경로는 Vite root 안의 JS·TS·JSX·TSX·Vue·Svelte 스크립트와 template 표현식만 정적으로 훑고 코드를 실행하지 않는다. 일치 문자열, `t`·`tParts` 별칭 호출, template prefix/suffix에 가능한 키를 보존한다. 해결 불가 동적 호출은 `dynamicKeys`가 없으면 빌드가 실패한다.
-- 개발은 전체 카탈로그를 쓰고 production eager·lazy·SSR만 선택 키로 줄인다. typegen은 전체 base schema를 유지한다. 런타임 키 분석은 Babel parser 메이저 7을 dev plugin Node 쪽에서만 쓴다. 메이저 8은 Node 24.11 이상을 요구해 기존 Node 24.x 설치 범위를 유지하려고 7을 골랐고, 루트 패키지 경계 검사용 devDependency 8은 별도다. 브라우저 번들에는 싣지 않으며 이 기능은 alpha.4 게시본에 없다.
-- 검증 명령은 `npm test --workspace=@0disoft/saylo-vite`와 `npm run verify:demo:react:recovery`다. 전체 테스트 수는 이 문서에서 고정하지 않고 저장소 실행 결과를 따른다.
+- Production uses pre-parsed and validated AST catalogs and shares the core formatter with development.
+- The Vite plugin locally implements a path that removes the parser from the runtime at build time (option `astRuntime`, default `true`, production only). Only when Saylo `core/dist/formatters.js` imports `intl-messageformat` does it resolve that module to a separate virtual module and replace the module's dependency with the public `@formatjs/icu-messageformat-parser/no-parser.js`. It does not alias the whole app.
+- The no-parser configuration is handled only within Saylo's AST-only distribution boundary. Consumers that call `IntlMessageFormat(string)` externally continue to use the original parser.
+- Dependencies resolved externally are untouched, so SSR external dependencies remain as they are. If the app calls `parseCatalog` directly at runtime, including the parser is expected. Set `astRuntime: false` to disable this path.
+- The public `@0disoft/saylo-core/runtime` entry excludes `parseCatalog`, while the existing root entry retains the existing API.
+- Using only the runtime entry does not guarantee parser removal in every bundler. The verified scope is a Vite 8 production build. A parser may remain at runtime.
+- Core's browser entry has no file-system access and does not require the parser. Given an AST, it works without a parser. File-system and parser access belong to the dev plugin and build boundaries.
+- Unused-message removal is locally implemented through `includeKeys`. It accepts the existing `string[]` or `{ from, dynamicKeys? }`. The object form statically scans only JS, TS, JSX, TSX, Vue, and Svelte scripts and template expressions inside the Vite root and does not execute code. It retains matching strings, calls through `t` and `tParts` aliases, and possible keys matching template prefixes and suffixes. An unresolvable dynamic call fails the build when `dynamicKeys` is absent.
+- Development uses the full catalog; only production eager, lazy, and SSR builds retain selected keys. Typegen keeps the full base schema. Runtime key analysis uses Babel parser major 7 only on the dev plugin's Node side. Major 8 requires Node 24.11 or later, so major 7 was chosen to retain the existing Node 24.x support range; the devDependency 8 used for the root package-boundary check is separate. It is not included in the browser bundle, and this feature is absent from published alpha.4.
+- Verification commands are `npm test --workspace=@0disoft/saylo-vite` and `npm run verify:demo:react:recovery`. This document does not freeze the total test count; follow the repository's execution results.
 
-코드 생성 대기를 줄이는 접근이라는 점에서 코드젠 방식 도구([Paraglide 메시지 컴파일](https://paraglidejs.com/compiling-messages))와 HMR 방식 도구([Wuchale 개발 모드](https://wuchale.dev/guides/dev/)) 사이에 있다.
+Because it reduces code-generation waits, the approach sits between codegen-based tools ([Paraglide message compilation](https://paraglidejs.com/compiling-messages)) and HMR-based tools ([Wuchale development mode](https://wuchale.dev/guides/dev/)).
 
-## 번역 검증 정책 (build)
+## Translation validation policy (build)
 
-- 제공된 번역의 문법·스키마 오류는 build를 실패시킨다. 깨진 번역을 배포하지 않는다.
-- 번역이 아예 없는 키는 baseline fallback을 기본 허용한다.
-- 모든 로케일 완역을 강제하는 `requireCompleteTranslations` 옵션은 `0.1.0-alpha.3`에 구현했다. 기본값은 `false`이고 production build(`config.command === 'build'`)에서만 엄격 검증한다. 기본값과 개발 경로는 불완전한 번역 누락과 baseline fallback을 그대로 허용한다.
-- production build는 개발 캐시를 재사용하지 않는다. build는 현재 disk snapshot에서 전체를 다시 파싱·검증하고, baseline이 유효하지 않으면 build를 실패시킨다. 마지막 정상값 유지 규칙은 개발 전용이다.
+- Grammar and schema errors in supplied translations fail the build. Broken translations are not shipped.
+- Missing translations fall back to the baseline by default.
+- The `requireCompleteTranslations` option, which requires every locale to be fully translated, was implemented in `0.1.0-alpha.3`. It defaults to `false` and performs strict validation only during production builds (`config.command === 'build'`). The default and development path continue to allow incomplete translations and baseline fallback.
+- Production builds do not reuse the development cache. A build reparses and validates the entire current disk snapshot and fails if the base is invalid. The last-known-good retention rule is development-only.
 
-## 지연 로딩
+## Lazy loading
 
-- 로케일과 namespace는 `CatalogSource`를 통해 지연 로딩한다. 전체 카탈로그를 한 번에 싣지 않는다.
-- 개발은 범용 `loadCatalog(locale, namespace)`가 현재 registry를 조회한다. 운영은 boot pair를 inline으로 싣고 나머지 present pair를 생성된 literal `import()` loader entry로 분리한다(`createStaticCatalogSource`). 둘 다 같은 인터페이스를 뒤에 둔다.
-- 서버에서 카탈로그를 파싱할 때 브라우저의 소스 파일 시스템에 접근하지 않는다. 서버가 파일을 읽어 파싱하고, 클라이언트는 결과를 받는다.
+- Locales and namespaces load lazily through `CatalogSource`. The full catalog is not loaded at once.
+- In development, the general `loadCatalog(locale, namespace)` queries the current registry. In production, boot pairs are inlined and the remaining present pairs are split into generated literal `import()` loader entries (`createStaticCatalogSource`). Both sit behind the same interface.
+- Parsing catalogs on the server does not access the browser's source file system. The server reads and parses files, and the client receives the results.
 
-## 런타임 로케일 전환
+## Runtime locale switching
 
-- 로케일 전환은 비동기다. 카탈로그 로드를 보장한 뒤 스냅샷을 게시한다.
-- 로케일 전환과 namespace 로드는 하나의 desired state로 조정한다. 미완료 동안 이전 UI를 유지하고, 모든 base+target pair가 확정되면 한 번에 게시한다. 판정 규칙은 [04-live-update-and-types.md](04-live-update-and-types.md)를 따른다.
-- 빠른 토글을 위해 load/commit generation token을 쓴다. 뒤늦게 도착한 이전 로케일 로드가 최신 전환을 덮어쓰지 못하게 한다.
-- 네트워크 오류가 나면 이전 상태를 유지하고 그 요청을 실패로 처리한다. 빈 카탈로그로 갈아타지 않는다.
-- baseline은 항상 로드돼 있어야 하며 fallback 대상이 된다. fallback 대상은 baseLocale 하나다.
+- Locale switching is asynchronous. It publishes a snapshot after ensuring the catalog is loaded.
+- Locale switching and namespace loading are reconciled through one desired state. Retain the previous UI until complete, and publish at once when every base+target pair is resolved. Follow the decision rules in [04-live-update-and-types.md](04-live-update-and-types.md).
+- For fast toggling, use load and commit generation tokens. A late-arriving load for an earlier locale must not overwrite the latest switch.
+- On network error, retain the previous state and fail that request. Do not switch to an empty catalog.
+- The baseline must always be loaded and is the fallback source. There is one fallback target: baseLocale.
 
-## DEV/PROD 공통 경로
+## Shared DEV/PROD paths
 
-개발과 운영은 같은 정규화, parser 검증, formatter, fallback 구현을 쓴다. 두 경로가 같은 입력에 같은 결과를 내는지 벡터 비교(vector compare)로 확인한다. 개발에서만 통과하고 운영에서 갈라지는 차이를 막기 위한 장치다.
+Development and production use the same normalization, parser validation, formatter, and fallback implementations. Vector comparison checks whether the two paths produce the same result for the same input. This guards against differences that pass in development but diverge in production.
 
-## Vite 변환
+## Vite transforms
 
-- `virtual:saylo`(eager 전체 registry)와 `virtual:saylo/lazy`(boot data와 catalogSource) 두 virtual module을 노출한다. HMR 이벤트 등록은 `connectDev`가 담당한다.
-- 로케일을 동적으로 다시 export하는 const는 모듈을 무효화하지 않는다. 갱신은 store 스냅샷으로 전달하고, 모듈 자체를 바꾸지 않는다.
-- namespace manifest가 동적으로 늘거나 줄면 patch envelope의 `availableNamespaces`와 mutable manifest handle 갱신으로 전달한다. 개발에는 정적 namespace map이 없다. 새 namespace 조회는 범용 `loadCatalog`가 처리하고, 정적 loader map은 운영에서만 생성한다.
-- Vite dev server 재시작이나 websocket 재연결에서 Vite client가 스스로 full reload(`location.reload`)를 하는 경우가 있다. 그 경로는 Saylo의 DOM 보존 범위 밖이다. Saylo의 무리로드 보장은 정상 번역 변경에 한정한다.
-- 카탈로그 소스 파일을 앱 import 그래프에 넣지 않는다. 이 점은 [02-architecture.md](02-architecture.md)의 개발 서버 플러그인 규칙과 같다.
+- Expose two virtual modules: `virtual:saylo` (full eager registry) and `virtual:saylo/lazy` (boot data and catalogSource). `connectDev` handles HMR event registration.
+- A const that dynamically re-exports locales does not invalidate the module. Updates are delivered through store snapshots; the module itself is not replaced.
+- When the namespace manifest grows or shrinks dynamically, deliver the change by updating `availableNamespaces` in the patch envelope and the mutable manifest handle. Development has no static namespace map. The general `loadCatalog` handles lookups for new namespaces; the static loader map is generated only for production.
+- When the Vite dev server restarts or its websocket reconnects, the Vite client may perform a full reload (`location.reload`) itself. That path is outside Saylo's DOM-preservation scope. Saylo's no-full-reload guarantee applies only to normal translation changes.
+- Do not place catalog source files in the app import graph. This matches the development-server plugin rule in [02-architecture.md](02-architecture.md).
 
 ## SSR
 
-- 요청마다 instance와 immutable 카탈로그 snapshot을 만든다. 공유하는 것은 컴파일된 엔트리(파싱·검증 결과)뿐이다.
-- 서버 전역 `setLocale`을 두지 않는다. per-request instance를 쓴다. 요청 간 로케일이 섞이는 원인을 없앤다.
-- context factory가 만든 hook의 `t`는 그 렌더에 묶인다. boot S1로 hydration하는 동안 `t`도 S1을 읽는다.
-- hydration barrier 동안 S2 이벤트는 buffer에 담고, barrier가 끝날 때 한 번만 적용한다.
-- client는 `createHydrationAdapter(instance)`로 감싼다. adapter는 root마다 새로 만들고 boot S1을 유지하며 underlying snapshot은 최신 하나로 buffer한다. `finishHydration()`을 호출해야 한 번 publish하고 그 뒤에도 `getServerSnapshot`은 S1을 반환한다. `adapter.dispose()`는 자신이 건 구독만 해제하고 원래 instance의 `dispose()`는 앱이 따로 호출한다.
-- `getServerSnapshot`은 decode한 boot 데이터를 고정 identity로 반환한다. `subscribe`/`getSnapshot` 참조는 안정적으로 유지한다(`Object.is` 비교).
-- 렌더 중인 스냅샷은 격리한다. 요청 처리 도중 스냅샷을 변형하지 않는다.
-- 서버 플러그인은 브라우저 갱신과 함께 SSR의 이후 요청에도 갱신된 카탈로그를 반영한다.
+- Create an instance and immutable catalog snapshot for each request. Only compiled entries (parse and validation results) are shared.
+- Do not use a server-global `setLocale`. Use a per-request instance. This eliminates locale mixing between requests.
+- The `t` in hooks created by a context factory is bound to that render. During hydration from boot S1, `t` also reads S1.
+- During the hydration barrier, buffer S2 events and apply them only once when the barrier ends.
+- Wrap the client with `createHydrationAdapter(instance)`. Create the adapter anew for each root, retain boot S1, and buffer the underlying snapshot to the latest one. Call `finishHydration()` to publish once; afterward, `getServerSnapshot` still returns S1. `adapter.dispose()` releases only the subscriptions it added, and the app separately calls the original instance's `dispose()`.
+- `getServerSnapshot` returns decoded boot data under a fixed identity. The `subscribe` and `getSnapshot` references remain stable (compared with `Object.is`).
+- Isolate snapshots during rendering. Do not mutate a snapshot while a request is being handled.
+- The server plugin applies updated catalogs to subsequent SSR requests together with browser updates.
 
-### 부팅 데이터
+### Boot data
 
-- boot wire v1은 `format: 'saylo-boot-v1'`에 `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas`(`CatalogSchema[]`), `catalogOutcomes`(`CatalogOutcome[]`)를 담는다. `createBootSnapshot`·`serializeBootSnapshot`·`decodeBootSnapshot`이 공개 API다.
-- 현재 `catalogOutcome`은 parsed catalog의 sourceName·locale·AST·인자를 배열로 싣고 loaded base+target pair의 present/missing을 빠짐없이 명시한다. decode는 누락·중복 outcome과 stamp·schema 불일치를 `INVALID_BOOT`로 거부하고, boot timeZone은 config와 일치해야 한다. 공개 UI snapshot은 `StoreSnapshot`이고 전송 단위는 `CatalogOutcome`이다. `CatalogRecord`·`Map` 모형은 쓰지 않는다.
-- `serializeBootSnapshot`은 모든 `<`를 `\u003c`로, U+2028·U+2029를 escape한다. `createServerI18n({ catalogSource, locale, initialNamespaces, timeZone?, requestTimeoutMs? })`는 async scope를 준비한 뒤 요청별 instance를 만들고, `getServerSnapshot`이 생성 시점 snapshot이므로 렌더 전에 scope를 확정하려면 이 factory를 쓴다. `virtual:saylo/server`는 플러그인 기본값을 적용하는 `createRequestI18n`과 서버용 `catalogSource`를 노출한다.
-- HTML에 넣는 JSON은 모든 `<`를 `\u003c`로 치환해 `</script>` 종료를 막는다.
-- 날짜·시간 인자로 Date를 받을 때 내부에서 현재 시각(`Date.now`/`currentTime`)을 만들지 않는다.
-- timeZone은 config에 값을 저장하는 것만으로 모든 날짜 포맷에 자동 적용되지 않는다. resolved timeZone을 기본 date/time 스타일과 skeleton 경로 모두에 전달한다(provide formatters cache override).
+- Boot wire v1 contains `format: 'saylo-boot-v1'`, `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas` (`CatalogSchema[]`), and `catalogOutcomes` (`CatalogOutcome[]`). `createBootSnapshot`, `serializeBootSnapshot`, and `decodeBootSnapshot` are public APIs.
+- The current `catalogOutcome` includes the sourceName, locale, AST, and arguments of the parsed catalog in an array and explicitly marks every present/missing loaded base+target pair. Decode rejects missing or duplicate outcomes and stamp or schema mismatches as `INVALID_BOOT`; boot timeZone must match config. The public UI snapshot is `StoreSnapshot`, and the transport unit is `CatalogOutcome`. The `CatalogRecord` and `Map` models are not used.
+- `serializeBootSnapshot` escapes every `<` as `\u003c` and U+2028 and U+2029. `createServerI18n({ catalogSource, locale, initialNamespaces, timeZone?, requestTimeoutMs? })` prepares an async scope and then creates a per-request instance. Because `getServerSnapshot` is the snapshot from construction time, use this factory to settle the scope before rendering. `virtual:saylo/server` exposes `createRequestI18n`, which applies plugin defaults, and a server-side `catalogSource`.
+- Replace every `<` in JSON embedded in HTML with `\u003c` to prevent premature `</script>` termination.
+- When date and time arguments receive a Date, do not create the current time internally (`Date.now` or `currentTime`).
+- Storing a timeZone value in config does not automatically apply it to every date format. Pass the resolved timeZone to both the default date/time styles and the skeleton path (provide a formatters cache override).
 
-## 보안
+## Security
 
-- 카탈로그 로딩 경로는 로케일·namespace allowlist로 검증하고 루트 밖으로 나가지 못하게 한다(path traversal 방지).
-- 임의 HTML을 자동 주입하지 않는다. 안전하지 않은 문자열은 프레임워크의 escape에 맡긴다.
-- 개발용 커스텀 이벤트는 개발 전용이다. 운영에서 websocket 같은 상시 채널을 열지 않는다.
+- Validate catalog-loading paths against locale and namespace allowlists and prevent them from escaping the root (path traversal prevention).
+- Do not inject arbitrary HTML automatically. Delegate escaping unsafe strings to the framework.
+- Development custom events are development-only. Production does not open persistent channels such as websockets.
 
-## 정리(cleanup)
+## Cleanup
 
-- watcher, event listener, socket은 abort 경로에서 정리한다. 개발 서버 재시작이나 HMR이 반복돼도 listener가 쌓여 새지 않게 한다.
-- Vite dev server가 watcher와 websocket을 소유한다. Saylo는 공유 watcher와 socket을 닫지 않고 자신이 등록한 listener와 bridge 구독만 해제한다.
-- saylo가 생성한 `.d.ts`와 typegen 임시 파일은 Saylo의 감시·이벤트 범위에서 제외한다. 임시 파일이 앱 watch HMR을 유발하지 않도록 좁은 ignore 규칙을 검증한다.
+- Clean up watchers, event listeners, and sockets on abort paths. Listener leaks must not accumulate when the dev server restarts or HMR repeats.
+- The Vite dev server owns the watcher and websocket. Saylo does not close the shared watcher or socket; it releases only listeners and bridge subscriptions it registered.
+- Exclude Saylo-generated `.d.ts` files and typegen temporary files from Saylo's watch and event scope. Verify narrow ignore rules so temporary files do not trigger app watch HMR.

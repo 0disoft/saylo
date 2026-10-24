@@ -1,41 +1,41 @@
-# 09. 릴리스
+# 09. Release
 
-Saylo의 배포 대상과 릴리스 절차를 정리한 runbook이다. 첫 버전 `0.1.0-alpha.1`은 2026-10-06 게시했다. 게시 전 단계였던 워크플로 dry-run dispatch는 GitHub `main` `3953f24`에서 성공했고(run [37467769385](https://github.com/0disoft/saylo/actions/runs/37467769385), 46초, Ubuntu 24.04·Node 24.21.0), 그때는 실제 게시 step을 건너뛰었다.
+This is the runbook for Saylo's distribution targets and release process. The first version, `0.1.0-alpha.1`, was published on 2026-10-06. A pre-publication workflow dry-run dispatch succeeded on GitHub `main` at `3953f24` (run [37467769385](https://github.com/0disoft/saylo/actions/runs/37467769385), 46 seconds, Ubuntu 24.04, Node 24.21.0); the actual publish step was skipped then.
 
-## 확정 사항
+## Confirmed details
 
-현행 게시 버전은 `0.1.0-alpha.4`다. 2026-10-11 다섯 패키지의 CI OIDC 인증·게시와 승인 tarball SHA-512 대조, 외부 JS/TS·selector SSR·SvelteKit Chromium 소비를 통과했다. 변경·검증은 [릴리스 기록](../releases/0.1.0-alpha.4.md), 승인 integrity는 [manifest](../releases/0.1.0-alpha.4.json)에 있다. 이전 릴리스와 아래의 게시·인증 결과는 당시 기록으로 유지한다.
+The current published version is `0.1.0-alpha.4`. On 2026-10-11, all five packages passed CI OIDC authentication and publishing, comparison with approved tarball SHA-512 values, and external JS/TS, selector SSR, and SvelteKit Chromium consumption. Changes and verification are in the [release record](../releases/0.1.0-alpha.4.md); approved integrity is in the [manifest](../releases/0.1.0-alpha.4.json). Earlier releases and the publication and authentication results below are retained as records from their respective times.
 
-다음 배포 후보의 변경 범위·승격·게시·이전 버전 복귀 절차는 [alpha.5 계획](../releases/0.1.0-alpha.5-plan.md)에 있다. 원본 버전은 alpha.4를 유지하며 alpha.5는 임시 후보에서만 검증했다. 2026-10-12 [문서 검사](../review/release-alpha5-documentation-acceptance-2026-10-12.json)는 후보 안내를 반영한 최신 소스의 로컬 pack이며,앞선 alpha.5 후보와 registry alpha.4 실물을 구분한다. registry 검사도 alpha.5 이후에는 새 동기화 상태·문의 진단 API와 동봉 문서를 필수로 확인한다. 새 SvelteKit 검사는 고정한 `sveltekit-registry-alpha5` 예제를 사용하고 기존 alpha.1~4의 검사 경로는 유지한다([준비 검증](../review/registry-consumer-contract-acceptance-2026-10-12.json)). alpha.5의 실제 게시와 CI 승인 manifest를 확보한 뒤 `verify:registry:alpha5`·`verify:registry:sveltekit:alpha5`를 실행한다.
+The change scope, promotion, publication, and rollback procedure for the next distribution candidate are in the [alpha.5 plan](../releases/0.1.0-alpha.5-plan.md). Source version remains alpha.4, and alpha.5 was verified only in temporary candidates. The 2026-10-12 [documentation check](../review/release-alpha5-documentation-acceptance-2026-10-12.json) covers a local pack of the latest source containing candidate guidance; it distinguishes that work from the earlier alpha.5 candidate and the actual registry alpha.4. Registry checks after alpha.5 must also verify the new synchronization-state and support-diagnostic APIs and the accompanying documentation. The new SvelteKit check uses the pinned `sveltekit-registry-alpha5` example, while existing alpha.1–4 verification paths remain ([readiness verification](../review/registry-consumer-contract-acceptance-2026-10-12.json)). After alpha.5 is actually published and its CI-approved manifest is available, run `verify:registry:alpha5` and `verify:registry:sveltekit:alpha5`.
 
-`0.1.0-alpha.3`부터 완역 검사, `alpha.4`부터 React·Svelte selector를 포함한다. 아래 로컬 명령과 workflow 기본 버전은 alpha.4 기준이다. 로컬 `.release/npm/` 후보는 gitignore 대상이고, 승인 기록은 성공한 CI artifact에서 가져온다. 현행 소비 명령은 `npm run verify:registry:alpha4`·`npm run verify:registry:sveltekit:alpha4`다.
+Full-translation checking has been present since `0.1.0-alpha.3`, and React and Svelte selectors since `alpha.4`. The local commands and default workflow version below are based on alpha.4. Local `.release/npm/` candidates are gitignored, and approved records come from successful CI artifacts. Current consumption commands are `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`.
 
-2026-10-08 로컬 릴리스 목록에 `@0disoft/saylo-svelte`를 추가했다. 아래의 네 패키지 게시·인증 기록은 2026-10-06 기존 릴리스의 기록이다. 현행 로컬 pack·게시 계획·OIDC 대상은 다섯 패키지이며 `verify:registry`는 기존 `alpha.1` manifest의 네 패키지만 검사한다. 상세 범위는 [38-svelte-adapter.md](38-svelte-adapter.md)에 있다.
+On 2026-10-08, `@0disoft/saylo-svelte` was added to the local release list. The four-package publication and authentication record below is from the original release on 2026-10-06. The current local pack, publication plan, and OIDC targets cover five packages, while `verify:registry` checks only the four packages in the existing `alpha.1` manifest. Detailed scope is in [38-svelte-adapter.md](38-svelte-adapter.md).
 
-| 항목 | 결정 |
+| Item | Decision |
 | --- | --- |
-| 라이선스 | Apache-2.0. 배포 tarball에 루트 `LICENSE`·`NOTICE`를 함께 싣는다 |
-| 첫 버전 | `0.1.0-alpha.1` |
+| License | Apache-2.0. Include the root `LICENSE` and `NOTICE` in distributed tarballs |
+| First version | `0.1.0-alpha.1` |
 | dist-tag | `alpha` |
-| 배포 패키지 | `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-svelte`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` |
-| 루트 package | `saylo-workspace`는 `private`를 유지한다 |
+| Distributed packages | `@0disoft/saylo-core`, `@0disoft/saylo-react`, `@0disoft/saylo-svelte`, `@0disoft/saylo-typegen`, and `@0disoft/saylo-vite` |
+| Root package | `saylo-workspace` remains `private` |
 | publishConfig | `access: public`, `tag: alpha`, `registry: https://registry.npmjs.org/` |
-| Node | `engines.node`는 `24.x`. 로컬 검증 환경은 Node 24.18.0 |
-| TypeScript | 7을 기준으로 검증한다. `typescript`를 peer로 강제하지 않는다 |
-| peer 조건 | react 19, svelte 5, vite 8 |
-| 런타임 | core·react·svelte는 ES2022 브라우저 대상이라 Node API에 의존하지 않는다. typegen·vite는 Node에서 실행한다 |
-| provenance | 저장소가 private인 동안 `--provenance=false`로 게시한다. 공개 저장소면 true |
+| Node | `engines.node` is `24.x`. The local verification environment uses Node 24.18.0 |
+| TypeScript | Verified against version 7. `typescript` is not forced as a peer |
+| Peer requirements | react 19, svelte 5, vite 8 |
+| Runtime | core, react, and svelte target ES2022 browsers and do not depend on Node APIs. typegen and vite run in Node |
+| provenance | Publish with `--provenance=false` while the repository is private. Use true when it is public |
 
-2026-10-06 네 패키지를 `0.1.0-alpha.1`·dist-tag `alpha`로 게시했다. 공개 metadata의 dist-tags는 네 패키지 모두 `latest`가 등록용 placeholder `0.0.0-stage`를, `alpha`가 `0.1.0-alpha.1`을 가리킨다. 실제 설치는 `@0disoft/saylo-core@alpha`처럼 `@alpha`를 지정한다. `latest`를 바꾸거나 unpublish하지 않고 alpha 정책을 유지한다.
+On 2026-10-06, four packages were published as `0.1.0-alpha.1` with dist-tag `alpha`. In public metadata, `latest` points to the registration placeholder `0.0.0-stage` for all four packages, and `alpha` points to `0.1.0-alpha.1`. Install with `@alpha`, for example `@0disoft/saylo-core@alpha`. The alpha policy remains; `latest` is not changed and nothing is unpublished.
 
-## 버전과 태그 계약
+## Version and tag contract
 
-- 게시 버전은 커밋된 manifest 값을 그대로 쓴다. 워크플로는 버전을 다시 쓰지 않는다. dispatch `version`과 릴리스 대상 `packages/*/package.json`의 `version`이 하나라도 다르면 실패한다.
-- 형식은 `x.y.z` 또는 `x.y.z-alpha.N`·`-beta.N`·`-rc.N`이다.
-- tag는 `alpha`·`next`·`latest`다. prerelease는 `latest`를 쓸 수 없고 stable은 `alpha`를 쓸 수 없다.
-- 워크스페이스 내부 의존(`@0disoft/saylo-*`)은 같은 버전을 정확히 지정한다.
+- Published versions use committed manifest values unchanged. The workflow does not rewrite versions. It fails if the dispatch `version` differs from any release-target `version` in `packages/*/package.json`.
+- Versions use `x.y.z` or `x.y.z-alpha.N`, `-beta.N`, or `-rc.N`.
+- Tags are `alpha`, `next`, and `latest`. Prereleases cannot use `latest`, and stable releases cannot use `alpha`.
+- Workspace-internal dependencies (`@0disoft/saylo-*`) use exactly the same version.
 
-## 로컬 검증 명령
+## Local verification commands
 
 ```sh
 npm run release:check -- --version 0.1.0-alpha.4 --tag alpha
@@ -43,68 +43,68 @@ npm run check
 npm run release:pack
 ```
 
-`release:check`는 루트 `private`, 패키지의 `private` 부재, `license`, `engines`, `publishConfig`, 내부 의존 버전, 다섯 패키지의 `LICENSE`·`NOTICE` 일치를 검사한다. `check`는 빌드·워크스페이스 테스트·소비 타입 검사·typegen·React TS 검사를 돌린다. Svelte 데모 빌드는 `npm run build:svelte`로 별도 실행한다. `release:pack`은 빌드 후 다섯 tarball을 저장소 밖 JS·TS 소비 앱에 설치해 검증하고, 통과하면 tarball과 `manifest.json`(`name`·`version`·`filename`·`integrity`)을 `.release/npm/`에 남긴다. `.release/`는 gitignore 대상이다.
+`release:check` checks that the root is `private`, packages are not `private`, and `license`, `engines`, `publishConfig`, internal dependency versions, and the five packages' `LICENSE` and `NOTICE` files match. `check` runs builds, workspace tests, consumer type checks, typegen, and React TS checks. The Svelte demo build runs separately with `npm run build:svelte`. `release:pack` builds, installs the five tarballs into JS and TS consumer apps outside the repository for verification, and on success leaves the tarballs and `manifest.json` (`name`, `version`, `filename`, `integrity`) in `.release/npm/`. `.release/` is gitignored.
 
-`packages/vite` 빌드는 원본 사용 문서에서 설치용 `docs/`를 생성한다. `release:pack`의 `--ignore-scripts`는 이 빌드 산출물을 그대로 포장하며, 문서 13파일의 누락·예상 밖 파일·원본 불일치와 실제 설치 후 내부 파일 링크를 함께 검사한다. `npm run build:docs`·`npm run verify:docs`로 문서만 생성·대조할 수 있다. 실행 코드 블록은 보존하고 외부 URL·heading fragment는 파일 존재 검사 범위에 넣지 않는다. 이 동봉 변경은 로컬 준비 상태이며 기존 공개 alpha.4에는 없다.
+The `packages/vite` build generates install-time `docs/` from the original user documentation. `release:pack` with `--ignore-scripts` packages that build output as-is and checks all 13 documentation files for missing or unexpected files, differences from the source, and links to internal files after installation. `npm run build:docs` and `npm run verify:docs` generate and compare only the documentation. Runnable code blocks are preserved; external URLs and heading fragments are outside the file-existence check. This bundled change is in the local preparation state and is absent from the existing public alpha.4.
 
-게시된 실물은 `npm run verify:registry`로 대조한다. 현재 명령은 `pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1`을 실행해 커밋된 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json)의 네 패키지 버전과 SHA-512 integrity를 registry metadata·다운로드한 tarball과 비교한다. 현재 소스 버전이나 이동 가능한 `alpha` tag는 과거 파일의 판정에 사용하지 않는다. 설치 metadata와 README 예제도 실제 게시본을 기준으로 검사하며, alpha.1에 없는 `/runtime`·`freezeCatalogs`·Svelte API는 요구하지 않는다. registry tarball을 저장소 밖 JS·TS 앱에 설치해 CLI·checkJs/TS·런타임 SSR·public subpath·Vite production lazy chunk를 확인한다. 새로운 승인 JSON은 실제 CI artifact의 integrity를 기록하는 별도 단계이며 로컬 후보 tarball로 기존 승인 기록을 덮어쓰지 않는다. 현행 다섯 `alpha.4`는 `npm run verify:registry:alpha4`가 [releases/0.1.0-alpha.4.json](../releases/0.1.0-alpha.4.json)을 기준으로 검사하고, `npm run verify:registry:sveltekit:alpha4`가 그 게시본으로 SvelteKit 앱을 검증한다. 과거 alpha.3 검증도 유지한다. 기존 `alpha.1`·`alpha.2` 명령과 `verify:registry:sveltekit`(`alpha.2`)은 그대로 둔다.
+Compare the published artifacts with `npm run verify:registry`. The current command runs `pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1` and compares the four package versions and SHA-512 integrity in the committed [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json) with registry metadata and downloaded tarballs. Current source versions and the moving `alpha` tag are not used to judge historical files. Install metadata and README examples are checked against the actual published build; APIs absent from alpha.1 such as `/runtime`, `freezeCatalogs`, and Svelte are not required. It installs registry tarballs into JS/TS apps outside the repository and checks CLI, checkJs/TS, runtime SSR, public subpaths, and the Vite production lazy chunk. New approved JSON is a separate step that records integrity from an actual CI artifact; local candidate tarballs do not overwrite existing approved records. For current five-package `alpha.4`, `npm run verify:registry:alpha4` checks [releases/0.1.0-alpha.4.json](../releases/0.1.0-alpha.4.json), and `npm run verify:registry:sveltekit:alpha4` verifies a SvelteKit app against that published build. Alpha.3 verification is also retained. The existing `alpha.1` and `alpha.2` commands and `verify:registry:sveltekit` (`alpha.2`) remain unchanged.
 
-## GitHub Actions 워크플로
+## GitHub Actions workflow
 
-[release.yml](../.github/workflows/release.yml)은 수동 dispatch만 받는다.
+[release.yml](../.github/workflows/release.yml) accepts manual dispatches only.
 
-| 입력 | 값 |
+| Input | Value |
 | --- | --- |
-| `version` | 커밋된 정확한 버전 문자열. 기본 `0.1.0-alpha.4` |
-| `dist_tag` | `alpha`·`next`·`latest`. 기본 `alpha` |
-| `publish` | boolean. 기본 `false` |
-| `verify_oidc` | boolean. 기본 `false`. `true`이면 validation 또는 publication 전에 다섯 Trusted Publisher의 OIDC 토큰 교환을 검증한다 |
+| `version` | Exact committed version string. Default `0.1.0-alpha.4` |
+| `dist_tag` | `alpha`, `next`, or `latest`. Default `alpha` |
+| `publish` | boolean. Default `false` |
+| `verify_oidc` | boolean. Default `false`. When `true`, verify the OIDC token exchange for all five Trusted Publishers before validation or publication |
 
-단일 job이 Ubuntu·Node 24·npm 11에서 `main`이고 저장소가 `0disoft/saylo`일 때만 돈다. environment는 `npm-release`, 권한은 `contents: read`·`id-token: write`다. `release:check` → `npm ci` → `check` → `release:pack` → `release:publish`(dry run) → artifact 업로드 순서이고, `publish`가 true일 때만 `release:publish --publish`로 게시한다. 게시 순서는 core → react → svelte → typegen → vite이고 registry secret(`NPM_TOKEN` 등)을 쓰지 않는다.
+A single job runs only on Ubuntu, Node 24, npm 11, on `main`, in repository `0disoft/saylo`. Its environment is `npm-release`; permissions are `contents: read` and `id-token: write`. The sequence is `release:check` → `npm ci` → `check` → `release:pack` → `release:publish` (dry run) → artifact upload. It publishes with `release:publish --publish` only when `publish` is true. Publish order is core → react → svelte → typegen → vite, and it uses no registry secret such as `NPM_TOKEN`.
 
-`verify_oidc`는 게시와 별개 입력이다. `true`이면 `release:oidc`가 GitHub OIDC 토큰을 `npm:registry.npmjs.org` audience로 받아 npm 공식 API [api-docs.npmjs.com](https://api-docs.npmjs.com/)의 package-scoped token exchange(`.../oidc/token/exchange/package/@0disoft/saylo-<id>`)로 현행 릴리스 대상 다섯 패키지를 확인한다. 패키지 버전·게시·태그는 바꾸지 않고 토큰을 stdout에 출력하거나 디스크에 저장하지 않는다. helper의 guard·성공 교환 protocol·로그/에러 secret 누출 방지 3개 로컬 테스트와 실제 registry 토큰 교환이 모두 통과했다. 2026-10-06 [run 37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758)은 네 패키지 토큰 교환과 전체 143개 테스트·타입 검사·pack 소비 검증을 42초에 마쳤다.
+`verify_oidc` is independent of publication. When `true`, `release:oidc` obtains a GitHub OIDC token with the `npm:registry.npmjs.org` audience and verifies the five current release target packages through npm's official package-scoped token exchange API at [api-docs.npmjs.com](https://api-docs.npmjs.com/) (`.../oidc/token/exchange/package/@0disoft/saylo-<id>`). It does not change package versions, publication, or tags and does not print or store the token. The helper's three local tests (guard, successful exchange protocol, and secret-leak prevention in logs and errors) and actual registry token exchange all passed. On 2026-10-06, [run 37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758) completed token exchange for four packages, all 143 tests, type checks, and pack consumption verification in 42 seconds.
 
-`npm-release` environment는 GitHub에 존재하고 보호 규칙은 없다. dry-run run 37467769385는 140개 테스트·소비 타입 검사·JS/TS packed consumer·`release:publish` dry run까지 통과하고 tarball 4개를 artifact `saylo-npm-0.1.0-alpha.1`로 올렸다. `gh run download 37467769385 --name saylo-npm-0.1.0-alpha.1 --dir .release/bootstrap`로 받은 tarball은 SHA-512가 원본과 일치했다.
+The `npm-release` environment exists on GitHub and has no protection rules. Dry-run 37467769385 passed 140 tests, consumer type checks, JS/TS packed consumers, and the `release:publish` dry run, and uploaded four tarballs as artifact `saylo-npm-0.1.0-alpha.1`. The tarballs downloaded with `gh run download 37467769385 --name saylo-npm-0.1.0-alpha.1 --dir .release/bootstrap` had SHA-512 hashes matching the originals.
 
-게시 스크립트는 `--provenance=${NPM_CONFIG_PROVENANCE}`를 명시적으로 넘기고, 워크플로는 이 값을 `github.event.repository.private`으로 정한다. 현재 `0disoft/saylo`는 PRIVATE라 provenance를 끄고 게시한다. npm 공식 문서는 private 저장소의 provenance를 지원하지 않는다. 저장소를 공개로 바꾸면 자동으로 켜진다. 이 절차는 저장소 visibility를 바꾸지 않는다.
+The publish script explicitly passes `--provenance=${NPM_CONFIG_PROVENANCE}`, and the workflow sets that value from `github.event.repository.private`. `0disoft/saylo` is currently PRIVATE, so it publishes with provenance disabled. npm's official documentation says provenance is unsupported for private repositories. It turns on automatically if the repository becomes public. This procedure does not change repository visibility.
 
-## 로컬 배포 후보
+## Local distribution candidate
 
-최신 후보는 `b39b3fd`의 입력 973개를 대조하고 전체 256개 테스트·다섯 tarball·SvelteKit SSR/Chromium 소비를 통과했다. 버전 승격 패치는 원본에 적용하지 않았다. [후보 갱신 기록](../review/release-alpha5-candidate-refresh-2026-10-12.json)에 후보 파일과 해시를 남겼다. 아래 `5d90701` 기록은 첫 실행 이력이다.
+The latest candidate reconciled 973 inputs at `b39b3fd` and passed all 256 tests, five tarballs, and SvelteKit SSR/Chromium consumption. The version-bump patch was not applied to the original. Candidate files and hashes are recorded in [candidate refresh record](../review/release-alpha5-candidate-refresh-2026-10-12.json). The `5d90701` record below is from the first execution.
 
-원본 버전을 올리지 않고 다음 버전을 검토하려면 먼저 관련 변경을 커밋한 뒤 아래 명령을 실행한다.
+To review the next version without bumping the original, first commit related changes, then run:
 
 ```sh
 npm run release:candidate -- --version 0.1.0-alpha.5
-npm run release:candidate:verify -- --candidate .release/candidate-0.1.0-alpha.5-<생성된 suffix>
+npm run release:candidate:verify -- --candidate .release/candidate-0.1.0-alpha.5-<generated-suffix>
 ```
 
-첫 명령은 커밋된 HEAD를 `.release/candidate-<버전>-<suffix>/source.zip`으로 보관하고 `source/`에 푼다. 그 사본의 다섯 package.json과 내부 의존성, lockfile의 workspace 항목만 제안 버전으로 바꾼다. 원본 package.json·lockfile과 기존 `.release/npm`은 유지한다. 추적된 미커밋 변경이나 Git symlink가 있으면 생성하지 않는다. 추적하지 않는 파일은 후보에 포함하지 않는다. 현재 명령은 `alpha` dist-tag 후보를 준비한다.
+The first command archives the committed HEAD at `.release/candidate-<version>-<suffix>/source.zip` and extracts it into `source/`. In that copy, only the five package.json files, internal dependencies, and workspace lockfile entries are changed to the proposed version. Original package.json, lockfile, and existing `.release/npm` are retained. It does not create a candidate if tracked files have uncommitted changes or Git symlinks exist. Untracked files are excluded. The current command prepares an `alpha` dist-tag candidate.
 
-검증 명령은 원본 커밋의 모든 입력을 Git 객체와 대조해 위 버전 변경 외의 차이를 거부한다. 사본에서 `npm ci --ignore-scripts`, 전체 `check`, `release:check`, JS·TS 독립 tarball 소비, 게시 계획 dry run을 실행한다. 시작과 종료 때 입력을 대조하고, 실제 tarball SHA-512도 manifest와 맞는지 검사한다. 새로운 `validation-<suffix>/`에 다섯 tgz·manifest·입력 SHA-256·명령별 로그·validation.json을 저장한다. 실패하면 failure.json과 해당 로그를 남기며 성공 상태로 표시하지 않는다. 검증은 새 결과 폴더를 쓰므로 이전 결과를 유지한다.
+The verification command compares every input in the source commit with Git objects and rejects differences other than the version changes. In the copy, it runs `npm ci --ignore-scripts`, full `check`, `release:check`, independent JS and TS tarball consumption, and a publication-plan dry run. It compares inputs at start and finish and verifies actual tarball SHA-512 values against the manifest. It writes five tgz files, the manifest, input SHA-256 values, per-command logs, and `validation.json` into a new `validation-<suffix>/`. On failure, it records `failure.json` and the relevant logs and does not mark the result as successful. Because verification uses a new result directory, earlier results remain.
 
-이 결과는 로컬 후보의 근거다. `source.zip`은 버전 변경 전 커밋 원본이고 tarball은 제안 버전이며, 게시 완료나 registry 인수 결과를 뜻하지 않는다. 원본 버전 승격·푸시·workflow dispatch·OIDC·게시는 별도 단계다. 게시 전에는 README의 공개·미게시 표시와 릴리스 문서를 최종 버전에 맞추고 최종 커밋에서 artifact를 다시 만든다. SvelteKit 브라우저·보조 기술 검증은 이 명령에 포함하지 않는다.
+These results are evidence for a local candidate. `source.zip` is the original commit before version changes, and the tarballs use the proposed version; this does not mean publication or registry acceptance. Original version promotion, push, workflow dispatch, OIDC, and publishing are separate steps. Before publication, update README public/unpublished labels and release documentation for the final version, then rebuild artifacts from the final commit. SvelteKit browser and assistive-technology verification are not part of this command.
 
-2026-10-12의 로컬 실행에서는 `5d90701`의 입력 937개를 대조한 alpha.5 후보로 위 검사를 통과했다. 다섯 tarball·입력과 로그 해시·도구 회귀 2건의 결과는 [후보 검증 기록](../review/release-candidate-acceptance-2026-10-12.json)에 있다. 이 후보의 제품 소스 기준은 `5d90701`이고, 그 뒤 추가한 후보 도구 자체는 별도 회귀로 검사했다. 공개 전달은 아직 완료하지 않았다.
+In the local run on 2026-10-12, the alpha.5 candidate reconciled all 937 inputs at `5d90701` and passed the checks above. Results for five tarballs, inputs and log hashes, and two tool regression cases are in [candidate verification record](../review/release-candidate-acceptance-2026-10-12.json). The product source baseline for this candidate is `5d90701`; candidate tooling added afterward was checked by separate regression tests. Public delivery has not been completed.
 
 ## Trusted Publisher
 
-패키지마다 하나씩 등록한다. 등록 값은 모든 패키지에 동일하게 적용한다. 기존 네 패키지와 Svelte 모두 등록 완료이다. Svelte의 2026-10-09 저장·조회 결과는 아래 등록 기록에 있고, 같은 날 CI에서 다섯 패키지 모두 실제 OIDC 교환을 확인했다.
+Register one for each package. Use the same registration values for every package. The original four packages and Svelte are all registered. Svelte's save and retrieval results on 2026-10-09 are in the registration record below, and on the same day CI verified actual OIDC exchange for all five packages.
 
-| 필드 | 값 |
+| Field | Value |
 | --- | --- |
 | Provider | GitHub Actions |
 | Organization or user | `0disoft` |
 | Repository | `saylo` |
 | Workflow file | `release.yml` |
 | Environment | `npm-release` |
-| Allowed action | `npm publish` 허용 |
+| Allowed action | Allow `npm publish` |
 
-Workflow file에는 확장자를 포함한 `release.yml`만 넣고 `.github/workflows/` 경로는 넣지 않는다. 자세한 절차는 npm 공식 문서 [Trusted publishing](https://docs.npmjs.com/trusted-publishers/)를 따르고, `npm trust` CLI로도 같은 설정을 할 수 있다. 네 패키지 모두 `npm trust github`로 설정했고 `npm trust list`로 값이 같음을 확인했다. 게시 전에는 비인증 공개 registry의 package metadata fetch가 404였고 인증된 `npm view`에서는 placeholder `0.0.0-stage`가 보였다.
+Use only `release.yml`, including the extension, for the workflow file; do not include the `.github/workflows/` path. Follow npm's official [Trusted publishing](https://docs.npmjs.com/trusted-publishers/) documentation; the same settings can be made with the `npm trust` CLI. All four original packages were configured with `npm trust github` and confirmed identical with `npm trust list`. Before publication, unauthenticated package metadata fetch on the public registry returned 404, while authenticated `npm view` showed the `0.0.0-stage` placeholder.
 
-## 초기 등록 절차
+## Initial registration procedure
 
-네 이름을 `registry.npmjs.org`에 등록하고 Trusted Publisher를 설정한 순서다. npm 11의 staged publishing과 `npm trust`를 쓴다([staged publishing](https://docs.npmjs.com/staged-publishing/), [npm trust](https://docs.npmjs.com/cli/v11/commands/npm-trust/)). 브라우저 2FA와 승인은 사람이 직접 한다.
+This is the sequence used to register four names on `registry.npmjs.org` and configure Trusted Publisher. It uses npm 11 staged publishing and `npm trust` ([staged publishing](https://docs.npmjs.com/staged-publishing/), [npm trust](https://docs.npmjs.com/cli/v11/commands/npm-trust/)). A person completes browser 2FA and approval.
 
 ```sh
 gh run download 37467769385 --name saylo-npm-0.1.0-alpha.1 --dir .release/bootstrap
@@ -115,13 +115,13 @@ npm trust github @0disoft/saylo-<id> --file release.yml --repo 0disoft/saylo --e
 npm trust list @0disoft/saylo-<id>
 ```
 
-`<id>`는 `core`·`react`·`svelte`·`typegen`·`vite`이며 새 패키지 등록 시 해당 id에 적용한다. 아래의 첫 릴리스 제출 기록은 기존 네 패키지에 해당한다. `npm stage publish`는 공개 placeholder `0.0.0-stage`를 등록하고, 실제 `0.1.0-alpha.1` 내용은 승인 전까지 공개되지 않는다. `npm trust`는 패키지가 registry에 이미 있고 계정 2FA가 켜져 있어야 동작한다.
+`<id>` is `core`, `react`, `svelte`, `typegen`, or `vite`, and is applied to that ID when registering a new package. The initial release submission record below applies to the original four packages. `npm stage publish` registers the public placeholder `0.0.0-stage`; the actual `0.1.0-alpha.1` content is not public until approval. `npm trust` works only when the package already exists in the registry and 2FA is enabled on the account.
 
-### Svelte 등록 진행 기록
+### Svelte registration progress record
 
-2026-10-08 `0disoft` 계정으로 로컬 검증된 `.release/npm/0disoft-saylo-svelte-0.1.0-alpha.2.tgz`를 staging에 제출했다. 제출 전 SHA-512가 후보 manifest와 같음을 확인했고, `npm stage list @0disoft/saylo-svelte --json`에서 다음 값을 확인했다.
+On 2026-10-08, using account `0disoft`, the locally verified `.release/npm/0disoft-saylo-svelte-0.1.0-alpha.2.tgz` was submitted to staging. Before submission, its SHA-512 was checked against the candidate manifest, and `npm stage list @0disoft/saylo-svelte --json` returned the following values.
 
-| 항목 | 값 |
+| Item | Value |
 | --- | --- |
 | Stage ID | `4cd95172-ad66-4bc1-9cc5-b0fc968b1dee` |
 | Package | `@0disoft/saylo-svelte` |
@@ -130,75 +130,75 @@ npm trust list @0disoft/saylo-<id>
 | Access / actor | `public` / `0disoft` |
 | SHA-1 | `f1d4985ff0c2be9ad20a4760c915ff86716f38a7` |
 
-staging 제출 직후에는 실제 버전의 승인·게시와 기존 네 패키지의 게시·태그 변경을 수행하지 않았다. 당시 `npm view`는 404를 반환해 공개 placeholder 노출을 확인하지 못했다. 아래는 이후 조회한 현행 상태이다.
+Immediately after staging, no approval or publication of the actual version and no changes to published versions or tags of the original four packages were performed. At the time, `npm view` returned 404, so the public placeholder could not be confirmed visible. The following is the current state retrieved later.
 
-2026-10-09 첫 인증 완료 조회가 404로 종료되어 설정 요청을 다시 실행했다. 새 브라우저 2FA 뒤 `npm trust github @0disoft/saylo-svelte --file release.yml --repo 0disoft/saylo --env npm-release --allow-publish --yes`가 exit 0으로 성공했다. `npm trust list @0disoft/saylo-svelte --json`도 exit 0으로 같은 저장 값을 반환했다.
+On 2026-10-09, the first authenticated check completed with 404, so the configuration request was run again. After new browser 2FA, `npm trust github @0disoft/saylo-svelte --file release.yml --repo 0disoft/saylo --env npm-release --allow-publish --yes` succeeded with exit 0. `npm trust list @0disoft/saylo-svelte --json` also exited 0 and returned the same saved values.
 
-| Trusted Publisher 항목 | 조회 값 |
+| Trusted Publisher item | Retrieved value |
 | --- | --- |
 | ID | `f9181faf-2907-4a6c-9956-520689d25568` |
 | Type / repository | `github` / `0disoft/saylo` |
 | File / environment | `release.yml` / `npm-release` |
 | Permissions | `createPackage`, `createStagedPackage` |
 
-같은 시점의 stage 목록은 비어 있고 공개 registry는 HTTP 200으로 `0.0.0-stage`·`0.1.0-alpha.2`를 반환했다. tag는 `latest: 0.0.0-stage`, `alpha: 0.1.0-alpha.2`이다. 공개 Svelte `alpha.2`의 metadata integrity와 다운로드한 tarball SHA-512가 검증된 로컬 후보와 일치한다. 이 작업에서는 stage approve 명령을 실행하지 않았으므로 승인 경로와 실행 주체는 확인하지 않았다.
+The stage list at the same time was empty, and the public registry returned HTTP 200 with `0.0.0-stage` and `0.1.0-alpha.2`. Tags were `latest: 0.0.0-stage` and `alpha: 0.1.0-alpha.2`. Public Svelte `alpha.2` metadata integrity and downloaded tarball SHA-512 matched the verified local candidate. This work did not run a stage approve command, so the approval path and executing actor were not verified.
 
-Svelte 등록 당시에는 기존 core·react·typegen·vite가 `alpha.1`이었고, 이 단계에서 새 CI 게시·OIDC 교환·원격 푸시는 수행하지 않았다. 이후 전체 `alpha.2` 릴리스 결과는 아래에 기록한다.
+When Svelte was registered, core, react, typegen, and vite were on `alpha.1`. This step did not perform a new CI publish, OIDC exchange, or remote push. The later full `alpha.2` release result is recorded below.
 
-### 기존 네 패키지 등록 이력
+### Original four-package registration history
 
-`npm login --auth-type=web`으로 인증했고 `npm whoami`는 `0disoft`, 프로필 `tfa`는 `auth-only`다. CI tarball의 SHA-512를 확인한 뒤 네 패키지 `npm stage publish`를 제출했고 `npm stage list` 기준 네 stage status가 모두 `staged`다. `npm trust github`도 네 패키지 모두 성공했고 브라우저 2FA는 사용자가 마쳤다. `npm trust list`는 네 패키지 모두 exit 0으로 repo `0disoft/saylo`, file `release.yml`, env `npm-release`, permissions `['createPackage','createStagedPackage']`가 같음을 확인했다. 게시 전 인증된 `npm view @0disoft/saylo-core versions --json`은 `["0.0.0-stage"]`를 반환해 placeholder를 확인했다. 이후 2026-10-06 네 패키지의 `0.1.0-alpha.1`을 게시했다.
+Authentication used `npm login --auth-type=web`. `npm whoami` returned `0disoft`, and profile `tfa` was `auth-only`. After verifying CI tarball SHA-512 values, `npm stage publish` was submitted for four packages; `npm stage list` showed all four stages as `staged`. `npm trust github` succeeded for all four, and the user completed browser 2FA. `npm trust list` exited 0 for all four and confirmed identical repository `0disoft/saylo`, file `release.yml`, environment `npm-release`, and permissions `['createPackage','createStagedPackage']`. Before publication, authenticated `npm view @0disoft/saylo-core versions --json` returned `["0.0.0-stage"]`, confirming the placeholder. On 2026-10-06, the four packages were then published as `0.1.0-alpha.1`.
 
-| 패키지 | staged id | trust id |
+| Package | staged id | trust id |
 | --- | --- | --- |
 | `@0disoft/saylo-core` | `f6cad51f-166d-41da-bd39-2037f8b9c6a4` | `908f7eaf-0b2b-4d03-96a2-c095f2894475` |
 | `@0disoft/saylo-react` | `ac9fff89-9f32-4f8f-aa80-b943c1b89051` | `52f2679c-c880-43bf-8056-1b59c8399f9d` |
 | `@0disoft/saylo-typegen` | `9c7e9fc7-37d9-453b-8e4b-4edab04a5829` | `08b6515a-ef84-4f60-a00e-4a44cf15e35f` |
 | `@0disoft/saylo-vite` | `e82284c6-7867-40b2-a996-4ad39835e2c8` | `bbc6a339-cbf2-4b47-8296-0a2199799e64` |
 
-## 게시 실패와 재실행
+## Publication failure and rerun
 
-게시는 원자적이지 않다. 중간에 실패하면 앞서 올라간 패키지만 남고 자동으로 되돌리지 않는다. 다시 실행하면 이미 게시된 버전은 tarball integrity와 요청한 dist-tag가 둘 다 같을 때만 건너뛴다. integrity가 다르면 실패하고, registry metadata의 tag가 다르면 오류로 종료한다(태그 변경은 별도 요청). 같은 버전을 지우지 말고 새 패치 버전으로 올린다. 이미 게시된 패키지를 integrity·tag가 같아 건너뛰는 skip은 OIDC 인증 성공을 뜻하지 않는다. 인증 여부는 `verify_oidc=true`·`publish=false` dispatch로 따로 확인한다.
+Publication is not atomic. If it fails midway, only packages already uploaded remain, and there is no automatic rollback. On rerun, already published versions are skipped only when both tarball integrity and the requested dist-tag match. A different integrity fails; a different registry tag exits with an error (changing the tag is a separate request). Do not delete the same version; publish a new patch version. A skip caused by matching integrity and tag does not indicate successful OIDC authentication. Verify authentication separately with a `verify_oidc=true` and `publish=false` dispatch.
 
-## 게시 후 검증 결과
+## Post-publication verification results
 
-- `0.1.0-alpha.1`은 stage 승인을 거쳐 2026-10-06 게시했다. 공개 registry에서 네 패키지 버전과 `alpha` tag를 확인했고 `npm run verify:registry`도 통과했다.
-- `verify_oidc=true`·`publish=false` dispatch에서 네 Trusted Publisher의 실제 OIDC 토큰 교환을 확인했다. 첫 실행 [37471215141](https://github.com/0disoft/saylo/actions/runs/37471215141)은 응답 검사 단계에서 실패했고, npm CLI와 같이 반환된 token을 검사하도록 수정한 뒤 [37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758)이 통과했다.
-- placeholder `0.0.0-stage`와 비인증 404는 게시 전 조회 기록이다. `latest`를 바꾸거나 unpublish하지 않고 alpha 정책을 유지한다.
-- Trusted Publisher는 네 패키지 모두 설정했고(`npm trust github`) `npm trust list`로 값이 같음을 확인했다. `npm-release` environment는 존재하고 보호 규칙은 없다.
-- 워크플로는 `publish=false`로 실행했고 실제 패키지 게시 단계는 건너뛰었다. 첫 alpha 게시는 사용자의 stage 승인으로 진행했다. OIDC 인증과 actionlint 검사는 통과했다.
-- CI 검증: `npm run check`가 Node 24.21.0에서 143개 테스트(기존 140개 + OIDC helper 3개)와 소비 타입 검사를 통과했다. 로컬에서는 Node 24.18.0으로 OIDC helper 3개와 registry 소비 검증을 실행했다. 최종 README를 반영한 `release:pack`도 통과했다. 네 tarball의 LICENSE·NOTICE·메타데이터 일치와 README 예제 실행·타입 검사, 외부 JS·TS 소비 앱의 CLI·번역·React SSR·Vite 8.3.3 lazy chunk를 확인했다. `npm run verify:registry`는 게시된 네 버전·`alpha` tag와 [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json) integrity 일치, registry tarball의 CLI·checkJs/TS·런타임 SSR·public subpath·Vite production lazy chunk 검사를 exit 0으로 통과했다. `release:publish`의 dry run과 actionlint도 통과했다. 변조 tarball은 SHA-512 불일치로 거부하고, GitHub Actions 환경이 아닌 `--publish`는 registry 조회 전에 거부한다.
-- CI에서 새 버전을 실제로 게시하는 단계는 아직 실행하지 않았다. 이번 검증은 OIDC 인증까지만 확인했으며, 다음 의도적인 버전 릴리스에서 실제 CI 게시를 확인한다.
-- 성능 p95 목표는 여전히 미달이며 [검증과 로드맵](06-validation-and-roadmap.md)에 기록한다. 릴리스 게이트는 위 세 명령의 통과이며 성능 측정을 포함하지 않는다.
+- `0.1.0-alpha.1` was published through stage approval on 2026-10-06. Four package versions and the `alpha` tag were confirmed on the public registry, and `npm run verify:registry` passed.
+- A `verify_oidc=true` and `publish=false` dispatch verified actual OIDC token exchange for four Trusted Publishers. The first run, [37471215141](https://github.com/0disoft/saylo/actions/runs/37471215141), failed at response validation; after changing it to validate the token as returned by the npm CLI, [37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758) passed.
+- The placeholder `0.0.0-stage` and unauthenticated 404 are pre-publication retrieval records. The alpha policy remains; `latest` was not changed and nothing was unpublished.
+- Trusted Publisher was configured for all four packages (`npm trust github`) and `npm trust list` confirmed matching values. The `npm-release` environment exists and has no protection rules.
+- The workflow ran with `publish=false`, so the actual package publication step was skipped. The first alpha publication proceeded through user stage approval. OIDC authentication and actionlint checks passed.
+- CI verification: `npm run check` passed 143 tests (the existing 140 plus 3 OIDC helpers) and consumer type checks on Node 24.21.0. Locally, the 3 OIDC helpers and registry consumption verification were run on Node 24.18.0. `release:pack` with final READMEs also passed. It verified LICENSE, NOTICE, and metadata matching in the four tarballs, README example execution and type checks, and CLI, translation, React SSR, and Vite 8.3.3 lazy chunks in external JS and TS consumer apps. `npm run verify:registry` exited 0 after confirming the four published versions, `alpha` tag, and integrity in [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json), and checking registry tarballs' CLI, checkJs/TS, runtime SSR, public subpaths, and Vite production lazy chunk. The `release:publish` dry run and actionlint also passed. Tampered tarballs are rejected for SHA-512 mismatch, and `--publish` outside GitHub Actions is rejected before registry lookup.
+- The step that actually publishes a new version from CI had not yet run. This verification covered OIDC authentication only; actual CI publishing would be verified on the next intentional version release.
+- The performance p95 targets were still not met and are recorded in [Validation and Roadmap](06-validation-and-roadmap.md). The release gate is passing the three commands above and does not include performance measurement.
 
-## 2026-10-09 alpha.2 게시 완료
+## 2026-10-09 alpha.2 publication completed
 
-[run 37804205176](https://github.com/0disoft/saylo/actions/runs/37804205176)은 `main` `c36ff13`, `publish=true`, `verify_oidc=true`로 실행했다. Node 24.21.0·npm 11·Ubuntu에서 다섯 Trusted Publisher 인증, 181개 테스트와 소비 타입 검사, 외부 tarball 검증, artifact 업로드를 통과했다. 1분 16초에 완료했고 core·react·typegen·vite를 게시했다. Svelte는 동일한 게시 파일과 tag를 확인해 건너뛰었다.
+[Run 37804205176](https://github.com/0disoft/saylo/actions/runs/37804205176) ran on `main` at `c36ff13` with `publish=true` and `verify_oidc=true`. On Node 24.21.0, npm 11, and Ubuntu, it passed authentication of five Trusted Publishers, 181 tests and consumer type checks, external tarball verification, and artifact upload. It completed in 1 minute 16 seconds and published core, react, typegen, and vite. Svelte was skipped after confirming the same publication file and tag.
 
-CI artifact의 manifest를 [releases/0.1.0-alpha.2.json](../releases/0.1.0-alpha.2.json)에 기록했다. 다섯 공개 버전의 `alpha` tag·metadata·다운로드한 tarball SHA-512가 일치한다. 처음에는 React·typegen의 metadata와 다운로드 URL이 404였으나 재게시 없이 조회·다운로드 가능 상태를 확인한 뒤 소비 검증을 마쳤다. 원인은 확정하지 않는다.
+The CI artifact manifest was recorded in [releases/0.1.0-alpha.2.json](../releases/0.1.0-alpha.2.json). The `alpha` tag, metadata, and downloaded tarball SHA-512 match for all five public versions. Initially, React and typegen metadata and download URLs returned 404, but without republishing they became retrievable and downloadable, and consumption verification was completed. The cause is not established.
 
-`npm run verify:registry:alpha2`는 실제 게시된 다섯 패키지로 JS/checkJs·TS·README 예제·core runtime·React/Svelte SSR·typegen CLI·Vite lazy build와 parser 제거를 검증한다. `npm run verify:registry:sveltekit`은 같은 승인 registry 파일로 SvelteKit 앱을 설치해 타입 진단 0 errors·0 warnings, client/SSR 빌드, 요청별 SSR·boot·연결 수명, Node 운영 HTTP, HeadlessChrome 154의 hydration·ko/en/ko 전환·입력과 열린 모달 유지·종료와 재진입을 검증했다. 보고된 runtime 오류·경고는 없다. 기존 네 `alpha.1`의 `npm run verify:registry`도 통과했다. 임시 서버·브라우저·소비 앱을 정리했다.
+`npm run verify:registry:alpha2` verifies JS/checkJs, TS, README examples, core runtime, React/Svelte SSR, typegen CLI, and the Vite lazy build with parser removal using the five actually published packages. `npm run verify:registry:sveltekit` installs a SvelteKit app from the same approved registry file and verified zero type errors and warnings, client and SSR builds, per-request SSR, boot, and connection lifetime, production Node HTTP, and HeadlessChrome 154 hydration, ko/en/ko switching, input and open-modal retention, exit, and re-entry. No runtime errors or warnings were reported. The existing four-package `alpha.1` `npm run verify:registry` also passed. Temporary servers, browsers, and consumer apps were cleaned up.
 
-## 2026-10-09 alpha.3 게시 완료
+## 2026-10-09 alpha.3 publication completed
 
-[run 37935637066](https://github.com/0disoft/saylo/actions/runs/37935637066)은 `main` `534a912`, `publish=true`, `verify_oidc=true`로 실행했다. Node 24.21.0·npm 11·Ubuntu에서 다섯 Trusted Publisher 인증, 185개 테스트(core 75·react 9·svelte 5·typegen 8·vite 83·릴리스 helper 5, fail 0)와 소비 타입 검사, pack 검증, 게시 dry run, artifact 업로드, 실제 게시를 통과했다. 릴리스 작업은 22:16:13~22:17:35 KST에 1분 22초로 끝났고 다섯 패키지를 모두 게시했으며 skip은 없었다.
+[Run 37935637066](https://github.com/0disoft/saylo/actions/runs/37935637066) ran on `main` at `534a912` with `publish=true` and `verify_oidc=true`. On Node 24.21.0, npm 11, and Ubuntu, it passed authentication of five Trusted Publishers, 185 tests (core 75, react 9, svelte 5, typegen 8, vite 83, release helpers 5; 0 failures), consumer type checks, pack verification, a publication dry run, artifact upload, and actual publication. The release job ran from 22:16:13 to 22:17:35 KST, completing in 1 minute 22 seconds; it published all five packages with no skips.
 
-CI artifact의 manifest를 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)에 기록했다. 다섯 공개 버전의 `alpha` tag·metadata·다운로드한 tarball SHA-512가 일치하고 `latest`는 placeholder `0.0.0-stage`를 유지한다. 게시 직후 공개 metadata는 `alpha.2`를 가리키고 `alpha.3` 버전 endpoint는 404였으나, 재게시 없이 조회·다운로드 가능해졌다. 원인은 확정하지 않는다.
+The CI artifact manifest was recorded in [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json). The `alpha` tag, metadata, and downloaded tarball SHA-512 match for all five public versions, and `latest` remained at placeholder `0.0.0-stage`. Immediately after publication, public metadata pointed to `alpha.2` and the `alpha.3` version endpoint returned 404, but without republishing they became retrievable and downloadable. The cause is not established.
 
-`npm run verify:registry:alpha3`는 승인 integrity와 실제 tarball 외부 설치, README 예제, JS/checkJs·TS, typegen CLI, core runtime·React/Svelte SSR, public subpath, Vite lazy build와 parser 제거, 새 완역 fixture(기본 fallback·키/namespace 누락 진단·기존 타입 유지·수정 후 빌드)의 JS/TS 소비를 exit 0으로 통과했다. `npm run verify:registry:sveltekit:alpha3`는 같은 승인 registry 파일로 SvelteKit 앱을 설치해 타입 진단 0 errors·0 warnings, client/SSR 빌드, 요청별 ko/en SSR·boot와 canonical/base fallback, dev 연결 수명(listener 정리·idempotent stop·late connection 취소), Node 운영 HTTP, HeadlessChrome 154의 hydration·ko/en/ko 전환·공통 layout 입력/모달 유지·종료/재진입을 통과했다. 임시 앱·서버·브라우저는 finally에서 정리했다. 기존 `alpha.1`·`alpha.2` 검증은 이번에 반복하지 않았다. 새 성능 측정과 `examples/npm` lock 변경은 없다.
+`npm run verify:registry:alpha3` exited 0 after verifying approved integrity, external installation of actual tarballs, README examples, JS/checkJs and TS, typegen CLI, core runtime, React/Svelte SSR, public subpaths, the Vite lazy build with parser removal, and JS/TS consumption of new full-translation fixtures (default fallback, missing key and namespace diagnostics, retention of existing types, and build after correction). `npm run verify:registry:sveltekit:alpha3` installed a SvelteKit app from the same approved registry file and passed zero type errors and warnings, client and SSR builds, per-request ko/en SSR and boot with canonical/base fallback, dev connection lifetime (listener cleanup, idempotent stop, late-connection cancellation), production Node HTTP, and HeadlessChrome 154 hydration, ko/en/ko switching, retention of shared-layout input and modal state, exit, and re-entry. Temporary apps, servers, and browsers were cleaned up in `finally`. Earlier `alpha.1` and `alpha.2` verification was not repeated in this run. There were no new performance measurements or `examples/npm` lockfile changes.
 
-## 2026-10-11 현재 소스 로컬 검증
+## Current source local verification on 2026-10-11
 
-게시 승인·원격 상태와 별개로, 현행 소스 `0f7840f`(제품 `eb66af8`)에 대해 로컬에서 다음을 exit 0으로 확인했다. 근거는 [review/local-readiness-2026-10-11.json](../review/local-readiness-2026-10-11.json)(입력 해시 86개, 기록 `38ee9be`)와 [로컬 릴리스 준비 상태](77-local-release-readiness.md)다.
+Separately from publication approval and remote state, the following local checks exited 0 for current source `0f7840f` (product `eb66af8`). Evidence is in [review/local-readiness-2026-10-11.json](../review/local-readiness-2026-10-11.json) (86 input hashes, record `38ee9be`) and [local release readiness](77-local-release-readiness.md).
 
-- `npm run check`: 다섯 패키지 build·단위 테스트, JS/TS 소비 5종, React 예제, OIDC·registry 단위 검사.
-- `npm exec -- node scripts/pack-smoke.mjs`: 다섯 tarball 독립 install, CLI·typegen·README 예제, Node 번역·인자 거부·React SSR, React·Svelte selector SSR, Vite production lazy, 완역 거부·복구, 개발 의존성 제거 후 SSR(관측 Vite 8.3.4).
-- `npm exec -- node scripts/pack-sveltekit.mjs`: 독립 5-tarball install, svelte-check 0 error·0 warning, Vite 8.3.4 production Node·client build, ko/en 동시 SSR과 boot 일치·canonical fallback, listener 정리·runtime 취소, 운영 HTTP, Chromium 154 hydration·ko→en→ko 전환·공통 layout 상태 유지·종료·재진입.
+- `npm run check`: five-package builds and unit tests, five JS/TS consumption cases, the React example, and OIDC and registry unit checks.
+- `npm exec -- node scripts/pack-smoke.mjs`: independent installs of five tarballs, CLI, typegen and README examples, Node translation and argument rejection, React SSR, React and Svelte selector SSR, Vite production lazy loading, full-translation rejection and recovery, and SSR after removing development dependencies (observed with Vite 8.3.4).
+- `npm exec -- node scripts/pack-sveltekit.mjs`: independent five-tarball install, svelte-check with 0 errors and 0 warnings, Vite 8.3.4 production Node and client builds, simultaneous ko/en SSR with matching boot and canonical fallback, listener cleanup and runtime cancellation, production HTTP, Chromium 154 hydration, ko→en→ko switching, shared-layout state retention, exit, and re-entry.
 
-이 pack은 미게시 후속 코드를 `0.1.0-alpha.3` metadata로 묶은 로컬 proof이고 게시된 `alpha.3` artifact가 아니다. selector 공개 API는 현행 소스에 구현돼 있고 로컬 pack으로 검증했지만 게시본에는 없다. 임시 tarball·앱·브라우저·서버는 pack 스크립트가 정리했고, 승인 파일 [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json)과 `.release/`는 갱신하지 않았다.
+This pack is a local proof combining unpublished follow-up code with `0.1.0-alpha.3` metadata; it is not the published `alpha.3` artifact. Selector public APIs are implemented in current source and verified with the local pack, but they are absent from the published build. The pack scripts cleaned up temporary tarballs, apps, browsers, and servers, and did not update the approved [releases/0.1.0-alpha.3.json](../releases/0.1.0-alpha.3.json) file or `.release/`.
 
-원격 검증(릴리스 `version`·CI 승인, `verify_oidc` 토큰 교환, `verify:registry:alpha3` registry 대조)은 이번 로컬 check와 별개다. 현행 head에 대한 외부 CI·OIDC 검증을 실행한 것이 아니다.
+Remote verification (release `version` and CI approval, `verify_oidc` token exchange, and `verify:registry:alpha3` registry comparison) is separate from this local check. External CI and OIDC verification were not run for the current HEAD.
 
-## 의존성 취약점 조회
+## Dependency vulnerability checks
 
-기존 릴리스 작업은 `npm ci` 뒤 `npm run audit:dependencies`로 루트 lock의 개발·실행 의존성에 대한 npm advisory를 조회한다. 조회 실패나 low 이상으로 보고된 취약점은 다음 단계로 넘어가지 않는다. 별도 CI 작업은 추가하지 않았으며 원격 실행은 아직 확인하지 않았다. [의존성 갱신](dependency-updates.md)에 봇 정책·갱신 PR 확인 명령과 조회 범위를 정리했다.
+Existing release work runs `npm run audit:dependencies` after `npm ci` to query npm advisories for development and runtime dependencies in the root lockfile. A failed lookup or any reported vulnerability at low severity or higher stops the next step. No separate CI job was added, and remote execution has not been verified. [Dependency updates](dependency-updates.md) records the bot policy, update-PR check commands, and lookup scope.

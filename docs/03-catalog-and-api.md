@@ -1,8 +1,8 @@
-# 03. 카탈로그와 API
+# 03. Catalogs and API
 
-이 문서는 카탈로그 파일 형식, ID·namespace 규칙, ICU 정책, argument 계약, 공개 API와 예제를 정한다. 갱신 프로토콜의 wire 타입과 적용 규칙은 [08-update-protocol.md](08-update-protocol.md)가 단일 출처다. 이 문서는 그 정의를 중복하지 않는다. 공개 패키지는 `@0disoft/saylo-core`·`@0disoft/saylo-react`·`@0disoft/saylo-svelte`·`@0disoft/saylo-typegen`·`@0disoft/saylo-vite` 다섯 개이고 `0.1.0-alpha.4`(dist-tag `alpha`)로 게시했다. `@0disoft/saylo-vue`는 로컬 private workspace 구현이다. API는 이 문서의 초안이 아니라 소스 타입을 따른다.
+This document defines the catalog file format, ID and namespace rules, ICU policy, argument contract, public APIs, and examples. [08-update-protocol.md](08-update-protocol.md) is the single source for the update protocol's wire types and application rules. This document does not duplicate those definitions. There are five public packages: `@0disoft/saylo-core`, `@0disoft/saylo-react`, `@0disoft/saylo-svelte`, `@0disoft/saylo-typegen`, and `@0disoft/saylo-vite`. They were published as `0.1.0-alpha.4` (dist-tag `alpha`). `@0disoft/saylo-vue` is a local private workspace implementation. The API follows the source types, not the draft in this document.
 
-## 파일 레이아웃
+## File layout
 
 ```text
 locales/
@@ -14,55 +14,55 @@ locales/
     cart.json
 ```
 
-- 인코딩은 UTF-8이다.
-- 로케일 디렉터리 이름은 BCP 47 태그다. 대소문자와 스크립트 표기를 정규화(canonicalization)한 뒤 중복을 검사한다. `ko-kr`과 `ko-KR`이 서로 다른 로케일로 취급되면 안 된다.
-- 각 로케일은 같은 namespace 파일 이름을 쓴다. namespace는 파일 이름에서 `.json`을 뺀 값이고, 주소는 로케일과 무관하게 같다. namespace에 경로 구분자를 넣지 않는다.
-- 파일 경로는 `locales/<locale>/<namespace>.json`로 해석하고, 결과 경로가 locales 루트를 벗어나지 않는지 검사한다. 심볼릭 링크가 루트 밖을 가리키면 거부한다.
-- 값은 flat literal ID를 키로 갖는 JSON 객체다. 중첩 객체로 namespace를 흉내 내지 않는다.
+- Encoding is UTF-8.
+- Locale directory names are BCP 47 tags. Normalize case and script notation (canonicalization), then check for duplicates. `ko-kr` and `ko-KR` must not be treated as different locales.
+- Every locale uses the same namespace file names. A namespace is the file name without `.json`, and its address is the same regardless of locale. Namespace names must not contain path separators.
+- Resolve file paths as `locales/<locale>/<namespace>.json` and verify that the resulting path does not escape the locales root. Reject symbolic links that point outside the root.
+- Values are a JSON object keyed by flat literal IDs. Do not mimic namespaces with nested objects.
 
-## ID와 namespace 주소
+## ID and namespace addresses
 
-카탈로그 안의 키는 literal ID다. 코드에서 참조할 때는 namespace를 붙인 주소를 쓴다.
+Keys inside a catalog are literal IDs. Code references them through addresses with the namespace prepended.
 
-| 표기 | 규칙 |
+| Notation | Rule |
 | --- | --- |
-| literal ID | 파일 안의 키. 예: `welcome`, `cart.items` |
-| 주소 | `<namespace>:<literal-id>`. 예: `common:welcome`, `cart:items` |
-| 콜론 | namespace와 literal ID 안에 쓸 수 없다. 구분자 전용이다. |
-| 점 | literal 문자다. 계층 구분이 아니다. ID로 `cart.items`를 쓰면 주소는 `cart:cart.items`다. |
+| literal ID | A key inside a file. For example, `welcome` or `cart.items` |
+| address | `<namespace>:<literal-id>`. For example, `common:welcome` or `cart:items` |
+| colon | Cannot appear in a namespace or literal ID. It is reserved as the separator. |
+| period | A literal character, not a hierarchy separator. If the ID is `cart.items`, the address is `cart:cart.items`. |
 
-- (namespace, id) 쌍의 중복과 namespace 구분자 모호성을 금지한다. 서로 다른 locale에서 같은 주소를 쓰는 것은 정상이다.
-- JSON 안에 같은 ID가 두 번 나오면 거부한다. `JSON.parse`만으로는 중복 키를 감지하지 못하므로(마지막 값이 남는다) parser 전처리로 중복을 감지한다.
+- Forbid duplicate (namespace, id) pairs and ambiguity in namespace separators. Using the same address across different locales is valid.
+- Reject JSON in which the same ID appears twice. `JSON.parse` alone cannot detect duplicate keys (the last value remains), so the parser preprocesses the input to detect duplicates.
 
-## ICU 정책
+## ICU policy
 
-- 지원 범위는 선택한 FormatJS 버전이 지원하는 MessageFormat 1 문법이다. 전체 ICU 표준을 보장하지 않는다. 변수, `number`, `date`, `time`, `select`, `plural`, `selectordinal`, offset, 중첩 폼을 대상으로 한다. 문법 정의는 [FormatJS ICU 문법](https://formatjs.github.io/docs/core-concepts/icu-syntax/)을 따른다.
-- `offset:n`은 plural 분기의 offset 지정이고, `#`은 plural 안에서 offset이 적용된 수를 출력하는 자리다.
-- plural category 집합을 locale마다 같게 강요하지 않는다. `other`, 정확값 분기, `selectordinal`, `offset`, 중첩 구조를 각각 검증한다.
-- parser와 formatter는 검증된 라이브러리를 재사용한다. 초기 구현 선택은 `@formatjs/icu-messageformat-parser`와 `intl-messageformat`이다. `IntlMessageFormat`은 직렬화된 AST를 입력으로 받고 tag/`ignoreTag` 옵션을 지원한다([FormatJS intl-messageformat](https://formatjs.github.io/docs/intl-messageformat/)). 문법을 새로 발명하지 않는다.
-- 태그는 parser의 `ignoreTag`를 켜서 literal 텍스트로 처리한다. 초기 결정은 rich text 컴포넌트 보간을 MVP에서 제외하는 것이었다. 첫 rich text core API 슬라이스가 순수 텍스트 계약 위에 읽기 전용 parts 투영(`tParts`)을 더한다([78-rich-text-parts.md](78-rich-text-parts.md)). 인자로 컴포넌트를 넣는 보간과 자동 HTML 렌더는 여전히 비목표다.
-- 임의 JavaScript 실행, `eval`, 자동 HTML 주입을 하지 않는다.
-- AST는 언어 간에 같아야 하지 않는다. 번역마다 구조와 분기가 달라도 된다. 요구사항은 같은 로케일·같은 메시지·같은 argument에 대해 개발과 운영이 같은 출력, 같은 오류, 같은 fallback을 내는 것(dev/prod parity)이다. 같은 Intl locale data와 같은 런타임 매트릭스에서 비교한다.
+- Supported syntax is the MessageFormat 1 grammar supported by the selected FormatJS version. The full ICU standard is not guaranteed. Variables, `number`, `date`, `time`, `select`, `plural`, `selectordinal`, offsets, and nested forms are covered. The grammar follows [FormatJS ICU syntax](https://formatjs.github.io/docs/core-concepts/icu-syntax/).
+- `offset:n` specifies a plural branch offset, and `#` is the placeholder that prints the offset-adjusted number inside a plural.
+- Plural category sets are not required to be identical across locales. `other`, exact-value branches, `selectordinal`, `offset`, and nested structures are validated individually.
+- The parser and formatter reuse validated libraries. The initial implementation uses `@formatjs/icu-messageformat-parser` and `intl-messageformat`. `IntlMessageFormat` accepts serialized AST input and supports tag and `ignoreTag` options ([FormatJS intl-messageformat](https://formatjs.github.io/docs/intl-messageformat/)). The project does not invent a grammar.
+- Tags are treated as literal text by enabling the parser's `ignoreTag`. The initial decision excluded rich text component interpolation from the MVP. The first rich text core API slice adds a read-only parts projection (`tParts`) on top of the plain text contract ([78-rich-text-parts.md](78-rich-text-parts.md)). Interpolation with components as arguments and automatic HTML rendering remain non-goals.
+- The project does not execute arbitrary JavaScript, use `eval`, or inject HTML automatically.
+- ASTs do not need to match across languages. Structure and branches may differ by translation. The requirement is development/production parity (dev/prod parity): the same locale, message, and arguments produce the same output, errors, and fallback in both. Compare under the same Intl locale data and runtime matrix.
 
-## argument 계약 (초기 설계 결정)
+## Argument contract (initial design decision)
 
-기준 로케일이 키와 argument 스키마의 원본이다. argument의 타입은 오직 기준(base) 메시지 안에서 그 argument가 나타나는 모든 사용의 교집합으로 정한다. 번역은 이 계약을 바꾸지 않는다.
+The base locale is the source of keys and argument schemas. An argument's type is determined only by the intersection of all uses of that argument in the base message. Translations do not change this contract.
 
-| 사용 형태 | 그 사용의 타입 |
+| Use form | Type for that use |
 | --- | --- |
-| plain 변수 (`{name}`) | 문자열 또는 숫자 |
+| plain variable (`{name}`) | string or number |
 | `number`, `plural`, `selectordinal` | number |
-| `date`, `time` | number 또는 Date |
+| `date`, `time` | number or Date |
 | `select` | string |
 
-- 기준 메시지 안에서 한 argument가 여러 형태로 쓰이면 각 사용 타입의 교집합을 최종 타입으로 삼는다. 예를 들어 기준에 `{count}`(plain)와 `{count, plural}`(number)가 함께 있으면 교집합은 number다. 교집합이 비면 오류다.
-- 번역에서 사용하는 인자 이름은 기준 인자 이름의 부분집합이어야 한다. 번역이 새 인자를 추가하면 오류다.
-- 각 인자에 대해 기준이 허용하는 값 타입은 번역이 받아들이는 타입의 부분집합이어야 한다. 번역이 기준보다 더 좁은 타입을 요구하면(기준 plain, 번역 plural) 오류다.
-- 번역이 그 인자를 쓰지 않는 것은 허용한다. 이는 키 자체가 없는 것(폴백 대상)과 다른 경우다.
-- 번역이 인자를 생략해도 호출 시 기준의 필수 인자 검증은 그대로 적용한다. TS뿐 아니라 JS를 포함한 모든 경로에서 accepted base schema를 기준으로 호출 인자를 검증하고, 어긋나면 `InvalidArgumentError`를 낸다.
-- 기준 메시지에 나오는 모든 placeholder 이름의 합집합이 그 메시지의 필수 인자 이름 집합이다. 각 이름의 타입은 그 이름이 쓰인 사용 형태들의 교집합으로 정한다.
+- If an argument is used in multiple forms in the base message, the final type is the intersection of each use's type. For example, if the base contains both `{count}` (plain) and `{count, plural}` (number), the intersection is number. An empty intersection is an error.
+- Argument names used in a translation must be a subset of the base argument names. A translation that introduces a new argument is an error.
+- For each argument, the value types the base accepts must be a subset of the types the translation accepts. An error occurs when a translation requires a narrower type than the base (plain in the base, plural in the translation).
+- A translation is allowed not to use an argument. This differs from the key itself being absent (a fallback case).
+- Even if a translation omits an argument, the base's required-argument validation still applies at call time. Every path, including JS as well as TS, validates call arguments against the accepted base schema and throws `InvalidArgumentError` on a mismatch.
+- The union of all placeholder names in the base message is that message's required argument-name set. Each name's type is the intersection of the use forms in which that name appears.
 
-정상 예, 기준 `locales/ko/cart.json`:
+Valid example, base `locales/ko/cart.json`:
 
 ```json
 {
@@ -73,9 +73,9 @@ locales/
 }
 ```
 
-여기서 `items`의 `count`는 plural 하나뿐이라 number다. `title`은 argument가 없다.
+Here, `count` in `items` appears only in a plural, so it is a number. `title` has no arguments.
 
-정상 예, 번역 `locales/en/cart.json`. 기준 타입을 그대로 받고 일부 키는 생략한다:
+Valid example, translation `locales/en/cart.json`. It accepts the base types and omits some keys:
 
 ```json
 {
@@ -84,9 +84,9 @@ locales/
 }
 ```
 
-`total`과 `when`은 번역에 없다. 이는 키 누락이라 접근 시 baseline 값으로 폴백한다. `items`는 plural이라 number 요구가 기준과 맞는다. 이 번역은 키만 생략했고 `items`의 `count`는 그대로 쓴다.
+`total` and `when` are absent from the translation. Because those keys are missing, access falls back to the baseline values. `items` is a plural, so its number requirement matches the base. This translation omits only keys and still uses `count` for `items`.
 
-argument를 실제로 생략한 예, `locales/en/cart.json`의 `items`만 다르게 둔다:
+Example that actually omits an argument, with only `items` different in `locales/en/cart.json`:
 
 ```json
 {
@@ -94,9 +94,9 @@ argument를 실제로 생략한 예, `locales/en/cart.json`의 `items`만 다르
 }
 ```
 
-이 번역은 메시지에서 `count`를 쓰지 않는다. 그래도 기준이 `count`를 필수로 정하므로 호출은 그대로 `t("cart:items", { count })`로 해야 한다. 메시지에서 인자를 생략해도 호출 계약은 accepted base schema를 따른다.
+This translation does not use `count` in the message. The base still requires `count`, however, so the call remains `t("cart:items", { count })`. Even when a message omits the argument, the call contract follows the accepted base schema.
 
-오류 예, 번역이 더 좁은 타입을 요구한다. 기준 `locales/ko/badge.json`:
+Error example in which the translation requires a narrower type. Base `locales/ko/badge.json`:
 
 ```json
 {
@@ -104,7 +104,7 @@ argument를 실제로 생략한 예, `locales/en/cart.json`의 `items`만 다르
 }
 ```
 
-기준 `count`는 plain이라 타입이 문자열 또는 숫자다. 번역 `locales/en/badge.json`이 아래처럼 plural(number)을 요구하면 오류다.
+The base `count` is plain, so its type is string or number. Translation `locales/en/badge.json` is an error if it requires plural (number), as below.
 
 ```json
 {
@@ -112,96 +112,96 @@ argument를 실제로 생략한 예, `locales/en/cart.json`의 `items`만 다르
 }
 ```
 
-이 진단은 단순히 번역 오류라고 끝내지 않는다. 기준에서 숫자 계약을 명시해야 한다는 수정 방향을 함께 알린다.
+This diagnostic does not stop at calling the translation erroneous. It also explains that the base must declare a numeric contract.
 
-argument 없는 키는 그대로 호출한다. `t("cart:title")`.
+Call argument-free keys as they are: `t("cart:title")`.
 
-## 포맷 캐시와 시간대
+## Format cache and time zone
 
-캐시를 두 층으로 나눈다.
+Caches are split into two layers.
 
-| 캐시 | 키 | 무효화 |
+| Cache | Key | Invalidation |
 | --- | --- | --- |
-| 메시지 formatter | (namespace, id, message fingerprint, formatLocale, 정규화한 option, timeZone) | 그 메시지의 fingerprint나 formatLocale이 바뀔 때 |
-| `Intl` formatter | (locale, 정규화한 Intl option, timeZone) | locale이나 option이 바뀔 때 |
+| message formatter | (namespace, id, message fingerprint, formatLocale, normalized options, timeZone) | When that message's fingerprint or formatLocale changes |
+| `Intl` formatter | (locale, normalized Intl options, timeZone) | When the locale or options change |
 
-- 카탈로그 revision이 바뀌어도 문구 내용이 그대로면 모든 `Intl` 캐시를 비우지 않는다. `Intl` 캐시는 문구 revision과 독립이다.
-- full replacement에서도 AST fingerprint가 그대로인 메시지는 formatter를 재사용한다. 더 이상 쓰지 않는 항목은 LRU 등으로 bounded하게 정리한다.
-- 날짜·시간 포맷은 timeZone을 명시적으로 config에서 받는다. 기본값은 UTC를 권장한다. timeZone을 명시하지 않으면 서버 렌더링과 브라우저 렌더링 결과가 갈려 hydration 불일치가 난다.
-- baseline fallback으로 채워진 메시지는 그 메시지의 출처 locale(formatLocale) 기준으로 포맷한다. 이때 숫자·날짜 표기가 사용자가 고른 로케일의 기대와 다를 수 있음을 문서와 진단에 명시한다.
+- Even when the catalog revision changes, do not clear every `Intl` cache if the copy content is unchanged. The `Intl` cache is independent of copy revisions.
+- Even during a full replacement, reuse formatters for messages whose AST fingerprint is unchanged. Bound the cache and evict unused entries, for example with an LRU policy.
+- Date and time formatting receives timeZone explicitly from configuration. UTC is recommended as the default. If timeZone is omitted, server-rendered and browser-rendered results can diverge and cause hydration mismatches.
+- A message populated through baseline fallback is formatted using that message's source locale (formatLocale). Document and diagnose that numeric and date presentation may differ from what the user expects for the selected locale.
 
-## revision의 구분
+## Revision distinctions
 
-| 값 | 소유 | 용도 | 노출 |
+| Value | Owner | Purpose | Exposure |
 | --- | --- | --- | --- |
-| registry revision | 개발 서버·전역 transport | 카탈로그 전송 순서를 맞춘다 | 공개 API 아님 |
-| instance stateRevision | 클라이언트 instance | UI 구독 identity | `StoreSnapshot` |
+| registry revision | Development server and global transport | Aligns catalog transmission order | Not a public API |
+| instance stateRevision | Client instance | UI subscription identity | `StoreSnapshot` |
 
-- 로케일 전환은 instance stateRevision만 올린다. 로케일 전환으로 registry revision을 올리지 않는다.
-- 전역 schemaRevision은 공개 API와 wire에 두지 않는다. schema 버전은 namespace 단위 `namespaceSchemaFingerprint`로 다룬다. 한 namespace의 schema 변경이 다른 namespace의 정상 로드 결과를 낡게 만들지 않는다.
-- `catalogVersion`은 catalog key마다 증가한다. 삭제를 나타내는 tombstone도 version을 갖는다. 세부 규칙은 [08-update-protocol.md](08-update-protocol.md)를 따른다.
+- Locale changes increment only the instance stateRevision. They do not increment the registry revision.
+- The global schemaRevision is not exposed through the public API or wire protocol. Schema versions are handled by a per-namespace `namespaceSchemaFingerprint`. A schema change in one namespace does not make valid load results in another namespace stale.
+- `catalogVersion` increments for each catalog key. A tombstone marking deletion also has a version. Follow [08-update-protocol.md](08-update-protocol.md) for detailed rules.
 
-## 카탈로그 로드 결과와 오류
+## Catalog load results and errors
 
-카탈로그 조회는 `CatalogSource` 인터페이스를 통한다. 개발과 운영은 같은 인터페이스 뒤에 다른 어댑터를 둔다. 결과는 세 상태로 구분한다.
+Catalog retrieval goes through the `CatalogSource` interface. Development and production place different adapters behind the same interface. Results have three states.
 
-- `present`: 카탈로그가 있다. catalogVersion, namespaceSchemaFingerprint, 카탈로그 record를 함께 돌려준다.
-- `missing`: 서버가 그 카탈로그가 없다고 판정했다. 파일 삭제나 아직 없는 namespace가 해당한다. version만 돌려준다.
-- `failed`: 네트워크 오류나 서버 오류로 조회가 끝나지 못했다. `missing`과 구분한다.
+- `present`: The catalog exists. Return the catalogVersion, namespaceSchemaFingerprint, and catalog record together.
+- `missing`: The server determined that the catalog does not exist. This covers deleted files and namespaces that do not exist yet. Return only a version.
+- `failed`: The lookup did not finish because of a network or server error. Distinguish this from `missing`.
 
-조회 실패(`failed`)면 이전 UI를 유지하고, 그 호출의 Promise는 `CatalogLoadError`로 reject한다. 서버가 판정한 `missing`은 실패가 아니라 정상 결과다.
+On a failed lookup, retain the previous UI and reject that call's Promise with `CatalogLoadError`. A server-determined `missing` is a normal result, not a failure.
 
-| 오류 | 발생 조건 |
+| Error | Condition |
 | --- | --- |
-| `UnknownMessageError` | 알 수 없는 키에 접근했을 때. 키 문자열을 그대로 노출하지 않는다. |
-| `NamespaceNotLoadedError` | 로드하지 않은 namespace에 접근했을 때. |
-| `InvalidArgumentError` | accepted base schema 기준으로 필수 인자가 빠지거나 타입이 어긋날 때. |
-| `CatalogLoadError` | `loadCatalog`가 `failed`를 반환했을 때. |
-| `SupersededRequestError` | 앞선 의도가 실제로 대체되었을 때(예: `en` 전환 중 `ko`로 재전환). `dispose`는 별도 사유로 reject한다. |
+| `UnknownMessageError` | Accessing an unknown key. The key string is not exposed as-is. |
+| `NamespaceNotLoadedError` | Accessing a namespace that has not been loaded. |
+| `InvalidArgumentError` | A required argument is missing or has the wrong type according to the accepted base schema. |
+| `CatalogLoadError` | `loadCatalog` returns `failed`. |
+| `SupersededRequestError` | An earlier intent is actually superseded (for example, switching from `en` back to `ko`). `dispose` rejects with a separate reason. |
 
-## 공개 API
+## Public APIs
 
-현행 공개 타입은 다음 소스가 단일 기준이다. 필드와 유니온은 이 파일들을 따른다.
+The following sources are the single reference for current public types. Follow these files for fields and unions.
 
-- [packages/core/src/types.ts](../packages/core/src/types.ts): `ParsedCatalog`·`ParsedMessage`·`ArgumentSchema`·`CatalogSchema`·`Schema`·`Translate`·`StoreSnapshot`
-- [packages/core/src/loading-types.ts](../packages/core/src/loading-types.ts): `CatalogKey`·`CatalogManifest`·`CatalogOutcome`·`CatalogLoadResult`·`CatalogSource`·`CreateI18nOptions`·`I18n`
-- [packages/core/src/boot.ts](../packages/core/src/boot.ts): `BootSnapshot`와 boot 직렬화 함수
-- [packages/vite/src/virtual.d.ts](../packages/vite/src/virtual.d.ts): `virtual:saylo` 계열 선언
+- [packages/core/src/types.ts](../packages/core/src/types.ts): `ParsedCatalog`, `ParsedMessage`, `ArgumentSchema`, `CatalogSchema`, `Schema`, `Translate`, and `StoreSnapshot`
+- [packages/core/src/loading-types.ts](../packages/core/src/loading-types.ts): `CatalogKey`, `CatalogManifest`, `CatalogOutcome`, `CatalogLoadResult`, `CatalogSource`, `CreateI18nOptions`, and `I18n`
+- [packages/core/src/boot.ts](../packages/core/src/boot.ts): `BootSnapshot` and boot serialization functions
+- [packages/vite/src/virtual.d.ts](../packages/vite/src/virtual.d.ts): declarations for the `virtual:saylo` family
 
-현행 모델은 네 층이다.
+The current model has four layers.
 
-- `ParsedCatalog`는 parser 출력이다. `locale`·`namespace`·`sourceName`과 `messages`를 갖고, 각 `ParsedMessage`는 `source`·`position`·`ast`·`arguments`를 갖는다.
-- `CatalogOutcome`은 session과 pair version을 붙인 전송 단위다. `present`는 `catalog: ParsedCatalog`와 `namespaceSchemaFingerprint`를, `missing`은 version만 가진 tombstone을 담는다. `CatalogLoadResult`는 여기에 `failed`를 더한다.
-- `StoreSnapshot<S>`는 `Translator<S>`를 확장한 공개 UI 스냅샷이다. `locale`·`baseLocale`·`timeZone`·`t`·`tParts`·`stateRevision`·`availableLocales`·`availableNamespaces`·`loadedNamespaces`를 담는다.
-- `BootSnapshot`은 `format: "saylo-boot-v1"`, `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas: CatalogSchema[]`, `catalogOutcomes: CatalogOutcome[]`를 담는다.
+- `ParsedCatalog` is parser output. It contains `locale`, `namespace`, `sourceName`, and `messages`, and each `ParsedMessage` contains `source`, `position`, `ast`, and `arguments`.
+- `CatalogOutcome` is the transport unit with session and pair version attached. `present` contains `catalog: ParsedCatalog` and `namespaceSchemaFingerprint`; `missing` contains a tombstone with only a version. `CatalogLoadResult` adds `failed`.
+- `StoreSnapshot<S>` is the public UI snapshot extending `Translator<S>`. It contains `locale`, `baseLocale`, `timeZone`, `t`, `tParts`, `stateRevision`, `availableLocales`, `availableNamespaces`, and `loadedNamespaces`.
+- `BootSnapshot` contains `format: "saylo-boot-v1"`, `manifest`, `locale`, `timeZone`, `stateRevision`, `loadedNamespaces`, `baseSchemas: CatalogSchema[]`, and `catalogOutcomes: CatalogOutcome[]`.
 
-`Map<string, CatalogRecord>` 형태의 `UiSnapshot`은 초기 설계 초안이었고 현행 구현에 없다. 카탈로그 내용은 `CatalogOutcome.catalog`의 `ParsedCatalog`로 전달된다. `CatalogRecord`·`RuntimeArgumentSchema`·`ArgTypes`·`UiSnapshot`도 공개 타입에 없다.
+The `Map<string, CatalogRecord>`-shaped `UiSnapshot` was an initial design draft and is absent from the current implementation. Catalog contents are delivered as `ParsedCatalog` in `CatalogOutcome.catalog`. `CatalogRecord`, `RuntimeArgumentSchema`, `ArgTypes`, and `UiSnapshot` are also absent from the public types.
 
-`createI18n`은 동기 생성이다. 클라이언트 lazy 경로는 `locale`·`initialNamespaces`·`initialCatalogs`를 직접 받고, SSR·hydration 경로는 `initialSnapshot`을 받는다. 두 형태 모두 `catalogSource`가 필요하다. `initialSnapshot`의 `timeZone`과 options의 `timeZone`이 다르면 생성 오류다.
+`createI18n` is constructed synchronously. The client lazy path receives `locale`, `initialNamespaces`, and `initialCatalogs` directly; the SSR and hydration path receives `initialSnapshot`. Both forms require `catalogSource`. If `initialSnapshot.timeZone` and the `timeZone` option differ, construction throws an error.
 
-`I18n`은 `t`·`tParts`, `getSnapshot`·`getServerSnapshot`·`getBootSnapshot`, `getLocales`·`getNamespaces`, `subscribe`·`onDispose`, `setLocale`·`loadNamespace`·`refresh`·`dispose`를 제공한다. typed 호출은 `TypedCall` tuple로 키와 인자를 묶는다.
+`I18n` provides `t` and `tParts`; `getSnapshot`, `getServerSnapshot`, and `getBootSnapshot`; `getLocales` and `getNamespaces`; `subscribe` and `onDispose`; and `setLocale`, `loadNamespace`, `refresh`, and `dispose`. Typed calls pair keys and arguments in a `TypedCall` tuple.
 
-`fallbackLocale` 옵션은 없다. 번역이 없으면 baseLocale 하나로 폴백한다. 다단계 fallback은 로딩·스키마·포맷 출처를 함께 설계할 때 별도로 다룬다.
+There is no `fallbackLocale` option. When a translation is absent, it falls back to the single baseLocale. Multi-level fallback will be considered separately together with loading, schema, and formatting provenance.
 
-`freezeCatalogs`는 core 루트와 `/runtime`에서 제공하며 `0.1.0-alpha.2`부터 게시본에 포함된다.
+`freezeCatalogs` is provided by the core root and `/runtime` and has been included in published builds since `0.1.0-alpha.2`.
 
-선택 빌드는 `includeKeys`로 정한다. 기존 `string[]` 목록 또는 `{ from: ['src'], dynamicKeys?: ['demo:key'] }` 객체를 받는다. 객체 경로는 Vite root 안의 파일·디렉터리이고, 실제 JS·TS·JSX·TSX·Vue·Svelte 스크립트와 template 표현식만 정적으로 분석한다. 코드는 실행하지 않으며, 일치 문자열과 `t`·`tParts` 별칭의 정적 호출, template prefix/suffix에 맞는 가능한 전체 키를 보존한다. 해결할 수 없는 동적 호출은 `dynamicKeys`가 없으면 빌드를 실패시킨다. symlink·root 밖 경로·파싱 오류도 거부한다.
+Selective builds are configured through `includeKeys`. It accepts an existing `string[]` list or a `{ from: ['src'], dynamicKeys?: ['demo:key'] }` object. Object paths are files or directories inside the Vite root, and only actual JS, TS, JSX, TSX, Vue, and Svelte scripts and template expressions are analyzed statically. Code is not executed; matching strings, static calls through `t` and `tParts` aliases, and every possible full key matching template prefixes and suffixes are retained. An unresolvable dynamic call fails the build unless `dynamicKeys` is provided. Symlinks, paths outside the root, and parse errors are also rejected.
 
-개발은 전체 카탈로그를 쓰고, production eager·lazy·SSR은 선택 키만 싣는다. typegen 선언은 전체 base schema를 유지한다. 이 기능은 게시본 `0.1.0-alpha.4`에 없다.
+Development uses the full catalog; production eager, lazy, and SSR builds include only selected keys. Typegen declarations retain the full base schema. This feature is absent from published `0.1.0-alpha.4`.
 
-## 개발 연결 (virtual module)
+## Development connection (virtual module)
 
-개발 서버는 세 가지를 클라이언트에 제공한다.
+The development server provides three things to the client.
 
-- `virtual:saylo`: `initialCatalogs`(`ParsedCatalog[]`), `baseLocale`, `initialLocale`, `timeZone`을 내보낸다. 전체 registry를 한 번에 싣는 eager 경로다.
-- `virtual:saylo/lazy`: `initialCatalogs`(`CatalogOutcome[]`), `initialLocale`, `initialNamespaces`, `timeZone`, `catalogSource`를 내보낸다. `initialSnapshot`은 내보내지 않는다. 개발 source는 `{ push: true }`로 만든다.
-- 수동 `createDevCatalogSource`는 `push: true` opt-in이며 기본값은 `false`다. source는 `saylo:catalog-scope`로 owner·session·캐시 pair metadata를 등록하고, 서버는 `saylo:catalog-push`로 그 scope에서 바뀐 pair만 보낸다. payload는 `{ kind: "patch", owner, baseRevision, manifest, outcomes }`다.
-- `virtual:saylo/server`: `catalogSource`와 `createRequestI18n`을 내보낸다.
-- `catalogSource`(개발): 범용 `loadCatalog(locale, namespace)`가 현재 registry를 조회한다. 부팅 뒤에 새 namespace가 생겨도 기존 namespace별 loader map에 항목이 없어서 실패하지 않는다.
-- `connectDev(instance, { catalogSource })`: lazy instance를 갱신 대상으로 등록한다. eager store는 `connectDev(store)`를 쓴다. 이 호출이 없으면 plugin은 어느 store에 이벤트를 적용할지 알 수 없다. 개발에서만 호출한다.
+- `virtual:saylo`: Exports `initialCatalogs` (`ParsedCatalog[]`), `baseLocale`, `initialLocale`, and `timeZone`. This is the eager path that loads the full registry at once.
+- `virtual:saylo/lazy`: Exports `initialCatalogs` (`CatalogOutcome[]`), `initialLocale`, `initialNamespaces`, `timeZone`, and `catalogSource`. It does not export `initialSnapshot`. The development source is created with `{ push: true }`.
+- Manual `createDevCatalogSource` uses `push: true` as an opt-in and defaults to `false`. The source registers owner, session, and cached pair metadata through `saylo:catalog-scope`, and the server sends only pairs that changed within that scope through `saylo:catalog-push`. The payload is `{ kind: "patch", owner, baseRevision, manifest, outcomes }`.
+- `virtual:saylo/server`: Exports `catalogSource` and `createRequestI18n`.
+- `catalogSource` (development): The general `loadCatalog(locale, namespace)` queries the current registry. A namespace created after boot does not fail merely because it has no entry in the old per-namespace loader map.
+- `connectDev(instance, { catalogSource })`: Registers a lazy instance as an update target. Eager stores use `connectDev(store)`. Without this call, the plugin does not know which store should receive events. Call it only in development.
 
-- namespace manifest가 동적으로 늘거나 줄면 manifest의 `availableNamespaces` 갱신으로 현재 source에 알린다. 개발 경로에는 정적 namespace map을 두지 않는다. 새 namespace 조회는 범용 `loadCatalog`가 모두 처리한다. 정적 loader map은 운영에서만 생성한다.
-- 운영은 generated static loader map만 쓴다. 그 map도 같은 `CatalogSource` 인터페이스를 뒤에 둔다.
+- When the namespace manifest grows or shrinks dynamically, notify the current source by updating the manifest's `availableNamespaces`. The development path has no static namespace map. The general `loadCatalog` handles lookups for new namespaces. A static loader map is generated only for production.
+- Production uses only the generated static loader map. That map also sits behind the same `CatalogSource` interface.
 
 ```ts
 // vite.config.ts
@@ -223,9 +223,9 @@ export default defineConfig({
 });
 ```
 
-## 예제
+## Examples
 
-TS, generated 타입과 lazy 초기화:
+TypeScript, generated types, and lazy initialization:
 
 ```ts
 // src/i18n/client.ts
@@ -255,7 +255,7 @@ await i18n.setLocale("en");
 export const disconnect = connectDev(i18n, { catalogSource });
 ```
 
-JS, `checkJs`와 JSDoc으로 lazy 초기화:
+JavaScript, with `checkJs` and JSDoc for lazy initialization:
 
 ```js
 // src/i18n/client.js
@@ -290,7 +290,7 @@ import { i18n } from "./client";
 connectDev(i18n, { catalogSource });
 ```
 
-React, factory가 같은 context로 Provider와 hook을 만든다:
+React, where the factory creates the Provider and hook in the same context:
 
 ```tsx
 // src/i18n/react.ts
@@ -322,6 +322,6 @@ function CartSummary() {
 }
 ```
 
-## 갱신 프로토콜
+## Update protocol
 
-patch, snapshot, boot 인코딩, 적용과 resync 규칙은 [08-update-protocol.md](08-update-protocol.md)가 단일 출처다. 이 문서는 중복 정의를 두지 않는다.
+[08-update-protocol.md](08-update-protocol.md) is the single source for encoding and applying patches, snapshots, and boot data, and for resync rules. This document does not redefine them.
