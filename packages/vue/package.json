@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Vue 3 bindings for Saylo with typed context and snapshot-bound reactive translation state.",
   "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/vue" },
+  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/vue#readme",
+  "bugs": { "email": "rodisoft1@gmail.com" },
+  "publishConfig": { "access": "public", "provenance": true },
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
   "files": ["dist/index.js", "dist/index.d.ts", "dist/rich-text.js", "dist/rich-text.d.ts", "LICENSE", "NOTICE"],
   "scripts": {
