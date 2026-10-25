@@ -1,4 +1,5 @@
 import { parse } from '@babel/parser';
+import { svelteSources } from './auto-key-svelte.js';
 
 export interface SourceNode {
   readonly type: string;
@@ -36,9 +37,9 @@ export function sourceTrees(source: string, file: string): SourceNode[] {
       throw new Error(`[saylo:auto-keys] Cannot analyze ${file}: ${error instanceof Error ? error.message : String(error)}. Use explicit includeKeys for unsupported syntax.`);
     }
   };
-  if (!/\.(?:vue|svelte)$/.test(file)) { add(source); return result; }
+  if (file.endsWith('.svelte')) { svelteSources(source, file, add); return result; }
+  if (!/\.vue$/.test(file)) { add(source); return result; }
   let cursor = 0, braces = 0, expressionQuote = '', attributeQuote = '', inTag = false;
-  const svelte = file.endsWith('.svelte');
   // Inspect only markup between blocks. Raw scripts and real comments are each
   // consumed whole, so comment-looking JavaScript strings cannot erase code.
   const inspectPrefix = (text: string) => {
@@ -51,9 +52,9 @@ export function sourceTrees(source: string, file: string): SourceNode[] {
         } else if ('\"\'`'.includes(character)) expressionQuote = character;
         else if (character === '{') braces++;
         else if (character === '}') braces--;
-      } else if (character === '{' && (svelte || !attributeQuote && text[i + 1] === '{')) {
-        braces = svelte ? 1 : 2;
-        if (!svelte) i++;
+      } else if (character === '{' && (!attributeQuote && text[i + 1] === '{')) {
+        braces = 2;
+        i++;
       } else if (attributeQuote) {
         if (character === attributeQuote) attributeQuote = '';
       } else if (inTag) {
@@ -85,35 +86,6 @@ export function sourceTrees(source: string, file: string): SourceNode[] {
       add(expression, true, true);
     }
     return result;
-  }
-  // Find balanced Svelte expressions, including object literals and quoted braces.
-  for (let start = 0; start < markup.length; start++) {
-    if (markup[start] !== '{') continue;
-    let depth = 1, quote = '', end = start + 1;
-    for (; end < markup.length && depth; end++) {
-      const character = markup[end]!;
-      if (quote) {
-        if (character === '\\') end++;
-        else if (character === quote) quote = '';
-      } else if (character === '"' || character === "'" || character === '`') quote = character;
-      else if (character === '{') depth++;
-      else if (character === '}') depth--;
-    }
-    if (depth) throw new Error(`[saylo:auto-keys] Unclosed template expression in ${file}.`);
-    let expression = markup.slice(start + 1, end - 1).trim();
-    start = end - 1;
-    if (expression.startsWith('#snippet ')) { add(`function ${expression.slice(9)} {}`); continue; }
-    if (/^(?:\/|:else\s*$|:then\b|:catch\b)/.test(expression)) continue;
-    expression = expression.replace(/^:else\s+if\s+/, '').replace(/^#(?:if|key|await)\s+/, '')
-      .replace(/^@(?:html|render|debug)\s+/, '');
-    if (expression.startsWith('#each ')) {
-      const parts = expression.slice(6).split(/\s+as\s+/);
-      const key = parts.slice(1).join(' as ').match(/\(([^]*)\)\s*$/)?.[1];
-      if (key) add(key, true);
-      expression = parts[0]!;
-    }
-    if (expression.startsWith('@const ')) add('const ' + expression.slice(7));
-    else add(expression, true);
   }
   return result;
 }

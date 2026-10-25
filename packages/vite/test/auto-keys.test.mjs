@@ -10,6 +10,29 @@ import { findIncludedKeys, readAutoKeys } from '../dist/auto-keys.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { compileTemplateKey } from '../dist/auto-key-pattern.js';
+import { compile } from 'svelte/compiler';
+
+test('official Svelte syntax preserves keys in await branches, quoted each delimiters and nested expressions', async t => {
+  const root = await fixture(t);
+  const file = path.join(root, 'src/View.svelte');
+  for (const [source, expected] of [
+    [`{#await promise then value}<p>{t('demo:title')} {value}</p>{/await}`, ['demo:title']],
+    [`{#await promise catch error}<p>{t('demo:two')} {error}</p>{/await}`, ['demo:two']],
+    [`{#each [" as ", t('demo:one')] as item (t('demo:two'))}<p>{item}</p>{/each}`, ['demo:one', 'demo:two']],
+    [`{#if /}/.test('x')}<p>{t('demo:title')}</p>{/if}`, ['demo:title']],
+    [`{#if true}{@const label = t('demo:two')}<p title={t('demo:one')}>{label}</p>{/if}`, ['demo:one', 'demo:two']],
+    [`<script lang="ts">const translate = i18n.t; const marker: string = '<!--';</script><p>{translate('demo:title')}</p>`, ['demo:title']],
+    [`<style>p { --label: 'demo:unused'; color: var(--ink); }</style><p>{t('demo:title')}</p>`, ['demo:title']],
+  ]) {
+    assert.doesNotThrow(() => compile(source, { generate: 'server', filename: file }));
+    await writeFile(file, source);
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), expected, source);
+  }
+  await writeFile(file, `{#await promise then value}<p>{t(key)}</p>{/await}`);
+  await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/);
+  await writeFile(file, `{#await promise then value}<p>{t('demo:two')}</p>`);
+  await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Cannot analyze/);
+});
 
 test('many template substitutions cannot stall source selection on a short nonmatching key', async t => {
   const root = await fixture(t);
