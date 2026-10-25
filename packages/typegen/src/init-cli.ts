@@ -13,7 +13,7 @@ Requires package.json, src/, and one vite.config.ts/mts/js/mjs. Dynamic configs
 and config spreads require manual integration. No dependencies are installed;
 the result lists package-manager commands and the remaining UI wiring steps.
 Each file is published atomically; failures report already written files.
-This command is available in the source checkout; it requires a future npm release.`;
+Available since 0.1.0-alpha.7. Install @0disoft/saylo-typegen@alpha; latest remains a registration placeholder.`;
 
 export async function runInit(args: readonly string[]): Promise<void> {
   const { values } = parseArgs({ args: [...args], options: {

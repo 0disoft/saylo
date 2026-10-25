@@ -1,14 +1,15 @@
 # Migrate one i18next namespace
 
-The source checkout provides `saylo migrate` and `@0disoft/saylo-typegen/migrate`. They require a future npm release; alpha.6 does not include them. Migration reads one namespace resource at a time, so you can move one screen without replacing the rest of an app.
+The published `0.1.0-alpha.7` release provides `saylo migrate` and `@0disoft/saylo-typegen/migrate`; see the [alpha.7 release record](../releases/0.1.0-alpha.7.md). Migration reads one namespace resource at a time, so you can move one screen without replacing the rest of an app.
 
 Supported input follows the default [i18next JSON v4 format](https://www.i18next.com/misc/json-format): nested string keys, simple `{{name}}` interpolation, and cardinal plural suffixes. Namespace and flattened dotted IDs are preserved. The report maps source keys to Saylo keys, such as `shop:title` and `shop:items`.
 
-After building this checkout, run from your application directory:
+Install the CLI with the `alpha` tag, then run it from your application directory. The `latest` tag remains a registration placeholder.
 
 ```sh
-node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" migrate --from i18next --file i18next/en/shop.json --locale en --namespace shop --escape-value false --json
-node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" migrate --from i18next --file i18next/en/shop.json --locale en --namespace shop --escape-value false --out-file locales/en/shop.json --json
+npm install --save-dev @0disoft/saylo-typegen@alpha
+npx --no-install saylo migrate --from i18next --file i18next/en/shop.json --locale en --namespace shop --escape-value false --json
+npx --no-install saylo migrate --from i18next --file i18next/en/shop.json --locale en --namespace shop --escape-value false --out-file locales/en/shop.json --json
 ```
 
 The first command only prints a preview. The second exclusively creates a new catalog; its parent directory must already exist. Existing files and linked output parents are rejected. Source files are never modified, and any conversion issue blocks the entire catalog. The preview includes `catalog`, `mappings`, and `issues`. Exit codes are 0 for ready/written, 1 for blocked conversion, and 2 for usage, invalid JSON, or filesystem errors.

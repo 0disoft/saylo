@@ -8,15 +8,15 @@ This document describes where to send general questions, feature requests, and b
 - Subject format: `Saylo · <package> <version> · <one-line summary>`
 - Profile: <https://github.com/0disoft>
 
-An example subject is `Saylo · @0disoft/saylo-vite 0.1.0-alpha.4 · screen does not update after saving copy`. Including `Saylo` plus the package and version in the subject keeps the message from being mixed up with mail from other repositories.
+An example subject is `Saylo · @0disoft/saylo-vite 0.1.0-alpha.7 · screen does not update after saving copy`. Including `Saylo` plus the package and version in the subject keeps the message from being mixed up with mail from other repositories.
 
-The five alpha.5 packages use `bugs.email` for the contact above. The earlier alpha.4 packages pointed to GitHub issues while the repository was private.
+The five published alpha.7 packages use `bugs.email` for the contact above. Earlier alpha.4 packages pointed to GitHub issues while the repository was private.
 
 ## What to send
 
 Whatever the type of request, include the following. You can leave out items you do not know.
 
-- Package and version: which of `@0disoft/saylo-core`, `saylo-react`, `saylo-svelte`, `saylo-vite`, or `saylo-typegen`, and the version (for example `0.1.0-alpha.4`).
+- Package and version: which of `@0disoft/saylo-core`, `saylo-react`, `saylo-svelte`, `saylo-vite`, or `saylo-typegen`, and the version (for example `0.1.0-alpha.7`).
 - Environment: OS, Node version, framework and version (React, Svelte, and so on), Vite version, and whether you use TypeScript.
 - Actual behavior and expected behavior.
 - Minimal reproduction: the relevant catalog JSON fragment, configuration, and commands you ran.
@@ -35,4 +35,4 @@ Whatever the type of request, include the following. You can leave out items you
 
 ## Install tag
 
-The published version is `0.1.0-alpha.4` and the dist-tag is `alpha`. The `latest` tag points to a registration placeholder rather than an actual package release. Install with `@alpha`. Check the installed version in `package.json` or with `npm ls`.
+The five public packages are published as `0.1.0-alpha.7` under dist-tag `alpha`. Vue remains private at `0.1.0-alpha.4` with its core dependency on `0.1.0-alpha.7`. The `latest` tag points to a registration placeholder rather than an actual package release, so install with `@alpha`. The [alpha.7 release record](releases/0.1.0-alpha.7.md) is the authoritative publication record. Check the installed version in `package.json` or with `npm ls`.

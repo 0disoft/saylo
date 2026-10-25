@@ -20,7 +20,7 @@ Read-only by default. Converts JSON-v4 nested keys, simple interpolation and car
 --base-file <saylo.json> --base-locale <locale> optionally validate against an existing Saylo base contract.
 --out-file exclusively writes a new catalog when no issues remain. Existing parents are required.
 Context selection, ordinal/legacy plurals, nesting, arrays and custom formatters require manual migration.
-Application call sites are not rewritten. This source-only command requires a future npm release.`);
+Application call sites are not rewritten. Available since 0.1.0-alpha.7. Install @0disoft/saylo-typegen@alpha; latest remains a registration placeholder.`);
     return;
   }
   if (values.from !== 'i18next' || !values.file || !values.locale || !values.namespace)

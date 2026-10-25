@@ -1,6 +1,6 @@
 # Production catalog compaction
 
-The source checkout compacts production catalogs without removing source text, argument contracts, rich tags, or diagnostic locations. It requires a future release; published alpha.6 does not contain this feature.
+The published `0.1.0-alpha.7` release compacts production catalogs without removing source text, argument contracts, rich tags, or diagnostic locations. See the [alpha.7 release record](../releases/0.1.0-alpha.7.md).
 
 The representation interns identical argument schemas and encodes literal/argument AST nodes as tuples. Complex ICU AST nodes remain unchanged. Decoding restores ordinary immutable catalogs without parsing ICU source. Source text remains the formatter cache key, so two edits of the same message cannot accidentally reuse an older formatter.
 

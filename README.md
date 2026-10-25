@@ -1,10 +1,10 @@
 # Saylo
 
-The source checkout also includes [production catalog compaction](docs/production-catalogs.md), with automatic size thresholds and opt-in compact SSR boot JSON. Existing runtime catalog shapes and the default boot format are preserved; this feature requires a future npm release.
+The published `0.1.0-alpha.7` release includes [production catalog compaction](docs/production-catalogs.md), with automatic size thresholds and opt-in compact SSR boot JSON. Existing runtime catalog shapes and the default boot format are preserved.
 
-The source checkout includes [i18next namespace migration](docs/migration.md), with a read-only preview, key mappings, cardinal plural conversion, and exclusive file output. It requires a future npm release.
+The published `0.1.0-alpha.7` release also includes [i18next namespace migration](docs/migration.md), with a read-only preview, key mappings, cardinal plural conversion, and exclusive file output.
 
-The source checkout now includes [`saylo init`](docs/init.md) for adding the catalog pipeline to an existing Vite app. It previews seven file changes, connects static Vite configs, and creates a typed per-owner store factory. It requires a future npm release; alpha.6 does not include the command.
+The release adds [`saylo init`](docs/init.md) for adding the catalog pipeline to an existing Vite app. It previews seven file changes, connects static Vite configs, and creates a typed per-owner store factory.
 
 Added a [Vue getting-started guide](docs/getting-started-vue.md) for starting a Vue app outside the repository. `npm run prepare:starter:vue -- --out-dir <empty-directory>` exports four source tarballs and an example, and you install and run them in that folder.
 
@@ -16,9 +16,10 @@ Saylo is an i18n (internationalization) library that aims to show translation co
 
 ## Current status
 
-- The five public packages are published as `0.1.0-alpha.6` under dist-tag `alpha` from source `1c13dc6a669c258e34ff3d0de1d3fc2f9dbfae76`. The [CI release](https://github.com/0disoft/saylo/actions/runs/40131860171) completed in 1 minute 34 seconds and passed metadata validation, five OIDC authentications, the locked dependency audit, runtime and tests with consumer types, five-package pack and JS/TS consumer smoke, the dry publication plan, and OIDC publication. All five downloaded CI tarballs match the [CI-approved manifest](releases/0.1.0-alpha.6.json), and their SHA-512 values match the registry `dist.integrity`; all five `alpha` tags now point to `0.1.0-alpha.6`, while `latest` remains `0.0.0-stage`. Vue remains private at `0.1.0-alpha.4` with its core dependency on `0.1.0-alpha.6`. The only behavioral change since alpha.5 prevents CSS or Tailwind watch-only modules with no resolved file ID from emitting a false direct-import warning. See the [alpha.6 release record](releases/0.1.0-alpha.6.md) for details.
+- The five public packages are published as `0.1.0-alpha.7` under dist-tag `alpha`. The [alpha.7 release record](releases/0.1.0-alpha.7.md) is the authoritative summary of changes, source, publication, and verification; the [CI-approved manifest](releases/0.1.0-alpha.7.json) records the five artifact integrities. The release includes `saylo init`, i18next namespace migration, production catalog compaction, and the Svelte and translator fixes listed in the record. `latest` remains the registration placeholder `0.0.0-stage`, so install with `@alpha`. Vue remains private at `0.1.0-alpha.4` with its core dependency on `0.1.0-alpha.7`.
 
-- The previous five-package release was `0.1.0-alpha.5` with dist-tag `alpha`. It included rich text, catalog translation workflows, synchronization diagnostics, cancellation controls, large-catalog optimizations, and English install-time documentation. Publication and registry acceptance are recorded in the [alpha.5 release record](releases/0.1.0-alpha.5.md), and the [CI-approved manifest](releases/0.1.0-alpha.5.json) records the five artifact integrities.
+- The previous five-package release was `0.1.0-alpha.6` with dist-tag `alpha`. It fixed a false direct-import warning for CSS or Tailwind watch-only modules with no resolved file ID. Publication and registry acceptance are recorded in the [alpha.6 release record](releases/0.1.0-alpha.6.md), and the [CI-approved manifest](releases/0.1.0-alpha.6.json) records the five artifact integrities.
+- The earlier `0.1.0-alpha.5` release included rich text, catalog translation workflows, synchronization diagnostics, cancellation controls, large-catalog optimizations, and English install-time documentation. Its publication and registry acceptance remain in the [alpha.5 release record](releases/0.1.0-alpha.5.md) and the [CI-approved manifest](releases/0.1.0-alpha.5.json).
 - The `0.1.0-alpha.4` release passed five Trusted Publisher OIDC authentications, 229 tests, consumer type checks, and publication in the 2026-10-11 [CI release](https://github.com/0disoft/saylo/actions/runs/38088660390). CI and the registry tarball SHA-512 checks, published JS/TS, React and Svelte selector SSR, and SvelteKit browser verification also passed. Changes and verification are in the [release record](releases/0.1.0-alpha.4.md), and approved integrity is in the [manifest](releases/0.1.0-alpha.4.json). Re-check with `npm run verify:registry:alpha4` and `npm run verify:registry:sveltekit:alpha4`.
 - The complete translation check and the publication and consumer verification for the previous `0.1.0-alpha.3` are preserved in the [release record](releases/0.1.0-alpha.3.md). The approval manifests and verification commands for past versions are kept as well.
 - The publication and verification record for the previous `0.1.0-alpha.2` is kept in the [release record](releases/0.1.0-alpha.2.md) and the [manifest](releases/0.1.0-alpha.2.json). Re-check with `npm run verify:registry:alpha2` and `npm run verify:registry:sveltekit`, and the `alpha.1` verification is kept as well.
@@ -247,7 +248,7 @@ The runnable SSR fixture is in `examples/ssr/`; `npm run demo:ssr` runs renderTo
 
 ## Release
 
-The current published version is `0.1.0-alpha.7` for the five public packages under dist-tag `alpha`. [CI run 40187216309](https://github.com/0disoft/saylo/actions/runs/40187216309) published them from source `1a4b253d5615a90627f8c75056eb94d837212c65`, and the [CI-approved manifest](releases/0.1.0-alpha.7.json) matches all five downloaded tarballs and registry integrities. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
+The current published version is `0.1.0-alpha.7` for the five public packages under dist-tag `alpha`. See the [alpha.7 release record](releases/0.1.0-alpha.7.md) and [CI-approved manifest](releases/0.1.0-alpha.7.json) for publication and artifact details. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
 
 ```sh
 npm run release:check -- --version 0.1.0-alpha.7 --tag alpha
@@ -277,7 +278,7 @@ The example that runs directly in Vite without a framework after installation is
 
 ## Questions and security reports
 
-For general questions, feature proposals, and bugs, see [Support](SUPPORT.md); for private security reports, see [Security](SECURITY.md). The Vite package's install folder also includes these guides. The documentation bundle and email contact metadata are included in alpha.5.
+For general questions, feature proposals, and bugs, see [Support](SUPPORT.md); for private security reports, see [Security](SECURITY.md). The Vite package's install folder also includes these guides. The documentation bundle and email contact metadata have been included since alpha.5.
 
 ## Documentation
 

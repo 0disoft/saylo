@@ -1,12 +1,13 @@
 # Add Saylo to an existing Vite app
 
-`saylo init` is available in the source checkout and requires a future npm release. The published alpha.6 does not contain this command. It connects the catalog pipeline in an existing Vite app without replacing routes or application components.
+`saylo init` is included in the published `0.1.0-alpha.7` release. The [alpha.7 release record](../releases/0.1.0-alpha.7.md) is the authoritative publication record. The command connects the catalog pipeline in an existing Vite app without replacing routes or application components.
 
-Build the checkout with `npm run build`. Then run its CLI from your app directory:
+Install the CLI with the `alpha` tag, then run it from your app directory. The `latest` tag remains a registration placeholder.
 
 ```sh
-node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" init --base-locale ko --json
-node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" init --base-locale ko --apply --json
+npm install --save-dev @0disoft/saylo-typegen@alpha
+npx --no-install saylo init --base-locale ko --json
+npx --no-install saylo init --base-locale ko --apply --json
 ```
 
 The first command is a read-only preview, including each file's complete before/after content. `--dry-run` is optional. The second applies the previewed integration to the current files; it does not reuse an earlier saved plan. Review `changes` and `writtenFiles` in the JSON result.
