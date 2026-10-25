@@ -11,6 +11,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { compileTemplateKey } from '../dist/auto-key-pattern.js';
 import { compile } from 'svelte/compiler';
+import { render } from 'svelte/server';
 
 test('official Svelte syntax preserves keys in await branches, quoted each delimiters and nested expressions', async t => {
   const root = await fixture(t);
@@ -32,6 +33,62 @@ test('official Svelte syntax preserves keys in await branches, quoted each delim
   await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/);
   await writeFile(file, `{#await promise then value}<p>{t('demo:two')}</p>`);
   await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Cannot analyze/);
+});
+
+test('Svelte block bindings preserve translator aliases and dynamic-key validation', async t => {
+  const root = await fixture(t);
+  const file = path.join(root, 'src/View.svelte');
+  for (const source of [
+    '{#each stores as { t: msg }}{msg(`demo:t${suffix}`)}{/each}',
+    '{#each stores as { ["t"]: msg }}{msg(`demo:t${suffix}`)}{/each}',
+    '{#each stores as [{ nested: { tParts: msg } }]}{msg(`demo:t${suffix}`)}{/each}',
+    '{#await pending then { t: msg }}{msg(`demo:t${suffix}`)}{/await}',
+    '{#await pending catch { ["tParts"]: msg }}{msg(`demo:t${suffix}`)}{/await}',
+    '{#each translators as t}{t(`demo:t${suffix}`)}{/each}',
+    '{#await pending then t}{t(`demo:t${suffix}`)}{/await}',
+  ]) {
+    assert.doesNotThrow(() => compile(source, { generate: 'server', filename: file }));
+    await writeFile(file, source);
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), ['demo:title', 'demo:two'], source);
+  }
+  for (const source of [
+    '{#each stores as { ["t"]: msg }}{msg(key)}{/each}',
+    '{#await pending then { ["tParts"]: msg }}{msg(key)}{/await}',
+  ]) {
+    await writeFile(file, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), /Dynamic translation keys/);
+    assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'], dynamicKeys: ['demo:two'] }), ['demo:two']);
+  }
+  await writeFile(file, '{#each rows as { label = t("demo:one") }}{label}{t("demo:two")}{/each}');
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), ['demo:one', 'demo:two']);
+});
+
+test('production Svelte block aliases retain template keys through SSR rendering', async t => {
+  const root = await fixture(t);
+  await mkdir(path.join(root, 'locales/ko'), { recursive: true });
+  await writeFile(path.join(root, 'locales/ko/demo.json'), JSON.stringify(messages));
+  await writeFile(path.join(root, 'src/View.svelte'), `<script>export let stores; export let suffix;</script>
+{#each stores as { ["t"]: msg }}<p>{msg(\`demo:t\${suffix}\`)}</p>{/each}`);
+  await writeFile(path.join(root, 'src/main.ts'), `import { createStore } from '@0disoft/saylo-core/runtime';
+import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
+export { default as View } from './View.svelte';
+export const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale });`);
+  const result = await build({ configFile: false, root, logLevel: 'silent',
+    plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', includeKeys: { from: ['src'] },
+      typegen: { outFile: 'generated.d.ts' } }),
+    { name: 'compile-svelte-ssr', transform(source, id) {
+      if (id.endsWith('.svelte')) return { code: compile(source, { generate: 'server', filename: id }).js.code, map: null };
+    } }],
+    resolve: { alias: { '@0disoft/saylo-core/runtime': fileURLToPath(new URL('../../core/dist/runtime.js', import.meta.url)) } },
+    build: { ssr: true, outDir: 'out', minify: false,
+      rolldownOptions: { input: path.join(root, 'src/main.ts'), preserveEntrySignatures: 'strict' } } });
+  const chunks = result.output.filter(value => value.type === 'chunk');
+  assert.ok(chunks.every(chunk => !chunk.code.includes('UNUSED_AUTO_KEY_MARKER')));
+  const app = await import(pathToFileURL(path.join(root, 'out', chunks.find(chunk => chunk.isEntry).fileName)));
+  t.after(() => app.store.dispose());
+  assert.match(render(app.View, { props: { stores: [app.store], suffix: 'itle' } }).body, /<p>Hello<\/p>/);
+  assert.match(render(app.View, { props: { stores: [app.store], suffix: 'wo' } }).body, /<p>Two<\/p>/);
+  assert.throws(() => app.store.t('demo:unused'), { name: 'UnknownMessageError' });
 });
 
 test('many template substitutions cannot stall source selection on a short nonmatching key', async t => {

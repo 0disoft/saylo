@@ -35,6 +35,16 @@ export function svelteSources(source: string, file: string, add: AddSource): voi
       add(`function ${text(current.expression as SyntaxNode)}(${(current.parameters as SyntaxNode[]).map(text).join(',')}) {}`);
       collect(current.body); return;
     }
+    if (current.type === 'EachBlock' || current.type === 'AwaitBlock') {
+      const bindings = current.type === 'EachBlock' ? ['context'] : ['value', 'error'];
+      for (const [name, child] of Object.entries(current)) {
+        // Preserve patterns as declarations: isolated identifiers lose aliases and look like escaped callbacks.
+        // This declaration is only parsed, never executed; defaults and computed keys still reach Babel.
+        if (bindings.includes(name)) { if (child) add(`const ${text(child as SyntaxNode)} = null;`); }
+        else collect(child);
+      }
+      return;
+    }
     if (current.type === 'VariableDeclaration') { add(text(current)); return; }
     if (current.type && /(?:Expression|Literal)$|^(?:Identifier|Super|MetaProperty)$/.test(current.type)) {
       add(text(current), true); return;
