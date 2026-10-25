@@ -79,15 +79,24 @@ test('incomplete bodies cannot exceed the admitted request budget and disconnect
   t.after(() => { for (const request of held) request.destroy(); });
   await Promise.all(Array.from({ length: 32 }, () => new Promise((resolve, reject) => {
     const request = httpRequest(f.server.url + '/api/preview', {
-      method: 'POST', headers: { ...f.headers, 'Content-Length': '100' },
+      method: 'POST', headers: { ...f.headers, 'Content-Length': '100', Expect: '100-continue' },
     });
     held.push(request);
     request.on('error', () => {});
-    request.write('{', error => error ? reject(error) : resolve());
+    request.once('error', reject);
+    // A completed client write only confirms local buffering. The server's
+    // continue response is received after its synchronous admission checks.
+    request.once('continue', () => { request.write('{'); resolve(); });
+    request.flushHeaders();
   })));
   assert.equal((await fetch(f.server.url + '/api/state', { headers: f.headers })).status, 503);
   const closed = held.map(request => new Promise(resolve => request.once('close', resolve)));
   for (const request of held) request.destroy();
   await Promise.all(closed);
-  assert.equal((await fetch(f.server.url + '/api/state', { headers: f.headers })).status, 200);
+  // Client close can precede the server's abort cleanup on a different OS.
+  const signal = AbortSignal.timeout(2000);
+  let status;
+  do { status = (await fetch(f.server.url + '/api/state', { headers: f.headers, signal })).status; }
+  while (status === 503);
+  assert.equal(status, 200);
 });
