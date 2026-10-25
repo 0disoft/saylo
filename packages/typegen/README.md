@@ -35,6 +35,17 @@ Use the `locales/<locale>/<namespace>.json` structure. For example, `locales/ko/
 
 ## Running
 
+### Initialize an existing Vite app (source checkout)
+
+The new `saylo init` command previews integration by default; `--apply` creates a starter catalog, shared config, virtual-module types, a typed store factory, and connects a static ESM Vite config. It preserves conflicting files and prints package-manager install commands instead of running them. UI providers and SSR request/hydration wiring remain explicit. See the [init guide](../../docs/init.md) for requirements, preview output, cleanup, and failure recovery. This command is not in published alpha.6 and requires a future release.
+
+From the app directory, after building this checkout:
+
+```sh
+node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" init --base-locale en --json
+node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" init --base-locale en --apply --json
+```
+
 ### Shared configuration and catalog checks (alpha.5)
 
 `loadProjectConfig()` and the `saylo` command in the current checkout are not in the npm `alpha.4` release. The existing `saylo-typegen` arguments are preserved, and the new `--config` option reads the same JSON configuration as Vite. Configuration code other than JSON is not executed.

@@ -16,6 +16,7 @@ import { writeReviewApproval, ReviewApprovalWriteError } from './review-write.js
 import { refreshTranslationWorkfile } from './catalog-refresh.js';
 import { CommandInterruptedError, createCliCancellation } from './cli-cancellation.js';
 import { CatalogOutputError, writeCatalogOutput } from './catalog-output.js';
+import { InitApplyError } from './init-error.js';
 
 let json = process.argv.includes('--json');
 let cancellation: ReturnType<typeof createCliCancellation> | undefined;
@@ -27,8 +28,8 @@ function printCheckReport(report: CatalogCheckReport): string {
   return lines.join('\n');
 }
 
-try {
-  const invocation = parseCatalogArguments(process.argv.slice(2));
+async function runCatalog(args: readonly string[]): Promise<void> {
+  const invocation = parseCatalogArguments(args);
   const { values } = invocation;
   json = values.json ?? false;
   if (invocation.kind === 'help') console.log(catalogHelp);
@@ -104,10 +105,17 @@ try {
       process.exitCode = report.diagnostics.length ? 1 : 0;
     }
   }
+}
+
+try {
+  const args = process.argv.slice(2);
+  if (args[0] === 'init') await (await import('./init-cli.js')).runInit(args.slice(1));
+  else await runCatalog(args);
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
-  const interrupted = cancellation?.signal.reason instanceof CommandInterruptedError ? cancellation.signal.reason : undefined;
-  const writtenFiles = error instanceof TranslationApplyError || error instanceof ReviewApprovalWriteError || error instanceof CommandInterruptedError || error instanceof CatalogOutputError
+  const interrupted = error instanceof CommandInterruptedError ? error
+    : cancellation?.signal.reason instanceof CommandInterruptedError ? cancellation.signal.reason : undefined;
+  const writtenFiles = error instanceof TranslationApplyError || error instanceof ReviewApprovalWriteError || error instanceof CommandInterruptedError || error instanceof CatalogOutputError || error instanceof InitApplyError
     ? error.writtenFiles : interrupted ? [] : undefined;
   if (json) console.log(JSON.stringify({ format: 'saylo-command-error/v1', error: { message,
     ...(writtenFiles ? { writtenFiles } : {}), ...(interrupted ? { cancelled: true, signal: interrupted.signalName } : {}) } }));

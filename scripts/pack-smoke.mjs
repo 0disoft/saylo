@@ -169,6 +169,27 @@ try {
       assert.match(help.stdout, /Example:/);
       console.log('[pack] Installed typegen CLI help alias and option example passed.');
     }
+    if (!fromRegistry && language === 'js') {
+      const initialized = path.join(app, 'init-proof');
+      await mkdir(path.join(initialized, 'src'), { recursive: true });
+      await writeFile(path.join(initialized, 'package.json'), JSON.stringify({ type: 'module', devDependencies: { vite: majors.vite } }));
+      await writeFile(path.join(initialized, 'vite.config.mjs'), 'export default { plugins: [] };\n');
+      const cli = path.join(app, 'node_modules/@0disoft/saylo-typegen/dist/catalog-cli.js');
+      const preview = await exec(process.execPath, [cli, 'init', '--json'], { cwd: initialized, env: childEnv, windowsHide: true });
+      assert.equal(JSON.parse(preview.stdout).changes.length, 7);
+      const applied = await exec(process.execPath, [cli, 'init', '--apply', '--json'], { cwd: initialized, env: childEnv, windowsHide: true });
+      assert.equal(JSON.parse(applied.stdout).writtenFiles.length, 7);
+      await writeFile(path.join(initialized, 'index.html'), '<script type="module" src="/src/main.ts"></script>');
+      await writeFile(path.join(initialized, 'src/main.ts'), `import { createAppI18n } from './saylo/i18n';
+const app = createAppI18n(); document.body.textContent = app.store.getSnapshot().t('saylo:greeting', { name: 'Packed' }); app.dispose();`);
+      await writeFile(path.join(initialized, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022',
+        module: 'ESNext', moduleResolution: 'Bundler', lib: ['ES2022', 'DOM'], strict: true, noEmit: true }, include: ['src'] }));
+      await exec(process.execPath, [path.join(app, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json'],
+        { cwd: initialized, env: childEnv, windowsHide: true });
+      await exec(process.execPath, [path.join(app, 'node_modules/vite/bin/vite.js'), 'build'],
+        { cwd: initialized, env: childEnv, windowsHide: true });
+      console.log('[pack] Installed init CLI preview/apply and generated app typecheck/build passed.');
+    }
     if (hasSvelte) await cp(path.join(repository, 'packages/svelte/test/consumer-js.js'), path.join(app, 'src/consumer-svelte.js'));
     const hasSvelteSelectors = hasSvelte && (await readFile(path.join(app, 'node_modules/@0disoft/saylo-svelte/dist/index.d.ts'), 'utf8'))
       .includes('selectSvelteStore');

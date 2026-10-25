@@ -1,5 +1,7 @@
 # Saylo
 
+The source checkout now includes [`saylo init`](docs/init.md) for adding the catalog pipeline to an existing Vite app. It previews seven file changes, connects static Vite configs, and creates a typed per-owner store factory. It requires a future npm release; alpha.6 does not include the command.
+
 Added a [Vue getting-started guide](docs/getting-started-vue.md) for starting a Vue app outside the repository. `npm run prepare:starter:vue -- --out-dir <empty-directory>` exports four source tarballs and an example, and you install and run them in that folder.
 
 The local starters for React 19 and Svelte 5 are exported to folders outside the repository in the same way. Export them with `npm run prepare:starter:react -- --out-dir <empty-directory>` and `npm run prepare:starter:svelte -- --out-dir <empty-directory>`, and verify locally with `npm run verify:starter:react:local` and `npm run verify:starter:svelte:local`. The guides are in [React local starter](examples/react-starter/README.md) and [Svelte local starter](examples/svelte-starter/README.md). The procedure for starting from the published npm `alpha` in an empty folder is in the [React getting-started guide](docs/getting-started-react.md) and the [Svelte getting-started guide](docs/getting-started-svelte.md).

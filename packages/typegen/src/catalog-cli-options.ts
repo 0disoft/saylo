@@ -1,8 +1,9 @@
 import { parseArgs } from 'node:util';
 
-export const catalogHelp = `Usage: saylo <check|sync|snapshot|export|import|approve|refresh> [--config saylo.config.json] [--json]
+export const catalogHelp = `Usage: saylo <init|check|sync|snapshot|export|import|approve|refresh> [--config saylo.config.json] [--json]
 
 Commands:
+  init                      Preview existing Vite app integration; init --help lists its own options.
   check                     Validate catalogs, contracts and translation completeness; never writes files.
   sync --dry-run            Preview missing keys, review work and retained orphan translations; never writes files.
   snapshot                  Print a JSON source-hash comparison checkpoint; optionally save with --out-file.
@@ -18,9 +19,9 @@ Options:
   --locales <en,fr>          Completeness targets; otherwise configured/discovered locales.
   --baseline <file.json>     Compare base text/rich contracts with a saved snapshot.
   --reviews <file.json>      Track explicit approvals per locale and message.
-  --dry-run                 Preview sync, import or approval without writing files.
+  --dry-run                 Preview sync, import, approval or init without writing files.
   --diff                    Show a unified file diff; only with import --dry-run (optional --json).
-  --apply                   Apply import (atomic per file) or atomically update approval JSON.
+  --apply                   Apply init/import (atomic per file) or atomically update approval JSON.
   --file <work.json>         Translation workfile input; supported with import, approve or refresh.
   --with-context            Export/refresh v2 workfiles with advisory argument types and allowed tags.
   --out-file <new.json>      Save export/snapshot/refresh JSON exclusively; stdout reports writtenFiles.
@@ -28,7 +29,8 @@ Options:
   --help, -h                Show help without reading files.
 
 Exit codes: check 0 clean/1 issues; sync/export/import/approve/refresh 0 ready/1 blocked; snapshot 0 valid/1 invalid catalogs.
-All commands use exit 2 for usage/config/filesystem failures. Only import --apply writes catalogs.
+All commands use exit 2 for usage/config/filesystem failures. init --apply creates a first catalog;
+only import --apply updates translations in existing catalogs.
 approve --apply writes only the reviews ledger. Import/snapshot never approve translations.
 Apply/--out-file commands wait for cleanup on SIGINT/SIGTERM, then exit 130/143 and report already written files.`;
 export class CatalogUsageError extends Error {}
