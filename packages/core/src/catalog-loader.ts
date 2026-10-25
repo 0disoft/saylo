@@ -9,6 +9,7 @@ interface Flight {
   readonly key: CatalogKey;
   readonly version: string;
   readonly promise: Promise<CatalogOutcome>;
+  started: boolean;
   cancel(reason: Error): void;
 }
 
@@ -39,6 +40,16 @@ export class CatalogLoader {
   }
 
   seed(outcomes: readonly CatalogOutcome[]) { for (const outcome of outcomes) this.remember(outcome.key, outcome); }
+
+  /** Retain shared queued work and let already-started I/O finish into the cache. */
+  discardQueuedOutside(keys: readonly CatalogKey[]) {
+    if (!this.flights.size) return;
+    const required = new Set(keys.map(keyId));
+    for (const flight of this.flights.values()) {
+      if (!flight.started && !required.has(keyId(flight.key)))
+        flight.cancel(new CatalogLoadError('SCOPE_SUPERSEDED', 'Catalog is outside the requested scope.'));
+    }
+  }
 
   /** Apply the inactive LRU budget after desired/committed scope changes. */
   trim() {
@@ -117,7 +128,7 @@ export class CatalogLoader {
       cancelTimer();
       this.flights.delete(version);
     };
-    const flight: Flight = { key, version, promise, cancel: reason => {
+    const flight: Flight = { key, version, promise, started: false, cancel: reason => {
       if (done) return;
       finish();
       reject(reason);
@@ -127,7 +138,10 @@ export class CatalogLoader {
       `Catalog ${key.locale}/${key.namespace} did not load within ${this.timeoutMs}ms.`)));
     this.flights.set(version, flight);
     // The queue retains physical source slots across timeouts and invalidation.
-    this.queue.run(() => this.source.loadCatalog(key.locale, key.namespace, controller.signal), controller.signal).then(result => {
+    this.queue.run(() => {
+      flight.started = true;
+      return this.source.loadCatalog(key.locale, key.namespace, controller.signal);
+    }, controller.signal).then(result => {
       if (done) return;
       try {
         if (!result || result.status === 'failed') throw new CatalogLoadError(result?.code ?? 'INVALID_RESULT', result?.message ?? 'Invalid catalog load result.');

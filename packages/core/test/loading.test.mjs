@@ -255,6 +255,59 @@ function queuedLoader(t, count = 9, cacheOptions) {
     restart() { manifest = validateCatalogManifest({ ...manifest, sessionId: 'two' }); loader.invalidate(); } };
 }
 
+test('new scopes discard obsolete queued catalogs without aborting started I/O', async t => {
+  for (const count of [8, 9, 128]) await t.test(`${count} obsolete catalogs`, async t => {
+    const clock = scheduler();
+    const f = fixture(t, { schedule: clock.schedule });
+    const namespaces = Array.from({ length: count }, (_, index) => `page${index}`);
+    const releases = [];
+    for (const namespace of namespaces) {
+      f.change('ko', namespace, namespace);
+      releases.push(f.defer('ko', namespace));
+    }
+    const obsolete = assert.rejects(f.i18n.setNamespaces(namespaces), { code: 'SCOPE_SUPERSEDED' });
+    await tick();
+    assert.equal(f.calls.length, 8);
+    const latest = f.i18n.setNamespaces(['cart']);
+    latest.catch(() => {}); // Disposal still handles the promise if a regression assertion fails.
+    await tick();
+    assert.equal(f.calls.length, 8, 'unfinished physical I/O keeps its source slots');
+    assert.equal(clock.size, 9, 'only eight started loads and the latest catalog retain timers');
+    assert.ok(f.calls.every(call => !call.signal.aborted));
+    for (const release of releases) release.release();
+    await tick();
+    assert.equal(f.calls.length, 9, 'the ninth physical call belongs to the latest screen');
+    assert.equal(f.calls.at(-1).namespace, 'cart');
+    await Promise.all([obsolete, latest]);
+    assert.equal(f.i18n.t('cart:title'), '장바구니');
+    assert.equal(clock.size, 0);
+  });
+});
+
+test('locale supersession discards only obsolete queued targets and retains shared base loads', async t => {
+  const f = fixture(t);
+  const namespaces = Array.from({ length: 16 }, (_, index) => `page${index}`);
+  const releases = [];
+  for (const namespace of namespaces) {
+    f.change('ko', namespace, namespace);
+    f.change('en', namespace, `en:${namespace}`);
+    releases.push(f.defer('en', namespace));
+  }
+  await f.i18n.setNamespaces(namespaces);
+  const obsolete = assert.rejects(f.i18n.setLocale('en'), SupersededRequestError);
+  await tick();
+  const latest = f.i18n.setLocale('fr');
+  latest.catch(() => {});
+  await tick();
+  for (const release of releases) release.release();
+  await tick();
+  assert.equal(f.calls.filter(call => call.locale === 'en').length, 8);
+  assert.equal(f.calls.filter(call => call.locale === 'ko').length, 16, 'base outcomes are reused');
+  await Promise.all([obsolete, latest]);
+  assert.equal(f.i18n.getSnapshot().locale, 'fr');
+  assert.equal(f.i18n.t('page0:title'), 'page0', 'missing target still falls back to the shared base');
+});
+
 test('replacing required scope releases a locale switch from a previous screen and keeps cached pairs', { timeout: 2000 }, async t => {
   const { i18n, calls, defer } = fixture(t);
   await i18n.loadNamespace('cart');

@@ -174,7 +174,9 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     const locale = desiredLocale;
     const namespaces = [...desiredNamespaces].sort();
     try {
-      const outcomes = await Promise.all(scopeKeys(manifest, locale, namespaces, fallbackLocales).map(key => loader.load(key)));
+      const keys = scopeKeys(manifest, locale, namespaces, fallbackLocales);
+      loader.discardQueuedOutside(keys);
+      const outcomes = await Promise.all(keys.map(key => loader.load(key)));
       if (disposed || epoch !== generation) return;
       if (syncManifest()) return;
       const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter,
