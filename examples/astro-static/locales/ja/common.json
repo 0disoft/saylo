@@ -1,0 +1,4 @@
+{
+  "hello": "こんにちは、{name}！",
+  "total": "合計 {count, number}"
+}

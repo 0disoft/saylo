@@ -1,0 +1,20 @@
+{
+  "name": "saylo-astro-static-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "check": "saylo-typegen --config saylo.config.json && saylo check --config saylo.config.json && astro check",
+    "build": "bun run check && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": { "@0disoft/saylo-core": "^0.1.0-alpha.8" },
+  "devDependencies": {
+    "@0disoft/saylo-typegen": "^0.1.0-alpha.8",
+    "@0disoft/saylo-vite": "^0.1.0-alpha.8",
+    "@astrojs/check": "^0.9",
+    "astro": "7",
+    "typescript": "6"
+  },
+  "engines": { "node": "24.x" }
+}

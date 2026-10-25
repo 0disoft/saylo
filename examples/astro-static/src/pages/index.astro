@@ -1,0 +1,18 @@
+---
+import { locales } from '../lib/locales';
+---
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Choose a language</title></head>
+  <body>
+    <h1>Choose a language</h1>
+    <nav aria-label="Languages">{locales.map(locale => <a href={`/${locale}/`}>{locale} </a>)}</nav>
+    <script>
+      import { resolveLocale } from '@0disoft/saylo-core/runtime';
+      import { locales } from '../lib/locales';
+      const url = new URL(location.href);
+      url.pathname = `/${resolveLocale(navigator.languages, locales, 'en')}/`;
+      location.replace(url);
+    </script>
+  </body>
+</html>

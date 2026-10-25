@@ -1,0 +1,31 @@
+---
+import { serializeBootSnapshot } from '@0disoft/saylo-core/runtime';
+import { createRequestI18n } from 'virtual:saylo/server';
+import type { AppSchema } from '../lib/generated';
+import { locales } from '../lib/locales';
+
+export function getStaticPaths() { return locales.map(locale => ({ params: { locale } })); }
+const instance = await createRequestI18n<AppSchema>({ locale: Astro.params.locale!, initialNamespaces: ['common'] });
+let boot: string, heading: string;
+try {
+  boot = serializeBootSnapshot(instance.getBootSnapshot(), { compact: true });
+  heading = instance.t('common:hello', { name: 'Saylo' });
+} finally { instance.dispose(); }
+---
+<!doctype html>
+<html lang={Astro.params.locale}>
+  <head><meta charset="utf-8" /><title>{heading}</title></head>
+  <body>
+    <nav aria-label="Static language pages">{locales.map(locale => <a href={`/${locale}/`}>{locale} </a>)}</nav>
+    <label>Language <select id="locale" disabled>{locales.map(locale => <option value={locale} selected={locale === Astro.params.locale}>{locale}</option>)}</select></label>
+    <label>Name <input id="name" value="Saylo" /></label>
+    <h1 id="greeting">{heading}</h1>
+    <button id="load-cart" type="button" disabled>Load cart namespace</button>
+    <p id="cart"></p>
+    <button id="open-dialog" type="button">Open dialog</button>
+    <dialog><p id="dialog-greeting">{heading}</p><button id="close-dialog" type="button">Close</button></dialog>
+    <p id="error" role="alert"></p>
+    <script id="saylo-boot" type="application/json" set:html={boot!}></script>
+    <script>import '../lib/client';</script>
+  </body>
+</html>
