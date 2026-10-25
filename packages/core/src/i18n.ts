@@ -104,6 +104,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   function fail(error: unknown) {
     rejectWhere(() => true, () => error);
     rollbackDesired();
+    // No pending intent owns queued work after rollback; started loads can still warm the cache.
+    loader.discardQueuedOutside([]);
     loader.trim();
   }
   function schedule() {

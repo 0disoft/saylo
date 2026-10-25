@@ -656,6 +656,35 @@ test('failed lookup leaves the exact UI snapshot intact and a retry can reuse su
   assert.equal(calls.filter(c => c.locale === 'ko' && c.namespace === 'cart').length, 1);
 });
 
+test('failed scope retires queued loads while started outcomes remain reusable', async t => {
+  for (const count of [8, 9, 128]) await t.test(`${count} catalogs`, async t => {
+    const clock = scheduler();
+    const f = fixture(t, { schedule: clock.schedule });
+    const namespaces = Array.from({ length: count }, (_, index) => `page${String(index).padStart(3, '0')}`);
+    const releases = [];
+    for (const namespace of namespaces) {
+      f.change('ko', namespace, namespace);
+      releases.push(f.defer('ko', namespace));
+    }
+    const cause = new Error('catalog connection failed');
+    f.handlers.set(`ko/${namespaces[0]}`, () => { throw cause; });
+    const before = f.i18n.getSnapshot();
+    await assert.rejects(f.i18n.setNamespaces(namespaces), error => error.code === 'LOAD_FAILED' && error.cause === cause);
+    assert.equal(f.i18n.getSnapshot(), before, 'a failed scope retains the exact committed UI');
+    const started = f.calls.length;
+    const timersAfterFailure = clock.size;
+    for (const release of releases) release.release();
+    await tick();
+    assert.equal(f.calls.length, started, 'failure must not leave obsolete queued calls running');
+    assert.equal(timersAfterFailure, started - 1, 'only unfinished physical calls retain timers');
+    assert.equal(clock.size, 0);
+    const cached = f.calls[1].namespace;
+    await f.i18n.setNamespaces([cached]);
+    assert.equal(f.calls.length, started, 'already-started successes remain cached for recovery');
+    assert.equal(f.i18n.t(`${cached}:title`), cached);
+  });
+});
+
 test('load exceptions and timeout are failures rather than missing catalogs', async t => {
   const { i18n, handlers } = fixture(t, { requestTimeoutMs: 10 });
   handlers.set('en/common', () => { throw new Error('socket closed'); });
