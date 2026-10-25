@@ -125,3 +125,11 @@ If you installed the Vite package, you can read the fuller guidance in `node_mod
 ## License
 
 Apache-2.0. The distribution tarball includes the repository root `LICENSE` and `NOTICE`.
+
+## Compact catalog and boot wire data (source checkout)
+
+`encodeCatalog(catalog)` and `decodeCatalog(wire)` are available from core and `/runtime`. They preserve source text, argument contracts, rich tags, source positions and ICU ASTs without reparsing ICU on the client. Repeated argument schemas are shared in a table, and literal/argument AST nodes use tuples. The decoded result is an ordinary immutable `ParsedCatalog`. Mutable caller inputs are copied rather than frozen or cached. The encoder memoizes only recognized immutable catalogs.
+
+`serializeBootSnapshot(snapshot, { compact: true })` emits HTML-safe `saylo-boot-v2` JSON with compact catalogs and without redundant base schemas. The decoder rebuilds and validates those schemas from the catalogs, checks manifest pair stamps and contracts, and returns the existing canonical `BootSnapshot` shape. `decodeBootSnapshot()` accepts both v1 and v2. Serialization without the new option still emits v1, preserving existing integrations. Compact boot is explicit; update both server and client packages together before using it.
+
+These additions require a future npm release and are not in published alpha.6. See [production catalog compaction](../../docs/production-catalogs.md) for the Vite build policy and measurements.

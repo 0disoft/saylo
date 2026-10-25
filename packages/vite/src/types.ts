@@ -15,6 +15,8 @@ export interface SayloViteOptions {
   readonly richText?: Readonly<Record<string, NonNullable<CatalogOptions['richText']>>>;
   /** Production-only parser removal scoped to Saylo's AST formatter. Defaults to true. */
   readonly astRuntime?: boolean;
+  /** Production-only lossless compaction when savings cover the decoder. Defaults to true. */
+  readonly compactCatalogs?: boolean;
   /** Build-only exact namespace:messageId list. Undefined keeps all messages; [] keeps none. */
   readonly includeKeys?: readonly string[] | AutoIncludeKeys;
   /** Build-only: every discovered locale and initialLocale must cover all base namespaces/keys. Defaults to false. */

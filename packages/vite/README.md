@@ -1,5 +1,7 @@
 # @0disoft/saylo-vite
 
+The source checkout includes lossless production catalog compaction. `compactCatalogs` defaults to true and applies only when raw and gzip savings cover a decoder budget; small catalogs keep the original representation. Set it to false in the Vite plugin options for comparison. Eager, lazy and server modules share the core codec, while existing development socket bytes stay compatible. Compact SSR boot serialization is separately opt-in. See [production catalog compaction](../../docs/production-catalogs.md) for measurements and compatibility. This feature requires a future npm release.
+
 The Saylo Vite 8 plugin and development client. It detects catalog file changes and applies them to the screen without replacing app modules.
 
 ## Status

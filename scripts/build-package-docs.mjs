@@ -11,7 +11,7 @@ const destination = path.join(repository, 'packages/vite/docs');
 export const packageDocInputs = [
   { source: 'SUPPORT.md', target: 'support.md' },
   { source: 'SECURITY.md', target: 'security.md' },
-  ...['getting-started', 'getting-started-react', 'getting-started-svelte', 'getting-started-sveltekit', 'init', 'migration',
+  ...['getting-started', 'getting-started-react', 'getting-started-svelte', 'getting-started-sveltekit', 'init', 'migration', 'production-catalogs',
     'dev-sync-state', 'support-report'].map(name => ({ source: `docs/${name}.md`, target: `${name}.md` })),
   ...['core', 'react', 'svelte', 'typegen', 'vite'].map(name => ({ source: `packages/${name}/README.md`, target: `api/${name}.md` })),
 ];

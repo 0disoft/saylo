@@ -1,5 +1,7 @@
 # Saylo
 
+The source checkout also includes [production catalog compaction](docs/production-catalogs.md), with automatic size thresholds and opt-in compact SSR boot JSON. Existing runtime catalog shapes and the default boot format are preserved; this feature requires a future npm release.
+
 The source checkout includes [i18next namespace migration](docs/migration.md), with a read-only preview, key mappings, cardinal plural conversion, and exclusive file output. It requires a future npm release.
 
 The source checkout now includes [`saylo init`](docs/init.md) for adding the catalog pipeline to an existing Vite app. It previews seven file changes, connects static Vite configs, and creates a typed per-owner store factory. It requires a future npm release; alpha.6 does not include the command.

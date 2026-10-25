@@ -3,6 +3,8 @@ import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError } from './loading-errors.js';
 import { acceptOutcome, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import { createBaseSchema } from './schema.js';
+import { decodeCatalog, encodeCatalog } from './catalog-codec.js';
+import type { CompactCatalog } from './catalog-codec.js';
 import type { CatalogManifest, CatalogOutcome } from './loading-types.js';
 import type { CatalogSchema } from './types.js';
 
@@ -59,13 +61,24 @@ export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
 }
 
 /** HTML-safe JSON text for a script[type=application/json]; does not emit a script element. */
-export function serializeBootSnapshot(snapshot: BootSnapshot): string {
-  return JSON.stringify(validateBootSnapshot(snapshot)).replace(/</g, '\\u003c')
+export function serializeBootSnapshot(snapshot: BootSnapshot, options: { readonly compact?: boolean } = {}): string {
+  if (options.compact !== undefined && typeof options.compact !== 'boolean') throw new TypeError('compact must be a boolean.');
+  const accepted = validateBootSnapshot(snapshot);
+  const { baseSchemas, catalogOutcomes, ...metadata } = accepted;
+  const wire = options.compact ? { ...metadata, format: 'saylo-boot-v2', catalogOutcomes: catalogOutcomes.map(outcome =>
+    outcome.status === 'present' ? { ...outcome, catalog: encodeCatalog(outcome.catalog) } : outcome) } : accepted;
+  return JSON.stringify(wire).replace(/</g, '\\u003c')
     .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 }
 
 export function decodeBootSnapshot(json: string): BootSnapshot {
-  try { return validateBootSnapshot(JSON.parse(json) as BootSnapshot); }
+  try {
+    const input = JSON.parse(json);
+    if (input?.format !== 'saylo-boot-v2') return validateBootSnapshot(input as BootSnapshot);
+    if (!Array.isArray(input.catalogOutcomes) || Object.hasOwn(input, 'baseSchemas')) throw new Error('Invalid compact boot structure.');
+    return createBootSnapshot({ ...input, catalogOutcomes: input.catalogOutcomes.map((outcome: CatalogOutcome) =>
+      outcome?.status === 'present' ? { ...outcome, catalog: decodeCatalog(outcome.catalog as unknown as CompactCatalog) } : outcome) });
+  }
   catch (cause) { throw new CatalogLoadError('INVALID_BOOT', 'Unable to decode Saylo boot snapshot.', { cause }); }
 }
 

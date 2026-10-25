@@ -2,6 +2,19 @@ import { CatalogError, createBaseSchema, createI18n, createStore, createTranslat
 import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog, RichTextPart } from '@0disoft/saylo-core';
 import { createI18n as createRuntimeI18n, freezeCatalogs, resolveLocale, resolveAcceptLanguage, parseAcceptLanguage } from '@0disoft/saylo-core/runtime';
 import type { LanguagePreference } from '@0disoft/saylo-core';
+import { encodeCatalog, decodeCatalog, serializeBootSnapshot } from '@0disoft/saylo-core/runtime';
+import type { BootSnapshot, CompactCatalog } from '@0disoft/saylo-core/runtime';
+const compactContract = (catalog: ParsedCatalog, boot: BootSnapshot) => {
+  const wire: CompactCatalog = encodeCatalog(catalog);
+  const restored: ParsedCatalog = decodeCatalog(wire);
+  const html: string = serializeBootSnapshot(boot, { compact: true });
+  // @ts-expect-error compact wire catalog messages are readonly
+  wire.messages.push([]);
+  // @ts-expect-error compact is a boolean policy
+  serializeBootSnapshot(boot, { compact: 'yes' });
+  return { restored, html };
+};
+void compactContract;
 
 const selectedLocale: string = resolveLocale(['en-GB'] as const, ['ko', 'en'] as const, 'ko');
 const httpLocale: string = resolveAcceptLanguage(null, ['ko', 'en'], 'ko');

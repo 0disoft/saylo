@@ -189,6 +189,20 @@ const app = createAppI18n(); document.body.textContent = app.store.getSnapshot()
       await exec(process.execPath, [path.join(app, 'node_modules/vite/bin/vite.js'), 'build'],
         { cwd: initialized, env: childEnv, windowsHide: true });
       console.log('[pack] Installed init CLI preview/apply and generated app typecheck/build passed.');
+      await writeFile(path.join(initialized, 'i18next.json'), '{"hello":"Hello {{name}}","items_one":"One item","items_other":"{{count}} items"}');
+      const migrated = await exec(process.execPath, [cli, 'migrate', '--from', 'i18next', '--file', 'i18next.json',
+        '--locale', 'en', '--namespace', 'demo', '--escape-value', 'false', '--out-file', 'migrated.json', '--json'],
+        { cwd: initialized, env: childEnv, windowsHide: true });
+      assert.equal(JSON.parse(migrated.stdout).blocked, false);
+      assert.equal(JSON.parse(await readFile(path.join(initialized, 'migrated.json'), 'utf8')).hello, 'Hello {name}');
+      await exec(process.execPath, ['--input-type=module', '-e', `import { migrateI18next } from '@0disoft/saylo-typegen/migrate';
+import { encodeCatalog, decodeCatalog, createTranslator } from '@0disoft/saylo-core/runtime';
+import { parseCatalog } from '@0disoft/saylo-core';
+const result = migrateI18next('{"hello":"Hello {{name}}"}', { locale: 'en', namespace: 'demo', escapeValue: false });
+const catalog = decodeCatalog(JSON.parse(JSON.stringify(encodeCatalog(parseCatalog(JSON.stringify(result.catalog), { locale: 'en', namespace: 'demo' })))));
+if (createTranslator({ locale: 'en', baseCatalogs: [catalog] }).t('demo:hello', { name: 'Packed' }) !== 'Hello Packed') throw new Error('Migration/codec contract failed');`],
+        { cwd: initialized, env: childEnv, windowsHide: true });
+      console.log('[pack] Installed migration CLI, public migration export and parser-free catalog codec passed.');
     }
     if (hasSvelte) await cp(path.join(repository, 'packages/svelte/test/consumer-js.js'), path.join(app, 'src/consumer-svelte.js'));
     const hasSvelteSelectors = hasSvelte && (await readFile(path.join(app, 'node_modules/@0disoft/saylo-svelte/dist/index.d.ts'), 'utf8'))

@@ -25,6 +25,29 @@ function fixture() {
   return { source, create, outcome, change() { records[0] = parse('ko', 'demo', { title: '최신 문구', when: '{at, date, short}', '__proto__.title': 'literal' }); revision++; } };
 }
 
+test('compact boot v2 restores the canonical v1 snapshot and rejects forged metadata', t => {
+  const f = fixture(), server = f.create();
+  t.after(() => server.dispose());
+  const original = server.getBootSnapshot(), expanded = serializeBootSnapshot(original);
+  const compact = serializeBootSnapshot(original, { compact: true });
+  const wire = JSON.parse(compact);
+  assert.equal(wire.format, 'saylo-boot-v2');
+  assert.equal(Object.hasOwn(wire, 'baseSchemas'), false);
+  assert.ok(!compact.includes('<') && !compact.includes('\u2028') && !compact.includes('\u2029'));
+  const decoded = decodeBootSnapshot(compact);
+  assert.equal(decoded.format, 'saylo-boot-v1');
+  assert.equal(serializeBootSnapshot(decoded), expanded);
+  const hydrated = createI18n({ catalogSource: f.source, initialSnapshot: decoded });
+  t.after(() => hydrated.dispose());
+  assert.equal(hydrated.t('demo:title'), 'English');
+  assert.equal(hydrated.t('help:title'), '도움말');
+  for (const edit of [
+    value => { value.baseSchemas = []; }, value => { value.catalogOutcomes.pop(); },
+    value => { value.catalogOutcomes[0].namespaceSchemaFingerprint = 'forged'; },
+    value => { value.catalogOutcomes[0].catalog.messages[0][6] = 1000; },
+  ]) { const forged = JSON.parse(compact); edit(forged); assert.throws(() => decodeBootSnapshot(JSON.stringify(forged)), { code: 'INVALID_BOOT' }); }
+});
+
 test('HTML-safe boot JSON restores immutable schemas, pair stamps, fallback and fixed date formatting', t => {
   const f = fixture();
   const server = f.create();

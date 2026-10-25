@@ -26,6 +26,7 @@ import { CATALOG_EVENT, CATALOG_PUSH_EVENT, CATALOG_SCOPE_EVENT, CATALOG_REQUEST
 import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './types.js';
 
 export default function saylo(options: SayloViteOptions): Plugin {
+  if (options.compactCatalogs !== undefined && typeof options.compactCatalogs !== 'boolean') throw new TypeError('compactCatalogs must be a boolean.');
   const autoKeys = readAutoKeys(options.includeKeys);
   const includeKeys = autoKeys ? undefined : readIncludedKeys(options.includeKeys);
   const richText = options.richText === undefined ? undefined : structuredClone(options.richText);
@@ -236,10 +237,11 @@ export default function saylo(options: SayloViteOptions): Plugin {
         if (ast) return ast;
       }
       const chunk = chunks.get(id.startsWith('\0') ? id.slice(1) : id);
-      if (chunk) return renderCatalogChunk(chunk);
+      if (chunk) return renderCatalogChunk(chunk, production && options.compactCatalogs !== false);
       if (id === RESOLVED_SERVER && this.environment?.name === 'client') throw new Error('virtual:saylo/server is a server-only entry.');
       if (![RESOLVED, RESOLVED_LAZY, RESOLVED_SERVER].includes(id)) return;
       return renderVirtualModule(id, { production, sessionId, baseLocale, initialLocale, timeZone,
+        compactCatalogs: options.compactCatalogs !== false,
         initialNamespaces: options.initialNamespaces, registry, chunks, catalogs: snapshot().catalogs, buildCatalogs });
     },
     async configureServer(devServer) {

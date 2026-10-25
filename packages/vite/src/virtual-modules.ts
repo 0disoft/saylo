@@ -1,4 +1,6 @@
 import type { CatalogOutcome, ParsedCatalog } from '@0disoft/saylo-core';
+import { encodeCatalog } from '@0disoft/saylo-core';
+import { gzipSync } from 'node:zlib';
 import type { CatalogRegistry } from './catalog-registry.js';
 import { catalogId } from './catalog-outcome.js';
 
@@ -12,6 +14,7 @@ export const CHUNK = 'virtual:saylo/catalog/';
 
 interface VirtualModuleContext {
   readonly production: boolean;
+  readonly compactCatalogs?: boolean;
   readonly sessionId: string;
   readonly baseLocale: string;
   readonly initialLocale: string;
@@ -30,8 +33,42 @@ function encode(value: unknown): string {
   return json.includes('"__proto__":') ? `JSON.parse(${JSON.stringify(json)})` : json;
 }
 
-export function renderCatalogChunk(outcome: CatalogOutcome): string {
-  return `export default ${encode(outcome)};`;
+const COMPACTION_POLICY = Object.freeze({ minimumRawSaving: 16 * 1024, decoderGzipBudget: 2048 });
+const rendered = new WeakMap<ReturnType<typeof encodeCatalog>, { source: string; compact: boolean }>();
+
+function catalogExpression(catalog: ParsedCatalog, enabled: boolean) {
+  if (!enabled) return { source: encode(catalog), compact: false };
+  const packed = encodeCatalog(catalog), previous = rendered.get(packed);
+  if (previous) return previous;
+  const expanded = encode(catalog);
+  const compact = encode(packed);
+  const worthwhile = Buffer.byteLength(expanded) - Buffer.byteLength(compact) >= COMPACTION_POLICY.minimumRawSaving
+    && gzipSync(expanded).byteLength - gzipSync(compact).byteLength > COMPACTION_POLICY.decoderGzipBudget;
+  const result = { source: worthwhile ? `decodeCatalog(${compact})` : expanded, compact: worthwhile };
+  rendered.set(packed, result);
+  return result;
+}
+
+export function renderCatalogChunk(outcome: CatalogOutcome, compact = true): string {
+  if (outcome.status !== 'present') return `export default ${encode(outcome)};`;
+  const catalog = catalogExpression(outcome.catalog, compact);
+  return `${catalog.compact ? "import { decodeCatalog } from '@0disoft/saylo-core/runtime';\n" : ''}export default { ...${encode(outcomeMetadata(outcome))}, catalog: ${catalog.source} };`;
+}
+
+function outcomeMetadata(outcome: Extract<CatalogOutcome, { status: 'present' }>) {
+  const { catalog, ...metadata } = outcome;
+  return metadata;
+}
+
+function outcomeExpressions(outcomes: readonly CatalogOutcome[], enabled: boolean) {
+  let compact = false;
+  const source = `[${outcomes.map(outcome => {
+    if (outcome.status !== 'present') return encode(outcome);
+    const catalog = catalogExpression(outcome.catalog, enabled);
+    compact ||= catalog.compact;
+    return `{ ...${encode(outcomeMetadata(outcome))}, catalog: ${catalog.source} }`;
+  }).join(',')}]`;
+  return { source, compact };
 }
 
 function renderDevServer({ sessionId, initialLocale, timeZone, initialNamespaces }: VirtualModuleContext): string {
@@ -55,8 +92,10 @@ function renderLazyModule(context: VirtualModuleContext, server: boolean): strin
   const bootPairs = new Set(outcomes.map(outcome => catalogId(outcome.key)));
   const loaders = [...chunks].filter(([, outcome]) => !bootPairs.has(catalogId(outcome.key)))
     .map(([moduleId, outcome]) => `{ key: ${encode(outcome.key)}, load: () => import(${encode(moduleId)}).then(module => module.default) }`);
+  const boot = production ? outcomeExpressions(outcomes, context.compactCatalogs !== false) : { source: encode(outcomes), compact: false };
   return `import { ${production ? 'createStaticCatalogSource' : 'createDevCatalogSource'} } from '@0disoft/saylo-vite/client';
-export const initialCatalogs = ${encode(outcomes)};
+${boot.compact ? "import { decodeCatalog } from '@0disoft/saylo-core/runtime';" : ''}
+export const initialCatalogs = ${boot.source};
 export const initialLocale = ${encode(locale)};
 export const initialNamespaces = ${encode(namespaces)};
 export const timeZone = ${encode(timeZone)};
@@ -73,8 +112,10 @@ export function renderVirtualModule(id: string, context: VirtualModuleContext): 
   if (id === RESOLVED_LAZY || id === RESOLVED_SERVER) return renderLazyModule(context, id === RESOLVED_SERVER);
   if (id !== RESOLVED) return;
   const { catalogs, buildCatalogs, baseLocale, initialLocale, timeZone } = context;
+  const expressions = context.production ? (buildCatalogs ?? catalogs).map(catalog => catalogExpression(catalog, context.compactCatalogs !== false)) : [];
   return `import { freezeCatalogs } from '@0disoft/saylo-vite/client';
-export const initialCatalogs = freezeCatalogs(${encode(buildCatalogs ?? catalogs)});
+${expressions.some(catalog => catalog.compact) ? "import { decodeCatalog } from '@0disoft/saylo-core/runtime';" : ''}
+export const initialCatalogs = freezeCatalogs(${context.production ? `[${expressions.map(catalog => catalog.source).join(',')}]` : encode(buildCatalogs ?? catalogs)});
 export const baseLocale = ${JSON.stringify(baseLocale)};
 export const initialLocale = ${JSON.stringify(catalogs.some(c => c.locale === initialLocale) ? initialLocale : baseLocale)};
 export const timeZone = ${JSON.stringify(timeZone)};`;
