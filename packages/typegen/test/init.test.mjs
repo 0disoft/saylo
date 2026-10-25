@@ -125,6 +125,58 @@ test('init selects the existing package manager and canonicalizes locale directo
   assert.match(plan.nextSteps[0], /^pnpm add /);
 });
 
+test('SvelteKit init previews a complete isolated route, preserves app files and reruns idempotently', async t => {
+  const f = await fixture(t);
+  await mkdir(path.join(f.root, 'src/routes'));
+  await writeFile(path.join(f.root, 'package.json'), JSON.stringify({ type: 'module',
+    devDependencies: { vite: '8', svelte: '5', '@sveltejs/kit': '3' } }));
+  const existing = { 'src/hooks.server.ts': '// application hooks',
+    'src/routes/+layout.svelte': '<main>{@render children()}</main>', 'src/routes/+page.svelte': '<h1>Existing home</h1>' };
+  for (const [file, text] of Object.entries(existing)) await writeFile(path.join(f.root, file), text);
+  const before = await f.snapshot();
+  const result = f.run(['--framework', 'sveltekit', '--json']);
+  assert.equal(result.status, 0, result.stderr);
+  const plan = JSON.parse(result.stdout);
+  assert.equal(plan.changes.length, 12);
+  assert.deepEqual(await f.snapshot(), before);
+  assert.match(plan.nextSteps[0], /saylo-svelte@alpha/);
+  const applied = f.run(['--framework', 'sveltekit', '--apply', '--json']);
+  assert.equal(applied.status, 0, applied.stderr);
+  for (const [file, text] of Object.entries(existing)) assert.equal(await readFile(path.join(f.root, file), 'utf8'), text);
+  const again = f.run(['--framework', 'sveltekit', '--apply', '--json']);
+  assert.equal(again.status, 0, again.stderr);
+  assert.deepEqual(JSON.parse(again.stdout).writtenFiles, []);
+  const server = await readFile(path.join(f.root, 'src/routes/saylo/+layout.server.ts'), 'utf8');
+  assert.match(server, /finally \{ instance.dispose\(\); \}/);
+  assert.match(server, /signal: request.signal/);
+  assert.match(server, /compact: true/);
+  const korean = await fixture(t);
+  await mkdir(path.join(korean.root, 'src/routes'));
+  await writeFile(path.join(korean.root, 'package.json'), await readFile(path.join(f.root, 'package.json')));
+  const localized = planInit(korean.root, 'ko', { framework: 'sveltekit' });
+  assert.equal(JSON.parse(localized.changes.find(change => change.file === 'locales/ko/saylo.json').after).greeting, '안녕하세요 {name}');
+  assert.equal(JSON.parse(localized.changes.find(change => change.file === 'locales/en/saylo.json').after).greeting, 'Hello {name}');
+});
+
+test('SvelteKit preset rejects unsupported apps and route conflicts before writing', async t => {
+  const f = await fixture(t);
+  const before = await f.snapshot();
+  assert.equal(f.run(['--framework', 'unknown']).status, 2);
+  assert.equal(f.run(['--framework', 'sveltekit', '--apply']).status, 2);
+  assert.deepEqual(await f.snapshot(), before);
+  await mkdir(path.join(f.root, 'src/routes'), { recursive: true });
+  const manifest = { type: 'module', devDependencies: { vite: '8', svelte: '5', '@sveltejs/kit': '3' } };
+  await writeFile(path.join(f.root, 'package.json'), JSON.stringify({ ...manifest,
+    devDependencies: { ...manifest.devDependencies, '@sveltejs/adapter-static': '3' } }));
+  assert.throws(() => planInit(f.root, 'en', { framework: 'sveltekit' }), /server adapter/);
+  await writeFile(path.join(f.root, 'package.json'), JSON.stringify(manifest));
+  await mkdir(path.join(f.root, 'src/routes/saylo'));
+  await writeFile(path.join(f.root, 'src/routes/saylo/+page.svelte'), 'Keep existing route');
+  const conflict = await f.snapshot();
+  assert.equal(f.run(['--framework', 'sveltekit', '--apply']).status, 2);
+  assert.deepEqual(await f.snapshot(), conflict);
+});
+
 test('an initialized app builds for browser and SSR and isolates request-owned stores', async t => {
   const f = await fixture(t);
   await applyInit(planInit(f.root));

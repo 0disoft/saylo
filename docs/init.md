@@ -1,5 +1,7 @@
 # Add Saylo to an existing Vite app
 
+For the source checkout's request-local SSR and hydration preset, see [SvelteKit init](init-sveltekit.md). The `--framework sveltekit` option requires the next npm release; the default Vite initializer below is already published.
+
 `saylo init` is included in the published `0.1.0-alpha.7` release. The [alpha.7 release record](../releases/0.1.0-alpha.7.md) is the authoritative publication record. The command connects the catalog pipeline in an existing Vite app without replacing routes or application components.
 
 Install the CLI with the `alpha` tag, then run it from your app directory. The `latest` tag remains a registration placeholder.

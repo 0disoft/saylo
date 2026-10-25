@@ -41,6 +41,7 @@
     "setup:sveltekit": "npm run build && node scripts/setup-sveltekit.mjs",
     "dev:sveltekit": "npm --prefix examples/sveltekit run dev",
     "build:sveltekit": "npm --prefix examples/sveltekit run build",
+    "verify:init:sveltekit": "node scripts/verify-init-sveltekit.mjs",
     "verify:sveltekit": "npm --prefix examples/sveltekit run verify:ssr",
     "verify:pack:sveltekit": "npm run build && node scripts/pack-sveltekit.mjs",
     "test": "npm run build && npm run test --workspaces",
