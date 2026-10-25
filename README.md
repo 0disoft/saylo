@@ -1,5 +1,7 @@
 # Saylo
 
+The source checkout includes [i18next namespace migration](docs/migration.md), with a read-only preview, key mappings, cardinal plural conversion, and exclusive file output. It requires a future npm release.
+
 The source checkout now includes [`saylo init`](docs/init.md) for adding the catalog pipeline to an existing Vite app. It previews seven file changes, connects static Vite configs, and creates a typed per-owner store factory. It requires a future npm release; alpha.6 does not include the command.
 
 Added a [Vue getting-started guide](docs/getting-started-vue.md) for starting a Vue app outside the repository. `npm run prepare:starter:vue -- --out-dir <empty-directory>` exports four source tarballs and an example, and you install and run them in that folder.

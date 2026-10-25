@@ -35,6 +35,10 @@ Use the `locales/<locale>/<namespace>.json` structure. For example, `locales/ko/
 
 ## Running
 
+### Migrate an i18next namespace (source checkout)
+
+`saylo migrate --from i18next --file namespace.json --locale en --namespace common --json` previews a JSON-v4 namespace conversion. Use `--escape-value false` only when the source app already disables interpolation escaping. Nested keys, simple interpolation and complete cardinal plural groups are converted; unsupported behavior blocks output. `--out-file new.json` exclusively creates a ready catalog, and `--base-file` with `--base-locale` checks an existing Saylo base contract. See the [migration guide](../../docs/migration.md). The programmatic function is exported from `@0disoft/saylo-typegen/migrate`. Both interfaces require a future npm release.
+
 ### Initialize an existing Vite app (source checkout)
 
 The new `saylo init` command previews integration by default; `--apply` creates a starter catalog, shared config, virtual-module types, a typed store factory, and connects a static ESM Vite config. It preserves conflicting files and prints package-manager install commands instead of running them. UI providers and SSR request/hydration wiring remain explicit. See the [init guide](../../docs/init.md) for requirements, preview output, cleanup, and failure recovery. This command is not in published alpha.6 and requires a future release.

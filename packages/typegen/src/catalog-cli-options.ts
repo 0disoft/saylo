@@ -1,8 +1,9 @@
 import { parseArgs } from 'node:util';
 
-export const catalogHelp = `Usage: saylo <init|check|sync|snapshot|export|import|approve|refresh> [--config saylo.config.json] [--json]
+export const catalogHelp = `Usage: saylo <init|migrate|check|sync|snapshot|export|import|approve|refresh> [--config saylo.config.json] [--json]
 
 Commands:
+  migrate                   Convert one i18next JSON-v4 namespace; migrate --help lists options.
   init                      Preview existing Vite app integration; init --help lists its own options.
   check                     Validate catalogs, contracts and translation completeness; never writes files.
   sync --dry-run            Preview missing keys, review work and retained orphan translations; never writes files.

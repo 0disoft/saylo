@@ -7,7 +7,7 @@ export class CatalogOutputError extends Error {
   constructor(message: string, readonly writtenFiles: readonly string[], cause: unknown) { super(message, { cause }); }
 }
 export interface CatalogOutputOptions {
-  readonly localesDir: string;
+  readonly localesDir?: string;
   readonly protectedFiles?: readonly string[];
   readonly signal?: AbortSignal;
   readonly publish?: typeof link;
@@ -27,9 +27,11 @@ export async function writeCatalogOutput(filename: string, value: unknown, optio
     if (!filename.trim() || !filename.endsWith('.json')) throw new Error('--out-file must name a new .json file.');
     const target = path.resolve(filename), directory = path.dirname(target), parent = await realpath(directory);
     if (path.relative(directory, parent)) throw new Error('Output parent must be an existing, non-symlink directory.');
-    const locales = await realpath(options.localesDir);
-    if (inside(locales, target) || inside(path.resolve(options.localesDir), target))
-      throw new Error('Output must be outside the locales directory.');
+    if (options.localesDir !== undefined) {
+      const locales = await realpath(options.localesDir);
+      if (inside(locales, target) || inside(path.resolve(options.localesDir), target))
+        throw new Error('Output must be outside the locales directory.');
+    }
     if (options.protectedFiles?.some(file => !path.relative(path.resolve(file), target)))
       throw new Error('Output must not replace an input file.');
     assertSafePath(parent, target);

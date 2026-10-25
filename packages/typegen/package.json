@@ -21,6 +21,10 @@
     "typescript"
   ],
   "exports": {
+    "./migrate": {
+      "types": "./dist/migrate-i18next.d.ts",
+      "import": "./dist/migrate-i18next.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
@@ -49,7 +53,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test test/init.test.mjs test/typegen.test.mjs test/config.test.mjs test/catalog-cli.test.mjs test/catalog-import.test.mjs test/catalog-diff.test.mjs test/catalog-approvals.test.mjs test/catalog-refresh.test.mjs test/catalog-work-context.test.mjs test/catalog-output.test.mjs test/cli-cancellation.test.mjs test/review-write.test.mjs test/replace.test.mjs test/generator-race.test.mjs test/write.test.mjs test/worker.test.mjs test/output-lock.test.mjs",
+    "test": "node --test test/migrate.test.mjs test/init.test.mjs test/typegen.test.mjs test/config.test.mjs test/catalog-cli.test.mjs test/catalog-import.test.mjs test/catalog-diff.test.mjs test/catalog-approvals.test.mjs test/catalog-refresh.test.mjs test/catalog-work-context.test.mjs test/catalog-output.test.mjs test/cli-cancellation.test.mjs test/review-write.test.mjs test/replace.test.mjs test/generator-race.test.mjs test/write.test.mjs test/worker.test.mjs test/output-lock.test.mjs",
     "typecheck:consumers": "node test/generate-fixture.mjs && tsc -p test/tsconfig.json"
   },
   "dependencies": {
