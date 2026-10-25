@@ -4,9 +4,21 @@ import { CatalogError } from '@0disoft/saylo-core';
 import type { CatalogDiagnostic } from '@0disoft/saylo-core';
 import type { CatalogFile } from './catalog-files.js';
 
+/** Snapshot direct plugin options as well as JSON-config inputs. */
+export function readCheckLocales(value: readonly string[] | undefined): readonly string[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) throw new TypeError('checkLocales must be an array.');
+  const locales = value.map(locale => {
+    if (typeof locale !== 'string' || !locale.trim()) throw new TypeError('checkLocales must contain valid BCP 47 locales.');
+    return Intl.getCanonicalLocales(locale)[0]!;
+  });
+  if (new Set(locales).size !== locales.length) throw new TypeError('checkLocales contains duplicate entries.');
+  return Object.freeze(locales);
+}
+
 /** Runs after ordinary schema validation, before chunk or type generation. */
 export async function requireCompleteTranslations(root: string, files: readonly CatalogFile[],
-  baseLocale: string, initialLocale: string,
+  baseLocale: string, initialLocale: string, checkLocales?: readonly string[],
 ): Promise<void> {
   const bases = files.filter(file => file.catalog.locale === baseLocale)
     .map(({ catalog }) => ({ catalog, ids: Object.keys(catalog.messages).sort() }))
@@ -25,14 +37,14 @@ export async function requireCompleteTranslations(root: string, files: readonly 
     if (!entry.isDirectory() && !(entry.isSymbolicLink() && (await stat(path.join(root, entry.name))).isDirectory())) continue;
     directories.set(Intl.getCanonicalLocales(entry.name)[0]!, entry.name);
   }
-  if (!directories.has(initialLocale)) directories.set(initialLocale, initialLocale);
+  const targets = new Set([...(checkLocales ?? directories.keys()), initialLocale]);
   const diagnostics: CatalogDiagnostic[] = [];
-  for (const locale of [...directories.keys()].sort()) {
+  for (const locale of [...targets].sort()) {
     if (locale === baseLocale) continue;
     for (const { catalog: base, ids } of bases) {
       const namespace = base.namespace;
       const translation = translations.get(locale)?.get(namespace)?.catalog;
-      const sourceName = translation?.sourceName ?? `${directories.get(locale)}/${namespace}.json`;
+      const sourceName = translation?.sourceName ?? `${directories.get(locale) ?? locale}/${namespace}.json`;
       const context = { locale, namespace, sourceName };
       if (!translation) {
         diagnostics.push({ ...context, code: 'MISSING_NAMESPACE',

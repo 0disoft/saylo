@@ -24,7 +24,9 @@ If an existing schema, argument, or type error is present, that error fails befo
 
 ## Check target
 
-The check collects non-hidden locale directories under `localesDir`, including empty directories, and follows the scanner's locale normalization and path validation. It adds `initialLocale`, so an initial locale is included even when its folder does not exist. A locale that appears in neither a folder nor `initialLocale` cannot be discovered automatically.
+The check uses `checkLocales` when provided, matching the catalog CLI's target selection. Otherwise it collects non-hidden locale directories under `localesDir`, including empty directories. It always adds `initialLocale`, so an initial locale is included even when its folder does not exist. Declare release languages in `checkLocales` to detect a missing language directory. An explicit empty list checks only the initial locale. Locales outside the selected targets still undergo ordinary schema validation.
+
+`checkLocales` is supported both in `saylo.config.json` loaded with `loadProjectConfig()` and in direct Vite options. Locale tags are canonicalized, duplicates are rejected, and caller-owned arrays are copied. This addition is in the source checkout and requires the next npm release.
 
 The check is independent of `initialNamespaces`. It verifies every message ID in every namespace under the base locale, not only the `initialNamespaces` subset. The base locale itself is excluded.
 

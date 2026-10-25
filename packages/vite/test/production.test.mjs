@@ -10,6 +10,7 @@ import saylo, { loadProjectConfig } from '../dist/index.js';
 import { createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
 import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
+import { inspectProject } from '../../typegen/dist/catalog-audit.js';
 
 function registry() {
   const catalog = (locale, namespace, text) => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
@@ -209,6 +210,48 @@ test('strict builds retain ordinary schema errors and reject non-boolean configu
     assert.ok(error.diagnostics.every(d => d.code !== 'MISSING_MESSAGE' && d.code !== 'MISSING_NAMESPACE'));
     return true;
   });
+});
+
+test('JSON-config release locales match CLI targets even when entire directories are absent', async t => {
+  const root = await completeFixture(t);
+  await mkdir(path.join(root, 'locales', 'en'));
+  await writeFile(path.join(root, 'locales', 'en', 'demo.json'), '{}');
+  const configPath = path.join(root, 'saylo.config.json');
+  await writeFile(configPath, JSON.stringify({ localesDir: 'locales', baseLocale: 'ko', initialLocale: 'fr',
+    checkLocales: ['ko', 'ja'], requireCompleteTranslations: true }));
+  const config = loadProjectConfig(configPath);
+  const { report } = await inspectProject(config);
+  const identities = diagnostics => diagnostics.map(d => [d.code, d.locale, d.namespace, d.id]);
+  assert.deepEqual(report.locales, ['ko', 'fr', 'ja']);
+  const generated = path.join(root, 'generated.d.ts');
+  await writeFile(generated, '// retain existing declarations');
+  await assert.rejects(build(completeConfig(root, config)), error => {
+    assert.ok(error instanceof CatalogError);
+    assert.deepEqual(identities(error.diagnostics), identities(report.diagnostics));
+    assert.deepEqual(error.diagnostics.map(d => d.sourceName), ['fr/demo.json', 'fr/help.json', 'ja/demo.json', 'ja/help.json']);
+    return true;
+  });
+  assert.equal(await readFile(generated, 'utf8'), '// retain existing declarations');
+  for (const locale of ['fr', 'ja']) {
+    await mkdir(path.join(root, 'locales', locale));
+    for (const namespace of ['demo', 'help']) await writeFile(path.join(root, 'locales', locale, `${namespace}.json`),
+      await readFile(path.join(root, 'locales', 'ko', `${namespace}.json`)));
+  }
+  await build(completeConfig(root, config));
+  assert.equal((await inspectProject(config)).report.summary.errors, 0);
+});
+
+test('direct completeness targets are validated, canonicalized and detached from caller arrays', async t => {
+  for (const checkLocales of ['en', [null], [''], ['not_locale'], ['en-us', 'en-US']]) {
+    assert.throws(() => saylo({ localesDir: 'locales', baseLocale: 'ko', checkLocales }));
+  }
+  const root = await completeFixture(t);
+  const targets = ['en-us'];
+  const config = completeConfig(root, { requireCompleteTranslations: true, checkLocales: targets });
+  targets.length = 0;
+  await assert.rejects(build(config), error => error.diagnostics?.every(d => d.locale === 'en-US')
+    && error.diagnostics.length === 2);
+  await build(completeConfig(root, { requireCompleteTranslations: true, checkLocales: [] }));
 });
 
 test('static imports dedupe across consumers, cache immutable outcomes, and honor pre-abort', async () => {

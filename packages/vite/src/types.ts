@@ -19,7 +19,9 @@ export interface SayloViteOptions {
   readonly compactCatalogs?: boolean;
   /** Build-only exact namespace:messageId list. Undefined keeps all messages; [] keeps none. */
   readonly includeKeys?: readonly string[] | AutoIncludeKeys;
-  /** Build-only: every discovered locale and initialLocale must cover all base namespaces/keys. Defaults to false. */
+  /** Completeness targets shared with the CLI; omitted means discovered locales. */
+  readonly checkLocales?: readonly string[];
+  /** Build-only: target locales and initialLocale must cover all base namespaces/keys. Defaults to false. */
   readonly requireCompleteTranslations?: boolean;
   /** Build-only: require complete translations and current explicit approvals. Defaults to false. */
   readonly requireReviewedTranslations?: boolean;

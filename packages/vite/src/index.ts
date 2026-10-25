@@ -14,7 +14,7 @@ import { diagnosticMessage } from './diagnostic-observers.js';
 import { VIRTUAL, RESOLVED, LAZY, RESOLVED_LAZY, SERVER, RESOLVED_SERVER, CHUNK,
   renderCatalogChunk, renderVirtualModule } from './virtual-modules.js';
 import { createAstFormatter } from './ast-formatter.js';
-import { requireCompleteTranslations } from './complete-translations.js';
+import { readCheckLocales, requireCompleteTranslations } from './complete-translations.js';
 import { readIncludedKeys, selectBuildCatalogs } from './build-keys.js';
 import { findIncludedKeys, readAutoKeys } from './auto-keys.js';
 import type { ImportResolver } from './auto-key-modules.js';
@@ -26,6 +26,7 @@ import { CATALOG_EVENT, CATALOG_PUSH_EVENT, CATALOG_SCOPE_EVENT, CATALOG_REQUEST
 import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './types.js';
 
 export default function saylo(options: SayloViteOptions): Plugin {
+  const checkLocales = readCheckLocales(options.checkLocales);
   if (options.compactCatalogs !== undefined && typeof options.compactCatalogs !== 'boolean') throw new TypeError('compactCatalogs must be a boolean.');
   const autoKeys = readAutoKeys(options.includeKeys);
   const includeKeys = autoKeys ? undefined : readIncludedKeys(options.includeKeys);
@@ -142,7 +143,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
     const strictBuild = production && (options.requireCompleteTranslations === true || reviewedBuild);
     // Missing locales are reported by completeness, rather than by createStore's locale range check.
     createStore({ baseLocale, locale: strictBuild ? baseLocale : initialLocale, catalogs: snapshot().catalogs, timeZone }).dispose();
-    if (strictBuild) await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale);
+    if (strictBuild) await requireCompleteTranslations(root, [...files.values()], baseLocale, initialLocale, checkLocales);
     if (production && reviewedBuild) await requireReviewedTranslations([...files.values()], baseLocale, reviewsFile!);
   }
   let buildRoot = '';

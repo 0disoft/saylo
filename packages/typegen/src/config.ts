@@ -16,7 +16,7 @@ export interface SayloProjectConfig {
   readonly requireCompleteTranslations?: boolean;
   readonly requireReviewedTranslations?: boolean;
   readonly typegen?: { readonly outFile: string };
-  /** Completeness targets for the catalog CLI; omitted means discovered locales. */
+  /** Completeness targets shared by the catalog CLI and strict Vite builds; omitted means discovered locales. */
   readonly checkLocales?: readonly string[];
   /** Optional source comparison checkpoint for catalog review. */
   readonly baseline?: string;
