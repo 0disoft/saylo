@@ -91,6 +91,42 @@ test('inactive catalog cache budgets validate and evict least-recently-used outc
   }
 });
 
+test('a large protected scope has a linear cache bookkeeping budget', async t => {
+  const count = 1024;
+  class CountingSet extends Set {
+    checks = 0;
+    has(value) { this.checks++; return super.has(value); }
+  }
+  const pins = new CountingSet(Array.from({ length: count }, (_, i) => JSON.stringify(['en', `scope${i}`])));
+  const f = queuedLoader(t, count, { maxCachedCatalogs: 0, protectedKeys: () => pins });
+  f.loader.seed(f.keys.map(key => ({ sessionId: 'one', status: 'missing', key, catalogVersion: 0 })));
+  assert.ok(pins.checks <= count * 2, `seeding made ${pins.checks} protection checks`);
+  await Promise.all(f.keys.map(key => f.loader.load(key)));
+  assert.equal(f.calls.length, 0, 'budget zero must retain every protected catalog');
+  assert.ok(pins.checks <= count * 3, 'cache hits must not rescan the protected scope');
+});
+
+test('scope changes preserve LRU order when formerly protected entries become evictable', async t => {
+  let pins = new Set([0, 1].map(i => JSON.stringify(['en', `scope${i}`])));
+  const f = queuedLoader(t, 4, { maxCachedCatalogs: 3, protectedKeys: () => pins });
+  f.loader.seed(f.keys.map(key => ({ sessionId: 'one', status: 'missing', key, catalogVersion: 0 })));
+  await f.loader.load(f.keys[0]);
+  pins = new Set([JSON.stringify(['en', 'scope1'])]);
+  f.loader.trim();
+  const restored = f.loader.load(f.keys[2]);
+  await tick(); f.calls.at(-1).resolve(); await restored;
+  await Promise.all([0, 1, 2].map(i => f.loader.load(f.keys[i])));
+  assert.equal(f.calls.length, 1, 'recently touched and still-protected pairs survive');
+  const oldest = f.loader.load(f.keys[3]);
+  await tick(); f.calls.at(-1).resolve(); await oldest;
+  assert.equal(f.calls.length, 2, 'the oldest unprotected pair was evicted');
+  pins = new Set();
+  f.restart();
+  const restarted = f.loader.load(f.keys[3]);
+  await tick(); f.calls.at(-1).resolve();
+  assert.equal((await restarted).sessionId, 'two', 'invalidation must also retire candidate entries');
+});
+
 test('disposal cancels queued loads before they reach the source and clears timers', async t => {
   const { loader, calls, keys, clock } = queuedLoader(t);
   const pending = Promise.allSettled(keys.map(key => loader.load(key)));
