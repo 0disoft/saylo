@@ -1,6 +1,6 @@
 # React initialization preset
 
-Source checkout feature; not included in the published alpha.7 CLI.
+Included in the alpha.8 CLI build.
 
 In an existing React 19 + React DOM + Vite 8 app, preview `saylo init --framework react --json`, then apply with `--apply`. Install the packages listed in `nextSteps` using matching builds. Existing application entries, routes and providers are preserved; conflicting generated files are rejected before writing.
 

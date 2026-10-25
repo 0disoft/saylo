@@ -6,7 +6,7 @@ on:
       version:
         description: Exact version already committed in all packages
         required: true
-        default: 0.1.0-alpha.7
+        default: 0.1.0-alpha.8
         type: string
       dist_tag:
         description: npm distribution tag

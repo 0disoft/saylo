@@ -1,6 +1,6 @@
 # Runtime translation error policy
 
-These callbacks are available in the source checkout and have not been published in `0.1.0-alpha.7`.
+These optional callbacks are included in the alpha.8 build.
 
 Saylo keeps the strict behavior by default: unknown keys, unloaded namespaces, invalid arguments and formatter failures throw their original errors. An app can opt into bounded fallbacks on `createTranslator`, `createStore`, `createI18n` and `createServerI18n`.
 

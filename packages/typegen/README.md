@@ -10,7 +10,7 @@ Success is determined from the output actually persisted to disk. If a newer req
 
 `writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the `0.1.0-alpha.7` release lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
 
-This README describes `0.1.0-alpha.7` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.7.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
+This README describes `0.1.0-alpha.8` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.8.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
 
 ## Installation
 

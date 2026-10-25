@@ -1,6 +1,6 @@
 # Add Saylo to an existing SvelteKit app
 
-`saylo init --framework sveltekit [--base-locale en] [--apply] [--json]` adds an isolated `/saylo` route to an existing SvelteKit app. It is available from the source checkout and is not published in `0.1.0-alpha.7`. Until a future release includes it, build the checkout and run its CLI.
+`saylo init --framework sveltekit [--base-locale en] [--apply] [--json]` adds an isolated `/saylo` route to an existing SvelteKit app. It is included in the alpha.8 CLI build.
 
 The command previews the integration by default. `--apply` writes the previewed files, `--base-locale` selects the base locale, and `--json` returns the report as JSON. Review the preview before applying it.
 
@@ -15,7 +15,7 @@ node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" init --framework sv
 
 The app must already use Vite 8, Svelte 5, and SvelteKit with server rendering. `adapter-static` is rejected because the generated route needs a request-local server runtime.
 
-The initializer adds the isolated `/saylo` route. It does not change existing hooks, layouts, routes, or `package.json`. Its `nextSteps` retains the generated `@alpha` install commands for `@0disoft/saylo-core`, `@0disoft/saylo-svelte`, `@0disoft/saylo-typegen`, and `@0disoft/saylo-vite`. For the verified setup, use matching builds of all four packages from the same checkout, or a later release that contains the complete preset. Runtime compatibility here was verified against matching checkout builds only; compatibility with the current published alpha packages has not been tarball-verified.
+The initializer adds the isolated `/saylo` route. It does not change existing hooks, layouts, routes, or `package.json`. Its `nextSteps` retains the generated `@alpha` install commands for `@0disoft/saylo-core`, `@0disoft/saylo-svelte`, `@0disoft/saylo-typegen`, and `@0disoft/saylo-vite`. Use matching alpha.8 builds of all four packages. Runtime compatibility here was verified against matching checkout builds only; the release record tracks package and registry verification separately.
 
 ## Generated behavior
 
@@ -30,4 +30,4 @@ The generated page preserves state when the locale query changes and during live
 
 ## Publication status
 
-The SvelteKit initializer is source-only in the `0.1.0-alpha.7` release. Use the built checkout CLI and the matching package builds above until the initializer is published in a later release. The [alpha.7 release record](../releases/0.1.0-alpha.7.md) is the authoritative record of published release behavior.
+The complete SvelteKit initializer is included in the alpha.8 build. The [alpha.8 release record](../releases/0.1.0-alpha.8.md) tracks publication and registry verification.

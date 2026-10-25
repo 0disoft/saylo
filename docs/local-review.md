@@ -1,6 +1,6 @@
 # Local translation review
 
-Source checkout feature. Run `saylo review --config saylo.config.json [--metadata notes.json] [--port 0]` and open the printed local URL. The server binds only to `127.0.0.1`; Ctrl+C closes connections and cancels owned operations. It does not start a hosted service or open the browser automatically.
+Included in the alpha.8 build. Run `saylo review --config saylo.config.json [--metadata notes.json] [--port 0]` and open the printed local URL. The server binds only to `127.0.0.1`; Ctrl+C closes connections and cancels owned operations. It does not start a hosted service or open the browser automatically.
 
 Search current source, translation or keys, then select a message. The screen shows its source, current translation, argument/tag context, optional metadata and approval status. Search displays at most 200 matching entries at a time. Edit the draft and validate it without writing, save it through the existing guarded importer, and approve the saved translation separately. Unsaved drafts require confirmation before switching or refreshing.
 

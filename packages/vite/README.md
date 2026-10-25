@@ -6,7 +6,7 @@ The Saylo Vite 8 plugin and development client. It detects catalog file changes 
 
 ## Status
 
-This README describes `0.1.0-alpha.7` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.7.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
+This README describes `0.1.0-alpha.8` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.8.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
 
 The lazy development path sends full present responses in a compact form and restores them to the existing catalog shape in the browser. Complex ICU ASTs and error locations are preserved, and there is no re-parsing of ICU in the browser. This change is included in the `0.1.0-alpha.2` release. Scope, verification, and performance measurements are in [compact transport notes](https://github.com/0disoft/saylo/blob/main/docs/16-compact-catalog-transport.md).
 

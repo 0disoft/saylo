@@ -1,6 +1,6 @@
 # Gettext PO exchange
 
-Source checkout feature. Export with `saylo export --with-context --format po --out-file work.po`. Combine `--metadata notes.json` for descriptions, glossary, screenshots and advisory length guidance. Output is created exclusively outside the catalog directory; existing files are never replaced.
+Included in the alpha.8 build. Export with `saylo export --with-context --format po --out-file work.po`. Combine `--metadata notes.json` for descriptions, glossary, screenshots and advisory length guidance. Output is created exclusively outside the catalog directory; existing files are never replaced.
 
 Each PO entry contains one complete ICU message. Keep ICU placeholders, plural syntax and rich tags intact; this format does not convert ICU branches into native gettext `msgid_plural` forms. UTF-8, multiline quoted strings, standard C escapes, translator comments and fuzzy drafts are supported. Obsolete entries, native gettext plural entries, missing checkpoints and duplicate tasks are rejected.
 

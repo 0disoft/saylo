@@ -1,6 +1,6 @@
 # Translation context and reviewer attribution
 
-Source checkout feature. Existing v1/v2 workfiles and approval ledgers remain readable.
+Included in the alpha.8 build. Existing v1/v2 workfiles and approval ledgers remain readable.
 
 Create an advisory sidecar and export it with `saylo export --metadata notes.json --out-file work.json`:
 

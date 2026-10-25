@@ -1,6 +1,6 @@
 # Migrate an i18next directory
 
-The directory workflow converts an i18next JSON-v4 tree to Saylo catalogs and can optionally update safe literal `t()` keys. It is available from the current source checkout and is not included in `0.1.0-alpha.7`; build the typegen workspace before using it. The published single-file command remains available in the [alpha.7 release record](../releases/0.1.0-alpha.7.md).
+The directory workflow converts an i18next JSON-v4 tree to Saylo catalogs and can optionally update safe literal `t()` keys. It is included in the alpha.8 CLI build. The published single-file command remains available in the [alpha.7 release record](../releases/0.1.0-alpha.7.md).
 
 ```text
 i18next/<locale>/<namespace>.json

@@ -1,6 +1,6 @@
 # Message fallback chains
 
-This source-only guide describes an API that is not included in the published `0.1.0-alpha.7` packages. Version labels for the starter templates remain unchanged.
+This guide describes the explicit fallback API included in the alpha.8 build. Version labels for the starter templates remain unchanged.
 
 Saylo resolves a message from the selected locale, then from an optional ordered list of fallback locales, and finally from the base locale catalog. Existing instances keep the default selected-locale-then-base behavior. Parent languages are not inferred automatically.
 

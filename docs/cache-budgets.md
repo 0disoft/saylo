@@ -1,6 +1,6 @@
 # Catalog cache budgets
 
-These cache limits are available in the source checkout and have not been published in `0.1.0-alpha.7`.
+These cache limits are included in the alpha.8 build.
 
 Saylo keeps its existing unbounded catalog cache by default. An app can opt into a finite soft limit with `maxCachedCatalogs` on `createI18n`, `createServerI18n`, `createStaticCatalogSource`, or the Vite plugin's production static source.
 
