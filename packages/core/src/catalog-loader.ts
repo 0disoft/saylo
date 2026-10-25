@@ -27,13 +27,13 @@ export class CatalogLoader {
   private readonly evictable = new Set<string>();
   private protectionSnapshot: ReadonlySet<string> | undefined;
   private readonly flights = new Map<string, Flight>();
-  private readonly queue = new CatalogLoadQueue();
   private readonly maxCachedCatalogs: number | undefined;
   private readonly protectedKeys: () => ReadonlySet<string>;
 
   constructor(private readonly source: CatalogSource, private readonly manifest: () => CatalogManifest,
     private readonly timeoutMs: number, private readonly schedule: CatalogSchedule = scheduleCatalog,
-    cacheOptions: CatalogLoaderCacheOptions = {}) {
+    cacheOptions: CatalogLoaderCacheOptions = {},
+    private readonly queue = new CatalogLoadQueue()) {
     this.maxCachedCatalogs = catalogCacheLimit(cacheOptions.maxCachedCatalogs);
     this.protectedKeys = cacheOptions.protectedKeys ?? NO_PROTECTED_KEYS;
   }

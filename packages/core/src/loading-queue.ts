@@ -1,6 +1,6 @@
 import { CATALOG_LOAD_CONCURRENCY } from './loading-policy.js';
 
-/** One loader owns the queue, across scope changes and manifest generations. */
+/** Physical I/O budget shared across scope changes, manifest generations and SSR retries. */
 export class CatalogLoadQueue {
   private active = 0;
   private readonly pending = new Set<() => void>();

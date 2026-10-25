@@ -1,6 +1,7 @@
 import { SSR_STABILITY_MAX_ATTEMPTS } from './loading-policy.js';
 import { createBootSnapshot } from './boot.js';
 import { CatalogLoader } from './catalog-loader.js';
+import { CatalogLoadQueue } from './loading-queue.js';
 import { createI18n } from './i18n.js';
 import { CatalogLoadError } from './loading-errors.js';
 import { aborted, timeoutDuration } from './loading-runtime.js';
@@ -30,6 +31,9 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
   if (options.signal?.aborted) throw aborted(options.signal);
   const locale = canonicalLocale(options.locale);
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
+  // Retry loaders own separate versions/caches, but share the request's physical
+  // I/O budget until even sources that ignore cancellation have settled.
+  const queue = new CatalogLoadQueue();
   for (let attempt = 0; attempt < SSR_STABILITY_MAX_ATTEMPTS; attempt++) {
     const manifest = readManifest(options.catalogSource.readManifest());
     if (!manifestMembership(manifest).locales.has(locale) || new Set(options.initialNamespaces).size !== options.initialNamespaces.length ||
@@ -42,7 +46,7 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
       ? { protectedKeys: () => protectedKeys }
       : { maxCachedCatalogs, protectedKeys: () => protectedKeys };
     const loader = new CatalogLoader(options.catalogSource, () => manifest, timeoutMs, options.schedule,
-      cacheOptions);
+      cacheOptions, queue);
     const abort = () => loader.stop(aborted(options.signal!));
     options.signal?.addEventListener('abort', abort, { once: true });
     try {

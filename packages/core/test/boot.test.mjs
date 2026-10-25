@@ -4,6 +4,104 @@ import { UnknownMessageError, createBaseSchema, createBootSnapshot, createI18n, 
   parseCatalog, serializeBootSnapshot } from '@0disoft/saylo-core';
 import { validateBootSnapshot } from '../dist/boot.js';
 import { freeze } from '../dist/diagnostics.js';
+import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
+
+function retrySource(t, alwaysStale) {
+  const clock = scheduler(), retryStarted = Promise.withResolvers();
+  const namespaces = Array.from({ length: 8 }, (_, i) => `n${i}`);
+  const catalogs = new Map(namespaces.map(namespace => [namespace,
+    parseCatalog('{"title":"ready"}', { locale: 'ko', namespace })]));
+  let revision = 0, attemptVersion = 0, active = 0, peak = 0, starts = 0;
+  const held = [];
+  const outcome = (namespace, version) => ({ sessionId: 'retry-source', status: 'present',
+    key: { locale: 'ko', namespace }, catalogVersion: version + 1,
+    namespaceSchemaFingerprint: createBaseSchema(catalogs.get(namespace)).fingerprint, catalog: catalogs.get(namespace) });
+  const source = {
+    readManifest() {
+      attemptVersion = revision;
+      return { sessionId: 'retry-source', registryRevision: revision, baseLocale: 'ko',
+        availableLocales: ['ko'], availableNamespaces: namespaces,
+        catalogs: namespaces.map(namespace => {
+          const { catalog, sessionId, ...metadata } = outcome(namespace, revision);
+          return metadata;
+        }) };
+    },
+    loadCatalog(_locale, namespace, signal) {
+      active++; starts++; peak = Math.max(peak, active);
+      let work;
+      if (namespace === 'n0' && (alwaysStale || revision === 0)) {
+        revision++;
+        work = Promise.resolve(outcome(namespace, revision));
+      } else if (alwaysStale || attemptVersion === 0) {
+        const deferred = Promise.withResolvers();
+        held.push({ ...deferred, signal, outcome: outcome(namespace, attemptVersion) });
+        work = deferred.promise; // Models an I/O operation that ignores abort.
+      } else {
+        if (namespace === 'n0') retryStarted.resolve();
+        work = Promise.resolve(outcome(namespace, revision));
+      }
+      return work.finally(() => { active--; });
+    },
+  };
+  const release = async () => {
+    for (const call of held) call.resolve(call.outcome);
+    await new Promise(resolve => setImmediate(resolve));
+  };
+  t.after(release);
+  return { source, namespaces, clock, held, retryStarted, release,
+    peak: () => peak, active: () => active, starts: () => starts };
+}
+
+test('SSR stale retries share one physical I/O limit even when sources ignore abort', async t => {
+  const f = retrySource(t, true);
+  const preparing = createServerI18n({ catalogSource: f.source, locale: 'ko', initialNamespaces: f.namespaces,
+    schedule: f.clock.schedule, requestTimeoutMs: 100 }).then(() => assert.fail('SSR must reject'), error => error);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.peak(), 8, 'retrying must not create a new physical I/O budget');
+  assert.equal(f.starts(), 10);
+  f.clock.tick(100); // Exhausted physical slots must time out rather than admit more I/O.
+  assert.equal((await preparing).code, 'TIMEOUT');
+  assert.equal(f.clock.size, 0);
+  assert.ok(f.held.every(call => call.signal.aborted));
+  await f.release();
+  assert.equal(f.active(), 0);
+});
+
+test('SSR abort removes queued retries without starting more physical I/O', async t => {
+  const f = retrySource(t, true), controller = new AbortController();
+  const preparing = assert.rejects(createServerI18n({ catalogSource: f.source, locale: 'ko', initialNamespaces: f.namespaces,
+    signal: controller.signal, schedule: f.clock.schedule, requestTimeoutMs: 100 }), { code: 'ABORTED', cause: 'http closed' });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.peak(), 8);
+  const starts = f.starts();
+  controller.abort('http closed');
+  await preparing;
+  assert.equal(f.clock.size, 0);
+  assert.ok(f.held.every(call => call.signal.aborted));
+  await f.release();
+  assert.equal(f.starts(), starts);
+  assert.equal(f.active(), 0);
+});
+
+test('SSR retries recover after obsolete I/O settles and publish only the new version', async t => {
+  const f = retrySource(t, false);
+  const preparing = createServerI18n({ catalogSource: f.source, locale: 'ko', initialNamespaces: f.namespaces,
+    maxCachedCatalogs: 0, schedule: f.clock.schedule, requestTimeoutMs: 100 });
+  await f.retryStarted.promise;
+  assert.equal(f.peak(), 8);
+  assert.ok(f.held.every(call => call.signal.aborted));
+  await f.release();
+  const instance = await preparing;
+  t.after(() => instance.dispose());
+  assert.equal(f.active(), 0);
+  assert.equal(f.peak(), 8);
+  assert.equal(f.starts(), 16);
+  assert.equal(f.clock.size, 0);
+  const boot = instance.getBootSnapshot();
+  assert.equal(boot.manifest.registryRevision, 1);
+  assert.ok(boot.catalogOutcomes.every(outcome => outcome.catalogVersion === 2));
+  assert.equal(instance.t('n7:title'), 'ready');
+});
 
 function fixture() {
   const parse = (locale, namespace, messages) => parseCatalog(JSON.stringify(messages), { locale, namespace, sourceName: `${locale}/${namespace}.json` });
