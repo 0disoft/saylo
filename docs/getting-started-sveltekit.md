@@ -1,12 +1,12 @@
 # Start Saylo with SvelteKit from an empty folder
 
-This guide adds Saylo to a SvelteKit 3 + Svelte 5 app using only the npm registry, without cloning the Saylo repository. Create 19 files in an empty folder and install them; the text changes as soon as you edit the locale JSON. Input and focus in forms and the confirmation dialog are preserved during file edits and empty-catalog recovery. This document uses only the public API of the published alpha. It does not use unpublished local APIs (`onSyncState` or the diagnostic support report).
+This guide adds Saylo to a SvelteKit 3 + Svelte 5 app using only the npm registry, without cloning the Saylo repository. Create 19 files in an empty folder and install them; the text changes as soon as you edit the locale JSON. Input and focus in forms and the confirmation dialog are preserved during file edits and empty-catalog recovery. The nineteen-file sample's validation provenance is the published `0.1.0-alpha.4`. `onSyncState`, `createSupportRecorder`/`createSupportReport`, `resolveLocale`, and `resolveAcceptLanguage` have shipped publicly since `0.1.0-alpha.5`. See the [alpha.6 release record](../releases/0.1.0-alpha.6.md) and the feature notes below.
 
 ## Prerequisites
 
 - Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
 - The Saylo packages are on the npm public registry. The Saylo repository is private, but you do not need to clone it, sign in to GitHub, or use `file:` or `workspace:` links.
-- `latest` is a placeholder, so add `@alpha` when installing. The published build checked against this document is `0.1.0-alpha.4`.
+- `latest` is a placeholder. `@alpha` currently installs `0.1.0-alpha.6` for the five public packages; the starter was checked against `0.1.0-alpha.4`, so recheck it against the version you install.
 - Tool versions list only major ranges: SvelteKit 3, Svelte 5, `@sveltejs/vite-plugin-svelte` 7, `@sveltejs/adapter-node` 6, TypeScript 6, `svelte-check` 4, `@types/node` 24, and Vite 8.
 - `svelte-check` 4 accepts only TypeScript 5 and 6, so this example stays on 6 for now.
 
@@ -665,11 +665,11 @@ On the client, the layout decodes that boot with `decodeBootSnapshot`. The initi
 
 The request locale is normalized in hooks with `Intl.getCanonicalLocales`. `EN` becomes `en`; the malformed tag `en_US` and `fr`, which has no catalog, use the base locale `ko`.
 
-### Note on the next local version
+### Locale resolution APIs
 
-The alpha.4 code and execution order above keep the published behavior that uses only the query locale. The next local version in `examples/sveltekit` uses `resolveLocale` and `resolveAcceptLanguage` to resolve inputs in this order: query, the `saylo-locale` cookie, `Accept-Language`, then the manifest base locale. Invalid or unsupported query and cookie values fall through to the next input source, and an explicit query or cookie overrides `q=0` exclusions in `Accept-Language`. The server reads the cookie but does not write it; hooks store the chosen locale in `event.locals` and return the same boot with `no-store`.
+The runnable example above is the minimal alpha.4-tested flow and resolves only the query locale. The current repository example uses `resolveLocale` and `resolveAcceptLanguage`, which are public exports from `@0disoft/saylo-core` and `@0disoft/saylo-core/runtime` from `0.1.0-alpha.5` onward. It resolves inputs in this order: query, the `saylo-locale` cookie, `Accept-Language`, then the manifest base locale. Invalid or unsupported query and cookie values fall through to the next input source, and an explicit query or cookie overrides `q=0` exclusions in `Accept-Language`. The server reads the cookie but does not write it; hooks store the chosen locale in `event.locals` and return the same boot with `no-store`.
 
-These helpers are unpublished local APIs and are not in `0.1.0-alpha.4`. Do not add new imports to the runnable alpha.4 example above.
+These helpers ship in current `0.1.0-alpha.6`. The full contract is in the [@0disoft/saylo-core README](../packages/core/README.md#locale-resolution). [Development sync state](dev-sync-state.md) and [support diagnostic report](support-report.md) document the other alpha.5 APIs.
 
 The on-screen locale selector calls `goto(url, { reset: false, refreshAll: true })` to refresh the query and server data. If you remove a language and then add it again, the request-specific boot is read again even when the URL is unchanged. The `locale` in the address follows the selection, and the form is managed by the shared layout. SvelteKit's router handles focus for route navigation.
 

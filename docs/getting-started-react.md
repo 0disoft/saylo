@@ -1,6 +1,6 @@
 # Start Saylo with React from an empty folder
 
-This guide adds Saylo to a Vite 8 + React 19 app using only the npm registry, without cloning the Saylo repository. Create eight files in an empty folder and start the development server; the text changes as soon as you edit the locale JSON, and form and modal state stay as they are. This document uses only the public API of the published `0.1.0-alpha.4`. It does not use unpublished local APIs (`onSyncState` or the diagnostic support report).
+This guide adds Saylo to a Vite 8 + React 19 app using only the npm registry, without cloning the Saylo repository. Create eight files in an empty folder and start the development server; the text changes as soon as you edit the locale JSON, and form and modal state stay as they are. The sample's validation provenance is the published `0.1.0-alpha.4`. `onSyncState`, `createSupportRecorder`, and `createSupportReport` are public APIs in `0.1.0-alpha.5` and later. See the [alpha.6 release record](../releases/0.1.0-alpha.6.md), [development sync state](dev-sync-state.md), and [support diagnostic report](support-report.md).
 
 To export a separate React starter from a Saylo repository clone into an empty folder outside the repository using a local unpublished tarball, see [examples/react-starter/README.md](../examples/react-starter/README.md).
 
@@ -10,7 +10,7 @@ To export a separate React starter from a Saylo repository clone into an empty f
 - Saylo packages are available on the public npm registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
 - The `latest` tag for the Saylo packages is a placeholder for registration. Add `@alpha` when installing.
 - React is a peer dependency whose condition is 19, and Vite is a peer dependency of `@0disoft/saylo-vite` whose condition is 8.
-- The published build checked against this document is `0.1.0-alpha.4`. Each alpha publication increases the version, so recheck the procedure below against a new build.
+- `@alpha` currently installs `0.1.0-alpha.6`. The starter was checked against `0.1.0-alpha.4`, so recheck the procedure against the version you install.
 
 ## Eight files
 

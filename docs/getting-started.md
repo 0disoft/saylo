@@ -1,13 +1,13 @@
 # Start Saylo from an empty folder with npm
 
-This guide adds Saylo to a Vite 8 app using only the npm registry, without cloning the Saylo repository. Create six files in an empty folder and start the development server; the on-screen text changes as soon as you edit the locale JSON. The code in this document was written by checking the public API of the published `0.1.0-alpha.4` against `packages/*/src` and the READMEs.
+This guide adds Saylo to a Vite 8 app using only the npm registry, without cloning the Saylo repository. Create six files in an empty folder and start the development server; the on-screen text changes as soon as you edit the locale JSON. This minimal sample was written and validated against the published `0.1.0-alpha.4`; its recorded validation remains at that version.
 
 ## Prerequisites
 
 - Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
 - Saylo packages are available on the public npm registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
-- The `latest` tag for the Saylo packages is still a placeholder for registration. To install an actual published build, add `@alpha` when installing.
-- The published build checked against this document is `0.1.0-alpha.4`. Each alpha publication increases the version, so after installing a new build, recheck the run, live-edit, and build procedure below against that version.
+- The `latest` tag is still a placeholder for registration. The `alpha` tag currently installs `0.1.0-alpha.6` for the five public packages. See the [alpha.6 release record](../releases/0.1.0-alpha.6.md).
+- The sample below has alpha.4 validation provenance, so recheck the run, live-edit, and build procedure against the version you install.
 - The app runtime requires `@0disoft/saylo-core`. The plugin and dev client are provided by `@0disoft/saylo-vite`; `vite` is a peer dependency whose condition is 8.
 
 ## Six files
