@@ -294,6 +294,7 @@ For general questions, feature proposals, and bugs, see [Support](SUPPORT.md); f
 | [docs/getting-started-react.md](docs/getting-started-react.md) | Installing a React 19 app in an empty folder, live edits, adding a locale, error recovery, and build |
 | [docs/getting-started-svelte.md](docs/getting-started-svelte.md) | Installing a Svelte 5 app in an empty folder, live edits, adding a locale, error recovery, and build |
 | [docs/getting-started-sveltekit.md](docs/getting-started-sveltekit.md) | Independent SvelteKit 3 installation, per-request SSR, hydration, shared layout, and Node production server |
+| [docs/static-sites.md](docs/static-sites.md) | Static Astro 7 and SvelteKit 3 with adapter-static: build-time boot snapshots, lazy catalogs, language routes, and hosting limits |
 | [docs/01-product-and-scope.md](docs/01-product-and-scope.md) | Problem definition, goals, scope, non-goals, DOM preservation scope, and terminology |
 | [docs/02-architecture.md](docs/02-architecture.md) | Development pipeline, core/adapter boundary, store model, and ownership |
 | [docs/03-catalog-and-api.md](docs/03-catalog-and-api.md) | Catalog files, ID/namespace, ICU policy, argument contract, public API, and examples |
