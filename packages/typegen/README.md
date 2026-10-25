@@ -8,9 +8,9 @@ On Windows, if a rename fails with `EPERM`, `EACCES`, or `EBUSY`, the writer ret
 
 Success is determined from the output actually persisted to disk. If a newer request arrives in the middle, a result already written to the file is still recorded as a success, and saving the same catalog again after a generation failure retries instead of skipping the earlier result. This behavior is included in the `0.1.0-alpha.4` release.
 
-`writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the alpha.6 source lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
+`writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the `0.1.0-alpha.7` release lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
 
-This README describes `0.1.0-alpha.6` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.6.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
+This README describes `0.1.0-alpha.7` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.7.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
 
 ## Installation
 
@@ -35,19 +35,20 @@ Use the `locales/<locale>/<namespace>.json` structure. For example, `locales/ko/
 
 ## Running
 
-### Migrate an i18next namespace (source checkout)
+### Migrate an i18next namespace
 
-`saylo migrate --from i18next --file namespace.json --locale en --namespace common --json` previews a JSON-v4 namespace conversion. Use `--escape-value false` only when the source app already disables interpolation escaping. Nested keys, simple interpolation and complete cardinal plural groups are converted; unsupported behavior blocks output. `--out-file new.json` exclusively creates a ready catalog, and `--base-file` with `--base-locale` checks an existing Saylo base contract. See the [migration guide](../../docs/migration.md). The programmatic function is exported from `@0disoft/saylo-typegen/migrate`. Both interfaces require a future npm release.
+`saylo migrate --from i18next --file namespace.json --locale en --namespace common --json` previews a JSON-v4 namespace conversion. Use `--escape-value false` only when the source app already disables interpolation escaping. Nested keys, simple interpolation and complete cardinal plural groups are converted; unsupported behavior blocks output. `--out-file new.json` exclusively creates a ready catalog, and `--base-file` with `--base-locale` checks an existing Saylo base contract. See the [migration guide](../../docs/migration.md). The programmatic function is exported from `@0disoft/saylo-typegen/migrate`. Both interfaces are included in `0.1.0-alpha.7`.
 
-### Initialize an existing Vite app (source checkout)
+### Initialize an existing Vite app
 
-The new `saylo init` command previews integration by default; `--apply` creates a starter catalog, shared config, virtual-module types, a typed store factory, and connects a static ESM Vite config. It preserves conflicting files and prints package-manager install commands instead of running them. UI providers and SSR request/hydration wiring remain explicit. See the [init guide](../../docs/init.md) for requirements, preview output, cleanup, and failure recovery. This command is not in published alpha.6 and requires a future release.
+`saylo init` previews integration by default; `--apply` creates a starter catalog, shared config, virtual-module types, a typed store factory, and connects a static ESM Vite config. It preserves conflicting files and prints package-manager install commands instead of running them. UI providers and SSR request/hydration wiring remain explicit. See the [init guide](../../docs/init.md) for requirements, preview output, cleanup, and failure recovery. The command is included in published `0.1.0-alpha.7`.
 
-From the app directory, after building this checkout:
+From the app directory, install the CLI with the `alpha` tag and run:
 
 ```sh
-node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" init --base-locale en --json
-node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" init --base-locale en --apply --json
+npm install --save-dev @0disoft/saylo-typegen@alpha
+npx --no-install saylo init --base-locale en --json
+npx --no-install saylo init --base-locale en --apply --json
 ```
 
 ### Shared configuration and catalog checks (alpha.5)

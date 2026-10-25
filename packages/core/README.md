@@ -4,11 +4,11 @@ The Saylo core package. It provides catalog parsing and schema validation, a syn
 
 ## Status
 
-This README describes `0.1.0-alpha.6` (dist-tag `alpha`). See the [release record](https://github.com/0disoft/saylo/blob/main/releases/0.1.0-alpha.6.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.
+This README describes `0.1.0-alpha.7` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.7.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.
 
 React and Svelte selector fine-grained subscriptions (`useI18nSelector`, `selectSvelteStore`, `getI18nSelector`) are included in the `0.1.0-alpha.4` release.
 
-This README is included in the alpha.5 tarball.
+This README has been included in published tarballs since alpha.5.
 
 ## Installation
 
@@ -48,11 +48,11 @@ In TypeScript, connect key and argument types with `createStore<AppSchema>(...)`
 
 Lazy loading is handled by `createI18n`, and catalog transport sources are provided by [@0disoft/saylo-vite](https://github.com/0disoft/saylo/tree/main/packages/vite#readme). Per-request SSR uses `createServerI18n`; boot serialization uses `serializeBootSnapshot` and `decodeBootSnapshot`.
 
-The alpha.6 source supports `setLocale(locale, { signal })`, `loadNamespace(namespace, { signal })`, and `refresh({ signal })`. This signal cancels only that caller's wait; shared catalog loads and the requested screen state transition continue. Failures are reported through `CatalogLoadError` with `code: 'ABORTED'` and `cause: signal.reason`. To tear down the whole instance, call `dispose()` or pass a lifetime `signal` in the options of `createI18n` or `createServerI18n`. Cancellation of the lifetime ends in-flight API calls with `I18nDisposedError`, while cancellation during SSR preparation ends with `ABORTED`.
+The `0.1.0-alpha.7` release supports `setLocale(locale, { signal })`, `loadNamespace(namespace, { signal })`, and `refresh({ signal })`. This signal cancels only that caller's wait; shared catalog loads and the requested screen state transition continue. Failures are reported through `CatalogLoadError` with `code: 'ABORTED'` and `cause: signal.reason`. To tear down the whole instance, call `dispose()` or pass a lifetime `signal` in the options of `createI18n` or `createServerI18n`. Cancellation of the lifetime ends in-flight API calls with `I18nDisposedError`, while cancellation during SSR preparation ends with `ABORTED`.
 
-The alpha.6 source runs at most 8 `loadCatalog` calls concurrently per i18n instance. The same execution limit is shared even when the locale, screen scope, or manifest changes. `requestTimeoutMs` (default 5 seconds) includes time spent waiting for an execution slot, and a load canceled while waiting does not call the source. If the source ignores cancellation, the slot stays occupied until the actual Promise settles. If all 8 slots are stuck, new requests also wait and then end with a timeout, so the source must also clean up I/O according to the `AbortSignal` it receives. On servers that use multiple i18n instances, the source's shared pool also limits the total number of connections.
+The `0.1.0-alpha.7` release runs at most 8 `loadCatalog` calls concurrently per i18n instance. The same execution limit is shared even when the locale, screen scope, or manifest changes. `requestTimeoutMs` (default 5 seconds) includes time spent waiting for an execution slot, and a load canceled while waiting does not call the source. If the source ignores cancellation, the slot stays occupied until the actual Promise settles. If all 8 slots are stuck, new requests also wait and then end with a timeout, so the source must also clean up I/O according to the `AbortSignal` it receives. On servers that use multiple i18n instances, the source's shared pool also limits the total number of connections.
 
-The alpha.6 `setNamespaces(namespaces, { signal })` replaces every required namespace for the current screen. Calling it as `await i18n.setNamespaces(['common', 'editor'])` removes the previous screen's namespaces from the language-switch wait, and catalogs already received stay in the cache. `[]` is allowed. Requests for namespaces excluded by the replacement and requests from the previous scope are rejected with `SCOPE_SUPERSEDED`. Array order does not matter, and duplicate or missing namespaces are rejected before the state changes. The React, Svelte, and Vue bindings and the React hydration adapter also forward this method.
+The `0.1.0-alpha.7` `setNamespaces(namespaces, { signal })` replaces every required namespace for the current screen. Calling it as `await i18n.setNamespaces(['common', 'editor'])` removes the previous screen's namespaces from the language-switch wait, and catalogs already received stay in the cache. `[]` is allowed. Requests for namespaces excluded by the replacement and requests from the previous scope are rejected with `SCOPE_SUPERSEDED`. Array order does not matter, and duplicate or missing namespaces are rejected before the state changes. The React, Svelte, and Vue bindings and the React hydration adapter also forward this method.
 
 The optional `schedule(milliseconds, callback)` on both factories is used to control timers in tests. It must run the callback later and return a cancel function that is safe to call repeatedly. `requestTimeoutMs` accepts finite positive numbers up to `2,147,483,647`; fractional values are rounded up. If a displayed-state change pushes the revision beyond the safe integer range, the change is rejected with `REVISION_OVERFLOW` and the existing snapshot and boot data are kept.
 
@@ -126,10 +126,10 @@ If you installed the Vite package, you can read the fuller guidance in `node_mod
 
 Apache-2.0. The distribution tarball includes the repository root `LICENSE` and `NOTICE`.
 
-## Compact catalog and boot wire data (source checkout)
+## Compact catalog and boot wire data
 
 `encodeCatalog(catalog)` and `decodeCatalog(wire)` are available from core and `/runtime`. They preserve source text, argument contracts, rich tags, source positions and ICU ASTs without reparsing ICU on the client. Repeated argument schemas are shared in a table, and literal/argument AST nodes use tuples. The decoded result is an ordinary immutable `ParsedCatalog`. Mutable caller inputs are copied rather than frozen or cached. The encoder memoizes only recognized immutable catalogs.
 
 `serializeBootSnapshot(snapshot, { compact: true })` emits HTML-safe `saylo-boot-v2` JSON with compact catalogs and without redundant base schemas. The decoder rebuilds and validates those schemas from the catalogs, checks manifest pair stamps and contracts, and returns the existing canonical `BootSnapshot` shape. `decodeBootSnapshot()` accepts both v1 and v2. Serialization without the new option still emits v1, preserving existing integrations. Compact boot is explicit; update both server and client packages together before using it.
 
-These additions require a future npm release and are not in published alpha.6. See [production catalog compaction](../../docs/production-catalogs.md) for the Vite build policy and measurements.
+These APIs are included in the published `0.1.0-alpha.7` release. See [production catalog compaction](../../docs/production-catalogs.md) and the [alpha.7 release record](../../releases/0.1.0-alpha.7.md).
