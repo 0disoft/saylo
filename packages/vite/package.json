@@ -1,6 +1,6 @@
 {
   "name": "@0disoft/saylo-vite",
-  "version": "0.1.0-alpha.8",
+  "version": "0.1.0-alpha.9",
   "type": "module",
   "description": "Vite 8 plugin and dev client that live-update Saylo catalogs without a full reload.",
   "repository": {
@@ -49,8 +49,8 @@
   },
   "dependencies": {
     "@babel/parser": "7",
-    "@0disoft/saylo-core": "0.1.0-alpha.8",
-    "@0disoft/saylo-typegen": "0.1.0-alpha.8"
+    "@0disoft/saylo-core": "0.1.0-alpha.9",
+    "@0disoft/saylo-typegen": "0.1.0-alpha.9"
   },
   "peerDependencies": {
     "vite": "8",
