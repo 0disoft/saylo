@@ -107,11 +107,16 @@ export interface TranslationErrorPolicy {
   readonly onFormatError?: FormatErrorHandler;
 }
 
+export interface LocaleFallbackOptions {
+  /** Opt-in parent locales, tried in order after the selected locale and before `baseLocale`. */
+  readonly fallbackLocales?: readonly string[];
+}
+
 /** A synchronous translator bound to one set of immutable parsed catalogs. */
-export interface TranslatorOptions extends TranslationErrorPolicy {
+export interface TranslatorOptions extends TranslationErrorPolicy, LocaleFallbackOptions {
   readonly locale: string;
   readonly baseCatalogs: readonly ParsedCatalog[];
-  /** Only catalogs for the selected locale; missing namespaces fall back to base. */
+  /** Catalogs for the selected locale or configured fallback locales. */
   readonly translations?: readonly ParsedCatalog[];
   readonly timeZone?: string;
 }
@@ -132,7 +137,7 @@ export interface StoreSnapshot<S extends Schema = Schema> extends Translator<S> 
   readonly loadedNamespaces: readonly string[];
 }
 
-export interface StoreOptions extends TranslationErrorPolicy {
+export interface StoreOptions extends TranslationErrorPolicy, LocaleFallbackOptions {
   readonly baseLocale: string;
   readonly locale: string;
   readonly catalogs: readonly ParsedCatalog[];

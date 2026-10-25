@@ -68,6 +68,37 @@ test('fallback formats with base locale; missing target namespace also falls bac
   assert.equal(partial.t('cart:amount', { n: 1234.5 }), '1.234,5');
 });
 
+test('explicit fallback locales resolve in order after the selection and format with their source locale', () => {
+  const base = catalog({ title: 'Base', parent: 'Base parent', amount: '{n, number}', baseOnly: 'Base only' }, 'ko');
+  const german = catalog({ title: 'Deutsch', parent: 'German parent' }, 'de');
+  const english = catalog({ title: 'English', parent: 'English parent', amount: '{n, number}' }, 'en');
+  const british = catalog({ title: 'British' }, 'en-GB');
+  const tr = createTranslator({ locale: 'en-GB', fallbackLocales: ['de', 'en'], baseCatalogs: [base],
+    translations: [british, german, english] });
+  assert.equal(tr.t('cart:title'), 'British');
+  assert.equal(tr.t('cart:parent'), 'German parent');
+  assert.equal(tr.t('cart:amount', { n: 1234.5 }), new Intl.NumberFormat('en').format(1234.5));
+  assert.equal(tr.t('cart:baseOnly'), 'Base only');
+});
+
+test('parent fallback remains opt-in and duplicate, self and base entries are bounded', () => {
+  const base = catalog({ title: 'Base', parent: 'Base parent' }, 'ko');
+  const english = catalog({ title: 'English', parent: 'English parent' }, 'en');
+  const british = catalog({ title: 'British' }, 'en-GB');
+  assert.throws(() => createTranslator({ locale: 'en-GB', baseCatalogs: [base], translations: [british, english] }), CatalogError);
+  const strict = createTranslator({ locale: 'en-GB', baseCatalogs: [base], translations: [british] });
+  assert.equal(strict.t('cart:title'), 'British');
+  assert.equal(strict.t('cart:parent'), 'Base parent');
+
+  const tr = createTranslator({ locale: 'en-GB', fallbackLocales: ['en-GB', 'ko', 'en'],
+    baseCatalogs: [base], translations: [british, english] });
+  assert.equal(tr.t('cart:parent'), 'English parent');
+  assert.throws(() => createTranslator({ locale: 'en-GB', fallbackLocales: ['en', 'EN'], baseCatalogs: [base] }), RangeError);
+  assert.throws(() => createTranslator({ locale: 'en-GB', fallbackLocales: 'en', baseCatalogs: [base] }), TypeError);
+  assert.throws(() => createTranslator({ locale: 'en-GB', fallbackLocales: ['en'], baseCatalogs: [base],
+    translations: [british, catalog({ title: 'Français' }, 'fr')] }), CatalogError);
+});
+
 test('base required arguments remain required when translation omits them', () => {
   const { t } = translator({ items: '{n, number}' }, { items: 'Items' });
   assert.equal(t('cart:items', { n: 3 }), 'Items');
@@ -248,6 +279,12 @@ test('factory validates translations, duplicate namespaces and locale consistenc
   assert.throws(() => createTranslator({ locale: 'en', baseCatalogs: [base], translations: [catalog({}, 'fr')] }), CatalogError);
   assert.throws(() => createTranslator({ locale: 'en', baseCatalogs: [base], translations: [catalog({}, 'en', 'common')] }), CatalogError);
   assert.throws(() => createTranslator({ locale: 'en', baseCatalogs: [base], translations: [catalog({}, 'en'), catalog({}, 'en')] }), CatalogError);
+  assert.throws(() => createTranslator({ locale: 'en', baseCatalogs: [base], translations: [catalog({ title: 'Base override' })] }), CatalogError);
+  assert.throws(() => createTranslator({ locale: 'en', fallbackLocales: ['ko'], baseCatalogs: [base],
+    translations: [catalog({ title: 'Base override' })] }), CatalogError);
+  const baseSelected = createTranslator({ locale: 'ko', baseCatalogs: [base],
+    translations: [catalog({ title: 'Selected base override' })] });
+  assert.equal(baseSelected.t('cart:title'), 'Selected base override');
 });
 
 test('translator is snapshot-bound; caller arrays and another translator cannot change it', () => {

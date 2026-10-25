@@ -423,7 +423,10 @@ function fixture(t, options = {}) {
   }
   const calls = [];
   const handlers = new Map();
-  const config = { catalogSource: source, locale: 'ko', initialNamespaces: ['common'], initialCatalogs: [outcome('ko', 'common')], ...options };
+  const initialLocales = new Set(['ko', Intl.getCanonicalLocales(options.locale ?? 'ko')[0]]);
+  for (const locale of options.fallbackLocales ?? []) initialLocales.add(Intl.getCanonicalLocales(locale)[0]);
+  const config = { catalogSource: source, locale: 'ko', initialNamespaces: ['common'],
+    initialCatalogs: [...initialLocales].map(locale => outcome(locale, 'common')), ...options };
   const i18n = createI18n(config);
   t.after(() => i18n.dispose());
   const change = (locale, namespace, text) => {
@@ -759,4 +762,37 @@ test('accepted mutable outcomes remain independent of source changes and preserv
   assert.ok(Object.isFrozen(accepted.catalog.messages.__proto__.ast));
   assert.equal(Object.hasOwn(accepted.catalog.messages, '__proto__'), true);
   assert.equal(acceptOutcome(manifest, accepted.key, { ...accepted, catalog: parsed }).catalog, parsed);
+});
+
+test('explicit lazy fallback chain loads complete scope and keeps canceled and stale refreshes atomic', async t => {
+  const f = fixture(t, { locale: 'fr', fallbackLocales: ['en'] });
+  const before = f.i18n.getSnapshot();
+  assert.equal(before.locale, 'fr');
+  assert.equal(before.t('common:title'), 'Français');
+  assert.deepEqual(f.i18n.getBootSnapshot().fallbackLocales, ['en']);
+  assert.deepEqual(f.i18n.getBootSnapshot().catalogOutcomes.map(outcome => outcome.key.locale).sort(), ['en', 'fr', 'ko']);
+
+  f.change('fr', 'cart', 'Panier');
+  f.change('fr', 'common');
+  f.change('en', 'common', 'English v2');
+  const slow = f.defer('en', 'common');
+  const controller = new AbortController();
+  const canceled = f.i18n.refresh({ signal: controller.signal });
+  await tick();
+  controller.abort('caller finished');
+  await assert.rejects(canceled, { code: 'ABORTED' });
+  assert.equal(f.i18n.getSnapshot(), before);
+
+  const localeWait = f.i18n.setLocale('en');
+  slow.release();
+  await localeWait;
+  assert.equal(f.i18n.getSnapshot().locale, 'en');
+  assert.equal(f.i18n.t('common:title'), 'English v2');
+  await f.i18n.setLocale('fr');
+  assert.equal(f.i18n.t('common:title'), 'English v2');
+
+  f.change('en', 'common');
+  await f.i18n.refresh();
+  assert.equal(f.i18n.t('common:title'), '기준');
+  assert.deepEqual(f.i18n.getBootSnapshot().fallbackLocales, ['en']);
 });

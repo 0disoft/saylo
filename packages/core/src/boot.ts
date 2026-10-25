@@ -1,6 +1,7 @@
 import { freeze } from './diagnostics.js';
 import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError } from './loading-errors.js';
+import { normalizeFallbackLocales } from './locale-chain.js';
 import { acceptOutcome, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import { createBaseSchema } from './schema.js';
 import { decodeCatalog, encodeCatalog } from './catalog-codec.js';
@@ -16,6 +17,8 @@ export interface BootSnapshot {
   readonly timeZone: string;
   readonly stateRevision: number;
   readonly loadedNamespaces: readonly string[];
+  /** Explicit parent chain configured by the instance; absent in older boot payloads. */
+  readonly fallbackLocales?: readonly string[];
   readonly baseSchemas: readonly CatalogSchema[];
   /** Every loaded base+target pair, including explicit versioned missing outcomes. */
   readonly catalogOutcomes: readonly CatalogOutcome[];
@@ -40,7 +43,10 @@ export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
   const namespaces = [...input.loadedNamespaces].sort();
   if (new Set(namespaces).size !== namespaces.length || namespaces.some(n => !manifestMembership(manifest).namespaces.has(n)))
     throw new CatalogLoadError('INVALID_BOOT', 'Boot namespaces must be unique and available.');
-  const keys = scopeKeys(manifest, locale, namespaces);
+  const fallbackLocales = normalizeFallbackLocales(input.fallbackLocales);
+  const unavailableFallback = fallbackLocales.find(value => !manifestMembership(manifest).locales.has(value));
+  if (unavailableFallback) throw new CatalogLoadError('INVALID_BOOT', 'Boot fallback locales must be available.');
+  const keys = scopeKeys(manifest, locale, namespaces, fallbackLocales);
   const keyIndex = new Map(keys.map(key => [keyId(key), key]));
   const supplied = new Map<string, CatalogOutcome>();
   for (const outcome of input.catalogOutcomes) {
@@ -51,11 +57,12 @@ export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
   if (supplied.size !== keys.length) throw new CatalogLoadError('INVALID_BOOT', 'Boot must explicitly include every base and target outcome.');
   const outcomes = keys.map(k => supplied.get(keyId(k))!);
   // Reuse atomic schema/translation validation and formatter contracts, without reparsing message text.
-  createLoadedSnapshot(manifest, locale, namespaces, outcomes, timeZone, createTextFormatter(timeZone), input.stateRevision);
+  createLoadedSnapshot(manifest, locale, namespaces, outcomes, timeZone, createTextFormatter(timeZone),
+    input.stateRevision, fallbackLocales);
   const baseSchemas = outcomes.flatMap(o => o.status === 'present' && o.key.locale === manifest.baseLocale
     ? [createBaseSchema(o.catalog)] : []);
   const snapshot: BootSnapshot = freeze({ format: 'saylo-boot-v1', manifest, locale, timeZone, stateRevision: input.stateRevision,
-    loadedNamespaces: namespaces, baseSchemas, catalogOutcomes: outcomes });
+    loadedNamespaces: namespaces, fallbackLocales, baseSchemas, catalogOutcomes: outcomes });
   acceptedSnapshots.add(snapshot);
   return snapshot;
 }

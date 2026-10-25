@@ -293,3 +293,37 @@ test('catalog text replacement retains native Intl caches across snapshots', () 
     assert.equal(created, 1);
   } finally { Intl.NumberFormat = NativeNumberFormat; }
 });
+
+test('explicit eager fallback locales follow selected locale changes and replacement atomically', () => {
+  const record = (messages, locale) => parseCatalog(JSON.stringify(messages), { locale, namespace: 'cart' });
+  const catalogs = () => [
+    record({ title: 'Base', parent: 'Base parent', baseOnly: 'Base only' }, 'ko'),
+    record({ title: 'English', parent: 'English parent' }, 'en'),
+    record({ title: 'Français' }, 'fr'),
+    record({ title: 'British' }, 'en-GB'),
+  ];
+  const i18n = createStore({ baseLocale: 'ko', locale: 'fr', catalogs: catalogs(), fallbackLocales: ['en'] });
+  const first = i18n.getSnapshot();
+  assert.equal(first.t('cart:title'), 'Français');
+  assert.equal(first.t('cart:parent'), 'English parent');
+  assert.equal(first.t('cart:baseOnly'), 'Base only');
+  i18n.setLocale('en-GB');
+  assert.equal(i18n.t('cart:title'), 'British');
+  assert.equal(i18n.t('cart:parent'), 'English parent');
+  assert.equal(first.t('cart:title'), 'Français');
+  i18n.replaceCatalogs([
+    record({ title: 'Base', parent: 'Base parent', baseOnly: 'Base only' }, 'ko'),
+    record({ title: 'English', parent: 'Updated parent' }, 'en'),
+    record({ title: 'Français' }, 'fr'),
+    record({ title: 'British' }, 'en-GB'),
+  ]);
+  assert.equal(i18n.t('cart:parent'), 'Updated parent');
+
+  const strict = createStore({ baseLocale: 'ko', locale: 'fr', catalogs: catalogs() });
+  assert.equal(strict.t('cart:parent'), 'Base parent');
+  assert.throws(() => createStore({ baseLocale: 'ko', locale: 'fr', catalogs: catalogs(), fallbackLocales: ['de'] }), RangeError);
+  assert.throws(() => createStore({ baseLocale: 'ko', locale: 'fr', catalogs: catalogs(), fallbackLocales: ['en', 'EN'] }), RangeError);
+  const committed = i18n.getSnapshot();
+  assert.throws(() => i18n.replaceCatalogs(catalogs().filter(catalog => catalog.locale !== 'en')), RangeError);
+  assert.equal(i18n.getSnapshot(), committed);
+});

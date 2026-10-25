@@ -1,5 +1,6 @@
 import { CatalogError, immutableSnapshot } from './diagnostics.js';
 import { createTextFormatter } from './formatters.js';
+import { fallbackLocaleChain, normalizeFallbackLocales } from './locale-chain.js';
 import { InvalidRichTextError } from './rich-text.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
@@ -58,7 +59,13 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   const baseCatalogs = new Map<string, ParsedCatalog>();
   const baseSchemas = new Map<string, CatalogSchema>();
-  const translations = new Map<string, ParsedCatalog>();
+  const fallbackLocales = normalizeFallbackLocales(options.fallbackLocales);
+  const messageLocales = fallbackLocaleChain(locale, fallbackLocales, baseLocale);
+  // The terminal base catalog is already the final lookup. Only its own selected
+  // locale historically allowed a same-locale override in `translations`.
+  const translationLocales = locale === baseLocale ? messageLocales : messageLocales.slice(0, -1);
+  const messageLocaleSet = new Set(translationLocales);
+  const translations = new Map<string, Map<string, ParsedCatalog>>();
   for (const catalog of bases) {
     if (catalog.locale !== baseLocale) catalogError(catalog, 'LOCALE_MISMATCH', 'All base catalogs must use the same locale.');
     if (baseCatalogs.has(catalog.namespace)) catalogError(catalog, 'DUPLICATE_CATALOG', 'Duplicate base namespace.');
@@ -66,12 +73,15 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
     baseSchemas.set(catalog.namespace, createBaseSchema(catalog));
   }
   for (const catalog of suppliedTranslations) {
-    if (catalog.locale !== locale) catalogError(catalog, 'LOCALE_MISMATCH', 'Translation catalog must use the selected locale.');
-    if (translations.has(catalog.namespace)) catalogError(catalog, 'DUPLICATE_CATALOG', 'Duplicate translation namespace.');
+    if (!messageLocaleSet.has(catalog.locale))
+      catalogError(catalog, 'LOCALE_MISMATCH', 'Translation catalog locale is outside the fallback chain.');
+    let localeCatalogs = translations.get(catalog.locale);
+    if (!localeCatalogs) { localeCatalogs = new Map(); translations.set(catalog.locale, localeCatalogs); }
+    if (localeCatalogs.has(catalog.namespace)) catalogError(catalog, 'DUPLICATE_CATALOG', 'Duplicate translation namespace.');
     const schema = baseSchemas.get(catalog.namespace);
     if (!schema) catalogError(catalog, 'NAMESPACE_MISMATCH', 'Translation namespace has no loaded base catalog.');
     validateTranslation(schema, catalog);
-    translations.set(catalog.namespace, catalog);
+    localeCatalogs.set(catalog.namespace, catalog);
   }
   const format = sharedFormat ?? createTextFormatter(timeZone);
   const policy = captureErrorPolicy(options);
@@ -102,8 +112,11 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
     if (!base) throw new NamespaceNotLoadedError(namespace, key);
     if (!Object.hasOwn(base.messages, id)) throw new UnknownMessageError(key);
     const values = validateArguments(key, baseSchemas.get(namespace)!.keys[id]!, args);
-    const translation = translations.get(namespace);
-    const source = translation && Object.hasOwn(translation.messages, id) ? translation : base;
+    let source = base;
+    for (const messageLocale of translationLocales) {
+      const translation = translations.get(messageLocale)?.get(namespace);
+      if (translation && Object.hasOwn(translation.messages, id)) { source = translation; break; }
+    }
     return rich ? formatParts(namespace, id, source.messages[id]!, source.locale, values)
       : formatText(namespace, id, source.messages[id]!, source.locale, values);
   };

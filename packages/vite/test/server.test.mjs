@@ -15,9 +15,11 @@ async function fixture(t) {
     await rm(root, { recursive: true, force: true });
   });
   await writeFile(path.join(root, 'package.json'), '{"type":"module"}');
-  for (const locale of ['ko', 'en']) {
+  for (const locale of ['ko', 'en', 'en-GB']) {
     await mkdir(path.join(root, 'locales', locale), { recursive: true });
-    await writeFile(path.join(root, 'locales', locale, 'demo.json'), JSON.stringify({ title: `${locale}_SSR` }));
+    const messages = locale === 'en' ? { title: 'en_SSR', parent: 'parent_SSR' }
+      : locale === 'ko' ? { title: 'ko_SSR', parent: 'ko_parent' } : { title: `${locale}_SSR` };
+    await writeFile(path.join(root, 'locales', locale, 'demo.json'), JSON.stringify(messages));
   }
   await writeFile(path.join(root, 'main.mjs'), `import { createRequestI18n, catalogSource } from 'virtual:saylo/server';
 import { serializeBootSnapshot } from '@0disoft/saylo-core';
@@ -25,6 +27,12 @@ export { catalogSource };
 export async function render(locale) {
   const instance = await createRequestI18n({ locale });
   try { return { title: instance.getServerSnapshot().t('demo:title'), boot: serializeBootSnapshot(instance.getBootSnapshot()) }; }
+  finally { instance.dispose(); }
+}
+export async function renderFallback() {
+  const instance = await createRequestI18n({ locale: 'en-GB', fallbackLocales: ['en'] });
+  try { return { title: instance.getServerSnapshot().t('demo:title'), parent: instance.getServerSnapshot().t('demo:parent'),
+    boot: JSON.parse(serializeBootSnapshot(instance.getBootSnapshot())) }; }
   finally { instance.dispose(); }
 }`);
   return { root, config: { configFile: false, root, logLevel: 'silent',
@@ -37,10 +45,14 @@ test('Vite SSR dev requests see current catalogs without invalidating the server
   t.after(() => server.close());
   const module = await server.ssrLoadModule('/main.mjs');
   const [ko, en] = await Promise.all([module.render('ko'), module.render('en')]);
+  const fallback = await module.renderFallback();
   assert.equal(ko.title, 'ko_SSR');
   assert.equal(en.title, 'en_SSR');
+  assert.equal(fallback.title, 'en-GB_SSR');
+  assert.equal(fallback.parent, 'parent_SSR');
+  assert.deepEqual(fallback.boot.fallbackLocales, ['en']);
   const file = path.join(root, 'locales', 'ko', 'demo.json');
-  await writeFile(file, '{"title":"ko_UPDATED"}');
+  await writeFile(file, '{"title":"ko_UPDATED","parent":"ko_parent"}');
   // Observe the real watcher; no manual plugin callback and no module reload.
   const deadline = Date.now() + 5000;
   while (module.catalogSource.readManifest().registryRevision === 0 && Date.now() < deadline)
@@ -65,7 +77,7 @@ test('catalog watch-only nodes do not warn, but resolved JSON imports still do',
   const watched = environment.moduleGraph.createFileOnlyEntry(normalizePath(file));
   assert.equal(watched.id, null);
   const change = modules => plugin.hotUpdate.call({ environment }, {
-    type: 'update', file, modules, server, read: () => '{"title":"ko_UPDATED"}',
+    type: 'update', file, modules, server, read: () => '{"title":"ko_UPDATED","parent":"ko_parent"}',
   });
   assert.deepEqual(await change([watched]), []);
   assert.deepEqual(warnings, []);
@@ -86,13 +98,16 @@ test('Vite production SSR bundle prepares independent requests using static cata
   const result = await build({ ...config, build: { ssr: path.join(root, 'main.mjs'), minify: false,
     rolldownOptions: { external: [], preserveEntrySignatures: 'strict' } }, ssr: { noExternal: ['@0disoft/saylo-core'] } });
   const chunks = result.output.filter(o => o.type === 'chunk');
-  assert.equal(chunks.filter(o => o.isDynamicEntry).length, 1);
+  assert.equal(chunks.filter(o => o.isDynamicEntry).length, 2);
   const entry = chunks.find(o => o.isEntry);
   assert.ok(!entry.code.includes('getServerCatalogSource') && !entry.code.includes('createDevCatalogSource'));
   const module = await import(pathToFileURL(path.join(root, 'dist', entry.fileName)));
   const [ko, en] = await Promise.all([module.render('ko'), module.render('en')]);
+  const fallback = await module.renderFallback();
   assert.equal(ko.title, 'ko_SSR');
   assert.equal(en.title, 'en_SSR');
+  assert.equal(fallback.title, 'en-GB_SSR');
+  assert.equal(fallback.parent, 'parent_SSR');
   assert.equal(JSON.parse(ko.boot).locale, 'ko');
   assert.equal(JSON.parse(en.boot).locale, 'en');
 });

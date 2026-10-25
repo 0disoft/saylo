@@ -1,16 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createBaseSchema, createBootSnapshot, createI18n, createServerI18n, decodeBootSnapshot, parseCatalog, serializeBootSnapshot } from '@0disoft/saylo-core';
+import { UnknownMessageError, createBaseSchema, createBootSnapshot, createI18n, createServerI18n, decodeBootSnapshot,
+  parseCatalog, serializeBootSnapshot } from '@0disoft/saylo-core';
 import { validateBootSnapshot } from '../dist/boot.js';
 import { freeze } from '../dist/diagnostics.js';
 
 function fixture() {
   const parse = (locale, namespace, messages) => parseCatalog(JSON.stringify(messages), { locale, namespace, sourceName: `${locale}/${namespace}.json` });
-  const records = [parse('ko', 'demo', { title: '</script><script>bad</script>\u2028\u2029', when: '{at, date, short}', '__proto__.title': 'literal' }),
-    parse('en', 'demo', { title: 'English' }), parse('ko', 'help', { title: '도움말' })];
+  const records = [parse('ko', 'demo', { title: '</script><script>bad</script>\u2028\u2029', parent: '기준 부모', when: '{at, date, short}', '__proto__.title': 'literal' }),
+    parse('en', 'demo', { title: 'English', parent: 'English parent' }), parse('en-GB', 'demo', { title: 'British' }),
+    parse('ko', 'help', { title: '도움말' })];
   let revision = 0;
   const manifest = () => ({ sessionId: 'server', registryRevision: revision, baseLocale: 'ko',
-    availableLocales: ['en', 'ko'], availableNamespaces: ['demo', 'help'], catalogs: records.map(c => ({
+    availableLocales: ['en', 'en-GB', 'ko'], availableNamespaces: ['demo', 'help'], catalogs: records.map(c => ({
       key: { locale: c.locale, namespace: c.namespace }, status: 'present', catalogVersion: c.namespace === 'demo' ? revision + 1 : 1,
       namespaceSchemaFingerprint: createBaseSchema(records.find(b => b.locale === 'ko' && b.namespace === c.namespace)).fingerprint,
     })) });
@@ -227,4 +229,37 @@ test('SSR request instances forward render policy without serializing callbacks'
   const hydrated = createI18n({ catalogSource: f.source, initialSnapshot: decodeBootSnapshot(wire) });
   t.after(() => hydrated.dispose());
   assert.throws(() => hydrated.t('demo:missing'), { name: 'UnknownMessageError' });
+});
+
+test('SSR boot carries explicit fallback metadata and legacy v1/v2 scope still decodes', async t => {
+  const f = fixture();
+  const server = await createServerI18n({ catalogSource: f.source, locale: 'en-GB', initialNamespaces: ['demo'],
+    fallbackLocales: ['en'] });
+  t.after(() => server.dispose());
+  assert.equal(server.t('demo:title'), 'British');
+  assert.equal(server.t('demo:parent'), 'English parent');
+  const boot = server.getBootSnapshot();
+  assert.deepEqual(boot.fallbackLocales, ['en']);
+  assert.deepEqual(boot.catalogOutcomes.map(outcome => outcome.key.locale).sort(), ['en', 'en-GB', 'ko']);
+
+  for (const compact of [false, true]) {
+    const decoded = decodeBootSnapshot(serializeBootSnapshot(boot, { compact }));
+    assert.deepEqual(decoded.fallbackLocales, ['en']);
+    const hydrated = createI18n({ catalogSource: f.source, initialSnapshot: decoded });
+    t.after(() => hydrated.dispose());
+    assert.equal(hydrated.t('demo:parent'), 'English parent');
+  }
+
+  const strict = f.create('en-GB');
+  t.after(() => strict.dispose());
+  for (const compact of [false, true]) {
+    const legacyWire = JSON.parse(serializeBootSnapshot(strict.getBootSnapshot(), { compact }));
+    delete legacyWire.fallbackLocales;
+    const legacy = decodeBootSnapshot(JSON.stringify(legacyWire));
+    assert.deepEqual(legacy.fallbackLocales, []);
+    const legacyClient = createI18n({ catalogSource: f.source, initialSnapshot: legacy });
+    t.after(() => legacyClient.dispose());
+    assert.equal(legacyClient.t('demo:title'), 'British');
+    assert.equal(legacyClient.t('demo:parent'), '기준 부모');
+  }
 });

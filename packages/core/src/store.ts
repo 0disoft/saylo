@@ -1,5 +1,6 @@
 import { CatalogError, isDeepFrozen } from './diagnostics.js';
 import { nextRevision } from './loading-runtime.js';
+import { fallbackLocaleChain, normalizeFallbackLocales } from './locale-chain.js';
 import { createTextFormatter } from './formatters.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { createBoundTranslator } from './translator.js';
@@ -42,8 +43,10 @@ function validateRegistry(catalogs: readonly ParsedCatalog[], baseLocale: string
   };
 }
 
-function visibleSignature(registry: Registry, baseLocale: string, locale: string): string {
-  const catalogs = registry.catalogs.filter(c => c.locale === baseLocale || c.locale === locale);
+function visibleSignature(registry: Registry, baseLocale: string, locale: string,
+  fallbackLocales: readonly string[]): string {
+  const locales = new Set(fallbackLocaleChain(locale, fallbackLocales, baseLocale));
+  const catalogs = registry.catalogs.filter(c => locales.has(c.locale));
   catalogs.sort((a, b) => JSON.stringify([a.locale, a.namespace]).localeCompare(JSON.stringify([b.locale, b.namespace])));
   const scope = JSON.stringify([locale, registry.locales, registry.namespaces]);
   return `${scope.slice(0, -1)},[${catalogs.map(catalogSignature).join(',')}]]`;
@@ -55,14 +58,22 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   const formatter = createTextFormatter(timeZone);
   const policy = captureErrorPolicy(options);
+  const fallbackLocales = normalizeFallbackLocales(options.fallbackLocales);
   let registry = validateRegistry(options.catalogs, baseLocale);
   let locale = canonicalLocale(options.locale);
   if (!registry.locales.includes(locale)) throw new RangeError('Initial locale is outside the eager registry.');
-  let signature = visibleSignature(registry, baseLocale, locale);
+  function assertFallbackLocales(next: Registry) {
+    const unavailable = fallbackLocales.find(locale => !next.locales.includes(locale));
+    if (unavailable) throw new RangeError(`Fallback locale is outside the eager registry: ${unavailable}`);
+  }
+  assertFallbackLocales(registry);
+  let signature = visibleSignature(registry, baseLocale, locale, fallbackLocales);
   function snapshot(registry: Registry, locale: string, stateRevision: number): StoreSnapshot<S> {
+    const chain = fallbackLocaleChain(locale, fallbackLocales, baseLocale);
     const translator = createBoundTranslator<S>({ locale, timeZone,
       baseCatalogs: registry.catalogs.filter(c => c.locale === baseLocale),
-      translations: locale === baseLocale ? [] : registry.catalogs.filter(c => c.locale === locale),
+      translations: registry.catalogs.filter(c => c.locale !== baseLocale && chain.includes(c.locale)),
+      fallbackLocales,
       ...(policy ?? {}),
     }, formatter);
     return Object.freeze({ ...translator, stateRevision,
@@ -77,7 +88,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   const disposers = new Set<{ callback: () => void }>();
   function assertActive() { if (disposed) throw new Error('Store is disposed.'); }
   function publish(nextRegistry: Registry, nextLocale: string) {
-    const nextSignature = visibleSignature(nextRegistry, baseLocale, nextLocale);
+    const nextSignature = visibleSignature(nextRegistry, baseLocale, nextLocale, fallbackLocales);
     const next = nextSignature === signature ? planned : snapshot(nextRegistry, nextLocale, nextRevision(planned.stateRevision));
     registry = nextRegistry;
     locale = nextLocale;
@@ -119,6 +130,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
     replaceCatalogs: (catalogs: readonly ParsedCatalog[]) => {
       assertActive();
       const nextRegistry = validateRegistry(catalogs, baseLocale);
+      assertFallbackLocales(nextRegistry);
       publish(nextRegistry, nextRegistry.locales.includes(locale) ? locale : baseLocale);
     },
     setLocale: (nextLocale: string) => {

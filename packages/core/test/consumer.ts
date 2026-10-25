@@ -1,5 +1,5 @@
 import { CatalogError, createBaseSchema, createI18n, createServerI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
-import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, FormatErrorContext, FormatErrorHandler,
+import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, FormatErrorContext, FormatErrorHandler, LocaleFallbackOptions,
   MissingKeyErrorContext, MissingKeyHandler, ParsedCatalog, RichTextPart, ServerI18nOptions, SharedI18nOptions,
   TranslationErrorPolicy } from '@0disoft/saylo-core';
 import { createI18n as createRuntimeI18n, freezeCatalogs, resolveLocale, resolveAcceptLanguage, parseAcceptLanguage } from '@0disoft/saylo-core/runtime';
@@ -80,6 +80,7 @@ const onFormatError: FormatErrorHandler = (context: FormatErrorContext) => {
   return undefined;
 };
 const policy: TranslationErrorPolicy = { onMissingKey, onFormatError };
+const fallbackOptions: LocaleFallbackOptions = { fallbackLocales: ['en'] as const };
 // @ts-expect-error handlers must return a string or undefined
 const invalidMissingHandler: MissingKeyHandler = () => 3;
 void invalidMissingHandler;
@@ -88,6 +89,10 @@ const policyTyped = createTranslator<AppSchema>({ locale: 'ko', baseCatalogs: [a
 policyTyped.t('cart:title');
 policyTyped.tParts('cart:title');
 const typed = createTranslator<AppSchema>({ locale: 'ko', baseCatalogs: [appCatalog] });
+const fallbackTyped = createTranslator<AppSchema>({ locale: 'en-GB', baseCatalogs: [appCatalog], ...fallbackOptions });
+fallbackTyped.t('cart:title');
+// @ts-expect-error fallback locales must be strings
+createTranslator({ locale: 'en-GB', baseCatalogs: [appCatalog], fallbackLocales: [3] });
 typed.t('cart:title');
 typed.t('cart:items', { count: 3 });
 typed.t('cart:at', { at: new Date(0) });
@@ -117,7 +122,7 @@ if (key === 'cart:items') typed.t(key, { count: 3 }); else typed.t(key);
 const untyped = createTranslator({ locale: 'ko', baseCatalogs: [parsed] });
 untyped.t('dynamic:key', { value: 3 });
 
-const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog], ...policy });
+const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog], ...policy, ...fallbackOptions });
 store.t('cart:items', { count: 3 });
 store.tParts('cart:items', { count: 3 });
 store.getSnapshot().tParts('cart:title');
@@ -145,9 +150,9 @@ const source: CatalogSource = {
     return { status: 'missing', sessionId: 'initial', key: { locale, namespace }, catalogVersion: 0 };
   },
 };
-const sharedPolicy: SharedI18nOptions = { catalogSource: source, ...policy };
+const sharedPolicy: SharedI18nOptions = { catalogSource: source, ...policy, ...fallbackOptions };
 const lazy = createI18n<AppSchema>({ ...sharedPolicy, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
-const serverPolicy: ServerI18nOptions = { catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], ...policy };
+const serverPolicy: ServerI18nOptions = { catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], ...policy, ...fallbackOptions };
 const request = createServerI18n<AppSchema>(serverPolicy);
 void request;
 const transition: Promise<void> = lazy.setLocale('en');
@@ -183,6 +188,10 @@ void missing;
 const serverSnapshot = lazy.getServerSnapshot();
 serverSnapshot.t('cart:items', { count: 1 });
 const bootSnapshot = lazy.getBootSnapshot();
+const fallbackMetadata: readonly string[] | undefined = bootSnapshot.fallbackLocales;
+void fallbackMetadata;
+// @ts-expect-error boot fallback metadata is readonly
+bootSnapshot.fallbackLocales?.push('en');
 const restored = createI18n<AppSchema>({ catalogSource: source, initialSnapshot: bootSnapshot });
 restored.t('cart:items', { count: 1 });
 // @ts-expect-error SSR boot and parsed initial scope are mutually exclusive

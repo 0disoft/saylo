@@ -63,5 +63,8 @@ createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [{ key: { 
 import { createRequestI18n } from 'virtual:saylo/server';
 const request = createRequestI18n<{ 'demo:hello': { name: string } }>({ locale: 'en' });
 request.then(instance => { instance.getServerSnapshot().t('demo:hello', { name: 'SSR' }); instance.dispose(); });
+createRequestI18n({ locale: 'en-GB', fallbackLocales: ['en'] as const });
 // @ts-expect-error request locale must be a string
 createRequestI18n({ locale: 3 });
+// @ts-expect-error request fallback locales must be strings
+createRequestI18n({ locale: 'en-GB', fallbackLocales: [3] });

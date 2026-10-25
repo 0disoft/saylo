@@ -1,5 +1,6 @@
 import { freeze, immutableSnapshot } from './diagnostics.js';
 import { CatalogLoadError } from './loading-errors.js';
+import { fallbackLocaleChain, normalizeFallbackLocales } from './locale-chain.js';
 import { missingKeyFallback } from './translation-policy.js';
 import { createBaseSchema } from './schema.js';
 import { createBoundTranslator } from './translator.js';
@@ -103,8 +104,11 @@ export function assertManifestTransition(previous: CatalogManifest, next: Catalo
   }
 }
 
-export function scopeKeys(manifest: CatalogManifest, locale: string, namespaces: readonly string[]): CatalogKey[] {
-  return namespaces.flatMap(namespace => [...new Set([manifest.baseLocale, locale])].map(locale => ({ locale, namespace })));
+export function scopeKeys(manifest: CatalogManifest, locale: string, namespaces: readonly string[],
+  fallbackLocales: readonly string[] = []): CatalogKey[] {
+  const chain = fallbackLocaleChain(locale, normalizeFallbackLocales(fallbackLocales), manifest.baseLocale);
+  const loadOrder = [manifest.baseLocale, ...chain.filter(value => value !== manifest.baseLocale)];
+  return namespaces.flatMap(namespace => loadOrder.map(locale => ({ locale, namespace })));
 }
 
 export function acceptOutcome(manifest: CatalogManifest, key: CatalogKey, outcome: CatalogOutcome): CatalogOutcome {
@@ -126,12 +130,14 @@ export function acceptOutcome(manifest: CatalogManifest, key: CatalogKey, outcom
 export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest, locale: string,
   namespaces: readonly string[], outcomes: readonly CatalogOutcome[], timeZone: string,
   formatter: ReturnType<typeof createTextFormatter>, stateRevision: number,
-  policy?: TranslationErrorPolicy): { snapshot: StoreSnapshot<S>; signature: string } {
+  fallbackLocales: readonly string[] = [], policy?: TranslationErrorPolicy): { snapshot: StoreSnapshot<S>; signature: string } {
   const catalogs = outcomes.filter(o => o.status === 'present').map(o => o.catalog);
   const bases = catalogs.filter(c => c.locale === manifest.baseLocale);
+  const chain = fallbackLocaleChain(locale, normalizeFallbackLocales(fallbackLocales), manifest.baseLocale);
+  const messageLocales = new Set(chain.filter(value => value !== manifest.baseLocale));
   // Schema compatibility is checked atomically by the translator, after all pairs finish.
   const bound = bases.length ? createBoundTranslator<S>({ locale, timeZone, baseCatalogs: bases,
-    translations: locale === manifest.baseLocale ? [] : catalogs.filter(c => c.locale === locale),
+    translations: catalogs.filter(c => messageLocales.has(c.locale)), fallbackLocales,
     ...(policy ?? {}) }, formatter) : undefined;
   const available = manifestMembership(manifest).namespaces;
   const loaded = new Set(namespaces);

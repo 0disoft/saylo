@@ -4,6 +4,7 @@ import { createBootSnapshot, validateBootSnapshot } from './boot.js';
 import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
 import { aborted, nextRevision, timeoutDuration } from './loading-runtime.js';
+import { normalizeFallbackLocales } from './locale-chain.js';
 import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import { captureErrorPolicy } from './translation-policy.js';
 import type { CatalogOutcome, CreateI18nOptions, I18n, I18nRequestOptions } from './loading-types.js';
@@ -24,6 +25,15 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   const decoded = options.initialSnapshot ? validateBootSnapshot(options.initialSnapshot) : undefined;
   let manifest = readManifest(decoded?.manifest ?? source.readManifest());
   const baseLocale = manifest.baseLocale;
+  const configuredFallbackLocales = options.fallbackLocales === undefined ? undefined : normalizeFallbackLocales(options.fallbackLocales);
+  const decodedFallbackLocales = decoded?.fallbackLocales ?? [];
+  if (decoded && configuredFallbackLocales &&
+      (decodedFallbackLocales.length !== configuredFallbackLocales.length ||
+       decodedFallbackLocales.some((locale, index) => locale !== configuredFallbackLocales[index])))
+    throw new CatalogLoadError('INVALID_BOOT', 'Configured fallback locales differ from the SSR boot snapshot.');
+  const fallbackLocales = decoded ? decodedFallbackLocales : configuredFallbackLocales ?? [];
+  const unavailableFallback = fallbackLocales.find(locale => !manifestMembership(manifest).locales.has(locale));
+  if (unavailableFallback) throw new RangeError(`Fallback locale is outside the manifest: ${unavailableFallback}`);
   const retiredSessions = new Set<string>();
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? decoded?.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   if (decoded && timeZone !== decoded.timeZone) throw new CatalogLoadError('INVALID_BOOT', 'Configured timeZone differs from the SSR boot snapshot.');
@@ -37,7 +47,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     assertNamespace(namespace);
     if (!manifestMembership(manifest).namespaces.has(namespace)) throw new RangeError('Initial namespace is outside the manifest.');
   }
-  const initialKeys = scopeKeys(manifest, desiredLocale, [...desiredNamespaces].sort());
+  const initialKeys = scopeKeys(manifest, desiredLocale, [...desiredNamespaces].sort(), fallbackLocales);
   const initialKeyIndex = new Map(initialKeys.map(key => [keyId(key), key]));
   const initial = new Map<string, CatalogOutcome>();
   for (const outcome of decoded?.catalogOutcomes ?? options.initialCatalogs!) {
@@ -49,7 +59,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   const formatter = createTextFormatter(timeZone);
   const policy = captureErrorPolicy(options);
   const boot = createLoadedSnapshot<S>(manifest, desiredLocale, [...desiredNamespaces].sort(),
-    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0, policy);
+    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0, fallbackLocales, policy);
   let current = boot.snapshot;
   let signature = boot.signature;
   let committedManifest = manifest;
@@ -99,6 +109,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     if (next.sessionId === manifest.sessionId && next.registryRevision === manifest.registryRevision)
       throw new CatalogLoadError('INVALID_MANIFEST', 'Catalog metadata changed without a registry revision.');
     assertManifestTransition(manifest, next);
+    const removedFallback = fallbackLocales.find(locale => !manifestMembership(next).locales.has(locale));
+    if (removedFallback) throw new CatalogLoadError('LOCALE_REMOVED', 'Configured fallback locale was removed from the manifest.');
     if (next.sessionId !== manifest.sessionId) retiredSessions.add(manifest.sessionId);
     manifest = next;
     generation++;
@@ -141,10 +153,11 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     const locale = desiredLocale;
     const namespaces = [...desiredNamespaces].sort();
     try {
-      const outcomes = await Promise.all(scopeKeys(manifest, locale, namespaces).map(key => loader.load(key)));
+      const outcomes = await Promise.all(scopeKeys(manifest, locale, namespaces, fallbackLocales).map(key => loader.load(key)));
       if (disposed || epoch !== generation) return;
       if (syncManifest()) return;
-      const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter, current.stateRevision, policy);
+      const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter,
+        current.stateRevision, fallbackLocales, policy);
       const snapshot = candidate.signature === signature ? candidate.snapshot :
         Object.freeze({ ...candidate.snapshot, stateRevision: nextRevision(current.stateRevision) });
       staleRetries = 0;
@@ -186,7 +199,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     getSnapshot: () => current,
     getServerSnapshot: () => boot.snapshot,
     getBootSnapshot: () => createBootSnapshot({ manifest: committedManifest, locale: current.locale, timeZone,
-      stateRevision: current.stateRevision, loadedNamespaces: current.loadedNamespaces, catalogOutcomes: committedOutcomes }),
+      stateRevision: current.stateRevision, loadedNamespaces: current.loadedNamespaces, fallbackLocales,
+      catalogOutcomes: committedOutcomes }),
     getLocales: () => current.availableLocales,
     getNamespaces: () => current.availableNamespaces,
     subscribe(callback: (snapshot: StoreSnapshot<S>) => void) {
