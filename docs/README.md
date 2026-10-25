@@ -16,6 +16,8 @@ Automated accessibility checks for the development examples' modals and locales 
 
 For application setup, see [Vite init](init.md) or the source checkout's [SvelteKit init preset](init-sveltekit.md).
 
+The source checkout also supports an optional [runtime translation error policy](runtime-error-policy.md).
+
 The procedure for starting from an empty folder with a published package is in [getting-started.md](getting-started.md).
 
 The current scope of the Svelte adapter and demo is summarized in [38-svelte-adapter.md](38-svelte-adapter.md). Existing performance measurement records are preserved as they are.

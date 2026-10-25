@@ -21,8 +21,13 @@ parseCatalog('{}', { locale: 'ko' });
 base.keys.x.n.acceptedTypes.push('string');
 
 /** @typedef {{ 'cart:title': {}, 'cart:items': { count: number } }} AppSchema */
+/** @type {import('@0disoft/saylo-core').TranslationErrorPolicy} */
+const errorPolicy = {
+  onMissingKey: context => context.surface === 'text' ? '' : undefined,
+  onFormatError: context => context.argument === undefined ? undefined : '',
+};
 /** @type {import('@0disoft/saylo-core').Translator<AppSchema>} */
-const typed = createTranslator({ locale: 'ko', baseCatalogs: [parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' })] });
+const typed = createTranslator({ locale: 'ko', baseCatalogs: [parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' })], ...errorPolicy });
 typed.t('cart:title');
 typed.t('cart:items', { count: 3 });
 typed.tParts('cart:items', { count: 3 });
@@ -43,7 +48,7 @@ function unionKey(key) {
 void unionKey;
 
 /** @type {import('@0disoft/saylo-core').Store<AppSchema>} */
-const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' })] });
+const store = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [parseCatalog('{"title":"Cart","items":"{count, number}"}', { locale: 'ko', namespace: 'cart' })], ...errorPolicy });
 store.t('cart:items', { count: 3 });
 store.subscribe(snapshot => {
   snapshot.t('cart:title');
@@ -62,7 +67,7 @@ const source = {
   loadCatalog: async (locale, namespace) => ({ status: 'missing', sessionId: 'one', key: { locale, namespace }, catalogVersion: 0 }),
 };
 /** @type {import('@0disoft/saylo-core').I18n<AppSchema>} */
-const lazy = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
+const lazy = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair], ...errorPolicy });
 /** @type {Promise<void>} */
 const transition = lazy.setLocale('en');
 void transition;

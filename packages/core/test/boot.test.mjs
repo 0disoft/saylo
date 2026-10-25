@@ -206,3 +206,25 @@ test('SSR request preparation pins the ready scope, retries changed pair stamps,
   await assert.rejects(createServerI18n({ catalogSource: hanging, locale: 'ko', initialNamespaces: ['demo'], requestTimeoutMs: 10 }), { code: 'TIMEOUT' });
   await assert.rejects(createServerI18n({ catalogSource: source, locale: 'ja', initialNamespaces: ['demo'] }), RangeError);
 });
+
+test('SSR request instances forward render policy without serializing callbacks', async t => {
+  const f = fixture();
+  const seen = [];
+  const server = await createServerI18n({ catalogSource: f.source, locale: 'en', initialNamespaces: ['demo'],
+    onMissingKey: context => {
+      seen.push(context);
+      return `${context.key}:${context.locale}:${context.baseLocale}`;
+    } });
+  t.after(() => server.dispose());
+  assert.equal(server.t('demo:missing'), 'demo:missing:en:ko');
+  const parts = server.tParts('demo:missing');
+  assert.deepEqual(parts, [{ type: 'text', value: 'demo:missing:en:ko' }]);
+  assert.equal(Object.isFrozen(parts), true);
+  assert.equal(seen[0].error.name, 'UnknownMessageError');
+  const wire = serializeBootSnapshot(server.getBootSnapshot());
+  assert.equal(wire.includes('onMissingKey'), false);
+  assert.equal(wire.includes('onFormatError'), false);
+  const hydrated = createI18n({ catalogSource: f.source, initialSnapshot: decodeBootSnapshot(wire) });
+  t.after(() => hydrated.dispose());
+  assert.throws(() => hydrated.t('demo:missing'), { name: 'UnknownMessageError' });
+});

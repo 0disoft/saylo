@@ -5,6 +5,7 @@ import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError, I18nDisposedError, SupersededRequestError } from './loading-errors.js';
 import { aborted, nextRevision, timeoutDuration } from './loading-runtime.js';
 import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
+import { captureErrorPolicy } from './translation-policy.js';
 import type { CatalogOutcome, CreateI18nOptions, I18n, I18nRequestOptions } from './loading-types.js';
 import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
@@ -46,8 +47,9 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   }
   if (initial.size !== initialKeys.length) throw new CatalogLoadError('INVALID_INITIAL_STATE', 'Initial state must contain every base and target outcome.');
   const formatter = createTextFormatter(timeZone);
+  const policy = captureErrorPolicy(options);
   const boot = createLoadedSnapshot<S>(manifest, desiredLocale, [...desiredNamespaces].sort(),
-    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0);
+    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0, policy);
   let current = boot.snapshot;
   let signature = boot.signature;
   let committedManifest = manifest;
@@ -142,7 +144,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       const outcomes = await Promise.all(scopeKeys(manifest, locale, namespaces).map(key => loader.load(key)));
       if (disposed || epoch !== generation) return;
       if (syncManifest()) return;
-      const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter, current.stateRevision);
+      const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter, current.stateRevision, policy);
       const snapshot = candidate.signature === signature ? candidate.snapshot :
         Object.freeze({ ...candidate.snapshot, stateRevision: nextRevision(current.stateRevision) });
       staleRetries = 0;

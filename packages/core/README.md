@@ -4,6 +4,8 @@ The Saylo core package. It provides catalog parsing and schema validation, a syn
 
 ## Status
 
+The source checkout adds optional `onMissingKey` and `onFormatError` callbacks; strict exceptions remain the default. See [runtime translation error policy](../../docs/runtime-error-policy.md). These options have not been published yet.
+
 This README describes `0.1.0-alpha.7` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.7.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.
 
 React and Svelte selector fine-grained subscriptions (`useI18nSelector`, `selectSvelteStore`, `getI18nSelector`) are included in the `0.1.0-alpha.4` release.

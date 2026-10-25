@@ -39,6 +39,36 @@ test('snapshots are stable, immutable and keep their own translator after replac
   assert.equal(notifications, 1);
 });
 
+test('error policy callbacks stay bound to eager snapshots across locale changes and replacement', () => {
+  const seen = [];
+  const options = {
+    baseLocale: 'ko', locale: 'en', catalogs: initial(),
+    onMissingKey: context => { seen.push(context); return `missing:${context.locale}:${context.surface}`; },
+    onFormatError: context => `format:${context.locale}`,
+  };
+  const i18n = createStore(options);
+  const before = i18n.getSnapshot();
+  options.onMissingKey = () => 'mutated after creation';
+  assert.equal(before.t('cart:missing'), 'missing:en:text');
+  assert.deepEqual(before.tParts('cart:missing'), [{ type: 'text', value: 'missing:en:parts' }]);
+  i18n.setLocale('ko');
+  assert.equal(i18n.t('cart:missing'), 'missing:ko:text');
+  i18n.replaceCatalogs([catalog('새 기준'), catalog('New', 'en'), catalog('Nouveau', 'fr')]);
+  assert.equal(i18n.t('cart:missing'), 'missing:ko:text');
+  assert.equal(seen[0].baseLocale, 'ko');
+  assert.equal(seen[0].error instanceof Error, true);
+  assert.equal(seen[1].surface, 'parts');
+  assert.equal(seen[2].locale, 'ko');
+  i18n.replaceCatalogs([
+    parseCatalog('{"items":"{n, number}"}', { locale: 'ko', namespace: 'cart' }),
+    parseCatalog('{"items":"{n, number}"}', { locale: 'en', namespace: 'cart' }),
+  ]);
+  assert.equal(i18n.t('cart:items'), 'format:ko');
+  i18n.setLocale('en');
+  assert.equal(i18n.t('cart:items'), 'format:en');
+  i18n.dispose();
+});
+
 test('mutable inputs cannot change published snapshots before or after explicit publication', () => {
   const base = structuredClone(catalog('Before'));
   const translation = structuredClone(catalog('Original', 'en'));

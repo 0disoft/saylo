@@ -5,10 +5,11 @@ import { createI18n } from './i18n.js';
 import { CatalogLoadError } from './loading-errors.js';
 import { aborted, timeoutDuration } from './loading-runtime.js';
 import { canonicalLocale, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
+import { captureErrorPolicy } from './translation-policy.js';
 import type { CatalogSource, CatalogSchedule, I18n } from './loading-types.js';
-import type { Schema } from './types.js';
+import type { Schema, TranslationErrorPolicy } from './types.js';
 
-export interface ServerI18nOptions {
+export interface ServerI18nOptions extends TranslationErrorPolicy {
   readonly catalogSource: CatalogSource;
   readonly locale: string;
   readonly initialNamespaces: readonly string[];
@@ -21,6 +22,7 @@ export interface ServerI18nOptions {
 /** Load a request's complete scope before creating its fixed render/hydration snapshot. */
 export async function createServerI18n<S extends Schema = Schema>(options: ServerI18nOptions): Promise<I18n<S>> {
   const timeoutMs = timeoutDuration(options.requestTimeoutMs);
+  const policy = captureErrorPolicy(options);
   if (options.signal?.aborted) throw aborted(options.signal);
   const locale = canonicalLocale(options.locale);
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
@@ -38,7 +40,8 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
       const initialSnapshot = createBootSnapshot({ manifest, locale, timeZone, loadedNamespaces: options.initialNamespaces,
         stateRevision: 0, catalogOutcomes: outcomes });
       return createI18n<S>({ catalogSource: options.catalogSource, initialSnapshot, requestTimeoutMs: timeoutMs,
-        ...(options.schedule ? { schedule: options.schedule } : {}), ...(options.signal ? { signal: options.signal } : {}) });
+        ...(options.schedule ? { schedule: options.schedule } : {}), ...(options.signal ? { signal: options.signal } : {}),
+        ...(policy ?? {}) });
     } catch (error) {
       if (!(error instanceof CatalogLoadError) || error.code !== 'STALE_CATALOG' || attempt === SSR_STABILITY_MAX_ATTEMPTS - 1) throw error;
     } finally { options.signal?.removeEventListener('abort', abort); loader.stop(new CatalogLoadError('DISPOSED', 'SSR preparation finished.')); }

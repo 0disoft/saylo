@@ -1,4 +1,4 @@
-import type { ParsedCatalog, Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
+import type { ParsedCatalog, Schema, StoreSnapshot, Translate, TranslateParts, TranslationErrorPolicy } from './types.js';
 import type { BootSnapshot } from './boot.js';
 
 export interface CatalogKey {
@@ -45,7 +45,7 @@ export interface I18nRequestOptions {
   readonly signal?: AbortSignal;
 }
 
-interface SharedI18nOptions {
+export interface SharedI18nOptions extends TranslationErrorPolicy {
   readonly catalogSource: CatalogSource;
   readonly timeZone?: string;
   /** Per-catalog timeout including queue wait, defaults to 5000ms. */

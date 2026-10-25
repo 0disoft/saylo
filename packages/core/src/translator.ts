@@ -1,7 +1,9 @@
 import { CatalogError, immutableSnapshot } from './diagnostics.js';
 import { createTextFormatter } from './formatters.js';
+import { InvalidRichTextError } from './rich-text.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
+import { captureErrorPolicy, formatErrorFallback, missingKeyFallback } from './translation-policy.js';
 import type { CatalogSchema, MessageSchema, ParsedCatalog, Schema, Translate, TranslateParts, Translator, TranslatorOptions } from './types.js';
 
 function catalogError(catalog: ParsedCatalog, code: 'DUPLICATE_CATALOG' | 'LOCALE_MISMATCH' | 'NAMESPACE_MISMATCH', message: string): never {
@@ -72,7 +74,25 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
     translations.set(catalog.namespace, catalog);
   }
   const format = sharedFormat ?? createTextFormatter(timeZone);
-  const render = (key: string, args?: Record<string, unknown>, rich = false) => {
+  const policy = captureErrorPolicy(options);
+  const formatFailures = policy?.onFormatError ? new WeakSet<object>() : undefined;
+  let formatText: (...args: Parameters<typeof format>) => ReturnType<typeof format> = format;
+  let formatParts: typeof format.parts = format.parts;
+  if (formatFailures) {
+    const markFailure = (error: unknown) => {
+      if (!(error instanceof InvalidRichTextError) && error !== null &&
+          (typeof error === 'object' || typeof error === 'function')) formatFailures.add(error);
+    };
+    formatText = (namespace, id, message, formatLocale, values) => {
+      try { return format(namespace, id, message, formatLocale, values); }
+      catch (error) { markFailure(error); throw error; }
+    };
+    formatParts = (namespace, id, message, formatLocale, values) => {
+      try { return format.parts(namespace, id, message, formatLocale, values); }
+      catch (error) { markFailure(error); throw error; }
+    };
+  }
+  const strictRender = (key: string, args?: Record<string, unknown>, rich = false) => {
     if (typeof key !== 'string') throw new UnknownMessageError(String(key));
     const separator = key.indexOf(':');
     if (separator <= 0 || separator === key.length - 1 || key.indexOf(':', separator + 1) !== -1) throw new UnknownMessageError(key);
@@ -84,9 +104,27 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
     const values = validateArguments(key, baseSchemas.get(namespace)!.keys[id]!, args);
     const translation = translations.get(namespace);
     const source = translation && Object.hasOwn(translation.messages, id) ? translation : base;
-    return rich ? format.parts(namespace, id, source.messages[id]!, source.locale, values)
-      : format(namespace, id, source.messages[id]!, source.locale, values);
+    return rich ? formatParts(namespace, id, source.messages[id]!, source.locale, values)
+      : formatText(namespace, id, source.messages[id]!, source.locale, values);
   };
+  const render = policy ? (key: string, args?: Record<string, unknown>, rich = false) => {
+    try { return strictRender(key, args, rich); }
+    catch (error) {
+      const surface = rich ? 'parts' : 'text';
+      if (error instanceof UnknownMessageError || error instanceof NamespaceNotLoadedError) {
+        const fallback = missingKeyFallback(policy, error, error.key, locale, baseLocale, surface);
+        if (fallback !== undefined) return fallback;
+        throw error;
+      }
+      const formatterFailure = error instanceof Error && formatFailures?.delete(error) === true;
+      if (error instanceof InvalidArgumentError || formatterFailure) {
+        const fallback = formatErrorFallback(policy, error,
+          error instanceof InvalidArgumentError ? error.key : key, locale, baseLocale, surface);
+        if (fallback !== undefined) return fallback;
+      }
+      throw error;
+    }
+  } : strictRender;
   const translate = (key: string, args?: Record<string, unknown>) => render(key, args);
   const parts = (key: string, args?: Record<string, unknown>) => render(key, args, true);
   return Object.freeze({ locale, baseLocale, timeZone, t: translate as Translate<S>, tParts: parts as TranslateParts<S> });

@@ -1,12 +1,13 @@
 import { freeze, immutableSnapshot } from './diagnostics.js';
 import { CatalogLoadError } from './loading-errors.js';
+import { missingKeyFallback } from './translation-policy.js';
 import { createBaseSchema } from './schema.js';
 import { createBoundTranslator } from './translator.js';
 import { createLoadedSignature } from './snapshot-signature.js';
 import { NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
 import type { createTextFormatter } from './formatters.js';
 import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome } from './loading-types.js';
-import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
+import type { RichTextPart, Schema, StoreSnapshot, Translate, TranslateParts, TranslationErrorPolicy } from './types.js';
 
 export function canonicalLocale(value: string): string {
   const locale = Intl.getCanonicalLocales(value)[0];
@@ -124,21 +125,33 @@ export function acceptOutcome(manifest: CatalogManifest, key: CatalogKey, outcom
 
 export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest, locale: string,
   namespaces: readonly string[], outcomes: readonly CatalogOutcome[], timeZone: string,
-  formatter: ReturnType<typeof createTextFormatter>, stateRevision: number): { snapshot: StoreSnapshot<S>; signature: string } {
+  formatter: ReturnType<typeof createTextFormatter>, stateRevision: number,
+  policy?: TranslationErrorPolicy): { snapshot: StoreSnapshot<S>; signature: string } {
   const catalogs = outcomes.filter(o => o.status === 'present').map(o => o.catalog);
   const bases = catalogs.filter(c => c.locale === manifest.baseLocale);
   // Schema compatibility is checked atomically by the translator, after all pairs finish.
   const bound = bases.length ? createBoundTranslator<S>({ locale, timeZone, baseCatalogs: bases,
-    translations: locale === manifest.baseLocale ? [] : catalogs.filter(c => c.locale === locale) }, formatter) : undefined;
+    translations: locale === manifest.baseLocale ? [] : catalogs.filter(c => c.locale === locale),
+    ...(policy ?? {}) }, formatter) : undefined;
   const available = manifestMembership(manifest).namespaces;
   const loaded = new Set(namespaces);
+  const unresolved = (error: UnknownMessageError | NamespaceNotLoadedError, keyText: string,
+    surface: 'text' | 'parts'): string | readonly RichTextPart[] => {
+    const fallback = missingKeyFallback(policy, error, keyText, locale, manifest.baseLocale, surface);
+    if (fallback !== undefined) return fallback;
+    throw error;
+  };
   const render = (key: string, args?: Record<string, unknown>, rich = false) => {
-    if (typeof key !== 'string') throw new UnknownMessageError(String(key));
+    if (typeof key !== 'string') {
+      const keyText = String(key);
+      return unresolved(new UnknownMessageError(keyText), keyText, rich ? 'parts' : 'text');
+    }
     const separator = key.indexOf(':');
-    if (separator <= 0 || separator === key.length - 1 || key.indexOf(':', separator + 1) !== -1) throw new UnknownMessageError(key);
+    if (separator <= 0 || separator === key.length - 1 || key.indexOf(':', separator + 1) !== -1)
+      return unresolved(new UnknownMessageError(key), key, rich ? 'parts' : 'text');
     const namespace = key.slice(0, separator);
-    if (!available.has(namespace)) throw new UnknownMessageError(key);
-    if (!loaded.has(namespace)) throw new NamespaceNotLoadedError(namespace, key);
+    if (!available.has(namespace)) return unresolved(new UnknownMessageError(key), key, rich ? 'parts' : 'text');
+    if (!loaded.has(namespace)) return unresolved(new NamespaceNotLoadedError(namespace, key), key, rich ? 'parts' : 'text');
     return rich ? (bound!.tParts as TranslateParts<Schema>)(key, args) : (bound!.t as Translate<Schema>)(key, args);
   };
   const translate = (key: string, args?: Record<string, unknown>) => render(key, args);

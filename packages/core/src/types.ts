@@ -1,4 +1,5 @@
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
+import type { NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
 
 export type DeepReadonly<T> = T extends object
   ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
@@ -79,8 +80,35 @@ export type TranslateParts<S extends Schema> = string extends keyof S
   ? (key: string, args?: Record<string, unknown>) => readonly RichTextPart[]
   : (...call: TypedCall<S>) => readonly RichTextPart[];
 
+export type TranslationErrorSurface = 'text' | 'parts';
+
+export interface TranslationErrorContext<E extends Error = Error> {
+  /** The original error thrown by translation. */
+  readonly error: E;
+  readonly key: string;
+  readonly locale: string;
+  readonly baseLocale: string;
+  readonly namespace?: string;
+  readonly messageId?: string;
+  readonly surface: TranslationErrorSurface;
+}
+
+export interface MissingKeyErrorContext extends TranslationErrorContext<UnknownMessageError | NamespaceNotLoadedError> {}
+
+export interface FormatErrorContext extends TranslationErrorContext {
+  readonly argument?: string;
+}
+
+export type MissingKeyHandler = (context: MissingKeyErrorContext) => string | undefined;
+export type FormatErrorHandler = (context: FormatErrorContext) => string | undefined;
+
+export interface TranslationErrorPolicy {
+  readonly onMissingKey?: MissingKeyHandler;
+  readonly onFormatError?: FormatErrorHandler;
+}
+
 /** A synchronous translator bound to one set of immutable parsed catalogs. */
-export interface TranslatorOptions {
+export interface TranslatorOptions extends TranslationErrorPolicy {
   readonly locale: string;
   readonly baseCatalogs: readonly ParsedCatalog[];
   /** Only catalogs for the selected locale; missing namespaces fall back to base. */
@@ -104,7 +132,7 @@ export interface StoreSnapshot<S extends Schema = Schema> extends Translator<S> 
   readonly loadedNamespaces: readonly string[];
 }
 
-export interface StoreOptions {
+export interface StoreOptions extends TranslationErrorPolicy {
   readonly baseLocale: string;
   readonly locale: string;
   readonly catalogs: readonly ParsedCatalog[];

@@ -3,6 +3,7 @@ import { nextRevision } from './loading-runtime.js';
 import { createTextFormatter } from './formatters.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { createBoundTranslator } from './translator.js';
+import { captureErrorPolicy } from './translation-policy.js';
 import { catalogSignature } from './snapshot-signature.js';
 import type { ParsedCatalog, Schema, Store, StoreOptions, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
@@ -53,6 +54,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   const baseLocale = canonicalLocale(options.baseLocale);
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   const formatter = createTextFormatter(timeZone);
+  const policy = captureErrorPolicy(options);
   let registry = validateRegistry(options.catalogs, baseLocale);
   let locale = canonicalLocale(options.locale);
   if (!registry.locales.includes(locale)) throw new RangeError('Initial locale is outside the eager registry.');
@@ -61,6 +63,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
     const translator = createBoundTranslator<S>({ locale, timeZone,
       baseCatalogs: registry.catalogs.filter(c => c.locale === baseLocale),
       translations: locale === baseLocale ? [] : registry.catalogs.filter(c => c.locale === locale),
+      ...(policy ?? {}),
     }, formatter);
     return Object.freeze({ ...translator, stateRevision,
       availableLocales: registry.locales, availableNamespaces: registry.namespaces, loadedNamespaces: registry.namespaces });

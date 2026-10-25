@@ -1,5 +1,7 @@
-import { CatalogError, createBaseSchema, createI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
-import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, ParsedCatalog, RichTextPart } from '@0disoft/saylo-core';
+import { CatalogError, createBaseSchema, createI18n, createServerI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
+import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, FormatErrorContext, FormatErrorHandler,
+  MissingKeyErrorContext, MissingKeyHandler, ParsedCatalog, RichTextPart, ServerI18nOptions, SharedI18nOptions,
+  TranslationErrorPolicy } from '@0disoft/saylo-core';
 import { createI18n as createRuntimeI18n, freezeCatalogs, resolveLocale, resolveAcceptLanguage, parseAcceptLanguage } from '@0disoft/saylo-core/runtime';
 import type { LanguagePreference } from '@0disoft/saylo-core';
 import { encodeCatalog, decodeCatalog, serializeBootSnapshot } from '@0disoft/saylo-core/runtime';
@@ -62,7 +64,29 @@ parsed.messages.x!.ast.push({ type: 0, value: 'changed' });
 base.keys.x!.n!.acceptedTypes.push('string');
 
 type AppSchema = { 'cart:title': {}; 'cart:items': { count: number }; 'cart:at': { at: number | Date } };
+const onMissingKey: MissingKeyHandler = (context: MissingKeyErrorContext) => {
+  const error: Error = context.error;
+  const namespace: string | undefined = context.namespace;
+  const messageId: string | undefined = context.messageId;
+  const surface: 'text' | 'parts' = context.surface;
+  void error; void namespace; void messageId; void surface;
+  return context.key === 'cart:missing' ? '' : undefined;
+};
+const onFormatError: FormatErrorHandler = (context: FormatErrorContext) => {
+  const argument: string | undefined = context.argument;
+  const locale: string = context.locale;
+  const baseLocale: string = context.baseLocale;
+  void argument; void locale; void baseLocale;
+  return undefined;
+};
+const policy: TranslationErrorPolicy = { onMissingKey, onFormatError };
+// @ts-expect-error handlers must return a string or undefined
+const invalidMissingHandler: MissingKeyHandler = () => 3;
+void invalidMissingHandler;
 const appCatalog = parseCatalog('{"title":"Cart","items":"{count, number}","at":"{at, date}"}', { locale: 'ko', namespace: 'cart' });
+const policyTyped = createTranslator<AppSchema>({ locale: 'ko', baseCatalogs: [appCatalog], ...policy });
+policyTyped.t('cart:title');
+policyTyped.tParts('cart:title');
 const typed = createTranslator<AppSchema>({ locale: 'ko', baseCatalogs: [appCatalog] });
 typed.t('cart:title');
 typed.t('cart:items', { count: 3 });
@@ -93,7 +117,7 @@ if (key === 'cart:items') typed.t(key, { count: 3 }); else typed.t(key);
 const untyped = createTranslator({ locale: 'ko', baseCatalogs: [parsed] });
 untyped.t('dynamic:key', { value: 3 });
 
-const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog] });
+const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog], ...policy });
 store.t('cart:items', { count: 3 });
 store.tParts('cart:items', { count: 3 });
 store.getSnapshot().tParts('cart:title');
@@ -121,7 +145,11 @@ const source: CatalogSource = {
     return { status: 'missing', sessionId: 'initial', key: { locale, namespace }, catalogVersion: 0 };
   },
 };
-const lazy = createI18n<AppSchema>({ catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
+const sharedPolicy: SharedI18nOptions = { catalogSource: source, ...policy };
+const lazy = createI18n<AppSchema>({ ...sharedPolicy, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
+const serverPolicy: ServerI18nOptions = { catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], ...policy };
+const request = createServerI18n<AppSchema>(serverPolicy);
+void request;
 const transition: Promise<void> = lazy.setLocale('en');
 const namespace: Promise<void> = lazy.loadNamespace('cart');
 const scope: Promise<void> = lazy.setNamespaces(['cart'] as const, { signal: new AbortController().signal });

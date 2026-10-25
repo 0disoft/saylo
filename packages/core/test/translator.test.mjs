@@ -111,6 +111,123 @@ test('unknown keys, malformed addresses and unloaded namespaces have distinct er
   assert.throws(() => t('common:title'), error => error instanceof NamespaceNotLoadedError && error.namespace === 'common');
 });
 
+test('strict translation remains the default and an undefined policy fallback rethrows the original error', () => {
+  const strict = translator({ title: 'Title' });
+  assert.throws(() => strict.t('cart:missing'), UnknownMessageError);
+  assert.throws(() => strict.tParts('cart:missing'), UnknownMessageError);
+
+  let context;
+  const recover = translator({ title: 'Title' }, undefined, {
+    onMissingKey: value => { context = value; return undefined; },
+  });
+  let thrown;
+  try { recover.t('cart:missing'); } catch (error) { thrown = error; }
+  assert.ok(thrown instanceof UnknownMessageError);
+  assert.equal(thrown, context.error);
+  assert.equal(context.key, 'cart:missing');
+  assert.equal(context.locale, 'en');
+  assert.equal(context.baseLocale, 'ko');
+  assert.equal(context.namespace, 'cart');
+  assert.equal(context.messageId, 'missing');
+  assert.equal(context.surface, 'text');
+});
+
+test('missing-key policy coerces foreign keys once and preserves coercion errors', () => {
+  let calls = 0;
+  const translator = createTranslator({ locale: 'ko', baseCatalogs: [catalog({ title: 'Title' })],
+    onMissingKey: context => context.key });
+  const key = { toString() { calls++; if (calls > 1) throw new Error('Unexpected second coercion'); return 'cart:missing'; } };
+  assert.equal(translator.t(key), 'cart:missing');
+  assert.equal(calls, 1);
+  const original = new Error('coercion failed');
+  assert.throws(() => translator.t({ toString() { throw original; } }), error => error === original);
+});
+
+test('empty missing-key fallbacks are retained and covers unknown and unloaded namespaces', () => {
+  const seen = [];
+  const tr = translator({ title: 'Title' }, undefined, {
+    onMissingKey: context => { seen.push(context); return ''; },
+  });
+  assert.equal(tr.t('cart:missing'), '');
+  assert.deepEqual(tr.tParts('common:title'), [{ type: 'text', value: '' }]);
+  assert.equal(seen[0].error instanceof UnknownMessageError, true);
+  assert.equal(seen[1].error instanceof NamespaceNotLoadedError, true);
+  assert.equal(seen[1].surface, 'parts');
+});
+
+test('format fallbacks cover invalid arguments and native Intl failures only during render', () => {
+  const seen = [];
+  const tr = translator({ items: '{n, number}' }, undefined, {
+    onFormatError: context => { seen.push(context); return context.argument ? `missing:${context.argument}` : 'formatter'; },
+  });
+  assert.equal(tr.t('cart:items'), 'missing:n');
+  assert.equal(seen[0].error instanceof InvalidArgumentError, true);
+  assert.equal(seen[0].argument, 'n');
+  assert.equal(seen[0].surface, 'text');
+
+  const NativeNumberFormat = Intl.NumberFormat;
+  Intl.NumberFormat = class extends NativeNumberFormat {
+    constructor() { super('en'); throw new RangeError('native formatter failed'); }
+  };
+  try { assert.equal(tr.t('cart:items', { n: 1 }), 'formatter'); }
+  finally { Intl.NumberFormat = NativeNumberFormat; }
+  assert.equal(seen[1].error.message, 'native formatter failed');
+
+  const base = catalog({ title: 'Title' });
+  assert.throws(() => createTranslator({ locale: 'en', baseCatalogs: [base],
+    translations: [catalog({ title: '{n}' }, 'en')], onFormatError: () => '' }), CatalogError);
+  assert.equal(seen.length, 2);
+});
+
+test('handler failures propagate without invoking the other handler', () => {
+  const handlerFailure = new Error('handler failed');
+  let formatCalls = 0;
+  const missing = translator({ items: '{n, number}' }, undefined, {
+    onMissingKey: () => { throw handlerFailure; },
+    onFormatError: () => { formatCalls++; return 'format'; },
+  });
+  assert.throws(() => missing.t('cart:missing'), error => error === handlerFailure);
+  assert.equal(formatCalls, 0);
+
+  let missingCalls = 0;
+  const format = translator({ items: '{n, number}' }, undefined, {
+    onMissingKey: () => { missingCalls++; return 'missing'; },
+    onFormatError: () => { throw handlerFailure; },
+  });
+  assert.throws(() => format.t('cart:items'), error => error === handlerFailure);
+  assert.equal(missingCalls, 0);
+  assert.throws(() => translator({ title: 'Title' }, undefined, { onMissingKey: () => 3 }).t('cart:missing'), TypeError);
+});
+
+test('a consumed formatter failure marker cannot misclassify the same error from an argument getter', () => {
+  const shared = new RangeError('shared failure');
+  const NativeNumberFormat = Intl.NumberFormat;
+  let formatCalls = 0;
+  const tr = translator({ items: '{n, number}' }, undefined, {
+    onFormatError: () => { formatCalls++; return 'formatted'; },
+  });
+  Intl.NumberFormat = class { constructor() { throw shared; } };
+  try { assert.equal(tr.t('cart:items', { n: 1 }), 'formatted'); }
+  finally { Intl.NumberFormat = NativeNumberFormat; }
+  const args = {};
+  Object.defineProperty(args, 'n', { enumerable: true, get() { throw shared; } });
+  assert.throws(() => tr.t('cart:items', args), error => error === shared);
+  assert.equal(formatCalls, 1);
+});
+
+test('tParts fallbacks are frozen literal text and never parse markup', () => {
+  const fallback = '<strong data-action="submit">{name}</strong>';
+  const tr = translator({ items: '{n, number}' }, undefined, {
+    onMissingKey: () => fallback,
+    onFormatError: () => fallback,
+  });
+  for (const parts of [tr.tParts('cart:missing'), tr.tParts('cart:items')]) {
+    assert.deepEqual(parts, [{ type: 'text', value: fallback }]);
+    assert.equal(Object.isFrozen(parts), true);
+    assert.equal(Object.isFrozen(parts[0]), true);
+  }
+});
+
 test('prototype-like message and argument names remain literal and own properties', () => {
   const base = parseCatalog('{"__proto__":"{__proto__}","constructor":"Literal"}', { locale: 'ko', namespace: 'cart' });
   const i18n = createTranslator({ locale: 'ko', baseCatalogs: [base] });

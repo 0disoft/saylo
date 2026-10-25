@@ -318,6 +318,74 @@ test('new pair versions with identical text keep the snapshot; schema and text c
   assert.equal(schemaChanged.t('common:title', { name: 'test' }), 'English');
 });
 
+test('lazy error policy covers unloaded namespaces and persists through locale and refresh', async t => {
+  const seen = [];
+  const { i18n, change } = fixture(t, {
+    onMissingKey: context => {
+      seen.push(context);
+      return `${context.error.name}:${context.locale}:${context.surface}`;
+    },
+  });
+  assert.equal(i18n.t('cart:title'), 'NamespaceNotLoadedError:ko:text');
+  const parts = i18n.tParts('cart:title');
+  assert.deepEqual(parts, [{ type: 'text', value: 'NamespaceNotLoadedError:ko:parts' }]);
+  assert.equal(Object.isFrozen(parts), true);
+  assert.equal(Object.isFrozen(parts[0]), true);
+  assert.equal(i18n.t('unknown:title'), 'UnknownMessageError:ko:text');
+  await i18n.setLocale('en');
+  assert.equal(i18n.t('cart:title'), 'NamespaceNotLoadedError:en:text');
+  await i18n.loadNamespace('cart');
+  assert.equal(i18n.t('cart:title'), 'Cart');
+  assert.equal(i18n.t('cart:nope'), 'UnknownMessageError:en:text');
+  change('en', 'common', 'Hello');
+  await i18n.refresh();
+  assert.equal(i18n.t('common:title'), 'Hello');
+  assert.equal(seen.at(-1).locale, 'en');
+  assert.equal(seen.at(-1).baseLocale, 'ko');
+});
+
+test('source failures bypass render error policy', async t => {
+  let calls = 0;
+  const { i18n, handlers } = fixture(t, {
+    onMissingKey: () => { calls++; return 'missing'; },
+    onFormatError: () => { calls++; return 'formatted'; },
+  });
+  handlers.set('en/common', () => { throw new Error('source failed'); });
+  await assert.rejects(i18n.setLocale('en'), error => error instanceof CatalogLoadError && error.code === 'LOAD_FAILED');
+  assert.equal(calls, 0);
+  assert.equal(i18n.getSnapshot().locale, 'ko');
+});
+
+test('lazy format policy remains active after locale switches and refresh', async t => {
+  const parse = (text, locale = 'ko') => parseCatalog(JSON.stringify({ title: text, items: '{n, number}' }), { locale, namespace: 'common' });
+  const records = new Map([['ko', parse('기준')], ['en', parse('English', 'en')]]);
+  let registryRevision = 0;
+  const manifest = () => ({ sessionId: 'policy', registryRevision, baseLocale: 'ko',
+    availableLocales: ['ko', 'en'], availableNamespaces: ['common'],
+    catalogs: [...records].map(([locale, catalog]) => ({ key: { locale, namespace: 'common' }, catalogVersion: registryRevision + 1,
+      status: 'present', namespaceSchemaFingerprint: createBaseSchema(records.get('ko')).fingerprint })) });
+  const outcome = locale => ({ ...manifest().catalogs.find(catalog => catalog.key.locale === locale),
+    sessionId: 'policy', catalog: records.get(locale) });
+  const source = { readManifest: manifest, loadCatalog: async locale => outcome(locale) };
+  const seen = [];
+  const i18n = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['common'],
+    initialCatalogs: [outcome('ko')], onFormatError: context => {
+      seen.push(context);
+      return `formatted:${context.locale}`;
+    } });
+  t.after(() => i18n.dispose());
+  assert.equal(i18n.t('common:items'), 'formatted:ko');
+  await i18n.setLocale('en');
+  assert.equal(i18n.t('common:items'), 'formatted:en');
+  records.set('en', parse('Changed', 'en'));
+  registryRevision++;
+  await i18n.refresh();
+  assert.equal(i18n.t('common:title'), 'Changed');
+  assert.equal(i18n.t('common:items'), 'formatted:en');
+  assert.equal(seen.at(-1).baseLocale, 'ko');
+  assert.equal(seen.at(-1).error.name, 'InvalidArgumentError');
+});
+
 function fixture(t, options = {}) {
   const records = new Map([
     ['ko/common', catalog('기준')], ['en/common', catalog('English', 'en')], ['fr/common', catalog('Français', 'fr')],
