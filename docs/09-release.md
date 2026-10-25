@@ -1,6 +1,6 @@
 # 09. Release
 
-The current source targets `0.1.0-alpha.7`. Its [release record](../releases/0.1.0-alpha.7.md) tracks publication and registry acceptance; the alpha.6 results below remain historical evidence.
+Alpha.7 was published on 2026-10-25. The [release record](../releases/0.1.0-alpha.7.md), [CI run](https://github.com/0disoft/saylo/actions/runs/40187216309), and [approved manifest](../releases/0.1.0-alpha.7.json) record publication of all five packages and registry download integrity. Existing translator/store/Svelte call signatures remain compatible. The alpha.6 results below remain historical evidence.
 
 Alpha.6 was published on 2026-10-25. The five public packages use `0.1.0-alpha.6`; Vue stays private at alpha.4. The [CI release](https://github.com/0disoft/saylo/actions/runs/40131860171) and [CI-approved manifest](../releases/0.1.0-alpha.6.json) record publication and artifact integrity. The [alpha.6 release record](../releases/0.1.0-alpha.6.md) records the completed registry acceptance. The published alpha.5 [release record](../releases/0.1.0-alpha.5.md) and [manifest](../releases/0.1.0-alpha.5.json) remain as historical evidence.
 
@@ -59,7 +59,7 @@ Compare the published artifacts with `npm run verify:registry`. The current comm
 
 | Input | Value |
 | --- | --- |
-| `version` | Exact committed version string. Default `0.1.0-alpha.4` |
+| `version` | Exact committed version string. Default `0.1.0-alpha.7` |
 | `dist_tag` | `alpha`, `next`, or `latest`. Default `alpha` |
 | `publish` | boolean. Default `false` |
 | `verify_oidc` | boolean. Default `false`. When `true`, verify the OIDC token exchange for all five Trusted Publishers before validation or publication |

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "@0disoft/saylo-core",
+    "version": "0.1.0-alpha.7",
+    "filename": "0disoft-saylo-core-0.1.0-alpha.7.tgz",
+    "integrity": "sha512-9cIogKASd7uTeUl1tG8tklJBkEzBKngsy7iMws5vnhX6/plkKtMyBfH8ZGVxAKtXrm8UvKqrlQGde+9BU2tysw=="
+  },
+  {
+    "name": "@0disoft/saylo-react",
+    "version": "0.1.0-alpha.7",
+    "filename": "0disoft-saylo-react-0.1.0-alpha.7.tgz",
+    "integrity": "sha512-VBHNvoJ5P3cQWxnqGlpQhfx+j7EleQWs6pD/hj878dduGWO4iUGCTydYdlyEKOXPuMtl4im2C5L83CRkfMxu/A=="
+  },
+  {
+    "name": "@0disoft/saylo-svelte",
+    "version": "0.1.0-alpha.7",
+    "filename": "0disoft-saylo-svelte-0.1.0-alpha.7.tgz",
+    "integrity": "sha512-nVorejyu1JLomLHmdYyppRHvQ8Ghmt9x9tdb4Bjp/oCmVRJyjzGx3uFsqB3UvzmUtG2SvBOK3yb09QUaxBW+oQ=="
+  },
+  {
+    "name": "@0disoft/saylo-typegen",
+    "version": "0.1.0-alpha.7",
+    "filename": "0disoft-saylo-typegen-0.1.0-alpha.7.tgz",
+    "integrity": "sha512-cZPNWRst186pCPkfEFxy1u5668kZ0o6vYDMsahxs0JRd+mlVSYjYq8ZXrcKa7DIeJOT1rX75mHETu17KeNCPDw=="
+  },
+  {
+    "name": "@0disoft/saylo-vite",
+    "version": "0.1.0-alpha.7",
+    "filename": "0disoft-saylo-vite-0.1.0-alpha.7.tgz",
+    "integrity": "sha512-RPhFrwsbdRyeUOVafcaXthA2MMj7wbMXp8ixadBSimJ+XF/bvP3dCiC2Q6D5ID7LVvlGvH8uygFhiCOAIWrt4g=="
+  }
+]
