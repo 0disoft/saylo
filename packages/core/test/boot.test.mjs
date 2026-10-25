@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { getEventListeners } from 'node:events';
 import { UnknownMessageError, createBaseSchema, createBootSnapshot, createI18n, createServerI18n, decodeBootSnapshot,
   parseCatalog, serializeBootSnapshot } from '@0disoft/saylo-core';
 import { validateBootSnapshot } from '../dist/boot.js';
@@ -124,6 +125,81 @@ function fixture() {
     initialCatalogs: ['demo', 'help'].flatMap(n => [...new Set(['ko', locale])].map(l => outcome(l, n))) });
   return { source, create, outcome, change() { records[0] = parse('ko', 'demo', { title: '최신 문구', when: '{at, date, short}', '__proto__.title': 'literal' }); revision++; } };
 }
+
+function heldPreparation() {
+  const f = fixture(), gate = Promise.withResolvers(), started = Promise.withResolvers();
+  const source = { readManifest: f.source.readManifest, loadCatalog: async (locale, namespace) => {
+    started.resolve();
+    await gate.promise;
+    return f.outcome(locale, namespace);
+  } };
+  return { source, gate, started };
+}
+
+test('SSR pins the requested namespaces before awaiting caller-owned I/O', async t => {
+  const f = heldPreparation(), namespaces = ['demo'];
+  t.after(() => f.gate.resolve());
+  const preparing = createServerI18n({ catalogSource: f.source, locale: 'en', initialNamespaces: namespaces });
+  await f.started.promise;
+  namespaces.splice(0, 1, 'help');
+  f.gate.resolve();
+  const instance = await preparing;
+  t.after(() => instance.dispose());
+  assert.deepEqual(instance.getSnapshot().loadedNamespaces, ['demo']);
+  assert.deepEqual(instance.getBootSnapshot().loadedNamespaces, ['demo']);
+  assert.equal(instance.t('demo:title'), 'English');
+  assert.deepEqual(namespaces, ['help'], 'The caller still owns its array');
+});
+
+test('SSR cleans up the original abort signal when the caller reuses its options object', async t => {
+  const f = heldPreparation(), original = new AbortController(), replacement = new AbortController();
+  t.after(() => { f.gate.resolve(); original.abort(); replacement.abort(); });
+  const options = { catalogSource: f.source, locale: 'en', initialNamespaces: ['demo'], signal: original.signal };
+  const preparing = createServerI18n(options);
+  await f.started.promise;
+  options.signal = replacement.signal;
+  f.gate.resolve();
+  const instance = await preparing;
+  t.after(() => instance.dispose());
+  const unrelatedListeners = getEventListeners(replacement.signal, 'abort').length;
+  instance.dispose();
+  assert.equal(getEventListeners(original.signal, 'abort').length, 0, 'No SSR listener may remain after disposal');
+  assert.equal(unrelatedListeners, 0, 'The instance must not adopt another request signal');
+});
+
+test('SSR cancellation keeps the original request reason after options reuse', async t => {
+  const f = heldPreparation(), original = new AbortController(), replacement = new AbortController(), clock = scheduler();
+  t.after(() => { f.gate.resolve(); original.abort(); replacement.abort(); });
+  const options = { catalogSource: f.source, locale: 'en', initialNamespaces: ['demo'], signal: original.signal, schedule: clock.schedule };
+  const preparing = assert.rejects(createServerI18n(options), { code: 'ABORTED', cause: 'original request closed' });
+  await f.started.promise;
+  options.signal = replacement.signal;
+  replacement.abort('another request closed');
+  original.abort('original request closed');
+  await preparing;
+  assert.equal(getEventListeners(original.signal, 'abort').length, 0);
+  assert.equal(getEventListeners(replacement.signal, 'abort').length, 0);
+  assert.equal(clock.size, 0);
+});
+
+test('SSR retains its original catalog source and scheduler after preparation', async t => {
+  for (const field of ['catalogSource', 'schedule']) await t.test(field, async t => {
+    const f = heldPreparation(), clock = scheduler();
+    t.after(() => f.gate.resolve());
+    const options = { catalogSource: f.source, locale: 'en', initialNamespaces: ['demo'], schedule: clock.schedule };
+    const preparing = createServerI18n(options);
+    await f.started.promise;
+    const unexpected = () => { throw new Error(`Reused options substituted ${field}`); };
+    if (field === 'catalogSource') options.catalogSource = { readManifest: unexpected, loadCatalog: unexpected };
+    else options.schedule = unexpected;
+    f.gate.resolve();
+    const instance = await preparing;
+    t.after(() => instance.dispose());
+    await instance.loadNamespace('help');
+    assert.equal(instance.t('help:title'), '도움말');
+    assert.equal(clock.size, 0);
+  });
+});
 
 test('compact boot v2 restores the canonical v1 snapshot and rejects forged metadata', t => {
   const f = fixture(), server = f.create();
