@@ -1,0 +1,6 @@
+{
+  "extends": "$app/tsconfig",
+  "compilerOptions": { "strict": true, "types": ["$app/types", "node", "vite/client", "@0disoft/saylo-vite/virtual"] },
+  "include": ["src"],
+  "exclude": ["node_modules", "build"]
+}

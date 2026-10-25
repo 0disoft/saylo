@@ -10,4 +10,7 @@ packages/vite/docs/
 packages/svelte/test/.compiled/
 examples/sveltekit/.svelte-kit/
 examples/sveltekit/build/
+examples/astro-static/.astro/
+examples/sveltekit-static/.svelte-kit/
+examples/sveltekit-static/build/
 benchmarks/.live-update-*/

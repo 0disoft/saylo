@@ -1,0 +1,28 @@
+{
+  "name": "saylo-sveltekit-static-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "check": "saylo-typegen --config saylo.config.json && saylo check --config saylo.config.json && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "build": "bun run check && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@0disoft/saylo-core": "^0.1.0-alpha.8",
+    "@0disoft/saylo-svelte": "^0.1.0-alpha.8"
+  },
+  "devDependencies": {
+    "@0disoft/saylo-typegen": "^0.1.0-alpha.8",
+    "@0disoft/saylo-vite": "^0.1.0-alpha.8",
+    "@sveltejs/adapter-static": "4",
+    "@sveltejs/kit": "3",
+    "@sveltejs/vite-plugin-svelte": "7",
+    "@types/node": "24",
+    "svelte": "5",
+    "svelte-check": "4",
+    "typescript": "6",
+    "vite": "8"
+  },
+  "engines": { "node": "24.x" }
+}
