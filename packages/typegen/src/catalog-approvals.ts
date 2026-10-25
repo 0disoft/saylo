@@ -12,6 +12,9 @@ export interface ReviewApproval {
   readonly id: string;
   readonly sourceHash: string;
   readonly translationHash: string;
+  /** Operator-supplied audit context; not an authenticated identity. */
+  readonly reviewer?: string;
+  readonly reviewedAt?: string;
 }
 export interface ReviewApprovals {
   readonly format: 'saylo-review-approvals/v1';
@@ -38,7 +41,9 @@ export function parseReviewApprovals(source: string, baseLocale: string): Review
     throw new TypeError('Invalid review approvals format or base locale.');
   const identities = new Set<string>();
   for (const entry of value.entries) {
-    if (!record(entry) || !fields(entry, ['locale', 'namespace', 'id', 'sourceHash', 'translationHash']) ||
+    if (!record(entry) || !fields(entry, ['locale', 'namespace', 'id', 'sourceHash', 'translationHash',
+      ...(Object.hasOwn(entry, 'reviewer') ? ['reviewer'] : []), ...(Object.hasOwn(entry, 'reviewedAt') ? ['reviewedAt'] : [])]) ||
+        !validReviewAttribution(entry) ||
         typeof entry.locale !== 'string' || !entry.locale || Intl.getCanonicalLocales(entry.locale)[0] !== entry.locale || entry.locale === baseLocale ||
         typeof entry.namespace !== 'string' || !entry.namespace || entry.namespace.startsWith('.') || /[:/\\\x00-\x1f]/.test(entry.namespace) ||
         typeof entry.id !== 'string' || !entry.id || entry.id.includes(':') || !hash(entry.sourceHash) || !hash(entry.translationHash))
@@ -48,6 +53,13 @@ export function parseReviewApprovals(source: string, baseLocale: string): Review
     identities.add(identity);
   }
   return value as unknown as ReviewApprovals;
+}
+
+export function validReviewAttribution(value: { readonly reviewer?: unknown; readonly reviewedAt?: unknown }): boolean {
+  if (value.reviewer === undefined && value.reviewedAt === undefined) return true;
+  if (typeof value.reviewer !== 'string' || !value.reviewer.trim() || value.reviewer.length > 200 || /[\x00-\x1f]/.test(value.reviewer) ||
+      typeof value.reviewedAt !== 'string') return false;
+  try { return new Date(value.reviewedAt).toISOString() === value.reviewedAt; } catch { return false; }
 }
 
 export async function readReviewApprovals(file: string, baseLocale: string, allowMissing = false): Promise<ApprovalFile> {

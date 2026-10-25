@@ -1,5 +1,5 @@
 import { createReviewBaseline } from './catalog-review.js';
-import { approvalIdentity, translationHash } from './catalog-approvals.js';
+import { approvalIdentity, translationHash, validReviewAttribution } from './catalog-approvals.js';
 import type { ApprovalFile, ReviewApproval, ReviewApprovals } from './catalog-approvals.js';
 import type { CatalogInspection } from './catalog-files.js';
 import type { CatalogCheckReport } from './catalog-audit.js';
@@ -24,7 +24,9 @@ export interface ApprovalPlan {
 }
 
 /** The workfile pins the human-reviewed text; approval never edits a translation or a source baseline. */
-export function planReviewApproval(input: CatalogInspection, checked: CatalogCheckReport, work: TranslationWorkfile, ledger: ApprovalFile): ApprovalPlan {
+export function planReviewApproval(input: CatalogInspection, checked: CatalogCheckReport, work: TranslationWorkfile, ledger: ApprovalFile,
+  attribution: { readonly reviewer?: string; readonly reviewedAt?: string } = {}): ApprovalPlan {
+  if (!validReviewAttribution(attribution)) throw new TypeError('Review attribution requires reviewer and a canonical ISO reviewedAt timestamp.');
   const diagnostics: { code: string; message: string }[] = checked.diagnostics.filter(issue => issue.severity === 'error' &&
     !['MISSING_MESSAGE', 'MISSING_NAMESPACE', 'UNKNOWN_MESSAGE', 'NAMESPACE_MISMATCH'].includes(issue.code))
     .map(issue => ({ code: issue.code, message: `${issue.sourceName}: ${issue.message}` }));
@@ -51,7 +53,7 @@ export function planReviewApproval(input: CatalogInspection, checked: CatalogChe
       fail('TRANSLATION_CONFLICT', 'Current translation differs from the reviewed workfile. Import or export fresh work first.'); continue;
     }
     const approved: ReviewApproval = { locale: entry.locale, namespace: entry.namespace, id: entry.id,
-      sourceHash, translationHash: translationHash(message) };
+      sourceHash, translationHash: translationHash(message), ...attribution };
     const identity = approvalIdentity(approved), previous = entries.get(identity);
     if (previous?.sourceHash === approved.sourceHash && previous.translationHash === approved.translationHash) continue;
     entries.set(identity, approved); changes.push(approved);

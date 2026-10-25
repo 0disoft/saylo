@@ -25,6 +25,10 @@ Options:
   --apply                   Apply init/import (atomic per file) or atomically update approval JSON.
   --file <work.json>         Translation workfile input; supported with import, approve or refresh.
   --with-context            Export/refresh v2 workfiles with advisory argument types and allowed tags.
+  --metadata <file.json>    Export/refresh v3 workfiles with descriptions, glossary, screenshots and limits.
+  --format <json|po>        Translation export format; PO preserves ICU and workfile checkpoints.
+  --reviewer <name>         Record operator-supplied reviewer context with approve; not authentication.
+  --reviewed-at <ISO>       Optional canonical timestamp with --reviewer; defaults to the current time.
   --out-file <new.json>      Save export/snapshot/refresh JSON exclusively; stdout reports writtenFiles.
   --json                    Emit one machine-readable JSON result on stdout.
   --help, -h                Show help without reading files.
@@ -46,6 +50,8 @@ export function parseCatalogArguments(args: readonly string[]) {
     locales: { type: 'string' }, json: { type: 'boolean' }, diff: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
     baseline: { type: 'string' }, reviews: { type: 'string' }, 'dry-run': { type: 'boolean' },
     file: { type: 'string' }, apply: { type: 'boolean' }, 'with-context': { type: 'boolean' }, 'out-file': { type: 'string' },
+    metadata: { type: 'string' }, reviewer: { type: 'string' }, 'reviewed-at': { type: 'string' },
+    format: { type: 'string' },
   } });
   if (values.help) return { kind: 'help' as const, values };
   const command = positionals[0] as CatalogCommand | undefined;
@@ -56,10 +62,18 @@ export function parseCatalogArguments(args: readonly string[]) {
     throw new CatalogUsageError('--diff is only supported with import --dry-run.');
   if (values['with-context'] && !['export', 'refresh'].includes(command))
     throw new CatalogUsageError('--with-context is only supported with export or refresh.');
+  if (values.format !== undefined && (command !== 'export' || !['json', 'po'].includes(values.format)))
+    throw new CatalogUsageError('--format json|po is only supported with export.');
+  if (values.format === 'po' && values.json && values['out-file'] === undefined)
+    throw new CatalogUsageError('PO stdout cannot also be JSON. Use --out-file for a JSON write report.');
+  if (values.metadata !== undefined && !['export', 'refresh'].includes(command)) throw new CatalogUsageError('--metadata is only supported with export or refresh.');
+  if ((values.reviewer !== undefined || values['reviewed-at'] !== undefined) && command !== 'approve')
+    throw new CatalogUsageError('Review attribution is only supported with approve.');
+  if (values['reviewed-at'] !== undefined && values.reviewer === undefined) throw new CatalogUsageError('--reviewed-at requires --reviewer.');
   if (values['out-file'] !== undefined && !['export', 'snapshot', 'refresh'].includes(command))
     throw new CatalogUsageError('--out-file is only supported with export, snapshot or refresh.');
-  if (values['out-file'] !== undefined && (!values['out-file'].trim() || !values['out-file'].endsWith('.json')))
-    throw new CatalogUsageError('--out-file must name a new .json file.');
+  if (values['out-file'] !== undefined && (!values['out-file'].trim() || !values['out-file'].endsWith(values.format === 'po' ? '.po' : '.json')))
+    throw new CatalogUsageError('--out-file must name a new .json file (or .po with export --format po).');
   const usesWorkfile = ['import', 'approve'].includes(command);
   if (!['sync', 'import', 'approve'].includes(command) && values['dry-run']) throw new CatalogUsageError('--dry-run is only supported with sync, import or approve.');
   if (usesWorkfile && (!values.file || !!values.apply === !!values['dry-run']))

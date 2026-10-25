@@ -15,8 +15,11 @@ import { planReviewApproval } from './catalog-approve.js';
 import { writeReviewApproval, ReviewApprovalWriteError } from './review-write.js';
 import { refreshTranslationWorkfile } from './catalog-refresh.js';
 import { CommandInterruptedError, createCliCancellation } from './cli-cancellation.js';
-import { CatalogOutputError, writeCatalogOutput } from './catalog-output.js';
+import { CatalogOutputError, writeCatalogOutput, writeCatalogTextOutput } from './catalog-output.js';
 import { InitApplyError } from './init-error.js';
+import { readTranslationMetadata } from './translation-metadata.js';
+import { serializeTranslationPo } from './catalog-po.js';
+import type { TranslationWorkfile } from './catalog-workfile.js';
 
 let json = process.argv.includes('--json');
 let cancellation: ReturnType<typeof createCliCancellation> | undefined;
@@ -53,25 +56,30 @@ async function runCatalog(args: readonly string[]): Promise<void> {
     const approvals = ['check', 'sync', 'export', 'approve', 'refresh'].includes(command) && config.reviews
       ? await readReviewApprovals(config.reviews, config.baseLocale, ['export', 'approve', 'refresh'].includes(command)) : undefined;
     const report = approvals && command !== 'approve' ? applyReviewApprovals(inspected.inspection, compared, approvals.approvals) : compared;
+    const metadata = values.metadata === undefined ? undefined : await readTranslationMetadata(values.metadata);
+    const workOptions = { withContext: values['with-context'] === true, ...(metadata ? { metadata } : {}) };
     cancellation?.throwIfCancelled();
     const emitJson = async (value: unknown, blocked: boolean, canSave: boolean) => {
-      if (values['out-file'] === undefined || !canSave) { cancellation?.throwIfCancelled(); console.log(JSON.stringify(value)); return; }
-      const protectedFiles = [filename, values.file, command === 'snapshot' ? undefined : config.baseline, approvals?.file]
+      const po = command === 'export' && values.format === 'po' && canSave;
+      const output = po ? serializeTranslationPo(value as TranslationWorkfile) : value;
+      if (values['out-file'] === undefined || !canSave) { cancellation?.throwIfCancelled(); console.log(po ? output : JSON.stringify(output)); return; }
+      const protectedFiles = [filename, values.file, values.metadata, command === 'snapshot' ? undefined : config.baseline, approvals?.file]
         .filter((file): file is string => file !== undefined);
-      const writtenFiles = await writeCatalogOutput(values['out-file'], value,
+      const writtenFiles = await (po ? writeCatalogTextOutput : writeCatalogOutput)(values['out-file'], output as string,
         { localesDir: config.localesDir, protectedFiles, signal: cancellation!.signal });
       cancellation!.throwIfCancelled(writtenFiles);
       console.log(JSON.stringify({ format: 'saylo-file-output/v1', command, writtenFiles, blocked }));
     };
     if (command === 'refresh') {
       const work = await readTranslationWorkfile(values.file!, config.baseLocale);
-      const result = refreshTranslationWorkfile(inspected.inspection, report, work, { withContext: values['with-context'] === true });
+      const result = refreshTranslationWorkfile(inspected.inspection, report, work, workOptions);
       await emitJson(result, result.blocked, result.workfile !== null);
       process.exitCode = result.blocked ? 1 : 0;
     } else if (command === 'approve') {
       const work = await readTranslationWorkfile(values.file!, config.baseLocale);
       cancellation?.throwIfCancelled();
-      const plan = planReviewApproval(inspected.inspection, report, work, approvals!);
+      const plan = planReviewApproval(inspected.inspection, report, work, approvals!, values.reviewer === undefined ? {} : {
+        reviewer: values.reviewer, reviewedAt: values['reviewed-at'] ?? new Date().toISOString() });
       const result = values.apply && !plan.report.blocked ? await writeReviewApproval(plan, { signal: cancellation!.signal }) : plan.report;
       cancellation?.throwIfCancelled(result.writtenFiles);
       console.log(json ? JSON.stringify(result) : `${result.diagnostics.map(issue => `${issue.code}: ${issue.message}`).join('\n')}\n[saylo:approve] ${result.blocked ? 'blocked' : result.dryRun ? 'dry-run' : 'approved'}; ${result.changes.length} approval(s); ${result.writtenFiles.length} ledger file(s) written.`);
@@ -89,7 +97,7 @@ async function runCatalog(args: readonly string[]): Promise<void> {
       process.exitCode = result.blocked ? 1 : 0;
     } else if (command === 'export') {
       const plan = planCatalogSync(inspected.inspection, report);
-      await emitJson(plan.blocked ? report : createTranslationWorkfile(inspected.inspection, report, { withContext: values['with-context'] === true }), plan.blocked, !plan.blocked);
+      await emitJson(plan.blocked ? report : createTranslationWorkfile(inspected.inspection, report, workOptions), plan.blocked, !plan.blocked);
       process.exitCode = plan.blocked ? 1 : 0;
     } else if (command === 'snapshot') {
       const blocked = report.diagnostics.some(issue => issue.severity === 'error' && isBlockingIssue(issue.code));

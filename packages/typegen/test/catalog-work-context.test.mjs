@@ -10,9 +10,71 @@ import { createTranslationWorkfile, parseTranslationWorkfile } from '../dist/cat
 import { refreshTranslationWorkfile } from '../dist/catalog-refresh.js';
 import { planTranslationImport } from '../dist/catalog-import.js';
 import { planReviewApproval } from '../dist/catalog-approve.js';
+import { parseTranslationMetadata } from '../dist/translation-metadata.js';
+import { parseReviewApprovals } from '../dist/catalog-approvals.js';
+import { parseTranslationPo, serializeTranslationPo } from '../dist/catalog-po.js';
 
 const cli = fileURLToPath(new URL('../dist/catalog-cli.js', import.meta.url));
 const find = (work, id) => work.entries.find(entry => entry.id === id);
+
+test('CLI PO export is exclusive and edited work returns through the same validated import path', async t => {
+  const f = await fixture(t);
+  const saved = f.run(['export', '--with-context', '--format', 'po', '--out-file', 'work.po', '--json']);
+  assert.equal(saved.status, 0, saved.stderr + saved.stdout);
+  const po = await readFile(path.join(f.root, 'work.po'), 'utf8');
+  const parsed = parseTranslationPo(po, 'ko');
+  find(parsed, 'plain').translation = 'Welcome {name}';
+  await writeFile(path.join(f.root, 'work.po'), serializeTranslationPo(parsed));
+  const preview = f.run(['import', '--file', 'work.po', '--dry-run', '--json']);
+  assert.equal(preview.status, 0, preview.stderr + preview.stdout);
+  assert.equal(JSON.parse(preview.stdout).changes.length, 1);
+  assert.equal(f.run(['export', '--format', 'po', '--out-file', 'work.po']).status, 2);
+  find(parsed, 'numeric').translation = '{count, select, x {bad} other {bad}}';
+  await writeFile(path.join(f.root, 'work.po'), serializeTranslationPo(parsed));
+  assert.equal(f.run(['import', '--file', 'work.po', '--dry-run', '--json']).status, 1);
+});
+
+test('v3 advisory metadata roundtrips, refreshes and never relaxes the current catalog contract', async t => {
+  const f = await fixture(t);
+  const metadata = parseTranslationMetadata(JSON.stringify({ format: 'saylo-translation-metadata/v1', messages: {
+    'common:numeric': { description: 'Checkout total', maxLength: 20, screenshots: ['https://example.test/cart'], glossary: { total: 'Amount due' } } } }));
+  const work = createTranslationWorkfile(f.checked.inspection, f.checked.report, { metadata });
+  assert.equal(work.format, 'saylo-translation-work/v3');
+  const parsed = parseTranslationWorkfile(JSON.stringify(work), 'ko');
+  assert.deepEqual(find(parsed, 'numeric').context.metadata, metadata.messages['common:numeric']);
+  find(parsed, 'numeric').context.metadata.description = 'Edited translator note';
+  assert.equal(metadata.messages['common:numeric'].description, 'Checkout total');
+  const refreshed = refreshTranslationWorkfile(f.checked.inspection, f.checked.report, parsed);
+  assert.equal(find(refreshed.workfile, 'numeric').context.metadata.description, 'Edited translator note');
+  const updated = refreshTranslationWorkfile(f.checked.inspection, f.checked.report, parsed, { metadata });
+  assert.equal(find(updated.workfile, 'numeric').context.metadata.description, 'Checkout total');
+  find(parsed, 'numeric').translation = '{count, select, foo {x} other {y}}';
+  assert.equal(planTranslationImport(f.checked.inspection, f.checked.report, f.config, parsed).report.blocked, true);
+  for (const notes of [{ maxLength: 0 }, { screenshots: ['javascript:alert(1)'] }, { glossary: [] }])
+    assert.throws(() => parseTranslationMetadata(JSON.stringify({ format: 'saylo-translation-metadata/v1', messages: { 'common:numeric': notes } })));
+  await writeFile(path.join(f.root, 'metadata.json'), JSON.stringify(metadata));
+  const result = f.run(['export', '--metadata', 'metadata.json', '--json']);
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  assert.equal(JSON.parse(result.stdout).format, 'saylo-translation-work/v3');
+});
+
+test('review attribution is optional audit context and does not bypass approval checkpoints', async t => {
+  const f = await fixture(t);
+  await f.write('en', { numeric: '{count, number}' });
+  const current = await inspectProject(f.config);
+  const work = structuredClone(f.work);
+  work.entries = [find(work, 'numeric')]; work.entries[0].translation = '{count, number}';
+  const ledger = { file: path.join(f.root, 'reviews.json'), source: null,
+    approvals: { format: 'saylo-review-approvals/v1', baseLocale: 'ko', entries: [] } };
+  const attribution = { reviewer: 'Translator', reviewedAt: '2026-10-25T00:00:00.000Z' };
+  const plan = planReviewApproval(current.inspection, current.report, work, ledger, attribution);
+  assert.equal(plan.report.blocked, false);
+  assert.equal(plan.approvals.entries[0].reviewer, 'Translator');
+  assert.deepEqual(parseReviewApprovals(JSON.stringify(plan.approvals), 'ko'), plan.approvals);
+  assert.throws(() => planReviewApproval(current.inspection, current.report, work, ledger, { reviewer: 'x' }));
+  work.entries[0].source = 'Stale source';
+  assert.equal(planReviewApproval(current.inspection, current.report, work, ledger, attribution).report.blocked, true);
+});
 async function fixture(t) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-work-context-'));
   t.after(async () => {

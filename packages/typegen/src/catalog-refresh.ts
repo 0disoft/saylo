@@ -34,8 +34,9 @@ export function refreshTranslationWorkfile(input: CatalogInspection, report: Cat
     !['UNKNOWN_MESSAGE', 'NAMESPACE_MISMATCH'].includes(issue.code)) };
   if (planCatalogSync(input, planningReport).blocked)
     return { ...result, blocked: true, workfile: null, conflicts: [], alreadyApplied: [] };
-  const withContext = options.withContext === true || previous.format === 'saylo-translation-work/v2';
-  const fresh = createTranslationWorkfile(input, planningReport, { withContext });
+  const withContext = options.withContext === true || previous.format !== 'saylo-translation-work/v1';
+  const withMetadata = options.metadata !== undefined || previous.format === 'saylo-translation-work/v3';
+  const fresh = createTranslationWorkfile(input, planningReport, { ...options, withContext, withMetadata });
   const entries = new Map(fresh.entries.map(entry => [identity(entry), entry]));
   const bases = new Map(input.files.filter(file => file.catalog.locale === report.baseLocale).map(file => [file.catalog.namespace, file.catalog]));
   const translations = new Map(input.files.map(file => [pair(file.catalog.locale, file.catalog.namespace), file.catalog]));
@@ -51,7 +52,8 @@ export function refreshTranslationWorkfile(input: CatalogInspection, report: Cat
       locale: entry.locale, namespace: entry.namespace, id: entry.id, reason: translation === null ? 'add' : 'review',
       source: source.source, sourceHash: hashes[`${entry.namespace}:${entry.id}`]!,
       originalTranslation: translation, translation: null,
-      ...(withContext ? { context: createTranslationWorkContext(source) } : {}),
+      ...(withContext ? { context: createTranslationWorkContext(source, withMetadata
+        ? options.metadata?.messages[`${entry.namespace}:${entry.id}`] ?? (options.metadata ? null : entry.context?.metadata ?? null) : undefined) } : {}),
     };
     let code: TranslationRefreshConflict['code'] | undefined;
     if (!targets.has(entry.locale)) code = 'UNKNOWN_TARGET';
