@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createTextFormatter } from '../dist/formatters.js';
 import {
   CatalogError, InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError,
   createTranslator, parseCatalog,
@@ -10,6 +11,56 @@ const catalog = (messages, locale = 'ko', namespace = 'cart') =>
 const translator = (base, translated, options = {}) => createTranslator({
   locale: 'en', baseCatalogs: [catalog(base)],
   translations: translated === undefined ? [] : [catalog(translated, 'en')], ...options,
+});
+
+function countMessageKeys(run) {
+  const stringify = JSON.stringify;
+  const keys = [];
+  JSON.stringify = function (value, ...args) {
+    if (Array.isArray(value) && value.length === 5 && value[0] === 'cart') keys.push([...value]);
+    return stringify.call(this, value, ...args);
+  };
+  try { run(); } finally { JSON.stringify = stringify; }
+  return keys;
+}
+
+test('hot text and rich calls serialize a long message cache key once', () => {
+  const prefix = 'x'.repeat(32768);
+  const bound = createTranslator({ locale: 'ko', baseCatalogs: [catalog({ title: prefix + ' {name}' })] });
+  const keys = countMessageKeys(() => {
+    for (let i = 0; i < 100; i++) {
+      assert.equal(bound.t('cart:title', { name: String(i) }), prefix + ' ' + i);
+      assert.deepEqual(bound.tParts('cart:title', { name: String(i) }), [{ type: 'text', value: prefix + ' ' + i }]);
+    }
+  });
+  assert.equal(keys.length, 1);
+});
+
+test('message key memoization has a bounded working set and refreshes hot entries', () => {
+  const messages = Object.fromEntries(Array.from({ length: 257 }, (_, i) => [`m${i}`, `Message ${i}`]));
+  const bound = createTranslator({ locale: 'ko', baseCatalogs: [catalog(messages)] });
+  const keys = countMessageKeys(() => {
+    for (let i = 0; i < 256; i++) bound.t(`cart:m${i}`);
+    bound.t('cart:m0'); // Refresh m0 before m256 evicts m1.
+    bound.t('cart:m256');
+    bound.t('cart:m0');
+    bound.t('cart:m1');
+  });
+  assert.equal(keys.length, 258);
+  assert.equal(keys.filter(key => key[1] === 'm0').length, 1);
+  assert.equal(keys.filter(key => key[1] === 'm1').length, 2);
+});
+
+test('a shared message identity retains namespace, ID and formatting locale in its cache key', () => {
+  const message = catalog({ amount: '{n, number}' }).messages.amount;
+  const format = createTextFormatter('UTC');
+  const keys = countMessageKeys(() => {
+    assert.equal(format('cart', 'amount', message, 'en', { n: 1234.5 }), '1,234.5');
+    assert.equal(format('cart', 'other', message, 'de', { n: 1234.5 }), '1.234,5');
+    assert.equal(format('other', 'amount', message, 'de', { n: 1234.5 }), '1.234,5');
+    assert.equal(format('cart', 'amount', message, 'en', { n: 1234.5 }), '1,234.5');
+  });
+  assert.deepEqual(keys.map(key => [key[1], key[3]]), [['amount', 'en'], ['other', 'de'], ['amount', 'en']]);
 });
 
 test('a translator isolates mutable catalogs and ASTs without freezing caller data', () => {

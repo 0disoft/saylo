@@ -6,11 +6,11 @@ import { freezeRichParts, projectRichText } from './rich-text.js';
 
 const FORMATTER_CACHE_POLICY = Object.freeze({ intlEntries: 128, messageEntries: 256 });
 
-class BoundedCache<T> {
-  private readonly values = new Map<string, T>();
+class BoundedCache<T, K = string> {
+  private readonly values = new Map<K, T>();
   constructor(private readonly limit: number) {}
 
-  get(key: string, create: () => T): T {
+  get(key: K, create: () => T): T {
     const cached = this.values.get(key);
     if (cached !== undefined) {
       this.values.delete(key);
@@ -28,6 +28,11 @@ function intlKey(locale: unknown, options: object | undefined): string {
   return JSON.stringify([locale, Object.entries(options ?? {}).filter(([, value]) => value !== undefined).sort(([a], [b]) => a.localeCompare(b))]);
 }
 
+function messageKey(namespace: string, id: string, message: ParsedMessage, locale: string, timeZone: string) {
+  return { namespace, id, source: message.source, locale,
+    key: JSON.stringify([namespace, id, message.source, locale, timeZone]) };
+}
+
 /** Two separate bounded caches; text changes do not invalidate native Intl formatters. */
 export function createTextFormatter(timeZone: string) {
   const numbers = new BoundedCache<Intl.NumberFormat>(FORMATTER_CACHE_POLICY.intlEntries);
@@ -35,6 +40,15 @@ export function createTextFormatter(timeZone: string) {
   const plurals = new BoundedCache<Intl.PluralRules>(FORMATTER_CACHE_POLICY.intlEntries);
   const messages = new BoundedCache<IntlMessageFormat>(FORMATTER_CACHE_POLICY.messageEntries);
   const richMessages = new BoundedCache<{ formatter: IntlMessageFormat; tags: ReadonlyMap<string, string> }>(FORMATTER_CACHE_POLICY.messageEntries);
+  // Bound identity hints as well as formatter instances: a WeakMap would retain
+  // serialized keys for every still-live catalog message even after LRU eviction.
+  const messageKeys = new BoundedCache<ReturnType<typeof messageKey>, ParsedMessage>(FORMATTER_CACHE_POLICY.messageEntries);
+  const keyFor = (namespace: string, id: string, message: ParsedMessage, locale: string) => {
+    const hint = messageKeys.get(message, () => messageKey(namespace, id, message, locale, timeZone));
+    if (hint.namespace !== namespace || hint.id !== id || hint.source !== message.source || hint.locale !== locale)
+      Object.assign(hint, messageKey(namespace, id, message, locale, timeZone));
+    return hint.key;
+  };
   const formatters: Formatters = {
     getNumberFormat: (locale, options) => numbers.get(intlKey(locale, options), () => new Intl.NumberFormat(locale, options)),
     getDateTimeFormat: (locale, options) => {
@@ -45,8 +59,9 @@ export function createTextFormatter(timeZone: string) {
     getPluralRules: (locale, options) => plurals.get(intlKey(locale, options), () => new Intl.PluralRules(locale, options)),
   };
   const text = (namespace: string, id: string, message: ParsedMessage, formatLocale: string, values: Record<string, string | number>): string => {
-    // Exact source text is a collision-free content key for this initial implementation.
-    const key = JSON.stringify([namespace, id, message.source, formatLocale, timeZone]);
+    // Keep exact content keys across catalog replacement, without copying the
+    // full source again for every hot call on the same message and context.
+    const key = keyFor(namespace, id, message, formatLocale);
     const formatter = messages.get(key, () => new IntlMessageFormat(
       // FormatJS reads this AST; it never receives a public mutable reference.
       message.ast as unknown as MessageFormatElement[], formatLocale, undefined, { formatters, ignoreTag: true },
@@ -56,7 +71,7 @@ export function createTextFormatter(timeZone: string) {
   };
   const parts = (namespace: string, id: string, message: ParsedMessage, formatLocale: string,
     values: Record<string, string | number>): readonly RichTextPart[] => {
-    const key = JSON.stringify([namespace, id, message.source, formatLocale, timeZone]);
+    const key = keyFor(namespace, id, message, formatLocale);
     const { formatter, tags } = richMessages.get(key, () => {
       const projected = projectRichText(message.ast, `${namespace}:${id}`, message.arguments);
       return { formatter: new IntlMessageFormat(projected.ast, formatLocale, undefined, { formatters }), tags: projected.tags };
