@@ -3,6 +3,7 @@ import { acceptOutcome, keyId, metadata, stamp } from './loading-registry.js';
 import type { CatalogKey, CatalogManifest, CatalogOutcome, CatalogSchedule, CatalogSource } from './loading-types.js';
 import { scheduleCatalog } from './loading-runtime.js';
 import { CatalogLoadQueue } from './loading-queue.js';
+import { catalogCacheLimit } from './loading-policy.js';
 
 interface Flight {
   readonly key: CatalogKey;
@@ -11,16 +12,50 @@ interface Flight {
   cancel(reason: Error): void;
 }
 
+export interface CatalogLoaderCacheOptions {
+  readonly maxCachedCatalogs?: number;
+  /** Current and desired catalog IDs that cannot be evicted from the inactive cache. */
+  readonly protectedKeys?: () => ReadonlySet<string>;
+}
+
+const NO_PROTECTED_KEYS = () => new Set<string>();
+
 /** Dedupes pair/version loads, independently of desired-state generations. */
 export class CatalogLoader {
   private readonly cache = new Map<string, CatalogOutcome>();
   private readonly flights = new Map<string, Flight>();
   private readonly queue = new CatalogLoadQueue();
+  private readonly maxCachedCatalogs: number | undefined;
+  private readonly protectedKeys: () => ReadonlySet<string>;
 
   constructor(private readonly source: CatalogSource, private readonly manifest: () => CatalogManifest,
-    private readonly timeoutMs: number, private readonly schedule: CatalogSchedule = scheduleCatalog) {}
+    private readonly timeoutMs: number, private readonly schedule: CatalogSchedule = scheduleCatalog,
+    cacheOptions: CatalogLoaderCacheOptions = {}) {
+    this.maxCachedCatalogs = catalogCacheLimit(cacheOptions.maxCachedCatalogs);
+    this.protectedKeys = cacheOptions.protectedKeys ?? NO_PROTECTED_KEYS;
+  }
 
-  seed(outcomes: readonly CatalogOutcome[]) { for (const outcome of outcomes) this.cache.set(keyId(outcome.key), outcome); }
+  seed(outcomes: readonly CatalogOutcome[]) { for (const outcome of outcomes) this.remember(outcome.key, outcome); }
+
+  /** Apply the inactive LRU budget after desired/committed scope changes. */
+  trim() {
+    if (this.maxCachedCatalogs === undefined || this.cache.size <= this.maxCachedCatalogs) return;
+    const protectedKeys = this.protectedKeys();
+    for (const id of this.cache.keys()) {
+      if (this.cache.size <= this.maxCachedCatalogs) break;
+      if (!protectedKeys.has(id)) this.cache.delete(id);
+    }
+  }
+
+  private touch(id: string, outcome: CatalogOutcome) {
+    this.cache.delete(id);
+    this.cache.set(id, outcome);
+  }
+
+  private remember(key: CatalogKey, outcome: CatalogOutcome) {
+    this.touch(keyId(key), outcome);
+    this.trim();
+  }
 
   invalidate() {
     const current = this.manifest();
@@ -42,7 +77,10 @@ export class CatalogLoader {
     const initial = this.manifest();
     const version = stamp(initial.sessionId, metadata(initial, key));
     const cached = this.cache.get(keyId(key));
-    if (cached && stamp(cached.sessionId, cached) === version) return Promise.resolve(cached);
+    if (cached && stamp(cached.sessionId, cached) === version) {
+      this.touch(keyId(key), cached);
+      return Promise.resolve(cached);
+    }
     const existing = this.flights.get(version);
     if (existing) return existing.promise;
     const controller = new AbortController();
@@ -70,7 +108,7 @@ export class CatalogLoader {
       try {
         if (!result || result.status === 'failed') throw new CatalogLoadError(result?.code ?? 'INVALID_RESULT', result?.message ?? 'Invalid catalog load result.');
         const accepted = acceptOutcome(this.manifest(), key, result);
-        this.cache.set(keyId(key), accepted);
+        this.remember(key, accepted);
         finish();
         resolve(accepted);
       } catch (error) { finish(); reject(error); }

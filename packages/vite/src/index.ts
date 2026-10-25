@@ -17,6 +17,7 @@ import { createAstFormatter } from './ast-formatter.js';
 import { readCheckLocales, requireCompleteTranslations } from './complete-translations.js';
 import { readIncludedKeys, selectBuildCatalogs } from './build-keys.js';
 import { findIncludedKeys, readAutoKeys } from './auto-keys.js';
+import { catalogCacheLimit } from './cache-policy.js';
 import type { ImportResolver } from './auto-key-modules.js';
 import { CatalogPushSubscriptions } from './catalog-push.js';
 import type { CatalogOutcome, ParsedCatalog } from '@0disoft/saylo-core';
@@ -27,6 +28,7 @@ import type { EagerCatalogUpdate, LiveDiagnostic, SayloViteOptions } from './typ
 
 export default function saylo(options: SayloViteOptions): Plugin {
   const checkLocales = readCheckLocales(options.checkLocales);
+  const maxCachedCatalogs = catalogCacheLimit(options.maxCachedCatalogs);
   if (options.compactCatalogs !== undefined && typeof options.compactCatalogs !== 'boolean') throw new TypeError('compactCatalogs must be a boolean.');
   const autoKeys = readAutoKeys(options.includeKeys);
   const includeKeys = autoKeys ? undefined : readIncludedKeys(options.includeKeys);
@@ -243,6 +245,7 @@ export default function saylo(options: SayloViteOptions): Plugin {
       if (![RESOLVED, RESOLVED_LAZY, RESOLVED_SERVER].includes(id)) return;
       return renderVirtualModule(id, { production, sessionId, baseLocale, initialLocale, timeZone,
         compactCatalogs: options.compactCatalogs !== false,
+        ...(maxCachedCatalogs === undefined ? {} : { maxCachedCatalogs }),
         initialNamespaces: options.initialNamespaces, registry, chunks, catalogs: snapshot().catalogs, buildCatalogs });
     },
     async configureServer(devServer) {

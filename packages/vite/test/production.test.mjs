@@ -9,6 +9,7 @@ import { CatalogError, parseCatalog } from '@0disoft/saylo-core';
 import saylo, { loadProjectConfig } from '../dist/index.js';
 import { createStaticCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
+import { RESOLVED_LAZY, renderVirtualModule } from '../dist/virtual-modules.js';
 import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 import { inspectProject } from '../../typegen/dist/catalog-audit.js';
 
@@ -275,6 +276,68 @@ test('static imports dedupe across consumers, cache immutable outcomes, and hono
   assert.ok(Object.isFrozen(a.catalog.messages.title.ast));
   assert.equal(await source.loadCatalog('en', 'demo'), a);
   assert.equal(count, 1);
+});
+
+test('static cache budgets keep boot outcomes pinned and evict only settled imports', async () => {
+  const catalog = (locale, namespace, text) => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
+  const r = new CatalogRegistry('budget', 'ko', [catalog('ko', 'demo', 'BOOT'), catalog('en', 'demo', 'EN_DEMO'),
+    catalog('ko', 'help', 'HELP'), catalog('en', 'help', 'EN_HELP'), catalog('ko', 'extra', 'EXTRA'),
+    catalog('en', 'extra', 'EN_EXTRA')]);
+  const counts = new Map();
+  const allLoaders = r.manifest().catalogs.filter(meta => meta.status === 'present').map(entry => ({ key: entry.key, load: async () => {
+    const pair = `${entry.key.locale}/${entry.key.namespace}`;
+    counts.set(pair, (counts.get(pair) ?? 0) + 1);
+    return r.load(entry.key.locale, entry.key.namespace);
+  } }));
+  const loaders = allLoaders.filter(entry => !(entry.key.locale === 'ko' && entry.key.namespace === 'demo'));
+  const initial = [r.load('ko', 'demo')];
+  const zero = createStaticCatalogSource(r.manifest(), initial, loaders, { maxCachedCatalogs: 0 });
+  await zero.loadCatalog('en', 'demo');
+  assert.equal(zero.getCatalogs().length, 1, 'the unpinned import is not retained');
+  await zero.loadCatalog('en', 'demo');
+  assert.equal(counts.get('en/demo'), 2);
+  assert.equal((await zero.loadCatalog('ko', 'demo')).catalog.messages.title.source, 'BOOT');
+
+  counts.clear();
+  const one = createStaticCatalogSource(r.manifest(), [], allLoaders, { maxCachedCatalogs: 1 });
+  await one.loadCatalog('en', 'demo');
+  await one.loadCatalog('en', 'help');
+  await one.loadCatalog('en', 'help');
+  assert.equal(counts.get('en/help'), 1, 'the recent catalog remains cached');
+  await one.loadCatalog('en', 'demo');
+  await one.loadCatalog('en', 'help');
+  assert.equal(counts.get('en/demo'), 2);
+  assert.equal(counts.get('en/help'), 2, 'the former LRU entry was reloaded');
+  assert.equal(one.getCatalogs().length, 1);
+
+  let active = 0;
+  let release;
+  const dedupedLoaders = allLoaders.map(entry => entry.key.locale === 'en' && entry.key.namespace === 'demo'
+    ? { key: entry.key, load: () => { active++; return new Promise(resolve => { release = resolve; }); } } : entry);
+  const deduped = createStaticCatalogSource(r.manifest(), [], dedupedLoaders, { maxCachedCatalogs: 0 });
+  const first = deduped.loadCatalog('en', 'demo');
+  const second = deduped.loadCatalog('en', 'demo');
+  await Promise.resolve();
+  assert.equal(active, 1);
+  release(r.load('en', 'demo'));
+  const [a, b] = await Promise.all([first, second]);
+  assert.equal(a, b);
+  assert.equal(deduped.getCatalogs().length, 0);
+
+  for (const invalid of [-1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])
+    assert.throws(() => createStaticCatalogSource(r.manifest(), [], allLoaders, { maxCachedCatalogs: invalid }), RangeError);
+});
+
+test('production lazy codegen emits the static cache budget only when configured', () => {
+  const r = registry();
+  const chunks = new Map(entries(r).map(entry => [`virtual:saylo/catalog/${entry.key.locale}/${entry.key.namespace}`,
+    r.load(entry.key.locale, entry.key.namespace)]));
+  const context = { production: true, sessionId: 'codegen', baseLocale: 'ko', initialLocale: 'ko', timeZone: 'UTC',
+    initialNamespaces: ['demo'], registry: r, chunks, catalogs: [], buildCatalogs: [] };
+  const omitted = renderVirtualModule(RESOLVED_LAZY, context);
+  assert.ok(!omitted.includes('maxCachedCatalogs'));
+  const emitted = renderVirtualModule(RESOLVED_LAZY, { ...context, maxCachedCatalogs: 0 });
+  assert.match(emitted, /createStaticCatalogSource\([\s\S]+, \{ maxCachedCatalogs: 0 \}\)/);
 });
 
 test('missing pairs keep manifest tombstones without importing', async () => {

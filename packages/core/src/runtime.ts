@@ -25,4 +25,4 @@ export type {
   LocaleFallbackOptions,
 } from './types.js';
 export type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome, CatalogLoadResult,
-  CatalogSource, CatalogSchedule, I18nRequestOptions, SharedI18nOptions, CreateI18nOptions, I18n } from './loading-types.js';
+  CatalogSource, CatalogSchedule, I18nRequestOptions, CatalogCacheOptions, SharedI18nOptions, CreateI18nOptions, I18n } from './loading-types.js';

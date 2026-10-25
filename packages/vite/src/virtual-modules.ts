@@ -15,6 +15,7 @@ export const CHUNK = 'virtual:saylo/catalog/';
 interface VirtualModuleContext {
   readonly production: boolean;
   readonly compactCatalogs?: boolean;
+  readonly maxCachedCatalogs?: number;
   readonly sessionId: string;
   readonly baseLocale: string;
   readonly initialLocale: string;
@@ -93,13 +94,15 @@ function renderLazyModule(context: VirtualModuleContext, server: boolean): strin
   const loaders = [...chunks].filter(([, outcome]) => !bootPairs.has(catalogId(outcome.key)))
     .map(([moduleId, outcome]) => `{ key: ${encode(outcome.key)}, load: () => import(${encode(moduleId)}).then(module => module.default) }`);
   const boot = production ? outcomeExpressions(outcomes, context.compactCatalogs !== false) : { source: encode(outcomes), compact: false };
+  const cacheOptions = !production || context.maxCachedCatalogs === undefined ? ''
+    : `, { maxCachedCatalogs: ${String(context.maxCachedCatalogs)} }`;
   return `import { ${production ? 'createStaticCatalogSource' : 'createDevCatalogSource'} } from '@0disoft/saylo-vite/client';
 ${boot.compact ? "import { decodeCatalog } from '@0disoft/saylo-core/runtime';" : ''}
 export const initialCatalogs = ${boot.source};
 export const initialLocale = ${encode(locale)};
 export const initialNamespaces = ${encode(namespaces)};
 export const timeZone = ${encode(timeZone)};
-export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, initialCatalogs, [${loaders.join(',\n')}])`
+export const catalogSource = ${production ? `createStaticCatalogSource(${encode(manifest)}, initialCatalogs, [${loaders.join(',\n')}]${cacheOptions})`
     : `createDevCatalogSource(${encode(manifest)}, initialCatalogs, { hot: import.meta.hot, push: true })`};
 ${server ? `import { createServerI18n } from '@0disoft/saylo-core';
 export const createRequestI18n = (options = {}) => createServerI18n({ locale: initialLocale, timeZone,

@@ -30,6 +30,67 @@ test('catalog source concurrency is bounded at the limit and for large scopes', 
   });
 });
 
+test('inactive catalog cache budgets validate and evict least-recently-used outcomes', async t => {
+  const load = async (loader, calls, key) => {
+    const before = calls.length;
+    const pending = loader.load(key);
+    await tick();
+    if (calls.length > before) calls.at(-1).resolve();
+    return pending;
+  };
+  await t.test('zero, one, and exact capacity', async t => {
+    for (const budget of [0, 1, 3]) await t.test(String(budget), async t => {
+      const { loader, calls, keys } = queuedLoader(t, 3, { maxCachedCatalogs: budget });
+      const complete = Promise.all(keys.map(key => loader.load(key)));
+      await tick();
+      for (const call of calls) call.resolve();
+      await complete;
+      const before = calls.length;
+      if (budget === 0) {
+        for (const key of keys) await load(loader, calls, key);
+        assert.equal(calls.length - before, 3);
+      } else {
+        await load(loader, calls, keys[2]);
+        assert.equal(calls.length, before, 'the newest catalog remains cached');
+        if (budget === 1) {
+          await load(loader, calls, keys[0]);
+          assert.equal(calls.length, before + 1, 'a new pair evicts the previous one');
+        }
+      }
+    });
+  });
+
+  await t.test('LRU touch and protected entries', async t => {
+    const lru = queuedLoader(t, 3, { maxCachedCatalogs: 2 });
+    const initial = Promise.all(lru.keys.map(key => lru.loader.load(key)));
+    await tick();
+    for (const call of lru.calls) call.resolve();
+    await initial;
+    await load(lru.loader, lru.calls, lru.keys[2]);
+    const before = lru.calls.length;
+    await load(lru.loader, lru.calls, lru.keys[0]);
+    assert.equal(lru.calls.length, before + 1);
+    await load(lru.loader, lru.calls, lru.keys[2]);
+    assert.equal(lru.calls.length, before + 1, 'touching key 2 spared it from LRU eviction');
+    await load(lru.loader, lru.calls, lru.keys[1]);
+    assert.equal(lru.calls.length, before + 2, 'key 1 was the least recently used');
+
+    const protectedSet = new Set([JSON.stringify(['en', 'scope0'])]);
+    const pinned = queuedLoader(t, 3, { maxCachedCatalogs: 1, protectedKeys: () => protectedSet });
+    const loads = Promise.all(pinned.keys.map(key => pinned.loader.load(key)));
+    await tick();
+    for (const call of pinned.calls) call.resolve();
+    await loads;
+    const pinnedCalls = pinned.calls.length;
+    await load(pinned.loader, pinned.calls, pinned.keys[0]);
+    assert.equal(pinned.calls.length, pinnedCalls, 'a protected outcome remains cached beyond the budget');
+  });
+
+  for (const invalid of [-1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+    assert.throws(() => queuedLoader(t, 1, { maxCachedCatalogs: invalid }), RangeError);
+  }
+});
+
 test('disposal cancels queued loads before they reach the source and clears timers', async t => {
   const { loader, calls, keys, clock } = queuedLoader(t);
   const pending = Promise.allSettled(keys.map(key => loader.load(key)));
@@ -46,7 +107,7 @@ test('disposal cancels queued loads before they reach the source and clears time
 });
 
 test('timeouts retain source slots until ignored aborts actually settle', async t => {
-  const { loader, calls, keys, clock, peak } = queuedLoader(t);
+  const { loader, calls, keys, clock, peak } = queuedLoader(t, 9, { maxCachedCatalogs: 0 });
   const expired = Promise.allSettled(keys.map(key => loader.load(key)));
   await tick();
   clock.tick(100);
@@ -132,7 +193,7 @@ test('i18n scope and locale changes keep one source budget and publish only comp
   for (const namespace of namespaces) assert.equal(i18n.t(`${namespace}:title`), `en:${namespace}`);
 });
 
-function queuedLoader(t, count = 9) {
+function queuedLoader(t, count = 9, cacheOptions) {
   const clock = scheduler();
   const namespaces = Array.from({ length: count }, (_, index) => `scope${index}`);
   const keys = namespaces.map(namespace => ({ locale: 'en', namespace }));
@@ -152,7 +213,7 @@ function queuedLoader(t, count = 9) {
       }).finally(() => { active--; });
     },
   };
-  const loader = new CatalogLoader(source, () => manifest, 100, clock.schedule);
+  const loader = new CatalogLoader(source, () => manifest, 100, clock.schedule, cacheOptions);
   t.after(() => loader.stop(new I18nDisposedError()));
   return { loader, source, calls, keys, clock, active: () => active, peak: () => peak,
     restart() { manifest = validateCatalogManifest({ ...manifest, sessionId: 'two' }); loader.invalidate(); } };
@@ -795,4 +856,36 @@ test('explicit lazy fallback chain loads complete scope and keeps canceled and s
   await f.i18n.refresh();
   assert.equal(f.i18n.t('common:title'), '기준');
   assert.deepEqual(f.i18n.getBootSnapshot().fallbackLocales, ['en']);
+});
+
+test('i18n cache budget protects current, desired, and fallback scope and releases old screens', async t => {
+  const f = fixture(t, { locale: 'fr', fallbackLocales: ['en'], maxCachedCatalogs: 0 });
+  assert.equal(Object.hasOwn(f.i18n.getBootSnapshot(), 'maxCachedCatalogs'), false);
+  for (const invalid of [-1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])
+    assert.throws(() => createI18n({ ...f.config, maxCachedCatalogs: invalid }), RangeError);
+  assert.equal(f.calls.length, 0, 'the initial scope is seeded without loading');
+  await f.i18n.refresh();
+  assert.equal(f.calls.length, 0, 'initial current and fallback outcomes stay pinned at budget zero');
+
+  const pages = Array.from({ length: 5 }, (_, index) => `page${index}`);
+  for (const namespace of pages) for (const locale of ['ko', 'en', 'fr'])
+    f.change(locale, namespace, `${locale}:${namespace}`);
+  await f.i18n.setNamespaces(['common', ...pages]);
+  assert.equal(f.i18n.t('page4:title'), 'fr:page4');
+  const wide = f.calls.length;
+  await f.i18n.setNamespaces(['common']);
+  await f.i18n.setNamespaces(['common', ...pages]);
+  assert.equal(f.i18n.t('page4:title'), 'fr:page4');
+  assert.ok(f.calls.length > wide + pages.length * 2, 'released page catalogs are loaded again');
+
+  const g = fixture(t, { locale: 'fr', fallbackLocales: ['en'], maxCachedCatalogs: 0 });
+  const before = g.i18n.getSnapshot();
+  g.change('en', 'common', 'English v2');
+  const slow = g.defer('en', 'common');
+  const switching = g.i18n.setLocale('en');
+  await tick();
+  assert.equal(g.i18n.getSnapshot(), before, 'a desired locale never publishes a partial snapshot');
+  slow.release();
+  await switching;
+  assert.equal(g.i18n.t('common:title'), 'English v2');
 });

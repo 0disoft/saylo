@@ -1,4 +1,5 @@
 import { CatalogError, createBaseSchema, createI18n, createServerI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
+import type { CatalogCacheOptions } from '@0disoft/saylo-core';
 import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, FormatErrorContext, FormatErrorHandler, LocaleFallbackOptions,
   MissingKeyErrorContext, MissingKeyHandler, ParsedCatalog, RichTextPart, ServerI18nOptions, SharedI18nOptions,
   TranslationErrorPolicy } from '@0disoft/saylo-core';
@@ -81,6 +82,7 @@ const onFormatError: FormatErrorHandler = (context: FormatErrorContext) => {
 };
 const policy: TranslationErrorPolicy = { onMissingKey, onFormatError };
 const fallbackOptions: LocaleFallbackOptions = { fallbackLocales: ['en'] as const };
+const cacheOptions: CatalogCacheOptions = { maxCachedCatalogs: 4 };
 // @ts-expect-error handlers must return a string or undefined
 const invalidMissingHandler: MissingKeyHandler = () => 3;
 void invalidMissingHandler;
@@ -150,11 +152,13 @@ const source: CatalogSource = {
     return { status: 'missing', sessionId: 'initial', key: { locale, namespace }, catalogVersion: 0 };
   },
 };
-const sharedPolicy: SharedI18nOptions = { catalogSource: source, ...policy, ...fallbackOptions };
+const sharedPolicy: SharedI18nOptions = { catalogSource: source, ...policy, ...fallbackOptions, ...cacheOptions };
 const lazy = createI18n<AppSchema>({ ...sharedPolicy, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
-const serverPolicy: ServerI18nOptions = { catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], ...policy, ...fallbackOptions };
+const serverPolicy: ServerI18nOptions = { catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], ...policy, ...fallbackOptions, ...cacheOptions };
 const request = createServerI18n<AppSchema>(serverPolicy);
 void request;
+// @ts-expect-error cache budgets are numbers
+createServerI18n({ ...serverPolicy, maxCachedCatalogs: '4' });
 const transition: Promise<void> = lazy.setLocale('en');
 const namespace: Promise<void> = lazy.loadNamespace('cart');
 const scope: Promise<void> = lazy.setNamespaces(['cart'] as const, { signal: new AbortController().signal });

@@ -17,6 +17,8 @@ export interface SayloViteOptions {
   readonly astRuntime?: boolean;
   /** Production-only lossless compaction when savings cover the decoder. Defaults to true. */
   readonly compactCatalogs?: boolean;
+  /** Production static source soft decoded-catalog LRU; inline boot outcomes stay pinned. */
+  readonly maxCachedCatalogs?: number;
   /** Build-only exact namespace:messageId list. Undefined keeps all messages; [] keeps none. */
   readonly includeKeys?: readonly string[] | AutoIncludeKeys;
   /** Completeness targets shared with the CLI; omitted means discovered locales. */

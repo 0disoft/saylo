@@ -1,6 +1,7 @@
 import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
 import type { CatalogKey, CatalogManifest, CatalogOutcome } from '@0disoft/saylo-core';
 import { catalogId as id, catalogMetadata, immutable, matches } from './catalog-outcome.js';
+import { catalogCacheLimit } from './cache-policy.js';
 import type { DevCatalogSource } from './catalog-source.js';
 import { schedule, timeoutDuration } from './scheduling.js';
 import type { Schedule } from './scheduling.js';
@@ -8,6 +9,8 @@ import type { Schedule } from './scheduling.js';
 export interface StaticCatalogSourceOptions {
   readonly timeoutMs?: number;
   readonly schedule?: Schedule;
+  /** Soft LRU limit for decoded outcomes; inline initial outcomes remain pinned. Omitted keeps all. */
+  readonly maxCachedCatalogs?: number;
 }
 interface Flight { promise: Promise<CatalogOutcome>; users: number }
 
@@ -23,14 +26,18 @@ const invalid = () => new CatalogLoadError('INVALID_STATIC_CATALOG', 'Static cat
 export function createStaticCatalogSource(initial: CatalogManifest, initialCatalogs: readonly CatalogOutcome[],
   entries: readonly StaticCatalogLoader[], options: StaticCatalogSourceOptions = {}): DevCatalogSource {
   const timeoutMs = timeoutDuration(options.timeoutMs);
+  const maxCachedCatalogs = catalogCacheLimit(options.maxCachedCatalogs);
   const manifest = validateCatalogManifest(initial);
   const metadata = catalogMetadata(manifest);
   const cache = new Map<string, CatalogOutcome>();
+  const pinned = new Set<string>();
   const loaders = new Map<string, StaticCatalogLoader['load']>();
   const flights = new Map<string, Flight>();
   for (const outcome of initialCatalogs) {
     if (cache.has(id(outcome.key)) || !matches(manifest, outcome)) throw invalid();
-    cache.set(id(outcome.key), immutable(outcome));
+    const pair = id(outcome.key);
+    pinned.add(pair);
+    cache.set(pair, immutable(outcome));
   }
   for (const entry of entries) {
     const key = id(entry.key);
@@ -40,6 +47,20 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
   for (const meta of manifest.catalogs) {
     if (meta.status === 'present' && !cache.has(id(meta.key)) && !loaders.has(id(meta.key))) throw invalid();
   }
+  const remember = (pair: string, outcome: CatalogOutcome) => {
+    cache.delete(pair);
+    cache.set(pair, outcome);
+    if (maxCachedCatalogs === undefined || cache.size <= maxCachedCatalogs) return;
+    for (const cached of cache.keys()) {
+      if (cache.size <= maxCachedCatalogs) break;
+      if (!pinned.has(cached)) cache.delete(cached);
+    }
+  };
+  const cached = (pair: string) => {
+    const outcome = cache.get(pair);
+    if (outcome) { cache.delete(pair); cache.set(pair, outcome); }
+    return outcome;
+  };
   return Object.freeze({
     readManifest: () => manifest,
     getCatalogs: () => Object.freeze([...cache.values()].flatMap(o => o.status === 'present' ? [o.catalog] : [])),
@@ -49,8 +70,8 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
       if (signal?.aborted) return Promise.reject(aborted());
       const key = { locale, namespace };
       const pair = id(key);
-      const cached = cache.get(pair);
-      if (cached) return Promise.resolve(cached);
+      const hit = cached(pair);
+      if (hit) return Promise.resolve(hit);
       const meta = metadata.get(pair);
       if (!meta || meta.status === 'missing') return Promise.resolve(immutable({
         status: 'missing', sessionId: manifest.sessionId, key, catalogVersion: meta?.catalogVersion ?? 0,
@@ -60,7 +81,7 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
         const created: Flight = { users: 0, promise: Promise.resolve().then(() => loaders.get(pair)!()).then(outcome => {
           if (!outcome || !outcome.key || id(outcome.key) !== pair || !matches(manifest, outcome)) throw invalid();
           const accepted = immutable(outcome);
-          if (flights.get(pair) === created) cache.set(pair, accepted);
+          if (flights.get(pair) === created) remember(pair, accepted);
           return accepted;
         }).finally(() => { if (flights.get(pair) === created) flights.delete(pair); }) };
         flights.set(pair, created);

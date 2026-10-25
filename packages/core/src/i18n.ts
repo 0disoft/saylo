@@ -1,4 +1,4 @@
-import { STALE_CATALOG_MAX_ATTEMPTS } from './loading-policy.js';
+import { STALE_CATALOG_MAX_ATTEMPTS, catalogCacheLimit } from './loading-policy.js';
 import { CatalogLoader } from './catalog-loader.js';
 import { createBootSnapshot, validateBootSnapshot } from './boot.js';
 import { createTextFormatter } from './formatters.js';
@@ -21,6 +21,7 @@ interface Waiter {
 /** Async desired-scope coordinator; SSR instances start from a pinned boot manifest. */
 export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions): I18n<S> {
   if (options.signal?.aborted) throw aborted(options.signal);
+  const maxCachedCatalogs = catalogCacheLimit(options.maxCachedCatalogs);
   const source = options.catalogSource;
   const decoded = options.initialSnapshot ? validateBootSnapshot(options.initialSnapshot) : undefined;
   let manifest = readManifest(decoded?.manifest ?? source.readManifest());
@@ -72,7 +73,22 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   const waiters = new Set<Waiter>();
   const listeners = new Set<{ callback: (snapshot: StoreSnapshot<S>) => void }>();
   const disposers = new Set<{ callback: () => void }>();
-  const loader = new CatalogLoader(source, () => manifest, timeoutMs, options.schedule);
+  let protectionRevision = 0;
+  let protectedCache: { readonly revision: number; readonly keys: ReadonlySet<string> } | undefined;
+  function invalidateProtection() { protectionRevision++; }
+  function protectedCatalogKeys(): ReadonlySet<string> {
+    if (protectedCache?.revision === protectionRevision) return protectedCache.keys;
+    const keys = new Set<string>();
+    for (const key of scopeKeys(manifest, current.locale, current.loadedNamespaces, fallbackLocales)) keys.add(keyId(key));
+    for (const key of scopeKeys(manifest, desiredLocale, [...desiredNamespaces], fallbackLocales)) keys.add(keyId(key));
+    protectedCache = { revision: protectionRevision, keys };
+    return protectedCache.keys;
+  }
+  const cacheOptions = maxCachedCatalogs === undefined
+    ? { protectedKeys: protectedCatalogKeys }
+    : { maxCachedCatalogs, protectedKeys: protectedCatalogKeys };
+  const loader = new CatalogLoader(source, () => manifest, timeoutMs, options.schedule,
+    cacheOptions);
   loader.seed([...initial.values()]);
 
   function assertActive() { if (disposed) throw new I18nDisposedError(); }
@@ -82,11 +98,13 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   function rollbackDesired() {
     desiredLocale = manifestMembership(manifest).locales.has(current.locale) ? current.locale : baseLocale;
     desiredNamespaces = new Set(current.loadedNamespaces.filter(n => manifestMembership(manifest).namespaces.has(n)));
+    invalidateProtection();
     generation++;
   }
   function fail(error: unknown) {
     rejectWhere(() => true, () => error);
     rollbackDesired();
+    loader.trim();
   }
   function schedule() {
     if (scheduled || disposed) return;
@@ -123,6 +141,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       () => new CatalogLoadError('NAMESPACE_REMOVED', 'Requested namespace was removed from the manifest.'));
     if (!manifestMembership(manifest).locales.has(desiredLocale)) desiredLocale = baseLocale;
     desiredNamespaces = new Set([...desiredNamespaces].filter(n => manifestMembership(manifest).namespaces.has(n)));
+    invalidateProtection();
+    loader.trim();
     schedule();
     return true;
   }
@@ -138,6 +158,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     if (nextSignature !== signature) {
       current = snapshot;
       signature = nextSignature;
+      invalidateProtection();
       for (const listener of [...listeners]) {
         if (!listeners.has(listener)) continue;
         try { listener.callback(current); } catch (error) { errors.push(error); }
@@ -164,6 +185,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       committedManifest = manifest;
       committedOutcomes = outcomes;
       publish(snapshot, candidate.signature);
+      loader.trim();
     } catch (error) {
       if (disposed || epoch !== generation) return;
       try { if (syncManifest()) return; }
@@ -218,6 +240,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       if (!manifestMembership(manifest).locales.has(next)) throw new RangeError('Locale is outside the manifest.');
       if (desiredLocale !== next) {
         desiredLocale = next;
+        invalidateProtection();
         rejectWhere(w => w.kind === 'locale' && w.value !== next, w => new SupersededRequestError(w.value));
         generation++;
       }
@@ -229,7 +252,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       if (!manifestMembership(manifest).namespaces.has(namespace)) throw new RangeError('Namespace is outside the manifest.');
       if (!desiredNamespaces.has(namespace)) {
         rejectWhere(w => w.kind === 'namespaces', () => new CatalogLoadError('SCOPE_SUPERSEDED', 'Namespace scope was replaced by a newer selection.'));
-        desiredNamespaces.add(namespace); generation++;
+        desiredNamespaces.add(namespace); invalidateProtection(); generation++;
       }
       staleRetries = 0;
       return request('namespace', namespace, requestOptions.signal);
@@ -248,6 +271,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
         rejectWhere(w => w.kind === 'namespaces' || (w.kind === 'namespace' && !next.has(w.value)),
           () => new CatalogLoadError('SCOPE_SUPERSEDED', 'Namespace scope was replaced by a newer selection.'));
         desiredNamespaces = next;
+        invalidateProtection();
         generation++;
       }
       staleRetries = 0;

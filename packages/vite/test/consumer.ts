@@ -6,6 +6,9 @@ import { catalogSource, initialCatalogs as lazyCatalogs, initialLocale as lazyLo
 import { initialCatalogs, baseLocale, initialLocale, timeZone } from 'virtual:saylo';
 
 saylo({ localesDir: './locales', baseLocale: 'ko', astRuntime: true, requireCompleteTranslations: true, typegen: { outFile: 'generated.d.ts' } });
+saylo({ localesDir: './locales', baseLocale: 'ko', maxCachedCatalogs: 32 });
+// @ts-expect-error cache budgets are numbers
+saylo({ localesDir: './locales', baseLocale: 'ko', maxCachedCatalogs: '32' });
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: ['demo:hello'] as const });
 saylo({ localesDir: './locales', baseLocale: 'ko', includeKeys: [] });
 saylo({ localesDir: './locales', baseLocale: 'ko', requireReviewedTranslations: true, reviews: 'reviews.json' });
@@ -55,7 +58,9 @@ connectDev(lazy);
 
 const staticSource = createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [
   { key: { locale: 'en', namespace: 'demo' }, load: async () => lazyCatalogs[0]! },
-]);
+], { maxCachedCatalogs: 1 });
+// @ts-expect-error static cache budgets are numbers
+createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [], { maxCachedCatalogs: '1' });
 staticSource.loadCatalog('en', 'demo');
 // @ts-expect-error static loaders must resolve a versioned catalog outcome
 createStaticCatalogSource(catalogSource.readManifest(), lazyCatalogs, [{ key: { locale: 'en', namespace: 'demo' }, load: async () => ({}) }]);

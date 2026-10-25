@@ -46,7 +46,12 @@ export interface I18nRequestOptions {
   readonly signal?: AbortSignal;
 }
 
-export interface SharedI18nOptions extends TranslationErrorPolicy, LocaleFallbackOptions {
+export interface CatalogCacheOptions {
+  /** Soft maximum completed outcomes retained by the loader; active/desired scope may exceed it. */
+  readonly maxCachedCatalogs?: number;
+}
+
+export interface SharedI18nOptions extends TranslationErrorPolicy, LocaleFallbackOptions, CatalogCacheOptions {
   readonly catalogSource: CatalogSource;
   readonly timeZone?: string;
   /** Per-catalog timeout including queue wait, defaults to 5000ms. */

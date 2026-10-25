@@ -234,7 +234,7 @@ test('SSR request instances forward render policy without serializing callbacks'
 test('SSR boot carries explicit fallback metadata and legacy v1/v2 scope still decodes', async t => {
   const f = fixture();
   const server = await createServerI18n({ catalogSource: f.source, locale: 'en-GB', initialNamespaces: ['demo'],
-    fallbackLocales: ['en'] });
+    fallbackLocales: ['en'], maxCachedCatalogs: 0 });
   t.after(() => server.dispose());
   assert.equal(server.t('demo:title'), 'British');
   assert.equal(server.t('demo:parent'), 'English parent');
