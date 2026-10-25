@@ -72,3 +72,22 @@ test('same-revision competing edits serialize and reject the stale request; shut
   await f.server.close(); await f.server.close();
   await assert.rejects(fetch(f.server.url));
 });
+
+test('incomplete bodies cannot exceed the admitted request budget and disconnects release slots', async t => {
+  const f = await fixture(t);
+  const held = [];
+  t.after(() => { for (const request of held) request.destroy(); });
+  await Promise.all(Array.from({ length: 32 }, () => new Promise((resolve, reject) => {
+    const request = httpRequest(f.server.url + '/api/preview', {
+      method: 'POST', headers: { ...f.headers, 'Content-Length': '100' },
+    });
+    held.push(request);
+    request.on('error', () => {});
+    request.write('{', error => error ? reject(error) : resolve());
+  })));
+  assert.equal((await fetch(f.server.url + '/api/state', { headers: f.headers })).status, 503);
+  const closed = held.map(request => new Promise(resolve => request.once('close', resolve)));
+  for (const request of held) request.destroy();
+  await Promise.all(closed);
+  assert.equal((await fetch(f.server.url + '/api/state', { headers: f.headers })).status, 200);
+});
