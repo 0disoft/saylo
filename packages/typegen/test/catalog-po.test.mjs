@@ -12,6 +12,7 @@ test('PO roundtrip preserves ICU, literal escapes, metadata, pending tasks and e
   const original = work();
   const text = serializeTranslationPo(original);
   assert.match(text, /Content-Type: text\/plain/);
+  assert.match(text, /charset=UTF-8\\nX-Saylo-Format:/);
   assert.deepEqual(parseTranslationPo(text, 'en'), original);
   assert.equal(original.entries[0].translation, null);
   const control = work(); control.entries[0].source = '\x00\b\t\r\n';

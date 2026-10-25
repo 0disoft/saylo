@@ -3,11 +3,12 @@ import type { TranslationWorkfile } from './catalog-workfile.js';
 
 function quote(text: string): string {
   if (/[\uD800-\uDFFF]/u.test(text)) throw new TypeError('PO text must contain well-formed Unicode.');
+  const escapes: Record<string, string> = { '\n': '\\n', '\r': '\\r', '\t': '\\t', '\b': '\\b', '\f': '\\f', '\v': '\\v' };
   let result = '"';
   for (const char of text) {
     const code = char.codePointAt(0)!;
-    result += char === '"' || char === '\\' ? '\\' + char : code < 32 || code === 127
-      ? '\\' + code.toString(8).padStart(3, '0') : char;
+    result += escapes[char] ?? (char === '"' || char === '\\' ? '\\' + char : code < 32 || code === 127
+      ? '\\' + code.toString(8).padStart(3, '0') : char);
   }
   return result + '"';
 }
