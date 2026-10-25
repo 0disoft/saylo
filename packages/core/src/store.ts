@@ -3,6 +3,7 @@ import { nextRevision } from './loading-runtime.js';
 import { createTextFormatter } from './formatters.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { createBoundTranslator } from './translator.js';
+import { catalogSignature } from './snapshot-signature.js';
 import type { ParsedCatalog, Schema, Store, StoreOptions, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
 interface Registry {
@@ -41,11 +42,10 @@ function validateRegistry(catalogs: readonly ParsedCatalog[], baseLocale: string
 }
 
 function visibleSignature(registry: Registry, baseLocale: string, locale: string): string {
-  const catalogs = registry.catalogs.filter(c => c.locale === baseLocale || c.locale === locale)
-    .map(c => [c.locale, c.namespace, Object.keys(c.messages).sort().map(id => [id, c.messages[id]!.source,
-      ...(c.messages[id]!.richTextTags === undefined ? [] : [c.messages[id]!.richTextTags])])]);
-  catalogs.sort((a, b) => JSON.stringify(a.slice(0, 2)).localeCompare(JSON.stringify(b.slice(0, 2))));
-  return JSON.stringify([locale, registry.locales, registry.namespaces, catalogs]);
+  const catalogs = registry.catalogs.filter(c => c.locale === baseLocale || c.locale === locale);
+  catalogs.sort((a, b) => JSON.stringify([a.locale, a.namespace]).localeCompare(JSON.stringify([b.locale, b.namespace])));
+  const scope = JSON.stringify([locale, registry.locales, registry.namespaces]);
+  return `${scope.slice(0, -1)},[${catalogs.map(catalogSignature).join(',')}]]`;
 }
 
 /** Atomic eager snapshots. Transport, lazy loading and quarantine are later stages. */

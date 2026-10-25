@@ -4,7 +4,8 @@ import type { ParsedCatalog } from './types.js';
 
 const signatures = new WeakMap<ParsedCatalog, string>();
 
-function catalogSignature(catalog: ParsedCatalog): string {
+/** Shared eager/lazy fragment cache; caller-owned mutable catalogs are always rescanned. */
+export function catalogSignature(catalog: ParsedCatalog): string {
   const cacheable = isDeepFrozen(catalog);
   const cached = cacheable ? signatures.get(catalog) : undefined;
   if (cached !== undefined) return cached;

@@ -1,0 +1,23 @@
+{
+  "command": "node benchmarks/eager-locale-switch.mjs 10000 50",
+  "scenario": "Warm synchronous eager-store locale switches between two immutable catalogs; five warmup switches",
+  "baselineCommit": "f4ed123",
+  "before": {
+    "messagesPerLocale": 10000,
+    "locales": 2,
+    "samples": 50,
+    "medianMs": 18.9507,
+    "p95Ms": 56.5383,
+    "messageMapEnumerations": 75,
+    "enumeratedKeys": 750000
+  },
+  "after": {
+    "messagesPerLocale": 10000,
+    "locales": 2,
+    "samples": 50,
+    "medianMs": 0.5483,
+    "p95Ms": 0.8113,
+    "messageMapEnumerations": 0,
+    "enumeratedKeys": 0
+  }
+}

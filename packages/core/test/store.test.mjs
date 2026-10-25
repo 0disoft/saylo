@@ -109,6 +109,31 @@ test('reselecting an immutable registry locale never enumerates message keys', (
   assert.equal(i18n.getSnapshot(), before);
 });
 
+test('warm locale switches reuse immutable signatures without enumerating message maps', () => {
+  const catalogs = initial();
+  const i18n = createStore({ baseLocale: 'ko', locale: 'en', catalogs });
+  for (const locale of ['fr', 'ko', 'en']) i18n.setLocale(locale);
+  const before = i18n.getSnapshot();
+  const messageMaps = new Set(catalogs.map(catalog => catalog.messages));
+  const nativeKeys = Object.keys;
+  let enumerations = 0, notifications = 0;
+  i18n.subscribe(() => notifications++);
+  try {
+    Object.keys = value => {
+      if (messageMaps.has(value)) enumerations++;
+      return nativeKeys(value);
+    };
+    for (const [locale, expected] of [['fr', 'Panier'], ['ko', '장바구니'], ['en', 'Cart']]) {
+      i18n.setLocale(locale);
+      assert.equal(i18n.t('cart:title'), expected);
+    }
+  } finally { Object.keys = nativeKeys; i18n.dispose(); }
+  assert.equal(enumerations, 0);
+  assert.equal(notifications, 3);
+  assert.equal(before.t('cart:title'), 'Cart');
+  assert.equal(i18n.getSnapshot().stateRevision, before.stateRevision + 3);
+});
+
 test('same-locale selections still detect changes in mutable catalog inputs', () => {
   const mutable = structuredClone(catalog('Before'));
   const i18n = createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [mutable] });
