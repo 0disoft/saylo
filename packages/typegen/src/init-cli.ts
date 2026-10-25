@@ -5,7 +5,7 @@ import { planInit } from './init.js';
 import { applyInit } from './init-write.js';
 import { InitApplyError } from './init-error.js';
 
-const help = `Usage: saylo init [--framework vite|sveltekit] [--base-locale en] [--dry-run | --apply] [--json]
+const help = `Usage: saylo init [--framework vite|react|sveltekit] [--base-locale en] [--dry-run | --apply] [--json]
 
 Preview by default. --apply creates catalogs, types, a per-owner store factory,
 and connects a static ESM Vite config. Existing integration files are never replaced.
@@ -16,6 +16,8 @@ Each file is published atomically; failures report already written files.
 --framework sveltekit adds an isolated /saylo SSR route with context, hydration,
 locale selection and persistence. Requires standard src/routes and a server adapter.
 The SvelteKit preset is source-only until the next npm release.
+--framework react adds /saylo.html, typed bindings, locale persistence and a separate demo build config.
+The React preset is source-only and leaves the application's entry and router unchanged.
 Available since 0.1.0-alpha.7. Install @0disoft/saylo-typegen@alpha; latest remains a registration placeholder.`;
 
 export async function runInit(args: readonly string[]): Promise<void> {
@@ -25,8 +27,8 @@ export async function runInit(args: readonly string[]): Promise<void> {
   } });
   if (values.help) { console.log(help); return; }
   if (values.apply && values['dry-run']) throw new CatalogUsageError('Choose --dry-run or --apply, not both.');
-  if (values.framework !== undefined && values.framework !== 'vite' && values.framework !== 'sveltekit')
-    throw new CatalogUsageError('init framework must be vite or sveltekit.');
+  if (values.framework !== undefined && values.framework !== 'vite' && values.framework !== 'sveltekit' && values.framework !== 'react')
+    throw new CatalogUsageError('init framework must be vite, react or sveltekit.');
   const plan = planInit(process.cwd(), values['base-locale'],
     values.framework === undefined ? {} : { framework: values.framework });
   const cancellation = values.apply ? createCliCancellation() : undefined;

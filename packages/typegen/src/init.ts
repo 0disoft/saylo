@@ -6,8 +6,9 @@ import { resolveProjectConfig } from './config.js';
 import { connectVite } from './init-vite.js';
 import { renderTypes } from './render.js';
 import { svelteKitFiles } from './init-sveltekit.js';
+import { reactFiles } from './init-react.js';
 
-export interface InitOptions { readonly framework?: 'vite' | 'sveltekit' }
+export interface InitOptions { readonly framework?: 'vite' | 'sveltekit' | 'react' }
 
 export interface InitChange { readonly file: string; readonly before: string | null; readonly after: string }
 export interface InitPlan {
@@ -29,7 +30,7 @@ export function readInitFile(root: string, file: string): string | null {
 /** Plan a bounded Vite integration, preserving all application and route code. */
 export function planInit(directory: string, baseLocale = 'en', options: InitOptions = {}): InitPlan {
   const framework = options.framework ?? 'vite';
-  if (framework !== 'vite' && framework !== 'sveltekit') throw new TypeError('init framework must be vite or sveltekit.');
+  if (!['vite', 'sveltekit', 'react'].includes(framework)) throw new TypeError('init framework must be vite, react or sveltekit.');
   const root = realpathSync(directory);
   const base = resolveProjectConfig({ localesDir: 'locales', baseLocale }, root).baseLocale;
   const packageSource = readInitFile(root, 'package.json');
@@ -37,6 +38,8 @@ export function planInit(directory: string, baseLocale = 'en', options: InitOpti
   const manifest = JSON.parse(packageSource) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string>; packageManager?: string };
   const dependencies = { ...manifest.dependencies, ...manifest.devDependencies };
   if (!dependencies.vite) throw new Error('init requires Vite in dependencies or devDependencies.');
+  if (framework === 'react' && (!dependencies.react || !dependencies['react-dom']))
+    throw new Error('The react preset requires an existing React 19 client app with react and react-dom.');
   if (framework === 'sveltekit' && (!dependencies['@sveltejs/kit'] || !dependencies.svelte))
     throw new Error('The sveltekit preset requires an existing SvelteKit app with Svelte 5.');
   if (framework === 'sveltekit' && dependencies['@sveltejs/adapter-static'])
@@ -63,13 +66,13 @@ export function planInit(directory: string, baseLocale = 'en', options: InitOpti
     if (before !== null) throw new Error(`init will not overwrite ${file}. Keep the existing integration or choose an empty integration path.`);
     changes.push({ file, before, after });
   };
-  const catalog = JSON.stringify({ greeting: framework === 'sveltekit' && base.split('-')[0] === 'ko'
+  const catalog = JSON.stringify({ greeting: framework !== 'vite' && base.split('-')[0] === 'ko'
     ? '안녕하세요 {name}' : 'Hello {name}' }, null, 2) + '\n';
   const parsed = parseCatalog(catalog, { locale: base, namespace: 'saylo' });
   add('saylo.config.json', JSON.stringify({ format: 'saylo-project/v1', localesDir: 'locales', baseLocale: base,
     timeZone: 'UTC', typegen: { outFile: 'src/saylo/generated.d.ts' } }, null, 2) + '\n');
   add(`locales/${base}/saylo.json`, catalog);
-  if (framework === 'sveltekit') {
+  if (framework !== 'vite') {
     const alternate = base === 'en' ? 'ko' : 'en';
     add(`locales/${alternate}/saylo.json`, JSON.stringify({ greeting: alternate === 'ko' ? '안녕하세요 {name}' : 'Hello {name}' }, null, 2) + '\n');
   }
@@ -78,6 +81,9 @@ import saylo, { loadProjectConfig } from '@0disoft/saylo-vite';
 
 export default saylo(loadProjectConfig(fileURLToPath(new URL('./saylo.config.json', import.meta.url))));
 `);
+  if (framework === 'react') {
+    for (const [file, source] of Object.entries(reactFiles(viteFile))) add(file, source);
+  }
   add('src/saylo/generated.d.ts', renderTypes([createBaseSchema(parsed)]));
   add('src/saylo/env.d.ts', `/// <reference types="vite/client" />
 /// <reference types="@0disoft/saylo-vite/virtual" />
@@ -110,12 +116,14 @@ export function createAppI18n(locale = initialLocale) {
   const manager = managers.includes(packageManager as typeof managers[number]) ? packageManager! : [...new Set(detected)].length === 1 ? detected[0]! : 'npm';
   const install = manager === 'npm' ? 'npm install' : `${manager} add`;
   return { root, changes, guards, nextSteps: [
-    `${install} @0disoft/saylo-core@alpha${framework === 'sveltekit' ? ' @0disoft/saylo-svelte@alpha' : ''}`,
+    `${install} @0disoft/saylo-core@alpha${framework === 'sveltekit' ? ' @0disoft/saylo-svelte@alpha' : framework === 'react' ? ' @0disoft/saylo-react@alpha' : ''}`,
     `${install} -D @0disoft/saylo-vite@alpha @0disoft/saylo-typegen@alpha`,
     ...(framework === 'sveltekit' ? [
       'Open /saylo after starting the dev server. The isolated route includes request-local SSR, hydration, language selection and an HTTP-only locale cookie.',
       'Edit locales/<locale>/saylo.json while the demo input and dialog are open. Existing routes and hooks are unchanged.',
-    ] : ['Create createAppI18n() from src/saylo/i18n.ts in your app owner; subscribe to store changes and call dispose() when unmounting. For SSR, create and dispose one instance per request.',
+    ] : framework === 'react' ? ['Open /saylo.html on the dev server; the isolated React demo has a provider, language selector and browser persistence.',
+      'Build the isolated demo with vite build --config saylo.demo.config.mjs; output is dist-saylo-demo/.',
+      'For your application, use SayloProvider/useI18n from src/saylo/react.tsx and createAppI18n from src/saylo/i18n.ts; the app owner disposes its instance.'] : ['Create createAppI18n() from src/saylo/i18n.ts in your app owner; subscribe to store changes and call dispose() when unmounting. For SSR, create and dispose one instance per request.',
       "Try store.getSnapshot().t('saylo:greeting', { name: 'Saylo' })."]),
     'Run your existing dev/build commands. No route, provider, URL, or SEO code was rewritten.',
   ] };

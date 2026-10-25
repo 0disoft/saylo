@@ -158,6 +158,29 @@ test('SvelteKit init previews a complete isolated route, preserves app files and
   assert.equal(JSON.parse(localized.changes.find(change => change.file === 'locales/en/saylo.json').after).greeting, 'Hello {name}');
 });
 
+test('React preset creates an isolated typed demo and preserves existing app entries', async t => {
+  const f = await fixture(t);
+  assert.throws(() => planInit(f.root, 'en', { framework: 'react' }), /react-dom/);
+  await writeFile(path.join(f.root, 'package.json'), JSON.stringify({ type: 'module', dependencies: {
+    react: '19', 'react-dom': '19' }, devDependencies: { vite: '8' } }));
+  await writeFile(path.join(f.root, 'src/main.tsx'), '// existing application entry');
+  const before = await f.snapshot();
+  const plan = planInit(f.root, 'ko', { framework: 'react' });
+  assert.equal(plan.changes.length, 12);
+  assert.deepEqual(await f.snapshot(), before);
+  assert.ok(plan.changes.some(change => change.file === 'saylo.html'));
+  await applyInit(plan);
+  assert.equal(await readFile(path.join(f.root, 'src/main.tsx'), 'utf8'), '// existing application entry');
+  assert.deepEqual(planInit(f.root, 'ko', { framework: 'react' }).changes, []);
+  assert.equal(JSON.parse(await readFile(path.join(f.root, 'locales/ko/saylo.json'), 'utf8')).greeting, '안녕하세요 {name}');
+  const collision = await fixture(t);
+  await writeFile(path.join(collision.root, 'package.json'), await readFile(path.join(f.root, 'package.json')));
+  await writeFile(path.join(collision.root, 'saylo.html'), 'Keep this demo');
+  const checkpoint = await collision.snapshot();
+  assert.throws(() => planInit(collision.root, 'en', { framework: 'react' }), /will not overwrite/);
+  assert.deepEqual(await collision.snapshot(), checkpoint);
+});
+
 test('SvelteKit preset rejects unsupported apps and route conflicts before writing', async t => {
   const f = await fixture(t);
   const before = await f.snapshot();
