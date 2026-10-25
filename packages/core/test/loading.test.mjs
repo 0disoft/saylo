@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { getEventListeners } from 'node:events';
 import test from 'node:test';
 import { acceptOutcome } from '../dist/loading-registry.js';
 import { CatalogLoader } from '../dist/catalog-loader.js';
@@ -409,6 +410,41 @@ test('lifetime abort disposes owned flights and cleans its listener exactly once
   assert.equal(removed.mock.callCount(), 1);
   slow.release(); i18n.dispose(); assert.equal(removed.mock.callCount(), 1);
   await assert.rejects(i18n.refresh(), I18nDisposedError);
+});
+
+test('disposal removes the original lifetime listener after options reuse', async t => {
+  for (const replacement of [new AbortController().signal, undefined]) await t.test(
+    replacement ? 'signal replaced' : 'signal removed', t => {
+      const controller = new AbortController();
+      const f = fixture(t, { signal: controller.signal });
+      assert.equal(getEventListeners(controller.signal, 'abort').length, 1);
+      f.config.signal = replacement;
+      f.i18n.dispose();
+      assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
+      if (replacement) assert.equal(getEventListeners(replacement, 'abort').length, 0);
+      f.i18n.dispose();
+      assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
+    });
+});
+
+test('initialization observes the original lifetime abort despite options reuse', t => {
+  const f = fixture(t);
+  const controller = new AbortController(), replacement = new AbortController();
+  const cause = new Error('scope closed during initialization');
+  const options = { ...f.config, signal: controller.signal, catalogSource: {
+    readManifest() {
+      options.signal = replacement.signal;
+      controller.abort(cause);
+      return f.source.readManifest();
+    },
+    loadCatalog: f.source.loadCatalog,
+  } };
+  let created;
+  try {
+    assert.throws(() => { created = createI18n(options); }, error => error.code === 'ABORTED' && error.cause === cause);
+  } finally { created?.dispose(); }
+  assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
+  assert.equal(getEventListeners(replacement.signal, 'abort').length, 0);
 });
 
 test('fractional timeout normalization and exact timeout boundary use injected timers', async t => {

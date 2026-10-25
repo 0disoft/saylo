@@ -20,7 +20,8 @@ interface Waiter {
 
 /** Async desired-scope coordinator; SSR instances start from a pinned boot manifest. */
 export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions): I18n<S> {
-  if (options.signal?.aborted) throw aborted(options.signal);
+  const signal = options.signal;
+  if (signal?.aborted) throw aborted(signal);
   const maxCachedCatalogs = catalogCacheLimit(options.maxCachedCatalogs);
   const source = options.catalogSource;
   const decoded = options.initialSnapshot ? validateBootSnapshot(options.initialSnapshot) : undefined;
@@ -285,7 +286,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     dispose() {
       if (disposed) return;
       disposed = true;
-      options.signal?.removeEventListener('abort', disposeOnAbort);
+      signal?.removeEventListener('abort', disposeOnAbort);
       generation++;
       const reason = new I18nDisposedError();
       rejectWhere(() => true, () => reason);
@@ -304,7 +305,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     try { instance.dispose(); }
     catch (error) { try { options.onError?.(error as AggregateError); } catch { /* Disposal has already released all resources. */ } }
   };
-  options.signal?.addEventListener('abort', disposeOnAbort, { once: true });
-  if (options.signal?.aborted) { disposeOnAbort(); throw aborted(options.signal); }
+  signal?.addEventListener('abort', disposeOnAbort, { once: true });
+  if (signal?.aborted) { disposeOnAbort(); throw aborted(signal); }
   return instance;
 }
