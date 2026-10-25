@@ -20,7 +20,8 @@ Saylo is an i18n (internationalization) library that aims to show translation co
 
 ## Current status
 
-- The five public packages are published as `0.1.0-alpha.7` under dist-tag `alpha`. The [alpha.7 release record](releases/0.1.0-alpha.7.md) is the authoritative summary of changes, source, publication, and verification; the [CI-approved manifest](releases/0.1.0-alpha.7.json) records the five artifact integrities. The release includes `saylo init`, i18next namespace migration, production catalog compaction, and the Svelte and translator fixes listed in the record. `latest` remains the registration placeholder `0.0.0-stage`, so install with `@alpha`. Vue remains private at `0.1.0-alpha.4` with its core dependency on `0.1.0-alpha.7`.
+- The five public packages are published as `0.1.0-alpha.8` under dist-tag `alpha`. The [alpha.8 release record](releases/0.1.0-alpha.8.md) and [CI-approved manifest](releases/0.1.0-alpha.8.json) record publication, source and artifact integrity. Existing translator/store/framework calls remain compatible, and the new policies, fallback chains and cache budgets are opt-in. Vue remains private.
+- The previous five-package release was `0.1.0-alpha.7` under dist-tag `alpha`. The [alpha.7 release record](releases/0.1.0-alpha.7.md) is the authoritative summary of changes, source, publication, and verification; the [CI-approved manifest](releases/0.1.0-alpha.7.json) records the five artifact integrities. The release includes `saylo init`, i18next namespace migration, production catalog compaction, and the Svelte and translator fixes listed in the record. `latest` remains the registration placeholder `0.0.0-stage`, so install with `@alpha`. Vue remains private at `0.1.0-alpha.4` with its core dependency on `0.1.0-alpha.7`.
 
 - The previous five-package release was `0.1.0-alpha.6` with dist-tag `alpha`. It fixed a false direct-import warning for CSS or Tailwind watch-only modules with no resolved file ID. Publication and registry acceptance are recorded in the [alpha.6 release record](releases/0.1.0-alpha.6.md), and the [CI-approved manifest](releases/0.1.0-alpha.6.json) records the five artifact integrities.
 - The earlier `0.1.0-alpha.5` release included rich text, catalog translation workflows, synchronization diagnostics, cancellation controls, large-catalog optimizations, and English install-time documentation. Its publication and registry acceptance remain in the [alpha.5 release record](releases/0.1.0-alpha.5.md) and the [CI-approved manifest](releases/0.1.0-alpha.5.json).
@@ -252,10 +253,10 @@ The runnable SSR fixture is in `examples/ssr/`; `npm run demo:ssr` runs renderTo
 
 ## Release
 
-The current published version is `0.1.0-alpha.7` for the five public packages under dist-tag `alpha`. See the [alpha.7 release record](releases/0.1.0-alpha.7.md) and [CI-approved manifest](releases/0.1.0-alpha.7.json) for publication and artifact details. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
+The current published version is `0.1.0-alpha.8` for the five public packages under dist-tag `alpha`. See the [alpha.8 release record](releases/0.1.0-alpha.8.md) and [CI-approved manifest](releases/0.1.0-alpha.8.json) for publication and artifact details. The first version `0.1.0-alpha.1` of core, react, typegen, and vite was published on 2026-10-06, and Svelte is included from `alpha.2` on 2026-10-09. The contract and procedure are in [Release](docs/09-release.md). `latest` points to the registration placeholder `0.0.0-stage`, so specify `@alpha` when installing the current alpha, as in `@0disoft/saylo-core@alpha`. To install a past version, specify the version as in `@0disoft/saylo-core@0.1.0-alpha.1`.
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.7 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.8 --tag alpha
 npm run check
 npm run release:pack
 ```
