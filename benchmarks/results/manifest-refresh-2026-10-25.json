@@ -1,0 +1,25 @@
+{
+  "command": "node benchmarks/manifest-refresh.mjs 1000 50",
+  "scenario": "Unchanged validated manifest; one loaded base catalog; twenty locales and one thousand namespaces",
+  "baselineCommit": "1ad2712",
+  "before": {
+    "manifestEntries": 20000,
+    "manifestBytes": 4067891,
+    "samples": 50,
+    "medianMs": 77.5222,
+    "p95Ms": 94.2569,
+    "manifestSerializationsPerRefresh": 4,
+    "manifestSerializedBytesPerRefresh": 16271564,
+    "sourceLoads": 0
+  },
+  "after": {
+    "manifestEntries": 20000,
+    "manifestBytes": 4067891,
+    "samples": 50,
+    "medianMs": 0.4969,
+    "p95Ms": 0.7205,
+    "manifestSerializationsPerRefresh": 0,
+    "manifestSerializedBytesPerRefresh": 0,
+    "sourceLoads": 0
+  }
+}

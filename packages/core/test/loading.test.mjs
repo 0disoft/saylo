@@ -610,6 +610,39 @@ test('persistent stale results stop after three attempts without changing the UI
   assert.equal(i18n.getSnapshot(), before);
 });
 
+test('reused validated manifests retain snapshots while mutable replacements still enforce revisions', async t => {
+  const { source, config, calls, change } = fixture(t);
+  const read = source.readManifest;
+  let supplied = validateCatalogManifest(read());
+  const i18n = createI18n({ ...config, catalogSource: { ...source, readManifest: () => supplied } });
+  t.after(() => i18n.dispose());
+  let notifications = 0;
+  i18n.subscribe(() => notifications++);
+  const before = i18n.getSnapshot();
+  for (let index = 0; index < 3; index++) await i18n.refresh();
+  assert.equal(i18n.getSnapshot(), before);
+  assert.equal(calls.length, 0);
+  assert.equal(notifications, 0);
+
+  supplied = structuredClone(supplied);
+  await i18n.refresh();
+  assert.equal(i18n.getSnapshot(), before);
+  change('ko', 'common', 'Updated');
+  Object.assign(supplied, read());
+  await i18n.refresh();
+  assert.equal(i18n.t('common:title'), 'Updated');
+  assert.equal(notifications, 1);
+  const committed = i18n.getSnapshot();
+  supplied.catalogs[0].catalogVersion++;
+  await assert.rejects(i18n.refresh(), { code: 'INVALID_MANIFEST' });
+  assert.equal(i18n.getSnapshot(), committed);
+
+  change('ko', 'common', 'New validated revision');
+  supplied = validateCatalogManifest(read());
+  await i18n.refresh();
+  assert.equal(i18n.t('common:title'), 'New validated revision');
+});
+
 test('manifest revisions, known pair versions and deletion tombstones cannot move backwards', async t => {
   const { i18n, source, change } = fixture(t);
   const read = source.readManifest;

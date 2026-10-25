@@ -87,6 +87,8 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
 
   function syncManifest(): boolean {
     const next = readManifest(source.readManifest());
+    // readManifest only reuses validated, deeply frozen instances: identity proves no metadata changed.
+    if (next === manifest) return false;
     if (next.baseLocale !== baseLocale) throw new CatalogLoadError('BASE_LOCALE_CHANGED', 'Source base locale cannot change during instance lifetime.');
     if (retiredSessions.has(next.sessionId)) throw new CatalogLoadError('STALE_MANIFEST', 'Source returned a retired session.');
     if (next.sessionId === manifest.sessionId && next.registryRevision < manifest.registryRevision)
