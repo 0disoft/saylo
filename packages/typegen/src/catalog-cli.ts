@@ -119,6 +119,7 @@ try {
   const args = process.argv.slice(2);
   if (args[0] === 'init') await (await import('./init-cli.js')).runInit(args.slice(1));
   else if (args[0] === 'migrate') await (await import('./migrate-cli.js')).runMigration(args.slice(1));
+  else if (args[0] === 'review') await (await import('./review-cli.js')).runReview(args.slice(1));
   else await runCatalog(args);
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);

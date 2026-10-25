@@ -12,6 +12,7 @@ Commands:
   import --file <work.json>  Validate completed translations; requires --dry-run or --apply.
   approve --file <work.json> Approve current source/translation pairs; requires --reviews and --dry-run or --apply.
   refresh --file <work.json> Print a refreshed workfile and conflict report as JSON; optionally save with --out-file.
+  review                    Open a local translation review server; review --help lists options.
 
 Options:
   --config <file.json>       Defaults to saylo.config.json in cwd when present.
