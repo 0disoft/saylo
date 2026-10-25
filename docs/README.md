@@ -18,6 +18,20 @@ For application setup, see [Vite init](init.md) or the source checkout's [Svelte
 
 The source checkout also supports an optional [runtime translation error policy](runtime-error-policy.md).
 
+## Source checkout additions
+
+These guides cover source checkout behavior and are not included in the published `0.1.0-alpha.7` packages:
+
+- [React initialization preset](init-react.md)
+- [Message fallback chains](fallback-chains.md)
+- [Translation context and reviewer attribution](translation-metadata.md)
+- [Gettext PO exchange](translation-po.md)
+- [Local translation review](local-review.md)
+- [Directory migration and static call rewriting](migration-directory.md)
+- [Catalog cache budgets](cache-budgets.md)
+
+The local review server binds only to `127.0.0.1` and requires a per-process token. Reviewer names are operator-provided audit context, not authentication. The [Vue release readiness guide](vue-release-readiness.md) remains a private package reference and is not part of the install-time documentation bundle. `npm run build:docs` includes these source checkout guides.
+
 The procedure for starting from an empty folder with a published package is in [getting-started.md](getting-started.md).
 
 The current scope of the Svelte adapter and demo is summarized in [38-svelte-adapter.md](38-svelte-adapter.md). Existing performance measurement records are preserved as they are.

@@ -6,6 +6,18 @@ import { fileURLToPath } from 'node:url';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const destination = path.join(repository, 'packages/vite/docs');
+// Explicit source checkout guides; a missing guide must fail the docs build.
+const sourceOnlyDocNames = [
+  'init-react',
+  'fallback-chains',
+  'translation-metadata',
+  'translation-po',
+  'local-review',
+  'migration-directory',
+  'cache-budgets',
+];
+const sourceOnlyDocInputs = sourceOnlyDocNames
+  .map(name => ({ source: `docs/${name}.md`, target: `${name}.md`, sourceOnly: true }));
 // Explicit consumer-facing inputs only. Review logs, design histories, credentials
 // and application sources are never discovered or recursively copied.
 export const packageDocInputs = [
@@ -14,6 +26,7 @@ export const packageDocInputs = [
   ...['getting-started', 'getting-started-react', 'getting-started-svelte', 'getting-started-sveltekit', 'init', 'init-sveltekit', 'migration', 'production-catalogs', 'runtime-error-policy',
     'dev-sync-state', 'support-report'].map(name => ({ source: `docs/${name}.md`, target: `${name}.md` })),
   ...['core', 'react', 'svelte', 'typegen', 'vite'].map(name => ({ source: `packages/${name}/README.md`, target: `api/${name}.md` })),
+  ...sourceOnlyDocInputs,
 ];
 export const packageDocPaths = ['README.md', 'manifest.json', ...packageDocInputs.map(entry => entry.target)];
 const targets = new Map(packageDocInputs.map(entry => [entry.source, entry.target]));
@@ -66,7 +79,8 @@ async function render() {
   const manifest = JSON.parse(await readFile(path.join(repository, 'packages/vite/package.json'), 'utf8'));
   const files = new Map();
   const entries = [];
-  for (const { source, target } of packageDocInputs) {
+  const sourceOnlyLinks = [];
+  for (const { source, target, sourceOnly } of packageDocInputs) {
     const input = normalize(await readFile(path.join(repository, source), 'utf8'));
     const bundled = rewriteLinks(input, source, target);
     // Do not alter the runnable document snippets accepted by the starter checks.
@@ -74,8 +88,10 @@ async function render() {
     assert.deepEqual(code(bundled), code(input), `${source}: code blocks changed`);
     files.set(target, bundled);
     entries.push({ source, target, sourceSha256: hash(input), bundledSha256: hash(bundled) });
+    if (sourceOnly) sourceOnlyLinks.push(`- [${input.match(/^# (.+)$/m)?.[1] ?? target}](${target})`);
   }
-  files.set('README.md', `# Saylo documentation in your installation\n\nThis documentation bundle is included when the tarball for ${manifest.name} ${manifest.version} is built. You can read it from the installation directory without signing in to GitHub.\n\n## Getting started\n\n- [JavaScript and TypeScript](getting-started.md)\n- [React](getting-started-react.md)\n- [Svelte](getting-started-svelte.md)\n- [SvelteKit and SSR](getting-started-sveltekit.md)\n\n## APIs and usage contracts\n\n${['core', 'react', 'svelte', 'typegen', 'vite'].map(id => `- [@0disoft/saylo-${id}](api/${id}.md)`).join('\n')}\n- [Development synchronization state](dev-sync-state.md)\n- [Diagnostic reports for support](support-report.md)\n- [Support and feature requests](support.md)\n- [Private security reports](security.md)\n\nThe getting-started examples were originally verified against alpha.4 on the public npm registry. Alpha.5 includes the development synchronization state API, support diagnostics API, and this documentation bundle; they are absent from alpha.4. See the repository release record for publication and registry verification. The version shown here comes from package.json at build time and does not confirm registry publication. References to design and measurement records that are not bundled retain their titles only. External web documents and fragment targets are outside this bundle's file-link checks.\n\nmanifest.json records SHA-256 hashes of the source and bundled files after normalizing line endings to LF. Runnable code blocks are identical to their sources.\n`);
+  const sourceOnlySection = sourceOnlyLinks.length ? `\n## Source checkout guides\n\nThese guides describe behavior that is only in the source checkout. Their features are not included in the published \`0.1.0-alpha.7\` packages.\n\n${sourceOnlyLinks.join('\n')}\n` : '';
+  files.set('README.md', `# Saylo documentation in your installation\n\nThis documentation bundle is included when the tarball for ${manifest.name} ${manifest.version} is built. You can read it from the installation directory without signing in to GitHub.\n\n## Getting started\n\n- [JavaScript and TypeScript](getting-started.md)\n- [React](getting-started-react.md)\n- [Svelte](getting-started-svelte.md)\n- [SvelteKit and SSR](getting-started-sveltekit.md)\n\n## APIs and usage contracts\n\n${['core', 'react', 'svelte', 'typegen', 'vite'].map(id => `- [@0disoft/saylo-${id}](api/${id}.md)`).join('\n')}\n- [Development synchronization state](dev-sync-state.md)\n- [Diagnostic reports for support](support-report.md)\n- [Support and feature requests](support.md)\n- [Private security reports](security.md)\n${sourceOnlySection}\nThe getting-started examples were originally verified against alpha.4 on the public npm registry. Alpha.5 includes the development synchronization state API, support diagnostics API, and this documentation bundle; they are absent from alpha.4. See the repository release record for publication and registry verification. The version shown here comes from package.json at build time and does not confirm registry publication. References to design and measurement records that are not bundled retain their titles only. External web documents and fragment targets are outside this bundle's file-link checks.\n\nmanifest.json records SHA-256 hashes of the source and bundled files after normalizing line endings to LF. Runnable code blocks are identical to their sources.\n`);
   files.set('manifest.json', JSON.stringify({ schema: 'saylo.package-docs/v1', package: manifest.name,
     version: manifest.version, textNormalization: 'CRLF to LF', documents: entries }, null, 2) + '\n');
   assertLocalLinks(files);
