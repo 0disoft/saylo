@@ -13,6 +13,10 @@ function quote(text: string): string {
 }
 function unquote(text: string): string {
   if (!text.startsWith('"') || !text.endsWith('"')) throw new TypeError('Invalid PO quoted string.');
+  if (/[\uD800-\uDFFF]/u.test(text)) throw new TypeError('PO text must contain well-formed Unicode.');
+  // C octal escapes represent bytes. Keep bytes until all continuation lines
+  // are joined, since a UTF-8 character can span multiple quoted fragments.
+  text = Buffer.from(text, 'utf8').toString('latin1');
   let result = '';
   const escaped: Record<string, string> = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v', a: '\x07', '"': '"', '\\': '\\', '?': '?' };
   for (let i = 1; i < text.length - 1; i++) {
@@ -53,9 +57,13 @@ export function parseTranslationPo(source: string, baseLocale: string): Translat
   type Entry = { context?: string; source?: string; translation?: string; fuzzy: boolean };
   const entries: Entry[] = [];
   let entry: Entry = { fuzzy: false }, field: 'context' | 'source' | 'translation' | undefined;
+  const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
   const flush = () => {
     if (entry.source !== undefined || entry.translation !== undefined || entry.context !== undefined) {
       if (entry.source === undefined || entry.translation === undefined) throw new TypeError('Incomplete PO entry.');
+      for (const key of ['context', 'source', 'translation'] as const) {
+        if (entry[key] !== undefined) entry[key] = decoder.decode(Buffer.from(entry[key]!, 'latin1'));
+      }
       entries.push(entry);
     } else return;
     entry = { fuzzy: false }; field = undefined;
@@ -92,6 +100,8 @@ export function parseTranslationPo(source: string, baseLocale: string): Translat
     headers.set(key, line.slice(separator + 1).trim());
   }
   if (headers.get('x-saylo-base-locale') !== baseLocale) throw new TypeError('PO base locale mismatch.');
+  if (!/^text\/plain\s*;\s*charset\s*=\s*"?utf-8"?\s*$/i.test(headers.get('content-type') ?? ''))
+    throw new TypeError('Saylo PO files must declare UTF-8 encoding.');
   const work = { format: headers.get('x-saylo-format'), baseLocale, entries: entries.map(row => {
     if (row.context === undefined) throw new TypeError('Missing Saylo checkpoint in PO msgctxt.');
     const context: unknown = JSON.parse(row.context);

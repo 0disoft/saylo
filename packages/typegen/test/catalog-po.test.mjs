@@ -26,6 +26,18 @@ test('gettext multiline fields and fuzzy drafts retain checkpoints without becom
   assert.equal(parseTranslationPo(text, 'en').entries[0].translation, null);
 });
 
+test('PO decodes UTF-8 octal bytes across continuation lines and refuses invalid encodings', () => {
+  const original = work(); original.entries = [original.entries[2]];
+  original.entries[0].translation = '\uFEFF안녕 😀 {count}';
+  const text = serializeTranslationPo(original);
+  const field = text.split('\n').find(line => line.startsWith('msgstr ') && line.includes('안녕'));
+  const bytes = Buffer.from(original.entries[0].translation);
+  const fragments = [...bytes].map(byte => '"\\' + byte.toString(8).padStart(3, '0') + '"').join('\n');
+  assert.deepEqual(parseTranslationPo(text.replace(field, 'msgstr ""\n' + fragments), 'en'), original);
+  assert.throws(() => parseTranslationPo(text.replace(field, 'msgstr "\\377"'), 'en'));
+  assert.throws(() => parseTranslationPo(text.replace('charset=UTF-8', 'charset=ISO-8859-1'), 'en'), /UTF-8/);
+});
+
 test('PO refuses missing checkpoints, duplicate tasks, native plurals, malformed fields and wrong locales', () => {
   const original = work(); const text = serializeTranslationPo(original);
   for (const invalid of [text.replace(/^msgctxt .*\n/m, ''), text.replace('msgstr "<link>{count}</link>"', 'msgid_plural "plural"\nmsgstr[0] "x"'),
