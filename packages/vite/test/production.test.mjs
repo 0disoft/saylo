@@ -310,6 +310,19 @@ test('static cache budgets keep boot outcomes pinned and evict only settled impo
   assert.equal(counts.get('en/help'), 2, 'the former LRU entry was reloaded');
   assert.equal(one.getCatalogs().length, 1);
 
+  counts.clear();
+  const recent = createStaticCatalogSource(r.manifest(), initial, loaders, { maxCachedCatalogs: 3 });
+  await recent.loadCatalog('en', 'demo');
+  await recent.loadCatalog('en', 'help');
+  await recent.loadCatalog('en', 'demo'); // Touch the older eviction candidate.
+  await recent.loadCatalog('en', 'extra');
+  await recent.loadCatalog('en', 'demo');
+  assert.equal(counts.get('en/demo'), 1, 'a cache hit refreshes candidate recency');
+  await recent.loadCatalog('en', 'help');
+  assert.equal(counts.get('en/help'), 2, 'the untouched candidate was evicted');
+  assert.equal(recent.getCatalogs().length, 3);
+  assert.equal(recent.getCatalogs()[0].locale, 'ko', 'the boot pin remains first and cannot be evicted');
+
   let active = 0;
   let release;
   const dedupedLoaders = allLoaders.map(entry => entry.key.locale === 'en' && entry.key.namespace === 'demo'
@@ -326,6 +339,31 @@ test('static cache budgets keep boot outcomes pinned and evict only settled impo
 
   for (const invalid of [-1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])
     assert.throws(() => createStaticCatalogSource(r.manifest(), [], allLoaders, { maxCachedCatalogs: invalid }), RangeError);
+});
+
+test('static eviction work stays linear when inline boot pins exceed the cache budget', async t => {
+  const pinnedCount = 256, imports = 8;
+  const catalog = (locale, namespace) => parseCatalog('{"title":"value"}', { locale, namespace });
+  const r = new CatalogRegistry('pin-cost', 'ko', [
+    ...Array.from({ length: pinnedCount }, (_, i) => catalog('ko', `pin${i}`)),
+    catalog('ko', 'extra'), catalog('en', 'extra'),
+  ]);
+  const initial = r.manifest().catalogs.filter(meta => meta.key.locale === 'ko')
+    .map(meta => r.load(meta.key.locale, meta.key.namespace));
+  let loads = 0, checks = 0;
+  const source = createStaticCatalogSource(r.manifest(), initial, [{ key: { locale: 'en', namespace: 'extra' },
+    load: async () => { loads++; return r.load('en', 'extra'); } }], { maxCachedCatalogs: 0 });
+  const nativeHas = Set.prototype.has;
+  const probe = t.mock.method(Set.prototype, 'has', function (value) {
+    if (typeof value === 'string' && value.startsWith('["')) checks++;
+    return nativeHas.call(this, value);
+  });
+  try {
+    for (let i = 0; i < imports; i++) assert.equal((await source.loadCatalog('en', 'extra')).status, 'present');
+  } finally { probe.mock.restore(); }
+  assert.ok(checks <= pinnedCount + imports, `cache bookkeeping made ${checks} pair membership checks`);
+  assert.equal(loads, imports, 'budget zero still evicts each settled unpinned import');
+  assert.deepEqual(source.getCatalogs(), initial.map(outcome => outcome.catalog), 'boot pins and their order survive');
 });
 
 test('production lazy codegen emits the static cache budget only when configured', () => {

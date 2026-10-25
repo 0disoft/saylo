@@ -31,6 +31,7 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
   const metadata = catalogMetadata(manifest);
   const cache = new Map<string, CatalogOutcome>();
   const pinned = new Set<string>();
+  const evictable = new Set<string>();
   const loaders = new Map<string, StaticCatalogLoader['load']>();
   const flights = new Map<string, Flight>();
   for (const outcome of initialCatalogs) {
@@ -47,18 +48,28 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
   for (const meta of manifest.catalogs) {
     if (meta.status === 'present' && !cache.has(id(meta.key)) && !loaders.has(id(meta.key))) throw invalid();
   }
-  const remember = (pair: string, outcome: CatalogOutcome) => {
+  const touch = (pair: string, outcome: CatalogOutcome) => {
     cache.delete(pair);
     cache.set(pair, outcome);
+    // Boot pins never change. Track only unpinned entries in LRU order so a
+    // small budget cannot repeatedly scan the entire inline boot scope.
+    if (maxCachedCatalogs !== undefined && !pinned.has(pair)) {
+      evictable.delete(pair);
+      evictable.add(pair);
+    }
+  };
+  const remember = (pair: string, outcome: CatalogOutcome) => {
+    touch(pair, outcome);
     if (maxCachedCatalogs === undefined || cache.size <= maxCachedCatalogs) return;
-    for (const cached of cache.keys()) {
+    for (const cached of evictable) {
       if (cache.size <= maxCachedCatalogs) break;
-      if (!pinned.has(cached)) cache.delete(cached);
+      cache.delete(cached);
+      evictable.delete(cached);
     }
   };
   const cached = (pair: string) => {
     const outcome = cache.get(pair);
-    if (outcome) { cache.delete(pair); cache.set(pair, outcome); }
+    if (outcome) touch(pair, outcome);
     return outcome;
   };
   return Object.freeze({
