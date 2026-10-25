@@ -1,5 +1,7 @@
 # 09. Release
 
+The current source targets `0.1.0-alpha.7`. Its [release record](../releases/0.1.0-alpha.7.md) tracks publication and registry acceptance; the alpha.6 results below remain historical evidence.
+
 Alpha.6 was published on 2026-10-25. The five public packages use `0.1.0-alpha.6`; Vue stays private at alpha.4. The [CI release](https://github.com/0disoft/saylo/actions/runs/40131860171) and [CI-approved manifest](../releases/0.1.0-alpha.6.json) record publication and artifact integrity. The [alpha.6 release record](../releases/0.1.0-alpha.6.md) records the completed registry acceptance. The published alpha.5 [release record](../releases/0.1.0-alpha.5.md) and [manifest](../releases/0.1.0-alpha.5.json) remain as historical evidence.
 
 This is the runbook for Saylo's distribution targets and release process. The first version, `0.1.0-alpha.1`, was published on 2026-10-06. A pre-publication workflow dry-run dispatch succeeded on GitHub `main` at `3953f24` (run [37467769385](https://github.com/0disoft/saylo/actions/runs/37467769385), 46 seconds, Ubuntu 24.04, Node 24.21.0); the actual publish step was skipped then.
@@ -10,7 +12,7 @@ The previous published version was `0.1.0-alpha.5`. Its five packages passed CI 
 
 The change scope, promotion, publication, and rollback procedure for the alpha.5 release are in the [alpha.5 plan](../releases/0.1.0-alpha.5-plan.md). Before promotion, source versions stayed at alpha.4 while alpha.5 was validated in temporary candidates; the 2026-10-25 release supersedes that preparation state. The 2026-10-12 [documentation check](../review/release-alpha5-documentation-acceptance-2026-10-12.json) covers a local pack of the latest source containing candidate guidance; it distinguishes that work from the earlier alpha.5 candidate and the actual registry alpha.4. Registry checks after alpha.5 also verify the synchronization-state and support-diagnostic APIs and the accompanying documentation. The new SvelteKit check used the pinned `sveltekit-registry-alpha5` example, while existing alpha.1–4 verification paths remain ([readiness verification](../review/registry-consumer-contract-acceptance-2026-10-12.json)). Recheck the release with `verify:registry:alpha5` and `verify:registry:sveltekit:alpha5`.
 
-Full-translation checking has been present since `0.1.0-alpha.3`, and React and Svelte selectors since `alpha.4`. The current release commands use alpha.6. Local `.release/npm/` candidates are gitignored, and approved records come from successful CI artifacts. Both `npm run verify:registry:alpha6` and `npm run verify:registry:sveltekit:alpha6` exited 0 against the published alpha.6 artifacts.
+Full-translation checking has been present since `0.1.0-alpha.3`, and React and Svelte selectors since `alpha.4`. The current release commands use alpha.7. Local `.release/npm/` candidates are gitignored, and approved records come from successful CI artifacts. Both `npm run verify:registry:alpha6` and `npm run verify:registry:sveltekit:alpha6` exited 0 against the published alpha.6 artifacts.
 
 On 2026-10-08, `@0disoft/saylo-svelte` was added to the local release list. The four-package publication and authentication record below is from the original release on 2026-10-06. The current local pack, publication plan, and OIDC targets cover five packages, while `verify:registry` checks only the four packages in the existing `alpha.1` manifest. Detailed scope is in [38-svelte-adapter.md](38-svelte-adapter.md).
 
@@ -40,7 +42,7 @@ On 2026-10-06, four packages were published as `0.1.0-alpha.1` with dist-tag `al
 ## Local verification commands
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.6 --tag alpha
+npm run release:check -- --version 0.1.0-alpha.7 --tag alpha
 npm run check
 npm run release:pack
 ```

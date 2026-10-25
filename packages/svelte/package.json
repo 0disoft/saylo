@@ -1,6 +1,6 @@
 {
   "name": "@0disoft/saylo-svelte",
-  "version": "0.1.0-alpha.6",
+  "version": "0.1.0-alpha.7",
   "type": "module",
   "description": "Svelte 5 bindings for Saylo with typed context and snapshot-bound translation stores.",
   "repository": {
@@ -40,7 +40,7 @@
     "typecheck:consumers": "tsc -p test/tsconfig.json"
   },
   "dependencies": {
-    "@0disoft/saylo-core": "0.1.0-alpha.6"
+    "@0disoft/saylo-core": "0.1.0-alpha.7"
   },
   "peerDependencies": {
     "svelte": "5"
