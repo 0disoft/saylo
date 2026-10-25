@@ -12,6 +12,23 @@ const translator = (base, translated, options = {}) => createTranslator({
   translations: translated === undefined ? [] : [catalog(translated, 'en')], ...options,
 });
 
+test('a translator isolates mutable catalogs and ASTs without freezing caller data', () => {
+  const base = structuredClone(catalog({ title: 'Before', fallback: 'Base' }));
+  const translated = structuredClone(catalog({ title: 'Original' }, 'en'));
+  const bases = [base];
+  const translations = [translated];
+  const bound = createTranslator({ locale: 'en', baseCatalogs: bases, translations });
+  // Mutate before first formatting so an existing formatter cache cannot hide aliasing.
+  translated.messages.title.ast[0].value = 'Changed AST';
+  delete base.messages.fallback;
+  bases.length = 0;
+  translations.length = 0;
+  assert.equal(bound.t('cart:title'), 'Original');
+  assert.equal(bound.t('cart:fallback'), 'Base');
+  assert.equal(Object.isFrozen(base), false);
+  assert.equal(Object.isFrozen(translated.messages.title.ast), false);
+});
+
 test('t returns text, interpolated zero and literal tags; empty translation is not fallback', () => {
   const { t } = translator({ title: '장바구니', empty: 'Base', name: '{name}', tags: '<b>{name}</b>', dotted: 'Value' },
     { title: 'Cart', empty: '', name: '{name}', tags: '<b>{name}</b>' });

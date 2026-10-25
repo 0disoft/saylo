@@ -39,6 +39,41 @@ test('snapshots are stable, immutable and keep their own translator after replac
   assert.equal(notifications, 1);
 });
 
+test('mutable inputs cannot change published snapshots before or after explicit publication', () => {
+  const base = structuredClone(catalog('Before'));
+  const translation = structuredClone(catalog('Original', 'en'));
+  const i18n = createStore({ baseLocale: 'ko', locale: 'en', catalogs: [base, translation] });
+  const before = i18n.getSnapshot();
+  let notifications = 0;
+  i18n.subscribe(() => notifications++);
+  try {
+    translation.messages.title = structuredClone(catalog('Edited', 'en').messages.title);
+    assert.equal(before.t('cart:title'), 'Original');
+    assert.equal(i18n.t('cart:title'), 'Original');
+    assert.equal(i18n.getSnapshot(), before);
+    assert.equal(notifications, 0);
+    i18n.setLocale('en');
+    assert.equal(i18n.t('cart:title'), 'Edited');
+    assert.equal(before.t('cart:title'), 'Original');
+    assert.equal(i18n.getSnapshot().stateRevision, 1);
+    assert.equal(notifications, 1);
+    const published = i18n.getSnapshot();
+    delete translation.messages.title;
+    base.messages.title = structuredClone(catalog('New fallback').messages.title);
+    assert.equal(published.t('cart:title'), 'Edited');
+    i18n.replaceCatalogs([base, translation]);
+    assert.equal(i18n.t('cart:title'), 'New fallback');
+    assert.equal(published.t('cart:title'), 'Edited');
+    assert.equal(before.t('cart:title'), 'Original');
+    assert.equal(i18n.getSnapshot().stateRevision, 2);
+    assert.equal(notifications, 2);
+    assert.equal(Object.isFrozen(base), false);
+    assert.equal(Object.isFrozen(translation), false);
+  } finally { i18n.dispose(); }
+  base.messages.title = structuredClone(catalog('After disposal').messages.title);
+  assert.equal(i18n.t('cart:title'), 'New fallback');
+});
+
 test('equivalent catalogs and inactive edits do not force a new UI snapshot', () => {
   const i18n = store();
   const before = i18n.getSnapshot();

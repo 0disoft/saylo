@@ -1,4 +1,4 @@
-import { CatalogError } from './diagnostics.js';
+import { CatalogError, immutableSnapshot } from './diagnostics.js';
 import { createTextFormatter } from './formatters.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
@@ -46,20 +46,24 @@ export function createTranslator<S extends Schema = Schema>(options: TranslatorO
 export function createBoundTranslator<S extends Schema = Schema>(options: TranslatorOptions, sharedFormat?: ReturnType<typeof createTextFormatter>): Translator<S> {
   const locale = Intl.getCanonicalLocales(options.locale)[0];
   if (!locale) throw new RangeError('A translator requires a nonempty locale.');
-  const first = options.baseCatalogs[0];
+  // A translator owns its view even when callers retain mutable catalog inputs.
+  // Parser-owned immutable catalogs/ASTs are shared; only mutable data is copied.
+  const bases = immutableSnapshot(options.baseCatalogs);
+  const suppliedTranslations = immutableSnapshot(options.translations ?? []);
+  const first = bases[0];
   if (!first) throw new RangeError('A translator requires at least one base catalog.');
   const baseLocale = first.locale;
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   const baseCatalogs = new Map<string, ParsedCatalog>();
   const baseSchemas = new Map<string, CatalogSchema>();
   const translations = new Map<string, ParsedCatalog>();
-  for (const catalog of options.baseCatalogs) {
+  for (const catalog of bases) {
     if (catalog.locale !== baseLocale) catalogError(catalog, 'LOCALE_MISMATCH', 'All base catalogs must use the same locale.');
     if (baseCatalogs.has(catalog.namespace)) catalogError(catalog, 'DUPLICATE_CATALOG', 'Duplicate base namespace.');
     baseCatalogs.set(catalog.namespace, catalog);
     baseSchemas.set(catalog.namespace, createBaseSchema(catalog));
   }
-  for (const catalog of options.translations ?? []) {
+  for (const catalog of suppliedTranslations) {
     if (catalog.locale !== locale) catalogError(catalog, 'LOCALE_MISMATCH', 'Translation catalog must use the selected locale.');
     if (translations.has(catalog.namespace)) catalogError(catalog, 'DUPLICATE_CATALOG', 'Duplicate translation namespace.');
     const schema = baseSchemas.get(catalog.namespace);
