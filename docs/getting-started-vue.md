@@ -8,7 +8,7 @@ Export the Vue 3 + Vite 8 starter from the Saylo repository into an empty folder
 - Run the export from a Saylo repository checkout. `prepare:starter:vue` runs `npm run build` first, so repository dependencies must be installed beforehand.
 - The target folder must be outside the repository and empty. If it contains even one file, the export refuses it instead of overwriting it.
 - The tools list only major ranges. They are Vue 3, Vite 8, `@vitejs/plugin-vue` 6, TypeScript 6, and `vue-tsc` 3. The starter's TypeScript 6 and vue-tsc 3 are tools separate from the repository's TypeScript 7, and the root TypeScript 7 remains as it is.
-- The Vue binding and starter are not published. `@0disoft/saylo-vue` remains private at `0.1.0-alpha.4` and is not among the five public `0.1.0-alpha.6` packages. It is on publish hold. See the [alpha.6 release record](../releases/0.1.0-alpha.6.md).
+- The Vue binding and starter are not published. `@0disoft/saylo-vue` remains private at `0.1.0-alpha.4` and is not among the five public `0.1.0` packages. It is on publish hold. See the [stable release notes](../releases/0.1.0.md).
 
 ## Export
 

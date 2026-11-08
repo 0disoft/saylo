@@ -4,25 +4,25 @@ The Saylo core package. It provides catalog parsing and schema validation, a syn
 
 ## Status
 
-The source checkout also uses second-chance admission for message formatter and
+Version `0.1.0` also uses second-chance admission for message formatter and
 key caches, retaining their 256-entry limits while avoiding LRU's all-miss cycles
 on larger working sets. Native Intl caches retain their 128-entry limits. See
-[formatter cache measurements](../../docs/formatter-cache.md). This is not in npm alpha.9.
+[formatter cache measurements](../../docs/formatter-cache.md).
 
-The source checkout adds optional `devSchemaRecovery` to `createStore` and
+Version `0.1.0` adds optional `devSchemaRecovery` to `createStore` and
 `createI18n`. Previously successful messages can survive required-argument
 additions and key deletion while using current input values. Strict rendering
 remains the default. See [development schema recovery](../../docs/dev-schema-recovery.md)
-for development guards, history limits and diagnostics. This is not in npm alpha.9.
+for development guards, history limits and diagnostics.
 
-The source checkout adds optional `pseudoLocale: 'accent' | 'long'` rendering and
+Version `0.1.0` adds optional `pseudoLocale: 'accent' | 'long'` rendering and
 live `setPseudoLocale(mode?)` controls on eager and lazy instances. ICU arguments,
 formatting rules and rich tags are preserved. See [live pseudo-localization](../../docs/pseudo-localization.md).
-This addition is not in npm alpha.9; normal rendering remains the default.
+Normal rendering remains the default.
 
 Alpha.8 adds optional `onMissingKey` and `onFormatError` callbacks; strict exceptions remain the default. See [runtime translation error policy](../../docs/runtime-error-policy.md). These options are included in the alpha.8 build.
 
-This README describes `0.1.0-alpha.8` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.8.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.
+This README describes `0.1.0` (dist-tag `latest`). See the [release notes](../../releases/0.1.0.md) for scope and validation. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.
 
 React and Svelte selector fine-grained subscriptions (`useI18nSelector`, `selectSvelteStore`, `getI18nSelector`) are included in the `0.1.0-alpha.4` release.
 
@@ -31,10 +31,10 @@ This README has been included in published tarballs since alpha.5.
 ## Installation
 
 ```sh
-npm install @0disoft/saylo-core@alpha
+npm install @0disoft/saylo-core@latest
 ```
 
-`latest` still points to a registration placeholder, so specify `@alpha`. Install it as an app runtime dependency (`dependencies`).
+The stable release uses the `latest` tag. Install it as an app runtime dependency (`dependencies`).
 
 ## Usage
 

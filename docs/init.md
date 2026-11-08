@@ -1,13 +1,13 @@
 # Add Saylo to an existing Vite app
 
-For the source checkout's request-local SSR and hydration preset, see [SvelteKit init](init-sveltekit.md). The `--framework sveltekit` option requires the next npm release; the default Vite initializer below is already published.
+For the request-local SSR and hydration preset, see [SvelteKit init](init-sveltekit.md). Both presets are included in stable `0.1.0`.
 
 `saylo init` is included in the published `0.1.0-alpha.7` release. The [alpha.7 release record](../releases/0.1.0-alpha.7.md) is the authoritative publication record. The command connects the catalog pipeline in an existing Vite app without replacing routes or application components.
 
-Install the CLI with the `alpha` tag, then run it from your app directory. The `latest` tag remains a registration placeholder.
+Install the stable CLI, then run it from your app directory.
 
 ```sh
-npm install --save-dev @0disoft/saylo-typegen@alpha
+npm install --save-dev @0disoft/saylo-typegen@latest
 npx --no-install saylo init --base-locale ko --json
 npx --no-install saylo init --base-locale ko --apply --json
 ```
@@ -23,7 +23,7 @@ The command creates:
 - `src/saylo/generated.d.ts` and `env.d.ts`, with the initial schema and Vite virtual-module types.
 - `src/saylo/i18n.ts`, exporting an instance factory with development translation updates and cleanup.
 
-No install scripts, package-manager commands, or application code run. `nextSteps` lists install commands for the package manager declared in `package.json` or detected from a single lockfile family. Ambiguous detection falls back to npm. Dependencies use `@alpha`; `latest` remains a registration placeholder. No dependency versions or lockfiles are rewritten.
+No install scripts, package-manager commands, or application code run. `nextSteps` lists install commands for the package manager declared in `package.json` or detected from a single lockfile family. Ambiguous detection falls back to npm. Dependencies use the stable `@latest` channel. No dependency versions or lockfiles are rewritten.
 
 ## Connect the UI
 

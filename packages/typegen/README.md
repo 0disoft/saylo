@@ -1,6 +1,6 @@
 # @0disoft/saylo-typegen
 
-## Rich text tag declarations (source checkout)
+## Rich text tag declarations
 
 When a base message has an explicit `richText` contract, the CLI and background
 worker also emit `AppRichTextSchema` beside the existing `AppSchema`:
@@ -16,7 +16,7 @@ The names come from the configured allowed tags, including tags not used in the
 current base text. An empty tag list becomes `never`; messages without an explicit
 contract are omitted. With no rich contracts, generated output is unchanged.
 Tag-only contract changes update background-generated declarations too.
-These declarations are a source-checkout addition and are not in npm alpha.9.
+These declarations are included in `0.1.0`.
 See [strict rich text types](../../docs/rich-text-types.md) for shared configuration
 and optional React, Svelte, and Vue renderer checks.
 
@@ -30,16 +30,16 @@ Success is determined from the output actually persisted to disk. If a newer req
 
 `writeGenerated(outFile, source, isCurrent?, { signal, operations }?)` in the `0.1.0-alpha.7` release lets you inject file I/O, temporary naming, and replacement operations. Cancellation returns `cancelled` and is checked between I/O steps and during replacement retries. A cancellation that arrives after a successful rename does not change `written`. Only temporary files that were created exclusively are cleaned up, and if a write failure and a cleanup failure overlap, the original failure takes precedence. `new TypeGenerator(outFile, { createWorker, write }?)` lets you inject the worker and writer, and a late completion or failure from the previous worker is not applied to the new job.
 
-This README describes `0.1.0-alpha.8` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.8.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
+This README describes `0.1.0` (dist-tag `latest`). See the [release notes](../../releases/0.1.0.md) for scope and validation. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also run it directly from the repository workspace with `node packages/typegen/dist/cli.js`.
 
 ## Installation
 
 ```sh
-npm install --save-dev @0disoft/saylo-typegen@alpha
-npm install @0disoft/saylo-core@alpha
+npm install --save-dev @0disoft/saylo-typegen@latest
+npm install @0disoft/saylo-core@latest
 ```
 
-The `latest` tag of Saylo packages still points to a registration placeholder, so specify `@alpha`. `@0disoft/saylo-core` is needed when you consume the generated types with core generics. It is not needed when you only generate type declarations. If the CLI is already installed, use `npx saylo-typegen` as shown in the examples below.
+The stable release uses the `latest` tag; install matching versions of the Saylo packages. `@0disoft/saylo-core` is needed when you consume the generated types with core generics. It is not needed when you only generate type declarations. If the CLI is already installed, use `npx saylo-typegen` as shown in the examples below.
 
 ## Catalog
 
@@ -66,7 +66,7 @@ Use the `locales/<locale>/<namespace>.json` structure. For example, `locales/ko/
 From the app directory, install the CLI with the `alpha` tag and run:
 
 ```sh
-npm install --save-dev @0disoft/saylo-typegen@alpha
+npm install --save-dev @0disoft/saylo-typegen@latest
 npx --no-install saylo init --base-locale en --json
 npx --no-install saylo init --base-locale en --apply --json
 ```

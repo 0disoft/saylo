@@ -15,10 +15,10 @@ the result lists package-manager commands and the remaining UI wiring steps.
 Each file is published atomically; failures report already written files.
 --framework sveltekit adds an isolated /saylo SSR route with context, hydration,
 locale selection and persistence. Requires standard src/routes and a server adapter.
-The SvelteKit preset is source-only until the next npm release.
+The SvelteKit preset is included in stable 0.1.0.
 --framework react adds /saylo.html, typed bindings, locale persistence and a separate demo build config.
-The React preset is source-only and leaves the application's entry and router unchanged.
-Available since 0.1.0-alpha.7. Install @0disoft/saylo-typegen@alpha; latest remains a registration placeholder.`;
+The React preset leaves the application's entry and router unchanged.
+Install @0disoft/saylo-typegen@latest for stable 0.1.0.`;
 
 export async function runInit(args: readonly string[]): Promise<void> {
   const { values } = parseArgs({ args: [...args], options: {

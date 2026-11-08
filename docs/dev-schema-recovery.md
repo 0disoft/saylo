@@ -1,6 +1,6 @@
 # Development schema recovery
 
-Source checkout addition; not included in published `0.1.0-alpha.9` packages.
+Included in the stable `0.1.0` release; disabled by default.
 
 `createStore` and `createI18n` accept optional `devSchemaRecovery`. Omitting it,
 or passing `false`, keeps strict rendering as the default. The option is meant

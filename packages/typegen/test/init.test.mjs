@@ -139,7 +139,7 @@ test('SvelteKit init previews a complete isolated route, preserves app files and
   const plan = JSON.parse(result.stdout);
   assert.equal(plan.changes.length, 12);
   assert.deepEqual(await f.snapshot(), before);
-  assert.match(plan.nextSteps[0], /saylo-svelte@alpha/);
+  assert.match(plan.nextSteps[0], /saylo-svelte@latest/);
   const applied = f.run(['--framework', 'sveltekit', '--apply', '--json']);
   assert.equal(applied.status, 0, applied.stderr);
   for (const [file, text] of Object.entries(existing)) assert.equal(await readFile(path.join(f.root, file), 'utf8'), text);

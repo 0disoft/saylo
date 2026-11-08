@@ -6,12 +6,12 @@ on:
       version:
         description: Exact version already committed in all packages
         required: true
-        default: 0.1.0-alpha.9
+        default: 0.1.0
         type: string
       dist_tag:
         description: npm distribution tag
         required: true
-        default: alpha
+        default: latest
         type: choice
         options: [alpha, next, latest]
       publish:

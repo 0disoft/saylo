@@ -1,6 +1,6 @@
 # 03. Catalogs and API
 
-This document defines the catalog file format, ID and namespace rules, ICU policy, argument contract, public APIs, and examples. [08-update-protocol.md](08-update-protocol.md) is the single source for the update protocol's wire types and application rules. This document does not duplicate those definitions. There are five public packages: `@0disoft/saylo-core`, `@0disoft/saylo-react`, `@0disoft/saylo-svelte`, `@0disoft/saylo-typegen`, and `@0disoft/saylo-vite`. They were published as `0.1.0-alpha.4` (dist-tag `alpha`). `@0disoft/saylo-vue` is a local private workspace implementation. The API follows the source types, not the draft in this document.
+This document defines the catalog file format, ID and namespace rules, ICU policy, argument contract, public APIs, and examples. [08-update-protocol.md](08-update-protocol.md) is the single source for the update protocol's wire types and application rules. This document does not duplicate those definitions. There are five public packages: `@0disoft/saylo-core`, `@0disoft/saylo-react`, `@0disoft/saylo-svelte`, `@0disoft/saylo-typegen`, and `@0disoft/saylo-vite`. They use stable `0.1.0` (dist-tag `latest`). `@0disoft/saylo-vue` is a local private workspace implementation. The API follows the source types, not the draft in this document.
 
 ## File layout
 

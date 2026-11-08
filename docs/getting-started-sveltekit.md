@@ -6,7 +6,7 @@ This guide adds Saylo to a SvelteKit 3 + Svelte 5 app using only the npm registr
 
 - Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
 - The Saylo packages are on the npm public registry. The Saylo repository is private, but you do not need to clone it, sign in to GitHub, or use `file:` or `workspace:` links.
-- `latest` is a placeholder. `@alpha` currently installs `0.1.0-alpha.6` for the five public packages; the starter was checked against `0.1.0-alpha.4`, so recheck it against the version you install.
+- Install the stable `0.1.0` release from the `latest` tag.
 - Tool versions list only major ranges: SvelteKit 3, Svelte 5, `@sveltejs/vite-plugin-svelte` 7, `@sveltejs/adapter-node` 6, TypeScript 6, `svelte-check` 4, `@types/node` 24, and Vite 8.
 - `svelte-check` 4 accepts only TypeScript 5 and 6, so this example stays on 6 for now.
 
@@ -34,13 +34,13 @@ This guide adds Saylo to a SvelteKit 3 + Svelte 5 app using only the npm registr
     "verify:ssr": "node verify-ssr.mjs"
   },
   "dependencies": {
-    "@0disoft/saylo-core": "alpha",
-    "@0disoft/saylo-svelte": "alpha",
+    "@0disoft/saylo-core": "^0.1.0",
+    "@0disoft/saylo-svelte": "^0.1.0",
     "svelte": "5"
   },
   "devDependencies": {
-    "@0disoft/saylo-typegen": "alpha",
-    "@0disoft/saylo-vite": "alpha",
+    "@0disoft/saylo-typegen": "^0.1.0",
+    "@0disoft/saylo-vite": "^0.1.0",
     "@sveltejs/adapter-node": "6",
     "@sveltejs/kit": "3",
     "@sveltejs/vite-plugin-svelte": "7",

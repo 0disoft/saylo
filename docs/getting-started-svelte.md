@@ -8,9 +8,9 @@ To export a separate Svelte starter from a Saylo repository clone into an empty 
 
 - Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
 - Saylo packages are available on the public npm registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
-- The `latest` tag for the Saylo packages is a placeholder for registration. Add `@alpha` when installing.
+- Install the stable `0.1.0` release from the `latest` tag.
 - Svelte is a peer dependency whose condition is 5, and Vite is a peer dependency of `@0disoft/saylo-vite` whose condition is 8.
-- `@alpha` currently installs `0.1.0-alpha.6`. The starter was checked against `0.1.0-alpha.4`, so recheck the procedure against the version you install.
+- Use matching `0.1.0` Saylo packages. Historical starter validation is recorded separately below.
 
 ## Ten files
 
@@ -30,12 +30,12 @@ Create the following ten files in the empty folder. Create the `locales/ko` and 
   },
   "engines": { "node": "24.x" },
   "dependencies": {
-    "@0disoft/saylo-core": "alpha",
-    "@0disoft/saylo-svelte": "alpha",
+    "@0disoft/saylo-core": "^0.1.0",
+    "@0disoft/saylo-svelte": "^0.1.0",
     "svelte": "5"
   },
   "devDependencies": {
-    "@0disoft/saylo-vite": "alpha",
+    "@0disoft/saylo-vite": "^0.1.0",
     "@sveltejs/vite-plugin-svelte": "7",
     "@types/node": "24",
     "svelte-check": "4",
@@ -336,10 +336,10 @@ npm run preview
 You can write `AppSchema` in `i18n.ts` by hand. For automatic generation, run typegen once.
 
 ```sh
-npm exec --package=@0disoft/saylo-typegen@alpha -- saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
+npm exec --package=@0disoft/saylo-typegen@latest -- saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
 ```
 
-`latest` is a placeholder, so specify `@alpha`. To use generated types, delete the hand-written `export type AppSchema = {...}` from `i18n.ts` and add the following two lines at the top. Re-export it so the helper uses the same type.
+Use `@latest` for the stable release. To use generated types, delete the hand-written `export type AppSchema = {...}` from `i18n.ts` and add the following two lines at the top. Re-export it so the helper uses the same type.
 
 ```ts
 import type { AppSchema } from './generated';

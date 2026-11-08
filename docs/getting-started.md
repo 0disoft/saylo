@@ -6,7 +6,7 @@ This guide adds Saylo to a Vite 8 app using only the npm registry, without cloni
 
 - Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
 - Saylo packages are available on the public npm registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
-- The `latest` tag is still a placeholder for registration. The `alpha` tag currently installs `0.1.0-alpha.7` for the five public packages. See the [alpha.7 release record](../releases/0.1.0-alpha.7.md).
+- Install the stable `0.1.0` release from the `latest` tag.
 - The sample below retains its alpha.4 validation provenance; that run was not repeated for alpha.7. Recheck the run, live-edit, and build procedure against the version you install.
 - The app runtime requires `@0disoft/saylo-core`. The plugin and dev client are provided by `@0disoft/saylo-vite`; `vite` is a peer dependency whose condition is 8.
 
@@ -27,8 +27,8 @@ Create the following six files in the empty folder exactly as shown. Create the 
     "preview": "vite preview --host 127.0.0.1 --port 5189 --strictPort"
   },
   "engines": { "node": "24.x" },
-  "dependencies": { "@0disoft/saylo-core": "alpha" },
-  "devDependencies": { "@0disoft/saylo-vite": "alpha", "vite": "8" }
+  "dependencies": { "@0disoft/saylo-core": "^0.1.0" },
+  "devDependencies": { "@0disoft/saylo-vite": "^0.1.0", "vite": "8" }
 }
 ```
 
@@ -214,10 +214,10 @@ The build removes the parser runtime at the Saylo AST boundary (`astRuntime` def
 If you use only JS, this is unnecessary. To tie key and argument types together in TypeScript or checkJs, generate an `AppSchema` declaration from the base locale.
 
 ```sh
-npm exec --package=@0disoft/saylo-typegen@alpha -- saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
+npm exec --package=@0disoft/saylo-typegen@latest -- saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
 ```
 
-This is the form for a one-off run without installing the CLI. `latest` is a placeholder, so specify `@alpha`. For repeated runs, install with `npm install -D @0disoft/saylo-typegen@alpha` and then use `npx saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts`. Adding `typegen: { outFile: 'generated.d.ts' }` to the plugin options also generates types in the background during development. The build order is typegen → tsc → vite; because Vite build does not type-check consumer code, run tsc first.
+This is the form for a one-off run without installing the CLI. Use `@latest` for the stable release. For repeated runs, install with `npm install -D @0disoft/saylo-typegen@latest` and then use `npx saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts`. Adding `typegen: { outFile: 'generated.d.ts' }` to the plugin options also generates types in the background during development. The build order is typegen → tsc → vite; because Vite build does not type-check consumer code, run tsc first.
 
 Connect the generated types to the `createStore` generic, not to the config object. In TS, provide the generic at the call site.
 

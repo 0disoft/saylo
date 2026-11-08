@@ -4,15 +4,15 @@ The React 19 binding for Saylo. `createSayloReact` creates a typed Provider and 
 
 ## Status
 
-This README describes `0.1.0-alpha.8` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.8.md) for publication and registry verification. `0.1.0-alpha.1` was published on 2026-10-06 and `0.1.0-alpha.2` on 2026-10-09. `useI18nSelector` below is included in the `0.1.0-alpha.4` release. You can also use the package from this repository's workspace or from an `npm pack` tarball.
+This README describes `0.1.0` (dist-tag `latest`). See the [release notes](../../releases/0.1.0.md) for scope and validation. `0.1.0-alpha.1` was published on 2026-10-06 and `0.1.0-alpha.2` on 2026-10-09. `useI18nSelector` below is included in the `0.1.0-alpha.4` release. You can also use the package from this repository's workspace or from an `npm pack` tarball.
 
 ## Installation
 
 ```sh
-npm install @0disoft/saylo-react@alpha @0disoft/saylo-core@alpha react@19 react-dom@19
+npm install @0disoft/saylo-react@latest @0disoft/saylo-core@latest react@19 react-dom@19
 ```
 
-The `latest` tag of Saylo packages still points to a registration placeholder, so specify `@alpha`. `react` is a peer dependency and the current requirement is React 19. `react-dom` is needed when rendering in an app, and `@0disoft/saylo-core` is a runtime dependency.
+The stable release uses the `latest` tag; install matching versions of the Saylo packages. `react` is a peer dependency and the current requirement is React 19. `react-dom` is needed when rendering in an app, and `@0disoft/saylo-core` is a runtime dependency.
 
 ## Usage
 
@@ -90,10 +90,10 @@ The constraints are as follows.
 
 ## Rich text rendering (renderRichText)
 
-The source checkout also exports optional
+Version `0.1.0` also exports optional
 `StrictRichTextRenderers<AppRichTextSchema, Key>` for checking generated tag
 contracts with `satisfies`. See [strict rich text types](../../docs/rich-text-types.md).
-This type is not in npm alpha.9; the existing renderer API below is unchanged.
+This type is included in `0.1.0`; the existing renderer API below is unchanged.
 
 `renderRichText` renders the read-only parts returned by `snapshot.tParts(key, args)` as React nodes. It is a pure function, and the `renderers` passed by the app decide which element each tag becomes. Saylo does not create HTML or attributes.
 

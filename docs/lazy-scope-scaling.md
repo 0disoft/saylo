@@ -1,6 +1,6 @@
 # Lazy development subscription scaling
 
-Source checkout fix, measured on 2026-11-09. Not in published alpha.9.
+Included in stable `0.1.0`, measured on 2026-11-09.
 
 Previously, every accepted catalog lookup sent all cached pair metadata through
 `saylo:catalog-scope`. Starting with N base catalogs and adding N target-language

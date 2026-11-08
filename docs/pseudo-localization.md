@@ -1,7 +1,6 @@
 # Live pseudo-localization
 
-Status: available in the source checkout, not in the published npm alpha.9
-packages. Vue remains private. The feature is off by default and adds no new
+Status: included in the stable `0.1.0` release. Vue remains private. The feature is off by default and adds no new
 dependencies or translation files.
 
 ## Try the screen controls

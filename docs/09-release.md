@@ -1,5 +1,11 @@
 # 09. Release
 
+The stable release target is `0.1.0` under `latest` for core, React, Svelte, typegen and Vite. See [0.1.0 release notes](../releases/0.1.0.md). Historical alpha records below retain their original versions and evidence.
+
+## Historical publication records
+
+These dated alpha records describe earlier releases. The current release uses `0.1.0` and `latest`.
+
 Alpha.8 was published on 2026-10-26. The [release record](../releases/0.1.0-alpha.8.md), [CI run](https://github.com/0disoft/saylo/actions/runs/40217372424), and [approved manifest](../releases/0.1.0-alpha.8.json) record publication of all five packages and registry download integrity. Existing calls remain compatible. Vue remains private; the earlier results below are historical evidence.
 
 Alpha.7 was published on 2026-10-25. The [release record](../releases/0.1.0-alpha.7.md), [CI run](https://github.com/0disoft/saylo/actions/runs/40187216309), and [approved manifest](../releases/0.1.0-alpha.7.json) record publication of all five packages and registry download integrity. Existing translator/store/Svelte call signatures remain compatible. The alpha.6 results below remain historical evidence.
@@ -10,7 +16,7 @@ This is the runbook for Saylo's distribution targets and release process. The fi
 
 ## Confirmed details
 
-The previous published version was `0.1.0-alpha.5`. Its five packages passed CI publication and registry acceptance; details are in the [release record](../releases/0.1.0-alpha.5.md), and approved integrity is in the [manifest](../releases/0.1.0-alpha.5.json). Earlier releases and the publication and authentication results below are retained as records from their respective times.
+At the time of the following historical checks, the published version was `0.1.0-alpha.5`. Its five packages passed CI publication and registry acceptance; details are in the [release record](../releases/0.1.0-alpha.5.md), and approved integrity is in the [manifest](../releases/0.1.0-alpha.5.json). Earlier releases and the publication and authentication results below are retained as records from their respective times.
 
 The change scope, promotion, publication, and rollback procedure for the alpha.5 release are in the [alpha.5 plan](../releases/0.1.0-alpha.5-plan.md). Before promotion, source versions stayed at alpha.4 while alpha.5 was validated in temporary candidates; the 2026-10-25 release supersedes that preparation state. The 2026-10-12 [documentation check](../review/release-alpha5-documentation-acceptance-2026-10-12.json) covers a local pack of the latest source containing candidate guidance; it distinguishes that work from the earlier alpha.5 candidate and the actual registry alpha.4. Registry checks after alpha.5 also verify the synchronization-state and support-diagnostic APIs and the accompanying documentation. The new SvelteKit check used the pinned `sveltekit-registry-alpha5` example, while existing alpha.1–4 verification paths remain ([readiness verification](../review/registry-consumer-contract-acceptance-2026-10-12.json)). Recheck the release with `verify:registry:alpha5` and `verify:registry:sveltekit:alpha5`.
 
@@ -32,7 +38,7 @@ On 2026-10-08, `@0disoft/saylo-svelte` was added to the local release list. The 
 | Runtime | core, react, and svelte target ES2022 browsers and do not depend on Node APIs. typegen and vite run in Node |
 | provenance | Publish with `--provenance=false` while the repository is private. Use true when it is public |
 
-On 2026-10-06, four packages were published as `0.1.0-alpha.1` with dist-tag `alpha`. In public metadata, `latest` points to the registration placeholder `0.0.0-stage` for all four packages, and `alpha` points to `0.1.0-alpha.1`. Install with `@alpha`, for example `@0disoft/saylo-core@alpha`. The alpha policy remains; `latest` is not changed and nothing is unpublished.
+On 2026-10-06, four packages were published as `0.1.0-alpha.1` with dist-tag `alpha`. In public metadata, `latest` points to the registration placeholder `0.0.0-stage` for all four packages, and `alpha` points to `0.1.0-alpha.1`. Install with `@alpha`, for example `@0disoft/saylo-core@alpha`. That historical release retained the alpha policy and the placeholder `latest` tag. Stable `0.1.0` instead uses `latest`.
 
 ## Version and tag contract
 
@@ -44,14 +50,14 @@ On 2026-10-06, four packages were published as `0.1.0-alpha.1` with dist-tag `al
 ## Local verification commands
 
 ```sh
-npm run release:check -- --version 0.1.0-alpha.7 --tag alpha
+npm run release:check -- --version 0.1.0 --tag latest
 npm run check
 npm run release:pack
 ```
 
 `release:check` checks that the root is `private`, packages are not `private`, and `license`, `engines`, `publishConfig`, internal dependency versions, and the five packages' `LICENSE` and `NOTICE` files match. `check` runs builds, workspace tests, consumer type checks, typegen, and React TS checks. The Svelte demo build runs separately with `npm run build:svelte`. `release:pack` builds, installs the five tarballs into JS and TS consumer apps outside the repository for verification, and on success leaves the tarballs and `manifest.json` (`name`, `version`, `filename`, `integrity`) in `.release/npm/`. `.release/` is gitignored.
 
-The `packages/vite` build generates install-time `docs/` from the original user documentation. `release:pack` with `--ignore-scripts` packages that build output as-is and checks all 13 documentation files for missing or unexpected files, differences from the source, and links to internal files after installation. `npm run build:docs` and `npm run verify:docs` generate and compare only the documentation. Runnable code blocks are preserved; external URLs and heading fragments are outside the file-existence check. This bundled change is in the local preparation state and is absent from the existing public alpha.4.
+The `packages/vite` build generates install-time `docs/` from the original user documentation. `release:pack` with `--ignore-scripts` packages that build output as-is and checks all 13 documentation files for missing or unexpected files, differences from the source, and links to internal files after installation. `npm run build:docs` and `npm run verify:docs` generate and compare only the documentation. Runnable code blocks are preserved; external URLs and heading fragments are outside the file-existence check. These bundled guides are included in stable `0.1.0`.
 
 Compare the published artifacts with `npm run verify:registry`. The current command runs `pack-smoke.mjs --registry --registry-version 0.1.0-alpha.1` and compares the four package versions and SHA-512 integrity in the committed [releases/0.1.0-alpha.1.json](../releases/0.1.0-alpha.1.json) with registry metadata and downloaded tarballs. Current source versions and the moving `alpha` tag are not used to judge historical files. Install metadata and README examples are checked against the actual published build; APIs absent from alpha.1 such as `/runtime`, `freezeCatalogs`, and Svelte are not required. It installs registry tarballs into JS/TS apps outside the repository and checks CLI, checkJs/TS, runtime SSR, public subpaths, and the Vite production lazy chunk. New approved JSON records integrity from an actual CI artifact; local candidate tarballs do not overwrite existing approved records. For the published five-package `alpha.6`, `npm run verify:registry:alpha6` checks [releases/0.1.0-alpha.6.json](../releases/0.1.0-alpha.6.json), and `npm run verify:registry:sveltekit:alpha6` verifies a SvelteKit app against that published build. Both exited 0. Alpha.3 through alpha.5 verification is also retained, and the existing `alpha.1` and `alpha.2` commands remain unchanged.
 
@@ -61,12 +67,12 @@ Compare the published artifacts with `npm run verify:registry`. The current comm
 
 | Input | Value |
 | --- | --- |
-| `version` | Exact committed version string. Default `0.1.0-alpha.7` |
-| `dist_tag` | `alpha`, `next`, or `latest`. Default `alpha` |
+| `version` | Exact committed version string. Default `0.1.0` |
+| `dist_tag` | `alpha`, `next`, or `latest`. Default `latest` |
 | `publish` | boolean. Default `false` |
 | `verify_oidc` | boolean. Default `false`. When `true`, verify the OIDC token exchange for all five Trusted Publishers before validation or publication |
 
-A single job runs only on Ubuntu, Node 24, npm 11, on `main`, in repository `0disoft/saylo`. Its environment is `npm-release`; permissions are `contents: read` and `id-token: write`. The sequence is `release:check` → `npm ci` → `check` → `release:pack` → `release:publish` (dry run) → artifact upload. It publishes with `release:publish --publish` only when `publish` is true. Publish order is core → react → svelte → typegen → vite, and it uses no registry secret such as `NPM_TOKEN`.
+A single job runs only on Ubuntu, Node 24, npm 11, on `main`, in repository `0disoft/saylo`. Its environment is `npm-release`; permissions are `contents: read` and `id-token: write`. The sequence is `release:check` → optional OIDC verification → `npm ci` → `audit:dependencies` → `check` → `release:pack` → `release:publish` (dry run) → artifact upload. It publishes with `release:publish --publish` only when `publish` is true. Publish order is core → react → svelte → typegen → vite, and it uses no registry secret such as `NPM_TOKEN`.
 
 `verify_oidc` is independent of publication. When `true`, `release:oidc` obtains a GitHub OIDC token with the `npm:registry.npmjs.org` audience and verifies the five current release target packages through npm's official package-scoped token exchange API at [api-docs.npmjs.com](https://api-docs.npmjs.com/) (`.../oidc/token/exchange/package/@0disoft/saylo-<id>`). It does not change package versions, publication, or tags and does not print or store the token. The helper's three local tests (guard, successful exchange protocol, and secret-leak prevention in logs and errors) and actual registry token exchange all passed. On 2026-10-06, [run 37471573758](https://github.com/0disoft/saylo/actions/runs/37471573758) completed token exchange for four packages, all 143 tests, type checks, and pack consumption verification in 42 seconds.
 

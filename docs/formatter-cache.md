@@ -1,6 +1,6 @@
 # Bounded formatter admission
 
-Source checkout fix, not included in published alpha.9.
+Included in the stable `0.1.0` release.
 
 The previous message and key caches used LRU replacement with a 256-entry
 limit. Sequentially revisiting 257 distinct messages evicted each next-needed

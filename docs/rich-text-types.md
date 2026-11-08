@@ -1,8 +1,7 @@
 # Optional rich text renderer types
 
-Status: available in the source checkout, not in the published npm alpha.9
-packages. Vue remains a private workspace package. No runtime rendering behavior
-or public package version changes with this addition.
+Status: included in the stable `0.1.0` release. Vue remains a private workspace package. No runtime rendering behavior
+changes with this optional type contract.
 
 ## Generate tag contracts
 

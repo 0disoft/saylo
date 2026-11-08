@@ -116,8 +116,8 @@ export function createAppI18n(locale = initialLocale) {
   const manager = managers.includes(packageManager as typeof managers[number]) ? packageManager! : [...new Set(detected)].length === 1 ? detected[0]! : 'npm';
   const install = manager === 'npm' ? 'npm install' : `${manager} add`;
   return { root, changes, guards, nextSteps: [
-    `${install} @0disoft/saylo-core@alpha${framework === 'sveltekit' ? ' @0disoft/saylo-svelte@alpha' : framework === 'react' ? ' @0disoft/saylo-react@alpha' : ''}`,
-    `${install} -D @0disoft/saylo-vite@alpha @0disoft/saylo-typegen@alpha`,
+    `${install} @0disoft/saylo-core@latest${framework === 'sveltekit' ? ' @0disoft/saylo-svelte@latest' : framework === 'react' ? ' @0disoft/saylo-react@latest' : ''}`,
+    `${install} -D @0disoft/saylo-vite@latest @0disoft/saylo-typegen@latest`,
     ...(framework === 'sveltekit' ? [
       'Open /saylo after starting the dev server. The isolated route includes request-local SSR, hydration, language selection and an HTTP-only locale cookie.',
       'Edit locales/<locale>/saylo.json while the demo input and dialog are open. Existing routes and hooks are unchanged.',

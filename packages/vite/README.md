@@ -6,7 +6,7 @@ The Saylo Vite 8 plugin and development client. It detects catalog file changes 
 
 ## Status
 
-This README describes `0.1.0-alpha.8` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.8.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
+This README describes `0.1.0` (dist-tag `latest`). See the [release notes](../../releases/0.1.0.md) for scope and validation. The first published version was `0.1.0-alpha.1` from 2026-10-06. It can also be used from this repository's workspace.
 
 The lazy development path sends full present responses in a compact form and restores them to the existing catalog shape in the browser. Complex ICU ASTs and error locations are preserved, and there is no re-parsing of ICU in the browser. This change is included in the `0.1.0-alpha.2` release. Scope, verification, and performance measurements are in [compact transport notes](https://github.com/0disoft/saylo/blob/main/docs/16-compact-catalog-transport.md).
 
@@ -27,11 +27,11 @@ Install `@0disoft/saylo-core` as an app runtime dependency, and the plugin and d
 So that production SSR builds include `@0disoft/saylo-vite/client` in the app bundle, the plugin adds the `@0disoft/saylo-vite` package to the bundle target (`ssr.noExternal`). You therefore do not need to install this package as a production runtime dependency. This handling is included in the `0.1.0-alpha.4` release.
 
 ```sh
-npm install @0disoft/saylo-core@alpha
-npm install -D @0disoft/saylo-vite@alpha vite@8
+npm install @0disoft/saylo-core@latest
+npm install -D @0disoft/saylo-vite@latest vite@8
 ```
 
-The `latest` tag of Saylo packages still points to a registration placeholder, so specify `@alpha`.
+The stable release uses the `latest` tag; install matching versions of the Saylo packages.
 
 ## Configuration
 
@@ -70,11 +70,11 @@ The catalog file layout is `locales/<locale>/<namespace>.json`. For example, `lo
 
 The `richText: { demo: { terms: ['link', 'strong'] } }` option in the `0.1.0-alpha.7` release specifies the allowed tags for each namespace and message. For the specified messages, it checks tag balance in every ICU branch and the allowlist at startup, in production builds, and on edits during development. Invalid edits are diagnosed as `INVALID_RICH_TEXT`, and the development server keeps the last valid catalog. Tag order, nesting, and omission in translations are allowed, and ordinary strings that are not specified keep the existing behavior. This contract also applies to lazy transport and SSR boot data.
 
-Production `vite build --watch` watches catalog changes in the default, manual, and automatic `includeKeys` modes and revalidates on every rebuild. It updates translation copy, lazy chunks, and generated types from the new disk contents. This fix also exists only in the current checkout.
+Production `vite build --watch` watches catalog changes in the default, manual, and automatic `includeKeys` modes and revalidates on every rebuild. It updates translation copy, lazy chunks, and generated types from the new disk contents. This fix is included in `0.1.0`.
 
 ## Selective builds (includeKeys)
 
-`includeKeys` decides which messages are emitted in production. You can pass an exact `namespace:messageId` array as before, or use a `{ from, dynamicKeys? }` object to have the keys found in source. This feature is not in the `0.1.0-alpha.4` release and exists only in the current local checkout.
+`includeKeys` decides which messages are emitted in production. You can pass an exact `namespace:messageId` array as before, or use a `{ from, dynamicKeys? }` object to have the keys found in source. This feature is not in the `0.1.0-alpha.4` release and is included in `0.1.0`.
 
 ```js
 // 수동 목록
@@ -92,7 +92,7 @@ saylo({
 
 The analysis also tracks translation functions wrapped in type assertions, non-null assertions, or `satisfies`, directly invoked results of `bind`, `call`, and `apply`, and `t` and `tParts` in function arguments and nested destructuring. Direct member access and destructuring of `import * as messages` follow named export aliases that are within the analysis scope. If you pass a translation function as a component prop, constructor argument, or default export, or choose one through a condition or default value, you must list the required keys in `dynamicKeys`.
 
-`from` should include files that define and re-export translators as well. Simple variable aliases of namespace objects and named exports through relative paths within the analysis scope are connected. The current source checkout also follows `export * from './module'` through multiple barrels and cycles, including configured Vite aliases; this fix is not in published alpha.9. Explicit named exports override wildcard exports, and wildcard exports do not forward `default`. Type-only wildcard exports are ignored. A runtime wildcard target that cannot be resolved within the scanned sources stops automatic selection with a diagnostic; include its source in `from` or use a manual `includeKeys` list. Cloning a translation export from a confirmed namespace object, passing it outside, or destructuring it with rest requires `dynamicKeys` or a manual `includeKeys` list. Namespaces from unrelated external packages and modules that export only ordinary functions are not counted as translators, and this restriction does not apply to them.
+`from` should include files that define and re-export translators as well. Simple variable aliases of namespace objects and named exports through relative paths within the analysis scope are connected. The current source checkout also follows `export * from './module'` through multiple barrels and cycles, including configured Vite aliases; this fix is included in `0.1.0`. Explicit named exports override wildcard exports, and wildcard exports do not forward `default`. Type-only wildcard exports are ignored. A runtime wildcard target that cannot be resolved within the scanned sources stops automatic selection with a diagnostic; include its source in `from` or use a manual `includeKeys` list. Cloning a translation export from a confirmed namespace object, passing it outside, or destructuring it with rest requires `dynamicKeys` or a manual `includeKeys` list. Namespaces from unrelated external packages and modules that export only ordinary functions are not counted as translators, and this restriction does not apply to them.
 
 Modules outside `from` are not pulled in automatically. In the current local checkout's production `buildStart`, configured Vite `resolve.alias` entries (strings and regular expressions) are resolved through the Vite plugin resolver to connect named imports and re-exports and namespace imports. Only files already scanned by `includeKeys.from` take part; following a resolution does not widen the scan scope or leave the Vite root. It resolves again on production `build --watch` rebuilds. Aliases that cannot be resolved or remain external, and aliases that point outside the scanned files, stop the build with a diagnostic that names the importer and the path or target involved. The diagnostic suggests fixing `from` or the alias, or using an explicit `includeKeys` list. Official `@0disoft/saylo-*` runtimes and `virtual:saylo` modules keep the existing translator handling, and custom translation exports from other external packages are not followed. This support is included in alpha.5 and is absent from alpha.4.
 
@@ -135,11 +135,11 @@ The development server does not read the approval file and keeps the existing pa
 
 ## Lazy-loading client
 
-The source checkout sends incremental lazy development subscriptions: each
+Version `0.1.0` sends incremental lazy development subscriptions: each
 catalog lookup upserts one pair, and cache eviction removes only affected keys.
 Connection, reconnection and session changes still replace the full scope;
 shutdown clears the owner. Server subscription patch validation and map updates
-touch only changed pairs. This fix is not in published alpha.9; update the Vite
+touch only changed pairs. This fix is included in `0.1.0`; update the Vite
 client and server together. See [subscription scaling measurements](../../docs/lazy-scope-scaling.md)
 for the 100/500/1,000-catalog fixture and wire-byte results.
 

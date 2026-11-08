@@ -15,7 +15,7 @@ node "<saylo-checkout>/packages/typegen/dist/catalog-cli.js" init --framework sv
 
 The app must already use Vite 8, Svelte 5, and SvelteKit with server rendering. `adapter-static` is rejected because the generated route needs a request-local server runtime.
 
-The initializer adds the isolated `/saylo` route. It does not change existing hooks, layouts, routes, or `package.json`. Its `nextSteps` retains the generated `@alpha` install commands for `@0disoft/saylo-core`, `@0disoft/saylo-svelte`, `@0disoft/saylo-typegen`, and `@0disoft/saylo-vite`. Use matching alpha.8 builds of all four packages. Runtime compatibility here was verified against matching checkout builds only; the release record tracks package and registry verification separately.
+The initializer adds the isolated `/saylo` route. It does not change existing hooks, layouts, routes, or `package.json`. Its `nextSteps` retains the generated stable `@latest` install commands for `@0disoft/saylo-core`, `@0disoft/saylo-svelte`, `@0disoft/saylo-typegen`, and `@0disoft/saylo-vite`. Use matching `0.1.0` builds of all four packages. Runtime compatibility here was verified against matching checkout builds only; the release record tracks package and registry verification separately.
 
 ## Generated behavior
 

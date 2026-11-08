@@ -4,10 +4,10 @@ The published `0.1.0-alpha.7` release provides `saylo migrate` and `@0disoft/say
 
 Supported input follows the default [i18next JSON v4 format](https://www.i18next.com/misc/json-format): nested string keys, simple `{{name}}` interpolation, and cardinal plural suffixes. Namespace and flattened dotted IDs are preserved. The report maps source keys to Saylo keys, such as `shop:title` and `shop:items`.
 
-Install the CLI with the `alpha` tag, then run it from your application directory. The `latest` tag remains a registration placeholder.
+Install the stable CLI, then run it from your application directory.
 
 ```sh
-npm install --save-dev @0disoft/saylo-typegen@alpha
+npm install --save-dev @0disoft/saylo-typegen@latest
 npx --no-install saylo migrate --from i18next --file i18next/en/shop.json --locale en --namespace shop --escape-value false --json
 npx --no-install saylo migrate --from i18next --file i18next/en/shop.json --locale en --namespace shop --escape-value false --out-file locales/en/shop.json --json
 ```

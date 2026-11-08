@@ -24,8 +24,8 @@ const help = [
   'Directory mode reads <from-dir>/<locale>/<namespace>.json, preflights every target, and never overwrites output.',
   '--rewrite-calls only rewrites literal t() keys on i18next or direct useTranslation bindings; imports, hooks and providers stay manual.',
   'Context selection, ordinal/legacy plurals, nesting, arrays and custom formatters require manual migration.',
-  'Single-file migration is included in 0.1.0-alpha.7; install @0disoft/saylo-typegen@alpha.',
-  'Directory mode and --rewrite-calls are source-checkout additions until a later release includes them.',
+  'Migration is included in stable 0.1.0; install @0disoft/saylo-typegen@latest.',
+  'Directory mode and --rewrite-calls are included; unsupported dynamic calls remain manual.',
 ].join('\n');
 
 function callPlanReport(plan: CallRewritePlan, writtenFiles: readonly string[] = plan.writtenFiles) {

@@ -8,9 +8,9 @@ To export a separate React starter from a Saylo repository clone into an empty f
 
 - Node.js 24.x and npm are required. `engines.node` in the published package is `24.x`.
 - Saylo packages are available on the public npm registry. You do not need to clone the repository, sign in to GitHub, or use `file:`, `workspace:`, or alias links.
-- The `latest` tag for the Saylo packages is a placeholder for registration. Add `@alpha` when installing.
+- Install the stable `0.1.0` release from the `latest` tag.
 - React is a peer dependency whose condition is 19, and Vite is a peer dependency of `@0disoft/saylo-vite` whose condition is 8.
-- `@alpha` currently installs `0.1.0-alpha.6`. The starter was checked against `0.1.0-alpha.4`, so recheck the procedure against the version you install.
+- Use matching `0.1.0` Saylo packages. Historical starter validation is recorded separately below.
 
 ## Eight files
 
@@ -30,13 +30,13 @@ Create the following eight files in the empty folder. Create the `locales/ko` an
   },
   "engines": { "node": "24.x" },
   "dependencies": {
-    "@0disoft/saylo-core": "alpha",
-    "@0disoft/saylo-react": "alpha",
+    "@0disoft/saylo-core": "^0.1.0",
+    "@0disoft/saylo-react": "^0.1.0",
     "react": "19",
     "react-dom": "19"
   },
   "devDependencies": {
-    "@0disoft/saylo-vite": "alpha",
+    "@0disoft/saylo-vite": "^0.1.0",
     "@types/node": "24",
     "@types/react": "19",
     "@types/react-dom": "19",
@@ -336,10 +336,10 @@ npm run preview
 You can write `AppSchema` by hand. For automatic generation, run typegen once.
 
 ```sh
-npm exec --package=@0disoft/saylo-typegen@alpha -- saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
+npm exec --package=@0disoft/saylo-typegen@latest -- saylo-typegen --locales-dir locales --base-locale ko --out-file generated.d.ts
 ```
 
-`latest` is a placeholder, so specify `@alpha`. Connect generated types to the `createStore<AppSchema>` generic. Adding a new key or changing an argument requires updating both the schema and typegen; editing only the `greeting` value does not change the schema, so it is applied without waiting for a type compile.
+Use `@latest` for the stable release. Connect generated types to the `createStore<AppSchema>` generic. Adding a new key or changing an argument requires updating both the schema and typegen; editing only the `greeting` value does not change the schema, so it is applied without waiting for a type compile.
 
 ## Next
 
