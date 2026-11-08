@@ -71,6 +71,37 @@ function input(window, selector, value) {
   field.dispatchEvent(new window.Event('input', { bubbles: true }));
 }
 
+test('React pseudo preview preserves rich nodes, input values and the open modal', async t => {
+  const window = await page(t), { document } = window;
+  input(window, '#name', 'Ada'); input(window, '#count', '3');
+  await settle(() => document.querySelector('#rich-preview strong')?.textContent === 'Ada', 'Name did not update');
+  document.querySelector('#order-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+  const dialog = document.querySelector('#confirmation');
+  await settle(() => dialog.open, 'Dialog did not open');
+  input(window, '#confirmation-note', 'Keep this draft');
+  await settle(() => document.querySelector('#confirmation-note').value === 'Keep this draft', 'Draft did not update');
+  const name = document.querySelector('#name'), strong = document.querySelector('#rich-preview strong');
+  const link = document.querySelector('#rich-preview a'), heading = document.querySelector('h1');
+  const original = heading.textContent;
+  name.focus(); name.setSelectionRange(1, 2);
+  const select = document.querySelector('#pseudo-locale');
+  for (const mode of ['accent', 'long', '']) {
+    const previous = document.querySelector('#revision').textContent;
+    select.value = mode; select.dispatchEvent(new window.Event('change', { bubbles: true }));
+    await settle(() => document.querySelector('#revision').textContent !== previous, 'Preview did not publish');
+    assert.equal(document.querySelector('#name'), name); assert.equal(name.value, 'Ada');
+    assert.equal(document.activeElement, name); assert.equal(name.selectionStart, 1); assert.equal(name.selectionEnd, 2);
+    assert.equal(document.querySelector('#rich-preview strong'), strong); assert.equal(strong.textContent, 'Ada');
+    assert.equal(document.querySelector('#rich-preview a'), link); assert.equal(link.getAttribute('href'), '#order-form');
+    assert.equal(document.querySelector('#confirmation'), dialog); assert.equal(dialog.open, true);
+    assert.equal(document.querySelector('#confirmation-note').value, 'Keep this draft');
+    assert.equal(heading.textContent.includes('［'), mode !== '');
+    assert.match(document.querySelector('#summary').textContent, /3/);
+    assert.equal(document.documentElement.lang, 'ko');
+  }
+  assert.equal(heading.textContent, original);
+});
+
 test('React production app retains inputs, modal and working controls across repeated cached history events', async t => {
   const window = await page(t);
   const { document } = window;

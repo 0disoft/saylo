@@ -99,6 +99,16 @@ function App() {
             {snapshot.availableLocales.map(value => <option key={value} value={value} lang={value}>{({ ko: '한국어', en: 'English' } as Record<string, string>)[value] ?? value}</option>)}
           </select>
         </label>
+        <label className="locale-control">의사 번역
+          <select id="pseudo-locale" aria-label="의사 번역" value={snapshot.pseudoLocale ?? ''} onChange={event => {
+            const mode = event.target.value;
+            store.setPseudoLocale(mode === 'accent' || mode === 'long' ? mode : undefined);
+          }}>
+            <option value="">원문</option>
+            <option value="accent">악센트·길이 확장</option>
+            <option value="long">길이 늘리기</option>
+          </select>
+        </label>
       </header>
       <section className="intro" lang={presentation.locale}>
         <p className="eyebrow" lang="en">REACT LIVE CATALOG PREVIEW</p>

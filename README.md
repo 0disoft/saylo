@@ -22,6 +22,7 @@ Saylo is an i18n (internationalization) library that aims to show translation co
 
 ## Current status
 
+- The source checkout adds [live pseudo-localization](docs/pseudo-localization.md): opt-in `accent` and `long` modes, immediate store controls, SSR boot metadata, and vanilla/React preview selectors. ICU arguments and rich tags are retained. This addition is not in the published alpha.9 packages.
 - The source checkout adds optional [strict rich text renderer types](docs/rich-text-types.md): generated tag contracts and opt-in renderer maps for React, Svelte, and private Vue. This addition is not in the published alpha.9 packages; existing renderer behavior is unchanged.
 - The five public packages are published as `0.1.0-alpha.9` under dist-tag `alpha`. The [alpha.9 CI release](https://github.com/0disoft/saylo/actions/runs/40226979659) records publication, and the [verified manifest](releases/0.1.0-alpha.9.json) records the five artifact integrities. Existing translator/store/framework calls remain compatible. `latest` remains the registration placeholder `0.0.0-stage`, so install with `@alpha`. Vue remains private at `0.1.0-alpha.4` with its core dependency on `0.1.0-alpha.9`.
 - The previous five-package release was `0.1.0-alpha.8`. The [alpha.8 release record](releases/0.1.0-alpha.8.md) and [CI-approved manifest](releases/0.1.0-alpha.8.json) preserve its publication, source and artifact integrity. Its runtime policies, fallback chains and cache budgets remain opt-in.
@@ -299,6 +300,7 @@ For general questions, feature proposals, and bugs, see [Support](SUPPORT.md); f
 | [docs/getting-started-sveltekit.md](docs/getting-started-sveltekit.md) | Independent SvelteKit 3 installation, per-request SSR, hydration, shared layout, and Node production server |
 | [docs/static-sites.md](docs/static-sites.md) | Static Astro 7 and SvelteKit 3 with adapter-static: build-time boot snapshots, lazy catalogs, language routes, and hosting limits |
 | [docs/rich-text-types.md](docs/rich-text-types.md) | Generated tag contracts and optional strict renderer maps for React, Svelte, and private Vue |
+| [docs/pseudo-localization.md](docs/pseudo-localization.md) | Live accent/expansion previews that preserve ICU arguments, rich tags and committed view state |
 | [docs/01-product-and-scope.md](docs/01-product-and-scope.md) | Problem definition, goals, scope, non-goals, DOM preservation scope, and terminology |
 | [docs/02-architecture.md](docs/02-architecture.md) | Development pipeline, core/adapter boundary, store model, and ownership |
 | [docs/03-catalog-and-api.md](docs/03-catalog-and-api.md) | Catalog files, ID/namespace, ICU policy, argument contract, public API, and examples |

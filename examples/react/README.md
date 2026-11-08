@@ -1,5 +1,10 @@
 # React demo
 
+The header's **의사 번역** control switches between authored copy, accented copy
+and longer copy while preserving inputs, the open dialog and rich link/strong
+nodes. Enter a name to confirm that interpolation stays unchanged. See
+[live pseudo-localization](../../docs/pseudo-localization.md) for the source-checkout API.
+
 An example that uses the Saylo Vite plugin with React 19 and TypeScript. It shares the same catalogs and existing styles as `examples/vanilla/locales`, and manages input values, count, and the modal with React state. Run commands from the repository root.
 
 ## Development server

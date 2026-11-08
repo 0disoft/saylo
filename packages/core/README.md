@@ -4,6 +4,11 @@ The Saylo core package. It provides catalog parsing and schema validation, a syn
 
 ## Status
 
+The source checkout adds optional `pseudoLocale: 'accent' | 'long'` rendering and
+live `setPseudoLocale(mode?)` controls on eager and lazy instances. ICU arguments,
+formatting rules and rich tags are preserved. See [live pseudo-localization](../../docs/pseudo-localization.md).
+This addition is not in npm alpha.9; normal rendering remains the default.
+
 Alpha.8 adds optional `onMissingKey` and `onFormatError` callbacks; strict exceptions remain the default. See [runtime translation error policy](../../docs/runtime-error-policy.md). These options are included in the alpha.8 build.
 
 This README describes `0.1.0-alpha.8` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.8.md) for publication and registry verification. The first published version was `0.1.0-alpha.1` from 2026-10-06. You can also use it from this repository's workspace or install a tarball produced by `npm pack`.

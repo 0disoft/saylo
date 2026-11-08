@@ -84,3 +84,34 @@ test('vanilla rendering error retains the last screen and clears both status are
   assert.equal(document.querySelector('#status').textContent, '빌드된 카탈로그를 사용합니다.');
   assert.equal(document.querySelector('#dialog-status').textContent, '빌드된 카탈로그를 사용합니다.');
 });
+
+test('pseudo preview changes authored text without replacing controls, inputs, selection or the open dialog', t => {
+  const window = page(t), { document } = window;
+  const name = document.querySelector('#name'), dialog = document.querySelector('#confirmation');
+  name.value = 'Ada'; name.focus(); name.setSelectionRange(1, 2);
+  dialog.open = true;
+  const confirmation = document.querySelector('#confirmation-note'); confirmation.value = 'Keep this draft';
+  const heading = document.querySelector('h1'), original = heading.textContent;
+  const summary = document.querySelector('#summary').textContent;
+  const select = document.querySelector('#pseudo-locale');
+  for (const mode of ['accent', 'long', '']) {
+    select.value = mode; select.dispatchEvent(new window.Event('change', { bubbles: true }));
+    assert.equal(document.querySelector('#name'), name);
+    assert.equal(name.value, 'Ada');
+    assert.equal(document.activeElement, name);
+    assert.equal(name.selectionStart, 1); assert.equal(name.selectionEnd, 2);
+    assert.equal(document.querySelector('#confirmation'), dialog); assert.equal(dialog.open, true);
+    assert.equal(confirmation.value, 'Keep this draft');
+    assert.equal(document.documentElement.lang, 'ko');
+    assert.equal(heading.textContent.includes('［'), mode !== '');
+    assert.match(document.querySelector('#summary').textContent, /2/);
+  }
+  assert.equal(heading.textContent, original);
+  assert.equal(document.querySelector('#summary').textContent, summary);
+  select.value = 'long'; select.dispatchEvent(new window.Event('change', { bubbles: true }));
+  const locale = document.querySelector('#locale'); locale.value = 'en';
+  locale.dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal(document.documentElement.lang, 'en');
+  assert.match(heading.textContent, /New words/);
+  assert.match(heading.textContent, /［/);
+});

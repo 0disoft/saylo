@@ -12,6 +12,7 @@ const on = (target, event, callback) => target.addEventListener(event, callback,
 const textNodes = [...document.querySelectorAll('[data-message]')];
 const placeholders = [...document.querySelectorAll('[data-placeholder]')];
 const localeSelect = element('locale');
+const pseudoSelect = element('pseudo-locale');
 const count = element('count');
 const error = element('error');
 let localeList = '';
@@ -50,6 +51,7 @@ function render(snapshot) {
       localeList = nextList;
     }
     localeSelect.value = snapshot.locale;
+    pseudoSelect.value = snapshot.pseudoLocale ?? '';
   } catch (error) {
     renderMessage = error instanceof Error ? error.message : String(error);
     refreshStatus();
@@ -89,6 +91,7 @@ const disconnect = connectDev(store, {
 });
 refreshStatus();
 on(localeSelect, 'change', () => store.setLocale(localeSelect.value));
+on(pseudoSelect, 'change', () => store.setPseudoLocale(pseudoSelect.value || undefined));
 on(count, 'input', () => render(store.getSnapshot()));
 on(element('support-export'), 'click', () => {
   element('support-report').value = JSON.stringify(support.getReport(), null, 2);

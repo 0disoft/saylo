@@ -1,5 +1,10 @@
 # Vanilla demo
 
+The header's **의사 번역** control switches between authored copy, accented copy
+and longer copy without replacing form inputs or the open dialog. It retains the
+selected real language and ICU argument values. See
+[live pseudo-localization](../../docs/pseudo-localization.md) for the source-checkout API.
+
 An example that uses the Saylo Vite plugin with a minimal setup. Run commands from the repository root.
 
 ## Development server
