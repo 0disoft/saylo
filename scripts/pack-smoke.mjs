@@ -212,7 +212,18 @@ if (createTranslator({ locale: 'en', baseCatalogs: [catalog] }).t('demo:hello', 
     if (!fromRegistry && hasSvelte) assert.ok(hasSvelteRichText, 'Local Svelte package is missing the rich component entry.');
     if (hasSvelteRichText) {
       await cp(path.join(repository, 'packages/svelte/test/rich-consumer-js.js'), path.join(app, 'src/consumer-svelte-rich.js'));
-      if (language === 'ts') await cp(path.join(repository, 'packages/svelte/test/rich-consumer.ts'), path.join(app, 'readme-svelte-rich.ts'));
+      if (language === 'ts') {
+        await cp(path.join(repository, 'packages/svelte/test/rich-consumer.ts'), path.join(app, 'readme-svelte-rich.ts'));
+        const hasStrictRichText = (await readFile(path.join(app, 'node_modules/@0disoft/saylo-svelte/dist/index.d.ts'), 'utf8'))
+          .includes('StrictRichTextRenderers');
+        if (!fromRegistry) assert.ok(hasStrictRichText, 'Local release is missing strict rich text declarations.');
+        if (hasStrictRichText) {
+          const strictConsumer = await readFile(path.join(repository, 'packages/svelte/test/rich-strict-consumer.ts'), 'utf8');
+          await writeFile(path.join(app, 'readme-svelte-rich-strict.ts'),
+            strictConsumer.replace('../../typegen/test/rich-generated.js', './rich-generated.js'));
+          await cp(path.join(repository, 'packages/typegen/test/rich-generated.d.ts'), path.join(app, 'rich-generated.d.ts'));
+        }
+      }
     }
     if (hasSvelteSelectors) {
       await cp(path.join(repository, 'packages/svelte/test/selector-consumer-js.js'), path.join(app, 'src/consumer-svelte-selectors.js'));
