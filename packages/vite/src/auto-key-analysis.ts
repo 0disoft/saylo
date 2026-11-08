@@ -14,6 +14,7 @@ export interface SourceFacts {
   readonly namespaceImports: { specifier: string; token: string }[];
   readonly exports: [string, Reference][];
   readonly namedImports: { specifier: string; imported: string; local: string }[];
+  readonly starExports: string[];
 }
 const wrappers = new Set(['TSAsExpression', 'TSTypeAssertion', 'TSNonNullExpression', 'TSSatisfiesExpression',
   'TSInstantiationExpression', 'TypeCastExpression', 'ParenthesizedExpression']);
@@ -52,7 +53,7 @@ const reference = (value: unknown, namespaces: ReadonlyMap<string, string>): Ref
 
 /** Extract only string relationships and key usage; no AST node escapes this file's analysis. */
 export function analyzeSource(source: string, file: string, available: ReadonlySet<string>): SourceFacts {
-  const facts: SourceFacts = { file, edges: [], seeds: [], literals: new Set(), escapes: [], calls: [], namespaceImports: [], exports: [], namedImports: [] };
+  const facts: SourceFacts = { file, edges: [], seeds: [], literals: new Set(), escapes: [], calls: [], namespaceImports: [], exports: [], namedImports: [], starExports: [] };
   const bindings = new WeakSet<SourceNode>();
   const trees = sourceTrees(source, file), namespaces = new Map<string, string>();
   // Imports are hoisted: an earlier use must also recognize a later declaration.
@@ -87,6 +88,10 @@ export function analyzeSource(source: string, file: string, available: ReadonlyS
     if (from === true) facts.seeds.push(to); else facts.edges.push([from, to]);
   };
   for (const tree of trees) visit(tree, (current, parent) => {
+    if (current.type === 'ExportAllDeclaration' && current.exportKind !== 'type') {
+      const specifier = literal(current.source);
+      if (specifier) facts.starExports.push(specifier);
+    }
     if (current.type === 'ExportNamedDeclaration') {
       const declaration = node(current.declaration);
       if (declaration?.type === 'VariableDeclaration') for (const binding of declaration.declarations as SourceNode[]) {

@@ -180,7 +180,8 @@ test('type-only aliased imports and reexports never resolve or retain runtime ke
   const root = await fixture(t);
   await writeFile(path.join(root, 'src/main.ts'), `import type * as types from '@/types';
 import type { Message } from '@/types'; import { type Other } from '@/types';
-export type { Message } from '@/types'; export { type Other } from '@/types';`);
+export type { Message } from '@/types'; export { type Other } from '@/types';
+export type * from '@/types';`);
   const resolve = async () => { assert.fail('Type-only alias reached the runtime resolver'); };
   assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }, undefined, resolve), []);
 });
