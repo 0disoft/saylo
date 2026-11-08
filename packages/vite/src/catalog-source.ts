@@ -1,6 +1,6 @@
 import { DEV_HANDSHAKE_MAX_ATTEMPTS } from './dev-policy.js';
 import { CatalogLoadError, validateCatalogManifest } from '@0disoft/saylo-core';
-import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogOutcome, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
+import type { CatalogKey, CatalogLoadResult, CatalogManifest, CatalogMetadata, CatalogOutcome, CatalogSource, ParsedCatalog } from '@0disoft/saylo-core';
 import { EagerSync } from './dev-sync.js';
 import type { DevSyncState } from './dev-sync.js';
 import { catalogId as id, immutable, matches } from './catalog-outcome.js';
@@ -63,11 +63,17 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   const diagnostics = new Set<(diagnostic: LiveDiagnostic) => void>();
   const syncListeners = new Set<(state: DevSyncState) => void>();
   if (options.push !== undefined && typeof options.push !== 'boolean') throw new TypeError('push must be a boolean.');
+  const scopeMetadata = (outcome: CatalogOutcome): CatalogMetadata => ({ key: outcome.key, catalogVersion: outcome.catalogVersion,
+    ...(outcome.status === 'present' ? { status: 'present', namespaceSchemaFingerprint: outcome.namespaceSchemaFingerprint } : { status: 'missing' }) });
   const sendScope = (clear = false) => {
     if (!options.push || !sync) return;
     hot.send(CATALOG_SCOPE_EVENT, { owner: identity, sessionId: manifest.sessionId,
-      catalogs: clear ? [] : [...cache.values()].map(outcome => ({ key: outcome.key, catalogVersion: outcome.catalogVersion, status: outcome.status,
-        ...(outcome.status === 'present' ? { namespaceSchemaFingerprint: outcome.namespaceSchemaFingerprint } : {}) })) });
+      catalogs: clear ? [] : [...cache.values()].map(scopeMetadata) });
+  };
+  const patchScope = (catalogs: readonly CatalogOutcome[], removed: readonly CatalogKey[] = []) => {
+    if (!options.push || !sync) return;
+    hot.send(CATALOG_SCOPE_EVENT, { owner: identity, sessionId: manifest.sessionId, kind: 'patch',
+      catalogs: catalogs.map(scopeMetadata), ...(removed.length ? { removed } : {}) });
   };
   let syncState: DevSyncState = Object.freeze({ status: 'idle', attempt: 0, maxAttempts: DEV_HANDSHAKE_MAX_ATTEMPTS });
   const notify = (diagnostic: LiveDiagnostic) => {
@@ -124,7 +130,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
       if (result.status === 'failed') { entry.cleanup(); entry.resolve(result); return; }
       const accepted = immutable(result);
       cache.set(id(accepted.key), accepted);
-      sendScope();
+      patchScope([accepted]);
       entry.cleanup();
       entry.resolve(accepted);
     } catch (error) {
@@ -163,14 +169,17 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
             .map(([key, result]) => [key, immutable(result)]));
           const changed = JSON.stringify(next) !== JSON.stringify(manifest);
           const wasReady = ready;
+          const sessionChanged = manifest.sessionId !== next.sessionId;
           manifest = next;
           ready = true;
           for (const [key, result] of replacements) cache.set(key, result);
           const removals = planCacheRemovals(manifest, cache, options.push === true);
+          const removedKeys = removals.map(key => cache.get(key)!.key);
           for (const key of removals) cache.delete(key);
           // The server retains a scope until explicitly replaced. Evicted
           // locales/namespaces must not receive full pushes on recreation.
-          if (removals.length) sendScope();
+          if (sessionChanged) sendScope();
+          else if (removals.length) patchScope([], removedKeys);
           for (const entry of [...pending.values()]) {
             const accepted = cache.get(id(entry.key));
             if (accepted && matches(manifest, accepted)) { entry.cleanup(); entry.resolve(accepted); }

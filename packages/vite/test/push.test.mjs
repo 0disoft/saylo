@@ -4,11 +4,12 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import test from 'node:test';
-import { createI18n } from '@0disoft/saylo-core';
+import { createI18n, parseCatalog } from '@0disoft/saylo-core';
 import saylo from '../dist/index.js';
 import { createDevCatalogSource, connectDev } from '../dist/client.js';
 import { decodeCatalogResult } from '../dist/catalog-wire.js';
 import { CatalogPushSubscriptions } from '../dist/catalog-push.js';
+import { CatalogRegistry } from '../dist/catalog-registry.js';
 import { CATALOG_EVENT, CATALOG_PUSH_EVENT, CATALOG_SCOPE_EVENT, CATALOG_REQUEST_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT } from '../dist/types.js';
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
@@ -149,6 +150,48 @@ test('subscription validation rejects invalid pair metadata and duplicate scope 
     assert.throws(() => subscriptions.subscribe(client, input));
 });
 
+test('scope patches merge and remove pairs while legacy full scopes still replace or clear', () => {
+  const records = ['one', 'two', 'three'].map(namespace => parseCatalog('{"title":"Before"}', { locale: 'en', namespace }));
+  const registry = new CatalogRegistry('session', 'en', records);
+  const [one, two, three] = registry.manifest().catalogs;
+  const subscriptions = new CatalogPushSubscriptions(), client = {};
+  const send = (catalogs, extra = {}) => subscriptions.subscribe(client, { owner: 'test', sessionId: 'session', catalogs, ...extra });
+  const change = () => {
+    const before = registry.manifest().registryRevision;
+    registry.replace(records.map(record => parseCatalog(JSON.stringify({ title: String(before) }), { locale: 'en', namespace: record.namespace })));
+    return subscriptions.updates(client, registry, before).flatMap(push => push.outcomes.map(outcome => outcome.key.namespace)).sort();
+  };
+  send([one]);
+  send([two], { kind: 'patch' });
+  assert.deepEqual(change(), ['one', 'two']);
+  send([three], { kind: 'patch', removed: [one.key] });
+  assert.deepEqual(change(), ['three', 'two']);
+  send([one]); // Old clients omit kind and replace the complete scope.
+  assert.deepEqual(change(), ['one']);
+  send([]);
+  assert.deepEqual(change(), []);
+  send([two], { kind: 'patch' }); // A source with an empty initial cache can subscribe its first pair.
+  assert.deepEqual(change(), ['two']);
+});
+
+test('invalid scope patches are atomic and cannot change an existing session', () => {
+  const record = namespace => parseCatalog('{"title":"Before"}', { locale: 'en', namespace });
+  const registry = new CatalogRegistry('session', 'en', [record('one'), record('two')]);
+  const [one, two] = registry.manifest().catalogs;
+  const subscriptions = new CatalogPushSubscriptions(), client = {};
+  subscriptions.subscribe(client, { owner: 'test', sessionId: 'session', catalogs: [one] });
+  const patch = { owner: 'test', sessionId: 'session', kind: 'patch', catalogs: [two] };
+  for (const invalid of [
+    { ...patch, sessionId: 'other' }, { ...patch, kind: 'unknown' },
+    { ...patch, catalogs: [two, { ...two, catalogVersion: -1 }], removed: [one.key] },
+    { ...patch, removed: [two.key] }, { ...patch, removed: [one.key, one.key] },
+    { ...patch, removed: [{ locale: 'en', namespace: '../bad' }] },
+    { ...patch, removed: {} }, { ...patch, kind: 'replace', removed: [one.key] },
+  ]) assert.throws(() => subscriptions.subscribe(client, invalid));
+  registry.replace(['one', 'two'].map(namespace => parseCatalog('{"title":"After"}', { locale: 'en', namespace })));
+  assert.deepEqual(subscriptions.updates(client, registry, 0)[0].outcomes.map(outcome => outcome.key.namespace), ['one']);
+});
+
 test('pushed deletion tombstones fall back without a lookup and recreation restores the subscribed translation', async t => {
   const f = await fixture(t);
   await f.remove('en'); await tick();
@@ -186,7 +229,8 @@ test('removing a locale drops evicted push pairs until that locale is selected a
   const subscription = f.sent.filter(frame => frame.event === CATALOG_SCOPE_EVENT).at(-1);
   assert.ok(subscription, 'Cache eviction must publish the reduced server subscription.');
   const scope = subscription.data;
-  assert.ok(scope.catalogs.every(meta => meta.key.locale !== 'en'), 'Evicted pairs must leave the server subscription.');
+  assert.equal(scope.kind, 'patch');
+  assert.ok(scope.removed.some(key => key.locale === 'en'), 'Evicted pairs must leave the server subscription.');
   f.frames.length = 0; f.sent.length = 0;
   await f.restore('en', { title: 'Select to load recreated English' }); await tick();
   assert.equal(f.instance.getSnapshot().locale, 'ko');

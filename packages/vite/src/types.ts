@@ -1,4 +1,4 @@
-import type { CatalogDiagnostic, CatalogManifest, CatalogMetadata, CatalogOptions, ParsedCatalog } from '@0disoft/saylo-core';
+import type { CatalogDiagnostic, CatalogKey, CatalogManifest, CatalogMetadata, CatalogOptions, ParsedCatalog } from '@0disoft/saylo-core';
 import type { CatalogStamp } from './catalog-patch.js';
 import type { CatalogWireResult } from './catalog-wire.js';
 import type { AutoIncludeKeys } from './auto-keys.js';
@@ -93,7 +93,10 @@ export type ManifestEvent = { readonly manifest: CatalogManifest } & (
 export interface CatalogScope {
   readonly owner: string;
   readonly sessionId: string;
+  /** Omitted for legacy full replacements. Patches upsert only the supplied pairs. */
+  readonly kind?: 'replace' | 'patch';
   readonly catalogs: readonly CatalogMetadata[];
+  readonly removed?: readonly CatalogKey[];
 }
 /** One manifest revision and all changed payloads in an explicitly subscribed scope. */
 export interface CatalogPush {

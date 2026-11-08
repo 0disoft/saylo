@@ -81,14 +81,16 @@ The dev source from `virtual:saylo/lazy` is created with `{ push: true }`. Manua
 
 | Event | Direction | Content |
 | --- | --- | --- |
-| `saylo:catalog-scope` | client → server | `{ owner, sessionId, catalogs }`. Registers owner, session, and cached pair metadata |
+| `saylo:catalog-scope` | client → server | `{ owner, sessionId, kind?, catalogs, removed? }`. Replaces the scope or changes only the supplied cached pairs |
 | `saylo:catalog-push` | server → client | `{ kind: "patch", owner, baseRevision, manifest, outcomes }` |
 
 ```ts
 interface CatalogScope {
   readonly owner: string;
   readonly sessionId: string;
+  readonly kind?: 'replace' | 'patch';
   readonly catalogs: readonly CatalogMetadata[];
+  readonly removed?: readonly CatalogKey[];
 }
 
 interface CatalogPush {
@@ -100,6 +102,8 @@ interface CatalogPush {
 }
 ```
 
+- Omitted `kind` and `kind: 'replace'` replace the owner's complete scope; an empty replacement unsubscribes it. Old full-scope clients remain supported. `kind: 'patch'` upserts only `catalogs` and removes only `removed` keys, preserving all other subscriptions. Patches must match an existing owner's session; an absent owner starts empty. Duplicate keys, including overlaps between upserts and removals, and malformed patches are rejected before changing any subscriptions.
+- The client sends full scopes only on connection, reconnection, session change and shutdown. Each accepted lookup sends one pair's metadata; cache eviction sends just removed keys. Server patch validation and map updates touch only the changed pairs, without copying the whole subscription. The ordered shared Vite socket carries both forms. Upgrade the Vite client and server together to use patches; older servers do not understand incremental scopes. This addition is not in published alpha.9.
 - `outcomes` contains existing compact, full, or missing outcomes, or `status: "patch"` message deltas. The server sends only pairs registered in the scope whose version or schema changed; pairs absent from the cache receive metadata only.
 - The client validates the payload and `baseRevision`, replaces the cache and applies the manifest together, and publishes one atomic UI snapshot to core. An immediately following metadata broadcast for the same revision is skipped.
 - Malformed, missing, or gap data recovers through the existing snapshot and pair lookup. `stop` and `dispose` release only that owner's subscription and retain the shared Vite socket. Reconnection registers the scope again.
