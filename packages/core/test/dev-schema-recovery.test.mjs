@@ -53,6 +53,9 @@ test('strict defaults and unrelated argument/key errors remain strict', t => {
   store.replaceCatalogs([catalog({ count: '{n, number} {extra}' })]);
   assert.throws(() => store.t('demo:count', { n: 'wrong' }), InvalidArgumentError);
   assert.throws(() => store.t('demo:count', { n: 1, extra: false }), InvalidArgumentError);
+  store.replaceCatalogs([catalog({ count: '{n, number} {first} {second, number}' })]);
+  assert.throws(() => store.t('demo:count', { n: 1, second: 'wrong' }), InvalidArgumentError);
+  assert.equal(store.t('demo:count', { n: 2 }), '2');
   assert.throws(() => store.t('demo:unseen'), UnknownMessageError);
   assert.throws(() => store.t('demo:unknown'), UnknownMessageError);
   assert.throws(() => store.t('other:title'), NamespaceNotLoadedError);

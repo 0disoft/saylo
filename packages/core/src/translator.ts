@@ -21,13 +21,15 @@ function dateValue(value: unknown): number | undefined {
   } catch { return undefined; }
 }
 
-function validateArguments(key: string, schema: MessageSchema, args: Record<string, unknown> | undefined): Record<string, string | number> {
+function validateArguments(key: string, schema: MessageSchema, args: Record<string, unknown> | undefined,
+  allowMissing = false): Record<string, string | number> {
   if (args !== undefined && (args === null || typeof args !== 'object' || Array.isArray(args))) {
     throw new InvalidArgumentError(key, undefined, 'Arguments must be an object.');
   }
   const values: Record<string, string | number> = Object.create(null);
   for (const [argument, contract] of Object.entries(schema)) {
     if (args === undefined || !Object.hasOwn(args, argument)) {
+      if (allowMissing) continue;
       throw new InvalidArgumentError(key, argument, 'Required argument is missing, even when the translation omits it.');
     }
     const value = args[argument];
@@ -138,6 +140,8 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
         const schema = baseSchemas.get(namespace)?.keys;
         const contract = schema && Object.hasOwn(schema, id) ? schema[id] : undefined;
         const previous = recovery.recovery.recover(recovery.scope, error, key, args, surface, contract, plan => {
+          // Missing new arguments may recover; invalid supplied values must still fail.
+          if (contract) validateArguments(key, contract, args, true);
           const values = validateArguments(key, plan.arguments, args);
           return rich ? formatParts(namespace, id, plan.message, plan.sourceLocale, values, pseudoLocale)
             : formatText(namespace, id, plan.message, plan.sourceLocale, values, pseudoLocale);
