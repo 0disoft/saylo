@@ -62,7 +62,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "tag": "alpha",
+    "tag": "latest",
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependenciesMeta": {

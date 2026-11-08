@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 export const repository = fileURLToPath(new URL('..', import.meta.url));
 export const packageIds = ['core', 'react', 'svelte', 'typegen', 'vite'];
 export function releaseInput(args = process.argv.slice(2)) {
-  let version, tag = 'alpha', publish = false;
+  let version, tag, publish = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--version') version = args[++i];
     else if (args[i] === '--tag') tag = args[++i];
@@ -13,6 +13,7 @@ export function releaseInput(args = process.argv.slice(2)) {
     else throw new Error(`Unknown argument: ${args[i]}`);
   }
   assert.match(version ?? '', /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:alpha|beta|rc)\.(0|[1-9]\d*))?$/, 'Supply an exact release version.');
+  tag ??= version.includes('-') ? 'alpha' : 'latest';
   assert.ok(['alpha', 'next', 'latest'].includes(tag), 'Unsupported dist-tag.');
   assert.ok(!version.includes('-') || tag !== 'latest', 'Prereleases cannot use latest.');
   assert.ok(version.includes('-') || tag !== 'alpha', 'Stable releases cannot use alpha.');
@@ -32,6 +33,8 @@ export async function checkRelease({ version }) {
     assert.deepEqual(manifest.engines, { node: '24.x' });
     assert.equal(manifest.publishConfig.access, 'public');
     assert.equal(manifest.publishConfig.registry, 'https://registry.npmjs.org/');
+    // Packaging uses this default even when CI dispatch supplies a different tag.
+    releaseInput(['--version', manifest.version, '--tag', manifest.publishConfig.tag]);
     for (const [name, range] of Object.entries(manifest.dependencies ?? {})) {
       if (name.startsWith('@0disoft/saylo-')) assert.equal(range, version, `${id}: prerelease dependency must use the same exact version`);
     }

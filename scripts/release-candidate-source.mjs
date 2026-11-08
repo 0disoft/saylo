@@ -4,20 +4,23 @@ import { createHash } from 'node:crypto';
 import { readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { packageIds } from './release-check.mjs';
+import { packageIds, releaseInput } from './release-check.mjs';
 
 const exec = promisify(execFile);
 const owned = new Set(packageIds.map(id => `@0disoft/saylo-${id}`));
 export const privateCandidateIds = ['vue'];
 export function promote(manifest, version, { preserveVersion = false } = {}) {
-  if (!preserveVersion) manifest.version = version;
+  if (!preserveVersion) {
+    manifest.version = version;
+    if (manifest.publishConfig) manifest.publishConfig.tag = releaseInput(['--version', version]).tag;
+  }
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
     for (const name of Object.keys(manifest[field] ?? {})) if (owned.has(name)) manifest[field][name] = version;
   }
 }
 
 // Verify the snapshot against Git objects, not a descriptor's unverified claim.
-// Public versions/dependencies and private workspace internal dependency refs
+// Public versions/default tags/dependencies and private workspace internal dependency refs
 // may differ. Private versions and publication settings stay unchanged.
 export async function inspectCandidateSource(repository, source, commit, version) {
   const { stdout } = await exec('git', ['ls-tree', '-rz', '--full-tree', commit],

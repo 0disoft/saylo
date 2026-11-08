@@ -10,7 +10,7 @@ import { privateCandidateIds, promote } from './release-candidate-source.mjs';
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const exec = promisify(execFile);
 const { values } = parseArgs({ options: { version: { type: 'string' } } });
-const { version, tag } = releaseInput(['--version', values.version ?? '', '--tag', 'alpha']);
+const { version, tag } = releaseInput(['--version', values.version ?? '']);
 const current = JSON.parse(await readFile(path.join(repository, 'packages/core/package.json'), 'utf8'));
 assert.notEqual(version, current.version, 'A proposed candidate must use a new version.');
 const dirty = await exec('git', ['diff', '--name-only', 'HEAD'], { cwd: repository, windowsHide: true });
