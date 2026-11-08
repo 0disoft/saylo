@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { writeCatalogOutput } from '../dist/catalog-output.js';
 import {
@@ -185,6 +185,74 @@ test('hook shadowing, reassignment and named class expressions block call rewrit
   assert.deepEqual(await filesBelow(path.join(f.root, 'output')), []);
   assert.equal(await readFile(hook, 'utf8'), hookSource);
   assert.equal(await readFile(klass, 'utf8'), classSource);
+});
+
+test('private method parameter shadowing blocks CLI apply without changing unrelated calls', async t => {
+  const f = await fixture(t);
+  const sources = new Map([
+    ['parser.js', `import { t } from 'i18next';
+export class Parser {
+  #format(t) { return t('header.title'); }
+  run() { return this.#format(key => key); }
+}
+export const translated = t('header.title');\n`],
+    ['hook.tsx', `import { useTranslation } from 'react-i18next';
+class Parser {
+  #format(useTranslation) {
+    const { t } = useTranslation('shop');
+    return t('header.title');
+  }
+}\n`],
+    ['translation.js', "import { t } from 'i18next';\nexport const translated = t('header.title');\n"],
+  ]);
+  for (const [name, source] of sources) await writeFile(path.join(f.root, 'src', name), source);
+  const result = f.run([...directoryArgs, '--apply', '--rewrite-calls', '--source-dir', 'src', '--namespace', 'shop']);
+  assert.equal(result.status, 1, result.stderr + result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.blocked, true);
+  assert.ok(report.calls.issues.some(issue => issue.code === 'CALL_BINDING_SHADOWED' && issue.file.endsWith('parser.js')));
+  assert.ok(report.calls.issues.some(issue => issue.code === 'CALL_USE_TRANSLATION_SHADOWED' && issue.file.endsWith('hook.tsx')));
+  assert.deepEqual(await filesBelow(path.join(f.root, 'output')), []);
+  for (const [name, source] of sources) assert.equal(await readFile(path.join(f.root, 'src', name), 'utf8'), source);
+});
+
+test('successful CLI apply changes translation keys while private callbacks keep their runtime results', async t => {
+  const f = await fixture(t);
+  await writeFile(path.join(f.root, 'package.json'), '{"type":"module"}');
+  // A local identity stub isolates source rewriting from i18next's runtime setup.
+  const stub = path.join(f.root, 'node_modules', 'i18next');
+  await mkdir(stub, { recursive: true });
+  await writeFile(path.join(stub, 'package.json'), '{"type":"module","exports":"./index.js"}');
+  await writeFile(path.join(stub, 'index.js'), 'export const t = key => key;');
+  const sourceFile = path.join(f.root, 'src', 'parser.js');
+  const source = `import { t } from 'i18next';
+export class Parser {
+  #format(format) { return format('header.title'); }
+  run() { return this.#format(key => key); }
+}
+export const translated = t('header.title');\n`;
+  const unrelatedFile = path.join(f.root, 'src', 'unrelated.js');
+  const unrelated = `export class Parser {
+  #format(t) { return t('header.title'); }
+  run() { return this.#format(key => key); }
+}\n`;
+  await writeFile(sourceFile, source);
+  await writeFile(unrelatedFile, unrelated);
+  const before = await import(pathToFileURL(sourceFile).href + '?before');
+  assert.equal(new before.Parser().run(), 'header.title');
+  assert.equal(before.translated, 'header.title');
+  const result = f.run([...directoryArgs, '--apply', '--rewrite-calls', '--source-dir', 'src', '--namespace', 'shop']);
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.blocked, false);
+  assert.equal(report.calls.changes.length, 1);
+  assert.equal(await readFile(sourceFile, 'utf8'), source.replace("= t('header.title');", '= t("shop:header.title");'));
+  assert.equal(await readFile(unrelatedFile, 'utf8'), unrelated);
+  const after = await import(pathToFileURL(sourceFile).href + '?after');
+  const plain = await import(pathToFileURL(unrelatedFile));
+  assert.equal(after.translated, 'shop:header.title');
+  assert.equal(new after.Parser().run(), 'header.title');
+  assert.equal(new plain.Parser().run(), 'header.title');
 });
 
 test('call rewrite requires the namespace to exist in every locale with identical keys', async t => {

@@ -69,7 +69,7 @@ export function Title() {
 
 `useTranslation` may omit its namespace or use exactly `useTranslation('shop')`. A key without a prefix must match a converted ID and becomes `shop:title`. An existing `shop:` prefix is kept only when its suffix matches a converted ID. Hook imports, providers, and application wiring are not changed.
 
-The rewrite blocks instead of guessing when it finds dynamic or missing keys, aliased imports, namespace mismatch, `.t()` member calls, optional calls, multiple or reassigned bindings, shadowed `useTranslation`, parse errors, or source symlinks. Extra `t()` arguments are accepted only as an inline object containing interpolation values. Options such as `ns`, `keyPrefix`, `defaultValue`, context, language, or return-shape settings block the rewrite, as does a third argument.
+The rewrite blocks instead of guessing when it finds dynamic or missing keys, aliased imports, namespace mismatch, `.t()` member calls, optional calls, multiple or reassigned bindings, shadowed `useTranslation`, parse errors, or source symlinks. This includes private method parameters named `t` or `useTranslation`: they can be ordinary callbacks, so the ambiguous file requires manual disambiguation. A blocked migration writes neither catalogs nor call-site changes. Private callbacks with distinct names and files without translation imports remain unchanged while safe translation calls are migrated. Extra `t()` arguments are accepted only as an inline object containing interpolation values. Options such as `ns`, `keyPrefix`, `defaultValue`, context, language, or return-shape settings block the rewrite, as does a third argument.
 
 ## Manual work
 

@@ -165,7 +165,7 @@ function declarationOffsets(node: AstNode, name: string): number[] {
     'TSDeclareFunction', 'TSEnumDeclaration', 'TSImportEqualsDeclaration', 'TSModuleDeclaration'].includes(node.type)) {
     if (node.id?.type === 'Identifier' && node.id.name === name) offsets.push(node.start ?? 0);
   }
-  if (['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression', 'ObjectMethod', 'ClassMethod',
+  if (['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression', 'ObjectMethod', 'ClassMethod', 'ClassPrivateMethod',
     'TSDeclareFunction'].includes(node.type)) {
     for (const parameter of (node.params as AstNode[] | undefined) ?? []) {
       const names: string[] = [];
