@@ -47,13 +47,15 @@ for GHSA-gcqx-w48m-w2h4. This prevents prototype poisoning without an audit
 allowlist or a severity change. The fork retains the upstream MIT license and
 must be removed once a fixed upstream dependency is available. It is excluded
 from the five published packages and checked through the plugin's real module
-resolution in `npm run check`.
+resolution in `npm run check`. The independent SvelteKit example applies the
+same override, checks its copied implementation during `build:sveltekit`, and
+audits its own lockfile with `npm --prefix examples/sveltekit run audit:dependencies`.
 
 - `npm run audit:dependencies` runs `scripts/audit-dependencies.mjs`. This script invokes `npm audit` and queries the build and runtime dependencies in the entire root lock against registry advisories. It specifies `--audit-level=low` so that low and higher severities fail. It has no allowlist.
 - The helper exists because `npm run` passes the allow-scripts setting from `.npmrc` as the `npm_config_allow_scripts` environment variable, and recent npm rejects that flag for project commands (`EALLOWSCRIPTS`). The helper removes only that key from the environment and runs the npm CLI pointed to by `npm_execpath` with Node.
 - It does not install packages or run package scripts, and it passes through the audit exit code. `npm run audit:dependencies` exits 0 locally with 0 vulnerabilities.
-- `.github/workflows/release.yml` places this step after `npm ci`. No new CI job or workflow was added.
-- This step has not run in actual CI yet. The only record is a local run.
+- `.github/workflows/release.yml` audits both the root and SvelteKit example lockfiles after `npm ci`. The example lockfile audit does not need an example install.
+- Root auditing passed in the [0.1.0 release CI](https://github.com/0disoft/saylo/actions/runs/42502656511). The manually dispatched `.github/workflows/sveltekit-example.yml` separately checks the example's locked install, audit, patched merge behavior, build, development SSR and production adapter HTTP. It adds no automatic push-triggered runs or npm publication.
 - Advisory lookup is not a code security scan. A clean result means only that no advisory from the registry at observation time applied.
 - `npm run check` does not include a network audit. Audit remains a separate command to keep the offline checks as they are.
 

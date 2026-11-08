@@ -17,6 +17,30 @@ The example only reads the cookie. To remember a language with a cookie, the app
 
 The example uses SvelteKit 3, Svelte 5, Vite 8, adapter-node 6, TypeScript 6, and svelte-check 4. To match the current peer conditions of SvelteKit and the checker, only the example uses TypeScript 6; Saylo itself remains on TypeScript 7. It follows the [official SvelteKit 3 migration guide](https://svelte.dev/docs/kit/migrating-to-sveltekit-3).
 
+## Development dependency security
+
+The Svelte Vite plugin uses the repository's [private patched deepmerge fork](../../vendor/deepmerge/README.md)
+through an explicit development dependency and override. This fixes
+GHSA-gcqx-w48m-w2h4 without lowering the audit threshold. The normal build checks
+that the independently installed plugin resolves to the patched implementation
+and cannot poison merged option prototypes. The four copied local Saylo
+packages use the current stable `0.1.0` metadata.
+
+```sh
+npm --prefix examples/sveltekit run audit:dependencies
+npm run build:sveltekit
+npm run verify:sveltekit
+npm --prefix examples/sveltekit run verify:production
+```
+
+The last command serves the built adapter-node handler on an ephemeral loopback
+port and checks concurrent localized SSR and boot data over HTTP. It closes its
+server after the check. This repository has no external hosting configuration
+for the example; these development dependencies are outside the npm release
+artifacts. The manually dispatched [example workflow](../../.github/workflows/sveltekit-example.yml)
+checks the same installation, audit, build and HTTP behavior without publishing
+unchanged npm packages.
+
 ## SSR and hydration
 
 - `hooks.server.ts` resolves the locale in the order query, cookie, `Accept-Language`, then the manifest base value, and stores it in that request's `locals`. It also sets the HTML `lang` from this value.

@@ -10,8 +10,11 @@ The only code change defines own data properties for all three destination
 writes. This preserves enumerable keys, symbols, merge options and normal
 object prototypes without invoking the inherited prototype setter.
 
-The root development dependency and override make the Svelte Vite plugin use
-this fork. It is not a dependency of any published Saylo package. The distinct
+The root and independent `examples/sveltekit` development dependencies and
+overrides make their Svelte Vite plugins use this fork. The example copies the
+fork with `install-links=true` and checks the installed implementation's bytes
+and prototype safety during its normal build. It is not a dependency of any
+published Saylo package. The distinct
 private package identity records that the code differs from the registry build;
 it does not assert an upstream security fix. The strict audit still checks all
 registry dependencies, and `scripts/test/deepmerge-security.test.mjs` checks the

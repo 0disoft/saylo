@@ -1,0 +1,40 @@
+name: Validate SvelteKit example
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: saylo-sveltekit-example
+  cancel-in-progress: false
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install npm CLI
+        run: npm install --global npm@11
+      - name: Install root dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Audit root dependencies
+        run: npm run audit:dependencies
+      - name: Build and install the independent example
+        run: npm run setup:sveltekit
+      - name: Audit the example dependencies
+        run: npm --prefix examples/sveltekit run audit:dependencies
+      - name: Check types and build the example
+        run: npm run build:sveltekit
+      - name: Verify development SSR and cleanup
+        run: npm run verify:sveltekit
+      - name: Verify the production adapter over HTTP
+        run: npm --prefix examples/sveltekit run verify:production

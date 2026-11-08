@@ -2,15 +2,22 @@
   "name": "saylo-sveltekit-example",
   "private": true,
   "type": "module",
-  "engines": { "node": "24.x" },
-  "imports": { "#lib/*": "./src/lib/*" },
+  "engines": {
+    "node": "24.x"
+  },
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "typegen": "saylo-typegen --locales-dir locales --base-locale ko --out-file src/lib/generated.d.ts",
-    "check": "npm run typegen && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check": "npm run verify:security && npm run typegen && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "dev": "vite --host 127.0.0.1 --port 5191 --strictPort",
     "build": "npm run check && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 5192 --strictPort",
-    "verify:ssr": "node verify-ssr.mjs"
+    "verify:ssr": "node verify-ssr.mjs",
+    "verify:security": "node --test test/security.test.mjs",
+    "audit:dependencies": "node ../../scripts/audit-dependencies.mjs --prefix examples/sveltekit --workspaces=false",
+    "verify:production": "node verify-production.mjs"
   },
   "dependencies": {
     "@0disoft/saylo-core": "file:../../packages/core",
@@ -26,6 +33,10 @@
     "@types/node": "24",
     "svelte-check": "4",
     "typescript": "6",
-    "vite": "8"
+    "vite": "8",
+    "deepmerge": "file:../../vendor/deepmerge"
+  },
+  "overrides": {
+    "deepmerge": "$deepmerge"
   }
 }
