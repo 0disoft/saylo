@@ -1,6 +1,7 @@
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import type { NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
 import type { PseudoLocaleMode } from './pseudo-locale.js';
+import type { DevSchemaRecoveryConfig } from './dev-schema-recovery.js';
 
 export type DeepReadonly<T> = T extends object
   ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
@@ -143,7 +144,7 @@ export interface StoreSnapshot<S extends Schema = Schema> extends Translator<S> 
   readonly loadedNamespaces: readonly string[];
 }
 
-export interface StoreOptions extends TranslationErrorPolicy, LocaleFallbackOptions, PseudoLocaleOptions {
+export interface StoreOptions extends TranslationErrorPolicy, LocaleFallbackOptions, PseudoLocaleOptions, DevSchemaRecoveryConfig {
   readonly baseLocale: string;
   readonly locale: string;
   readonly catalogs: readonly ParsedCatalog[];

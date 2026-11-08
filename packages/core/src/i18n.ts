@@ -8,6 +8,7 @@ import { normalizeFallbackLocales } from './locale-chain.js';
 import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import { captureErrorPolicy } from './translation-policy.js';
 import { readPseudoLocale } from './pseudo-locale.js';
+import { createDevSchemaRecovery } from './dev-schema-recovery.js';
 import type { PseudoLocaleMode } from './pseudo-locale.js';
 import type { CatalogOutcome, CreateI18nOptions, I18n, I18nRequestOptions } from './loading-types.js';
 import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
@@ -66,9 +67,11 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   if (initial.size !== initialKeys.length) throw new CatalogLoadError('INVALID_INITIAL_STATE', 'Initial state must contain every base and target outcome.');
   const formatter = createTextFormatter(timeZone);
   const policy = captureErrorPolicy(options);
+  const recovery = createDevSchemaRecovery(options.devSchemaRecovery);
   const boot = createLoadedSnapshot<S>(manifest, desiredLocale, [...desiredNamespaces].sort(),
-    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0, fallbackLocales, policy, pseudoLocale);
+    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0, fallbackLocales, policy, pseudoLocale, recovery);
   let current = boot.snapshot;
+  recovery?.activate(current.t);
   let planned = current;
   let signature = boot.signature;
   let notifying = false;
@@ -170,6 +173,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     try {
       while (pending.length && !disposed) {
         current = pending.shift()!;
+        recovery?.activate(current.t);
         invalidateProtection();
         for (const listener of [...listeners]) {
           if (!listeners.has(listener)) continue;
@@ -203,7 +207,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       if (disposed || epoch !== generation) return;
       if (syncManifest()) return;
       const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter,
-        current.stateRevision, fallbackLocales, policy, pseudoLocale);
+        current.stateRevision, fallbackLocales, policy, pseudoLocale, recovery);
       const snapshot = candidate.signature === signature ? candidate.snapshot :
         Object.freeze({ ...candidate.snapshot, stateRevision: nextRevision(current.stateRevision) });
       staleRetries = 0;
@@ -265,7 +269,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       const next = readPseudoLocale(mode);
       if (next === pseudoLocale) return;
       const candidate = createLoadedSnapshot<S>(committedManifest, planned.locale, planned.loadedNamespaces,
-        committedOutcomes, timeZone, formatter, nextRevision(planned.stateRevision), fallbackLocales, policy, next);
+        committedOutcomes, timeZone, formatter, nextRevision(planned.stateRevision), fallbackLocales, policy, next, recovery);
       pseudoLocale = next;
       const error = commitSnapshot(candidate.snapshot, candidate.signature);
       if (error) throw error;
@@ -316,6 +320,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     dispose() {
       if (disposed) return;
       disposed = true;
+      recovery?.clear();
       signal?.removeEventListener('abort', disposeOnAbort);
       generation++;
       const reason = new I18nDisposedError();

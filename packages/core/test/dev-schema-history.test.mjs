@@ -69,7 +69,7 @@ test('successful reads resolve diagnostics and disposal cancels pending notifica
 
 test('invalid options fail early and disabled recovery allocates no history', () => {
   assert.equal(createDevSchemaRecovery(undefined), undefined); assert.equal(createDevSchemaRecovery(false), undefined);
-  for (const maxEntries of [0, -1, 1.5, Infinity]) assert.throws(() => createDevSchemaRecovery({ maxEntries }), RangeError);
+  for (const maxEntries of [null, 0, -1, 1.5, Infinity]) assert.throws(() => createDevSchemaRecovery({ maxEntries }), RangeError);
   assert.throws(() => createDevSchemaRecovery(true), TypeError);
   assert.throws(() => createDevSchemaRecovery({ onDiagnostic: 'wrong' }), TypeError);
 });

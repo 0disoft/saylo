@@ -1,6 +1,7 @@
 import type { LocaleFallbackOptions, ParsedCatalog, Schema, StoreSnapshot, Translate, TranslateParts,
   TranslationErrorPolicy, PseudoLocaleOptions } from './types.js';
 import type { PseudoLocaleMode } from './pseudo-locale.js';
+import type { DevSchemaRecoveryConfig } from './dev-schema-recovery.js';
 import type { BootSnapshot } from './boot.js';
 
 export interface CatalogKey {
@@ -52,7 +53,7 @@ export interface CatalogCacheOptions {
   readonly maxCachedCatalogs?: number;
 }
 
-export interface SharedI18nOptions extends TranslationErrorPolicy, LocaleFallbackOptions, CatalogCacheOptions, PseudoLocaleOptions {
+export interface SharedI18nOptions extends TranslationErrorPolicy, LocaleFallbackOptions, CatalogCacheOptions, PseudoLocaleOptions, DevSchemaRecoveryConfig {
   readonly catalogSource: CatalogSource;
   readonly timeZone?: string;
   /** Per-catalog timeout including queue wait, defaults to 5000ms. */

@@ -6,6 +6,7 @@ import { createBaseSchema, validateTranslation } from './schema.js';
 import { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
 import { captureErrorPolicy, formatErrorFallback, missingKeyFallback } from './translation-policy.js';
 import { readPseudoLocale } from './pseudo-locale.js';
+import type { BoundSchemaRecovery } from './dev-schema-recovery.js';
 import type { CatalogSchema, MessageSchema, ParsedCatalog, Schema, Translate, TranslateParts, Translator, TranslatorOptions } from './types.js';
 
 function catalogError(catalog: ParsedCatalog, code: 'DUPLICATE_CATALOG' | 'LOCALE_MISMATCH' | 'NAMESPACE_MISMATCH', message: string): never {
@@ -47,7 +48,8 @@ export function createTranslator<S extends Schema = Schema>(options: TranslatorO
 }
 
 /** Internal hook for an eager store to retain formatter caches across snapshots. */
-export function createBoundTranslator<S extends Schema = Schema>(options: TranslatorOptions, sharedFormat?: ReturnType<typeof createTextFormatter>): Translator<S> {
+export function createBoundTranslator<S extends Schema = Schema>(options: TranslatorOptions,
+  sharedFormat?: ReturnType<typeof createTextFormatter>, recovery?: BoundSchemaRecovery): Translator<S> {
   const pseudoLocale = readPseudoLocale(options.pseudoLocale);
   const locale = Intl.getCanonicalLocales(options.locale)[0];
   if (!locale) throw new RangeError('A translator requires a nonempty locale.');
@@ -113,19 +115,35 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
     const base = baseCatalogs.get(namespace);
     if (!base) throw new NamespaceNotLoadedError(namespace, key);
     if (!Object.hasOwn(base.messages, id)) throw new UnknownMessageError(key);
-    const values = validateArguments(key, baseSchemas.get(namespace)!.keys[id]!, args);
+    const contract = baseSchemas.get(namespace)!.keys[id]!;
+    const values = validateArguments(key, contract, args);
     let source = base;
     for (const messageLocale of translationLocales) {
       const translation = translations.get(messageLocale)?.get(namespace);
       if (translation && Object.hasOwn(translation.messages, id)) { source = translation; break; }
     }
-    return rich ? formatParts(namespace, id, source.messages[id]!, source.locale, values, pseudoLocale)
-      : formatText(namespace, id, source.messages[id]!, source.locale, values, pseudoLocale);
+    const message = source.messages[id]!;
+    const result = rich ? formatParts(namespace, id, message, source.locale, values, pseudoLocale)
+      : formatText(namespace, id, message, source.locale, values, pseudoLocale);
+    if (recovery) recovery.recovery.remember(recovery.scope, key, rich ? 'parts' : 'text',
+      { arguments: contract, message, sourceLocale: source.locale });
+    return result;
   };
-  const render = policy ? (key: string, args?: Record<string, unknown>, rich = false) => {
+  const render = policy || recovery ? (key: string, args?: Record<string, unknown>, rich = false) => {
     try { return strictRender(key, args, rich); }
     catch (error) {
       const surface = rich ? 'parts' : 'text';
+      if (recovery && typeof key === 'string') {
+        const separator = key.indexOf(':'), namespace = key.slice(0, separator), id = key.slice(separator + 1);
+        const schema = baseSchemas.get(namespace)?.keys;
+        const contract = schema && Object.hasOwn(schema, id) ? schema[id] : undefined;
+        const previous = recovery.recovery.recover(recovery.scope, error, key, args, surface, contract, plan => {
+          const values = validateArguments(key, plan.arguments, args);
+          return rich ? formatParts(namespace, id, plan.message, plan.sourceLocale, values, pseudoLocale)
+            : formatText(namespace, id, plan.message, plan.sourceLocale, values, pseudoLocale);
+        });
+        if (previous !== undefined) return previous;
+      }
       if (error instanceof UnknownMessageError || error instanceof NamespaceNotLoadedError) {
         const fallback = missingKeyFallback(policy, error, error.key, locale, baseLocale, surface);
         if (fallback !== undefined) return fallback;

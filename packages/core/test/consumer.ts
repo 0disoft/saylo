@@ -1,5 +1,14 @@
 import { CatalogError, createBaseSchema, createI18n, createServerI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
 import type { PseudoLocaleMode } from '@0disoft/saylo-core/runtime';
+import type { DevSchemaRecoveryOptions, DevSchemaRecoveryDiagnostic } from '@0disoft/saylo-core/runtime';
+
+const recoveryOptions: DevSchemaRecoveryOptions = { maxEntries: 64, onDiagnostic(event: DevSchemaRecoveryDiagnostic) {
+  const status: 'retained' | 'resolved' = event.status;
+  const reason: 'required-argument-added' | 'key-deleted' = event.reason;
+  void status; void reason;
+  // @ts-expect-error diagnostics never expose argument values
+  event.args;
+} };
 
 const pseudoMode: PseudoLocaleMode = 'accent';
 const pseudoTranslator = createTranslator({ locale: 'en', baseCatalogs: [], pseudoLocale: pseudoMode });
@@ -133,6 +142,9 @@ const untyped = createTranslator({ locale: 'ko', baseCatalogs: [parsed] });
 untyped.t('dynamic:key', { value: 3 });
 
 const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog], ...policy, ...fallbackOptions });
+createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog], devSchemaRecovery: recoveryOptions });
+// @ts-expect-error explicit options are required to enable development recovery
+createStore({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog], devSchemaRecovery: true });
 store.setPseudoLocale('accent');
 store.setPseudoLocale();
 // @ts-expect-error reject unsupported preview modes
@@ -166,6 +178,7 @@ const source: CatalogSource = {
 };
 const sharedPolicy: SharedI18nOptions = { catalogSource: source, ...policy, ...fallbackOptions, ...cacheOptions };
 const lazy = createI18n<AppSchema>({ ...sharedPolicy, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
+createI18n({ ...sharedPolicy, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair], devSchemaRecovery: recoveryOptions });
 lazy.setPseudoLocale('long');
 lazy.setPseudoLocale();
 // @ts-expect-error a pseudo mode does not change the real locale

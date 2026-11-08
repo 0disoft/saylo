@@ -17,6 +17,16 @@ export interface DevSchemaRecoveryOptions {
   readonly onDiagnostic?: (diagnostic: DevSchemaRecoveryDiagnostic) => void;
 }
 
+export interface DevSchemaRecoveryConfig {
+  /** Opt in only in a development client; omitted/false preserves strict rendering. */
+  readonly devSchemaRecovery?: DevSchemaRecoveryOptions | false;
+}
+
+export interface BoundSchemaRecovery {
+  readonly recovery: DevSchemaRecovery;
+  readonly scope: RecoveryScope;
+}
+
 export interface RecoveryMessage {
   readonly arguments: MessageSchema;
   readonly message: ParsedMessage;
@@ -45,6 +55,10 @@ export class DevSchemaRecovery {
   scope(locale: string, baseLocale: string, timeZone: string): RecoveryScope {
     return { locale, identity: (key, surface) => JSON.stringify([locale, baseLocale, timeZone, key, surface]),
       history: new Map(this.records) };
+  }
+
+  bind(locale: string, baseLocale: string, timeZone: string): BoundSchemaRecovery {
+    return { recovery: this, scope: this.scope(locale, baseLocale, timeZone) };
   }
 
   track(render: object, scope: RecoveryScope) { this.scopes.set(render, scope); }
@@ -107,7 +121,8 @@ export class DevSchemaRecovery {
 export function createDevSchemaRecovery(options: DevSchemaRecoveryOptions | false | undefined): DevSchemaRecovery | undefined {
   if (options === undefined || options === false) return;
   if (!options || typeof options !== 'object' || Array.isArray(options)) throw new TypeError('devSchemaRecovery must be options or false.');
-  const limit = options.maxEntries ?? 128, onDiagnostic = options.onDiagnostic;
+  const configuredLimit = options.maxEntries, onDiagnostic = options.onDiagnostic;
+  const limit = configuredLimit === undefined ? 128 : configuredLimit;
   if (!Number.isSafeInteger(limit) || limit < 1) throw new RangeError('devSchemaRecovery.maxEntries must be a positive safe integer.');
   if (onDiagnostic !== undefined && typeof onDiagnostic !== 'function') throw new TypeError('devSchemaRecovery.onDiagnostic must be a function.');
   return new DevSchemaRecovery(limit, onDiagnostic ?? (event => {

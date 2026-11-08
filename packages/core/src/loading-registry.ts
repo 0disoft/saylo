@@ -10,6 +10,7 @@ import type { createTextFormatter } from './formatters.js';
 import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome } from './loading-types.js';
 import type { RichTextPart, Schema, StoreSnapshot, Translate, TranslateParts, TranslationErrorPolicy } from './types.js';
 import type { PseudoLocaleMode } from './pseudo-locale.js';
+import type { DevSchemaRecovery } from './dev-schema-recovery.js';
 
 export function canonicalLocale(value: string): string {
   const locale = Intl.getCanonicalLocales(value)[0];
@@ -132,15 +133,16 @@ export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest
   namespaces: readonly string[], outcomes: readonly CatalogOutcome[], timeZone: string,
   formatter: ReturnType<typeof createTextFormatter>, stateRevision: number,
   fallbackLocales: readonly string[] = [], policy?: TranslationErrorPolicy,
-  pseudoLocale?: PseudoLocaleMode): { snapshot: StoreSnapshot<S>; signature: string } {
+  pseudoLocale?: PseudoLocaleMode, recovery?: DevSchemaRecovery): { snapshot: StoreSnapshot<S>; signature: string } {
   const catalogs = outcomes.filter(o => o.status === 'present').map(o => o.catalog);
   const bases = catalogs.filter(c => c.locale === manifest.baseLocale);
   const chain = fallbackLocaleChain(locale, normalizeFallbackLocales(fallbackLocales), manifest.baseLocale);
   const messageLocales = new Set(chain.filter(value => value !== manifest.baseLocale));
+  const recoveryScope = recovery?.bind(locale, manifest.baseLocale, timeZone);
   // Schema compatibility is checked atomically by the translator, after all pairs finish.
   const bound = bases.length ? createBoundTranslator<S>({ locale, timeZone, baseCatalogs: bases,
     translations: catalogs.filter(c => messageLocales.has(c.locale)), fallbackLocales,
-    ...(policy ?? {}), ...(pseudoLocale ? { pseudoLocale } : {}) }, formatter) : undefined;
+    ...(policy ?? {}), ...(pseudoLocale ? { pseudoLocale } : {}) }, formatter, recoveryScope) : undefined;
   const available = manifestMembership(manifest).namespaces;
   const loaded = new Set(namespaces);
   const unresolved = (error: UnknownMessageError | NamespaceNotLoadedError, keyText: string,
@@ -163,6 +165,7 @@ export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest
     return rich ? (bound!.tParts as TranslateParts<Schema>)(key, args) : (bound!.t as Translate<Schema>)(key, args);
   };
   const translate = (key: string, args?: Record<string, unknown>) => render(key, args);
+  if (recoveryScope) recovery!.track(translate, recoveryScope.scope);
   const parts = (key: string, args?: Record<string, unknown>) => render(key, args, true);
   const signature = createLoadedSignature(manifest, locale, namespaces, catalogs, pseudoLocale);
   return { signature, snapshot: Object.freeze({ locale, baseLocale: manifest.baseLocale, timeZone, t: translate as Translate<S>, tParts: parts as TranslateParts<S>,

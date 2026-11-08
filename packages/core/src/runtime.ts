@@ -25,5 +25,6 @@ export type {
   LocaleFallbackOptions, PseudoLocaleOptions,
 } from './types.js';
 export type { PseudoLocaleMode } from './pseudo-locale.js';
+export type { DevSchemaRecoveryConfig, DevSchemaRecoveryOptions, DevSchemaRecoveryDiagnostic } from './dev-schema-recovery.js';
 export type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome, CatalogLoadResult,
   CatalogSource, CatalogSchedule, I18nRequestOptions, CatalogCacheOptions, SharedI18nOptions, CreateI18nOptions, I18n } from './loading-types.js';

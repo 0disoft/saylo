@@ -7,6 +7,7 @@ import { createBoundTranslator } from './translator.js';
 import { captureErrorPolicy } from './translation-policy.js';
 import { catalogSignature } from './snapshot-signature.js';
 import { readPseudoLocale } from './pseudo-locale.js';
+import { createDevSchemaRecovery } from './dev-schema-recovery.js';
 import type { PseudoLocaleMode } from './pseudo-locale.js';
 import type { ParsedCatalog, Schema, Store, StoreOptions, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
@@ -61,6 +62,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   const formatter = createTextFormatter(timeZone);
   const policy = captureErrorPolicy(options);
+  const recovery = createDevSchemaRecovery(options.devSchemaRecovery);
   const fallbackLocales = normalizeFallbackLocales(options.fallbackLocales);
   let registry = validateRegistry(options.catalogs, baseLocale);
   let locale = canonicalLocale(options.locale);
@@ -72,6 +74,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   assertFallbackLocales(registry);
   let signature = visibleSignature(registry, baseLocale, locale, fallbackLocales, pseudoLocale);
   function snapshot(registry: Registry, locale: string, stateRevision: number, mode?: PseudoLocaleMode): StoreSnapshot<S> {
+    const recoveryScope = recovery?.bind(locale, baseLocale, timeZone);
     const chain = fallbackLocaleChain(locale, fallbackLocales, baseLocale);
     const translator = createBoundTranslator<S>({ locale, timeZone,
       baseCatalogs: registry.catalogs.filter(c => c.locale === baseLocale),
@@ -79,11 +82,13 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
       fallbackLocales,
       ...(mode ? { pseudoLocale: mode } : {}),
       ...(policy ?? {}),
-    }, formatter);
+    }, formatter, recoveryScope);
+    if (recoveryScope) recovery!.track(translator.t, recoveryScope.scope);
     return Object.freeze({ ...translator, stateRevision,
       availableLocales: registry.locales, availableNamespaces: registry.namespaces, loadedNamespaces: registry.namespaces });
   }
   let current = snapshot(registry, locale, 0, pseudoLocale);
+  recovery?.activate(current.t);
   let planned = current;
   let disposed = false;
   let notifying = false;
@@ -108,6 +113,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
         const candidate = pending.shift()!;
         if (candidate === current) continue;
         current = candidate;
+        recovery?.activate(current.t);
         for (const listener of [...listeners]) {
           if (!listeners.has(listener)) continue;
           try { listener.callback(current); } catch (error) { errors.push(error); }
@@ -156,6 +162,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
     dispose: () => {
       if (disposed) return;
       disposed = true;
+      recovery?.clear();
       listeners.clear();
       pending.length = 0;
       const errors: unknown[] = [];
