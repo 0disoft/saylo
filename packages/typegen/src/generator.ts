@@ -98,7 +98,10 @@ export class TypeGenerator {
     this.worker.ref();
     this.workerTimer = (this.operations.schedule ?? schedule)(this.timeoutMs,
       () => this.fail(deadlineError('Typegen worker', this.timeoutMs)));
-    this.worker.postMessage({ generation: this.active.generation, schemas: this.active.schemas.map(s => ({ namespace: s.namespace, keys: s.keys })) });
+    this.worker.postMessage({ generation: this.active.generation, schemas: this.active.schemas.map(s => ({
+      namespace: s.namespace, keys: s.keys,
+      ...(s.richTextTags === undefined ? {} : { richTextTags: s.richTextTags }),
+    })) });
   }
   private queueResult(result: WorkerResult) {
     const epoch = this.epoch;

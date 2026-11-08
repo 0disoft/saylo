@@ -5,7 +5,17 @@ import { loadProjectConfig, resolveProjectConfig } from '@0disoft/saylo-typegen/
 import type { SayloProjectConfig } from '@0disoft/saylo-typegen/config';
 import { requireReviewedTranslations, TranslationReviewError } from '@0disoft/saylo-typegen/review-check';
 import type { AppSchema } from './generated.js';
+import type { AppRichTextSchema } from './rich-generated.js';
 import { fixtureCatalog } from './fixture.mjs';
+
+const richTag: AppRichTextSchema['demo:terms'] = 'link';
+// @ts-expect-error only the configured tag names are generated
+const wrongRichTag: AppRichTextSchema['demo:terms'] = 'lnik';
+// @ts-expect-error an empty rich contract permits no tags
+const emptyRichTag: AppRichTextSchema['demo:empty'] = 'link';
+// @ts-expect-error literal messages have no explicit rich contract
+type LiteralRichTags = AppRichTextSchema['demo:literal'];
+void richTag; void wrongRichTag; void emptyRichTag;
 
 const writeOptions: WriteOptions = { signal: new AbortController().signal, operations: { createId: () => 'type-test' } };
 const project: SayloProjectConfig = loadProjectConfig('saylo.config.json');

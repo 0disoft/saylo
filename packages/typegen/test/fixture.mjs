@@ -7,3 +7,7 @@ export const fixtureCatalog = parseCatalog(JSON.stringify(Object.fromEntries([
   ['mixed', '{count} {count, number}'], ['dotted.key', 'Literal dot'], ['__proto__', '{constructor}'],
 ])), { locale: 'ko', namespace: 'cart' });
 export const fixtureSchema = createBaseSchema(fixtureCatalog);
+
+export const fixtureRichSchema = createBaseSchema(parseCatalog(JSON.stringify({
+  terms: '<link>{name}</link>', empty: 'No tags', literal: '<strong>Literal</strong>',
+}), { locale: 'en', namespace: 'demo', richText: { terms: ['strong', 'link'], empty: [] } }));

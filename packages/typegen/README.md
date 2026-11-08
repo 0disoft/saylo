@@ -1,5 +1,23 @@
 # @0disoft/saylo-typegen
 
+## Rich text tag declarations (source checkout)
+
+When a base message has an explicit `richText` contract, the CLI and background
+worker also emit `AppRichTextSchema` beside the existing `AppSchema`:
+
+```ts
+export type AppRichTextSchema = {
+  "demo:terms": "link" | "strong";
+  "demo:empty": never;
+};
+```
+
+The names come from the configured allowed tags, including tags not used in the
+current base text. An empty tag list becomes `never`; messages without an explicit
+contract are omitted. With no rich contracts, generated output is unchanged.
+Tag-only contract changes update background-generated declarations too.
+These declarations are a source-checkout addition and are not in npm alpha.9.
+
 Generate `AppSchema` type declarations (`.d.ts`) from the Saylo base catalog. Run the `saylo-typegen` CLI, or let `@0disoft/saylo-vite` run it in the background during development.
 
 ## Status

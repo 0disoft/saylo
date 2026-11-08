@@ -65,7 +65,9 @@ test('legacy typegen CLI shares rich policy and keeps output intact on failure',
   assert.equal(await readFile(out, 'utf8'), '// keep');
   await writeFile(translation, '{"terms":"<link>Terms</link>"}');
   const passed = run([]); assert.equal(passed.status, 0, passed.stderr);
-  assert.match(await readFile(out, 'utf8'), /demo:terms/);
+  const generated = await readFile(out, 'utf8');
+  assert.match(generated, /export type AppRichTextSchema = \{/);
+  assert.match(generated, /"demo:terms": "link";/);
   const explicit = path.join(root, 'explicit.d.ts');
   assert.equal(run(['--out-file', explicit]).status, 0);
   assert.match(await readFile(explicit, 'utf8'), /demo:terms/);
