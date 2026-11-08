@@ -5,6 +5,7 @@ import { InvalidRichTextError } from './rich-text.js';
 import { createBaseSchema, validateTranslation } from './schema.js';
 import { InvalidArgumentError, NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
 import { captureErrorPolicy, formatErrorFallback, missingKeyFallback } from './translation-policy.js';
+import { readPseudoLocale } from './pseudo-locale.js';
 import type { CatalogSchema, MessageSchema, ParsedCatalog, Schema, Translate, TranslateParts, Translator, TranslatorOptions } from './types.js';
 
 function catalogError(catalog: ParsedCatalog, code: 'DUPLICATE_CATALOG' | 'LOCALE_MISMATCH' | 'NAMESPACE_MISMATCH', message: string): never {
@@ -47,6 +48,7 @@ export function createTranslator<S extends Schema = Schema>(options: TranslatorO
 
 /** Internal hook for an eager store to retain formatter caches across snapshots. */
 export function createBoundTranslator<S extends Schema = Schema>(options: TranslatorOptions, sharedFormat?: ReturnType<typeof createTextFormatter>): Translator<S> {
+  const pseudoLocale = readPseudoLocale(options.pseudoLocale);
   const locale = Intl.getCanonicalLocales(options.locale)[0];
   if (!locale) throw new RangeError('A translator requires a nonempty locale.');
   // A translator owns its view even when callers retain mutable catalog inputs.
@@ -93,12 +95,12 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
       if (!(error instanceof InvalidRichTextError) && error !== null &&
           (typeof error === 'object' || typeof error === 'function')) formatFailures.add(error);
     };
-    formatText = (namespace, id, message, formatLocale, values) => {
-      try { return format(namespace, id, message, formatLocale, values); }
+    formatText = (...args) => {
+      try { return format(...args); }
       catch (error) { markFailure(error); throw error; }
     };
-    formatParts = (namespace, id, message, formatLocale, values) => {
-      try { return format.parts(namespace, id, message, formatLocale, values); }
+    formatParts = (...args) => {
+      try { return format.parts(...args); }
       catch (error) { markFailure(error); throw error; }
     };
   }
@@ -117,8 +119,8 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
       const translation = translations.get(messageLocale)?.get(namespace);
       if (translation && Object.hasOwn(translation.messages, id)) { source = translation; break; }
     }
-    return rich ? formatParts(namespace, id, source.messages[id]!, source.locale, values)
-      : formatText(namespace, id, source.messages[id]!, source.locale, values);
+    return rich ? formatParts(namespace, id, source.messages[id]!, source.locale, values, pseudoLocale)
+      : formatText(namespace, id, source.messages[id]!, source.locale, values, pseudoLocale);
   };
   const render = policy ? (key: string, args?: Record<string, unknown>, rich = false) => {
     try { return strictRender(key, args, rich); }
@@ -140,5 +142,6 @@ export function createBoundTranslator<S extends Schema = Schema>(options: Transl
   } : strictRender;
   const translate = (key: string, args?: Record<string, unknown>) => render(key, args);
   const parts = (key: string, args?: Record<string, unknown>) => render(key, args, true);
-  return Object.freeze({ locale, baseLocale, timeZone, t: translate as Translate<S>, tParts: parts as TranslateParts<S> });
+  return Object.freeze({ locale, baseLocale, timeZone, t: translate as Translate<S>, tParts: parts as TranslateParts<S>,
+    ...(pseudoLocale ? { pseudoLocale } : {}) });
 }

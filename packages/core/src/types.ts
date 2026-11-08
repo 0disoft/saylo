@@ -1,5 +1,6 @@
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import type { NamespaceNotLoadedError, UnknownMessageError } from './translation-errors.js';
+import type { PseudoLocaleMode } from './pseudo-locale.js';
 
 export type DeepReadonly<T> = T extends object
   ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
@@ -112,8 +113,13 @@ export interface LocaleFallbackOptions {
   readonly fallbackLocales?: readonly string[];
 }
 
+export interface PseudoLocaleOptions {
+  /** Optional visual preview; the real locale and ICU formatting rules are retained. */
+  readonly pseudoLocale?: PseudoLocaleMode;
+}
+
 /** A synchronous translator bound to one set of immutable parsed catalogs. */
-export interface TranslatorOptions extends TranslationErrorPolicy, LocaleFallbackOptions {
+export interface TranslatorOptions extends TranslationErrorPolicy, LocaleFallbackOptions, PseudoLocaleOptions {
   readonly locale: string;
   readonly baseCatalogs: readonly ParsedCatalog[];
   /** Catalogs for the selected locale or configured fallback locales. */
@@ -121,7 +127,7 @@ export interface TranslatorOptions extends TranslationErrorPolicy, LocaleFallbac
   readonly timeZone?: string;
 }
 
-export interface Translator<S extends Schema = Schema> {
+export interface Translator<S extends Schema = Schema> extends PseudoLocaleOptions {
   readonly locale: string;
   readonly baseLocale: string;
   readonly timeZone: string;

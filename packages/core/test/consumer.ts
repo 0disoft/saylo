@@ -1,4 +1,12 @@
 import { CatalogError, createBaseSchema, createI18n, createServerI18n, createStore, createTranslator, parseCatalog, validateTranslation } from '@0disoft/saylo-core';
+import type { PseudoLocaleMode } from '@0disoft/saylo-core/runtime';
+
+const pseudoMode: PseudoLocaleMode = 'accent';
+const pseudoTranslator = createTranslator({ locale: 'en', baseCatalogs: [], pseudoLocale: pseudoMode });
+const activePseudo: PseudoLocaleMode | undefined = pseudoTranslator.pseudoLocale;
+void activePseudo;
+// @ts-expect-error preview modes are not locale names
+createTranslator({ locale: 'en', baseCatalogs: [], pseudoLocale: 'en-XA' });
 import type { CatalogCacheOptions } from '@0disoft/saylo-core';
 import type { ArgumentType, CatalogOutcome, CatalogSchema, CatalogSource, FormatErrorContext, FormatErrorHandler, LocaleFallbackOptions,
   MissingKeyErrorContext, MissingKeyHandler, ParsedCatalog, RichTextPart, ServerI18nOptions, SharedI18nOptions,

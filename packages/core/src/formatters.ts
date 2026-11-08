@@ -3,6 +3,8 @@ import type { Formatters, FormatXMLElementFn } from 'intl-messageformat';
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import type { ParsedMessage, RichTextPart } from './types.js';
 import { freezeRichParts, projectRichText } from './rich-text.js';
+import { pseudoMessageAst } from './pseudo-locale.js';
+import type { PseudoLocaleMode } from './pseudo-locale.js';
 
 const FORMATTER_CACHE_POLICY = Object.freeze({ intlEntries: 128, messageEntries: 256 });
 
@@ -28,9 +30,10 @@ function intlKey(locale: unknown, options: object | undefined): string {
   return JSON.stringify([locale, Object.entries(options ?? {}).filter(([, value]) => value !== undefined).sort(([a], [b]) => a.localeCompare(b))]);
 }
 
-function messageKey(namespace: string, id: string, message: ParsedMessage, locale: string, timeZone: string) {
-  return { namespace, id, source: message.source, locale,
-    key: JSON.stringify([namespace, id, message.source, locale, timeZone]) };
+function messageKey(namespace: string, id: string, message: ParsedMessage, locale: string, timeZone: string,
+  pseudoLocale?: PseudoLocaleMode) {
+  return { namespace, id, source: message.source, locale, pseudoLocale,
+    key: JSON.stringify([namespace, id, message.source, locale, timeZone, ...(pseudoLocale ? [pseudoLocale] : [])]) };
 }
 
 /** Two separate bounded caches; text changes do not invalidate native Intl formatters. */
@@ -43,10 +46,10 @@ export function createTextFormatter(timeZone: string) {
   // Bound identity hints as well as formatter instances: a WeakMap would retain
   // serialized keys for every still-live catalog message even after LRU eviction.
   const messageKeys = new BoundedCache<ReturnType<typeof messageKey>, ParsedMessage>(FORMATTER_CACHE_POLICY.messageEntries);
-  const keyFor = (namespace: string, id: string, message: ParsedMessage, locale: string) => {
-    const hint = messageKeys.get(message, () => messageKey(namespace, id, message, locale, timeZone));
-    if (hint.namespace !== namespace || hint.id !== id || hint.source !== message.source || hint.locale !== locale)
-      Object.assign(hint, messageKey(namespace, id, message, locale, timeZone));
+  const keyFor = (namespace: string, id: string, message: ParsedMessage, locale: string, pseudoLocale?: PseudoLocaleMode) => {
+    const hint = messageKeys.get(message, () => messageKey(namespace, id, message, locale, timeZone, pseudoLocale));
+    if (hint.namespace !== namespace || hint.id !== id || hint.source !== message.source || hint.locale !== locale || hint.pseudoLocale !== pseudoLocale)
+      Object.assign(hint, messageKey(namespace, id, message, locale, timeZone, pseudoLocale));
     return hint.key;
   };
   const formatters: Formatters = {
@@ -58,23 +61,26 @@ export function createTextFormatter(timeZone: string) {
     },
     getPluralRules: (locale, options) => plurals.get(intlKey(locale, options), () => new Intl.PluralRules(locale, options)),
   };
-  const text = (namespace: string, id: string, message: ParsedMessage, formatLocale: string, values: Record<string, string | number>): string => {
+  const text = (namespace: string, id: string, message: ParsedMessage, formatLocale: string, values: Record<string, string | number>,
+    pseudoLocale?: PseudoLocaleMode): string => {
     // Keep exact content keys across catalog replacement, without copying the
     // full source again for every hot call on the same message and context.
-    const key = keyFor(namespace, id, message, formatLocale);
+    const key = keyFor(namespace, id, message, formatLocale, pseudoLocale);
     const formatter = messages.get(key, () => new IntlMessageFormat(
       // FormatJS reads this AST; it never receives a public mutable reference.
-      message.ast as unknown as MessageFormatElement[], formatLocale, undefined, { formatters, ignoreTag: true },
+      pseudoLocale ? pseudoMessageAst(message.ast, pseudoLocale) : message.ast as unknown as MessageFormatElement[],
+      formatLocale, undefined, { formatters, ignoreTag: true },
     ));
     const result = formatter.format(values);
     return Array.isArray(result) ? result.join('') : String(result);
   };
   const parts = (namespace: string, id: string, message: ParsedMessage, formatLocale: string,
-    values: Record<string, string | number>): readonly RichTextPart[] => {
-    const key = keyFor(namespace, id, message, formatLocale);
+    values: Record<string, string | number>, pseudoLocale?: PseudoLocaleMode): readonly RichTextPart[] => {
+    const key = keyFor(namespace, id, message, formatLocale, pseudoLocale);
     const { formatter, tags } = richMessages.get(key, () => {
       const projected = projectRichText(message.ast, `${namespace}:${id}`, message.arguments);
-      return { formatter: new IntlMessageFormat(projected.ast, formatLocale, undefined, { formatters }), tags: projected.tags };
+      return { formatter: new IntlMessageFormat(pseudoLocale ? pseudoMessageAst(projected.ast, pseudoLocale) : projected.ast,
+        formatLocale, undefined, { formatters }), tags: projected.tags };
     });
     const richValues: Record<string, string | number | FormatXMLElementFn<RichTextPart>> = Object.assign(Object.create(null), values);
     for (const [alias, name] of tags) {
