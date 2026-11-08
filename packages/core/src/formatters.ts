@@ -5,6 +5,7 @@ import type { ParsedMessage, RichTextPart } from './types.js';
 import { freezeRichParts, projectRichText } from './rich-text.js';
 import { pseudoMessageAst } from './pseudo-locale.js';
 import type { PseudoLocaleMode } from './pseudo-locale.js';
+import { MessageCache } from './message-cache.js';
 
 const FORMATTER_CACHE_POLICY = Object.freeze({ intlEntries: 128, messageEntries: 256 });
 
@@ -41,11 +42,11 @@ export function createTextFormatter(timeZone: string) {
   const numbers = new BoundedCache<Intl.NumberFormat>(FORMATTER_CACHE_POLICY.intlEntries);
   const dates = new BoundedCache<Intl.DateTimeFormat>(FORMATTER_CACHE_POLICY.intlEntries);
   const plurals = new BoundedCache<Intl.PluralRules>(FORMATTER_CACHE_POLICY.intlEntries);
-  const messages = new BoundedCache<IntlMessageFormat>(FORMATTER_CACHE_POLICY.messageEntries);
-  const richMessages = new BoundedCache<{ formatter: IntlMessageFormat; tags: ReadonlyMap<string, string> }>(FORMATTER_CACHE_POLICY.messageEntries);
+  const messages = new MessageCache<IntlMessageFormat>(FORMATTER_CACHE_POLICY.messageEntries);
+  const richMessages = new MessageCache<{ formatter: IntlMessageFormat; tags: ReadonlyMap<string, string> }>(FORMATTER_CACHE_POLICY.messageEntries);
   // Bound identity hints as well as formatter instances: a WeakMap would retain
   // serialized keys for every still-live catalog message even after LRU eviction.
-  const messageKeys = new BoundedCache<ReturnType<typeof messageKey>, ParsedMessage>(FORMATTER_CACHE_POLICY.messageEntries);
+  const messageKeys = new MessageCache<ReturnType<typeof messageKey>, ParsedMessage>(FORMATTER_CACHE_POLICY.messageEntries);
   const keyFor = (namespace: string, id: string, message: ParsedMessage, locale: string, pseudoLocale?: PseudoLocaleMode) => {
     const hint = messageKeys.get(message, () => messageKey(namespace, id, message, locale, timeZone, pseudoLocale));
     if (hint.namespace !== namespace || hint.id !== id || hint.source !== message.source || hint.locale !== locale || hint.pseudoLocale !== pseudoLocale)

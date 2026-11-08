@@ -36,19 +36,19 @@ test('hot text and rich calls serialize a long message cache key once', () => {
   assert.equal(keys.length, 1);
 });
 
-test('message key memoization has a bounded working set and refreshes hot entries', () => {
+test('message key memoization retains hot entries when a new message bypasses a full cache', () => {
   const messages = Object.fromEntries(Array.from({ length: 257 }, (_, i) => [`m${i}`, `Message ${i}`]));
   const bound = createTranslator({ locale: 'ko', baseCatalogs: [catalog(messages)] });
   const keys = countMessageKeys(() => {
     for (let i = 0; i < 256; i++) bound.t(`cart:m${i}`);
-    bound.t('cart:m0'); // Refresh m0 before m256 evicts m1.
+    bound.t('cart:m0');
     bound.t('cart:m256');
     bound.t('cart:m0');
     bound.t('cart:m1');
   });
-  assert.equal(keys.length, 258);
+  assert.equal(keys.length, 257);
   assert.equal(keys.filter(key => key[1] === 'm0').length, 1);
-  assert.equal(keys.filter(key => key[1] === 'm1').length, 2);
+  assert.equal(keys.filter(key => key[1] === 'm1').length, 1);
 });
 
 test('a shared message identity retains namespace, ID and formatting locale in its cache key', () => {
