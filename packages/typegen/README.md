@@ -17,6 +17,8 @@ current base text. An empty tag list becomes `never`; messages without an explic
 contract are omitted. With no rich contracts, generated output is unchanged.
 Tag-only contract changes update background-generated declarations too.
 These declarations are a source-checkout addition and are not in npm alpha.9.
+See [strict rich text types](../../docs/rich-text-types.md) for shared configuration
+and optional React, Svelte, and Vue renderer checks.
 
 Generate `AppSchema` type declarations (`.d.ts`) from the Saylo base catalog. Run the `saylo-typegen` CLI, or let `@0disoft/saylo-vite` run it in the background during development.
 

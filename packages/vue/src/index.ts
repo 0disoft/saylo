@@ -3,7 +3,7 @@ import type { App, ComputedRef, InjectionKey, ObjectPlugin, ShallowRef } from 'v
 import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
 
 export { renderRichText } from './rich-text.js';
-export type { RichTextRenderers } from './rich-text.js';
+export type { RichTextRenderers, StrictRichTextRenderers } from './rich-text.js';
 
 export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
   readonly onDispose?: (listener: () => void) => () => void;

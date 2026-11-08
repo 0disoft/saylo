@@ -1,5 +1,10 @@
 # @0disoft/saylo-vue
 
+The source checkout also exports optional
+`StrictRichTextRenderers<AppRichTextSchema, Key>` for checking renderer maps against
+generated tag contracts. See [strict rich text types](../../docs/rich-text-types.md).
+Existing rendering behavior is unchanged, and Vue remains private.
+
 The Vue 3 binding for Saylo. `createSayloVue<Schema>()` creates `createPlugin`, `provideI18n`, and `useI18n`, and `useVueStore(instance)` subscribes to the store snapshot as a read-only `shallowRef`. Call `useI18n`, `useVueStore`, and `provideI18n` synchronously in a component's `setup`; create `createPlugin(instance)` outside setup and install it with `app.use`.
 
 ## Status and installation

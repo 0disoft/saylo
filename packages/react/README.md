@@ -90,6 +90,11 @@ The constraints are as follows.
 
 ## Rich text rendering (renderRichText)
 
+The source checkout also exports optional
+`StrictRichTextRenderers<AppRichTextSchema, Key>` for checking generated tag
+contracts with `satisfies`. See [strict rich text types](../../docs/rich-text-types.md).
+This type is not in npm alpha.9; the existing renderer API below is unchanged.
+
 `renderRichText` renders the read-only parts returned by `snapshot.tParts(key, args)` as React nodes. It is a pure function, and the `renderers` passed by the app decide which element each tag becomes. Saylo does not create HTML or attributes.
 
 ```ts

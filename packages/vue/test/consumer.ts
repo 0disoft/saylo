@@ -3,7 +3,29 @@ import type { I18n } from '@0disoft/saylo-core';
 import { createApp, defineComponent, h } from 'vue';
 import type { VNodeChild } from 'vue';
 import { createSayloVue, useVueStore, useVueSelector, renderRichText } from '@0disoft/saylo-vue';
-import type { RichTextRenderers } from '@0disoft/saylo-vue';
+import type { RichTextRenderers, StrictRichTextRenderers } from '@0disoft/saylo-vue';
+import type { AppRichTextSchema } from '../../typegen/test/rich-generated.js';
+
+const strictRenderers = {
+  link: children => h('a', { href: '/terms' }, children),
+  strong: children => h('strong', children),
+} satisfies StrictRichTextRenderers<AppRichTextSchema, 'demo:terms'>;
+renderRichText([], strictRenderers);
+renderRichText([], {}); // Legacy partial renderer maps remain accepted.
+// @ts-expect-error all allowed tags need renderers
+const missingRenderer: StrictRichTextRenderers<AppRichTextSchema, 'demo:terms'> = { link: children => children };
+const unknownRenderer = { ...strictRenderers,
+  // @ts-expect-error misspelled tags are rejected on object literals
+  lnik: () => null,
+} satisfies StrictRichTextRenderers<AppRichTextSchema, 'demo:terms'>;
+const emptyRenderers = {} satisfies StrictRichTextRenderers<AppRichTextSchema, 'demo:empty'>;
+const forbiddenRenderer = {
+  // @ts-expect-error an empty rich contract permits no renderer names
+  link: () => null,
+} satisfies StrictRichTextRenderers<AppRichTextSchema, 'demo:empty'>;
+// @ts-expect-error messages without explicit rich contracts cannot select strict renderers
+type NoContract = StrictRichTextRenderers<AppRichTextSchema, 'demo:literal'>;
+void missingRenderer; void unknownRenderer; void emptyRenderers; void forbiddenRenderer;
 type AppSchema = { 'demo:title': {}; 'demo:items': { count: number }; 'demo:code': { code: string } };
 const catalog = parseCatalog('{"title":"Title","items":"{count, number}","code":"{code}"}', { locale: 'en', namespace: 'demo' });
 const store = createStore<AppSchema>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });

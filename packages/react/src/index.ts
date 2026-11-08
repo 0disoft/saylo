@@ -4,7 +4,7 @@ import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
 export { createHydrationAdapter } from './hydration.js';
 export type { SayloHydrationAdapter } from './hydration.js';
 export { renderRichText } from './rich-text.js';
-export type { RichTextRenderers } from './rich-text.js';
+export type { RichTextRenderers, StrictRichTextRenderers } from './rich-text.js';
 
 export interface SayloProviderProps<S extends Schema> {
   /** Caller owns the store and its disposal. Keep the instance stable across renders. */

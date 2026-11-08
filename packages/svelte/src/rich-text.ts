@@ -3,6 +3,10 @@ import type { RichTextPart } from '@0disoft/saylo-core';
 
 export type RichTextRenderers = Readonly<Record<string, Snippet<[Snippet]>>>;
 
+/** Opt-in renderer coverage for one message's generated rich tag contract. */
+export type StrictRichTextRenderers<S extends Record<string, string>, K extends keyof S> =
+  [S[K]] extends [never] ? Readonly<Record<string, never>> : Readonly<Record<S[K], RichTextRenderers[string]>>;
+
 export interface RichTextProps {
   readonly parts: readonly RichTextPart[];
   readonly renderers?: RichTextRenderers;

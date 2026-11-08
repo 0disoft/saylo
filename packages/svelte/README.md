@@ -1,5 +1,10 @@
 # @0disoft/saylo-svelte
 
+The source checkout also exports optional
+`StrictRichTextRenderers<AppRichTextSchema, Key>` for checking snippet maps against
+generated tag contracts. See [strict rich text types](../../docs/rich-text-types.md).
+This type is not in npm alpha.9; existing `<RichText>` behavior is unchanged.
+
 On Svelte 5, subscribe to Saylo's immutable snapshot with `$i18n`. The package provides ESM JavaScript and TypeScript declaration files. This README describes `0.1.0-alpha.8` (dist-tag `alpha`). See the [release record](../../releases/0.1.0-alpha.8.md) for publication and registry verification. Svelte has been included since `0.1.0-alpha.2`. Both selector APIs below are included in the `0.1.0-alpha.4` release.
 
 ## Direct subscription

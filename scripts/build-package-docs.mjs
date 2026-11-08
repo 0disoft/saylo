@@ -16,6 +16,7 @@ const sourceOnlyDocNames = [
   'migration-directory',
   'cache-budgets',
   'static-sites',
+  'rich-text-types',
 ];
 const sourceOnlyDocInputs = sourceOnlyDocNames
   .map(name => ({ source: `docs/${name}.md`, target: `${name}.md`, sourceOnly: true }));

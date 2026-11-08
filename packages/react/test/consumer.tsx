@@ -1,6 +1,31 @@
 import { createStore, parseCatalog } from '@0disoft/saylo-core';
 import type { I18n } from '@0disoft/saylo-core';
 import { createSayloReact, renderRichText } from '@0disoft/saylo-react';
+import type { RichTextRenderers, StrictRichTextRenderers } from '@0disoft/saylo-react';
+import type { AppRichTextSchema } from '../../typegen/test/rich-generated.js';
+
+const strictRenderers = {
+  link: children => <a href="/terms">{children}</a>,
+  strong: children => <strong>{children}</strong>,
+} satisfies StrictRichTextRenderers<AppRichTextSchema, 'demo:terms'>;
+renderRichText([], strictRenderers);
+renderRichText([], {}); // Legacy partial renderer maps remain accepted.
+const legacyRenderers: RichTextRenderers = { arbitrary: children => children };
+void legacyRenderers;
+// @ts-expect-error all allowed tags need renderers, even if unused by the base text
+const missingRenderer: StrictRichTextRenderers<AppRichTextSchema, 'demo:terms'> = { link: children => children };
+const unknownRenderer = { ...strictRenderers,
+  // @ts-expect-error misspelled tags are rejected on object literals
+  lnik: (children: string) => children,
+} satisfies StrictRichTextRenderers<AppRichTextSchema, 'demo:terms'>;
+const emptyRenderers = {} satisfies StrictRichTextRenderers<AppRichTextSchema, 'demo:empty'>;
+const forbiddenRenderer = {
+  // @ts-expect-error an empty rich contract permits no renderer names
+  link: (children: string) => children,
+} satisfies StrictRichTextRenderers<AppRichTextSchema, 'demo:empty'>;
+// @ts-expect-error messages without explicit rich contracts cannot select strict renderers
+type NoContract = StrictRichTextRenderers<AppRichTextSchema, 'demo:literal'>;
+void missingRenderer; void unknownRenderer; void emptyRenderers; void forbiddenRenderer;
 
 type AppSchema = {
   'cart:title': {};

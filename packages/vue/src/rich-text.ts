@@ -4,6 +4,10 @@ import type { RichTextPart } from '@0disoft/saylo-core';
 
 export type RichTextRenderers = Readonly<Record<string, (children: VNodeChild[]) => VNodeChild>>;
 
+/** Opt-in renderer coverage for one message's generated rich tag contract. */
+export type StrictRichTextRenderers<S extends Record<string, string>, K extends keyof S> =
+  [S[K]] extends [never] ? Readonly<Record<string, never>> : Readonly<Record<S[K], RichTextRenderers[string]>>;
+
 /** App-owned mappings supply elements/props; unknown tags retain their text children. */
 export function renderRichText(parts: readonly RichTextPart[], renderers: RichTextRenderers = {}): VNodeChild[] {
   const occurrences = new Map<string, number>();

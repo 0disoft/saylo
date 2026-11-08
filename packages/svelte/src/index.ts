@@ -4,7 +4,7 @@ import type { Readable } from 'svelte/store';
 import type { Schema, Store, StoreSnapshot } from '@0disoft/saylo-core';
 import { unwrapReadableResult } from './readable-result.js';
 import type { ReadableResult } from './readable-result.js';
-export type { RichTextProps, RichTextRenderers } from './rich-text.js';
+export type { RichTextProps, RichTextRenderers, StrictRichTextRenderers } from './rich-text.js';
 
 export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
   readonly onDispose?: (listener: () => void) => () => void;
