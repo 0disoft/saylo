@@ -1,0 +1,9 @@
+{
+  "name": "@saylo-internal/deepmerge",
+  "version": "4.3.1-saylo.1",
+  "private": true,
+  "description": "Development-only deepmerge 4.3.1 fork fixing GHSA-gcqx-w48m-w2h4",
+  "main": "index.cjs",
+  "types": "index.d.ts",
+  "license": "MIT"
+}

@@ -15,7 +15,7 @@ This document defines the rules for updating Saylo's dependencies (`renovate.jso
 - minor and patch (npm): `rangeStrategy: "in-range-only"` updates only the lock within the currently declared major range. Updates are grouped into one `npm compatible updates` PR and created without dashboard approval. The schedule is `* 0-5 1 * *`, a window from 00:00 to 05:59 KST on the first day of each month.
 - `lockFileMaintenance`: enabled and runs in the same monthly window. It does not require approval.
 - major: requires prior dashboard approval (`dependencyDashboardApproval`). Approval is only approval; it does not mean compatibility checks have passed. Compatibility checks and adoption are separate steps.
-- `@0disoft/saylo-*`: `enabled: false`. The five packages are released together at the same version, so the bot does not move their versions. Updates go through a separately approved release and registry validation. Keep the `alpha` publication tag used by `examples/npm` as is. However, creating a new lockfile may select a new published build that the tag points to, so validate such lock changes with the npm example check.
+- `@0disoft/saylo-*`: `enabled: false`. The five packages are released together at the same version, so the bot does not move their versions. Updates go through an approved release and registry validation. Historical registry examples retain their selected alpha versions until explicitly updated; validate such lock changes with the npm example check.
 
 ## TypeScript in SvelteKit
 
@@ -40,6 +40,14 @@ If you change benchmarks, use the scripts in that folder's README. Do not claim 
 4. Do not use `npm audit fix --force` to upgrade majors. Handle majors through dashboard approval and separate compatibility checks.
 
 ## audit:dependencies and CI
+
+The Svelte Vite plugin's development-only `deepmerge@4.3.1` dependency is
+temporarily replaced with a [private patched fork](../vendor/deepmerge/README.md)
+for GHSA-gcqx-w48m-w2h4. This prevents prototype poisoning without an audit
+allowlist or a severity change. The fork retains the upstream MIT license and
+must be removed once a fixed upstream dependency is available. It is excluded
+from the five published packages and checked through the plugin's real module
+resolution in `npm run check`.
 
 - `npm run audit:dependencies` runs `scripts/audit-dependencies.mjs`. This script invokes `npm audit` and queries the build and runtime dependencies in the entire root lock against registry advisories. It specifies `--audit-level=low` so that low and higher severities fail. It has no allowlist.
 - The helper exists because `npm run` passes the allow-scripts setting from `.npmrc` as the `npm_config_allow_scripts` environment variable, and recent npm rejects that flag for project commands (`EALLOWSCRIPTS`). The helper removes only that key from the environment and runs the npm CLI pointed to by `npm_execpath` with Node.
