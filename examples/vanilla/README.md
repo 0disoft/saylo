@@ -1,5 +1,10 @@
 # Vanilla demo
 
+Vite development enables [schema recovery](../../docs/dev-schema-recovery.md).
+Adding a required argument or deleting a previously rendered key retains its
+previous message with current inputs and shows a correction hint. Restoring the
+catalog clears the hint. Production builds keep strict rendering.
+
 The header's **의사 번역** control switches between authored copy, accented copy
 and longer copy without replacing form inputs or the open dialog. It retains the
 selected real language and ICU argument values. See

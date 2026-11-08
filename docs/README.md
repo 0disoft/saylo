@@ -20,6 +20,10 @@ The source checkout also supports an optional [runtime translation error policy]
 
 ## Source checkout additions
 
+Optional [development schema recovery](dev-schema-recovery.md) preserves previously
+successful copy during required-argument additions and key deletion. It is not in
+published alpha.9; strict errors remain the default.
+
 These guides cover source checkout behavior and are not included in the published `0.1.0-alpha.7` packages:
 
 - [React initialization preset](init-react.md)

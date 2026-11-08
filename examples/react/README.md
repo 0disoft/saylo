@@ -1,5 +1,12 @@
 # React demo
 
+Vite development enables [schema recovery](../../docs/dev-schema-recovery.md).
+Add `{previewExtra}` to a rendered message or delete its key: previous copy and
+current inputs remain visible, and a correction hint appears beside the preview
+and inside an open dialog. Restore the catalog to clear it. Production is strict.
+Run `node scripts/verify-demo-recovery.mjs --framework react --schema` for the
+focused Chrome check against temporary catalogs.
+
 The header's **의사 번역** control switches between authored copy, accented copy
 and longer copy while preserving inputs, the open dialog and rich link/strong
 nodes. Enter a name to confirm that interpolation stays unchanged. See

@@ -4,6 +4,12 @@ The Saylo core package. It provides catalog parsing and schema validation, a syn
 
 ## Status
 
+The source checkout adds optional `devSchemaRecovery` to `createStore` and
+`createI18n`. Previously successful messages can survive required-argument
+additions and key deletion while using current input values. Strict rendering
+remains the default. See [development schema recovery](../../docs/dev-schema-recovery.md)
+for development guards, history limits and diagnostics. This is not in npm alpha.9.
+
 The source checkout adds optional `pseudoLocale: 'accent' | 'long'` rendering and
 live `setPseudoLocale(mode?)` controls on eager and lazy instances. ICU arguments,
 formatting rules and rich tags are preserved. See [live pseudo-localization](../../docs/pseudo-localization.md).

@@ -70,14 +70,48 @@ void (async () => {
     await wait(() => node('#support-report').value.length > 0, 'Support report missing');
     const reportText = node('#support-report').value;
     const name = node('#name'); const dialog = node('#confirmation'); const field = node('#confirmation-note');
+    let expectedName = 'Recovery user';
     const preserved = () => {
-      check(node('#name') === name && name.value === 'Recovery user', 'Input was unmounted or reset');
+      check(node('#name') === name && name.value === expectedName, 'Input was unmounted or reset');
       check(node('#note').value === 'Keep this draft', 'Draft reset');
       check(node('#confirmation') === dialog && dialog.open, 'Dialog reset');
       check(node('#confirmation-note') === field && field.value === 'Keep this confirmation', 'Confirmation reset');
       check(document.activeElement === field, 'Focus reset');
       check(node('#support-report').value === reportText, 'Generated report reset');
     };
+    if (new URL(location.href).searchParams.has('schemaRecovery')) {
+      const heading = node('h1').textContent, rich = node('#rich-preview').textContent;
+      const link = node('#rich-preview a'), strong = node('#rich-preview strong');
+      field.setSelectionRange(3, 8);
+      const richPreserved = () => {
+        check(node('#rich-preview a') === link, 'Schema edit remounted the rich link');
+        check(node('#rich-preview strong') === strong, 'Schema edit remounted the rich emphasis');
+        check(field.selectionStart === 3 && field.selectionEnd === 8, 'Schema edit reset selection');
+        preserved();
+      };
+      await action('schema-add-argument');
+      await wait(() => node('#schema-recovery').textContent.includes('previewExtra'), 'Missing argument did not report recovery');
+      check(node('h1').textContent === heading, 'Added argument lost the previous heading');
+      check(node('#rich-preview').textContent === rich, 'Added argument lost rich text');
+      check(node('#dialog-schema-recovery').textContent.includes('previewExtra'), 'Dialog lost its recovery hint');
+      richPreserved(); checks.push('schema-required-argument');
+      expectedName = 'Current <em>input</em>';
+      fill('#name', expectedName);
+      await wait(() => node('#rich-preview strong').textContent === expectedName, 'Retained message ignored current input');
+      check(!node('#rich-preview em'), 'Current input became HTML');
+      richPreserved(); checks.push('schema-current-input');
+      await action('schema-delete-keys');
+      await wait(() => node('#schema-recovery').textContent.includes('Unknown message'), 'Deleted key did not report recovery');
+      check(node('h1').textContent === heading, 'Deleted key lost the previous heading');
+      check(node('#rich-preview strong').textContent === expectedName, 'Deleted rich key ignored current input');
+      richPreserved(); checks.push('schema-key-deletion');
+      await action('restore-base');
+      await wait(() => node('#schema-recovery').textContent === '', 'Repair did not clear recovery diagnostics');
+      check(node('h1').textContent === heading, 'Repair changed the restored heading');
+      richPreserved(); checks.push('schema-restoration');
+      await fetch('/__demo_recovery_result', { method: 'POST', body: JSON.stringify({ ok: true, checks, errors, browser: navigator.userAgent }) });
+      return;
+    }
     if (new URL(location.href).searchParams.has('live')) {
       field.setSelectionRange(3, 8);
       await action('edit-base');
@@ -136,12 +170,13 @@ void (async () => {
     await wait(() => [...node('#locale').options].some(option => option.value === 'en'), 'Restored locale missing');
     await locale('en'); checkLanguages('en'); preserved(); checks.push('locale-restoration');
     await action('empty-base');
-    await wait(() => node('#render-error')?.textContent.includes('demo:heading'), 'Empty base did not show recoverable render diagnostics');
+    await wait(() => node('#render-error')?.textContent.includes('demo:heading') || node('#schema-recovery')?.textContent.includes('demo:heading'), 'Empty base did not show recoverable render diagnostics');
+    const hasSchemaRecovery = node('#schema-recovery')?.dataset.enabled === 'true';
     check(node('h1').textContent === 'New words. Same input.', 'Last good heading was lost');
-    check(node('#dialog-render-error').textContent.length > 0, 'Open dialog has no correction hint');
+    check(node('#dialog-render-error').textContent.length > 0 || node('#dialog-schema-recovery')?.textContent.length > 0, 'Open dialog has no correction hint');
     await locale('ko');
-    check(node('h1').textContent === 'New words. Same input.', 'Failed locale change lost the last good English view');
-    checkLanguages('en');
+    check(node('h1').textContent === (hasSchemaRecovery ? '번역을 바꿔도, 입력은 그대로' : 'New words. Same input.'), 'Locale change lost its previous message');
+    checkLanguages(hasSchemaRecovery ? 'ko' : 'en');
     await locale('en');
     checkLanguages('en');
     preserved(); checks.push('empty-base');

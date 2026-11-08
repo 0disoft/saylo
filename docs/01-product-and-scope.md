@@ -26,7 +26,7 @@ This path does not wait for JavaScript output generation, whole-app module inval
 
 - Copy value edits and locale additions preserve existing DOM state.
 - Schema-compatible edits (key edits that only change values) preserve existing DOM state.
-- Schema-breaking edits (deleting a key or adding a required argument) apply the new schema immediately and emit diagnostics and typegen together. Existing call sites may throw `InvalidArgumentError`, and DOM state across that edit is not guaranteed. Follow the detailed rules in [04-live-update-and-types.md](04-live-update-and-types.md).
+- Schema-breaking edits (deleting a key or adding a required argument) apply the new schema immediately and emit diagnostics and typegen together. Existing call sites throw by default, and DOM state across that edit is not guaranteed. Optional [development schema recovery](dev-schema-recovery.md) can render previously successful messages with current inputs during those two edits, without changing the schema or strict default. Follow the detailed rules in [04-live-update-and-types.md](04-live-update-and-types.md).
 - Full reloads initiated by the Vite client when the Vite dev server restarts or the websocket reconnects are outside this guarantee. See [05-build-and-ssr.md](05-build-and-ssr.md) for details.
 - Even when Saylo does not recreate the DOM, changed copy length can alter layout and scroll position. State-preservation acceptance checks run under the same layout conditions.
 

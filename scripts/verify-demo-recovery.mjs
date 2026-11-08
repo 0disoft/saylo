@@ -8,6 +8,8 @@ import { createServer } from 'vite';
 
 const framework = process.argv[process.argv.indexOf('--framework') + 1];
 assert.ok(['react', 'svelte', 'vue'].includes(framework), 'Use --framework react, svelte or vue');
+const schemaOnly = process.argv.includes('--schema');
+assert.ok(!schemaOnly || framework === 'react', '--schema exercises the React demo');
 const label = framework === 'react' ? 'React' : framework === 'vue' ? 'Vue' : 'Svelte';
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const parent = path.join(repository, '.release');
@@ -78,6 +80,17 @@ try {
         else if (body === 'remove-added-locale' && framework === 'vue') await rm(addedFile);
         else if (body === 'restore-locale') await writeFile(enFile, en);
         else if (body === 'empty-base') await writeFile(koFile, '{}');
+        else if (body === 'schema-add-argument') {
+          const catalog = JSON.parse(ko);
+          catalog.heading += ' {previewExtra}';
+          catalog.rich += ' {previewExtra}';
+          await writeFile(koFile, JSON.stringify(catalog));
+        }
+        else if (body === 'schema-delete-keys') {
+          const catalog = JSON.parse(ko);
+          delete catalog.heading; delete catalog.rich;
+          await writeFile(koFile, JSON.stringify(catalog));
+        }
         else if (body === 'rich-edit' || body === 'rich-invalid') {
           const catalog = JSON.parse(ko);
           catalog.rich = body === 'rich-edit' ? 'RICH_EDIT <strong>{name}</strong> <link>Order</link>' : '<strong>{name}</link>';
@@ -103,7 +116,7 @@ try {
     void completed.catch(() => {});
     browser = spawn(executable, ['--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
       '--disable-background-networking', `--user-data-dir=${path.join(root, 'browser-profile')}`,
-      server.resolvedUrls.local[0] + (cold ? '?cold=1' : framework === 'vue' ? '?live=1' : '')], { windowsHide: true, stdio: 'ignore' });
+      server.resolvedUrls.local[0] + (cold ? '?cold=1' : schemaOnly ? '?schemaRecovery=1' : framework === 'vue' ? '?live=1' : '')], { windowsHide: true, stdio: 'ignore' });
     browser.once('error', rejectReport);
     browser.once('exit', code => rejectReport?.(new Error(`Chromium exited before report (${code}).`)));
     timer = setTimeout(() => rejectReport(new Error(`${label} recovery browser timed out after 45s.`)), 45000);
@@ -111,7 +124,8 @@ try {
     console.log(JSON.stringify(report, null, 2));
     assert.equal(report.ok, true, report.error);
     assert.deepEqual(report.errors, [], `${label} logged runtime errors`);
-    assert.deepEqual(report.checks, cold ? ['cold-empty-view', 'cold-interaction', 'cold-restoration']
+    if (schemaOnly) assert.deepEqual(report.checks, ['schema-required-argument', 'schema-current-input', 'schema-key-deletion', 'schema-restoration']);
+    else assert.deepEqual(report.checks, cold ? ['cold-empty-view', 'cold-interaction', 'cold-restoration']
       : [...(framework === 'vue' ? ['live-edit', 'invalid-json', 'live-restoration', 'locale-addition', 'added-locale-removal'] : []),
         'rich-live-edit', 'rich-invalid', 'rich-fallback-input', 'rich-restoration',
         'locale-removal', 'locale-restoration', 'empty-base', 'interactive-fallback', 'base-restoration', 'namespace-removal', 'namespace-restoration']);
@@ -120,11 +134,13 @@ try {
   }
   await start();
   await launch();
-  await server.close(); server = undefined;
-  // A genuinely new server/document has no previously translated view to retain.
-  await writeFile(koFile, '{}'); await writeFile(enFile, '{}');
-  await start();
-  await launch(true);
+  if (!schemaOnly) {
+    await server.close(); server = undefined;
+    // A genuinely new server/document has no previously translated view to retain.
+    await writeFile(koFile, '{}'); await writeFile(enFile, '{}');
+    await start();
+    await launch(true);
+  }
 } finally {
   clearTimeout(timer); rejectReport = undefined;
   await stopBrowser();

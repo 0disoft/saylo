@@ -18,6 +18,7 @@ const sourceOnlyDocNames = [
   'static-sites',
   'rich-text-types',
   'pseudo-localization',
+  'dev-schema-recovery',
 ];
 const sourceOnlyDocInputs = sourceOnlyDocNames
   .map(name => ({ source: `docs/${name}.md`, target: `${name}.md`, sourceOnly: true }));

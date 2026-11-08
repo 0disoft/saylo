@@ -5,7 +5,15 @@ import { formatDevSyncState } from '../shared/dev-status.js';
 
 const element = id => document.getElementById(id);
 const editors = { ko: element('ko-editor'), en: element('en-editor') };
-const store = createStore({ baseLocale, locale: initialLocale, catalogs: initialCatalogs, timeZone });
+const schemaRecovery = new Map();
+const store = createStore({ baseLocale, locale: initialLocale, catalogs: initialCatalogs, timeZone,
+  devSchemaRecovery: import.meta.env.DEV ? { onDiagnostic: event => {
+    const key = JSON.stringify([event.locale, event.key, event.surface]);
+    if (event.status === 'resolved') schemaRecovery.delete(key);
+    else { schemaRecovery.delete(key); schemaRecovery.set(key, event); }
+    if (schemaRecovery.size > 128) schemaRecovery.delete(schemaRecovery.keys().next().value);
+    refreshStatus();
+  } } : false });
 const support = createSupportRecorder(__SAYLO_SUPPORT_ENV__);
 const controls = new AbortController();
 const on = (target, event, callback) => target.addEventListener(event, callback, { signal: controls.signal });
@@ -22,7 +30,9 @@ let renderMessage = '';
 let syncState;
 
 function refreshStatus() {
-  const details = [diagnosticMessage, handshakeMessage, renderMessage].filter(Boolean).join('\n');
+  const schemaHint = [...schemaRecovery.values()].filter(event => event.locale === store.getSnapshot().locale)
+    .map(event => `${event.key}: ${event.error.message} 이전 정상 문구를 표시합니다. 호출부나 카탈로그를 수정하세요.`).join('\n');
+  const details = [diagnosticMessage, handshakeMessage, renderMessage, schemaHint].filter(Boolean).join('\n');
   error.textContent = details;
   const connection = import.meta.hot ? formatDevSyncState(syncState) : '빌드된 카탈로그를 사용합니다.';
   element('status').textContent = connection + (details ? '\n아래 진단을 확인하고 문제를 수정하세요. 마지막 화면은 유지됩니다.' : '');
@@ -52,6 +62,7 @@ function render(snapshot) {
     }
     localeSelect.value = snapshot.locale;
     pseudoSelect.value = snapshot.pseudoLocale ?? '';
+    if (schemaRecovery.size) refreshStatus();
   } catch (error) {
     renderMessage = error instanceof Error ? error.message : String(error);
     refreshStatus();

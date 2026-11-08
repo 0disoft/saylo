@@ -3,9 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { renderRichText } from '@0disoft/saylo-react';
 import { connectDev, createSupportRecorder } from '@0disoft/saylo-vite/client';
 import type { DevSyncState, LiveDiagnostic } from '@0disoft/saylo-vite/client';
-import type { ParsedCatalog } from '@0disoft/saylo-core';
+import type { DevSchemaRecoveryDiagnostic, ParsedCatalog } from '@0disoft/saylo-core';
 import { catalogSource, initialCatalogs } from 'virtual:saylo/lazy';
-import { SayloProvider, store, useI18n } from './i18n';
+import { SayloProvider, store, useI18n, observeSchemaRecovery } from './i18n';
 import '../vanilla/style.css';
 import { formatDevSyncState } from '../shared/dev-status';
 import { SupportPanel } from './SupportPanel';
@@ -40,6 +40,14 @@ function App() {
   const [diagnostic, setDiagnostic] = useState<LiveDiagnostic>({ message: '', diagnostics: [] });
   const [handshakeMessage, setHandshakeMessage] = useState('');
   const [syncState, setSyncState] = useState<DevSyncState>();
+  const [schemaRecovery, setSchemaRecovery] = useState<ReadonlyMap<string, DevSchemaRecoveryDiagnostic>>(new Map());
+  useEffect(() => observeSchemaRecovery(event => setSchemaRecovery(previous => {
+    const next = new Map(previous), key = JSON.stringify([event.locale, event.key, event.surface]);
+    if (event.status === 'resolved') next.delete(key);
+    else { next.delete(key); next.set(key, event); }
+    if (next.size > 128) next.delete(next.keys().next().value!);
+    return next;
+  })), []);
   useEffect(() => connectDev(store, { catalogSource, onUpdate: setCatalogs,
     onDiagnostic: value => { support.onDiagnostic(value); if (value.operation === 'handshake') setHandshakeMessage(value.message); else setDiagnostic(value); },
     onSyncState: value => { support.onSyncState(value); setSyncState(value); if (value.status === 'connected') setHandshakeMessage(''); }
@@ -47,6 +55,8 @@ function App() {
   const connection = import.meta.hot ? formatDevSyncState(syncState) : '빌드된 카탈로그를 사용합니다.';
   const snapshot = useI18n();
   const { locale, setLocale } = snapshot;
+  const schemaHint = [...schemaRecovery.values()].filter(event => event.locale === locale)
+    .map(event => `${event.key}: ${event.error.message} 이전 정상 문구를 표시하고 있어요. 호출부나 카탈로그를 수정해 주세요.`).join('\n');
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
   const [count, setCount] = useState('2');
@@ -116,6 +126,7 @@ function App() {
         <p>{text.description}</p>
         {pendingLocale && <p role="status" lang="ko">{pendingLocale} 문구를 불러오는 중입니다.</p>}
         <p role="alert" id="transition-error" lang="ko">{transitionError}</p>
+        <p role="status" id="schema-recovery" lang="ko" data-enabled={import.meta.env.DEV}>{schemaHint}</p>
       </section>
       <div className="layout">
         <section className="panel preview" lang={presentation.locale}>
@@ -150,6 +161,7 @@ function App() {
         <button>{text.closeDialog}</button>
         <p id="dialog-status" className="hint" role="status" lang="ko">{connection}{diagnostic.message && `\n${diagnostic.message}`}{handshakeMessage && `\n${handshakeMessage}`}</p>
         <p id="dialog-render-error" className="hint" role="alert" lang="ko">{presentation.error}</p>
+        <p id="dialog-schema-recovery" className="hint" role="status" lang="ko">{schemaHint}</p>
         <p className="hint" lang="ko">번역 파일을 저장해도 이 창은 열린 채 유지됩니다.</p>
       </form>
     </dialog>
