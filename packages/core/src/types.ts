@@ -143,7 +143,7 @@ export interface StoreSnapshot<S extends Schema = Schema> extends Translator<S> 
   readonly loadedNamespaces: readonly string[];
 }
 
-export interface StoreOptions extends TranslationErrorPolicy, LocaleFallbackOptions {
+export interface StoreOptions extends TranslationErrorPolicy, LocaleFallbackOptions, PseudoLocaleOptions {
   readonly baseLocale: string;
   readonly locale: string;
   readonly catalogs: readonly ParsedCatalog[];
@@ -161,6 +161,8 @@ export interface Store<S extends Schema = Schema> {
   /** Replaces the whole eager registry. Invalid candidates leave the current state intact. */
   replaceCatalogs(catalogs: readonly ParsedCatalog[]): void;
   setLocale(locale: string): void;
+  /** Synchronous visual preview; undefined restores authored text without loading catalogs. */
+  setPseudoLocale(mode?: PseudoLocaleMode): void;
   dispose(): void;
 }
 

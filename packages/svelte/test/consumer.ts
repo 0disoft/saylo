@@ -7,6 +7,10 @@ const catalog = parseCatalog('{"title":"Cart","items":"{count, number}","code":"
 const store = createStore<AppSchema>({ baseLocale: 'en', locale: 'en', catalogs: [catalog] });
 const bindings = createSayloSvelte<AppSchema>();
 createSvelteStore(store).subscribe(snapshot => {
+  snapshot.setPseudoLocale?.('accent');
+  snapshot.setPseudoLocale?.();
+  // @ts-expect-error unsupported visual preview mode
+  snapshot.setPseudoLocale?.('rtl');
   snapshot.t('cart:title');
   snapshot.t('cart:items', { count: 3 });
   // @ts-expect-error required argument

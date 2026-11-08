@@ -9,6 +9,7 @@ import { NamespaceNotLoadedError, UnknownMessageError } from './translation-erro
 import type { createTextFormatter } from './formatters.js';
 import type { CatalogKey, CatalogManifest, CatalogMetadata, CatalogOutcome } from './loading-types.js';
 import type { RichTextPart, Schema, StoreSnapshot, Translate, TranslateParts, TranslationErrorPolicy } from './types.js';
+import type { PseudoLocaleMode } from './pseudo-locale.js';
 
 export function canonicalLocale(value: string): string {
   const locale = Intl.getCanonicalLocales(value)[0];
@@ -130,7 +131,8 @@ export function acceptOutcome(manifest: CatalogManifest, key: CatalogKey, outcom
 export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest, locale: string,
   namespaces: readonly string[], outcomes: readonly CatalogOutcome[], timeZone: string,
   formatter: ReturnType<typeof createTextFormatter>, stateRevision: number,
-  fallbackLocales: readonly string[] = [], policy?: TranslationErrorPolicy): { snapshot: StoreSnapshot<S>; signature: string } {
+  fallbackLocales: readonly string[] = [], policy?: TranslationErrorPolicy,
+  pseudoLocale?: PseudoLocaleMode): { snapshot: StoreSnapshot<S>; signature: string } {
   const catalogs = outcomes.filter(o => o.status === 'present').map(o => o.catalog);
   const bases = catalogs.filter(c => c.locale === manifest.baseLocale);
   const chain = fallbackLocaleChain(locale, normalizeFallbackLocales(fallbackLocales), manifest.baseLocale);
@@ -138,7 +140,7 @@ export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest
   // Schema compatibility is checked atomically by the translator, after all pairs finish.
   const bound = bases.length ? createBoundTranslator<S>({ locale, timeZone, baseCatalogs: bases,
     translations: catalogs.filter(c => messageLocales.has(c.locale)), fallbackLocales,
-    ...(policy ?? {}) }, formatter) : undefined;
+    ...(policy ?? {}), ...(pseudoLocale ? { pseudoLocale } : {}) }, formatter) : undefined;
   const available = manifestMembership(manifest).namespaces;
   const loaded = new Set(namespaces);
   const unresolved = (error: UnknownMessageError | NamespaceNotLoadedError, keyText: string,
@@ -162,8 +164,8 @@ export function createLoadedSnapshot<S extends Schema>(manifest: CatalogManifest
   };
   const translate = (key: string, args?: Record<string, unknown>) => render(key, args);
   const parts = (key: string, args?: Record<string, unknown>) => render(key, args, true);
-  const signature = createLoadedSignature(manifest, locale, namespaces, catalogs);
+  const signature = createLoadedSignature(manifest, locale, namespaces, catalogs, pseudoLocale);
   return { signature, snapshot: Object.freeze({ locale, baseLocale: manifest.baseLocale, timeZone, t: translate as Translate<S>, tParts: parts as TranslateParts<S>,
     stateRevision, availableLocales: manifest.availableLocales, availableNamespaces: manifest.availableNamespaces,
-    loadedNamespaces: Object.freeze([...namespaces]) }) };
+    loadedNamespaces: Object.freeze([...namespaces]), ...(pseudoLocale ? { pseudoLocale } : {}) }) };
 }

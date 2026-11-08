@@ -52,6 +52,10 @@ function Cart() {
   const wrongSelection: number = useI18nSelector(snapshot => snapshot.locale);
   void wrongSelection;
   const snapshot = useI18n();
+  snapshot.setPseudoLocale?.('accent');
+  snapshot.setPseudoLocale?.();
+  // @ts-expect-error unsupported visual preview mode
+  snapshot.setPseudoLocale?.('rtl');
   const rich = renderRichText(snapshot.tParts('cart:items', { count: 3 }), { strong: children => <strong>{children}</strong> });
   void rich;
   // @ts-expect-error parts retain their base argument type
@@ -88,6 +92,7 @@ export const wrongApp = <SayloProvider instance={other} />;
 
 import { createHydrationAdapter } from '@0disoft/saylo-react';
 const hydration = createHydrationAdapter(lazy);
+hydration.setPseudoLocale?.('long');
 export const hydratedApp = <SayloProvider instance={hydration}><Cart /></SayloProvider>;
 hydration.getServerSnapshot().t('cart:items', { count: 1 });
 hydration.finishHydration();

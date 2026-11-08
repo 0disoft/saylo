@@ -9,10 +9,11 @@ import { catalogCacheLimit } from './loading-policy.js';
 import { normalizeFallbackLocales } from './locale-chain.js';
 import { canonicalLocale, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import { captureErrorPolicy } from './translation-policy.js';
+import { readPseudoLocale } from './pseudo-locale.js';
 import type { CatalogCacheOptions, CatalogSource, CatalogSchedule, I18n } from './loading-types.js';
-import type { LocaleFallbackOptions, Schema, TranslationErrorPolicy } from './types.js';
+import type { LocaleFallbackOptions, PseudoLocaleOptions, Schema, TranslationErrorPolicy } from './types.js';
 
-export interface ServerI18nOptions extends TranslationErrorPolicy, LocaleFallbackOptions, CatalogCacheOptions {
+export interface ServerI18nOptions extends TranslationErrorPolicy, LocaleFallbackOptions, CatalogCacheOptions, PseudoLocaleOptions {
   readonly catalogSource: CatalogSource;
   readonly locale: string;
   readonly initialNamespaces: readonly string[];
@@ -25,6 +26,7 @@ export interface ServerI18nOptions extends TranslationErrorPolicy, LocaleFallbac
 /** Load a request's complete scope before creating its fixed render/hydration snapshot. */
 export async function createServerI18n<S extends Schema = Schema>(options: ServerI18nOptions): Promise<I18n<S>> {
   const { catalogSource, schedule, signal } = options;
+  const pseudoLocale = readPseudoLocale(options.pseudoLocale);
   const timeoutMs = timeoutDuration(options.requestTimeoutMs);
   const maxCachedCatalogs = catalogCacheLimit(options.maxCachedCatalogs);
   const policy = captureErrorPolicy(options);
@@ -58,7 +60,7 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
       const outcomes = await Promise.all(initialKeys.map(key => loader.load(key)));
       if (signal?.aborted) throw aborted(signal);
       const initialSnapshot = createBootSnapshot({ manifest, locale, timeZone, loadedNamespaces: initialNamespaces,
-        fallbackLocales, stateRevision: 0, catalogOutcomes: outcomes });
+        fallbackLocales, stateRevision: 0, catalogOutcomes: outcomes, ...(pseudoLocale ? { pseudoLocale } : {}) });
       return createI18n<S>({ catalogSource, initialSnapshot, requestTimeoutMs: timeoutMs,
         ...(maxCachedCatalogs === undefined ? {} : { maxCachedCatalogs }),
         ...(schedule ? { schedule } : {}), ...(signal ? { signal } : {}),

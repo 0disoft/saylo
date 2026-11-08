@@ -7,6 +7,8 @@ import { aborted, nextRevision, timeoutDuration } from './loading-runtime.js';
 import { normalizeFallbackLocales } from './locale-chain.js';
 import { acceptOutcome, assertManifestTransition, assertNamespace, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import { captureErrorPolicy } from './translation-policy.js';
+import { readPseudoLocale } from './pseudo-locale.js';
+import type { PseudoLocaleMode } from './pseudo-locale.js';
 import type { CatalogOutcome, CreateI18nOptions, I18n, I18nRequestOptions } from './loading-types.js';
 import type { Schema, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
@@ -25,6 +27,10 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   const maxCachedCatalogs = catalogCacheLimit(options.maxCachedCatalogs);
   const source = options.catalogSource;
   const decoded = options.initialSnapshot ? validateBootSnapshot(options.initialSnapshot) : undefined;
+  const configuredPseudoLocale = readPseudoLocale(options.pseudoLocale);
+  let pseudoLocale = configuredPseudoLocale ?? decoded?.pseudoLocale;
+  if (decoded && configuredPseudoLocale !== undefined && configuredPseudoLocale !== decoded.pseudoLocale)
+    throw new CatalogLoadError('INVALID_BOOT', 'Configured pseudo locale differs from the SSR boot snapshot.');
   let manifest = readManifest(decoded?.manifest ?? source.readManifest());
   const baseLocale = manifest.baseLocale;
   const configuredFallbackLocales = options.fallbackLocales === undefined ? undefined : normalizeFallbackLocales(options.fallbackLocales);
@@ -61,9 +67,12 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
   const formatter = createTextFormatter(timeZone);
   const policy = captureErrorPolicy(options);
   const boot = createLoadedSnapshot<S>(manifest, desiredLocale, [...desiredNamespaces].sort(),
-    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0, fallbackLocales, policy);
+    initialKeys.map(key => initial.get(keyId(key))!), timeZone, formatter, decoded?.stateRevision ?? 0, fallbackLocales, policy, pseudoLocale);
   let current = boot.snapshot;
+  let planned = current;
   let signature = boot.signature;
+  let notifying = false;
+  const pending: StoreSnapshot<S>[] = [];
   let committedManifest = manifest;
   let committedOutcomes = initialKeys.map(key => initial.get(keyId(key))!);
   let generation = 0;
@@ -150,6 +159,27 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     return true;
   }
 
+  function commitSnapshot(snapshot: StoreSnapshot<S>, nextSignature: string): AggregateError | undefined {
+    if (nextSignature === signature) return;
+    signature = nextSignature;
+    planned = snapshot;
+    pending.push(snapshot);
+    if (notifying) return;
+    notifying = true;
+    const errors: unknown[] = [];
+    try {
+      while (pending.length && !disposed) {
+        current = pending.shift()!;
+        invalidateProtection();
+        for (const listener of [...listeners]) {
+          if (!listeners.has(listener)) continue;
+          try { listener.callback(current); } catch (error) { errors.push(error); }
+        }
+      }
+    } finally { notifying = false; }
+    return errors.length ? new AggregateError(errors, 'Subscriber failures after i18n commit; committed snapshot is retained.') : undefined;
+  }
+
   function publish(snapshot: StoreSnapshot<S>, nextSignature: string) {
     const loaded = new Set(snapshot.loadedNamespaces);
     const ready = [...waiters].filter(w => w.kind === 'refresh' ||
@@ -157,17 +187,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
         ? w.value === JSON.stringify(snapshot.loadedNamespaces) : loaded.has(w.value)));
     // These intents have committed, so reentrant selections cannot cancel them.
     for (const waiter of ready) { waiters.delete(waiter); waiter.cleanup(); }
-    const errors: unknown[] = [];
-    if (nextSignature !== signature) {
-      current = snapshot;
-      signature = nextSignature;
-      invalidateProtection();
-      for (const listener of [...listeners]) {
-        if (!listeners.has(listener)) continue;
-        try { listener.callback(current); } catch (error) { errors.push(error); }
-      }
-    }
-    const error = errors.length ? new AggregateError(errors, 'Subscriber failures after i18n commit; committed snapshot is retained.') : undefined;
+    const error = commitSnapshot(snapshot, nextSignature);
     for (const waiter of ready) error ? waiter.reject(error) : waiter.resolve();
     if (error && !ready.length) options.onError?.(error);
   }
@@ -183,7 +203,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       if (disposed || epoch !== generation) return;
       if (syncManifest()) return;
       const candidate = createLoadedSnapshot<S>(manifest, locale, namespaces, outcomes, timeZone, formatter,
-        current.stateRevision, fallbackLocales, policy);
+        current.stateRevision, fallbackLocales, policy, pseudoLocale);
       const snapshot = candidate.signature === signature ? candidate.snapshot :
         Object.freeze({ ...candidate.snapshot, stateRevision: nextRevision(current.stateRevision) });
       staleRetries = 0;
@@ -227,7 +247,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     getServerSnapshot: () => boot.snapshot,
     getBootSnapshot: () => createBootSnapshot({ manifest: committedManifest, locale: current.locale, timeZone,
       stateRevision: current.stateRevision, loadedNamespaces: current.loadedNamespaces, fallbackLocales,
-      catalogOutcomes: committedOutcomes }),
+      catalogOutcomes: committedOutcomes, ...(current.pseudoLocale ? { pseudoLocale: current.pseudoLocale } : {}) }),
     getLocales: () => current.availableLocales,
     getNamespaces: () => current.availableNamespaces,
     subscribe(callback: (snapshot: StoreSnapshot<S>) => void) {
@@ -239,6 +259,16 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       assertActive();
       const listener = { callback }; disposers.add(listener);
       return () => { disposers.delete(listener); };
+    },
+    setPseudoLocale(mode?: PseudoLocaleMode) {
+      assertActive();
+      const next = readPseudoLocale(mode);
+      if (next === pseudoLocale) return;
+      const candidate = createLoadedSnapshot<S>(committedManifest, planned.locale, planned.loadedNamespaces,
+        committedOutcomes, timeZone, formatter, nextRevision(planned.stateRevision), fallbackLocales, policy, next);
+      pseudoLocale = next;
+      const error = commitSnapshot(candidate.snapshot, candidate.signature);
+      if (error) throw error;
     },
     setLocale(locale: string, requestOptions: I18nRequestOptions = {}) { return call(() => {
       const next = canonicalLocale(locale);
@@ -292,6 +322,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
       rejectWhere(() => true, () => reason);
       loader.stop(reason);
       listeners.clear();
+      pending.length = 0;
       const errors: unknown[] = [];
       for (const listener of [...disposers]) {
         if (!disposers.has(listener)) continue;

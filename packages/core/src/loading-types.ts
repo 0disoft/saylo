@@ -1,5 +1,6 @@
 import type { LocaleFallbackOptions, ParsedCatalog, Schema, StoreSnapshot, Translate, TranslateParts,
-  TranslationErrorPolicy } from './types.js';
+  TranslationErrorPolicy, PseudoLocaleOptions } from './types.js';
+import type { PseudoLocaleMode } from './pseudo-locale.js';
 import type { BootSnapshot } from './boot.js';
 
 export interface CatalogKey {
@@ -51,7 +52,7 @@ export interface CatalogCacheOptions {
   readonly maxCachedCatalogs?: number;
 }
 
-export interface SharedI18nOptions extends TranslationErrorPolicy, LocaleFallbackOptions, CatalogCacheOptions {
+export interface SharedI18nOptions extends TranslationErrorPolicy, LocaleFallbackOptions, CatalogCacheOptions, PseudoLocaleOptions {
   readonly catalogSource: CatalogSource;
   readonly timeZone?: string;
   /** Per-catalog timeout including queue wait, defaults to 5000ms. */
@@ -84,6 +85,8 @@ export interface I18n<S extends Schema = Schema> {
   subscribe(listener: (snapshot: StoreSnapshot<S>) => void): () => void;
   onDispose(listener: () => void): () => void;
   setLocale(locale: string, options?: I18nRequestOptions): Promise<void>;
+  /** Changes the committed preview synchronously without resolving pending catalog requests. */
+  setPseudoLocale(mode?: PseudoLocaleMode): void;
   loadNamespace(namespace: string, options?: I18nRequestOptions): Promise<void>;
   /** Replace required namespaces atomically; cached catalogs remain reusable. Cancels superseded scope waits. */
   setNamespaces(namespaces: readonly string[], options?: I18nRequestOptions): Promise<void>;

@@ -30,7 +30,8 @@ test('catalog edits and literal insertion retain mapped component state, node id
     return h('button', { onClick: () => setCount(count + 1) }, children, ` ${count}`);
   }
   const renderers = { ...mappings, link: children => h(Counter, null, children) };
-  function App() { return h('p', null, renderRichText(useI18n().tParts('rich:message', { name: 'Ada' }), renderers)); }
+  let latest;
+  function App() { latest = useI18n(); return h('p', null, renderRichText(latest.tParts('rich:message', { name: 'Ada' }), renderers)); }
   const container = document.body.appendChild(document.createElement('div'));
   const root = createRoot(container);
   t.after(async () => { await act(() => root.unmount()); store.dispose(); container.remove(); });
@@ -46,6 +47,14 @@ test('catalog edits and literal insertion retain mapped component state, node id
   assert.equal(second.textContent, 'Other changed 0');
   assert.equal(document.activeElement, button);
   assert.equal(container.querySelector('strong').textContent, 'new');
+  await act(() => latest.setPseudoLocale('accent'));
+  assert.equal(container.querySelector('button'), button);
+  assert.equal(button.textContent, 'Ada 1');
+  assert.equal(container.querySelectorAll('button')[1], second);
+  assert.match(second.textContent, /［/);
+  assert.equal(document.activeElement, button);
+  await act(() => latest.setPseudoLocale());
+  assert.equal(second.textContent, 'Other changed 0');
 });
 
 test('hydration stays on the pinned rich snapshot until its barrier finishes', async t => {
@@ -58,6 +67,7 @@ test('hydration stays on the pinned rich snapshot until its barrier finishes', a
   container.innerHTML = renderToString(app);
   const link = container.querySelector('a');
   store.replaceCatalogs([catalog('<link>updated</link>')]);
+  adapter.setPseudoLocale('accent');
   const errors = [];
   let root;
   t.after(async () => { if (root) await act(() => root.unmount()); adapter.dispose(); store.dispose(); container.remove(); });
@@ -65,6 +75,8 @@ test('hydration stays on the pinned rich snapshot until its barrier finishes', a
   assert.equal(link.textContent, 'boot');
   assert.equal(container.querySelector('a'), link);
   await act(() => adapter.finishHydration());
+  assert.match(link.textContent, /üþďáţëď/);
+  await act(() => adapter.setPseudoLocale());
   assert.equal(link.textContent, 'updated');
   assert.equal(container.querySelector('a'), link);
   assert.deepEqual(errors, []);

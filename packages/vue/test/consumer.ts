@@ -39,6 +39,10 @@ pluginBindings.createPlugin(wrongSchema);
 app.use(pluginBindings.createPlugin(store), {});
 export function setup() {
   const state = useVueStore(store);
+  state.value.setPseudoLocale?.('long');
+  state.value.setPseudoLocale?.();
+  // @ts-expect-error unsupported visual preview mode
+  state.value.setPseudoLocale?.('rtl');
   state.value.t('demo:title');
   const renderers: RichTextRenderers = { strong: children => h('strong', children) };
   const nodes: VNodeChild[] = renderRichText(state.value.tParts('demo:title'), renderers);

@@ -8,11 +8,12 @@ export type { RichTextRenderers, StrictRichTextRenderers } from './rich-text.js'
 export interface SayloInstance<S extends Schema> extends Pick<Store<S>, 'getSnapshot' | 'subscribe'> {
   readonly onDispose?: (listener: () => void) => () => void;
   readonly setLocale: (locale: string) => void | Promise<void>;
+  readonly setPseudoLocale?: Store<S>['setPseudoLocale'];
   readonly loadNamespace?: (namespace: string) => Promise<void>;
   readonly setNamespaces?: (namespaces: readonly string[]) => Promise<void>;
 }
 
-export type SayloVueSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<SayloInstance<S>, 'setLocale' | 'loadNamespace' | 'setNamespaces'>>;
+export type SayloVueSnapshot<S extends Schema> = StoreSnapshot<S> & Readonly<Pick<SayloInstance<S>, 'setLocale' | 'setPseudoLocale' | 'loadNamespace' | 'setNamespaces'>>;
 export type SayloVueStore<S extends Schema> = Readonly<ShallowRef<SayloVueSnapshot<S>>>;
 
 function requireSetup() {
@@ -24,6 +25,7 @@ export function useVueStore<S extends Schema>(instance: SayloInstance<S>): Saylo
   requireSetup();
   const bind = (snapshot: StoreSnapshot<S>): SayloVueSnapshot<S> => Object.freeze({
     ...snapshot, setLocale: instance.setLocale,
+    ...(instance.setPseudoLocale ? { setPseudoLocale: instance.setPseudoLocale } : {}),
     ...(instance.loadNamespace ? { loadNamespace: instance.loadNamespace } : {}),
     ...(instance.setNamespaces ? { setNamespaces: instance.setNamespaces } : {}),
   });

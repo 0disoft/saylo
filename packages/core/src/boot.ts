@@ -5,12 +5,13 @@ import { normalizeFallbackLocales } from './locale-chain.js';
 import { acceptOutcome, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
 import { createBaseSchema } from './schema.js';
 import { decodeCatalog, encodeCatalog } from './catalog-codec.js';
+import { readPseudoLocale } from './pseudo-locale.js';
 import type { CompactCatalog } from './catalog-codec.js';
 import type { CatalogManifest, CatalogOutcome } from './loading-types.js';
-import type { CatalogSchema } from './types.js';
+import type { CatalogSchema, PseudoLocaleOptions } from './types.js';
 
 /** Versioned wire data from the same trusted parser/build as CatalogSource. No functions or Maps. */
-export interface BootSnapshot {
+export interface BootSnapshot extends PseudoLocaleOptions {
   readonly format: 'saylo-boot-v1';
   readonly manifest: CatalogManifest;
   readonly locale: string;
@@ -31,6 +32,9 @@ export type BootSnapshotInput = Omit<BootSnapshot, 'format' | 'baseSchemas'>;
 const acceptedSnapshots = new WeakSet<BootSnapshot>();
 
 export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
+  let pseudoLocale;
+  try { pseudoLocale = readPseudoLocale(input.pseudoLocale); }
+  catch (cause) { throw new CatalogLoadError('INVALID_BOOT', 'Invalid boot pseudo locale mode.', { cause }); }
   const manifest = readManifest(input.manifest);
   const locale = canonicalLocale(input.locale);
   if (locale !== input.locale || !manifestMembership(manifest).locales.has(locale) ||
@@ -58,11 +62,12 @@ export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
   const outcomes = keys.map(k => supplied.get(keyId(k))!);
   // Reuse atomic schema/translation validation and formatter contracts, without reparsing message text.
   createLoadedSnapshot(manifest, locale, namespaces, outcomes, timeZone, createTextFormatter(timeZone),
-    input.stateRevision, fallbackLocales);
+    input.stateRevision, fallbackLocales, undefined, pseudoLocale);
   const baseSchemas = outcomes.flatMap(o => o.status === 'present' && o.key.locale === manifest.baseLocale
     ? [createBaseSchema(o.catalog)] : []);
   const snapshot: BootSnapshot = freeze({ format: 'saylo-boot-v1', manifest, locale, timeZone, stateRevision: input.stateRevision,
-    loadedNamespaces: namespaces, fallbackLocales, baseSchemas, catalogOutcomes: outcomes });
+    loadedNamespaces: namespaces, fallbackLocales, baseSchemas, catalogOutcomes: outcomes,
+    ...(pseudoLocale ? { pseudoLocale } : {}) });
   acceptedSnapshots.add(snapshot);
   return snapshot;
 }

@@ -25,6 +25,12 @@ test('rich snippets retain independent state and focus when text is inserted', a
   const [first, second] = target.querySelectorAll('button');
   first.click(); flushSync(); first.focus();
   store.replaceCatalogs(records('Prefix <counter>{name}</counter> <counter>Other changed</counter>')); flushSync();
+  store.setPseudoLocale('accent'); flushSync();
+  assert.equal(target.querySelector('button'), first);
+  assert.equal(first.textContent, 'Ada 1');
+  assert.match(target.querySelectorAll('button')[1].textContent, /［/);
+  assert.equal(document.activeElement, first);
+  store.setPseudoLocale(); flushSync();
   assert.equal(target.querySelectorAll('button')[0], first);
   assert.equal(target.querySelectorAll('button')[1], second);
   assert.equal(first.textContent, 'Ada 1');

@@ -133,6 +133,10 @@ const untyped = createTranslator({ locale: 'ko', baseCatalogs: [parsed] });
 untyped.t('dynamic:key', { value: 3 });
 
 const store = createStore<AppSchema>({ baseLocale: 'ko', locale: 'ko', catalogs: [appCatalog], ...policy, ...fallbackOptions });
+store.setPseudoLocale('accent');
+store.setPseudoLocale();
+// @ts-expect-error reject unsupported preview modes
+store.setPseudoLocale('rtl');
 store.t('cart:items', { count: 3 });
 store.tParts('cart:items', { count: 3 });
 store.getSnapshot().tParts('cart:title');
@@ -162,6 +166,10 @@ const source: CatalogSource = {
 };
 const sharedPolicy: SharedI18nOptions = { catalogSource: source, ...policy, ...fallbackOptions, ...cacheOptions };
 const lazy = createI18n<AppSchema>({ ...sharedPolicy, locale: 'ko', initialNamespaces: ['cart'], initialCatalogs: [bootPair] });
+lazy.setPseudoLocale('long');
+lazy.setPseudoLocale();
+// @ts-expect-error a pseudo mode does not change the real locale
+lazy.setPseudoLocale('en-XA');
 const serverPolicy: ServerI18nOptions = { catalogSource: source, locale: 'ko', initialNamespaces: ['cart'], ...policy, ...fallbackOptions, ...cacheOptions };
 const request = createServerI18n<AppSchema>(serverPolicy);
 void request;

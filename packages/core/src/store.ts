@@ -6,6 +6,8 @@ import { createBaseSchema, validateTranslation } from './schema.js';
 import { createBoundTranslator } from './translator.js';
 import { captureErrorPolicy } from './translation-policy.js';
 import { catalogSignature } from './snapshot-signature.js';
+import { readPseudoLocale } from './pseudo-locale.js';
+import type { PseudoLocaleMode } from './pseudo-locale.js';
 import type { ParsedCatalog, Schema, Store, StoreOptions, StoreSnapshot, Translate, TranslateParts } from './types.js';
 
 interface Registry {
@@ -44,16 +46,17 @@ function validateRegistry(catalogs: readonly ParsedCatalog[], baseLocale: string
 }
 
 function visibleSignature(registry: Registry, baseLocale: string, locale: string,
-  fallbackLocales: readonly string[]): string {
+  fallbackLocales: readonly string[], pseudoLocale?: PseudoLocaleMode): string {
   const locales = new Set(fallbackLocaleChain(locale, fallbackLocales, baseLocale));
   const catalogs = registry.catalogs.filter(c => locales.has(c.locale));
   catalogs.sort((a, b) => JSON.stringify([a.locale, a.namespace]).localeCompare(JSON.stringify([b.locale, b.namespace])));
-  const scope = JSON.stringify([locale, registry.locales, registry.namespaces]);
+  const scope = JSON.stringify([locale, registry.locales, registry.namespaces, ...(pseudoLocale ? [pseudoLocale] : [])]);
   return `${scope.slice(0, -1)},[${catalogs.map(catalogSignature).join(',')}]]`;
 }
 
 /** Atomic eager snapshots. Transport, lazy loading and quarantine are later stages. */
 export function createStore<S extends Schema = Schema>(options: StoreOptions): Store<S> {
+  let pseudoLocale = readPseudoLocale(options.pseudoLocale);
   const baseLocale = canonicalLocale(options.baseLocale);
   const timeZone = new Intl.DateTimeFormat('en', { timeZone: options.timeZone ?? 'UTC' }).resolvedOptions().timeZone;
   const formatter = createTextFormatter(timeZone);
@@ -67,19 +70,20 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
     if (unavailable) throw new RangeError(`Fallback locale is outside the eager registry: ${unavailable}`);
   }
   assertFallbackLocales(registry);
-  let signature = visibleSignature(registry, baseLocale, locale, fallbackLocales);
-  function snapshot(registry: Registry, locale: string, stateRevision: number): StoreSnapshot<S> {
+  let signature = visibleSignature(registry, baseLocale, locale, fallbackLocales, pseudoLocale);
+  function snapshot(registry: Registry, locale: string, stateRevision: number, mode?: PseudoLocaleMode): StoreSnapshot<S> {
     const chain = fallbackLocaleChain(locale, fallbackLocales, baseLocale);
     const translator = createBoundTranslator<S>({ locale, timeZone,
       baseCatalogs: registry.catalogs.filter(c => c.locale === baseLocale),
       translations: registry.catalogs.filter(c => c.locale !== baseLocale && chain.includes(c.locale)),
       fallbackLocales,
+      ...(mode ? { pseudoLocale: mode } : {}),
       ...(policy ?? {}),
     }, formatter);
     return Object.freeze({ ...translator, stateRevision,
       availableLocales: registry.locales, availableNamespaces: registry.namespaces, loadedNamespaces: registry.namespaces });
   }
-  let current = snapshot(registry, locale, 0);
+  let current = snapshot(registry, locale, 0, pseudoLocale);
   let planned = current;
   let disposed = false;
   let notifying = false;
@@ -87,11 +91,12 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
   const listeners = new Set<{ callback: (snapshot: StoreSnapshot<S>) => void }>();
   const disposers = new Set<{ callback: () => void }>();
   function assertActive() { if (disposed) throw new Error('Store is disposed.'); }
-  function publish(nextRegistry: Registry, nextLocale: string) {
-    const nextSignature = visibleSignature(nextRegistry, baseLocale, nextLocale, fallbackLocales);
-    const next = nextSignature === signature ? planned : snapshot(nextRegistry, nextLocale, nextRevision(planned.stateRevision));
+  function publish(nextRegistry: Registry, nextLocale: string, nextPseudoLocale: PseudoLocaleMode | undefined) {
+    const nextSignature = visibleSignature(nextRegistry, baseLocale, nextLocale, fallbackLocales, nextPseudoLocale);
+    const next = nextSignature === signature ? planned : snapshot(nextRegistry, nextLocale, nextRevision(planned.stateRevision), nextPseudoLocale);
     registry = nextRegistry;
     locale = nextLocale;
+    pseudoLocale = nextPseudoLocale;
     signature = nextSignature;
     planned = next;
     pending.push(next);
@@ -131,7 +136,7 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
       assertActive();
       const nextRegistry = validateRegistry(catalogs, baseLocale);
       assertFallbackLocales(nextRegistry);
-      publish(nextRegistry, nextRegistry.locales.includes(locale) ? locale : baseLocale);
+      publish(nextRegistry, nextRegistry.locales.includes(locale) ? locale : baseLocale, pseudoLocale);
     },
     setLocale: (nextLocale: string) => {
       assertActive();
@@ -140,7 +145,13 @@ export function createStore<S extends Schema = Schema>(options: StoreOptions): S
       // locale includes queued reentrant selections. Only proven immutable
       // catalogs make an unchanged selection safe without a content scan.
       if (registry.immutable && canonical === locale) return;
-      publish(registry, canonical);
+      publish(registry, canonical, pseudoLocale);
+    },
+    setPseudoLocale: (mode?: PseudoLocaleMode) => {
+      assertActive();
+      const next = readPseudoLocale(mode);
+      if (next === pseudoLocale) return;
+      publish(registry, locale, next);
     },
     dispose: () => {
       if (disposed) return;

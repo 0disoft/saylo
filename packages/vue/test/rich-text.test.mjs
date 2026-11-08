@@ -33,7 +33,8 @@ test('literal insertion preserves repeated mapped component state, nodes and foc
     return () => h('button', { onClick: () => count.value++ }, [slots.default?.(), ` ${count.value}`]);
   } });
   const renderers = { ...mappings, link: children => h(Counter, null, { default: () => children }) };
-  const Root = { setup() { const state = useVueStore(store);
+  let latest;
+  const Root = { setup() { const state = latest = useVueStore(store);
     return () => h('p', renderRichText(state.value.tParts('rich:message', { name: 'Ada' }), renderers));
   } };
   const container = document.body.appendChild(document.createElement('div'));
@@ -50,6 +51,14 @@ test('literal insertion preserves repeated mapped component state, nodes and foc
   assert.equal(second.textContent, 'Other changed 0');
   assert.equal(document.activeElement, first);
   assert.equal(container.querySelector('strong').textContent, 'new');
+  latest.value.setPseudoLocale('accent'); await nextTick();
+  assert.equal(container.querySelector('button'), first);
+  assert.equal(first.textContent, 'Ada 1');
+  assert.equal(container.querySelectorAll('button')[1], second);
+  assert.match(second.textContent, /［/);
+  assert.equal(document.activeElement, first);
+  latest.value.setPseudoLocale(); await nextTick();
+  assert.equal(second.textContent, 'Other changed 0');
 });
 
 test('matching SSR hydration retains rich nodes through a live snapshot edit', async t => {

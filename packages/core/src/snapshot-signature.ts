@@ -1,6 +1,7 @@
 import { isDeepFrozen } from './diagnostics.js';
 import type { CatalogManifest } from './loading-types.js';
 import type { ParsedCatalog } from './types.js';
+import type { PseudoLocaleMode } from './pseudo-locale.js';
 
 const signatures = new WeakMap<ParsedCatalog, string>();
 
@@ -18,7 +19,8 @@ export function catalogSignature(catalog: ParsedCatalog): string {
 
 /** Preserve the content-based signature while reusing immutable catalog fragments. */
 export function createLoadedSignature(manifest: CatalogManifest, locale: string,
-  namespaces: readonly string[], catalogs: readonly ParsedCatalog[]): string {
-  const scope = JSON.stringify([locale, manifest.availableLocales, manifest.availableNamespaces, namespaces]);
+  namespaces: readonly string[], catalogs: readonly ParsedCatalog[], pseudoLocale?: PseudoLocaleMode): string {
+  const scope = JSON.stringify([locale, manifest.availableLocales, manifest.availableNamespaces, namespaces,
+    ...(pseudoLocale ? [pseudoLocale] : [])]);
   return `${scope.slice(0, -1)},[${catalogs.map(catalogSignature).join(',')}]]`;
 }
