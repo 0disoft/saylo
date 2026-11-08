@@ -4,6 +4,11 @@ The Saylo core package. It provides catalog parsing and schema validation, a syn
 
 ## Status
 
+The source checkout also uses second-chance admission for message formatter and
+key caches, retaining their 256-entry limits while avoiding LRU's all-miss cycles
+on larger working sets. Native Intl caches retain their 128-entry limits. See
+[formatter cache measurements](../../docs/formatter-cache.md). This is not in npm alpha.9.
+
 The source checkout adds optional `devSchemaRecovery` to `createStore` and
 `createI18n`. Previously successful messages can survive required-argument
 additions and key deletion while using current input values. Strict rendering

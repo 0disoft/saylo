@@ -1,0 +1,104 @@
+{
+  "measuredAt": "2026-11-08T16:16:21.521Z",
+  "node": "v24.18.0",
+  "platform": "win32",
+  "comparison": "Same process, alternating order; LRU reference replaces only the three message cache classes in a temporary copy of the current compiled core.",
+  "label": "paired",
+  "warmupRounds": 10,
+  "rounds": 400,
+  "trials": 5,
+  "messageEntryLimit": 256,
+  "nativeIntlEntryLimit": 128,
+  "results": [
+    {
+      "variant": "lru-reference",
+      "messages": 256,
+      "callsPerTrial": 102400,
+      "formatterConstructions": 0,
+      "hitRate": 1,
+      "medianMicrosecondsPerCall": 8.593965820312501,
+      "milliseconds": [
+        573.0933,
+        764.5816,
+        950.9161000000004,
+        903.6536000000006,
+        880.0221000000001
+      ]
+    },
+    {
+      "variant": "current",
+      "messages": 256,
+      "callsPerTrial": 102400,
+      "formatterConstructions": 0,
+      "hitRate": 1,
+      "medianMicrosecondsPerCall": 8.857030273437507,
+      "milliseconds": [
+        613.8998999999999,
+        825.1729000000003,
+        906.9599000000007,
+        967.8289999999997,
+        1019.7703000000001
+      ]
+    },
+    {
+      "variant": "lru-reference",
+      "messages": 257,
+      "callsPerTrial": 102800,
+      "formatterConstructions": 102800,
+      "hitRate": 0,
+      "medianMicrosecondsPerCall": 28.075964980544757,
+      "milliseconds": [
+        3472.0663000000004,
+        3612.7173999999977,
+        2886.209200000001,
+        1423.0211999999992,
+        2056.0024999999987
+      ]
+    },
+    {
+      "variant": "current",
+      "messages": 257,
+      "callsPerTrial": 102800,
+      "formatterConstructions": 400,
+      "hitRate": 0.9961089494163424,
+      "medianMicrosecondsPerCall": 8.935892996108969,
+      "milliseconds": [
+        1037.3562000000002,
+        1048.6432999999997,
+        526.9228000000003,
+        399.0568999999996,
+        918.609800000002
+      ]
+    },
+    {
+      "variant": "lru-reference",
+      "messages": 512,
+      "callsPerTrial": 204800,
+      "formatterConstructions": 204800,
+      "hitRate": 0,
+      "medianMicrosecondsPerCall": 24.868131835937533,
+      "milliseconds": [
+        4951.839800000002,
+        3647.5944999999992,
+        5430.227899999998,
+        6513.322099999998,
+        5092.993400000007
+      ]
+    },
+    {
+      "variant": "current",
+      "messages": 512,
+      "callsPerTrial": 204800,
+      "formatterConstructions": 102400,
+      "hitRate": 0.5,
+      "medianMicrosecondsPerCall": 18.06181249999998,
+      "milliseconds": [
+        1816.6510000000053,
+        3699.059199999996,
+        4101.333899999998,
+        5440.5501,
+        2868.991599999994
+      ]
+    }
+  ]
+}

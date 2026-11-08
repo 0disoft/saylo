@@ -1,0 +1,55 @@
+{
+  "measuredAt": "2026-11-08T16:10:34.758Z",
+  "node": "v24.18.0",
+  "platform": "win32",
+  "label": "before-lru",
+  "warmupRounds": 10,
+  "rounds": 400,
+  "trials": 5,
+  "messageEntryLimit": 256,
+  "nativeIntlEntryLimit": 128,
+  "results": [
+    {
+      "messages": 256,
+      "callsPerTrial": 102400,
+      "formatterConstructions": 0,
+      "hitRate": 1,
+      "medianMicrosecondsPerCall": 5.492570312499998,
+      "milliseconds": [
+        586.6445000000001,
+        678.5976999999999,
+        562.4391999999998,
+        546.1047000000003,
+        545.1599000000001
+      ]
+    },
+    {
+      "messages": 257,
+      "callsPerTrial": 102800,
+      "formatterConstructions": 102800,
+      "hitRate": 0,
+      "medianMicrosecondsPerCall": 20.508752918287946,
+      "milliseconds": [
+        2187.5696000000003,
+        2006.2060000000001,
+        2239.8469999999998,
+        2108.2998000000007,
+        2085.3191000000006
+      ]
+    },
+    {
+      "messages": 512,
+      "callsPerTrial": 204800,
+      "formatterConstructions": 204800,
+      "hitRate": 0,
+      "medianMicrosecondsPerCall": 30.49981445312497,
+      "milliseconds": [
+        5830.236099999998,
+        6300.8249,
+        6412.595999999998,
+        6246.361999999994,
+        5480.348899999997
+      ]
+    }
+  ]
+}
