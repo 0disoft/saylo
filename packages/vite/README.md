@@ -135,6 +135,14 @@ The development server does not read the approval file and keeps the existing pa
 
 ## Lazy-loading client
 
+The source checkout sends incremental lazy development subscriptions: each
+catalog lookup upserts one pair, and cache eviction removes only affected keys.
+Connection, reconnection and session changes still replace the full scope;
+shutdown clears the owner. Server subscription patch validation and map updates
+touch only changed pairs. This fix is not in published alpha.9; update the Vite
+client and server together. See [subscription scaling measurements](../../docs/lazy-scope-scaling.md)
+for the 100/500/1,000-catalog fixture and wire-byte results.
+
 `virtual:saylo/lazy` provides the initial pairs and the `catalogSource`. The app creates an instance with the core `createI18n` and connects to the development server with `connectDev`. `typegen.outFile` is relative to the Vite root, so `src/i18n.ts` below imports `../generated.js`.
 
 ```ts

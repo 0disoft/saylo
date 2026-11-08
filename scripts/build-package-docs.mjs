@@ -19,6 +19,7 @@ const sourceOnlyDocNames = [
   'rich-text-types',
   'pseudo-localization',
   'dev-schema-recovery',
+  'lazy-scope-scaling',
 ];
 const sourceOnlyDocInputs = sourceOnlyDocNames
   .map(name => ({ source: `docs/${name}.md`, target: `${name}.md`, sourceOnly: true }));

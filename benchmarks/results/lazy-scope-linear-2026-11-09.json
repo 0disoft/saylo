@@ -1,0 +1,83 @@
+{
+  "measuredAt": "2026-11-08T15:57:30.142Z",
+  "node": "v24.18.0",
+  "platform": "win32",
+  "scope": "Client-to-server subscription JSON only; simulated ordered socket, real source/codec/registry/subscriptions. Excludes catalog payloads, manifests and WebSocket framing.",
+  "samples": [
+    {
+      "catalogsPerLocale": 100,
+      "replyOrder": "sequential",
+      "initial": {
+        "messages": 1,
+        "metadataEntries": 100,
+        "jsonBytes": 20365,
+        "fullReplacements": 1,
+        "largestUpdateEntries": 100
+      },
+      "growth": {
+        "messages": 100,
+        "metadataEntries": 100,
+        "jsonBytes": 28300,
+        "fullReplacements": 0,
+        "largestUpdateEntries": 1
+      },
+      "reconnect": {
+        "messages": 1,
+        "metadataEntries": 200,
+        "jsonBytes": 40665,
+        "fullReplacements": 1,
+        "largestUpdateEntries": 200
+      }
+    },
+    {
+      "catalogsPerLocale": 500,
+      "replyOrder": "sequential",
+      "initial": {
+        "messages": 1,
+        "metadataEntries": 500,
+        "jsonBytes": 101565,
+        "fullReplacements": 1,
+        "largestUpdateEntries": 500
+      },
+      "growth": {
+        "messages": 500,
+        "metadataEntries": 500,
+        "jsonBytes": 141500,
+        "fullReplacements": 0,
+        "largestUpdateEntries": 1
+      },
+      "reconnect": {
+        "messages": 1,
+        "metadataEntries": 1000,
+        "jsonBytes": 203065,
+        "fullReplacements": 1,
+        "largestUpdateEntries": 1000
+      }
+    },
+    {
+      "catalogsPerLocale": 1000,
+      "replyOrder": "sequential",
+      "initial": {
+        "messages": 1,
+        "metadataEntries": 1000,
+        "jsonBytes": 203065,
+        "fullReplacements": 1,
+        "largestUpdateEntries": 1000
+      },
+      "growth": {
+        "messages": 1000,
+        "metadataEntries": 1000,
+        "jsonBytes": 283000,
+        "fullReplacements": 0,
+        "largestUpdateEntries": 1
+      },
+      "reconnect": {
+        "messages": 1,
+        "metadataEntries": 2000,
+        "jsonBytes": 406065,
+        "fullReplacements": 1,
+        "largestUpdateEntries": 2000
+      }
+    }
+  ]
+}
