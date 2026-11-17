@@ -1,0 +1,273 @@
+{
+  "schema": "saylo-simple-aot-experiment/v1",
+  "measuredAt": "2026-11-17T15:02:07.290Z",
+  "sourceRevision": "a7d60dbf248c81945df9a071c6b5695cd6b8c867",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "vite": "8.3.4",
+    "intlMessageFormat": "12.1.3"
+  },
+  "codeHashes": {
+    "benchmarks/aot-simple/run.mjs": "39cfc20429fba5af924083e6b78be65bde468ef5d0428c05151eaf9f2a0086f6",
+    "benchmarks/aot-simple/compiler.mjs": "11347d1fa9bb55560a0c01020808010fa41c3f659f71d18818df9c4f5a9353dd",
+    "packages/core/dist/translator.js": "04787bbe7e1f4430a52666560aee1c66ac5e12684f88cbef7cef871d2c02aa33",
+    "packages/core/dist/formatters.js": "279a0ffe352c4705dc957810c77794d9b8e44bf61943e634348aebf8fd5b762e",
+    "packages/vite/dist/ast-formatter.js": "d47a8c37fb07949a1b40e6ac15729e1cf83137a7ae8549d594be969f10bc562c"
+  },
+  "scope": "Experimental formatter dispatch in temporary compiled-core copies. Public translator validation and ICU/rich/pseudo fallbacks retained. Node warm calls; Vite production ESM library chunks, parser removed on both sides, gzip level 9. No browser, startup, heap or full app measurement. Catalog AST/source remain; this is not a complete AOT backend.",
+  "policy": {
+    "warmupRounds": 100,
+    "rounds": 200,
+    "trials": 5,
+    "controlRelativeTolerance": 0.15,
+    "controlAbsoluteToleranceUs": 0.5,
+    "minimumRelativeSaving": 0.1,
+    "minimumAbsoluteSavingUs": 0.2
+  },
+  "verification": {
+    "comparisons": 702,
+    "compiled": 6,
+    "fallback": 6,
+    "scope": "Text, parts, invalid arguments, unknown keys, ICU, rich text and both pseudo locales against current createTranslator."
+  },
+  "results": [
+    {
+      "label": "64-simple",
+      "messages": 64,
+      "compiledMessages": 64,
+      "fallbackMessages": 0,
+      "callsPerTrial": 12800,
+      "controlValid": true,
+      "timing": {
+        "baseline": {
+          "medianMicrosecondsPerCall": 8.92886718749999,
+          "microsecondsPerCall": [
+            11.209726562499966,
+            6.664718749999992,
+            8.30344531250006,
+            8.954843749999952,
+            8.92886718749999
+          ]
+        },
+        "control": {
+          "medianMicrosecondsPerCall": 9.241953124999966,
+          "microsecondsPerCall": [
+            9.241953124999966,
+            11.226296875000017,
+            9.015312499999979,
+            9.000601562499995,
+            10.027695312500029
+          ]
+        },
+        "candidate": {
+          "medianMicrosecondsPerCall": 4.700757812500029,
+          "microsecondsPerCall": [
+            4.675710937500028,
+            6.571406249999967,
+            4.417914062500046,
+            7.674976562500007,
+            4.700757812500029
+          ]
+        }
+      },
+      "timingVerdict": "local-node-saving",
+      "relativeSaving": 0.47353256423380585,
+      "pairedWins": 5,
+      "bundles": {
+        "baseline": {
+          "rawBytes": 77514,
+          "gzipBytes": 13488,
+          "sha256": [
+            "baa97a2fd04369ab520421784bd53abbca0755e7cb82cc4e0057f12b471b8015"
+          ]
+        },
+        "candidate": {
+          "rawBytes": 83566,
+          "gzipBytes": 14099,
+          "sha256": [
+            "7e908d66daf4a070592448b5c05af9719cbb6a187a9fee2b1ffd928c06f4d927"
+          ]
+        }
+      }
+    },
+    {
+      "label": "64-mixed",
+      "messages": 64,
+      "compiledMessages": 57,
+      "fallbackMessages": 7,
+      "callsPerTrial": 12800,
+      "controlValid": false,
+      "timing": {
+        "baseline": {
+          "medianMicrosecondsPerCall": 17.03569531250011,
+          "microsecondsPerCall": [
+            17.043390624999972,
+            13.126437500000065,
+            11.55500781250012,
+            17.972703125000038,
+            17.03569531250011
+          ]
+        },
+        "control": {
+          "medianMicrosecondsPerCall": 12.928289062500014,
+          "microsecondsPerCall": [
+            12.928289062500014,
+            11.330960937499981,
+            14.343867187499908,
+            14.906601562500013,
+            11.176812499999896
+          ]
+        },
+        "candidate": {
+          "medianMicrosecondsPerCall": 9.098437500000074,
+          "microsecondsPerCall": [
+            12.302171875000026,
+            10.720335937500067,
+            6.9917578124999125,
+            8.764781250000055,
+            9.098437500000074
+          ]
+        }
+      },
+      "timingVerdict": "invalid-control",
+      "relativeSaving": null,
+      "pairedWins": 5,
+      "bundles": {
+        "baseline": {
+          "rawBytes": 79567,
+          "gzipBytes": 13851,
+          "sha256": [
+            "d1156139e49726fb89bdab2e40afae8393449874a65ef281ebd7507a826f1926"
+          ]
+        },
+        "candidate": {
+          "rawBytes": 85017,
+          "gzipBytes": 14407,
+          "sha256": [
+            "2ea4448bd31cc83365aadb61a3da6a539f76711a86cda4b0a1359b4c623a34c3"
+          ]
+        }
+      }
+    },
+    {
+      "label": "512-simple",
+      "messages": 512,
+      "compiledMessages": 512,
+      "fallbackMessages": 0,
+      "callsPerTrial": 102400,
+      "controlValid": true,
+      "timing": {
+        "baseline": {
+          "medianMicrosecondsPerCall": 39.53832617187501,
+          "microsecondsPerCall": [
+            39.61509960937498,
+            41.089526367187474,
+            39.53832617187501,
+            35.55249316406247,
+            35.198150390625
+          ]
+        },
+        "control": {
+          "medianMicrosecondsPerCall": 38.55073437499996,
+          "microsecondsPerCall": [
+            39.890050781250004,
+            38.55073437499996,
+            37.743284179687464,
+            35.14899218750003,
+            39.68190527343751
+          ]
+        },
+        "candidate": {
+          "medianMicrosecondsPerCall": 6.741658203124992,
+          "microsecondsPerCall": [
+            6.741658203124992,
+            7.4237412109375,
+            9.067770507812511,
+            5.624057617187503,
+            5.953418945312522
+          ]
+        }
+      },
+      "timingVerdict": "local-node-saving",
+      "relativeSaving": 0.8294905511725843,
+      "pairedWins": 5,
+      "bundles": {
+        "baseline": {
+          "rawBytes": 373556,
+          "gzipBytes": 23646,
+          "sha256": [
+            "d74ea94d69925528b7c2f2ab703a71a7abef6f240a20f618b3b3a8449977122d"
+          ]
+        },
+        "candidate": {
+          "rawBytes": 420153,
+          "gzipBytes": 28128,
+          "sha256": [
+            "717de1b9045fd9513a484f2fae556cc879a94d25c5a86e8cd6328b1bfd043da8"
+          ]
+        }
+      }
+    },
+    {
+      "label": "512-mixed",
+      "messages": 512,
+      "compiledMessages": 460,
+      "fallbackMessages": 52,
+      "callsPerTrial": 102400,
+      "controlValid": true,
+      "timing": {
+        "baseline": {
+          "medianMicrosecondsPerCall": 42.708480468750025,
+          "microsecondsPerCall": [
+            51.47531445312496,
+            42.708480468750025,
+            28.151690429687477,
+            46.72267382812507,
+            39.329222656249954
+          ]
+        },
+        "control": {
+          "medianMicrosecondsPerCall": 41.066194335937496,
+          "microsecondsPerCall": [
+            46.18106542968746,
+            39.21261523437494,
+            36.974419921874926,
+            41.499122070312495,
+            41.066194335937496
+          ]
+        },
+        "candidate": {
+          "medianMicrosecondsPerCall": 9.714715820312563,
+          "microsecondsPerCall": [
+            10.718792968749968,
+            9.714715820312563,
+            6.455033203124998,
+            10.068142578124935,
+            8.124916992187536
+          ]
+        }
+      },
+      "timingVerdict": "local-node-saving",
+      "relativeSaving": 0.7725342668788963,
+      "pairedWins": 5,
+      "bundles": {
+        "baseline": {
+          "rawBytes": 384050,
+          "gzipBytes": 24402,
+          "sha256": [
+            "3202f88324fc3cfda856071ac2e97573d347cd0d1cb0d737b52509c7d1ddbc97"
+          ]
+        },
+        "candidate": {
+          "rawBytes": 425971,
+          "gzipBytes": 28438,
+          "sha256": [
+            "99ac528d13f1d74dbcfd00cbdbc1a027db3dddaa57017d8f7d87471214217af8"
+          ]
+        }
+      }
+    }
+  ]
+}
