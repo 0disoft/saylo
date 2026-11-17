@@ -1,4 +1,5 @@
 import { IntlMessageFormat } from 'intl-messageformat';
+import { TYPE } from '@formatjs/icu-messageformat-parser/no-parser.js';
 import type { Formatters, FormatXMLElementFn } from 'intl-messageformat';
 import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import type { ParsedMessage, RichTextPart } from './types.js';
@@ -64,6 +65,12 @@ export function createTextFormatter(timeZone: string) {
   };
   const text = (namespace: string, id: string, message: ParsedMessage, formatLocale: string, values: Record<string, string | number>,
     pseudoLocale?: PseudoLocaleMode): string => {
+    // Empty and single-literal ASTs already contain their final text.
+    if (!pseudoLocale) {
+      if (message.ast.length === 0) return '';
+      const element = message.ast[0];
+      if (message.ast.length === 1 && element?.type === TYPE.literal) return element.value;
+    }
     // Keep exact content keys across catalog replacement, without copying the
     // full source again for every hot call on the same message and context.
     const key = keyFor(namespace, id, message, formatLocale, pseudoLocale);

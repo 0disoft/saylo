@@ -37,14 +37,15 @@ test('hot text and rich calls serialize a long message cache key once', () => {
 });
 
 test('message key memoization retains hot entries when a new message bypasses a full cache', () => {
-  const messages = Object.fromEntries(Array.from({ length: 257 }, (_, i) => [`m${i}`, `Message ${i}`]));
+  const messages = Object.fromEntries(Array.from({ length: 257 }, (_, i) => [`m${i}`, `Message ${i} {name}`]));
   const bound = createTranslator({ locale: 'ko', baseCatalogs: [catalog(messages)] });
+  const args = { name: 'Saylo' };
   const keys = countMessageKeys(() => {
-    for (let i = 0; i < 256; i++) bound.t(`cart:m${i}`);
-    bound.t('cart:m0');
-    bound.t('cart:m256');
-    bound.t('cart:m0');
-    bound.t('cart:m1');
+    for (let i = 0; i < 256; i++) bound.t(`cart:m${i}`, args);
+    bound.t('cart:m0', args);
+    bound.t('cart:m256', args);
+    bound.t('cart:m0', args);
+    bound.t('cart:m1', args);
   });
   assert.equal(keys.length, 257);
   assert.equal(keys.filter(key => key[1] === 'm0').length, 1);

@@ -4,6 +4,38 @@ import { IntlMessageFormat } from 'intl-messageformat';
 import { createTranslator, parseCatalog } from '@0disoft/saylo-core';
 import { MessageCache } from '../dist/message-cache.js';
 
+test('literal scans above cache capacity construct no formatters or serialized message keys', () => {
+  const count = 512;
+  const catalog = parseCatalog(JSON.stringify(Object.fromEntries(Array.from({ length: count }, (_, index) =>
+    [`m${index}`, `Label ${index}`]))), { locale: 'en', namespace: 'literal' });
+  const translator = createTranslator({ locale: 'en', baseCatalogs: [catalog] });
+  const run = rounds => {
+    for (let round = 0; round < rounds; round++) for (let index = 0; index < count; index++)
+      assert.equal(translator.t(`literal:m${index}`), `Label ${index}`);
+  };
+  run(10);
+  const resolveLocale = IntlMessageFormat.resolveLocale, stringify = JSON.stringify;
+  let created = 0, serializedKeys = 0;
+  IntlMessageFormat.resolveLocale = (...args) => { created++; return resolveLocale(...args); };
+  JSON.stringify = (value, ...args) => {
+    if (Array.isArray(value) && value[0] === 'literal') serializedKeys++;
+    return stringify(value, ...args);
+  };
+  try { run(20); }
+  finally { IntlMessageFormat.resolveLocale = resolveLocale; JSON.stringify = stringify; }
+  assert.equal(created, 0, 'Literal messages need no IntlMessageFormat instance.');
+  assert.equal(serializedKeys, 0, 'Literal messages need no formatter cache key.');
+});
+
+test('literal shortcuts preserve FormatJS empty, quoting, Unicode and literal-tag output', () => {
+  for (const source of ['', 'Plain text', ' 😀 제로디\n ', "It''s ready", "'{name}'", '<link>literal</link>']) {
+    const catalog = parseCatalog(JSON.stringify({ value: source }), { locale: 'en', namespace: 'literal' });
+    const expected = new IntlMessageFormat(catalog.messages.value.ast, 'en', undefined, { ignoreTag: true }).format();
+    const translator = createTranslator({ locale: 'en', baseCatalogs: [catalog] });
+    assert.equal(translator.t('literal:value'), expected, source);
+  }
+});
+
 test('message admission retains at most 256 values during long scans', () => {
   const cache = new MessageCache(256);
   for (let key = 0; key < 10000; key++) {
