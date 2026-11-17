@@ -19,6 +19,10 @@ This document defines the rules for updating Saylo's dependencies (`renovate.jso
 
 ## TypeScript in SvelteKit
 
+The 0.1.1 release refreshes the independent example's lockfile from SvelteKit
+3.0.1 to 3.3.0 and adapter-node 6.0.0 to 6.0.4 for their published security
+fixes. The declared major ranges remain 3 and 6.
+
 `examples/sveltekit` uses `typescript` 6, while the root uses 7. Upgrading to TS 7 depends on peer and plugin compatibility conditions and is validated manually. The bot does not make this decision.
 
 ## Per-path verification commands
