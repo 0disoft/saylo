@@ -34,9 +34,11 @@
     "svelte-check": "4",
     "typescript": "6",
     "vite": "8",
-    "deepmerge": "file:../../vendor/deepmerge"
+    "deepmerge": "file:../../vendor/deepmerge",
+    "picomatch": "file:../../vendor/picomatch"
   },
   "overrides": {
-    "deepmerge": "$deepmerge"
+    "deepmerge": "$deepmerge",
+    "picomatch": "$picomatch"
   }
 }

@@ -41,6 +41,15 @@ If you change benchmarks, use the scripts in that folder's README. Do not claim 
 
 ## audit:dependencies and CI
 
+For the 0.1.1 release, build tooling also uses a
+[private picomatch 4.0.7 fork](../vendor/picomatch/PATCH.md) for
+GHSA-fc5q-39xc-vjpf. It applies the existing risky-extglob literalization to
+single-branch repeated wildcards. The root and independent SvelteKit example
+verify the real Vite, tinyglobby and fdir resolution and run a bounded child
+process regression for the affected patterns. No advisory allowlist or audit
+severity change is used. Remove the override when a fixed upstream release
+is available. The fork is not included in published Saylo artifacts.
+
 The Svelte Vite plugin's development-only `deepmerge@4.3.1` dependency is
 temporarily replaced with a [private patched fork](../vendor/deepmerge/README.md)
 for GHSA-gcqx-w48m-w2h4. This prevents prototype poisoning without an audit

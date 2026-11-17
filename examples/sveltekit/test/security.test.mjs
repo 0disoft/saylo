@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import test from 'node:test';
+import { registerPicomatchSecurityTests } from '../../../scripts/pack-fixtures/picomatch-security.mjs';
+
+registerPicomatchSecurityTests(createRequire(import.meta.url));
 
 test('the independently installed Svelte plugin uses the patched merge implementation', async () => {
   const require = createRequire(import.meta.url);
