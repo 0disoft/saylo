@@ -24,6 +24,66 @@ function fixture(t, publish = () => {}, operations = {}) {
 
 const flush = async () => { for (let i = 0; i < 25; i++) await Promise.resolve(); };
 
+function baselineFixture(t, count, isFile) {
+  const clock = scheduler(), root = path.resolve('virtual-locales'), publications = [];
+  const files = Array.from({ length: count }, (_, index) => {
+    const namespace = `part${index}`, source = '{"title":"Before"}';
+    return { file: path.join(root, 'ko', `${namespace}.json`), source,
+      catalog: parseCatalog(source, { locale: 'ko', namespace }) };
+  });
+  const registry = new LiveRegistry(root, files, 'ko', (files, changed) => publications.push({ files, changed }), {
+    ...clock, stamp: async () => 'stable', isFile,
+    readCatalog: async (_root, file, locale, namespace, read) => {
+      const source = await read(); return { file, source, catalog: parseCatalog(source, { locale, namespace }) };
+    },
+  });
+  t.after(() => registry.stop());
+  return { files, registry, publications, async save() {
+    const done = registry.enqueue(files.at(-1).file, () => '{"title":"After"}');
+    clock.tick(0); await done;
+  } };
+}
+
+test('ordinary saves check one baseline regardless of namespace count', async t => {
+  for (const count of [10, 100, 1000]) await t.test(`${count} namespaces`, async t => {
+    const checked = [];
+    const f = baselineFixture(t, count, async file => { checked.push(file); return true; });
+    for (let save = 0; save < 2; save++) {
+      checked.length = 0;
+      await f.save();
+      assert.equal(checked.length, 1);
+      assert.equal(checked[0], f.files[0].file);
+      assert.equal(f.registry.diagnostic().message, '');
+      assert.equal(f.publications.at(-1).files.at(-1).catalog.messages.title.source, 'After');
+    }
+  });
+});
+
+test('a missing baseline witness falls back once and reuses the surviving file', async t => {
+  for (const absent of ['ENOENT', 'not-file']) await t.test(absent, async t => {
+    const checked = [], missing = new Set();
+    const f = baselineFixture(t, 3, async file => {
+      checked.push(file);
+      if (!missing.has(file)) return true;
+      if (absent === 'ENOENT') throw Object.assign(new Error('Removed'), { code: 'ENOENT' });
+      return false;
+    });
+    await f.save();
+    missing.add(f.files[0].file); checked.length = 0;
+    await f.save();
+    assert.deepEqual(checked, f.files.map(file => file.file));
+    checked.length = 0;
+    await f.save();
+    assert.deepEqual(checked, [f.files[1].file]);
+    for (const file of f.files) missing.add(file.file);
+    checked.length = 0;
+    await f.save();
+    assert.deepEqual(checked, [f.files[1].file, f.files[0].file, f.files[2].file]);
+    assert.match(f.registry.diagnostic().message, /retain at least one catalog/);
+    assert.equal(f.publications.at(-1).changed, false);
+  });
+});
+
 test('saves arriving during a read coalesce to the latest reader instead of building a serial backlog', async t => {
   const gate = Promise.withResolvers(), reads = [], publications = [];
   const f = fixture(t, files => publications.push(files[0].catalog.messages.title.source));

@@ -53,6 +53,7 @@ export class LiveRegistry {
   private accepted: Map<string, CatalogFile>;
   private lastGoodTranslations: Map<string, CatalogFile>;
   private knownNamespaces: Set<string>;
+  private baseFile: string | undefined;
   private schemas = new WeakMap<ParsedCatalog, CatalogSchema>();
   private validated = new WeakMap<ParsedCatalog, string>();
   private errors = new Map<string, LiveDiagnostic>();
@@ -315,17 +316,27 @@ export class LiveRegistry {
     batch: ReadonlyMap<string, Read | undefined>, checks: Checks, generation: number) {
     const files = [...candidate.values()];
     const bases = baseCatalogs(files, this.baseLocale);
-    // Do not accept a ghost baseline if its unlink event is still in flight.
-    const existing = await this.bounded('Base catalog existence check', signal => mapFileTasks(bases, async f => {
-      try { return await this.fileTasks.run(() => this.operations.isFile ? this.operations.isFile(f.file) : stat(f.file).then(s => s.isFile()), signal); }
-      catch (error) {
-        if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') return false;
-        throw error;
+    // Recheck one witness on disk: an unlink may precede its watcher event.
+    const remembered = this.baseFile ? candidate.get(this.baseFile) : undefined;
+    const preferred = remembered?.catalog.locale === this.baseLocale ? remembered : bases[0]!;
+    this.baseFile = await this.bounded('Base catalog existence check', async signal => {
+      const exists = async (item: CatalogFile) => {
+        try { return await this.fileTasks.run(() => this.operations.isFile ? this.operations.isFile(item.file) : stat(item.file).then(s => s.isFile()), signal); }
+        catch (error) {
+          if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') return false;
+          throw error;
+        }
+      };
+      if (await exists(preferred)) return preferred.file;
+      // Only a missing witness needs the bounded parallel fallback scan.
+      const remaining = bases.filter(item => item !== preferred);
+      const existing = await mapFileTasks(remaining, exists, { signal });
+      const found = remaining.find((_, index) => existing[index]);
+      if (!found) {
+        throw new Error('The base locale must retain at least one catalog on disk.');
       }
-    }, { signal }));
-    if (!existing.some(Boolean)) {
-      throw new Error('The base locale must retain at least one catalog on disk.');
-    }
+      return found.file;
+    });
     const namespaces = new Set(bases.map(f => f.catalog.namespace));
     // Removing a baseline namespace removes it from the active registry. Its secondary
     // files stay cached on disk and rejoin if that baseline namespace is restored.
