@@ -1,6 +1,6 @@
 # Documentation guide
 
-All six packages, including Vue, are published at `0.1.1` under the npm `latest` tag. Start with the [0.1.1 release notes](../releases/0.1.1.md) and [release procedure](09-release.md). The Vue adapter is included in candidate, pack and publication tooling with core `0.1.1`. Historical alpha release records retain their original versions and integrity evidence.
+All six packages, including Vue, are published at `0.1.2` under the npm `latest` tag. Start with the [0.1.2 release notes](../releases/0.1.2.md) and [release procedure](09-release.md). The Vue adapter is included in candidate, pack and publication tooling with core `0.1.2`. Historical alpha release records retain their original versions and integrity evidence.
 
 This directory holds Saylo's design contracts and local validation records. Design drafts are mixed with current behavior that has already been implemented and validated, so if the documents and the actual code disagree, the current code in `packages/*/README.md` and `packages/*/src` takes precedence. In this directory, `proposal`, `goal`, `unresolved`, and `unvalidated` describe design intent, while labels such as `local implementation complete` indicate the scope of validation that was run. [08-update-protocol.md](08-update-protocol.md) is the single source of truth for the update wire, and measured and directly verified records are in [06-validation-and-roadmap.md](06-validation-and-roadmap.md).
 

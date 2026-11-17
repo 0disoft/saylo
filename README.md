@@ -1,6 +1,6 @@
 # Saylo
 
-Saylo `0.1.1` is published under `latest` for six packages, including the Vue 3 adapter. Install with `npm install @0disoft/saylo-core`; use matching versions of the adapters, typegen and Vite plugin. See the [0.1.1 release notes](releases/0.1.1.md) for scope and the release workflow. The release record includes registry integrity and consumer acceptance.
+Saylo `0.1.2` is published under `latest` for six packages, including the Vue 3 adapter. Install with `npm install @0disoft/saylo-core`; use matching versions of the adapters, typegen and Vite plugin. See the [0.1.2 release notes](releases/0.1.2.md) for scope and the release workflow. The release record includes registry integrity and consumer acceptance.
 
 The stable release includes [production catalog compaction](docs/production-catalogs.md), [i18next migration](docs/migration.md), and [`saylo init`](docs/init.md) for adding typed catalogs to Vite apps. The [React preset](docs/init-react.md) and [SvelteKit preset](docs/init-sveltekit.md) include locale persistence; SvelteKit also includes request-scoped SSR, hydration and Svelte context.
 
@@ -12,7 +12,7 @@ Saylo is an i18n (internationalization) library that aims to show translation co
 
 ## Current status
 
-- All six packages are published at `0.1.1` under `latest`, with matching registry integrity and independent JS/TS consumption verified.
+- All six packages are published at `0.1.2` under `latest` with npm provenance, including Vue.
 - Optional [strict rich text types](docs/rich-text-types.md), [live pseudo-localization](docs/pseudo-localization.md), and [development schema recovery](docs/dev-schema-recovery.md) are included. Existing rendering and strict errors remain the default.
 - Core provides catalog parsing, schema validation, immutable eager and lazy stores, locale fallback, request-scoped SSR and boot serialization. React 19, Svelte 5 and Vue 3 adapters share those instances.
 - The Vite plugin updates accepted catalogs without replacing app modules, quarantines invalid translations during development, and supports selective production builds, compact AST transport and lazy chunks. Full and incremental development subscription messages are described in the [update protocol](docs/08-update-protocol.md).
@@ -237,15 +237,15 @@ The runnable SSR fixture is in `examples/ssr/`; `npm run demo:ssr` runs renderTo
 
 ## Release
 
-The six packages are published at `0.1.1` under `latest`, including Vue. See the [release notes](releases/0.1.1.md) and [release procedure](docs/09-release.md). Install with `npm install @0disoft/saylo-core` or select `@0.1.1` explicitly. Historical alpha manifests retain their original artifact integrity records.
+The six packages are published at `0.1.2` under `latest`, including Vue. See the [release notes](releases/0.1.2.md) and [release procedure](docs/09-release.md). Install with `npm install @0disoft/saylo-core` or select `@0.1.2` explicitly. Historical alpha manifests retain their original artifact integrity records.
 
 ```sh
-npm run release:check -- --version 0.1.1 --tag latest
+npm run release:check -- --version 0.1.2 --tag latest
 npm run check
 npm run release:pack
 ```
 
-`@0disoft/saylo-svelte` has been a public release target since alpha.2. `release:check` checks the version, license, `engines`, `publishConfig`, and internal dependency versions of all six release targets. `release:pack` installs the six tarballs into a consumer app outside the repository, verifies them, and leaves the tarballs and `manifest.json` in `.release/npm/`. `verify:registry` compares the existing four `alpha.1` packages, `verify:registry:alpha2` the five `alpha.2` packages, and `verify:registry:alpha3` the five `alpha.3` packages against their approval manifests. `verify:registry:sveltekit` verifies a SvelteKit app with the approved `alpha.2` release, and `verify:registry:sveltekit:alpha3` with the `alpha.3` release. The GitHub Actions [release.yml](.github/workflows/release.yml) runs on manual dispatch, authenticates first regardless of whether it will publish when `verify_oidc=true`, and publishes only when `publish=true`. Historical OIDC authentication, publication, download, and installation records cover five packages. The six-package stable release is recorded in `releases/0.1.1.md` and verified with `npm run verify:registry:stable`.
+`@0disoft/saylo-svelte` has been a public release target since alpha.2. `release:check` checks the version, license, `engines`, `publishConfig`, and internal dependency versions of all six release targets. `release:pack` installs the six tarballs into a consumer app outside the repository, verifies them, and leaves the tarballs and `manifest.json` in `.release/npm/`. `verify:registry` compares the existing four `alpha.1` packages, `verify:registry:alpha2` the five `alpha.2` packages, and `verify:registry:alpha3` the five `alpha.3` packages against their approval manifests. `verify:registry:sveltekit` verifies a SvelteKit app with the approved `alpha.2` release, and `verify:registry:sveltekit:alpha3` with the `alpha.3` release. The GitHub Actions [release.yml](.github/workflows/release.yml) runs on manual dispatch, authenticates first regardless of whether it will publish when `verify_oidc=true`, and publishes only when `publish=true`. Historical OIDC authentication, publication, download, and installation records cover five packages. The six-package stable release is recorded in `releases/0.1.2.md`. To verify registry consumption, run `npm run verify:registry:stable`.
 
 For the historical alpha.6 release, `npm run verify:registry:alpha6` exited 0 after independent JS/TS installs, CLI, checkJs/types, core and React SSR, Svelte selector and rich SSR, lazy Vite build, installed synchronization states, and sanitized support reports. `npm run verify:registry:sveltekit:alpha6` also exited 0 after an independent SvelteKit install, typecheck and client/SSR builds, concurrent ko/en SSR, canonical locale and base fallback, lazy synchronization/support and cleanup lifecycle, production HTTP, Chromium hydration, ko/en/ko switching, shared-layout state retention, and exit/re-entry. Historical alpha.5 verification remains available with `npm run verify:registry:alpha5` and `npm run verify:registry:sveltekit:alpha5` using its [manifest](releases/0.1.0-alpha.5.json).
 

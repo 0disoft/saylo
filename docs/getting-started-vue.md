@@ -1,6 +1,6 @@
 # Start Saylo with Vue from an empty folder
 
-Export the Vue 3 + Vite 8 starter from the Saylo repository into an empty folder outside the repository, then install and run it. The Vue binding (`@0disoft/saylo-vue`) is publicly available at `0.1.1`. This exporter places workspace tarballs in `vendor/` inside the starter folder, and the consuming app installs only those tarballs through `file:`. The exported folder does not depend on the Saylo workspace, directory links, or root scripts.
+Export the Vue 3 + Vite 8 starter from the Saylo repository into an empty folder outside the repository, then install and run it. The Vue binding (`@0disoft/saylo-vue`) is publicly available at `0.1.2`. This exporter places workspace tarballs in `vendor/` inside the starter folder, and the consuming app installs only those tarballs through `file:`. The exported folder does not depend on the Saylo workspace, directory links, or root scripts.
 
 ## Prerequisites
 
@@ -8,7 +8,7 @@ Export the Vue 3 + Vite 8 starter from the Saylo repository into an empty folder
 - Run the export from a Saylo repository checkout. `prepare:starter:vue` runs `npm run build` first, so repository dependencies must be installed beforehand.
 - The target folder must be outside the repository and empty. If it contains even one file, the export refuses it instead of overwriting it.
 - The tools list only major ranges. They are Vue 3, Vite 8, `@vitejs/plugin-vue` 6, TypeScript 6, and `vue-tsc` 3. The starter's TypeScript 6 and vue-tsc 3 are tools separate from the repository's TypeScript 7, and the root TypeScript 7 remains as it is.
-- The Vue binding is included in the six-package `0.1.1` release. Its npm publication and registry verification are complete; the starter continues to install local tarballs. See the [stable release notes](../releases/0.1.1.md).
+- The Vue binding is published with npm provenance in the six-package `0.1.2` release. The starter continues to install local tarballs. See the [stable release notes](../releases/0.1.2.md).
 
 ## Export
 
@@ -50,7 +50,7 @@ The terminal prints the target path and the same content as `manifest.json` in J
 `vendor/` contains four tarballs created from the repository (`saylo-core.tgz`, `saylo-vue.tgz`, `saylo-vite.tgz`, `saylo-typegen.tgz`). Their filenames are changed from the `npm pack` output names to `saylo-<name>.tgz`.
 
 - The source is a local workspace snapshot. `source` in `vendor/manifest.json` is `local-unpublished`, and each package records `name`, `version`, `integrity`, and `file`.
-- The current export packs matching `0.1.1` workspace versions of core, Vite, typegen and Vue. These are local build artifacts, so their bytes differ from registry packages where a matching public version exists.
+- The current export packs matching `0.1.2` workspace versions of core, Vite, typegen and Vue. These are local build artifacts, so their bytes differ from registry packages where a matching public version exists.
 - The consuming app uses `file:./vendor/saylo-core.tgz` and `file:./vendor/saylo-vue.tgz` in `dependencies`, and `file:./vendor/saylo-vite.tgz` and `file:./vendor/saylo-typegen.tgz` in `devDependencies`. It does not use `workspace:`, `file:` directories, symbolic links, or root script links.
 
 ## Install and run
