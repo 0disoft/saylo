@@ -125,7 +125,7 @@ const Demo = defineComponent({
 });
 ```
 
-Instead of `useI18nSelector`, you can use `useVueSelector(instance, selector)` directly with the same instance. The Vue binding is a public release target at `0.1.1`; npm publication remains pending.
+Instead of `useI18nSelector`, you can use `useVueSelector(instance, selector)` directly with the same instance. The Vue binding is published at `0.1.1`; install it with the matching core version.
 
 ## SSR and ownership
 

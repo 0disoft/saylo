@@ -1,6 +1,6 @@
 # 09. Release
 
-The stable release target is `0.1.1` under `latest` for core, React, Svelte, Vue, typegen and Vite. Vue is newly prepared for public release; its first npm publication and registry acceptance remain pending. See [0.1.1 release notes](../releases/0.1.1.md). Historical alpha records below retain their original versions and evidence.
+Stable `0.1.1` is published under `latest` for core, React, Svelte, Vue, typegen and Vite. All six registry tarballs match the approved CI manifest and passed independent JS/TS consumption. See [0.1.1 release notes](../releases/0.1.1.md), including the first Vue publication's provenance exception. Recheck the approved artifacts with `npm run verify:registry:stable`. Historical alpha records below retain their original versions and evidence.
 
 ## Historical publication records
 
@@ -70,7 +70,7 @@ Compare the published artifacts with `npm run verify:registry`. The current comm
 | `version` | Exact committed version string. Default `0.1.1` |
 | `dist_tag` | `alpha`, `next`, or `latest`. Default `latest` |
 | `publish` | boolean. Default `false` |
-| `verify_oidc` | boolean. Default `false`. When `true`, verify the OIDC token exchange for all six release-target Trusted Publishers before validation or publication; Vue registration remains to be configured and verified |
+| `verify_oidc` | boolean. Default `false`. When `true`, verify the OIDC token exchange for all six release-target Trusted Publishers before validation or publication; Vue registration and all six exchanges passed in release run 44150361355 |
 
 A single job runs only on Ubuntu, Node 24, npm 11, on `main`, in repository `0disoft/saylo`. Its environment is `npm-release`; permissions are `contents: read` and `id-token: write`. The sequence is `release:check` → optional OIDC verification → `npm ci` → `audit:dependencies` → `check` → `release:pack` → `release:publish` (dry run) → artifact upload. It publishes with `release:publish --publish` only when `publish` is true. Publish order is core → react → svelte → vue → typegen → vite, and it uses no registry secret such as `NPM_TOKEN`.
 
@@ -78,7 +78,7 @@ A single job runs only on Ubuntu, Node 24, npm 11, on `main`, in repository `0di
 
 The `npm-release` environment exists on GitHub and has no protection rules. Dry-run 37467769385 passed 140 tests, consumer type checks, JS/TS packed consumers, and the `release:publish` dry run, and uploaded four tarballs as artifact `saylo-npm-0.1.0-alpha.1`. The tarballs downloaded with `gh run download 37467769385 --name saylo-npm-0.1.0-alpha.1 --dir .release/bootstrap` had SHA-512 hashes matching the originals.
 
-The publish script explicitly passes `--provenance=${NPM_CONFIG_PROVENANCE}`, and the workflow sets that value from `github.event.repository.private`. `0disoft/saylo` is currently PRIVATE, so it publishes with provenance disabled. npm's official documentation says provenance is unsupported for private repositories. It turns on automatically if the repository becomes public. This procedure does not change repository visibility.
+The publish script explicitly passes `--provenance=${NPM_CONFIG_PROVENANCE}`, and the workflow sets that value from `github.event.repository.private`. At the initial private-repository release, provenance was disabled. The repository is now public and CI publication enables provenance. npm's official documentation says provenance is unsupported for private repositories. It turns on automatically if the repository becomes public. This procedure does not change repository visibility.
 
 ## Local distribution candidate
 

@@ -1,6 +1,6 @@
 # Start Saylo with Vue from an empty folder
 
-Export the Vue 3 + Vite 8 starter from the Saylo repository into an empty folder outside the repository, then install and run it. The Vue binding (`@0disoft/saylo-vue`) is prepared for public release at `0.1.1`; its npm publication remains pending. The exporter therefore places workspace tarballs in `vendor/` inside the starter folder, and the consuming app installs only those tarballs through `file:`. The exported folder does not depend on the Saylo workspace, directory links, or root scripts.
+Export the Vue 3 + Vite 8 starter from the Saylo repository into an empty folder outside the repository, then install and run it. The Vue binding (`@0disoft/saylo-vue`) is publicly available at `0.1.1`. This exporter places workspace tarballs in `vendor/` inside the starter folder, and the consuming app installs only those tarballs through `file:`. The exported folder does not depend on the Saylo workspace, directory links, or root scripts.
 
 ## Prerequisites
 
@@ -8,7 +8,7 @@ Export the Vue 3 + Vite 8 starter from the Saylo repository into an empty folder
 - Run the export from a Saylo repository checkout. `prepare:starter:vue` runs `npm run build` first, so repository dependencies must be installed beforehand.
 - The target folder must be outside the repository and empty. If it contains even one file, the export refuses it instead of overwriting it.
 - The tools list only major ranges. They are Vue 3, Vite 8, `@vitejs/plugin-vue` 6, TypeScript 6, and `vue-tsc` 3. The starter's TypeScript 6 and vue-tsc 3 are tools separate from the repository's TypeScript 7, and the root TypeScript 7 remains as it is.
-- The Vue binding is included in the six-package `0.1.1` release target. Its first npm publication and registry verification remain pending; the starter continues to install local tarballs. See the [stable release notes](../releases/0.1.1.md).
+- The Vue binding is included in the six-package `0.1.1` release. Its npm publication and registry verification are complete; the starter continues to install local tarballs. See the [stable release notes](../releases/0.1.1.md).
 
 ## Export
 
@@ -106,7 +106,7 @@ It runs `saylo-typegen --locales-dir locales --base-locale ko --out-file generat
 - For updates within the same major, run the exporter again to get new tarballs and reproduce installation with `package-lock.json` and `npm ci`. If the repository publishes new builds, recheck the same procedure against those versions.
 - The starter lists tool versions by major range only (`vue: "3"`, `vite: "8"`, `@vitejs/plugin-vue: "6"`, `typescript: "6"`, `vue-tsc: "3"`), so stable updates within the same major follow through lockfile updates, and new majors are promoted after compatibility checks.
 
-This document does not cover publication, login, or private registry installation procedures. Vue publication remains pending, and the starter does not publish packages.
+This document does not cover publication, login, or private registry installation procedures. The starter installs local tarballs and does not publish packages.
 
 ## Repository validation
 
