@@ -1,0 +1,288 @@
+{
+  "schema": "saylo-simple-aot-experiment/v2",
+  "measuredAt": "2026-11-17T15:13:02.910Z",
+  "sourceRevision": "e8f8b2a9cd29742847218b0cebb9609b15ecdfe2",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "vite": "8.3.4",
+    "intlMessageFormat": "12.1.3"
+  },
+  "codeHashes": {
+    "benchmarks/aot-simple/run.mjs": "d340e654ed1ed91f9c48e08c22da9d8d0f8d8c4ce3517cdff7256aa524568db9",
+    "benchmarks/aot-simple/compiler.mjs": "9431ebd69e19611e634cfc26d06a38de63dfcb38a8b0f55e95d02787e6a06d84",
+    "packages/core/dist/translator.js": "04787bbe7e1f4430a52666560aee1c66ac5e12684f88cbef7cef871d2c02aa33",
+    "packages/core/dist/formatters.js": "279a0ffe352c4705dc957810c77794d9b8e44bf61943e634348aebf8fd5b762e",
+    "packages/core/dist/catalog-codec.js": "f548cf830dcb3d76246dda3b64e0abd23bd35f2c418e359bffb9705853db36f5",
+    "packages/vite/dist/ast-formatter.js": "d47a8c37fb07949a1b40e6ac15729e1cf83137a7ae8549d594be969f10bc562c",
+    "packages/vite/dist/virtual-modules.js": "04b3ffbc5d94c525625a809f604b6f48885dfded6e852a72bc577dab6bb8b06a"
+  },
+  "scope": "Deduplicated AOT transport: source stored once, literal AST restored from compiled spans, shared renderer/location templates. Baseline uses current production catalog compaction policy; both sides use the same outcome metadata envelope and entry. Public translator validation and ICU/rich/pseudo fallbacks retained. Node warm calls; emitted Vite ESM chunks executed in Node and measured with parser removed on both sides, gzip level 9. No browser, startup, heap or full app measurement.",
+  "policy": {
+    "warmupRounds": 100,
+    "rounds": 200,
+    "trials": 5,
+    "controlRelativeTolerance": 0.15,
+    "controlAbsoluteToleranceUs": 0.5,
+    "minimumRelativeSaving": 0.1,
+    "minimumAbsoluteSavingUs": 0.2
+  },
+  "verification": {
+    "comparisons": 702,
+    "compiled": 5,
+    "fallback": 7,
+    "emittedBundleComparisons": 144,
+    "scope": "Text, parts, invalid arguments, unknown keys, ICU, rich text and both pseudo locales against current createTranslator."
+  },
+  "results": [
+    {
+      "label": "64-simple",
+      "messages": 64,
+      "compiledMessages": 64,
+      "fallbackMessages": 0,
+      "renderTemplates": 6,
+      "callsPerTrial": 12800,
+      "controlValid": true,
+      "timing": {
+        "baseline": {
+          "medianMicrosecondsPerCall": 10.829773437500023,
+          "microsecondsPerCall": [
+            16.60535156249992,
+            10.829773437500023,
+            8.67222656249993,
+            13.35902343750007,
+            6.68277343750006
+          ]
+        },
+        "control": {
+          "medianMicrosecondsPerCall": 10.691695312499974,
+          "microsecondsPerCall": [
+            10.935328125000012,
+            12.85957812499987,
+            8.338968750000078,
+            10.691695312499974,
+            9.148789062499958
+          ]
+        },
+        "candidate": {
+          "medianMicrosecondsPerCall": 2.3233359374999907,
+          "microsecondsPerCall": [
+            4.567195312500019,
+            2.8490156249999643,
+            2.0937812500000064,
+            2.3233359374999907,
+            2.1959062500000925
+          ]
+        }
+      },
+      "timingVerdict": "local-node-saving",
+      "relativeSaving": 0.7854677246104683,
+      "pairedWins": 5,
+      "bundles": {
+        "baseline": {
+          "rawBytes": 96155,
+          "gzipBytes": 13922,
+          "verifiedCalls": 384,
+          "sha256": [
+            "dd63b62b5870d871f07d701b04a385e3611bc2c71e5cd6c1990bd590f52d4da3"
+          ]
+        },
+        "candidate": {
+          "rawBytes": 44955,
+          "gzipBytes": 13826,
+          "verifiedCalls": 384,
+          "sha256": [
+            "d3ada8ce2d61fe72e9ac1ce529c1b3a9c7f3b7e2aa1feb3f81912d2a922ebae8"
+          ]
+        }
+      }
+    },
+    {
+      "label": "64-mixed",
+      "messages": 64,
+      "compiledMessages": 57,
+      "fallbackMessages": 7,
+      "renderTemplates": 6,
+      "callsPerTrial": 12800,
+      "controlValid": true,
+      "timing": {
+        "baseline": {
+          "medianMicrosecondsPerCall": 13.627351562499966,
+          "microsecondsPerCall": [
+            13.627351562499966,
+            10.974835937499988,
+            12.868812499999933,
+            16.643054687500012,
+            15.062867187500046
+          ]
+        },
+        "control": {
+          "medianMicrosecondsPerCall": 13.326117187500017,
+          "microsecondsPerCall": [
+            10.738953124999993,
+            11.688257812499929,
+            15.793601562500044,
+            13.326117187500017,
+            16.057492187500202
+          ]
+        },
+        "candidate": {
+          "medianMicrosecondsPerCall": 5.4191953125000225,
+          "microsecondsPerCall": [
+            13.762765624999956,
+            5.4191953125000225,
+            5.0650234375000025,
+            4.519203125000075,
+            7.89071875000019
+          ]
+        }
+      },
+      "timingVerdict": "local-node-saving",
+      "relativeSaving": 0.6023295291351638,
+      "pairedWins": 4,
+      "bundles": {
+        "baseline": {
+          "rawBytes": 99577,
+          "gzipBytes": 14647,
+          "verifiedCalls": 384,
+          "sha256": [
+            "70696679fde62796d2b1e52c4ae7dd497c0c79cc4d9599516b9d95e17668626c"
+          ]
+        },
+        "candidate": {
+          "rawBytes": 49236,
+          "gzipBytes": 14392,
+          "verifiedCalls": 384,
+          "sha256": [
+            "0391ddcae08c5ce6fce9219c1ccb317278b1a7fb4c00a8ed9b550ae649f95027"
+          ]
+        }
+      }
+    },
+    {
+      "label": "512-simple",
+      "messages": 512,
+      "compiledMessages": 512,
+      "fallbackMessages": 0,
+      "renderTemplates": 9,
+      "callsPerTrial": 102400,
+      "controlValid": true,
+      "timing": {
+        "baseline": {
+          "medianMicrosecondsPerCall": 34.85261718750003,
+          "microsecondsPerCall": [
+            44.10080859375001,
+            34.05744628906248,
+            32.79233984375004,
+            34.85261718750003,
+            38.85283007812504
+          ]
+        },
+        "control": {
+          "medianMicrosecondsPerCall": 36.00942187500003,
+          "microsecondsPerCall": [
+            36.36930175781249,
+            37.75931738281251,
+            35.48932128906252,
+            34.10237207031244,
+            36.00942187500003
+          ]
+        },
+        "candidate": {
+          "medianMicrosecondsPerCall": 2.367892578124966,
+          "microsecondsPerCall": [
+            2.1675390624999835,
+            2.3458476562500152,
+            2.5383613281249495,
+            2.367892578124966,
+            2.6840390625000055
+          ]
+        }
+      },
+      "timingVerdict": "local-node-saving",
+      "relativeSaving": 0.9320598345488322,
+      "pairedWins": 5,
+      "bundles": {
+        "baseline": {
+          "rawBytes": 233757,
+          "gzipBytes": 23216,
+          "verifiedCalls": 3072,
+          "sha256": [
+            "c34c89123c7f150313b7f8e484876ff43cc8bd7fbf3d650e1c98348d3836a5f9"
+          ]
+        },
+        "candidate": {
+          "rawBytes": 72838,
+          "gzipBytes": 20938,
+          "verifiedCalls": 3072,
+          "sha256": [
+            "28f88833b56379c9f81b7c845bdf95d566a51e817771574f6ccb96696e0bfb7c"
+          ]
+        }
+      }
+    },
+    {
+      "label": "512-mixed",
+      "messages": 512,
+      "compiledMessages": 460,
+      "fallbackMessages": 52,
+      "renderTemplates": 9,
+      "callsPerTrial": 102400,
+      "controlValid": true,
+      "timing": {
+        "baseline": {
+          "medianMicrosecondsPerCall": 36.15814550781252,
+          "microsecondsPerCall": [
+            32.8496289062501,
+            40.21443554687508,
+            41.13655371093756,
+            35.8802705078125,
+            36.15814550781252
+          ]
+        },
+        "control": {
+          "medianMicrosecondsPerCall": 38.758446289062505,
+          "microsecondsPerCall": [
+            38.758446289062505,
+            38.48085546874998,
+            39.69795214843742,
+            43.213100585937525,
+            34.11496386718753
+          ]
+        },
+        "candidate": {
+          "medianMicrosecondsPerCall": 5.2006279296874425,
+          "microsecondsPerCall": [
+            5.858996093750051,
+            5.2006279296874425,
+            5.149068359375093,
+            5.518466796875003,
+            4.3602910156251085
+          ]
+        }
+      },
+      "timingVerdict": "local-node-saving",
+      "relativeSaving": 0.8561699485233897,
+      "pairedWins": 5,
+      "bundles": {
+        "baseline": {
+          "rawBytes": 539696,
+          "gzipBytes": 29506,
+          "verifiedCalls": 3072,
+          "sha256": [
+            "2632726def00bad7c897d57df20bee82ea8a80a60483c617e817150b3af440e6"
+          ]
+        },
+        "candidate": {
+          "rawBytes": 101019,
+          "gzipBytes": 22339,
+          "verifiedCalls": 3072,
+          "sha256": [
+            "71a8d766c9a91337a31babbf65af20b43aa6d3fb7da13a95f671579f2cd24ec2"
+          ]
+        }
+      }
+    }
+  ]
+}

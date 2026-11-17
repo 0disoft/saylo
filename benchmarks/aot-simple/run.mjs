@@ -7,8 +7,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import { gzipSync } from 'node:zlib';
 import { build } from 'vite';
-import { createTranslator, parseCatalog } from '@0disoft/saylo-core';
+import { createBaseSchema, createTranslator, parseCatalog } from '@0disoft/saylo-core';
 import { createAstFormatter } from '../../packages/vite/dist/ast-formatter.js';
+import { renderCatalogChunk } from '../../packages/vite/dist/virtual-modules.js';
 import { compileSimpleMessages, injectSimpleFormatter } from './compiler.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -34,7 +35,10 @@ async function prepare(label, catalog) {
   await writeFile(path.join(dist, 'aot-programs.js'), program.source);
   await writeFile(path.join(dist, 'formatters.js'), injectSimpleFormatter(source));
   const candidate = await import(pathToFileURL(path.join(dist, 'runtime.js')));
-  return { directory, dist, program, candidate };
+  const generated = await import(pathToFileURL(path.join(dist, 'aot-programs.js')));
+  assert.deepEqual(JSON.parse(JSON.stringify(generated.catalog)), JSON.parse(JSON.stringify(catalog)),
+    'AOT transport must preserve every catalog field, including source and AST locations.');
+  return { directory, dist, program, candidate, catalog: generated.catalog };
 }
 
 function outcome(call) {
@@ -54,11 +58,11 @@ async function verify() {
   ]));
   const catalog = parseCatalog(source, { locale: 'en', namespace: 'verify', richText: { rich: ['link'] } });
   const f = await prepare('verify', catalog);
-  assert.equal(f.program.compiled, 6); assert.equal(f.program.fallback, 6);
+  assert.equal(f.program.compiled, 5); assert.equal(f.program.fallback, 7);
   let comparisons = 0;
   for (const pseudoLocale of [undefined, 'accent', 'long']) {
     const options = { locale: 'en', baseCatalogs: [catalog], ...(pseudoLocale ? { pseudoLocale } : {}) };
-    const baseline = createTranslator(options), candidate = f.candidate.createTranslator(options);
+    const baseline = createTranslator(options), candidate = f.candidate.createTranslator({ ...options, baseCatalogs: [f.catalog] });
     for (const id of [...Object.keys(catalog.messages), 'missing']) {
       for (const args of [...inputs, undefined, null, [], { name: true, n: NaN },
         { name: 'Ada', n: Infinity, at: new Date('invalid') }, Object.create(inputs[0])]) {
@@ -72,7 +76,10 @@ async function verify() {
     }
   }
   assert.equal(globalThis.__sayloAotInjected, undefined);
+  const emitted = { baseline: await bundle(path.join(f.directory, 'baseline-bundle'), core, catalog),
+    candidate: await bundle(path.join(f.directory, 'candidate-bundle'), f.dist, catalog, true) };
   return { comparisons, compiled: f.program.compiled, fallback: f.program.fallback,
+    emittedBundleComparisons: emitted.baseline.verifiedCalls + emitted.candidate.verifiedCalls,
     scope: 'Text, parts, invalid arguments, unknown keys, ICU, rich text and both pseudo locales against current createTranslator.' };
 }
 
@@ -89,11 +96,21 @@ function fixture(count, mixed) {
   }))), { locale: 'en', namespace: 'bench' });
 }
 
-async function bundle(directory, runtime, catalog) {
+async function bundle(directory, runtime, catalog, candidate = false) {
   const entry = path.join(directory, 'entry.mjs');
   await mkdir(directory, { recursive: true });
-  await writeFile(entry, `import { createTranslator } from ${JSON.stringify(path.join(runtime, 'runtime.js').split(path.sep).join('/'))};
-export const translator = createTranslator({ locale: 'en', baseCatalogs: [JSON.parse(${JSON.stringify(JSON.stringify(catalog))})] });`);
+  const modulePath = file => JSON.stringify(file.split(path.sep).join('/'));
+  const metadata = { status: 'present', sessionId: 'aot-experiment', key: { locale: catalog.locale, namespace: catalog.namespace },
+    catalogVersion: 1, namespaceSchemaFingerprint: createBaseSchema(catalog).fingerprint };
+  const catalogModule = candidate
+    ? `import { catalog } from ${modulePath(path.join(runtime, 'aot-programs.js'))};
+export default { ...${JSON.stringify(metadata)}, catalog };`
+    : renderCatalogChunk({ ...metadata, catalog });
+  await writeFile(path.join(directory, 'catalog.mjs'), catalogModule);
+  await writeFile(entry, `import { createTranslator } from ${modulePath(path.join(runtime, 'runtime.js'))};
+import outcome from './catalog.mjs';
+const catalog = outcome.catalog;
+export const translator = createTranslator({ locale: 'en', baseCatalogs: [catalog] });`);
   const ast = createAstFormatter(), candidateFormatter = path.join(runtime, 'formatters.js');
   const output = await build({ configFile: false, root: directory, logLevel: 'silent',
     plugins: [{ name: 'saylo-aot-experiment-ast', enforce: 'pre',
@@ -107,8 +124,18 @@ export const translator = createTranslator({ locale: 'en', baseCatalogs: [JSON.p
     .filter(item => item.type === 'chunk');
   assert.ok(chunks.length > 0);
   assert.ok(chunks.every(chunk => !chunk.code.includes('EXPECT_ARGUMENT_CLOSING_BRACE')), 'Both bundles must remove the ICU source parser.');
+  assert.equal(chunks.length, 1, 'Execute the emitted self-contained ESM chunk.');
+  const emitted = await import('data:text/javascript;base64,' + Buffer.from(chunks[0].code).toString('base64'));
+  const reference = createTranslator({ locale: 'en', baseCatalogs: [catalog] });
+  let verifiedCalls = 0;
+  for (const id of Object.keys(catalog.messages)) for (const args of inputs) for (const surface of ['t', 'tParts']) {
+    const key = `${catalog.namespace}:${id}`;
+    assert.deepEqual(outcome(() => emitted.translator[surface](key, args)), outcome(() => reference[surface](key, args)));
+    verifiedCalls++;
+  }
   return { rawBytes: chunks.reduce((sum, chunk) => sum + Buffer.byteLength(chunk.code), 0),
     gzipBytes: chunks.reduce((sum, chunk) => sum + gzipSync(chunk.code, { level: 9 }).byteLength, 0),
+    verifiedCalls,
     sha256: chunks.map(chunk => hash(chunk.code)) };
 }
 
@@ -149,11 +176,11 @@ try {
       const f = await prepare(label, catalog), options = { locale: 'en', baseCatalogs: [catalog] };
       const keys = Object.keys(catalog.messages).map(id => `bench:${id}`);
       const cases = { baseline: createTranslator(options), control: createTranslator(options),
-        candidate: f.candidate.createTranslator(options) };
+        candidate: f.candidate.createTranslator({ ...options, baseCatalogs: [f.catalog] }) };
       for (const key of keys) for (const args of inputs)
         assert.equal(cases.candidate.t(key, args), cases.baseline.t(key, args));
       const bundles = { baseline: await bundle(path.join(f.directory, 'baseline-bundle'), core, catalog),
-        candidate: await bundle(path.join(f.directory, 'candidate-bundle'), f.dist, catalog) };
+        candidate: await bundle(path.join(f.directory, 'candidate-bundle'), f.dist, catalog, true) };
       const timing = timeCalls(cases, keys), base = timing.baseline.medianMicrosecondsPerCall;
       const controlDifference = Math.abs(timing.control.medianMicrosecondsPerCall - base);
       const controlValid = controlDifference <= Math.max(policy.controlAbsoluteToleranceUs, base * policy.controlRelativeTolerance);
@@ -163,20 +190,22 @@ try {
       const observedSaving = controlValid && savingUs >= Math.max(policy.minimumAbsoluteSavingUs, base * policy.minimumRelativeSaving)
         && wins >= 4;
       results.push({ label, messages: count, compiledMessages: f.program.compiled, fallbackMessages: f.program.fallback,
+        renderTemplates: f.program.templates,
         callsPerTrial: count * policy.rounds, controlValid, timing,
         timingVerdict: !controlValid ? 'invalid-control' : observedSaving ? 'local-node-saving' : 'inconclusive',
         relativeSaving: controlValid ? savingUs / base : null, pairedWins: wins, bundles });
       process.stderr.write(`${label}: ${results.at(-1).timingVerdict}; bundle ${bundles.baseline.gzipBytes} -> ${bundles.candidate.gzipBytes} gzip bytes\n`);
     }
-    const report = { schema: 'saylo-simple-aot-experiment/v1', measuredAt: new Date().toISOString(),
+    const report = { schema: 'saylo-simple-aot-experiment/v2', measuredAt: new Date().toISOString(),
       sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
       environment: { node: process.version, platform: process.platform, arch: process.arch,
         vite: JSON.parse(await readFile(path.join(root, 'node_modules/vite/package.json'))).version,
         intlMessageFormat: JSON.parse(await readFile(path.join(root, 'node_modules/intl-messageformat/package.json'))).version },
       codeHashes: Object.fromEntries(await Promise.all(['benchmarks/aot-simple/run.mjs', 'benchmarks/aot-simple/compiler.mjs',
-        'packages/core/dist/translator.js', 'packages/core/dist/formatters.js', 'packages/vite/dist/ast-formatter.js']
+        'packages/core/dist/translator.js', 'packages/core/dist/formatters.js', 'packages/core/dist/catalog-codec.js',
+        'packages/vite/dist/ast-formatter.js', 'packages/vite/dist/virtual-modules.js']
         .map(async file => [file, hash(await readFile(path.join(root, file)))]))),
-      scope: 'Experimental formatter dispatch in temporary compiled-core copies. Public translator validation and ICU/rich/pseudo fallbacks retained. Node warm calls; Vite production ESM library chunks, parser removed on both sides, gzip level 9. No browser, startup, heap or full app measurement. Catalog AST/source remain; this is not a complete AOT backend.',
+      scope: 'Deduplicated AOT transport: source stored once, literal AST restored from compiled spans, shared renderer/location templates. Baseline uses current production catalog compaction policy; both sides use the same outcome metadata envelope and entry. Public translator validation and ICU/rich/pseudo fallbacks retained. Node warm calls; emitted Vite ESM chunks executed in Node and measured with parser removed on both sides, gzip level 9. No browser, startup, heap or full app measurement.',
       policy, verification, results };
     const output = JSON.stringify(report, null, 2) + '\n', flag = process.argv.indexOf('--out-file');
     if (flag !== -1) { assert.ok(process.argv[flag + 1]); await writeFile(process.argv[flag + 1], output); }
