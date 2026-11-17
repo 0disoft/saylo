@@ -1,6 +1,6 @@
 # Optional rich text renderer types
 
-Status: included in the stable `0.1.0` release. Vue remains a private workspace package. No runtime rendering behavior
+Status: included in the stable `0.1.0` release. Vue is prepared at the same version; its first npm publication remains pending. No runtime rendering behavior
 changes with this optional type contract.
 
 ## Generate tag contracts
@@ -103,7 +103,7 @@ contract.
 
 ## Vue
 
-The private Vue adapter exports the same optional type with Vue renderer values:
+The Vue adapter exports the same optional type with Vue renderer values:
 
 ```ts
 import { h } from 'vue';

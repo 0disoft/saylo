@@ -1,7 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { releaseInput } from '../release-check.mjs';
+import { checkRelease, packageIds, releaseInput } from '../release-check.mjs';
 import { promote } from '../release-candidate-source.mjs';
+
+test('public release metadata includes Vue with the shared version and lockfile', async () => {
+  assert.deepEqual(packageIds, ['core', 'react', 'svelte', 'vue', 'typegen', 'vite']);
+  const { readFile } = await import('node:fs/promises');
+  const core = JSON.parse(await readFile(new URL('../../packages/core/package.json', import.meta.url), 'utf8'));
+  const lock = JSON.parse(await readFile(new URL('../../package-lock.json', import.meta.url), 'utf8'));
+  for (const id of packageIds) assert.equal(lock.packages[`packages/${id}`].version, core.version);
+  await checkRelease(releaseInput(['--version', core.version]));
+});
 
 test('release commands default stable versions to latest and prereleases to alpha', () => {
   assert.deepEqual(releaseInput(['--version', '0.1.0']),

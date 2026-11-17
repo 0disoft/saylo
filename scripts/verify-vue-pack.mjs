@@ -27,39 +27,23 @@ try {
     ...dependencies, vue: '3',
   } }));
   await npm(['install', '--workspaces=false', '--ignore-scripts', '--no-audit', '--no-fund'], app);
-  for (const file of ['consumer.ts', 'consumer-js.js', 'tsconfig.json'])
+  const installed = JSON.parse(await readFile(path.join(app, 'node_modules/@0disoft/saylo-vue/package.json'), 'utf8'));
+  assert.equal(installed.private, undefined);
+  assert.equal(installed.version, metadata.find(pack => pack.name === '@0disoft/saylo-core').version);
+  assert.equal(installed.dependencies['@0disoft/saylo-core'], installed.version);
+  assert.equal(installed.publishConfig.access, 'public');
+  assert.equal(installed.publishConfig.tag, 'latest');
+  assert.equal(installed.publishConfig.registry, 'https://registry.npmjs.org/');
+  assert.equal(installed.homepage, 'https://www.npmjs.com/package/@0disoft/saylo-vue');
+  assert.ok(installed.keywords.includes('vue'));
+  for (const file of ['consumer-js.js', 'tsconfig.json'])
     await cp(path.join(repository, 'packages/vue/test', file), path.join(app, file));
+  const consumer = await readFile(path.join(repository, 'packages/vue/test/consumer.ts'), 'utf8');
+  await writeFile(path.join(app, 'consumer.ts'), consumer.replace('../../typegen/test/rich-generated.js', './rich-generated.js'));
+  await cp(path.join(repository, 'packages/typegen/test/rich-generated.d.ts'), path.join(app, 'rich-generated.d.ts'));
   await exec(process.execPath, [path.join(repository, 'node_modules/typescript/lib/tsc.js'), '-p', path.join(app, 'tsconfig.json')],
     { cwd: app, env, windowsHide: true });
-  await writeFile(path.join(app, 'ssr.mjs'), `
-import assert from 'node:assert/strict';
-import { createSSRApp, h } from 'vue';
-import { renderToString } from 'vue/server-renderer';
-import { createStore, parseCatalog } from '@0disoft/saylo-core';
-import { createSayloVue, renderRichText } from '@0disoft/saylo-vue';
-const bindings = createSayloVue();
-const catalog = (title, locale) => parseCatalog(JSON.stringify({ title }), { locale, namespace: 'demo' });
-const run = async locale => {
-  const store = createStore({ baseLocale: 'ko', locale, catalogs: [catalog('한국어', 'ko'), catalog('English', 'en')] });
-  let subscribed = 0;
-  const instance = { ...store, subscribe() { subscribed++; throw new Error('SSR must not subscribe'); } };
-  const Child = { setup() { const title = bindings.useI18nSelector(snapshot => snapshot.t('demo:title')); return () => h('p', title.value); } };
-  try { const result = await renderToString(createSSRApp(Child).use(bindings.createPlugin(instance)));
-    assert.equal(subscribed, 0); return result;
-  } finally { store.dispose(); }
-};
-assert.deepEqual(await Promise.all([run('ko'), run('en')]), ['<p>한국어</p>', '<p>English</p>']);
-const rich = createStore({ baseLocale: 'en', locale: 'en', catalogs: [
-  parseCatalog(JSON.stringify({ message: '<link>Hello <strong>{name}</strong></link> <script>safe</script>' }), { locale: 'en', namespace: 'rich' }),
-] });
-try {
-  const html = await renderToString(createSSRApp({ render: () => h('p', renderRichText(rich.tParts('rich:message', { name: '<img>' }), {
-    link: children => h('a', { href: '#order' }, children), strong: children => h('strong', children),
-  })) }));
-  assert.equal(html.replace(/<!--[\\s\\S]*?-->/g, ''), '<p><a href="#order">Hello <strong>&lt;img&gt;</strong></a> safe</p>');
-} finally { rich.dispose(); }
-console.log('Independent JS/TS Vue tarball and concurrent SSR passed');
-`);
+  await cp(path.join(repository, 'scripts/pack-fixtures/vue-smoke.mjs'), path.join(app, 'ssr.mjs'));
   console.log((await exec(process.execPath, [path.join(app, 'ssr.mjs')], { cwd: app, env, windowsHide: true })).stdout.trim());
 } finally {
   assert.equal(path.dirname(path.resolve(root)), path.resolve(os.tmpdir()));

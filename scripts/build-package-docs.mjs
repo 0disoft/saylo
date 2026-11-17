@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { lstat, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { packageIds } from './release-check.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const destination = path.join(repository, 'packages/vite/docs');
@@ -31,7 +32,7 @@ export const packageDocInputs = [
   { source: 'SECURITY.md', target: 'security.md' },
   ...['getting-started', 'getting-started-react', 'getting-started-svelte', 'getting-started-sveltekit', 'init', 'init-sveltekit', 'migration', 'production-catalogs', 'runtime-error-policy',
     'dev-sync-state', 'support-report'].map(name => ({ source: `docs/${name}.md`, target: `${name}.md` })),
-  ...['core', 'react', 'svelte', 'typegen', 'vite'].map(name => ({ source: `packages/${name}/README.md`, target: `api/${name}.md` })),
+  ...packageIds.map(name => ({ source: `packages/${name}/README.md`, target: `api/${name}.md` })),
   ...sourceOnlyDocInputs,
 ];
 export const packageDocPaths = ['README.md', 'manifest.json', ...packageDocInputs.map(entry => entry.target)];
@@ -97,7 +98,7 @@ async function render() {
     if (sourceOnly) sourceOnlyLinks.push(`- [${input.match(/^# (.+)$/m)?.[1] ?? target}](${target})`);
   }
   const sourceOnlySection = sourceOnlyLinks.length ? `\n## Additional workflow guides\n\nThese guides describe features included in this ${manifest.version} package build. See the repository release record for publication status.\n\n${sourceOnlyLinks.join('\n')}\n` : '';
-  files.set('README.md', `# Saylo documentation in your installation\n\nThis documentation bundle is included when the tarball for ${manifest.name} ${manifest.version} is built. You can read it from the installation directory without signing in to GitHub.\n\n## Getting started\n\n- [JavaScript and TypeScript](getting-started.md)\n- [React](getting-started-react.md)\n- [Svelte](getting-started-svelte.md)\n- [SvelteKit and SSR](getting-started-sveltekit.md)\n\n## APIs and usage contracts\n\n${['core', 'react', 'svelte', 'typegen', 'vite'].map(id => `- [@0disoft/saylo-${id}](api/${id}.md)`).join('\n')}\n- [Development synchronization state](dev-sync-state.md)\n- [Diagnostic reports for support](support-report.md)\n- [Support and feature requests](support.md)\n- [Private security reports](security.md)\n${sourceOnlySection}\nThe getting-started examples were originally verified against alpha.4 on the public npm registry. Alpha.5 includes the development synchronization state API, support diagnostics API, and this documentation bundle; they are absent from alpha.4. See the repository release record for publication and registry verification. The version shown here comes from package.json at build time and does not confirm registry publication. References to design and measurement records that are not bundled retain their titles only. External web documents and fragment targets are outside this bundle's file-link checks.\n\nmanifest.json records SHA-256 hashes of the source and bundled files after normalizing line endings to LF. Runnable code blocks are identical to their sources.\n`);
+  files.set('README.md', `# Saylo documentation in your installation\n\nThis documentation bundle is included when the tarball for ${manifest.name} ${manifest.version} is built. You can read it from the installation directory without signing in to GitHub.\n\n## Getting started\n\n- [JavaScript and TypeScript](getting-started.md)\n- [React](getting-started-react.md)\n- [Svelte](getting-started-svelte.md)\n- [SvelteKit and SSR](getting-started-sveltekit.md)\n\n## APIs and usage contracts\n\n${packageIds.map(id => `- [@0disoft/saylo-${id}](api/${id}.md)`).join('\n')}\n- [Development synchronization state](dev-sync-state.md)\n- [Diagnostic reports for support](support-report.md)\n- [Support and feature requests](support.md)\n- [Private security reports](security.md)\n${sourceOnlySection}\nThe getting-started examples were originally verified against alpha.4 on the public npm registry. Alpha.5 includes the development synchronization state API, support diagnostics API, and this documentation bundle; they are absent from alpha.4. See the repository release record for publication and registry verification. The version shown here comes from package.json at build time and does not confirm registry publication. References to design and measurement records that are not bundled retain their titles only. External web documents and fragment targets are outside this bundle's file-link checks.\n\nmanifest.json records SHA-256 hashes of the source and bundled files after normalizing line endings to LF. Runnable code blocks are identical to their sources.\n`);
   files.set('manifest.json', JSON.stringify({ schema: 'saylo.package-docs/v1', package: manifest.name,
     version: manifest.version, textNormalization: 'CRLF to LF', documents: entries }, null, 2) + '\n');
   assertLocalLinks(files);

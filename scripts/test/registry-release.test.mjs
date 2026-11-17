@@ -20,3 +20,9 @@ test('registry release selectors reject traversal and unpublished versions', asy
   await assert.rejects(approvedRegistryRelease('../package'), /registry-version/);
   await assert.rejects(approvedRegistryRelease('999.999.999-alpha.0'), /ENOENT/);
 });
+
+test('five-package historical approvals stay unchanged after Vue joins the release targets', async () => {
+  const packs = await approvedRegistryRelease('0.1.0-alpha.9');
+  assert.equal(packs.length, 5);
+  assert.ok(packs.every(pack => pack.name !== '@0disoft/saylo-vue'));
+});

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 export const repository = fileURLToPath(new URL('..', import.meta.url));
-export const packageIds = ['core', 'react', 'svelte', 'typegen', 'vite'];
+export const packageIds = ['core', 'react', 'svelte', 'vue', 'typegen', 'vite'];
 export function releaseInput(args = process.argv.slice(2)) {
   let version, tag, publish = false;
   for (let i = 0; i < args.length; i++) {

@@ -84,7 +84,8 @@ try {
   const metadata = values['tarballs-dir'] ? await copyVerifiedTarballs(path.resolve(values['tarballs-dir']), packs)
     : JSON.parse(await npm(['pack', ...source, '--ignore-scripts', '--json', '--pack-destination', packs], repository));
   const packed = Array.isArray(metadata) ? metadata : Object.values(metadata);
-  assert.deepEqual(packed.map(pack => pack.name).sort(), packageIds.map(id => `@0disoft/saylo-${id}`).sort());
+  const expectedNames = approved ? approved.map(pack => pack.name) : packageIds.map(id => `@0disoft/saylo-${id}`);
+  assert.deepEqual(packed.map(pack => pack.name).sort(), expectedNames.sort());
   if (approved) for (const pack of packed) {
     const expected = approved.find(entry => entry.name === pack.name);
     assert.equal(pack.version, expected.version);
@@ -109,7 +110,7 @@ try {
     manifest[section][pack.name] = `file:../packs/${pack.filename}`;
   }
   await writeFile(path.join(app, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');
-  console.log(`[pack:sveltekit] Installing five ${approved ? 'approved registry' : values['tarballs-dir'] ? 'integrity-verified candidate' : 'local'} tarballs and declared tool/peer major ranges outside the workspace.`);
+  console.log(`[pack:sveltekit] Installing ${packed.length} ${approved ? 'approved registry' : values['tarballs-dir'] ? 'integrity-verified candidate' : 'local'} tarballs and declared tool/peer major ranges outside the workspace.`);
   await npm(['install', '--workspaces=false', '--ignore-scripts', '--no-audit', '--no-fund'], app);
   const resolvedApp = await realpath(app);
   for (const pack of packed) {
@@ -169,7 +170,7 @@ try {
   if (supportChecks) console.log('[pack:sveltekit] Navigation inside the shared modal retained the focused link.');
   if (supportChecks) console.log('[pack:sveltekit] Support report generation, private form content exclusion, review/reset and input preservation passed.');
   console.log(`[pack:sveltekit] Chromium ${report.browser}: hydration, ko/en/ko switching, shared-layout state and exit/re-entry passed.`);
-  console.log('[pack:sveltekit] Five tarballs: independent install, typecheck, client/SSR build, dev lifecycle and production HTTP/browser passed.');
+  console.log(`[pack:sveltekit] ${packed.length} tarballs: independent install, typecheck, client/SSR build, dev lifecycle and production HTTP/browser passed.`);
 } finally {
   clearTimeout(timer);
   rejectBrowser = undefined;

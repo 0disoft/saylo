@@ -3,13 +3,13 @@
 The source checkout also exports optional
 `StrictRichTextRenderers<AppRichTextSchema, Key>` for checking renderer maps against
 generated tag contracts. See [strict rich text types](../../docs/rich-text-types.md).
-Existing rendering behavior is unchanged, and Vue remains private.
+Existing rendering behavior is unchanged.
 
 The Vue 3 binding for Saylo. `createSayloVue<Schema>()` creates `createPlugin`, `provideI18n`, and `useI18n`, and `useVueStore(instance)` subscribes to the store snapshot as a read-only `shallowRef`. Call `useI18n`, `useVueStore`, and `provideI18n` synchronously in a component's `setup`; create `createPlugin(instance)` outside setup and install it with `app.use`.
 
 ## Status and installation
 
-This package is for the local private workspace only and has not been published to npm. `private` is `true` and `version` is `0.1.0-alpha.4` in `package.json`, but this version is not in the registry, and it is in neither the five published packages (`alpha`) nor the `0.1.0-alpha.5` candidate. Link it through the workspace or a file path instead of installing from the registry. The root `workspaces: ["packages/*"]` already includes it, so a root `npm install` links it; other apps install it from a local path such as `npm install <saylo-checkout>/packages/vue`.
+This checkout prepares `@0disoft/saylo-vue` version `0.1.0` for the shared six-package public release. The manifest is publishable and uses `latest`; this preparation has not published Vue to npm. Until publication is confirmed, link it through the workspace or install it from a local path such as `npm install <saylo-checkout>/packages/vue`. See [Vue release readiness](../../docs/vue-release-readiness.md) for the local verification and remaining publication steps.
 
 `vue` is a peer and the requirement is major version 3 (`"vue": "3"`). The repository root also uses the same major range as a devDependency for verification. `@0disoft/saylo-core` is a runtime dependency, and `dist/` contains ESM JavaScript and `.d.ts` files (`tsc -p tsconfig.json`).
 
@@ -125,7 +125,7 @@ const Demo = defineComponent({
 });
 ```
 
-Instead of `useI18nSelector`, you can use `useVueSelector(instance, selector)` directly with the same instance. The Vue binding is still private, and publication and version promotion are on hold.
+Instead of `useI18nSelector`, you can use `useVueSelector(instance, selector)` directly with the same instance. The Vue binding is a public release target at `0.1.0`; npm publication remains pending.
 
 ## SSR and ownership
 

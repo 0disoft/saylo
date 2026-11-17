@@ -36,15 +36,6 @@ test('a frozen candidate rejects code changes, metadata changes and missing inpu
     await mkdir(path.join(repository, directory), { recursive: true });
     await writeFile(path.join(repository, file), JSON.stringify(manifest));
   }
-  const privateFile = 'packages/vue/package.json';
-  const privateManifest = { name: '@0disoft/saylo-vue', version: '0.1.0-alpha.4', private: true,
-    dependencies: { '@0disoft/saylo-core': '0.1.0-alpha.4' } };
-  lock.packages['packages/vue'] = structuredClone(privateManifest);
-  // npm lock entries omit private even though the workspace manifest has it.
-  delete lock.packages['packages/vue'].private;
-  files.push(privateFile);
-  await mkdir(path.join(repository, 'packages/vue'));
-  await writeFile(path.join(repository, privateFile), JSON.stringify(privateManifest));
   await writeFile(path.join(repository, 'package-lock.json'), JSON.stringify(lock));
   await writeFile(path.join(repository, 'index.js'), 'export const value = 1;\n');
   await git(['add', '.']);
@@ -62,20 +53,19 @@ test('a frozen candidate rejects code changes, metadata changes and missing inpu
     promote(lock.packages[`packages/${id}`], version);
     await writeFile(file, JSON.stringify(manifest));
   }
-  const privateCandidate = structuredClone(privateManifest);
-  promote(privateCandidate, version, { preserveVersion: true });
-  promote(lock.packages['packages/vue'], version, { preserveVersion: true });
-  assert.equal(privateCandidate.version, privateManifest.version);
-  assert.equal(privateCandidate.private, true);
-  assert.equal(privateCandidate.dependencies['@0disoft/saylo-core'], version);
-  await writeFile(path.join(source, privateFile), JSON.stringify(privateCandidate));
+  const vueFile = path.join(source, 'packages/vue/package.json');
+  const vueCandidate = JSON.parse(await readFile(vueFile, 'utf8'));
+  assert.equal(vueCandidate.version, version);
+  assert.equal(vueCandidate.private, undefined);
+  assert.equal(vueCandidate.dependencies['@0disoft/saylo-core'], version);
+  assert.equal(lock.packages['packages/vue'].version, version);
   await writeFile(path.join(source, 'package-lock.json'), JSON.stringify(lock));
   assert.equal((await inspectCandidateSource(repository, source, commit, version)).length, files.length);
-  for (const changes of [{ version }, { private: false }]) {
-    await writeFile(path.join(source, privateFile), JSON.stringify({ ...privateCandidate, ...changes }));
+  for (const changes of [{ version: '0.1.0-alpha.4' }, { private: true }]) {
+    await writeFile(vueFile, JSON.stringify({ ...vueCandidate, ...changes }));
     await assert.rejects(inspectCandidateSource(repository, source, commit, version), /Unexpected candidate metadata edits/);
   }
-  await writeFile(path.join(source, privateFile), JSON.stringify(privateCandidate));
+  await writeFile(vueFile, JSON.stringify(vueCandidate));
   await writeFile(path.join(source, 'index.js'), 'export const value = 2;\n');
   await assert.rejects(inspectCandidateSource(repository, source, commit, version), /source differs from frozen commit/);
   await cp(path.join(repository, 'index.js'), path.join(source, 'index.js'));

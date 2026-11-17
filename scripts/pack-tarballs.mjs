@@ -9,7 +9,7 @@ export async function copyVerifiedTarballs(directory, destination) {
   const packs = JSON.parse(await readFile(path.join(directory, 'manifest.json'), 'utf8'));
   assert.ok(Array.isArray(packs), 'Tarball manifest must be an array.');
   assert.deepEqual(packs.map(pack => pack.name).sort(), packageIds.map(id => `@0disoft/saylo-${id}`).sort(),
-    'Tarball manifest must contain exactly the five public packages.');
+    'Tarball manifest must contain exactly the current public packages.');
   const version = packs[0].version;
   assert.match(version, /^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+)?$/, 'Invalid tarball version.');
   const verified = [];

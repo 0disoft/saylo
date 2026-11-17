@@ -29,6 +29,7 @@ const supportChecks = !fromRegistry || registryConsumerContract(values['registry
 // Historical registry checks use their approved package set, excluding unpublished additions.
 const names = fromRegistry ? bootstrap.map(pack => pack.name) : Object.keys(packages);
 const hasSvelte = names.includes('@0disoft/saylo-svelte');
+const hasVue = names.includes('@0disoft/saylo-vue');
 const license = await readFile(path.join(repository, 'LICENSE'), 'utf8');
 const notice = await readFile(path.join(repository, 'NOTICE'), 'utf8');
 // npm run can export .npmrc allow-scripts as an env override, which newer npm
@@ -133,14 +134,16 @@ try {
         typecheck: 'tsc -p tsconfig.json', build: 'vite build' },
       dependencies: { ...Object.fromEntries(packed.filter(pack => !['@0disoft/saylo-vite', '@0disoft/saylo-typegen'].includes(pack.name))
         .map(pack => [pack.name, `file:../packs/${pack.filename}`])),
-        react: majors.react, 'react-dom': majors['react-dom'], ...(hasSvelte ? { svelte: majors.svelte } : {}) },
+        react: majors.react, 'react-dom': majors['react-dom'], ...(hasSvelte ? { svelte: majors.svelte } : {}),
+        ...(hasVue ? { vue: majors.vue } : {}) },
       devDependencies: { ...Object.fromEntries(['typescript', 'vite', '@types/node', '@types/react', '@types/react-dom'].map(name => [name, majors[name]])),
         ...Object.fromEntries(packed.filter(pack => ['@0disoft/saylo-vite', '@0disoft/saylo-typegen'].includes(pack.name))
           .map(pack => [pack.name, `file:../packs/${pack.filename}`])) } }, null, 2));
     await writeFile(path.join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022',
       module: 'NodeNext', moduleResolution: 'NodeNext', lib: ['ES2022', 'DOM'], strict: true,
       allowJs: true, checkJs: true, noEmit: true, jsx: 'react-jsx', types: ['node', 'vite/client', '@0disoft/saylo-vite/virtual'] },
-      include: [`src/**/*.${language}`, ...(hasSvelte ? ['src/consumer-svelte*.js'] : []), 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
+      include: [`src/**/*.${language}`, ...(hasSvelte ? ['src/consumer-svelte*.js'] : []),
+        ...(hasVue ? ['src/consumer-vue.js'] : []), 'readme-*.ts', 'readme-*.tsx', 'generated.d.ts', 'vite.config.mjs'] }, null, 2));
     console.log(`[pack] ${language}: installing tarballs and declared peer/tool major ranges outside the workspace`);
     await npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', '--workspaces=false'], app);
     if (!fromRegistry && language === 'js') {
@@ -203,6 +206,16 @@ const catalog = decodeCatalog(JSON.parse(JSON.stringify(encodeCatalog(parseCatal
 if (createTranslator({ locale: 'en', baseCatalogs: [catalog] }).t('demo:hello', { name: 'Packed' }) !== 'Hello Packed') throw new Error('Migration/codec contract failed');`],
         { cwd: initialized, env: childEnv, windowsHide: true });
       console.log('[pack] Installed migration CLI, public migration export and parser-free catalog codec passed.');
+    }
+    if (hasVue) {
+      await cp(path.join(repository, 'packages/vue/test/consumer-js.js'), path.join(app, 'src/consumer-vue.js'));
+      if (language === 'ts') {
+        const consumer = await readFile(path.join(repository, 'packages/vue/test/consumer.ts'), 'utf8');
+        await writeFile(path.join(app, 'readme-vue.ts'), consumer.replace('../../typegen/test/rich-generated.js', './rich-generated.js'));
+        await cp(path.join(repository, 'packages/typegen/test/rich-generated.d.ts'), path.join(app, 'rich-generated.d.ts'));
+      }
+      await cp(path.join(fixtures, 'vue-smoke.mjs'), path.join(app, 'vue-smoke.mjs'));
+      console.log((await exec(process.execPath, ['vue-smoke.mjs'], { cwd: app, windowsHide: true, env: childEnv })).stdout.trim());
     }
     if (hasSvelte) await cp(path.join(repository, 'packages/svelte/test/consumer-js.js'), path.join(app, 'src/consumer-svelte.js'));
     const hasSvelteSelectors = hasSvelte && (await readFile(path.join(app, 'node_modules/@0disoft/saylo-svelte/dist/index.d.ts'), 'utf8'))

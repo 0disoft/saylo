@@ -1,13 +1,13 @@
 {
   "name": "@0disoft/saylo-vue",
-  "version": "0.1.0-alpha.4",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "description": "Vue 3 bindings for Saylo with typed context and snapshot-bound reactive translation state.",
   "repository": { "type": "git", "url": "git+https://github.com/0disoft/saylo.git", "directory": "packages/vue" },
-  "homepage": "https://github.com/0disoft/saylo/tree/main/packages/vue#readme",
+  "homepage": "https://www.npmjs.com/package/@0disoft/saylo-vue",
   "bugs": { "email": "rodisoft1@gmail.com" },
-  "publishConfig": { "access": "public", "provenance": true },
+  "keywords": ["i18n", "intl", "localization", "vue", "ssr"],
+  "publishConfig": { "access": "public", "provenance": true, "tag": "latest", "registry": "https://registry.npmjs.org/" },
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
   "files": ["dist/index.js", "dist/index.d.ts", "dist/rich-text.js", "dist/rich-text.d.ts", "LICENSE", "NOTICE"],
   "scripts": {
