@@ -16,7 +16,8 @@ Only the manifest, the guard import/call and `lib/repeated-wildcard.js` differ
 from the upstream implementation. Upstream README and license are unchanged.
 The private name makes this a separately maintained local implementation, not
 a claim that registry picomatch 4.0.7 has been fixed. No advisory is suppressed.
-The root and SvelteKit example overrides apply to build tooling only; Saylo
+The root, SvelteKit example, isolated Vue tools and thin-layer benchmark
+overrides apply to build tooling only; Saylo
 tarballs do not ship or depend on this fork. Regression tests exercise actual
 Vite/tinyglobby resolution as well as dangerous and normal glob behavior.
 

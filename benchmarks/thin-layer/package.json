@@ -26,5 +26,11 @@
   },
   "engines": {
     "node": "24.x"
+  },
+  "devDependencies": {
+    "picomatch": "file:../../vendor/picomatch"
+  },
+  "overrides": {
+    "picomatch": "$picomatch"
   }
 }

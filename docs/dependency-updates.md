@@ -53,6 +53,8 @@ verify the real Vite, tinyglobby and fdir resolution and run a bounded child
 process regression for the affected patterns. No advisory allowlist or audit
 severity change is used. Remove the override when a fixed upstream release
 is available. The fork is not included in published Saylo artifacts.
+The isolated `tools/vue` and `benchmarks/thin-layer` lockfiles apply the same
+override and pass their own low-and-higher severity audits with zero findings.
 
 The Svelte Vite plugin's development-only `deepmerge@4.3.1` dependency is
 temporarily replaced with a [private patched fork](../vendor/deepmerge/README.md)
