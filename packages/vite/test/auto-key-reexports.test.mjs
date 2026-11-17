@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
@@ -22,6 +22,52 @@ async function fixture(t) {
 }
 const messages = { title: 'Hello', one: 'One', two: 'Two', unused: 'Unused' };
 const catalogs = [parseCatalog(JSON.stringify(messages), { locale: 'ko', namespace: 'demo' })];
+
+test('relative runtime imports reject unscanned targets without reading them', async t => {
+  const root = await fixture(t), main = path.join(root, 'src/main.ts');
+  await writeFile(path.join(root, 'hidden.ts'), 'not valid JavaScript; must never be analyzed');
+  for (const source of [
+    "import { translate as message } from '../hidden'; message(`demo:${suffix}`);",
+    "import * as messages from '../hidden.js'; messages.translate(`demo:${suffix}`);",
+    "export { translate as message } from '../hidden.ts';",
+  ]) {
+    await writeFile(main, source);
+    await assert.rejects(findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }),
+      error => /Relative import.*scanned sources/.test(error.message) && error.message.includes(main) && error.message.includes('../hidden'), source);
+  }
+  await writeFile(main, "import type Message from '../hidden'; import type { Other } from '../hidden';");
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), []);
+  await writeFile(main, "import { name } from '../metadata.json'; import * as assets from '../assets.css';");
+  assert.deepEqual(await findIncludedKeys(root, catalogs, 'ko', { from: ['src'] }), []);
+});
+
+test('production rejects incomplete relative-import scans before writing types and recovers with complete sources', async t => {
+  const root = await fixture(t), main = path.join(root, 'src/main.ts');
+  await mkdir(path.join(root, 'locales/ko'), { recursive: true });
+  await writeFile(path.join(root, 'locales/ko/demo.json'), JSON.stringify(messages));
+  await writeFile(path.join(root, 'src/translators.ts'), `import { createStore } from '@0disoft/saylo-core/runtime';
+import { initialCatalogs, baseLocale, initialLocale } from 'virtual:saylo';
+export const store = createStore({ catalogs: initialCatalogs, baseLocale, locale: initialLocale });
+export const text = store.t;`);
+  await writeFile(main, `import { text, store } from './translators';
+export { store };
+export const translate = (suffix = 'title') => text(\`demo:\${suffix}\`);`);
+  const generated = path.join(root, 'generated.d.ts');
+  await writeFile(generated, '// Preserve existing types');
+  const bundle = from => build({ configFile: false, root, logLevel: 'silent',
+    plugins: [saylo({ localesDir: 'locales', baseLocale: 'ko', includeKeys: { from }, typegen: { outFile: 'generated.d.ts' } })],
+    resolve: { alias: { '@0disoft/saylo-core/runtime': fileURLToPath(new URL('../../core/dist/runtime.js', import.meta.url)),
+      '@0disoft/saylo-vite/client': fileURLToPath(new URL('../dist/client.js', import.meta.url)) } },
+    build: { outDir: 'out', rolldownOptions: { input: main, preserveEntrySignatures: 'strict' } } });
+  await assert.rejects(bundle(['src/main.ts']), /Relative import.*scanned sources/);
+  assert.equal(await readFile(generated, 'utf8'), '// Preserve existing types');
+  const result = await bundle(['src']);
+  const entry = result.output.find(chunk => chunk.type === 'chunk' && chunk.isEntry);
+  const app = await import(pathToFileURL(path.join(root, 'out', entry.fileName)));
+  t.after(() => app.store.dispose());
+  assert.equal(app.translate(), 'Hello');
+  assert.equal(app.translate('two'), 'Two');
+});
 
 test('wildcard barrel chains and cycles preserve translator aliases and dynamic diagnostics', async t => {
   const root = await fixture(t), main = path.join(root, 'src/main.ts');

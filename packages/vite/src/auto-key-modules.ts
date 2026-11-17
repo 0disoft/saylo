@@ -38,7 +38,7 @@ export async function resolveModuleImports(sources: readonly ModuleFacts[], reso
 export function linkNamespaceImports(sources: readonly ModuleFacts[], edge: (from: string, to: string) => void,
   unknown: (token: string) => void, resolvedImports: ReadonlyMap<string, string> = new Map()) {
   const modules = new Map(sources.map(source => [moduleId(source.file), source]));
-  const resolve = (file: string, specifier: string) => {
+  const resolve = (file: string, specifier: string, description = 'Relative import') => {
     const resolved = resolvedImports.get(namespaceId(file, specifier));
     if (resolved) return modules.get(resolved);
     if (!specifier.startsWith('.')) return;
@@ -53,13 +53,19 @@ export function linkNamespaceImports(sources: readonly ModuleFacts[], edge: (fro
       for (const suffix of extensions) candidates.push(base + suffix);
       for (const suffix of extensions) candidates.push(path.join(base, 'index' + suffix));
     }
-    return candidates.map(candidate => modules.get(moduleId(candidate))).find(Boolean);
+    const target = candidates.map(candidate => modules.get(moduleId(candidate))).find(Boolean);
+    // A missing code module could export a translator under any name. Continuing
+    // would prune its template keys without ever examining the defining source.
+    // Non-code assets cannot define translator functions and stay outside analysis.
+    if (!target && (!extension || extensions.includes(extension)))
+      throw new Error(`[saylo:auto-keys] ${description} ${JSON.stringify(specifier)} in ${file} cannot be resolved within scanned sources. Include its source in includeKeys.from or use an explicit includeKeys list.`);
+    return target;
   };
   const ownExports = new Map(sources.map(source => [source, new Set(source.exports.map(([name]) => name))]));
   const exportNames = new Map(sources.map(source => [source, new Set(ownExports.get(source))]));
   const starDependents = new Map<ModuleFacts, Set<ModuleFacts>>();
   for (const source of sources) for (const specifier of source.starExports) {
-    const target = resolve(source.file, specifier);
+    const target = resolve(source.file, specifier, 'Wildcard reexport');
     if (!target) throw new Error(`[saylo:auto-keys] Wildcard reexport ${JSON.stringify(specifier)} in ${source.file} cannot be resolved within scanned sources. Include its source in includeKeys.from or use an explicit includeKeys list.`);
     let dependents = starDependents.get(target);
     if (!dependents) { dependents = new Set(); starDependents.set(target, dependents); }

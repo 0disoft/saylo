@@ -277,6 +277,7 @@ test('repeated template patterns preserve literal regex characters, namespace sc
 
 test('automatic selection parses TS/JSX, aliases, Vue expressions and Svelte control blocks without executing sources', async t => {
   const root = await fixture(t);
+  await writeFile(path.join(root, 'src/translator.ts'), 'export const t = i18n.t;');
   await writeFile(path.join(root, 'src/code.tsx'), `import { t as tr } from './translator';
 const { tParts: parts } = useI18n(); const translate = i18n.t;
 export const view = <div>{tr('demo:title')}{parts('demo:rich')}{translate('demo:one')}</div>;
