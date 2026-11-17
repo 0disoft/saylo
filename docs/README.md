@@ -1,6 +1,6 @@
 # Documentation guide
 
-The six public release targets use `0.1.0` under the npm `latest` tag; Vue publication is pending. Start with the [0.1.0 release notes](../releases/0.1.0.md) and [release procedure](09-release.md). The Vue adapter is included in candidate, pack and publication tooling with core `0.1.0`. Historical alpha release records retain their original versions and integrity evidence.
+The six public release targets use `0.1.1` under the npm `latest` tag; Vue publication is pending. Start with the [0.1.1 release notes](../releases/0.1.1.md) and [release procedure](09-release.md). The Vue adapter is included in candidate, pack and publication tooling with core `0.1.1`. Historical alpha release records retain their original versions and integrity evidence.
 
 This directory holds Saylo's design contracts and local validation records. Design drafts are mixed with current behavior that has already been implemented and validated, so if the documents and the actual code disagree, the current code in `packages/*/README.md` and `packages/*/src` takes precedence. In this directory, `proposal`, `goal`, `unresolved`, and `unvalidated` describe design intent, while labels such as `local implementation complete` indicate the scope of validation that was run. [08-update-protocol.md](08-update-protocol.md) is the single source of truth for the update wire, and measured and directly verified records are in [06-validation-and-roadmap.md](06-validation-and-roadmap.md).
 
@@ -21,9 +21,9 @@ The source checkout also supports an optional [runtime translation error policy]
 ## Additional workflows
 
 Optional [development schema recovery](dev-schema-recovery.md) preserves previously
-successful copy during required-argument additions and key deletion. It is included in `0.1.0`; strict errors remain the default.
+successful copy during required-argument additions and key deletion. It is included in `0.1.1`; strict errors remain the default.
 
-These workflows are included in stable `0.1.0`:
+These workflows are included in stable `0.1.1`:
 
 - [React initialization preset](init-react.md)
 - [Message fallback chains](fallback-chains.md)
@@ -146,7 +146,7 @@ The Svelte 5 guide is in [getting-started-svelte.md](getting-started-svelte.md).
 The Vue 3 guide for exporting a local tarball into a standalone project is in [getting-started-vue.md](getting-started-vue.md).
 The React 19 and Svelte 5 guides for exporting a local tarball into a standalone project are in [examples/react-starter](../examples/react-starter/README.md) and [examples/svelte-starter](../examples/svelte-starter/README.md). Export with `npm run prepare:starter:react -- --out-dir <empty folder outside the repository>` and `npm run prepare:starter:svelte -- --out-dir <empty folder outside the repository>`, and run local validation with `npm run verify:starter:react:local` and `npm run verify:starter:svelte:local`.
 The SvelteKit 3 guide, including per-request SSR, hydration, and layout lifetimes, is in [getting-started-sveltekit.md](getting-started-sveltekit.md).
-The collection, review, reset, and submission procedure for support diagnostic JSON is in [support-report.md](support-report.md). Both APIs are included in stable `0.1.0`.
+The collection, review, reset, and submission procedure for support diagnostic JSON is in [support-report.md](support-report.md). Both APIs are included in stable `0.1.1`.
 
 The existing detailed history of validation and the roadmap is preserved in [06-validation-history.md](06-validation-history.md).
 

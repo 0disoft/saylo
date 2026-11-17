@@ -1,10 +1,10 @@
 # 09. Release
 
-The stable release target is `0.1.0` under `latest` for core, React, Svelte, Vue, typegen and Vite. Vue is newly prepared for public release; its first npm publication and registry acceptance remain pending. See [0.1.0 release notes](../releases/0.1.0.md). Historical alpha records below retain their original versions and evidence.
+The stable release target is `0.1.1` under `latest` for core, React, Svelte, Vue, typegen and Vite. Vue is newly prepared for public release; its first npm publication and registry acceptance remain pending. See [0.1.1 release notes](../releases/0.1.1.md). Historical alpha records below retain their original versions and evidence.
 
 ## Historical publication records
 
-These dated alpha records describe earlier releases. The current release uses `0.1.0` and `latest`.
+These dated alpha records describe earlier releases. The current release target uses `0.1.1` and `latest`.
 
 Alpha.8 was published on 2026-10-26. The [release record](../releases/0.1.0-alpha.8.md), [CI run](https://github.com/0disoft/saylo/actions/runs/40217372424), and [approved manifest](../releases/0.1.0-alpha.8.json) record publication of all five packages and registry download integrity. Existing calls remain compatible. Vue remains private; the earlier results below are historical evidence.
 
@@ -50,7 +50,7 @@ On 2026-10-06, four packages were published as `0.1.0-alpha.1` with dist-tag `al
 ## Local verification commands
 
 ```sh
-npm run release:check -- --version 0.1.0 --tag latest
+npm run release:check -- --version 0.1.1 --tag latest
 npm run check
 npm run release:pack
 ```
@@ -67,7 +67,7 @@ Compare the published artifacts with `npm run verify:registry`. The current comm
 
 | Input | Value |
 | --- | --- |
-| `version` | Exact committed version string. Default `0.1.0` |
+| `version` | Exact committed version string. Default `0.1.1` |
 | `dist_tag` | `alpha`, `next`, or `latest`. Default `latest` |
 | `publish` | boolean. Default `false` |
 | `verify_oidc` | boolean. Default `false`. When `true`, verify the OIDC token exchange for all six release-target Trusted Publishers before validation or publication; Vue registration remains to be configured and verified |

@@ -9,7 +9,7 @@ The Vue 3 binding for Saylo. `createSayloVue<Schema>()` creates `createPlugin`, 
 
 ## Status and installation
 
-This checkout prepares `@0disoft/saylo-vue` version `0.1.0` for the shared six-package public release. The manifest is publishable and uses `latest`; this preparation has not published Vue to npm. Until publication is confirmed, link it through the workspace or install it from a local path such as `npm install <saylo-checkout>/packages/vue`. See [Vue release readiness](../../docs/vue-release-readiness.md) for the local verification and remaining publication steps.
+This checkout prepares `@0disoft/saylo-vue` version `0.1.1` for the shared six-package public release. The manifest is publishable and uses `latest`; this preparation has not published Vue to npm. Until publication is confirmed, link it through the workspace or install it from a local path such as `npm install <saylo-checkout>/packages/vue`. See [Vue release readiness](../../docs/vue-release-readiness.md) for the local verification and remaining publication steps.
 
 `vue` is a peer and the requirement is major version 3 (`"vue": "3"`). The repository root also uses the same major range as a devDependency for verification. `@0disoft/saylo-core` is a runtime dependency, and `dist/` contains ESM JavaScript and `.d.ts` files (`tsc -p tsconfig.json`).
 
@@ -125,7 +125,7 @@ const Demo = defineComponent({
 });
 ```
 
-Instead of `useI18nSelector`, you can use `useVueSelector(instance, selector)` directly with the same instance. The Vue binding is a public release target at `0.1.0`; npm publication remains pending.
+Instead of `useI18nSelector`, you can use `useVueSelector(instance, selector)` directly with the same instance. The Vue binding is a public release target at `0.1.1`; npm publication remains pending.
 
 ## SSR and ownership
 

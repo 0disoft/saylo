@@ -1,6 +1,6 @@
 # Vue package release readiness
 
-The Vue 3 adapter is prepared for the shared `0.1.0` release under `latest`, alongside core, React, Svelte, typegen and Vite. Its manifest is publishable, uses Vue major 3 as a peer, and depends on the matching core version. The workspace lockfile carries the same version. This preparation does not publish packages or establish registry availability.
+The Vue 3 adapter is prepared for the shared `0.1.1` release under `latest`, alongside core, React, Svelte, typegen and Vite. Its manifest is publishable, uses Vue major 3 as a peer, and depends on the matching core version. The workspace lockfile carries the same version. This preparation does not publish packages or establish registry availability.
 
 The public package list in `scripts/release-check.mjs` owns release metadata checks, candidate version promotion and source verification, artifact manifests, publication order and package-scoped OIDC checks. Vue participates in all six-package paths. Candidate verification rejects unexpected Vue metadata edits, including restoring `private` or leaving its old version behind.
 

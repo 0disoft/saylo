@@ -1,6 +1,6 @@
 # Saylo
 
-Saylo targets stable `0.1.0` under `latest` for six public release packages, including the newly prepared Vue adapter. Install with `npm install @0disoft/saylo-core`; use matching versions of the adapters, typegen and Vite plugin. See the [0.1.0 release notes](releases/0.1.0.md) for scope and the release workflow. Vue publication is pending; see the readiness guide.
+Saylo targets stable `0.1.1` under `latest` for six public release packages, including the newly prepared Vue adapter. Install with `npm install @0disoft/saylo-core`; use matching versions of the adapters, typegen and Vite plugin. See the [0.1.1 release notes](releases/0.1.1.md) for scope and the release workflow. Vue publication is pending; see the readiness guide.
 
 The stable release includes [production catalog compaction](docs/production-catalogs.md), [i18next migration](docs/migration.md), and [`saylo init`](docs/init.md) for adding typed catalogs to Vite apps. The [React preset](docs/init-react.md) and [SvelteKit preset](docs/init-sveltekit.md) include locale persistence; SvelteKit also includes request-scoped SSR, hydration and Svelte context.
 
@@ -12,11 +12,11 @@ Saylo is an i18n (internationalization) library that aims to show translation co
 
 ## Current status
 
-- All six public release targets use `0.1.0` under `latest`. Vue is included in local release validation; its npm publication remains pending.
+- All six public release targets use `0.1.1` under `latest`. Vue is included in local release validation; its npm publication remains pending.
 - Optional [strict rich text types](docs/rich-text-types.md), [live pseudo-localization](docs/pseudo-localization.md), and [development schema recovery](docs/dev-schema-recovery.md) are included. Existing rendering and strict errors remain the default.
 - Core provides catalog parsing, schema validation, immutable eager and lazy stores, locale fallback, request-scoped SSR and boot serialization. React 19, Svelte 5 and Vue 3 adapters share those instances.
 - The Vite plugin updates accepted catalogs without replacing app modules, quarantines invalid translations during development, and supports selective production builds, compact AST transport and lazy chunks. Full and incremental development subscription messages are described in the [update protocol](docs/08-update-protocol.md).
-- The [0.1.0 release notes](releases/0.1.0.md) cover wildcard reexport analysis, private method migration safety, draft preservation during review queries, and bounded cache improvements.
+- The [0.1.1 release notes](releases/0.1.1.md) cover the first public Vue adapter, literal-message formatter bypass, and production key-analysis safety.
 - [Lazy subscription measurements](docs/lazy-scope-scaling.md) verify linear metadata transmission at 100, 500 and 1,000 catalogs. [Formatter measurements](docs/formatter-cache.md) compare 256, 257 and 512-message cycles, including the below-capacity timing tradeoff.
 - In the vanilla and React demos, live copy edits preserve inputs and open dialogs; development-only schema recovery also retains previously successful messages during required-argument additions and key deletion. Application remounts and development server restarts remain outside that guarantee.
 - The [documentation index](docs/README.md), [validation history](docs/06-validation-history.md) and [historical alpha.9 manifest](releases/0.1.0-alpha.9.json) retain earlier release and measurement evidence.
@@ -237,10 +237,10 @@ The runnable SSR fixture is in `examples/ssr/`; `npm run demo:ssr` runs renderTo
 
 ## Release
 
-The shared release target is `0.1.0` for six packages under `latest`; Vue publication remains pending. See the [release notes](releases/0.1.0.md) and [release procedure](docs/09-release.md). Install with `npm install @0disoft/saylo-core` or select `@0.1.0` explicitly. Historical alpha manifests retain their original artifact integrity records.
+The shared release target is `0.1.1` for six packages under `latest`; Vue publication remains pending. See the [release notes](releases/0.1.1.md) and [release procedure](docs/09-release.md). Install with `npm install @0disoft/saylo-core` or select `@0.1.1` explicitly. Historical alpha manifests retain their original artifact integrity records.
 
 ```sh
-npm run release:check -- --version 0.1.0 --tag latest
+npm run release:check -- --version 0.1.1 --tag latest
 npm run check
 npm run release:pack
 ```
