@@ -9,23 +9,34 @@ import type { Schedule } from './scheduling.js';
 export interface StaticCatalogSourceOptions {
   readonly timeoutMs?: number;
   readonly schedule?: Schedule;
+  /** Monotonic milliseconds. Defaults to performance.now with the built-in scheduler. */
+  readonly now?: () => number;
   /** Soft LRU limit for decoded outcomes; inline initial outcomes remain pinned. Omitted keeps all. */
   readonly maxCachedCatalogs?: number;
 }
-interface Flight { promise: Promise<CatalogOutcome>; users: number }
+type Waiter = (error?: unknown, outcome?: CatalogOutcome) => boolean;
+interface Flight {
+  readonly controller: AbortController;
+  readonly waiters: Set<Waiter>;
+}
 
 export interface StaticCatalogLoader {
   readonly key: CatalogKey;
-  readonly load: () => Promise<CatalogOutcome>;
+  /** The signal aborts when all callers leave. Native imports may ignore it. */
+  readonly load: (signal?: AbortSignal) => Promise<CatalogOutcome>;
 }
 
 const noop = () => {};
+const monotonicNow = () => performance.now();
 const invalid = () => new CatalogLoadError('INVALID_STATIC_CATALOG', 'Static catalog does not match its manifest pair.');
+const timedOut = () => new CatalogLoadError('TIMEOUT', 'Static catalog load timed out.');
 
 /** Boot pairs are inline; other present pairs are loaded from generated imports on demand. */
 export function createStaticCatalogSource(initial: CatalogManifest, initialCatalogs: readonly CatalogOutcome[],
   entries: readonly StaticCatalogLoader[], options: StaticCatalogSourceOptions = {}): DevCatalogSource {
   const timeoutMs = timeoutDuration(options.timeoutMs);
+  const later = options.schedule ?? schedule;
+  const now = options.now ?? (later === schedule ? monotonicNow : undefined);
   const maxCachedCatalogs = catalogCacheLimit(options.maxCachedCatalogs);
   const manifest = validateCatalogManifest(initial);
   const metadata = catalogMetadata(manifest);
@@ -72,6 +83,13 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
     if (outcome) touch(pair, outcome);
     return outcome;
   };
+  const finishFlight = (pair: string, flight: Flight, error?: unknown, outcome?: CatalogOutcome) => {
+    if (flights.get(pair) !== flight) return;
+    flights.delete(pair);
+    let accepted = false;
+    for (const wait of flight.waiters) if (wait(error, outcome)) accepted = true;
+    if (accepted && outcome) remember(pair, outcome);
+  };
   return Object.freeze({
     readManifest: () => manifest,
     getCatalogs: () => Object.freeze([...cache.values()].flatMap(o => o.status === 'present' ? [o.catalog] : [])),
@@ -87,37 +105,52 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
       if (!meta || meta.status === 'missing') return Promise.resolve(immutable({
         status: 'missing', sessionId: manifest.sessionId, key, catalogVersion: meta?.catalogVersion ?? 0,
       }));
+      const startedAt = now?.() ?? 0;
       let flight = flights.get(pair);
       if (!flight) {
-        const created: Flight = { users: 0, promise: Promise.resolve().then(() => loaders.get(pair)!()).then(outcome => {
-          if (!outcome || !outcome.key || id(outcome.key) !== pair || !matches(manifest, outcome)) throw invalid();
-          const accepted = immutable(outcome);
-          if (flights.get(pair) === created) remember(pair, accepted);
-          return accepted;
-        }).finally(() => { if (flights.get(pair) === created) flights.delete(pair); }) };
+        const created: Flight = { controller: new AbortController(), waiters: new Set() };
         flights.set(pair, created);
+        const importSignal = created.controller.signal;
+        void Promise.resolve().then(() => {
+          importSignal.throwIfAborted();
+          return loaders.get(pair)!(importSignal);
+        }).then(outcome => {
+          if (importSignal.aborted) return;
+          if (!outcome || !outcome.key || id(outcome.key) !== pair || !matches(manifest, outcome)) throw invalid();
+          return immutable(outcome);
+        }).then(outcome => finishFlight(pair, created, undefined, outcome),
+          error => finishFlight(pair, created, error));
         flight = created;
       }
       const shared = flight;
-      shared.users++;
       return new Promise<CatalogOutcome>((resolve, reject) => {
         let finished = false;
         let cancelTimer = noop;
-        const finish = (error?: unknown, outcome?: CatalogOutcome) => {
-          if (finished) return;
+        const finish: Waiter = (error, outcome) => {
+          if (finished) return false;
           finished = true;
           cancelTimer();
           signal?.removeEventListener('abort', abort);
-          if (--shared.users === 0 && flights.get(pair) === shared) flights.delete(pair);
-          if (outcome) resolve(outcome); else reject(error);
+          shared.waiters.delete(settle);
+          if (!shared.waiters.size && flights.get(pair) === shared) {
+            flights.delete(pair);
+            shared.controller.abort(error);
+          }
+          if (outcome) { resolve(outcome); return true; }
+          reject(error);
+          return false;
         };
+        // A settled import can reach its callers before their expired timers run.
+        const settle: Waiter = (error, outcome) =>
+          now && now() - startedAt >= timeoutMs ? finish(timedOut()) : finish(error, outcome);
         const abort = () => finish(aborted());
-        cancelTimer = (options.schedule ?? schedule)(timeoutMs,
-          () => finish(new CatalogLoadError('TIMEOUT', 'Static catalog load timed out.')));
+        shared.waiters.add(settle);
         signal?.addEventListener('abort', abort, { once: true });
-        // Imports cannot be interrupted; both handlers also observe orphaned rejections.
-        void shared.promise.then(outcome => finish(undefined, outcome), error => finish(error));
-        if (signal?.aborted) abort();
+        if (signal?.aborted) { abort(); return; }
+        try { cancelTimer = later(timeoutMs, () => finish(timedOut())); }
+        catch (error) { finish(error); }
+        // A custom scheduler can abort a caller during registration.
+        if (finished) cancelTimer();
       });
     },
   });

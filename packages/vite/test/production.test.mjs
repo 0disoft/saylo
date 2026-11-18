@@ -99,14 +99,16 @@ test('nested production builds release typegen ownership before the outer closeB
 test('static cancellation is per caller and abandoned imports cannot overwrite a new flight', async () => {
   const r = registry(), clock = scheduler(), loads = [];
   const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: { locale: 'en', namespace: 'demo' },
-    load: () => new Promise((resolve, reject) => loads.push({ resolve, reject })) }], { timeoutMs: 100, schedule: clock.schedule });
+    load: signal => new Promise((resolve, reject) => loads.push({ resolve, reject, signal })) }], { timeoutMs: 100, schedule: clock.schedule });
   const a = new AbortController(), b = new AbortController(), reason = new Error('navigation');
   const first = assert.rejects(source.loadCatalog('en', 'demo', a.signal), e => e.code === 'ABORTED' && e.cause === reason);
   const second = source.loadCatalog('en', 'demo', b.signal);
   const secondFailure = assert.rejects(second, { code: 'ABORTED' });
   await Promise.resolve(); a.abort(reason); await first;
   assert.equal(loads.length, 1);
+  assert.equal(loads[0].signal.aborted, false);
   b.abort(); await secondFailure;
+  assert.equal(loads[0].signal.reason.code, 'ABORTED');
   const fresh = source.loadCatalog('en', 'demo'); await Promise.resolve();
   loads[0].resolve(r.load('en', 'demo'));
   for (let i = 0; i < 5; i++) await Promise.resolve();
@@ -131,6 +133,79 @@ test('a static source deadline releases hung imports and keeps other consumers a
   const recovered = source.loadCatalog('en', 'demo'); await Promise.resolve();
   loads[0].reject(new Error('late import rejection'));
   loads[1].resolve(r.load('en', 'demo')); await recovered;
+  assert.equal(clock.size, 0);
+});
+
+test('static catalog results honor elapsed time even when the timeout callback is delayed', async t => {
+  for (const elapsed of [99, 100, 101]) await t.test(`${elapsed}ms`, async () => {
+    for (const fails of [false, true]) {
+      const r = registry(), clock = scheduler(), loads = [];
+      let now = 0;
+      const cause = new Error('import failed');
+      const outcome = r.load('en', 'demo');
+      const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: outcome.key,
+        load() { const pending = Promise.withResolvers(); loads.push(pending); return pending.promise; },
+      }], { timeoutMs: 100, schedule: clock.schedule, now: () => now });
+      const pending = source.loadCatalog('en', 'demo');
+      const checked = elapsed >= 100 ? assert.rejects(pending, { code: 'TIMEOUT' })
+        : fails ? assert.rejects(pending, error => error === cause) : pending;
+      await Promise.resolve();
+      now = elapsed; // The clock advances without dispatching the deferred timer.
+      if (fails) loads[0].reject(cause); else loads[0].resolve(outcome);
+      await checked;
+      assert.equal(source.getCatalogs().length, elapsed < 100 && !fails ? 3 : 2);
+      const retry = source.loadCatalog('en', 'demo');
+      await Promise.resolve();
+      if (elapsed >= 100 || fails) {
+        assert.equal(loads.length, 2, 'a rejected result must be fetched again');
+        loads[1].resolve(outcome);
+      } else assert.equal(loads.length, 1, 'an accepted result is cached');
+      assert.deepEqual(await retry, outcome);
+      assert.equal(clock.size, 0);
+    }
+  });
+});
+
+test('an expired static caller can share its import with a caller still inside the deadline', async () => {
+  const r = registry(), clock = scheduler(), pending = Promise.withResolvers();
+  const outcome = r.load('en', 'demo');
+  let now = 0, calls = 0;
+  const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: outcome.key,
+    load() { calls++; return pending.promise; },
+  }], { timeoutMs: 100, schedule: clock.schedule, now: () => now });
+  const expired = assert.rejects(source.loadCatalog('en', 'demo'), { code: 'TIMEOUT' });
+  now = 1;
+  const active = source.loadCatalog('en', 'demo');
+  now = 100;
+  pending.resolve(outcome);
+  await expired;
+  assert.deepEqual(await active, outcome);
+  assert.deepEqual(await source.loadCatalog('en', 'demo'), outcome);
+  assert.equal(calls, 1);
+  assert.equal(clock.size, 0);
+});
+
+test('static catalog loads avoid dispatch after the last caller leaves before the import', async () => {
+  const r = registry(), clock = scheduler(), abort = new AbortController();
+  const outcome = r.load('en', 'demo');
+  let calls = 0, throwOnSchedule = false;
+  const cause = new Error('scheduler unavailable');
+  const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: outcome.key,
+    async load() { calls++; return outcome; },
+  }], { schedule(ms, callback) {
+    if (throwOnSchedule) throw cause;
+    return clock.schedule(ms, callback);
+  } });
+  const cancelled = assert.rejects(source.loadCatalog('en', 'demo', abort.signal), { code: 'ABORTED' });
+  abort.abort();
+  await cancelled;
+  assert.equal(calls, 0);
+  throwOnSchedule = true;
+  await assert.rejects(source.loadCatalog('en', 'demo'), error => error === cause);
+  assert.equal(calls, 0);
+  throwOnSchedule = false;
+  assert.deepEqual(await source.loadCatalog('en', 'demo'), outcome);
+  assert.equal(calls, 1);
   assert.equal(clock.size, 0);
 });
 
