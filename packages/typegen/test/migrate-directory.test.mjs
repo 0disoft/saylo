@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { writeCatalogOutput } from '../dist/catalog-output.js';
+import { planCallRewrite } from '../dist/migrate-calls.js';
 import {
   DirectoryMigrationApplyError, applyDirectoryMigration, planDirectoryMigration,
 } from '../dist/migrate-directory.js';
@@ -39,6 +40,61 @@ async function filesBelow(root) {
     .map(entry => path.relative(root, path.join(entry.parentPath, entry.name)))
     .sort();
 }
+
+test('call rewrite rejects pre-aborted plans before loading the source tree', async t => {
+  const { root } = await fixture(t);
+  const reason = new Error('already cancelled');
+  const reads = [];
+  await assert.rejects(planCallRewrite({ sourceDir: path.join(root, 'src'), namespace: 'shop', targets: [],
+    signal: AbortSignal.abort(reason),
+    async readDirectory(directory) { reads.push(directory); return []; },
+  }), error => error === reason);
+  assert.deepEqual(reads, []);
+});
+
+test('call rewrite stops before descending if cancelled during root enumeration', async t => {
+  const { root } = await fixture(t);
+  const sourceDir = path.join(root, 'src');
+  for (const name of ['first', 'second']) await mkdir(path.join(sourceDir, name));
+  const controller = new AbortController(), reason = new Error('scan cancelled');
+  const reads = [];
+  const result = await planCallRewrite({ sourceDir, namespace: 'shop', targets: [], signal: controller.signal,
+    async readDirectory(directory) {
+      reads.push(directory);
+      const entries = await readdir(directory, { withFileTypes: true });
+      if (directory === sourceDir) controller.abort(reason);
+      return entries;
+    },
+  }).then(() => undefined, error => error);
+  assert.deepEqual(reads, [sourceDir]);
+  assert.equal(result, reason);
+});
+
+test('call rewrite checks cancellation again after the final source read', async t => {
+  const { root } = await fixture(t);
+  const sourceDir = path.join(root, 'src');
+  const file = path.join(sourceDir, 'shop.ts');
+  const source = "import { useTranslation } from 'react-i18next';\n" +
+    "export function Shop() { const { t } = useTranslation('shop'); return t('title'); }\n";
+  await writeFile(file, source);
+  const controller = new AbortController(), reason = new Error('source read cancelled');
+  const readError = Object.assign(new Error('source read failed'), { code: 'EIO' });
+  const options = { sourceDir, namespace: 'shop', targets: ['title'], signal: controller.signal };
+  const ready = await planCallRewrite(options);
+  assert.equal(ready.changes.length, 1);
+  await assert.rejects(planCallRewrite({ ...options, async readSource() { throw readError; } }), error => error === readError);
+
+  const reads = [];
+  await assert.rejects(planCallRewrite({ ...options,
+    async readSource(current, signal) {
+      reads.push(current);
+      assert.equal(signal, controller.signal);
+      controller.abort(reason);
+      return source;
+    },
+  }), error => error === reason);
+  assert.deepEqual(reads, [file]);
+});
 
 const directoryArgs = [
   '--from', 'i18next', '--from-dir', 'locales', '--out-dir', 'output',

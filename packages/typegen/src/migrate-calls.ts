@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { lstatSync, readFileSync } from 'node:fs';
+import type { Dirent } from 'node:fs';
 import { lstat, open, readFile, readdir, realpath, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from '@babel/parser';
@@ -67,6 +68,8 @@ export interface CallRewriteOptions {
   readonly namespace: string;
   readonly targets: readonly string[];
   readonly signal?: AbortSignal;
+  readonly readDirectory?: (directory: string) => Promise<readonly Dirent[]>;
+  readonly readSource?: (file: string, signal?: AbortSignal) => Promise<string>;
 }
 
 export interface CallRewriteApplyOptions {
@@ -223,15 +226,21 @@ function parserPlugins(extension: string): ParserPlugin[] {
   return ['jsx'];
 }
 
-async function sourceFiles(root: string, issues: CallRewriteIssue[]): Promise<string[]> {
+async function sourceFiles(root: string, issues: CallRewriteIssue[], signal?: AbortSignal,
+  readDirectory: NonNullable<CallRewriteOptions['readDirectory']> = directory => readdir(directory, { withFileTypes: true })): Promise<string[]> {
+  signal?.throwIfAborted();
   const resolved = path.resolve(root);
   const info = await lstat(resolved);
+  signal?.throwIfAborted();
   if (!info.isDirectory() || info.isSymbolicLink()) throw new Error('--source-dir must be an existing, non-symlink directory.');
   const actual = await realpath(resolved);
   if (path.relative(resolved, actual)) throw new Error('--source-dir must not traverse a symlink or junction.');
   const files: string[] = [];
   async function visit(directory: string): Promise<void> {
-    for (const entry of await readdir(directory, { withFileTypes: true })) {
+    signal?.throwIfAborted();
+    const entries = await readDirectory(directory);
+    for (const entry of entries) {
+      signal?.throwIfAborted();
       const file = path.join(directory, entry.name);
       if (entry.isSymbolicLink()) {
         issues.push({ code: 'UNSAFE_SYMLINK', file, message: 'Call rewrite refuses symbolic links and junctions.' });
@@ -245,6 +254,7 @@ async function sourceFiles(root: string, issues: CallRewriteIssue[]): Promise<st
     }
   }
   await visit(resolved);
+  signal?.throwIfAborted();
   return files.sort();
 }
 
@@ -401,15 +411,23 @@ function rewriteFile(source: string, file: string, namespace: string, targets: R
 export async function planCallRewrite(options: CallRewriteOptions): Promise<CallRewritePlan> {
   if (!options.namespace.trim() || options.namespace.includes(':'))
     throw new Error('--namespace must be one nonempty namespace without a colon.');
+  const { signal, readSource = (file, activeSignal) =>
+    readFile(file, activeSignal ? { encoding: 'utf8', signal: activeSignal } : 'utf8') } = options;
   const issues: CallRewriteIssue[] = [];
   const root = path.resolve(options.sourceDir);
-  const files = await sourceFiles(root, issues);
+  const files = await sourceFiles(root, issues, signal, options.readDirectory);
   const targetMap = new Map(options.targets.map(target => [target, options.namespace + ':' + target]));
   const changes: CallRewriteChange[] = [];
   const guards: CallRewriteGuard[] = [];
   for (const file of files) {
-    options.signal?.throwIfAborted();
-    const source = await readFile(file, 'utf8');
+    signal?.throwIfAborted();
+    let source: string;
+    try { source = await readSource(file, signal); }
+    catch (error) {
+      signal?.throwIfAborted();
+      throw error;
+    }
+    signal?.throwIfAborted();
     const result = rewriteFile(source, file, options.namespace, targetMap);
     issues.push(...result.issues);
     if (result.nextSource !== undefined) {
@@ -417,6 +435,7 @@ export async function planCallRewrite(options: CallRewriteOptions): Promise<Call
       guards.push({ file, relativeFile: path.relative(root, file), before: source, after: result.nextSource, sourceHash: hash(source) });
     }
   }
+  signal?.throwIfAborted();
   return {
     format: 'saylo-call-rewrite/v1', sourceDir: root, namespace: options.namespace,
     dryRun: true, blocked: issues.length > 0, changes, issues,
