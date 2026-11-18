@@ -24,6 +24,8 @@ export interface TypegenWorker {
 export interface TypeGeneratorOperations {
   readonly timeoutMs?: number;
   readonly schedule?: Schedule;
+  /** Monotonic clock for write deadlines. Pair virtual schedulers with their own clock. */
+  readonly now?: () => number;
   readonly createWorker?: () => TypegenWorker;
   readonly write?: typeof writeGenerated;
   readonly acquireLock?: (outFile: string) => OutputLock;
@@ -115,14 +117,34 @@ export class TypeGenerator {
     if (job.generation === this.desired?.generation) {
       if (result.failure) throw restoreFailure(result.failure);
       if (result.error || typeof result.source !== 'string') throw new Error(result.error ?? 'Invalid typegen worker result.');
+      const later = this.operations.schedule ?? schedule;
+      const now = this.operations.now ?? (later === schedule ? () => performance.now() : undefined);
+      const startedAt = now?.() ?? 0;
+      const label = 'Typegen write';
       const controller = new AbortController();
       this.writerAbort = controller;
-      const writing = Promise.resolve().then(() => (this.operations.write ?? writeGenerated)(this.outFile, result.source!,
-        () => !this.stopped && epoch === this.epoch && job.generation === this.desired?.generation,
-        { lock: this.lock!, signal: controller.signal }));
+      let expiration: Error | undefined;
+      const expireIfDue = () => {
+        if (expiration) return expiration;
+        if (controller.signal.aborted || !now || now() - startedAt < this.timeoutMs) return;
+        expiration = deadlineError(label, this.timeoutMs);
+        controller.abort(expiration);
+        return expiration;
+      };
+      // The writer checks this again before replacement and before each retry.
+      const current = () => !this.stopped && epoch === this.epoch && job.generation === this.desired?.generation &&
+        !controller.signal.aborted && !expireIfDue();
+      const writing = Promise.resolve().then<WriteResult>(() => current()
+        ? (this.operations.write ?? writeGenerated)(this.outFile, result.source!, current,
+          { lock: this.lock!, signal: controller.signal })
+        : 'cancelled');
       let status: WriteResult;
       try {
-        status = await withinDeadline(writing, this.timeoutMs, this.operations.schedule ?? schedule, 'Typegen write', controller);
+        const reporting = writing.finally(() => {
+          const error = expireIfDue();
+          if (error) throw error;
+        });
+        status = await withinDeadline(reporting, this.timeoutMs, later, label, controller);
       } catch (error) {
         const expired = (error as { code?: string } | null)?.code === 'TIMEOUT';
         if (expired) this.writeBlocked = error as Error;

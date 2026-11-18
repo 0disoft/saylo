@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
+import { realpathSync } from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
 import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
 import { TypeGenerator } from '../dist/generator.js';
+import { writeGenerated } from '../dist/write.js';
 import { serializeFailure, restoreFailure } from '../dist/worker-errors.js';
 import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 
@@ -58,6 +61,59 @@ test('a write timeout reports promptly but retains ownership until the physical 
   assert.equal(stopped, false); assert.equal(released, false);
   release.resolve(); await stopping;
   assert.equal(released, true); assert.equal(clock.size, 0);
+});
+
+for (const elapsed of [99, 100, 101]) {
+  test(`file replacement honors the write deadline at ${elapsed}ms with its timer still pending`, async t => {
+    const clock = scheduler(), worker = new Worker();
+    const outFile = path.join(realpathSync('.'), 'generated.d.ts');
+    const target = process.platform === 'win32' ? outFile.toLowerCase() : outFile;
+    let now = 0, signal, replacements = 0, removals = 0;
+    const generator = new TypeGenerator(outFile, { schedule: clock.schedule, now: () => now, timeoutMs: 100,
+      acquireLock: () => acquireLock(target), createWorker: () => worker,
+      write(file, source, current, options) {
+        signal = options.signal;
+        return writeGenerated(file, source, current, { ...options, operations: {
+          read: async () => 'before', mkdir: async () => {}, createId: () => 'fixed-id',
+          create: async () => ({
+            writeFile: async () => {},
+            close: async () => { now = elapsed; assert.equal(clock.size, 1); },
+          }),
+          replace: async () => { replacements++; return 'written'; },
+          remove: async () => { removals++; },
+        } });
+      } });
+    t.after(() => generator.stop());
+
+    const update = generator.update(schema('one'));
+    const result = elapsed < 100 ? update : assert.rejects(update, { code: 'TIMEOUT' });
+    worker.reply('one');
+    await result;
+    assert.equal(replacements, elapsed < 100 ? 1 : 0);
+    assert.equal(removals, elapsed < 100 ? 0 : 1);
+    assert.equal(signal.aborted, elapsed >= 100);
+    if (elapsed >= 100) assert.equal(signal.reason.code, 'TIMEOUT');
+    await generator.stop();
+    assert.equal(clock.size, 0);
+  });
+}
+
+test('a late write rejection reports the deadline and retains the physical I/O failure', async () => {
+  const clock = scheduler(), worker = new Worker();
+  const diskError = Object.assign(new Error('disk full'), { code: 'ENOSPC' });
+  let now = 0;
+  const generator = new TypeGenerator('generated.d.ts', { schedule: clock.schedule, now: () => now, timeoutMs: 100,
+    acquireLock, createWorker: () => worker,
+    async write() { now = 101; throw diskError; } });
+  try {
+    const failed = assert.rejects(generator.update(schema('one')), { code: 'TIMEOUT' });
+    worker.reply('one');
+    await failed;
+  } finally {
+    await assert.rejects(generator.stop(), error => error instanceof AggregateError &&
+      error.cause.code === 'TIMEOUT' && error.errors[1] === diskError);
+  }
+  assert.equal(clock.size, 0);
 });
 
 test('after a timed out physical write settles a later update can recover without concurrent writes', async t => {
