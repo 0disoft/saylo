@@ -20,12 +20,14 @@ export interface ServerI18nOptions extends TranslationErrorPolicy, LocaleFallbac
   readonly timeZone?: string;
   readonly requestTimeoutMs?: number;
   readonly schedule?: CatalogSchedule;
+  /** Monotonic milliseconds. Supply a matching clock for a custom scheduler to check elapsed time between callbacks. */
+  readonly now?: () => number;
   readonly signal?: AbortSignal;
 }
 
 /** Load a request's complete scope before creating its fixed render/hydration snapshot. */
 export async function createServerI18n<S extends Schema = Schema>(options: ServerI18nOptions): Promise<I18n<S>> {
-  const { catalogSource, schedule, signal } = options;
+  const { catalogSource, schedule, now, signal } = options;
   const pseudoLocale = readPseudoLocale(options.pseudoLocale);
   const timeoutMs = timeoutDuration(options.requestTimeoutMs);
   const maxCachedCatalogs = catalogCacheLimit(options.maxCachedCatalogs);
@@ -52,7 +54,7 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
       ? { protectedKeys: () => protectedKeys }
       : { maxCachedCatalogs, protectedKeys: () => protectedKeys };
     const loader = new CatalogLoader(catalogSource, () => manifest, timeoutMs, schedule,
-      cacheOptions, queue);
+      cacheOptions, queue, now);
     const abort = () => loader.stop(aborted(signal!));
     signal?.addEventListener('abort', abort, { once: true });
     try {
@@ -63,7 +65,7 @@ export async function createServerI18n<S extends Schema = Schema>(options: Serve
         fallbackLocales, stateRevision: 0, catalogOutcomes: outcomes, ...(pseudoLocale ? { pseudoLocale } : {}) });
       return createI18n<S>({ catalogSource, initialSnapshot, requestTimeoutMs: timeoutMs,
         ...(maxCachedCatalogs === undefined ? {} : { maxCachedCatalogs }),
-        ...(schedule ? { schedule } : {}), ...(signal ? { signal } : {}),
+        ...(schedule ? { schedule } : {}), ...(now ? { now } : {}), ...(signal ? { signal } : {}),
         fallbackLocales, ...(policy ?? {}) });
     } catch (error) {
       if (!(error instanceof CatalogLoadError) || error.code !== 'STALE_CATALOG' || attempt === SSR_STABILITY_MAX_ATTEMPTS - 1) throw error;

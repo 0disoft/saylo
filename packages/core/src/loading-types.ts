@@ -60,6 +60,8 @@ export interface SharedI18nOptions extends TranslationErrorPolicy, LocaleFallbac
   readonly requestTimeoutMs?: number;
   /** Optional per-instance scheduler; defaults to setTimeout/clearTimeout. */
   readonly schedule?: CatalogSchedule;
+  /** Monotonic milliseconds. Supply a matching clock for a custom scheduler to check elapsed time between callbacks. */
+  readonly now?: () => number;
   /** Aborting the instance lifetime disposes its owned loads and subscriptions. */
   readonly signal?: AbortSignal;
   /** Subscriber errors from automatic manifest adoption without a pending API caller. */

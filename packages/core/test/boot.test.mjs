@@ -390,6 +390,25 @@ test('SSR preparation aborts owned loads without disposing the shared source', a
   const next = await createServerI18n({ catalogSource: f.source, locale: 'ko', initialNamespaces: ['demo'] }); next.dispose();
 });
 
+test('SSR uses the supplied deadline clock for both preparation and later loads', async t => {
+  const f = fixture(), clock = scheduler(), signals = [];
+  let now = 0;
+  const source = { ...f.source, async loadCatalog(locale, namespace, signal) {
+    signals.push(signal);
+    now += 100; // Advance elapsed time while leaving the timeout callback pending.
+    return f.outcome(locale, namespace);
+  } };
+  const options = { catalogSource: source, locale: 'ko', schedule: clock.schedule, now: () => now, requestTimeoutMs: 100 };
+  await assert.rejects(createServerI18n({ ...options, initialNamespaces: ['demo'] }), { code: 'TIMEOUT' });
+
+  const server = await createServerI18n({ ...options, initialNamespaces: [] });
+  t.after(() => server.dispose());
+  await assert.rejects(server.loadNamespace('demo'), { code: 'TIMEOUT' });
+  assert.deepEqual(server.getSnapshot().loadedNamespaces, []);
+  assert.deepEqual(signals.map(signal => signal.reason?.code), ['TIMEOUT', 'TIMEOUT']);
+  assert.equal(clock.size, 0);
+});
+
 test('SSR request preparation pins the ready scope, retries changed pair stamps, and bounds waiting', async t => {
   const f = fixture();
   let changed = false;

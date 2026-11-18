@@ -101,7 +101,7 @@ export function createI18n<S extends Schema = Schema>(options: CreateI18nOptions
     ? { protectedKeys: protectedCatalogKeys }
     : { maxCachedCatalogs, protectedKeys: protectedCatalogKeys };
   const loader = new CatalogLoader(source, () => manifest, timeoutMs, options.schedule,
-    cacheOptions);
+    cacheOptions, undefined, options.now);
   loader.seed([...initial.values()]);
 
   function assertActive() { if (disposed) throw new I18nDisposedError(); }

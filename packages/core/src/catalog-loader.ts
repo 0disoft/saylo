@@ -160,10 +160,16 @@ export class CatalogLoader {
       try {
         if (!result || result.status === 'failed') throw new CatalogLoadError(result?.code ?? 'INVALID_RESULT', result?.message ?? 'Invalid catalog load result.');
         const accepted = acceptOutcome(this.manifest(), key, result);
+        // Validation and snapshotting can cross the deadline while timers are blocked.
+        if (done || expireIfDue()) return;
         this.remember(key, accepted);
         finish();
         resolve(accepted);
-      } catch (error) { finish(); reject(error); }
+      } catch (error) {
+        if (done || expireIfDue()) return;
+        finish();
+        reject(error);
+      }
     }, error => {
       if (done || expireIfDue()) return;
       finish();

@@ -199,6 +199,44 @@ test('catalog deadline applies before the timer callback can run', async t => {
   });
 });
 
+test('a catalog must finish validation before its deadline to enter the cache', async t => {
+  for (const elapsed of [99, 100, 101]) await t.test(`${elapsed}ms`, async t => {
+    for (const invalid of [false, true]) {
+      const clock = scheduler();
+      let now = 0;
+      const { i18n, calls, handlers } = fixture(t, {
+        schedule: clock.schedule, now: () => now, requestTimeoutMs: 100,
+      });
+      const before = i18n.getSnapshot();
+      handlers.set('en/common', outcome => ({
+        ...outcome,
+        catalog: { ...outcome.catalog, get locale() {
+          assert.equal(clock.size, 1, 'the request timer has not fired');
+          now = elapsed;
+          return invalid ? 'fr' : 'en';
+        } },
+      }));
+      const pending = i18n.setLocale('en');
+      if (elapsed >= 100) {
+        await assert.rejects(pending, error => error.code === 'TIMEOUT' && calls[0].signal.reason === error);
+      } else if (invalid) {
+        await assert.rejects(pending, { code: 'INVALID_CATALOG' });
+      } else {
+        await pending;
+        assert.equal(i18n.t('common:title'), 'English');
+      }
+      assert.equal(clock.size, 0);
+      assert.equal(calls[0].signal.aborted, elapsed >= 100);
+      if (elapsed >= 100 || invalid) assert.equal(i18n.getSnapshot(), before);
+
+      handlers.delete('en/common');
+      await i18n.setLocale('en');
+      assert.equal(i18n.t('common:title'), 'English');
+      assert.equal(calls.length, elapsed >= 100 || invalid ? 2 : 1);
+    }
+  });
+});
+
 test('a queued catalog cannot start I/O at its deadline if its timer is delayed', async t => {
   let now = 0;
   const { loader, calls, keys, clock } = queuedLoader(t, 9, {}, () => now);
