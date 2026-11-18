@@ -12,7 +12,7 @@ import type { DiskRecheckOperations } from './disk-rechecks.js';
 import { diagnosticMessage } from './diagnostic-observers.js';
 import { schedule, timeoutDuration } from './scheduling.js';
 
-type Read = () => string | Promise<string>;
+type Read = (signal?: AbortSignal) => string | Promise<string>;
 
 type Checks = ReadonlyMap<string, ReturnType<DiskRechecks['token']>>;
 
@@ -41,8 +41,9 @@ function acceptedChanged(previous: ReadonlyMap<string, CatalogFile>, active: rea
 
 export interface LiveRegistryOperations extends DiskRecheckOperations {
   readonly timeoutMs?: number;
+  /** Monotonic milliseconds. Pair a custom scheduler with its own clock. */
   readonly now?: () => number;
-  readonly read?: (file: string) => Promise<string>;
+  readonly read?: (file: string, signal?: AbortSignal) => Promise<string>;
   readonly readCatalog?: typeof readCatalogFile;
   readonly isFile?: (file: string) => Promise<boolean>;
 }
@@ -87,7 +88,7 @@ export class LiveRegistry {
     private operations: LiveRegistryOperations = {},
   ) {
     this.timeoutMs = timeoutDuration(operations.timeoutMs ?? DEV_DISK_POLICY.operationTimeoutMs);
-    this.rechecks = new DiskRechecks(file => { void this.enqueue(file, () => this.read(file)); }, {
+    this.rechecks = new DiskRechecks(file => { void this.enqueue(file, signal => this.read(file, signal)); }, {
       ...operations, stamp: file => this.bounded(`Catalog stamp: ${file}`,
         signal => this.fileTasks.run(() => (operations.stamp ?? diskStamp)(file), signal)),
     });
@@ -170,7 +171,7 @@ export class LiveRegistry {
     // A new path has no accepted state to temporarily remove. Read it on the
     // next turn; known-path replacements and pending unlinks still settle.
     return this.enqueue(resolved, this.desired.has(resolved) || this.accepted.has(resolved)
-      ? undefined : () => this.read(resolved));
+      ? undefined : signal => this.read(resolved, signal));
   }
 
   enqueue(file: string, read?: Read): Promise<void> {
@@ -253,7 +254,7 @@ export class LiveRegistry {
           // not be mistaken for the version represented by the old text.
           capturedStamp = await (this.operations.stamp ?? diskStamp)(file);
           signal.throwIfAborted();
-          return read ? read() : this.read(file);
+          return read ? read(signal) : this.read(file, signal);
         }, previous), signal);
         return { file, read, changed, capturedStamp, failed: false as const };
       } catch (error) { return { file, read, error, capturedStamp, failed: true as const }; }
@@ -366,11 +367,16 @@ export class LiveRegistry {
     return { message: diagnosticMessage(error), diagnostics: error instanceof CatalogError ? error.diagnostics : [] };
   }
 
-  private read(file: string) { return this.operations.read ? this.operations.read(file) : readFile(file, 'utf8'); }
+  private read(file: string, signal?: AbortSignal) {
+    return this.operations.read ? this.operations.read(file, signal)
+      : readFile(file, signal ? { encoding: 'utf8', signal } : 'utf8');
+  }
 
   private bounded<T>(label: string, operation: (signal: AbortSignal) => T | Promise<T>): Promise<T> {
     const controller = new AbortController();
     const parent = this.lifetime.signal;
+    const later = this.operations.schedule ?? schedule;
+    const now = this.operations.now ?? (later === schedule ? () => performance.now() : undefined);
     return new Promise<T>((resolve, reject) => {
       let finished = false;
       let cancelTimer = () => {};
@@ -382,11 +388,23 @@ export class LiveRegistry {
       };
       const abort = () => finish(true, parent.reason);
       if (parent.aborted) { abort(); return; }
+      const startedAt = now?.() ?? 0;
+      const timeout = () => finish(true, new Error(`${label} timed out after ${this.timeoutMs}ms.`,
+        { cause: new Error('Disk operation deadline exceeded.') }));
+      const expireIfDue = () => {
+        if (!now || now() - startedAt < this.timeoutMs) return false;
+        timeout();
+        return true;
+      };
+      const settle = (failed: boolean, value: unknown) => {
+        if (!finished && !expireIfDue()) finish(failed, value);
+      };
       this.cancelOperations.add(abort);
-      cancelTimer = (this.operations.schedule ?? schedule)(this.timeoutMs,
-        () => finish(true, new Error(`${label} timed out after ${this.timeoutMs}ms.`, { cause: new Error('Disk operation deadline exceeded.') })));
-      void Promise.resolve().then(() => { controller.signal.throwIfAborted(); return operation(controller.signal); })
-        .then(value => finish(false, value), error => finish(true, error));
+      cancelTimer = later(this.timeoutMs, timeout);
+      // Microtasks can start or settle I/O before an expired timer runs.
+      void Promise.resolve().then(() => {
+        if (!finished && !expireIfDue()) return operation(controller.signal);
+      }).then(value => settle(false, value), error => settle(true, error));
     });
   }
 

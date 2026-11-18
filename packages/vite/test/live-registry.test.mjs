@@ -154,6 +154,50 @@ for (const stage of ['read', 'readCatalog', 'stamp', 'isFile']) {
   });
 }
 
+test('live reads enforce the elapsed deadline before a delayed timer fires', async t => {
+  for (const elapsed of [99, 100, 101]) {
+    await t.test(`${elapsed}ms`, async t => {
+      for (const fails of [false, true]) {
+        let now = 0, duration = elapsed, signal;
+        const publications = [];
+        const f = fixture(t, (files, changed) => publications.push([files[0].catalog.messages.title.source, changed]), {
+          timeoutMs: 100, now: () => now,
+          read: async (_file, activeSignal) => {
+            signal = activeSignal;
+            now += duration;
+            if (duration && fails) throw new Error('disk read failed');
+            return '{"title":"Updated"}';
+          },
+        });
+        const job = f.registry.enqueue(f.file);
+        f.clock.tick(40);
+        await job;
+
+        const expired = elapsed >= 100;
+        const changed = !expired && !fails;
+        assert.deepEqual(publications, [[changed ? 'Updated' : 'Before', changed]]);
+        assert.equal(signal.aborted, expired);
+        if (expired) assert.match(signal.reason.message, /Catalog batch read timed out/);
+        const diagnostic = f.registry.diagnostic().message;
+        if (expired) assert.match(diagnostic, /Catalog batch read timed out/);
+        else if (fails) assert.match(diagnostic, /disk read failed/);
+        else assert.equal(diagnostic, '');
+
+        if (!changed) {
+          duration = 0;
+          const next = f.registry.enqueue(f.file);
+          f.clock.tick(40);
+          await next;
+          assert.deepEqual(publications.at(-1), ['Updated', true]);
+          assert.equal(f.registry.diagnostic().message, '');
+        }
+        f.registry.stop();
+        assert.equal(f.clock.size, 0);
+      }
+    });
+  }
+});
+
 test('baseline ENOENT means absent, while I/O failures retain their diagnostic and recover', async t => {
   let code = 'EIO';
   const f = fixture(t, () => {}, { isFile: async () => {
@@ -166,9 +210,17 @@ test('baseline ENOENT means absent, while I/O failures retain their diagnostic a
 });
 
 test('stop releases a hung read waiter and its deadline', async t => {
-  const f = fixture(t, () => assert.fail('publication after stop'), { read: () => new Promise(() => {}) });
+  let signal;
+  const f = fixture(t, () => assert.fail('publication after stop'), {
+    read: (_file, activeSignal) => {
+      signal = activeSignal;
+      return new Promise(() => {});
+    },
+  });
   const job = f.registry.enqueue(f.file); f.clock.tick(40); await flush();
   f.registry.stop(); await job; assert.equal(f.clock.size, 0);
+  assert.equal(signal.aborted, true);
+  assert.match(signal.reason.message, /Live registry is stopped/);
 });
 
 test('failed publication cannot poison later saves and identical saves retry publication', async t => {
