@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { build } from 'vite';
 import { planInit } from '../dist/init.js';
 import { applyInit } from '../dist/init-write.js';
+import { replaceGenerated } from '../dist/replace.js';
 import { connectVite } from '../dist/init-vite.js';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
@@ -105,6 +106,63 @@ test('init detects an edit after preview, handles cancellation and serializes co
   assert.equal(outcomes.filter(outcome => outcome.status === 'fulfilled').length, 1);
   assert.match(outcomes.find(outcome => outcome.status === 'rejected').reason.message, /locked/);
   assert.ok(!(await readdir(f.root)).includes('.saylo-init.lock'));
+});
+
+test('init retries Windows config replacement up to the existing retry limit', async t => {
+  for (const busyAttempts of [4, 5, 6]) await t.test(`${busyAttempts} busy attempts`, async t => {
+    const f = await fixture(t), plan = planInit(f.root);
+    const config = plan.changes.at(-1);
+    assert.equal(config.file, 'vite.config.mjs');
+    const busy = Object.assign(new Error('config is temporarily busy'), { code: 'EBUSY' });
+    let attempts = 0;
+    const waits = [];
+    const replacing = applyInit(plan, undefined, { createId: () => 'fixed', replace: (temp, target, current, _ops, signal) =>
+      replaceGenerated(temp, target, current, {
+        platform: 'win32',
+        async rename(from, to) {
+          if (++attempts <= busyAttempts) throw busy;
+          await rename(from, to);
+        },
+        async wait(ms) { waits.push(ms); },
+      }, signal) });
+    if (busyAttempts === 6) {
+      await assert.rejects(replacing, { cause: busy, writtenFiles: plan.changes.slice(0, -1).map(change => change.file) });
+    } else {
+      assert.deepEqual(await replacing, plan.changes.map(change => change.file));
+    }
+    assert.equal(attempts, Math.min(busyAttempts + 1, 6));
+    assert.deepEqual(waits, [20, 40, 80, 160, 320].slice(0, busyAttempts));
+    assert.equal(await readFile(path.join(f.root, config.file), 'utf8'), busyAttempts === 6 ? config.before : config.after);
+    assert.ok(!(await readdir(f.root)).some(name => name.includes('.saylo-init')));
+  });
+});
+
+test('init rechecks cancellation and config contents before retrying a busy replacement', async t => {
+  for (const interruption of ['abort', 'edit']) await t.test(interruption, async t => {
+    const f = await fixture(t), plan = planInit(f.root);
+    const controller = new AbortController(), cancelled = new Error('init was cancelled');
+    const config = plan.changes.at(-1), edited = 'export default { server: { port: 5500 } };\n';
+    const filename = path.join(f.root, config.file);
+    let attempts = 0;
+    await assert.rejects(applyInit(plan, controller.signal, { createId: () => 'fixed',
+      replace: (temp, target, current, _ops, signal) => replaceGenerated(temp, target, current, {
+        platform: 'win32',
+        async rename() { attempts++; throw Object.assign(new Error('busy'), { code: 'EPERM' }); },
+        async wait() {
+          if (interruption === 'abort') controller.abort(cancelled);
+          else await writeFile(filename, edited);
+        },
+      }, signal),
+    }), error => {
+      assert.deepEqual(error.writtenFiles, plan.changes.slice(0, -1).map(change => change.file));
+      if (interruption === 'abort') assert.equal(error.cause, cancelled);
+      else assert.match(error.message, /File changed during init: vite\.config\.mjs/);
+      return true;
+    });
+    assert.equal(attempts, 1);
+    assert.equal(await readFile(filename, 'utf8'), interruption === 'abort' ? config.before : edited);
+    assert.ok(!(await readdir(f.root)).some(name => name.includes('.saylo-init')));
+  });
 });
 
 test('init refuses linked source directories and never writes into the linked destination', async t => {
