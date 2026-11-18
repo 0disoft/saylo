@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import type { ParsedMessage } from '@0disoft/saylo-core';
 import type { CatalogInspection } from './catalog-files.js';
 import { reportIssues } from './catalog-audit.js';
 import type { CatalogCheckReport, CatalogIssue } from './catalog-audit.js';
@@ -11,10 +12,12 @@ export interface CatalogReviewBaseline {
   readonly messages: Readonly<Record<string, string>>;
 }
 
+export const reviewSourceHash = (message: ParsedMessage) =>
+  createHash('sha256').update(JSON.stringify([message.source, message.richTextTags ?? null])).digest('hex');
+
 export function createReviewBaseline(input: Pick<CatalogInspection, 'files'>, baseLocale: string): CatalogReviewBaseline {
   const entries = input.files.filter(file => file.catalog.locale === baseLocale).flatMap(({ catalog }) =>
-    Object.entries(catalog.messages).map(([id, message]) => [`${catalog.namespace}:${id}`,
-      createHash('sha256').update(JSON.stringify([message.source, message.richTextTags ?? null])).digest('hex')] as const));
+    Object.entries(catalog.messages).map(([id, message]) => [`${catalog.namespace}:${id}`, reviewSourceHash(message)] as const));
   entries.sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
   return { format: 'saylo-review-baseline/v1', baseLocale, messages: Object.fromEntries(entries) };
 }

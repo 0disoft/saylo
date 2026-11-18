@@ -147,6 +147,32 @@ test('import preserves formatting when changing and adding messages, including o
   await f.assertClean();
 });
 
+test('import checks only source hashes needed by the draft and preserves diagnostic precedence', async t => {
+  const f = await formattedPlan(t);
+  const base = f.inspection.files.find(file => file.file === f.base);
+  const unrelatedSource = base.catalog.messages.title;
+  let unrelatedReads = 0;
+  const unrelated = Object.freeze({ ...unrelatedSource,
+    get richTextTags() { unrelatedReads++; return unrelatedSource.richTextTags; } });
+  const extra = Object.freeze({ ...base, catalog: Object.freeze({ ...base.catalog, namespace: 'unrelated',
+    messages: Object.freeze({ title: unrelated }) }) });
+  const inspection = Object.freeze({ ...f.inspection, files: Object.freeze([...f.inspection.files, extra]) });
+  const edit = f.work.entries[0];
+  const entries = [
+    { ...edit, locale: 'unknown', sourceHash: 'stale', originalTranslation: 'stale' },
+    { ...edit, sourceHash: 'stale', originalTranslation: 'stale' },
+    { ...edit, originalTranslation: 'stale' },
+    ...f.work.entries,
+  ].map(entry => Object.freeze(entry));
+  const work = Object.freeze({ ...f.work, entries: Object.freeze(entries) });
+  const plan = planTranslationImport(inspection, f.report, f.config, work);
+  assert.deepEqual(plan.report.diagnostics.map(issue => issue.code), ['UNKNOWN_TARGET', 'SOURCE_CONFLICT', 'TRANSLATION_CONFLICT']);
+  assert.equal(plan.report.blocked, true);
+  assert.deepEqual(plan.report.changes, f.plan.report.changes);
+  assert.deepEqual(plan.files, f.plan.files);
+  assert.equal(unrelatedReads, 0);
+});
+
 test('formatting-only concurrent edits still block import without overwriting the target', async t => {
   const f = await formattedPlan(t);
   const concurrent = f.original + '\n';
