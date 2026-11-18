@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import type { Dirent } from 'node:fs';
 import { lstat, mkdir, open, readFile, readdir, realpath, rm, rmdir } from 'node:fs/promises';
 import path from 'node:path';
 import { assertSafePath } from './catalog-io.js';
@@ -63,6 +64,8 @@ export interface DirectoryMigrationOptions {
   readonly outDir: string;
   readonly escapeValue?: false;
   readonly signal?: AbortSignal;
+  readonly readDirectory?: (directory: string) => Promise<readonly Dirent[]>;
+  readonly readSource?: (file: string, signal?: AbortSignal) => Promise<string>;
 }
 
 export interface DirectoryMigrationApplyOptions {
@@ -142,14 +145,29 @@ function emptyFile(locale: string, localeDirectory: string, namespace: string, s
 
 /** Read and validate every directory input before any output path is written. */
 export async function planDirectoryMigration(options: DirectoryMigrationOptions): Promise<DirectoryMigrationPlan> {
+  const { signal, readDirectory = (directory) => readdir(directory, { withFileTypes: true }),
+    readSource = (file, activeSignal) => readFile(file, activeSignal ? { encoding: 'utf8', signal: activeSignal } : 'utf8') } = options;
+  signal?.throwIfAborted();
   const fromDir = await assertRootDirectory(options.fromDir, '--from-dir');
+  signal?.throwIfAborted();
   const outDir = await assertRootDirectory(options.outDir, '--out-dir');
   const issues: DirectoryMigrationIssue[] = [];
   const sources: { localeDirectory: string; namespace: string; sourceFile: string }[] = [];
   const localeNames = new Map<string, string>();
   const targetNames = new Map<string, string>();
 
-  const localeEntries = (await readdir(fromDir, { withFileTypes: true }))
+  const list = async (directory: string) => {
+    signal?.throwIfAborted();
+    try {
+      const entries = await readDirectory(directory);
+      signal?.throwIfAborted();
+      return entries;
+    } catch (error) {
+      signal?.throwIfAborted();
+      throw error;
+    }
+  };
+  const localeEntries = (await list(fromDir))
     .filter(entry => !entry.name.startsWith('.'))
     .sort((a, b) => a.name.localeCompare(b.name));
   for (const localeEntry of localeEntries) {
@@ -162,7 +180,7 @@ export async function planDirectoryMigration(options: DirectoryMigrationOptions)
       issues.push(fileIssue('INVALID_LAYOUT', localePath, 'Expected <from-dir>/<locale>/<namespace>.json.'));
       continue;
     }
-    const namespaceEntries = (await readdir(localePath, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name));
+    const namespaceEntries = [...await list(localePath)].sort((a, b) => a.name.localeCompare(b.name));
     for (const namespaceEntry of namespaceEntries) {
       const sourceFile = path.join(localePath, namespaceEntry.name);
       if (namespaceEntry.isSymbolicLink()) {
@@ -186,16 +204,18 @@ export async function planDirectoryMigration(options: DirectoryMigrationOptions)
 
   const files: DirectoryMigrationFile[] = [];
   for (const source of sources) {
-    options.signal?.throwIfAborted();
+    signal?.throwIfAborted();
     let sourceText = '';
-    try { sourceText = await readFile(source.sourceFile, 'utf8'); }
+    try { sourceText = await readSource(source.sourceFile, signal); }
     catch (error) {
+      signal?.throwIfAborted();
       issues.push(fileIssue('READ_FAILED', source.sourceFile, error instanceof Error ? error.message : String(error)));
       files.push(emptyFile(source.localeDirectory, source.localeDirectory, source.namespace, source.sourceFile,
         path.join(outDir, source.localeDirectory, source.namespace + '.json'), '',
         [{ code: 'READ_FAILED', key: '', message: 'Input could not be read.' }]));
       continue;
     }
+    signal?.throwIfAborted();
     let canonicalLocale = source.localeDirectory;
     try {
       const canonical = Intl.getCanonicalLocales(source.localeDirectory)[0];
@@ -216,6 +236,7 @@ export async function planDirectoryMigration(options: DirectoryMigrationOptions)
       issues.push(fileIssue('TARGET_COLLISION', targetFile, 'Two inputs target the same output file.'));
     targetNames.set(targetKey, source.sourceFile);
     const targetProblem = await outputIssue(outDir, targetFile);
+    signal?.throwIfAborted();
     if (targetProblem) issues.push(targetProblem);
     try {
       const result = migrateI18next(sourceText, {
@@ -235,6 +256,7 @@ export async function planDirectoryMigration(options: DirectoryMigrationOptions)
         sourceText, [{ code: 'CATALOG_PARSE', key: '', message: error instanceof Error ? error.message : String(error) }]));
     }
   }
+  signal?.throwIfAborted();
   const blocked = issues.length > 0 || files.some(file => file.blocked);
   return {
     format: 'saylo-directory-migration/v1', from: 'i18next-json-v4', fromDir, outDir,

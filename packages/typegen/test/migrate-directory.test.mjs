@@ -101,6 +101,55 @@ const directoryArgs = [
   '--escape-value', 'false', '--json',
 ];
 
+test('directory planning stops enumeration at the cancellation boundary', async t => {
+  for (const phase of ['before root listing', 'after root listing']) await t.test(phase, async t => {
+    const { root } = await fixture(t);
+    const fromDir = path.join(root, 'locales'), outDir = path.join(root, 'output');
+    const controller = new AbortController(), reason = new Error('migration cancelled');
+    const visited = [];
+    if (phase === 'before root listing') controller.abort(reason);
+    await assert.rejects(planDirectoryMigration({ fromDir, outDir, signal: controller.signal,
+      async readDirectory(directory) {
+        visited.push(directory);
+        const entries = await readdir(directory, { withFileTypes: true });
+        if (directory === fromDir) controller.abort(reason);
+        return entries;
+      },
+      readSource: () => assert.fail('cancelled enumeration must not read a source'),
+    }), error => error === reason);
+    assert.deepEqual(visited, phase === 'before root listing' ? [] : [fromDir]);
+  });
+});
+
+test('directory planning distinguishes cancellation during the last source read from I/O failure', async t => {
+  const { root } = await fixture(t);
+  const fromDir = path.join(root, 'locales'), outDir = path.join(root, 'output');
+  const lastSource = path.join(fromDir, 'ko', 'shop.json');
+  const ioError = Object.assign(new Error('catalog device unavailable'), { code: 'EIO' });
+  for (const outcome of ['read failure', 'abort before returning bytes', 'abort and reject']) {
+    await t.test(outcome, async () => {
+      const controller = new AbortController(), reason = new Error('migration cancelled');
+      const pending = planDirectoryMigration({ fromDir, outDir, escapeValue: false, signal: controller.signal,
+        async readSource(file, signal) {
+          assert.equal(signal, controller.signal);
+          if (file !== lastSource) return readFile(file, 'utf8');
+          if (outcome !== 'read failure') controller.abort(reason);
+          if (outcome === 'abort before returning bytes') return readFile(file, 'utf8');
+          throw ioError;
+        },
+      });
+      if (outcome !== 'read failure') await assert.rejects(pending, error => error === reason);
+      else {
+        const report = await pending;
+        assert.equal(report.blocked, true);
+        assert.deepEqual(report.issues.map(issue => [issue.code, issue.file]), [['READ_FAILED', lastSource]]);
+        assert.deepEqual(report.checkpoint.entries.map(entry => entry.status), ['ready', 'blocked']);
+      }
+      assert.deepEqual(await readdir(outDir), []);
+    });
+  }
+});
+
 test('directory CLI previews without writes, then applies every catalog with mappings and a checkpoint', async t => {
   const f = await fixture(t);
   const preview = f.run([...directoryArgs, '--dry-run']);
