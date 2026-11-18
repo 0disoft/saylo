@@ -10,7 +10,7 @@ interface Flight {
   readonly version: string;
   readonly promise: Promise<CatalogOutcome>;
   started: boolean;
-  cancel(reason: Error): void;
+  cancel(reason: unknown): void;
 }
 
 export interface CatalogLoaderCacheOptions {
@@ -28,6 +28,7 @@ export class CatalogLoader {
   private readonly evictable = new Set<string>();
   private protectionSnapshot: ReadonlySet<string> | undefined;
   private readonly flights = new Map<string, Flight>();
+  private stopReason: Error | undefined;
   private readonly maxCachedCatalogs: number | undefined;
   private readonly protectedKeys: () => ReadonlySet<string>;
 
@@ -104,6 +105,7 @@ export class CatalogLoader {
   }
 
   stop(reason: Error) {
+    this.stopReason ??= reason;
     for (const flight of this.flights.values()) flight.cancel(reason);
     this.cache.clear();
     this.evictable.clear();
@@ -111,6 +113,7 @@ export class CatalogLoader {
   }
 
   load(key: CatalogKey): Promise<CatalogOutcome> {
+    if (this.stopReason) return Promise.reject(this.stopReason);
     const initial = this.manifest();
     const version = stamp(initial.sessionId, metadata(initial, key));
     const cached = this.cache.get(keyId(key));
@@ -121,16 +124,17 @@ export class CatalogLoader {
     const existing = this.flights.get(version);
     if (existing) return existing.promise;
     const now = this.now;
-    const startedAt = now?.() ?? 0;
+    let startedAt = 0;
     const controller = new AbortController();
     let resolve!: (outcome: CatalogOutcome) => void;
     let reject!: (reason: unknown) => void;
     let done = false;
+    let cancelTimer: (() => void) | undefined;
     const promise = new Promise<CatalogOutcome>((yes, no) => { resolve = yes; reject = no; });
     const finish = () => {
       done = true;
-      cancelTimer();
       this.flights.delete(version);
+      cancelTimer?.();
     };
     const flight: Flight = { key, version, promise, started: false, cancel: reason => {
       if (done) return;
@@ -147,8 +151,20 @@ export class CatalogLoader {
     const expireIfDue = () => {
       if (now && now() - startedAt >= this.timeoutMs) return timeout();
     };
-    const cancelTimer = this.schedule(this.timeoutMs, timeout);
+    // The scheduler can cancel the owning request before returning its cleanup.
     this.flights.set(version, flight);
+    try {
+      startedAt = now?.() ?? 0;
+      if (done) return promise;
+      cancelTimer = this.schedule(this.timeoutMs, timeout);
+    } catch (error) {
+      flight.cancel(error);
+      return promise;
+    }
+    if (done) {
+      cancelTimer();
+      return promise;
+    }
     // Timer callbacks can run after microtasks that dispatch or settle source I/O.
     this.queue.run(signal => {
       const expired = expireIfDue();

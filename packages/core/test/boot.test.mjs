@@ -390,6 +390,34 @@ test('SSR preparation aborts owned loads without disposing the shared source', a
   const next = await createServerI18n({ catalogSource: f.source, locale: 'ko', initialNamespaces: ['demo'] }); next.dispose();
 });
 
+test('SSR cancellation during timer registration prevents every catalog dispatch', async t => {
+  for (const phase of ['before', 'during', 'after']) await t.test(phase, async () => {
+    const f = fixture(), clock = scheduler(), controller = new AbortController();
+    const cause = new Error('request closed');
+    let scheduled = 0, dispatched = 0;
+    const source = { ...f.source, async loadCatalog(locale, namespace) {
+      dispatched++;
+      return f.outcome(locale, namespace);
+    } };
+    if (phase === 'before') controller.abort(cause);
+    const preparing = createServerI18n({
+      catalogSource: source, locale: 'ko', initialNamespaces: ['demo', 'help'],
+      requestTimeoutMs: 100, signal: controller.signal, now: clock.now,
+      schedule(delay, callback) {
+        scheduled++;
+        const cancel = clock.schedule(delay, callback);
+        if (phase === 'during') controller.abort(cause);
+        return cancel;
+      },
+    });
+    if (phase === 'after') controller.abort(cause);
+    await assert.rejects(preparing, error => error.code === 'ABORTED' && error.cause === cause);
+    assert.equal(dispatched, 0);
+    assert.equal(scheduled, { before: 0, during: 1, after: 2 }[phase]);
+    assert.equal(clock.size, 0);
+  });
+});
+
 test('SSR uses the supplied deadline clock for both preparation and later loads', async t => {
   const f = fixture(), clock = scheduler(), signals = [];
   let now = 0;

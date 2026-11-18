@@ -143,6 +143,30 @@ test('disposal cancels queued loads before they reach the source and clears time
   assert.equal(calls.length, 8, 'the queued ninth catalog never starts');
 });
 
+test('timer setup failures reject without dispatch and permit a clean retry', async t => {
+  const f = queuedLoader(t, 1);
+  const cause = new Error('timer setup failed');
+  let throwOnSchedule = true;
+  const loader = new CatalogLoader(f.source, f.source.readManifest, 100, (delay, callback) => {
+    if (throwOnSchedule) throw cause;
+    return f.clock.schedule(delay, callback);
+  });
+  t.after(() => loader.stop(new I18nDisposedError()));
+  let pending;
+  assert.doesNotThrow(() => { pending = loader.load(f.keys[0]); });
+  await assert.rejects(pending, error => error === cause);
+  assert.equal(f.calls.length, 0);
+  assert.equal(f.clock.size, 0);
+
+  throwOnSchedule = false;
+  const retry = loader.load(f.keys[0]);
+  await tick();
+  assert.equal(f.calls.length, 1);
+  f.calls[0].resolve();
+  assert.deepEqual((await retry).key, f.keys[0]);
+  assert.equal(f.clock.size, 0);
+});
+
 test('timeouts retain source slots until ignored aborts actually settle', async t => {
   const { loader, calls, keys, clock, peak } = queuedLoader(t, 9, { maxCachedCatalogs: 0 });
   const expired = Promise.allSettled(keys.map(key => loader.load(key)));
