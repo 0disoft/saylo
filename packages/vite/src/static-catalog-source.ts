@@ -14,7 +14,11 @@ export interface StaticCatalogSourceOptions {
   /** Soft LRU limit for decoded outcomes; inline initial outcomes remain pinned. Omitted keeps all. */
   readonly maxCachedCatalogs?: number;
 }
-type Waiter = (error?: unknown, outcome?: CatalogOutcome) => boolean;
+type Settle = (error?: unknown, outcome?: CatalogOutcome) => boolean;
+interface Waiter {
+  readonly settle: Settle;
+  readonly expireIfDue: (at: number) => boolean;
+}
 interface Flight {
   readonly controller: AbortController;
   readonly waiters: Set<Waiter>;
@@ -87,7 +91,7 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
     if (flights.get(pair) !== flight) return;
     flights.delete(pair);
     let accepted = false;
-    for (const wait of flight.waiters) if (wait(error, outcome)) accepted = true;
+    for (const waiter of flight.waiters) if (waiter.settle(error, outcome)) accepted = true;
     if (accepted && outcome) remember(pair, outcome);
   };
   return Object.freeze({
@@ -112,6 +116,11 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
         flights.set(pair, created);
         const importSignal = created.controller.signal;
         void Promise.resolve().then(() => {
+          // A delayed timer must not start an import for callers that already expired.
+          if (now && created.waiters.size) {
+            const at = now();
+            for (const waiter of created.waiters) waiter.expireIfDue(at);
+          }
           importSignal.throwIfAborted();
           return loaders.get(pair)!(importSignal);
         }).then(outcome => {
@@ -126,12 +135,12 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
       return new Promise<CatalogOutcome>((resolve, reject) => {
         let finished = false;
         let cancelTimer = noop;
-        const finish: Waiter = (error, outcome) => {
+        const finish: Settle = (error, outcome) => {
           if (finished) return false;
           finished = true;
           cancelTimer();
           signal?.removeEventListener('abort', abort);
-          shared.waiters.delete(settle);
+          shared.waiters.delete(waiter);
           if (!shared.waiters.size && flights.get(pair) === shared) {
             flights.delete(pair);
             shared.controller.abort(error);
@@ -140,11 +149,19 @@ export function createStaticCatalogSource(initial: CatalogManifest, initialCatal
           reject(error);
           return false;
         };
-        // A settled import can reach its callers before their expired timers run.
-        const settle: Waiter = (error, outcome) =>
-          now && now() - startedAt >= timeoutMs ? finish(timedOut()) : finish(error, outcome);
+        const waiter: Waiter = {
+          expireIfDue(at) {
+            if (at - startedAt >= timeoutMs) {
+              finish(timedOut());
+              return true;
+            }
+            return false;
+          },
+          // A settled import can reach its callers before their expired timers run.
+          settle: (error, outcome) => now && waiter.expireIfDue(now()) ? false : finish(error, outcome),
+        };
         const abort = () => finish(aborted());
-        shared.waiters.add(settle);
+        shared.waiters.add(waiter);
         signal?.addEventListener('abort', abort, { once: true });
         if (signal?.aborted) { abort(); return; }
         try { cancelTimer = later(timeoutMs, () => finish(timedOut())); }

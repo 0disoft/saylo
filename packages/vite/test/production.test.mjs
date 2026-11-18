@@ -166,6 +166,31 @@ test('static catalog results honor elapsed time even when the timeout callback i
   });
 });
 
+test('static catalog imports start only within a waiting caller’s deadline', async t => {
+  for (const elapsed of [99, 100, 101]) await t.test(`${elapsed}ms`, async () => {
+    const r = registry(), clock = scheduler();
+    const outcome = r.load('en', 'demo');
+    let now = 0, calls = 0;
+    const source = createStaticCatalogSource(r.manifest(), boot(r), [{ key: outcome.key,
+      async load() { calls++; return outcome; },
+    }], { timeoutMs: 100, schedule: clock.schedule, now: () => now });
+    const pending = source.loadCatalog('en', 'demo');
+    assert.equal(clock.size, 1);
+    now = elapsed; // The timer stays queued while elapsed time advances before dispatch.
+    if (elapsed < 100) {
+      assert.deepEqual(await pending, outcome);
+      assert.equal(calls, 1);
+    } else {
+      await assert.rejects(pending, { code: 'TIMEOUT' });
+      assert.equal(calls, 0);
+      assert.equal(source.getCatalogs().length, 2);
+      assert.deepEqual(await source.loadCatalog('en', 'demo'), outcome);
+      assert.equal(calls, 1);
+    }
+    assert.equal(clock.size, 0);
+  });
+});
+
 test('an expired static caller can share its import with a caller still inside the deadline', async () => {
   const r = registry(), clock = scheduler(), pending = Promise.withResolvers();
   const outcome = r.load('en', 'demo');
@@ -177,8 +202,11 @@ test('an expired static caller can share its import with a caller still inside t
   now = 1;
   const active = source.loadCatalog('en', 'demo');
   now = 100;
-  pending.resolve(outcome);
+  await Promise.resolve();
+  assert.equal(calls, 1);
+  assert.equal(clock.size, 1, 'the expired caller is released before the shared import settles');
   await expired;
+  pending.resolve(outcome);
   assert.deepEqual(await active, outcome);
   assert.deepEqual(await source.loadCatalog('en', 'demo'), outcome);
   assert.equal(calls, 1);
