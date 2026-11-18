@@ -88,6 +88,30 @@ test('more-specific positive ranges override broad exclusions, but equal q=0 win
   assert.equal(resolveAcceptLanguage('en;q=0,en-US;q=0.5', ['ko', 'en-US'], 'ko'), 'en-US');
   assert.equal(resolveAcceptLanguage('*;q=0,en;q=0.5', ['ko', 'en'], 'ko'), 'en');
   assert.equal(resolveAcceptLanguage('en-US;q=0,en;q=1', ['ko', 'en-US'], 'ko'), 'ko');
+  assert.equal(resolveAcceptLanguage('en-x-app;q=0,en-x-app-1;q=0.5,*;q=0', ['ko', 'en-x-app-1'], 'ko'), 'en-x-app-1');
+  assert.equal(resolveAcceptLanguage('iw;q=0,he;q=1,*;q=0.5', ['ko', 'he'], 'ko'), 'ko');
+});
+
+test('HTTP exclusion checks probe locale ancestors instead of scanning every range', t => {
+  const supported = ['ko', ...Array.from({ length: 100 }, (_, i) => `en-x-app-${i}`)];
+  const ranges = ['en;q=0', ...Array.from({ length: 100 }, (_, i) => `fr-x-scan-${i};q=0.5`), '*;q=0.1'];
+  const header = ranges.join(',');
+  let scans = 0, probes = 0, selected;
+  const startsWith = String.prototype.startsWith, get = Map.prototype.get;
+  const prefixes = t.mock.method(String.prototype, 'startsWith', function (prefix, position) {
+    if (prefix === 'en-' || (typeof prefix === 'string' && /^fr-x-scan-\d+-$/.test(prefix))) scans++;
+    return startsWith.call(this, prefix, position);
+  });
+  const index = t.mock.method(Map.prototype, 'get', function (key) {
+    if (key === '*' || key === 'ko' || key === 'en' || key === 'en-x' || key === 'en-x-app' ||
+        (typeof key === 'string' && /^en-x-app-\d+$/.test(key))) probes++;
+    return get.call(this, key);
+  });
+  try { selected = resolveAcceptLanguage(header, supported, 'ko'); }
+  finally { index.mock.restore(); prefixes.mock.restore(); }
+  assert.equal(selected, 'ko');
+  assert.equal(scans, 0);
+  assert.equal(probes, 402);
 });
 
 test('wildcard supplies a default after explicit ranges and exhaustion uses app fallback', () => {

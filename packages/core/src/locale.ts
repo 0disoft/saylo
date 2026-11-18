@@ -60,20 +60,14 @@ export function parseAcceptLanguage(header: string | null | undefined): readonly
   return Object.freeze(preferences.sort((a, b) => b.quality - a.quality));
 }
 
-function rangeMatches(range: string, locale: string): boolean {
-  return range === '*' || locale === range || locale.startsWith(`${range}-`);
-}
-
-function isExcluded(locale: string, preferences: readonly LanguagePreference[]): boolean {
-  let specificity = -1;
-  let excluded = false;
-  for (const { range, quality } of preferences) {
-    if (!rangeMatches(range, locale)) continue;
-    const depth = range === '*' ? 0 : range.split('-').length;
-    if (depth > specificity) { specificity = depth; excluded = quality === 0; }
-    else if (depth === specificity && quality === 0) excluded = true;
+function isExcluded(locale: string, exclusions: ReadonlyMap<string, boolean>, wildcardExcluded: boolean): boolean {
+  for (let range = locale; ;) {
+    const excluded = exclusions.get(range);
+    if (excluded !== undefined) return excluded;
+    const separator = range.lastIndexOf('-');
+    if (separator === -1) return wildcardExcluded;
+    range = range.slice(0, separator);
   }
-  return excluded;
 }
 
 /**
@@ -86,7 +80,16 @@ export function resolveAcceptLanguage(
 ): string {
   const { supported, fallback } = localePolicy(supportedLocales, fallbackLocale);
   const preferences = parseAcceptLanguage(header);
-  const acceptable = new Set([...supported].filter(locale => !isExcluded(locale, preferences)));
+  let acceptable = supported;
+  if (preferences.some(({ quality }) => quality === 0)) {
+    const exclusions = new Map<string, boolean>();
+    for (const { range, quality } of preferences) {
+      // A zero-quality occurrence wins among duplicate canonical ranges.
+      if (quality === 0 || !exclusions.has(range)) exclusions.set(range, quality === 0);
+    }
+    const wildcardExcluded = exclusions.get('*') ?? false;
+    acceptable = new Set([...supported].filter(locale => !isExcluded(locale, exclusions, wildcardExcluded)));
+  }
   for (const { range, quality } of preferences) {
     if (quality === 0 || range === '*') continue;
     const locale = lookup(range, acceptable);
