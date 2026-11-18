@@ -1,9 +1,8 @@
 import { freeze } from './diagnostics.js';
-import { createTextFormatter } from './formatters.js';
 import { CatalogLoadError } from './loading-errors.js';
 import { normalizeFallbackLocales } from './locale-chain.js';
-import { acceptOutcome, canonicalLocale, createLoadedSnapshot, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
-import { createBaseSchema } from './schema.js';
+import { acceptOutcome, canonicalLocale, keyId, manifestMembership, readManifest, scopeKeys } from './loading-registry.js';
+import { createBaseSchema, validateTranslation } from './schema.js';
 import { decodeCatalog, encodeCatalog } from './catalog-codec.js';
 import { readPseudoLocale } from './pseudo-locale.js';
 import type { CompactCatalog } from './catalog-codec.js';
@@ -60,13 +59,18 @@ export function createBootSnapshot(input: BootSnapshotInput): BootSnapshot {
   }
   if (supplied.size !== keys.length) throw new CatalogLoadError('INVALID_BOOT', 'Boot must explicitly include every base and target outcome.');
   const outcomes = keys.map(k => supplied.get(keyId(k))!);
-  // Reuse atomic schema/translation validation and formatter contracts, without reparsing message text.
-  createLoadedSnapshot(manifest, locale, namespaces, outcomes, timeZone, createTextFormatter(timeZone),
-    input.stateRevision, fallbackLocales, undefined, pseudoLocale);
-  const baseSchemas = outcomes.flatMap(o => o.status === 'present' && o.key.locale === manifest.baseLocale
-    ? [createBaseSchema(o.catalog)] : []);
+  const baseSchemas = new Map<string, CatalogSchema>();
+  for (const outcome of outcomes) {
+    if (outcome.status === 'present' && outcome.key.locale === manifest.baseLocale)
+      baseSchemas.set(outcome.key.namespace, createBaseSchema(outcome.catalog));
+  }
+  // The validated scope contains a present base for each loaded namespace.
+  for (const outcome of outcomes) {
+    if (outcome.status === 'present' && outcome.key.locale !== manifest.baseLocale)
+      validateTranslation(baseSchemas.get(outcome.key.namespace)!, outcome.catalog);
+  }
   const snapshot: BootSnapshot = freeze({ format: 'saylo-boot-v1', manifest, locale, timeZone, stateRevision: input.stateRevision,
-    loadedNamespaces: namespaces, fallbackLocales, baseSchemas, catalogOutcomes: outcomes,
+    loadedNamespaces: namespaces, fallbackLocales, baseSchemas: [...baseSchemas.values()], catalogOutcomes: outcomes,
     ...(pseudoLocale ? { pseudoLocale } : {}) });
   acceptedSnapshots.add(snapshot);
   return snapshot;

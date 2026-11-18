@@ -259,6 +259,29 @@ test('boot pair and schema order do not change canonical hydration data', t => {
   assert.equal(decoded.catalogOutcomes.find(outcome => outcome.key.locale === 'en' && outcome.key.namespace === 'help').status, 'missing');
 });
 
+test('boot snapshot validation resolves the timezone once without constructing a translator', t => {
+  const server = fixture().create();
+  t.after(() => server.dispose());
+  const format = t.mock.method(Intl, 'DateTimeFormat');
+  let boot;
+  try { boot = server.getBootSnapshot(); }
+  finally { format.mock.restore(); }
+  assert.equal(boot.timeZone, 'Asia/Seoul');
+  assert.equal(format.mock.callCount(), 1);
+});
+
+test('boot snapshot rejects incompatible catalogs from a configured fallback locale', () => {
+  const f = fixture();
+  const base = f.outcome('ko', 'demo');
+  const selected = f.outcome('en-GB', 'demo');
+  const fallback = { ...f.outcome('en', 'demo'), catalog: parseCatalog('{"title":"{unexpected}"}',
+    { locale: 'en', namespace: 'demo' }) };
+  assert.throws(() => createBootSnapshot({ manifest: f.source.readManifest(), locale: 'en-GB', timeZone: 'UTC',
+    loadedNamespaces: ['demo'], fallbackLocales: ['en'], stateRevision: 0,
+    catalogOutcomes: [fallback, selected, base] }),
+  error => error.diagnostics?.some(diagnostic => diagnostic.code === 'UNKNOWN_ARGUMENT' && diagnostic.locale === 'en'));
+});
+
 test('canonical boot snapshots reuse validated identity without trusting external frozen copies', t => {
   const server = fixture().create();
   t.after(() => server.dispose());
