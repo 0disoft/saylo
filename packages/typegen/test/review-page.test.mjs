@@ -6,6 +6,7 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import { reviewPage } from '../dist/review-page.js';
 import { startReviewServer } from '../dist/review-server.js';
+import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 
 const row = (id = 'title') => ({ locale: 'ko', namespace: 'demo', id, source: id,
   originalTranslation: 'Saved ' + id, context: {}, status: 'review' });
@@ -19,12 +20,16 @@ async function wait(condition) {
   }
   assert.fail('Review page did not settle');
 }
-function mount(t, html, fetch) {
+function mount(t, html, fetch, clock) {
   const dom = new JSDOM(html, { url: 'http://localhost/', runScripts: 'dangerously', beforeParse(window) {
     window.fetch = fetch;
+    // The HTTP bridge uses Node fetch, which requires a Node AbortSignal.
+    window.AbortController = AbortController;
     window.confirm = () => false;
     // Trigger the real search debounce deterministically without wall-clock sleeps.
-    window.setTimeout = (callback, delay) => delay === 200 ? (queueMicrotask(callback), 0) : setTimeout(callback, delay);
+    window.setTimeout = (callback, delay) => clock ? clock.schedule(delay, callback)
+      : delay === 200 ? (queueMicrotask(callback), 0) : setTimeout(callback, delay);
+    if (clock) window.clearTimeout = cancel => cancel?.();
   } });
   t.after(() => dom.window.close());
   const { window } = dom;
@@ -111,6 +116,67 @@ test('selection changes during a read survive its response and older errors cann
   assert.equal(f.element('status').textContent, status);
   assert.equal(f.element('draft').value, 'Still editing');
   assert.equal(f.protectedDraft(), true);
+});
+
+test('a new search cancels the previous read at the debounce boundary', async t => {
+  const clock = scheduler(), reads = [];
+  let active = 0, peak = 0;
+  const f = mount(t, reviewPage('fixture-token', 'fixture-nonce'), (url, { signal }) => {
+    const pending = Promise.withResolvers();
+    peak = Math.max(peak, ++active);
+    const abort = () => { active--; pending.reject(signal.reason); };
+    signal?.addEventListener('abort', abort, { once: true });
+    reads.push({ url, signal, resolve: data => {
+      signal?.removeEventListener('abort', abort);
+      active--;
+      pending.resolve(response(data));
+    } });
+    return pending.promise;
+  }, clock);
+
+  assert.equal(reads.length, 1);
+  f.input('search', 'other');
+  clock.tick(199);
+  assert.equal(reads.length, 1);
+  assert.equal(reads[0].signal?.aborted ?? false, false);
+  clock.tick(1);
+  assert.equal(reads.length, 2);
+  assert.match(reads[1].url, /q=other$/);
+  assert.equal(peak, 1);
+  assert.equal(reads[0].signal.aborted, true);
+  reads[1].resolve(state('latest', [row('other')]));
+  await settle();
+  assert.match(f.element('status').textContent, /^1 messages/);
+  assert.equal(active, 0);
+});
+
+test('a write cancels an obsolete list read and reports a genuine current read error', async t => {
+  const reads = [], writes = [];
+  const f = mount(t, reviewPage('fixture-token', 'fixture-nonce'), (url, options) => {
+    if (options.method === 'POST') {
+      writes.push(options);
+      return Promise.resolve(response({ blocked: false }));
+    }
+    const pending = Promise.withResolvers();
+    reads.push({ ...pending, signal: options.signal });
+    return pending.promise;
+  });
+  reads[0].resolve(response(state()));
+  await settle();
+  f.element('list').firstChild.click();
+  f.element('reload').click();
+  f.input('draft', 'Editable draft');
+  f.element('validate').click();
+  assert.equal(reads[1].signal?.aborted, true);
+  assert.equal(writes[0].signal, undefined);
+  reads[1].reject(new Error('obsolete refresh failed'));
+  await settle();
+  assert.equal(f.element('draft').value, 'Editable draft');
+  f.window.confirm = () => true;
+  f.element('reload').click();
+  reads[2].reject(new Error('current refresh failed'));
+  await settle();
+  assert.match(f.element('status').textContent, /current refresh failed/);
 });
 
 test('preserved drafts still conflict with external catalog changes instead of overwriting them', async t => {

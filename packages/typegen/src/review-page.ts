@@ -15,10 +15,10 @@ body{font:16px system-ui;margin:2rem;max-width:1100px;color:#18212f;background:#
 <script nonce="${nonce}">
 const token=${JSON.stringify(token)};
 const element=id=>document.getElementById(id);
-let state,selected,selectedRevision,dirty=false,busy=false,generation=0,editGeneration=0;
+let state,selected,selectedRevision,activeRead,dirty=false,busy=false,editGeneration=0;
 const identity=row=>JSON.stringify([row.locale,row.namespace,row.id]);
-async function request(path,body){
- const response=await fetch('/api/'+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+async function request(path,body,signal,send=fetch){
+ const response=await send('/api/'+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{}),...(signal?{signal}:{})});
  const result=await response.json();if(!response.ok)throw Error(result.error||'Request failed');return result;
 }
 function controls(){for(const id of ['validate','save','approve'])element(id).disabled=busy||!selected;
@@ -30,16 +30,21 @@ function select(row){if(busy||dirty&&!confirm('Discard this unsaved draft?'))ret
  element('context').textContent=JSON.stringify(row.context,null,2);element('source').textContent=row.source;
  element('original').textContent=row.originalTranslation===null?'Not translated':row.originalTranslation;
  element('draft').value=row.originalTranslation??'';element('result').textContent='';controls();}
-async function load(){const requestId=++generation,editAtRequest=editGeneration;
- try{const result=await request('state?q='+encodeURIComponent(element('search').value));if(requestId!==generation)return;
+function cancelRead(){const previous=activeRead;activeRead=undefined;previous?.abort();}
+async function load(){
+ cancelRead();
+ const read=new AbortController(),editAtRequest=editGeneration;
+ activeRead=read;
+ try{const result=await request('state?q='+encodeURIComponent(element('search').value),undefined,read.signal);if(activeRead!==read)return;
  state=result;if(editAtRequest===editGeneration){selected=undefined;selectedRevision=undefined;dirty=false;}element('list').replaceChildren();
  element('status').textContent=result.total+' messages; showing '+result.rows.length+'. '+result.diagnostics.map(x=>x.code+': '+x.message).join('\\n');
  for(const row of result.rows){const button=document.createElement('button');button.dataset.identity=identity(row);button.textContent=row.locale+' '+row.namespace+':'+row.id+' — '+row.status;button.onclick=()=>select(row);element('list').append(button);}controls();
- }catch(error){if(requestId===generation)element('status').textContent=String(error);}}
+ }catch(error){if(activeRead===read)element('status').textContent=String(error);}
+ finally{if(activeRead===read)activeRead=undefined;}}
 element('draft').oninput=()=>{dirty=true;editGeneration++;controls();};
 element('reload').onclick=()=>{if(!dirty||confirm('Discard this unsaved draft and refresh?'))void load();};
 let searchTimer;element('search').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{if(!dirty||confirm('Discard this unsaved draft and search?'))void load();},200);};
-async function action(kind){if(!selected||busy)return;busy=true;generation++;controls();
+async function action(kind){if(!selected||busy)return;busy=true;cancelRead();controls();
  try{const result=await request(kind,{revision:selectedRevision,entry:{locale:selected.locale,namespace:selected.namespace,id:selected.id,translation:element('draft').value},reviewer:element('reviewer').value});
  element('result').textContent=JSON.stringify(result,null,2);
  if(kind!=='preview'&&!result.blocked){dirty=false;await load();}
