@@ -44,6 +44,44 @@ test('local review authenticates API requests, rejects foreign origins/hosts, an
   assert.deepEqual(JSON.parse(await readFile(path.join(f.localesDir, 'ko/common.json'), 'utf8')), {});
 });
 
+test('review preserves authorization, route, body and stale revision error precedence', async t => {
+  let reads = 0;
+  const f = await fixture(t, { readCatalog(file) { reads++; return readFile(file, 'utf8'); } });
+  const { Origin: _origin, ...withoutOrigin } = f.headers;
+  const { Authorization: _authorization, ...withoutAuthorization } = f.headers;
+  async function rejectRequest(endpoint, headers, status, error, body = '{') {
+    const response = await fetch(f.server.url + '/api/' + endpoint, { method: 'POST', headers, body });
+    assert.equal(response.status, status);
+    assert.deepEqual(await response.json(), { error });
+  }
+  await rejectRequest('unknown', { ...withoutAuthorization, Origin: 'https://elsewhere.test' }, 403, 'Review authorization required.');
+  await rejectRequest('unknown', { ...f.headers, Origin: 'https://elsewhere.test' }, 403, 'Invalid review origin.');
+  await rejectRequest('unknown', withoutOrigin, 404, 'Unknown review endpoint.');
+  await rejectRequest('save', withoutOrigin, 403, 'Review writes require the same origin.');
+  await rejectRequest('save', { ...f.headers, 'Content-Type': 'text/plain' }, 415, 'Use application/json.');
+  await rejectRequest('save', f.headers, 400, 'Invalid draft request.', '[]');
+  assert.equal(reads, 0);
+  const current = await f.state();
+  await rejectRequest('save', f.headers, 409, 'Catalogs, metadata or approvals changed. Refresh before saving.', '{}');
+  await rejectRequest('save', f.headers, 400, 'Invalid translation draft.', JSON.stringify({ revision: current.revision }));
+});
+
+test('review counts all search matches and returns the first 200 in catalog order', async t => {
+  const f = await fixture(t);
+  const ids = Array.from({ length: 201 }, (_, i) => 'key' + String(i).padStart(3, '0'));
+  const messages = Object.fromEntries(ids.map(id => [id, 'Common text']));
+  await writeFile(path.join(f.localesDir, 'en/common.json'), JSON.stringify(messages));
+  const search = async q => (await fetch(f.server.url + '/api/state?' + new URLSearchParams({ q }), { headers: f.headers })).json();
+  const first = await search('COMMON TEXT');
+  assert.equal(first.total, 201);
+  assert.deepEqual(first.rows.map(row => row.id), ids.slice(0, 200));
+  assert.ok(first.rows.every(row => row.status === 'untranslated'));
+  assert.equal(first.diagnostics.length, 200);
+  const last = await search('KEY200');
+  assert.equal(last.total, 1);
+  assert.deepEqual(last.rows.map(row => row.id), [ids.at(-1)]);
+});
+
 test('review preview never writes, saving validates ICU and approvals remain explicit with audit context', async t => {
   const f = await fixture(t); let state = await f.state();
   assert.equal(state.rows[0].status, 'untranslated');
