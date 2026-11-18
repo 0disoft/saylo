@@ -39,9 +39,11 @@ interface Pending {
   request: CatalogRequest;
   readonly key: CatalogKey;
   readonly baseline: PresentCatalog | undefined;
+  readonly startedAt: number;
   resolve(result: CatalogLoadResult): void;
   reject(error: unknown): void;
   cleanup(): void;
+  timeout(): void;
 }
 
 /** Generic pair lookup. No per-namespace loader map is needed during development. */
@@ -50,6 +52,8 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   if (!hot) throw new Error('createDevCatalogSource requires a Vite hot context.');
   let manifest = validateCatalogManifest(initial);
   const timeoutMs = timeoutDuration(options.requestTimeoutMs);
+  const later = options.runtime?.schedule ?? schedule;
+  const now = options.runtime?.now ?? (later === schedule ? () => performance.now() : undefined);
   const identity = (options.runtime?.createId ?? createRequestId)();
   let sequence = 0;
   let generation = 1;
@@ -94,12 +98,19 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
   function failPending(error: unknown) {
     for (const entry of [...pending.values()]) { entry.cleanup(); entry.reject(error); }
   }
+  function canProceed(entry: Pending) {
+    if (pending.get(entry.request.requestId) !== entry) return false;
+    if (now && now() - entry.startedAt >= timeoutMs) { entry.timeout(); return false; }
+    return true;
+  }
   function send(entry: Pending) {
+    if (!canProceed(entry)) return;
     try { hot!.send(CATALOG_REQUEST_EVENT, entry.request); }
     catch (error) { entry.cleanup(); entry.reject(error); }
   }
   function resume() {
     for (const entry of [...pending.values()]) {
+      if (!canProceed(entry)) continue;
       pending.delete(entry.request.requestId);
       entry.request = { ...entry.request, generation, requestId: `${identity}:${++sequence}` };
       pending.set(entry.request.requestId, entry);
@@ -121,19 +132,22 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
     const entry = reply?.request && pending.get(reply.request.requestId);
     if (!entry || !ready || reply.request.generation !== entry.request.generation ||
         reply.request.locale !== entry.key.locale || reply.request.namespace !== entry.key.namespace) return;
+    if (!canProceed(entry)) return;
     try {
       const wire = decodeCatalogResult(reply.result);
       if (wire?.status === 'patch' && !entry.request.known) throw new Error('Unexpected patch in a full catalog reply.');
       const result = wire?.status === 'patch' ? applyCatalogPatch(entry.baseline, wire) : wire;
       if (!result || (result.status !== 'failed' && (!result.key || id(result.key) !== id(entry.key) || !matches(manifest, result))))
         throw new CatalogLoadError('STALE_CATALOG', 'Catalog reply does not match the current pair stamp.');
-      if (result.status === 'failed') { entry.cleanup(); entry.resolve(result); return; }
-      const accepted = immutable(result);
+      const accepted = result.status === 'failed' ? result : immutable(result);
+      if (!canProceed(entry)) return;
+      if (accepted.status === 'failed') { entry.cleanup(); entry.resolve(accepted); return; }
       cache.set(id(accepted.key), accepted);
       patchScope([accepted]);
       entry.cleanup();
       entry.resolve(accepted);
     } catch (error) {
+      if (!canProceed(entry)) return;
       if (reply.result?.status === 'patch' && entry.request.known) {
         // One full retry, within the original timeout; superseded delta replies are ignored.
         pending.delete(entry.request.requestId);
@@ -182,7 +196,7 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
           else if (removals.length) patchScope([], removedKeys);
           for (const entry of [...pending.values()]) {
             const accepted = cache.get(id(entry.key));
-            if (accepted && matches(manifest, accepted)) { entry.cleanup(); entry.resolve(accepted); }
+            if (accepted && matches(manifest, accepted) && canProceed(entry)) { entry.cleanup(); entry.resolve(accepted); }
           }
           if (changed) for (const listener of [...listeners]) {
             if (disposed || !listeners.has(listener)) continue;
@@ -243,15 +257,30 @@ export function createDevCatalogSource(initial: CatalogManifest, initialCatalogs
         const baseline = cached?.status === 'present' ? cached : undefined;
         const request = { locale, namespace, generation, requestId: `${identity}:${++sequence}`,
           ...(baseline ? { known: { sessionId: baseline.sessionId, catalogVersion: baseline.catalogVersion } } : {}) };
+        const startedAt = now?.() ?? 0;
+        let finished = false;
+        let cancelTimer: (() => void) | undefined;
         const abort = () => { entry.cleanup(); reject(new CatalogLoadError('ABORTED', 'Catalog request was cancelled.', { cause: signal?.reason })); };
-        const cancelTimer = (options.runtime?.schedule ?? schedule)(timeoutMs, () => { entry.cleanup(); reject(new CatalogLoadError('TIMEOUT', 'Catalog reply timed out.')); });
-        const entry: Pending = { request, key, baseline, resolve, reject, cleanup: () => {
-          cancelTimer(); signal?.removeEventListener('abort', abort); pending.delete(entry.request.requestId); maybeStop();
+        const timeout = () => { entry.cleanup(); reject(new CatalogLoadError('TIMEOUT', 'Catalog reply timed out.')); };
+        const entry: Pending = { request, key, baseline, startedAt, resolve, reject, timeout, cleanup: () => {
+          if (finished) return;
+          finished = true;
+          pending.delete(entry.request.requestId);
+          signal?.removeEventListener('abort', abort);
+          cancelTimer?.();
+          maybeStop();
         } };
         pending.set(request.requestId, entry);
         signal?.addEventListener('abort', abort, { once: true });
-        const alreadyStarted = sync !== undefined;
-        try { start(); if (alreadyStarted && ready) send(entry); }
+        if (disposed || signal?.aborted) { abort(); return; }
+        try {
+          cancelTimer = later(timeoutMs, timeout);
+          if (finished) { cancelTimer(); return; }
+          if (!canProceed(entry)) return;
+          const alreadyStarted = sync !== undefined;
+          start();
+          if (alreadyStarted && ready) send(entry);
+        }
         catch (error) { entry.cleanup(); reject(error); }
       });
     },

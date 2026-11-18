@@ -5,6 +5,8 @@ export type Schedule = (milliseconds: number, callback: () => void) => () => voi
 
 export interface DevRuntime {
   readonly schedule?: Schedule;
+  /** Monotonic milliseconds for lazy catalog deadlines. Pair virtual schedulers with their clock. */
+  readonly now?: () => number;
   /** Return a unique connection identity; shared sockets require distinct IDs. */
   readonly createId?: () => string;
 }

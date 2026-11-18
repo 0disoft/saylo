@@ -6,10 +6,11 @@ import { connectDev, createDevCatalogSource, createStaticCatalogSource, createSu
 import { CatalogRegistry } from '../dist/catalog-registry.js';
 import { encodeCatalogResult } from '../dist/catalog-wire.js';
 import { CATALOG_EVENT, CATALOG_REQUEST_EVENT, DIAGNOSTIC_EVENT, MANIFEST_EVENT, MANIFEST_REQUEST_EVENT, SNAPSHOT_EVENT, isCatalogRequest } from '../dist/types.js';
+import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 
 const catalog = (text, locale = 'ko', namespace = 'demo') => parseCatalog(JSON.stringify({ title: text }), { locale, namespace });
 const tick = () => new Promise(resolve => setImmediate(resolve));
-function fixture(t) {
+function fixture(t, runtime) {
   let records = [catalog('한국어'), catalog('English', 'en'), catalog('도움말', 'ko', 'help'), catalog('Help', 'en', 'help')];
   let registry = new CatalogRegistry('one', 'ko', records);
   const hot = new EventEmitter();
@@ -32,7 +33,7 @@ function fixture(t) {
     }
   };
   const initial = [registry.load('ko', 'demo')];
-  const source = createDevCatalogSource(registry.manifest(), initial, { hot, requestTimeoutMs: 100 });
+  const source = createDevCatalogSource(registry.manifest(), initial, { hot, requestTimeoutMs: 100, runtime });
   const instance = createI18n({ catalogSource: source, locale: 'ko', initialNamespaces: ['demo'], initialCatalogs: initial });
   t.after(() => { instance.dispose(); source.dispose(); });
   const replace = next => {
@@ -351,6 +352,51 @@ test('source timeout and module disposal reject pending loads and release listen
   assert.equal(f.hot.listenerCount(CATALOG_EVENT), 0);
 });
 
+test('lazy replies cannot enter the cache at or after their deadline', async t => {
+  for (const elapsed of [99, 100, 101]) await t.test(`${elapsed}ms`, async t => {
+    const clock = scheduler();
+    let now = 0;
+    const f = fixture(t, { schedule: clock.schedule, now: () => now, createId: () => 'deadline' });
+    f.delay(true);
+    const pending = f.source.loadCatalog('en', 'demo');
+    const checked = elapsed < 100 ? pending : assert.rejects(pending, { code: 'TIMEOUT' });
+    assert.equal(f.delayed.length, 1);
+    assert.equal(clock.size, 1);
+    now = elapsed;
+    f.hot.emit(CATALOG_EVENT, f.delayed.shift());
+    await checked;
+    assert.equal(f.source.getCatalogs().length, elapsed < 100 ? 2 : 1);
+    assert.equal(clock.size, 0);
+    assert.equal(f.hot.listenerCount(CATALOG_EVENT), 0);
+
+    f.delay(false);
+    assert.equal((await f.source.loadCatalog('en', 'demo')).catalog.messages.title.source, 'English');
+    assert.equal(f.sent.filter(item => item.event === CATALOG_REQUEST_EVENT).length, elapsed < 100 ? 1 : 2);
+  });
+});
+
+test('lazy catalog cancellation or a scheduler failure during setup sends no requests', async t => {
+  for (const cancel of [true, false]) await t.test(cancel ? 'abort' : 'scheduler error', async t => {
+    const clock = scheduler(), controller = new AbortController();
+    const cause = new Error(cancel ? 'navigation' : 'scheduler unavailable');
+    let fail = true;
+    const f = fixture(t, { now: clock.now, schedule(delay, callback) {
+      if (fail && !cancel) throw cause;
+      const clear = clock.schedule(delay, callback);
+      if (fail) controller.abort(cause);
+      return clear;
+    } });
+    const result = f.source.loadCatalog('en', 'demo', controller.signal);
+    await assert.rejects(result, error => cancel ? error.code === 'ABORTED' && error.cause === cause : error === cause);
+    assert.equal(f.sent.length, 0);
+    assert.equal(clock.size, 0);
+    assert.equal(f.hot.listenerCount(CATALOG_EVENT), 0);
+    fail = false;
+    assert.equal((await f.source.loadCatalog('en', 'demo')).status, 'present');
+    assert.equal(clock.size, 0);
+  });
+});
+
 test('static chunk source consumes the same catalog contract and loads only desired pairs', async t => {
   const f = fixture(t);
   const registry = f.registry();
@@ -410,6 +456,23 @@ test('a broken delta retries once with a new full request and ignores the supers
   f.hot.emit(CATALOG_EVENT, recovered);
   await tick();
   assert.equal(f.instance.t('demo:title'), '최신 한국어');
+});
+
+test('a malformed patch received at the deadline cannot trigger a full retry', async t => {
+  const clock = scheduler();
+  let now = 0;
+  const f = fixture(t, { schedule: clock.schedule, now: () => now });
+  t.after(f.source.connect());
+  f.delay(true);
+  f.replace([catalog('최신 한국어'), ...f.records().filter(c => c.locale !== 'ko' || c.namespace !== 'demo')]);
+  const pending = assert.rejects(f.source.loadCatalog('ko', 'demo'), { code: 'TIMEOUT' });
+  const broken = f.delayed.shift();
+  assert.equal(broken.result.status, 'patch');
+  now = 100;
+  f.hot.emit(CATALOG_EVENT, { ...broken, result: { ...broken.result, remove: ['absent'] } });
+  await pending;
+  assert.equal(f.sent.filter(item => item.event === CATALOG_REQUEST_EVENT).length, 1);
+  assert.equal(clock.size, 0);
 });
 
 test('a repeatedly malformed patch cannot loop full recovery or mutate the current UI', async t => {
