@@ -68,6 +68,8 @@ export interface DirectoryMigrationOptions {
 export interface DirectoryMigrationApplyOptions {
   readonly signal?: AbortSignal;
   readonly write?: typeof writeCatalogOutput;
+  /** Creates one output locale directory exclusively. Defaults to fs.mkdir. */
+  readonly createDirectory?: (directory: string) => Promise<void>;
 }
 
 export class DirectoryMigrationApplyError extends CatalogOutputError {
@@ -254,23 +256,27 @@ async function assertSourcesCurrent(plan: DirectoryMigrationPlan, signal?: Abort
   }
 }
 
-async function ensureOutputDirectories(plan: DirectoryMigrationPlan): Promise<readonly string[]> {
-  const created: string[] = [];
+async function ensureOutputDirectories(plan: DirectoryMigrationPlan, created: string[],
+  createDirectory: NonNullable<DirectoryMigrationApplyOptions['createDirectory']> = mkdir,
+  signal?: AbortSignal): Promise<void> {
   const directories = [...new Set(plan.files.map(file => path.dirname(file.targetFile)))].sort();
   for (const directory of directories) {
+    signal?.throwIfAborted();
     assertSafePath(plan.outDir, path.join(directory, '.probe'));
     try {
       const info = await lstat(directory);
       if (!info.isDirectory() || info.isSymbolicLink()) throw new Error('Output locale path is not a safe directory: ' + directory);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-      try { await mkdir(directory); created.push(directory); }
+      signal?.throwIfAborted();
+      try { await createDirectory(directory); created.push(directory); }
       catch (mkdirError) { if ((mkdirError as NodeJS.ErrnoException).code !== 'EEXIST') throw mkdirError; }
+      // Take ownership before observing cancellation of the completed mkdir.
+      signal?.throwIfAborted();
       const info = await lstat(directory);
       if (!info.isDirectory() || info.isSymbolicLink()) throw new Error('Output locale path is not a safe directory: ' + directory);
     }
   }
-  return created;
 }
 
 function reportFor(plan: DirectoryMigrationPlan, writtenFiles: readonly string[]): DirectoryMigrationReport {
@@ -290,8 +296,8 @@ export async function applyDirectoryMigration(plan: DirectoryMigrationPlan,
   const lockFile = path.join(outDir, '.saylo-migrate.lock');
   assertSafePath(outDir, lockFile);
   const writtenFiles: string[] = [];
+  const created: string[] = [];
   let lock: Awaited<ReturnType<typeof open>> | undefined;
-  let created: readonly string[] = [];
   let failed = false, failure: unknown;
   const cleanupErrors: unknown[] = [];
   try {
@@ -304,7 +310,7 @@ export async function applyDirectoryMigration(plan: DirectoryMigrationPlan,
       const problem = await outputIssue(outDir, file.targetFile);
       if (problem) throw new Error(problem.message + ' ' + (problem.file ?? file.targetFile));
     }
-    created = await ensureOutputDirectories(plan);
+    await ensureOutputDirectories(plan, created, options.createDirectory, options.signal);
     const sourceFiles = plan.files.map(file => file.sourceFile);
     for (const file of plan.files) {
       options.signal?.throwIfAborted();
@@ -319,12 +325,12 @@ export async function applyDirectoryMigration(plan: DirectoryMigrationPlan,
       }
     }
   } catch (error) { failed = true; failure = error; }
+  if (failed) for (const directory of created.reverse()) try { await rmdir(directory); }
+  catch (error) { if (!['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes((error as NodeJS.ErrnoException).code ?? '')) cleanupErrors.push(error); }
   if (lock) {
     try { await lock.close(); } catch (error) { cleanupErrors.push(error); }
     try { await rm(lockFile, { force: true }); } catch (error) { cleanupErrors.push(error); }
   }
-  if (failed) for (const directory of [...created].reverse()) try { await rmdir(directory); }
-  catch (error) { if (!['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes((error as NodeJS.ErrnoException).code ?? '')) cleanupErrors.push(error); }
   if (failed || cleanupErrors.length) {
     const cause = cleanupErrors.length ? new AggregateError([...(failed ? [failure] : []), ...cleanupErrors],
       'Directory migration cleanup failed') : failure;

@@ -312,6 +312,31 @@ test('dynamic, aliased and unmapped calls block call rewrite and preserve every 
   assert.equal(await readFile(alias, 'utf8'), aliasSource);
 });
 
+for (const scenario of ['first mkdir fails', 'second mkdir fails', 'cancel after first mkdir']) {
+  test(`output directory setup stops cleanly when ${scenario}`, async t => {
+    const f = await fixture(t);
+    const outDir = path.join(f.root, 'output');
+    const plan = await planDirectoryMigration({ fromDir: path.join(f.root, 'locales'), outDir, escapeValue: false });
+    const controller = new AbortController();
+    const cause = scenario === 'cancel after first mkdir' ? new Error('cancelled by caller')
+      : Object.assign(new Error('could not create output directory'), { code: 'EACCES' });
+    const attempts = [];
+    await assert.rejects(applyDirectoryMigration(plan, {
+      signal: controller.signal,
+      async createDirectory(directory) {
+        attempts.push(path.basename(directory));
+        if (scenario === 'first mkdir fails' || (scenario === 'second mkdir fails' && attempts.length === 2)) throw cause;
+        await mkdir(directory);
+        if (scenario === 'cancel after first mkdir') controller.abort(cause);
+      },
+      write: () => assert.fail('catalog writes must not start after setup fails'),
+    }), error => error instanceof DirectoryMigrationApplyError && error.cause === cause &&
+      error.writtenFiles.length === 0 && error.report.checkpoint.entries.every(entry => entry.status === 'ready'));
+    assert.deepEqual(attempts, scenario === 'second mkdir fails' ? ['en', 'ko'] : ['en']);
+    assert.deepEqual(await readdir(outDir), []);
+  });
+}
+
 test('an injected later-file failure reports the completed checkpoint and removes locks and staging files', async t => {
   const f = await fixture(t);
   const plan = await planDirectoryMigration({
