@@ -2,7 +2,7 @@ import { DEV_HANDSHAKE_MAX_ATTEMPTS } from './dev-policy.js';
 import { isSnapshotRequest } from './types.js';
 import type { EagerCatalogEvent, EagerSnapshotRequest } from './types.js';
 import { createRequestId, schedule, timeoutDuration } from './scheduling.js';
-import type { DevRuntime } from './scheduling.js';
+import type { DevRuntime, Schedule } from './scheduling.js';
 
 export interface DevSyncState {
   readonly status: 'idle' | 'connecting' | 'retrying' | 'connected' | 'disconnected' | 'failed' | 'stopped';
@@ -19,6 +19,7 @@ interface SyncOptions {
   readonly report: (error: unknown, operation?: 'handshake' | 'observer') => void;
   readonly onState?: (state: DevSyncState) => void;
   readonly runtime?: DevRuntime;
+  readonly signal?: AbortSignal;
 }
 
 /** Eager handshake coordinator. Keeps the last good UI until a current reply arrives. */
@@ -26,11 +27,15 @@ export class EagerSync {
   // getRandomValues also works on HTTP LAN dev hosts where randomUUID is unavailable.
   private readonly id: string;
   private readonly timeoutMs: number;
+  private readonly schedule: Schedule;
+  private readonly now: (() => number) | undefined;
+  private readonly onAbort = () => this.stop();
   private generation = 0;
   private sessionId: string | undefined;
   private revision = -1;
   private readonly retired = new Set<string>();
   private pending: EagerSnapshotRequest | undefined;
+  private deadline: number | undefined;
   private hint: { sessionId: string; revision: number } | undefined;
   private timer: (() => void) | undefined;
   private attempts = 0;
@@ -42,11 +47,21 @@ export class EagerSync {
   constructor(private readonly options: SyncOptions) {
     this.id = (options.runtime?.createId ?? createRequestId)();
     this.timeoutMs = timeoutDuration(options.timeoutMs);
+    this.schedule = options.runtime?.schedule ?? schedule;
+    this.now = options.runtime?.now ?? (this.schedule === schedule ? () => performance.now() : undefined);
   }
 
   start() {
+    if (this.stopped) return;
+    if (this.options.signal?.aborted) { this.stop(); return; }
+    this.options.signal?.addEventListener('abort', this.onAbort, { once: true });
     try { this.request(); }
-    catch (error) { this.clearPending(); this.setState('failed', this.attempts); throw error; }
+    catch (error) {
+      this.clearPending();
+      this.options.signal?.removeEventListener('abort', this.onAbort);
+      if (!this.stopped) this.setState('failed', this.attempts);
+      throw error;
+    }
   }
 
   disconnect() {
@@ -66,7 +81,12 @@ export class EagerSync {
     this.recover();
   }
 
-  stop() { this.stopped = true; this.clearPending(); this.setState('stopped'); }
+  stop() {
+    this.stopped = true;
+    this.options.signal?.removeEventListener('abort', this.onAbort);
+    this.clearPending();
+    this.setState('stopped');
+  }
 
   private setState(status: DevSyncState['status'], attempt = 0) {
     if (this.state.status === status && this.state.attempt === attempt) return;
@@ -94,6 +114,8 @@ export class EagerSync {
     if (event.kind === 'snapshot') {
       const request = this.pending;
       if (!request || !this.acceptsRequest(event.request)) return;
+      // Socket delivery can run after the deadline but before the timeout callback.
+      if (this.now && this.deadline !== undefined && this.now() >= this.deadline) return;
       if (event.request.locale !== request.locale ||
           JSON.stringify(event.request.namespaces) !== JSON.stringify(request.namespaces)) {
         this.options.report(new Error('Eager snapshot request scope differs.'));
@@ -137,9 +159,11 @@ export class EagerSync {
   }
 
   private clearPending() {
-    this.timer?.();
+    const cancel = this.timer;
     this.timer = undefined;
     this.pending = undefined;
+    this.deadline = undefined;
+    cancel?.();
   }
 
   private request() {
@@ -149,8 +173,15 @@ export class EagerSync {
     const generation = ++this.generation;
     const request: EagerSnapshotRequest = { ...this.options.scope(), scope: 'eager',
       requestId: `${this.id}:${generation}`, generation };
+    const startedAt = this.now?.();
+    if (this.stopped || this.disconnected) return;
     this.pending = request;
-    this.timer = (this.options.runtime?.schedule ?? schedule)(this.timeoutMs, () => this.retry());
+    this.deadline = startedAt === undefined ? undefined : startedAt + this.timeoutMs;
+    const cancel = this.schedule(this.timeoutMs, () => {
+      if (this.pending === request) this.retry();
+    });
+    if (this.pending !== request) { cancel(); return; }
+    this.timer = cancel;
     this.setState(this.attempts === 1 ? 'connecting' : 'retrying', this.attempts);
     if (this.stopped || this.disconnected || this.pending !== request) return;
     this.options.send(request);

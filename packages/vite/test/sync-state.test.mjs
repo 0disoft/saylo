@@ -5,6 +5,7 @@ import { scheduler } from '../../../scripts/test/helpers/scheduler.mjs';
 import { createI18n, createStore, parseCatalog } from '@0disoft/saylo-core';
 import { connectDev, createDevCatalogSource } from '../dist/client.js';
 import { CatalogRegistry } from '../dist/catalog-registry.js';
+import { EagerSync } from '../dist/dev-sync.js';
 import { REQUEST_EVENT, SNAPSHOT_EVENT, MANIFEST_REQUEST_EVENT, MANIFEST_EVENT, DIAGNOSTIC_EVENT, CATALOG_REQUEST_EVENT, CATALOG_EVENT } from '../dist/types.js';
 
 const catalog = text => parseCatalog(JSON.stringify({ hello: text }), { locale: 'ko', namespace: 'demo' });
@@ -38,6 +39,52 @@ test('injected handshake timers bound retries at exact deadlines and use explici
   assert.equal(f.store.t('demo:hello'), 'recovered'); assert.equal(clock.size, 0);
   stop(); assert.equal(clock.size, 0);
 });
+
+for (const elapsed of [9, 10, 11]) {
+  test(`an eager reply at ${elapsed}ms respects the 10ms deadline before the timer runs`, t => {
+    const f = fixture(t), timers = scheduler();
+    let now = 0;
+    const stop = connectDev(f.store, { hot: f.hot, requestTimeoutMs: 10,
+      runtime: { schedule: timers.schedule, now: () => now, createId: () => 'deadline' } });
+    t.after(stop);
+    now = elapsed;
+    f.hot.emit(SNAPSHOT_EVENT, f.reply(f.requests[0], 'first reply'));
+    assert.equal(f.store.t('demo:hello'), elapsed < 10 ? 'first reply' : 'last good');
+    timers.tick(10);
+    assert.equal(f.requests.length, elapsed < 10 ? 1 : 2);
+    if (elapsed >= 10) {
+      f.hot.emit(SNAPSHOT_EVENT, f.reply(f.requests[1]));
+      assert.equal(f.store.t('demo:hello'), 'recovered');
+    }
+    assert.equal(timers.size, 0);
+  });
+}
+
+for (const phase of ['before start', 'during timer registration']) {
+  test(`eager handshake cancellation ${phase} leaves no request or retry`, () => {
+    const controller = new AbortController(), timers = scheduler(), states = [];
+    let scheduled = 0, sent = 0;
+    const sync = new EagerSync({ timeoutMs: 10, signal: controller.signal,
+      scope: () => ({ locale: 'ko', namespaces: ['demo'] }),
+      send: () => { sent++; },
+      commit: () => assert.fail('Cancelled handshake must not commit'),
+      report: error => assert.fail(String(error)),
+      onState: state => states.push(state.status),
+      runtime: { createId: () => 'cancelled', now: timers.now, schedule: (delay, callback) => {
+        scheduled++;
+        const cancel = timers.schedule(delay, callback);
+        controller.abort();
+        return cancel;
+      } } });
+    if (phase === 'before start') controller.abort();
+    sync.start();
+    assert.equal(scheduled, phase === 'before start' ? 0 : 1);
+    assert.equal(timers.size, 0);
+    timers.tick(100);
+    assert.equal(sent, 0);
+    assert.deepEqual(states, ['stopped']);
+  });
+}
 
 test('lazy catalog timeout is normalized, abort cleans timers, and late replies cannot win', async t => {
   const registry = new CatalogRegistry('lazy-timer', 'ko', [catalog('initial')]);
