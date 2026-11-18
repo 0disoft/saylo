@@ -8,7 +8,7 @@ import test from 'node:test';
 import { createBaseSchema, parseCatalog } from '@0disoft/saylo-core';
 import { renderTypes, TypeGenerator, writeGenerated, isGeneratedFile } from '@0disoft/saylo-typegen';
 import { fixtureSchema } from './fixture.mjs';
-import { mapFileTasks, FileTaskQueue, scanCatalogs } from '../dist/catalog-files.js';
+import { mapFileTasks, FileTaskQueue, inspectCatalogs, scanCatalogs } from '../dist/catalog-files.js';
 
 const schema = (messages, namespace = 'demo') => createBaseSchema(parseCatalog(JSON.stringify(messages), { locale: 'ko', namespace }));
 async function directory(t) {
@@ -57,6 +57,50 @@ test('parallel catalog scanning preserves sorted locale and namespace output', a
   }
   assert.deepEqual((await scanCatalogs(root)).files.map(f => `${f.catalog.locale}/${f.catalog.namespace}`),
     ['en/a', 'en/b', 'en/z', 'ko/a', 'ko/b', 'ko/z']);
+});
+
+test('cancelled inspections skip the catalog scan before it opens any source', async t => {
+  const root = await directory(t);
+  const locale = path.join(root, 'en');
+  await mkdir(locale);
+  await writeFile(path.join(locale, 'common.json'), '{"title":"Value"}');
+  const reason = new Error('review disconnected');
+  let reads = 0;
+  await assert.rejects(inspectCatalogs(root, undefined, {
+    signal: AbortSignal.abort(reason),
+    async read() { reads++; return '{"title":"Value"}'; },
+  }), error => error === reason);
+  assert.equal(reads, 0);
+});
+
+test('an inspection cancels at the eight-read boundary and keeps the original failure reason', async t => {
+  const root = await directory(t);
+  const locale = path.join(root, 'en');
+  await mkdir(locale);
+  for (let i = 0; i < 9; i++) await writeFile(path.join(locale, `part${i}.json`), '{"title":"Value"}');
+  const controller = new AbortController(), reason = new Error('review disconnected');
+  const started = Promise.withResolvers(), release = Promise.withResolvers();
+  const reads = [];
+  const inspected = inspectCatalogs(root, undefined, {
+    signal: controller.signal,
+    async read(file, signal) {
+      assert.equal(signal, controller.signal);
+      reads.push(file);
+      if (reads.length === 8) started.resolve();
+      return release.promise;
+    },
+  });
+  const cancelled = assert.rejects(inspected, error => error === reason);
+  await Promise.race([started.promise, inspected]);
+  controller.abort(reason);
+  release.resolve('invalid JSON that must not produce a report');
+  await cancelled;
+  assert.equal(reads.length, 8);
+  assert.equal((await inspectCatalogs(root)).files.length, 9);
+  const cause = Object.assign(new Error('catalog read failed'), { code: 'EIO' });
+  await assert.rejects(inspectCatalogs(root, undefined, {
+    async read() { throw cause; },
+  }), error => error === cause);
 });
 
 test('emission is stable across text/order edits and preserves base argument contracts', () => {

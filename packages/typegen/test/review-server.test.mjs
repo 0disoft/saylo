@@ -6,13 +6,13 @@ import test from 'node:test';
 import { request as httpRequest } from 'node:http';
 import { startReviewServer } from '../dist/review-server.js';
 
-async function fixture(t) {
+async function fixture(t, options) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'saylo-review-server-'));
   const localesDir = path.join(root, 'locales');
   for (const locale of ['en', 'ko']) await mkdir(path.join(localesDir, locale), { recursive: true });
   await writeFile(path.join(localesDir, 'en/common.json'), JSON.stringify({ title: 'Hello {name}' }));
   await writeFile(path.join(localesDir, 'ko/common.json'), JSON.stringify({}));
-  const server = await startReviewServer({ localesDir, baseLocale: 'en', checkLocales: ['ko'] });
+  const server = await startReviewServer({ localesDir, baseLocale: 'en', checkLocales: ['ko'] }, options);
   t.after(async () => {
     await server.close();
     assert.equal(path.dirname(root), os.tmpdir()); assert.ok(path.basename(root).startsWith('saylo-review-server-'));
@@ -71,6 +71,38 @@ test('same-revision competing edits serialize and reject the stale request; shut
   assert.equal((await f.post('save', draft(state, 'Stale {name}'))).status, 409);
   await f.server.close(); await f.server.close();
   await assert.rejects(fetch(f.server.url));
+});
+
+test('disconnecting an active review cancels its scan and lets the next request proceed', { timeout: 5000 }, async t => {
+  const started = Promise.withResolvers(), released = Promise.withResolvers();
+  const reads = [];
+  t.after(() => released.resolve());
+  const f = await fixture(t, {
+    async readCatalog(file, signal) {
+      reads.push(path.basename(path.dirname(file)));
+      if (reads.length === 1) {
+        started.resolve(signal);
+        const aborted = Promise.withResolvers();
+        const abort = () => aborted.resolve();
+        signal.addEventListener('abort', abort, { once: true });
+        try {
+          if (!signal.aborted) await Promise.race([aborted.promise, released.promise]);
+          signal.throwIfAborted();
+        } finally { signal.removeEventListener('abort', abort); }
+      }
+      return readFile(file, 'utf8');
+    },
+  });
+  const controller = new AbortController();
+  const disconnected = assert.rejects(fetch(f.server.url + '/api/state', { headers: f.headers, signal: controller.signal }),
+    { name: 'AbortError' });
+  const scanSignal = await started.promise;
+  controller.abort();
+  await disconnected;
+  const state = await f.state();
+  assert.equal(scanSignal.aborted, true);
+  assert.deepEqual(reads, ['en', 'en', 'ko']);
+  assert.equal(state.total, 1);
 });
 
 test('incomplete bodies cannot exceed the admitted request budget and disconnects release slots', async t => {

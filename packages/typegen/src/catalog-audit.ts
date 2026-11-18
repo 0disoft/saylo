@@ -1,7 +1,7 @@
 import { CatalogError, createBaseSchema, validateTranslation } from '@0disoft/saylo-core';
 import type { CatalogDiagnostic, DiagnosticCode } from '@0disoft/saylo-core';
 import { inspectCatalogs } from './catalog-files.js';
-import type { CatalogInspection } from './catalog-files.js';
+import type { CatalogInspection, CatalogScanOptions } from './catalog-files.js';
 import type { SayloProjectConfig } from './config.js';
 
 export type CatalogIssue = Omit<CatalogDiagnostic, 'code'> & {
@@ -89,7 +89,9 @@ export function analyzeCatalogs(config: SayloProjectConfig, input: CatalogInspec
   return reportIssues(baseLocale, [baseLocale, ...targets], diagnostics);
 }
 
-export async function inspectProject(config: SayloProjectConfig): Promise<{ inspection: CatalogInspection; report: CatalogCheckReport }> {
-  const inspection = await inspectCatalogs(config.localesDir, config.richText);
+export async function inspectProject(config: SayloProjectConfig,
+  options: CatalogScanOptions = {}): Promise<{ inspection: CatalogInspection; report: CatalogCheckReport }> {
+  const inspection = await inspectCatalogs(config.localesDir, config.richText, options);
+  options.signal?.throwIfAborted();
   return { inspection, report: analyzeCatalogs(config, inspection) };
 }

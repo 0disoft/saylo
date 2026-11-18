@@ -13,6 +13,7 @@ import { readTranslationMetadata } from './translation-metadata.js';
 import { reviewPage } from './review-page.js';
 import { planCatalogSync } from './catalog-sync.js';
 import type { SayloProjectConfig } from './config.js';
+import type { CatalogScanOptions } from './catalog-files.js';
 
 const MAX_BODY_BYTES = 256 * 1024, MAX_PENDING_REQUESTS = 32, PAGE_SIZE = 200;
 class RequestError extends Error { constructor(readonly status: number, message: string) { super(message); } }
@@ -33,18 +34,22 @@ const identity = (entry: { locale: unknown; namespace: unknown; id: unknown }) =
 
 /** Loopback-only, authenticated local editor; all writes reuse guarded CLI import/approval plans. */
 export async function startReviewServer(config: SayloProjectConfig,
-  options: { readonly port?: number; readonly metadataFile?: string; readonly signal?: AbortSignal } = {}) {
+  options: { readonly port?: number; readonly metadataFile?: string; readonly signal?: AbortSignal;
+    readonly readCatalog?: CatalogScanOptions['read'] } = {}) {
   options.signal?.throwIfAborted();
   const token = randomBytes(32).toString('hex');
   const expected = Buffer.from('Bearer ' + token);
   const controller = new AbortController();
   const reviews = config.reviews ?? path.join(path.dirname(config.localesDir), '.saylo-reviews.json');
   let queue = Promise.resolve(), pending = 0, origin = '';
-  const load = async () => {
-    controller.signal.throwIfAborted();
-    const inspected = await inspectProject(config);
+  const load = async (signal: AbortSignal) => {
+    signal.throwIfAborted();
+    const inspected = await inspectProject(config, { signal, ...(options.readCatalog ? { read: options.readCatalog } : {}) });
+    signal.throwIfAborted();
     const ledger = await readReviewApprovals(reviews, config.baseLocale, true);
+    signal.throwIfAborted();
     const metadata = options.metadataFile === undefined ? undefined : await readTranslationMetadata(options.metadataFile);
+    signal.throwIfAborted();
     const report = applyReviewApprovals(inspected.inspection, inspected.report, ledger.approvals);
     // An empty ledger enumerates all current messages, including already-approved translations.
     const all = applyReviewApprovals(inspected.inspection, inspected.report, { ...ledger.approvals, entries: [] });
@@ -87,7 +92,7 @@ export async function startReviewServer(config: SayloProjectConfig,
       const signal = AbortSignal.any([controller.signal, aborted.signal]);
       const result = queue.then(async () => {
         signal.throwIfAborted();
-        const current = await load();
+        const current = await load(signal);
         if (reading) {
           const query = (url.searchParams.get('q') ?? '').slice(0, 200).toLowerCase();
           const issues = new Map(current.report.diagnostics.filter(issue => issue.id !== undefined)

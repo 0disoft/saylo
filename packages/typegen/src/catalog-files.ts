@@ -20,6 +20,11 @@ export interface CatalogInspection {
   readonly diagnostics: readonly CatalogDiagnostic[];
 }
 
+export interface CatalogScanOptions {
+  readonly signal?: AbortSignal;
+  readonly read?: (file: string, signal?: AbortSignal) => Promise<string>;
+}
+
 /** Only direct locale/namespace JSON files are owned by Saylo. */
 export function catalogLocation(root: string, file: string): { locale: string; namespace: string } | undefined {
   const parts = path.relative(root, path.resolve(file)).split(path.sep);
@@ -48,13 +53,18 @@ export async function scanCatalogs(directory: string, richText?: Readonly<Record
 }
 
 /** Collect catalog diagnostics in disk order; filesystem/containment failures still reject. */
-export function inspectCatalogs(directory: string, richText?: Readonly<Record<string, NonNullable<CatalogOptions['richText']>>>): Promise<CatalogInspection> {
-  return scanDirectory(directory, richText, true);
+export function inspectCatalogs(directory: string, richText?: Readonly<Record<string, NonNullable<CatalogOptions['richText']>>>,
+  options: CatalogScanOptions = {}): Promise<CatalogInspection> {
+  return scanDirectory(directory, richText, true, options);
 }
 
 async function scanDirectory(directory: string, richText: Readonly<Record<string, NonNullable<CatalogOptions['richText']>>> | undefined,
-  collectErrors: boolean): Promise<CatalogInspection> {
+  collectErrors: boolean, options: CatalogScanOptions = {}): Promise<CatalogInspection> {
+  const { signal, read = (file, activeSignal) =>
+    readFile(file, activeSignal ? { encoding: 'utf8', signal: activeSignal } : 'utf8') } = options;
+  signal?.throwIfAborted();
   const root = await realpath(directory);
+  signal?.throwIfAborted();
   const files: CatalogFile[] = [];
   const locales = new Set<string>();
   const localeDirectories = new Map<string, string>();
@@ -63,10 +73,13 @@ async function scanDirectory(directory: string, richText: Readonly<Record<string
   const directories = await readdir(root, { withFileTypes: true });
   directories.sort((a, b) => a.name.localeCompare(b.name));
   for (const entry of directories) {
+    signal?.throwIfAborted();
     if (entry.name.startsWith('.') || (!entry.isDirectory() && !entry.isSymbolicLink())) continue;
     const directory = path.join(root, entry.name);
     await assertInside(root, directory);
+    signal?.throwIfAborted();
     if (!(await stat(directory)).isDirectory()) continue;
+    signal?.throwIfAborted();
     const locale = Intl.getCanonicalLocales(entry.name)[0];
     if (!locale) throw new Error(`Invalid locale directory: ${entry.name}`);
     if (locales.has(locale)) throw new Error(`Duplicate canonical locale directory: ${entry.name}`);
@@ -78,17 +91,23 @@ async function scanDirectory(directory: string, richText: Readonly<Record<string
       if (!(await stat(file)).isFile()) throw new Error(`Catalog is not a file: ${file}`);
       const namespace = name.slice(0, -5);
       try {
-        return { file: await readCatalogFile(root, file, locale, namespace, undefined, undefined,
+        return { file: await readCatalogFile(root, file, locale, namespace, async () => {
+          signal?.throwIfAborted();
+          const source = await read(file, signal);
+          signal?.throwIfAborted();
+          return source;
+        }, undefined,
           { richText: richText && Object.hasOwn(richText, namespace) ? richText[namespace] : undefined }) };
       } catch (error) {
         if (!collectErrors || !(error instanceof CatalogError)) throw error;
         return { invalid: { file, locale, namespace }, diagnostics: error.diagnostics };
       }
-    });
+    }, signal ? { signal } : {});
     for (const item of loaded) {
       if (item.file) files.push(item.file);
       else { invalidCatalogs.push(item.invalid!); diagnostics.push(...item.diagnostics!); }
     }
   }
+  signal?.throwIfAborted();
   return { root, files, localeDirectories, invalidCatalogs, diagnostics };
 }
