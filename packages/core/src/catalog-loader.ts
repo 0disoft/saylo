@@ -34,7 +34,9 @@ export class CatalogLoader {
   constructor(private readonly source: CatalogSource, private readonly manifest: () => CatalogManifest,
     private readonly timeoutMs: number, private readonly schedule: CatalogSchedule = scheduleCatalog,
     cacheOptions: CatalogLoaderCacheOptions = {},
-    private readonly queue = new CatalogLoadQueue()) {
+    private readonly queue = new CatalogLoadQueue(),
+    // Custom schedulers can use virtual time. Pair them with their own clock when available.
+    private readonly now: (() => number) | undefined = schedule === scheduleCatalog ? () => performance.now() : undefined) {
     this.maxCachedCatalogs = catalogCacheLimit(cacheOptions.maxCachedCatalogs);
     this.protectedKeys = cacheOptions.protectedKeys ?? NO_PROTECTED_KEYS;
   }
@@ -118,6 +120,8 @@ export class CatalogLoader {
     }
     const existing = this.flights.get(version);
     if (existing) return existing.promise;
+    const now = this.now;
+    const startedAt = now?.() ?? 0;
     const controller = new AbortController();
     let resolve!: (outcome: CatalogOutcome) => void;
     let reject!: (reason: unknown) => void;
@@ -134,15 +138,25 @@ export class CatalogLoader {
       reject(reason);
       controller.abort(reason);
     } };
-    const cancelTimer = this.schedule(this.timeoutMs, () => flight.cancel(new CatalogLoadError('TIMEOUT',
-      `Catalog ${key.locale}/${key.namespace} did not load within ${this.timeoutMs}ms.`)));
+    const timeout = () => {
+      const error = new CatalogLoadError('TIMEOUT',
+        `Catalog ${key.locale}/${key.namespace} did not load within ${this.timeoutMs}ms.`);
+      flight.cancel(error);
+      return error;
+    };
+    const expireIfDue = () => {
+      if (now && now() - startedAt >= this.timeoutMs) return timeout();
+    };
+    const cancelTimer = this.schedule(this.timeoutMs, timeout);
     this.flights.set(version, flight);
-    // The queue retains physical source slots across timeouts and invalidation.
-    this.queue.run(() => {
+    // Timer callbacks can run after microtasks that dispatch or settle source I/O.
+    this.queue.run(signal => {
+      const expired = expireIfDue();
+      if (expired) throw expired;
       flight.started = true;
-      return this.source.loadCatalog(key.locale, key.namespace, controller.signal);
+      return this.source.loadCatalog(key.locale, key.namespace, signal);
     }, controller.signal).then(result => {
-      if (done) return;
+      if (done || expireIfDue()) return;
       try {
         if (!result || result.status === 'failed') throw new CatalogLoadError(result?.code ?? 'INVALID_RESULT', result?.message ?? 'Invalid catalog load result.');
         const accepted = acceptOutcome(this.manifest(), key, result);
@@ -151,7 +165,7 @@ export class CatalogLoader {
         resolve(accepted);
       } catch (error) { finish(); reject(error); }
     }, error => {
-      if (done) return;
+      if (done || expireIfDue()) return;
       finish();
       reject(new CatalogLoadError('LOAD_FAILED', `Catalog ${key.locale}/${key.namespace} failed to load.`, { cause: error }));
     });

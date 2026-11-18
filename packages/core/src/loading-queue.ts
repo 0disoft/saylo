@@ -5,22 +5,22 @@ export class CatalogLoadQueue {
   private active = 0;
   private readonly pending = new Set<() => void>();
 
-  run<T>(operation: () => Promise<T>, signal: AbortSignal): Promise<T> {
-    if (signal.aborted) return Promise.reject(signal.reason);
+  run<T>(operation: (signal?: AbortSignal) => Promise<T>, signal?: AbortSignal): Promise<T> {
+    if (signal?.aborted) return Promise.reject(signal.reason);
     return new Promise<T>((resolve, reject) => {
-      const cleanup = () => signal.removeEventListener('abort', abort);
-      const abort = () => { this.pending.delete(start); cleanup(); reject(signal.reason); };
+      const cleanup = () => signal?.removeEventListener('abort', abort);
+      const abort = () => { this.pending.delete(start); cleanup(); reject(signal?.reason); };
       const start = () => {
         this.active++;
         void Promise.resolve().then(() => {
-          signal.throwIfAborted();
-          return operation();
+          signal?.throwIfAborted();
+          return operation(signal);
         }).then(resolve, reject).finally(() => {
           // An ignored abort must not admit more I/O before the source settles.
           cleanup(); this.active--; this.drain();
         });
       };
-      signal.addEventListener('abort', abort, { once: true });
+      signal?.addEventListener('abort', abort, { once: true });
       this.pending.add(start);
       this.drain();
     });

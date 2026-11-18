@@ -164,6 +164,60 @@ test('timeouts retain source slots until ignored aborts actually settle', async 
   assert.equal(clock.size, 0);
 });
 
+test('catalog deadline applies before the timer callback can run', async t => {
+  for (const elapsed of [99, 100, 101]) await t.test(`${elapsed}ms`, async t => {
+    for (const fails of [false, true]) {
+      let now = 0;
+      const { loader, calls, keys, clock } = queuedLoader(t, 1, {}, () => now);
+      const key = keys[0];
+      const cause = new Error('source is unavailable');
+      const pending = loader.load(key);
+      await tick();
+      // Advance elapsed time without dispatching the timer, as on a busy event loop.
+      now = elapsed;
+      if (fails) calls[0].reject(cause); else calls[0].resolve();
+      if (elapsed >= 100) {
+        await assert.rejects(pending, error => error.code === 'TIMEOUT' && calls[0].signal.reason === error);
+      } else if (fails) {
+        await assert.rejects(pending, error => error.code === 'LOAD_FAILED' && error.cause === cause);
+      } else {
+        assert.deepEqual((await pending).key, key);
+      }
+      assert.equal(clock.size, 0);
+      assert.equal(calls[0].signal.aborted, elapsed >= 100);
+
+      const retry = loader.load(key);
+      await tick();
+      if (elapsed >= 100 || fails) {
+        assert.equal(calls.length, 2, 'the rejected outcome was never cached');
+        calls[1].resolve();
+      } else {
+        assert.equal(calls.length, 1, 'an in-time catalog is cached');
+      }
+      assert.deepEqual((await retry).key, key);
+    }
+  });
+});
+
+test('a queued catalog cannot start I/O at its deadline if its timer is delayed', async t => {
+  let now = 0;
+  const { loader, calls, keys, clock } = queuedLoader(t, 9, {}, () => now);
+  const active = keys.slice(0, 8).map(key => loader.load(key));
+  const settled = Promise.allSettled(active);
+  const queued = loader.load(keys[8]);
+  void queued.catch(() => {});
+  await tick();
+  assert.equal(calls.length, 8);
+  now = 100;
+  calls[0].resolve();
+  await tick();
+  assert.equal(calls.length, 8, 'the expired ninth load performed zero source calls');
+  await assert.rejects(queued, { code: 'TIMEOUT' });
+  for (const call of calls) call.resolve();
+  assert.ok((await settled).every(result => result.status === 'rejected' && result.reason.code === 'TIMEOUT'));
+  assert.equal(clock.size, 0);
+});
+
 test('manifest generations share the same source limit and deduplicate queued loads', async t => {
   const { loader, calls, keys, restart, peak } = queuedLoader(t);
   const stale = Promise.allSettled(keys.map(key => loader.load(key)));
@@ -230,7 +284,7 @@ test('i18n scope and locale changes keep one source budget and publish only comp
   for (const namespace of namespaces) assert.equal(i18n.t(`${namespace}:title`), `en:${namespace}`);
 });
 
-function queuedLoader(t, count = 9, cacheOptions) {
+function queuedLoader(t, count = 9, cacheOptions, now) {
   const clock = scheduler();
   const namespaces = Array.from({ length: count }, (_, index) => `scope${index}`);
   const keys = namespaces.map(namespace => ({ locale: 'en', namespace }));
@@ -250,7 +304,7 @@ function queuedLoader(t, count = 9, cacheOptions) {
       }).finally(() => { active--; });
     },
   };
-  const loader = new CatalogLoader(source, () => manifest, 100, clock.schedule, cacheOptions);
+  const loader = new CatalogLoader(source, () => manifest, 100, clock.schedule, cacheOptions, undefined, now);
   t.after(() => loader.stop(new I18nDisposedError()));
   return { loader, source, calls, keys, clock, active: () => active, peak: () => peak,
     restart() { manifest = validateCatalogManifest({ ...manifest, sessionId: 'two' }); loader.invalidate(); } };
