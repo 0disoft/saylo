@@ -48,34 +48,36 @@ export function readManifest(input: CatalogManifest): CatalogManifest {
       !localeSet.has(baseLocale) || !namespaces.length ||
       localeSet.size !== locales.length || namespaceSet.size !== namespaces.length)
     throw new CatalogLoadError('INVALID_MANIFEST', 'Manifest lists must be canonical and unique, with a base locale and namespace.');
-  const seen = new Set<string>();
-  const catalogs = input.catalogs.map(meta => {
+  const index = new Map<string, CatalogMetadata>();
+  for (const meta of input.catalogs) {
     if (!meta?.key || canonicalLocale(meta.key.locale) !== meta.key.locale ||
         !Number.isSafeInteger(meta.catalogVersion) || meta.catalogVersion < 0 ||
         (meta.status !== 'present' && meta.status !== 'missing'))
       throw new CatalogLoadError('INVALID_MANIFEST', 'Invalid catalog metadata.');
     assertNamespace(meta.key.namespace);
     const id = keyId(meta.key);
-    if (seen.has(id)) throw new CatalogLoadError('INVALID_MANIFEST', 'Duplicate catalog metadata.');
-    seen.add(id);
+    if (index.has(id)) throw new CatalogLoadError('INVALID_MANIFEST', 'Duplicate catalog metadata.');
     const key = { locale: meta.key.locale, namespace: meta.key.namespace };
-    if (meta.status === 'missing') return { key, catalogVersion: meta.catalogVersion, status: 'missing' as const };
+    if (meta.status === 'missing') {
+      index.set(id, { key, catalogVersion: meta.catalogVersion, status: 'missing' });
+      continue;
+    }
     if (!localeSet.has(key.locale) || !namespaceSet.has(key.namespace) ||
         typeof meta.namespaceSchemaFingerprint !== 'string' || !meta.namespaceSchemaFingerprint)
       throw new CatalogLoadError('INVALID_MANIFEST', 'Present metadata needs an available pair and schema fingerprint.');
-    return { key, catalogVersion: meta.catalogVersion, status: 'present' as const, namespaceSchemaFingerprint: meta.namespaceSchemaFingerprint };
-  });
-  const index = new Map(catalogs.map(c => [keyId(c.key), c]));
+    index.set(id, { key, catalogVersion: meta.catalogVersion, status: 'present', namespaceSchemaFingerprint: meta.namespaceSchemaFingerprint });
+  }
+  const baseFingerprints = new Map<string, string>();
   for (const namespace of namespaces) {
     const base = index.get(keyId({ locale: baseLocale, namespace }));
     if (base?.status !== 'present') throw new CatalogLoadError('INVALID_MANIFEST', 'Every namespace needs present base metadata.');
+    baseFingerprints.set(namespace, base.namespaceSchemaFingerprint);
   }
-  for (const catalog of catalogs) if (catalog.status === 'present') {
-    const base = index.get(keyId({ locale: baseLocale, namespace: catalog.key.namespace }));
-    if (base?.status !== 'present' || catalog.namespaceSchemaFingerprint !== base.namespaceSchemaFingerprint)
+  for (const catalog of index.values()) if (catalog.status === 'present') {
+    if (catalog.namespaceSchemaFingerprint !== baseFingerprints.get(catalog.key.namespace))
       throw new CatalogLoadError('INVALID_MANIFEST', 'Every present pair must reference its current base namespace schema.');
   }
-  catalogs.sort((a, b) => keyId(a.key).localeCompare(keyId(b.key)));
+  const catalogs = [...index.keys()].sort((a, b) => a.localeCompare(b)).map(id => index.get(id)!);
   const manifest = freeze({ sessionId: input.sessionId, registryRevision: input.registryRevision, baseLocale,
     availableLocales: locales.sort(), availableNamespaces: namespaces.sort(), catalogs });
   indexes.set(manifest, index);

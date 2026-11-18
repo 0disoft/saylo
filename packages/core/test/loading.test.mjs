@@ -540,6 +540,26 @@ test('manifest membership rejects duplicate lists and unavailable present pairs 
   assert.deepEqual(accepted.availableNamespaces, [...manifest.availableNamespaces].sort());
 });
 
+test('manifest validation encodes each pair once and preserves canonical catalog order', t => {
+  const locales = ['en', 'ar', 'cs', 'da', 'de', 'es', 'fi', 'fr', 'he', 'hi',
+    'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
+  const namespaces = Array.from({ length: 100 }, (_, i) => `scope${i}`);
+  const catalogs = locales.flatMap(locale => namespaces.map(namespace => ({
+    key: { locale, namespace }, catalogVersion: 1, status: 'present', namespaceSchemaFingerprint: 'test-schema',
+  })));
+  const shuffled = catalogs.map((_, i) => catalogs[(i * 37) % catalogs.length]);
+  const pairId = ({ key }) => JSON.stringify([key.locale, key.namespace]);
+  const expected = catalogs.map(pairId).sort((a, b) => a.localeCompare(b));
+  const encode = t.mock.method(JSON, 'stringify');
+  let manifest;
+  try {
+    manifest = validateCatalogManifest({ sessionId: 'sort', registryRevision: 0, baseLocale: 'en',
+      availableLocales: locales, availableNamespaces: namespaces, catalogs: shuffled });
+  } finally { encode.mock.restore(); }
+  assert.deepEqual(manifest.catalogs.map(pairId), expected);
+  assert.equal(encode.mock.callCount(), catalogs.length + namespaces.length);
+});
+
 test('new pair versions with identical text keep the snapshot; schema and text changes still publish', async t => {
   const { i18n, change } = fixture(t);
   await i18n.setLocale('en');
