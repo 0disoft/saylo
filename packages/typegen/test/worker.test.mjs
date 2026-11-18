@@ -39,6 +39,51 @@ test('worker deadlines ignore wrong and late replies, release timers, and allow 
   await generator.stop(); assert.equal(clock.size, 0);
 });
 
+test('worker replies must reach the generator before the render deadline', async t => {
+  for (const elapsed of [99, 100, 101]) await t.test(`${elapsed}ms`, async t => {
+    for (const fails of [false, true]) {
+      const clock = scheduler(), workers = [], writes = [];
+      const cause = new Error('render failed');
+      let now = 0;
+      const generator = new TypeGenerator('generated.d.ts', { schedule: clock.schedule, now: () => now,
+        timeoutMs: 100, acquireLock,
+        createWorker(signal) {
+          const worker = new Worker();
+          workers.push({ worker, signal });
+          return worker;
+        },
+        write: async (_file, source) => { writes.push(source); return 'written'; },
+      });
+      t.after(() => generator.stop());
+      const pending = generator.update(schema('one'));
+      const expired = elapsed >= 100;
+      const checked = expired ? assert.rejects(pending, { code: 'TIMEOUT', message: /Typegen worker timed out/ })
+        : fails ? assert.rejects(pending, /render failed/) : pending;
+
+      const { worker, signal } = workers[0];
+      assert.equal(clock.size, 1);
+      now = elapsed; // The clock advances while the render timer is still queued.
+      if (fails) worker.emit('message', { generation: worker.jobs[0].generation, failure: serializeFailure(cause) });
+      else worker.reply('one');
+      await checked;
+      assert.deepEqual(writes, expired || fails ? [] : ['one']);
+      assert.equal(signal?.aborted, expired || fails);
+
+      if (expired || fails) {
+        await flush();
+        assert.equal(worker.terminations, 1);
+        if (expired) assert.equal(signal.reason.code, 'TIMEOUT');
+        const retry = generator.update(schema('two'));
+        workers[1].worker.reply('two');
+        await retry;
+        assert.deepEqual(writes, ['two']);
+      }
+      await generator.stop();
+      assert.equal(clock.size, 0);
+    }
+  });
+});
+
 test('a write timeout reports promptly but retains ownership until the physical write settles', async () => {
   const clock = scheduler(), worker = new Worker(), release = Promise.withResolvers();
   let released = false, signal, writes = 0;

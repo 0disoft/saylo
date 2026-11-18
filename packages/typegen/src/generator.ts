@@ -24,9 +24,10 @@ export interface TypegenWorker {
 export interface TypeGeneratorOperations {
   readonly timeoutMs?: number;
   readonly schedule?: Schedule;
-  /** Monotonic clock for write deadlines. Pair virtual schedulers with their own clock. */
+  /** Monotonic clock for render and write deadlines. Pair virtual schedulers with their own clock. */
   readonly now?: () => number;
-  readonly createWorker?: () => TypegenWorker;
+  /** The signal ends this worker's lifetime, including on timeout and shutdown. */
+  readonly createWorker?: (signal?: AbortSignal) => TypegenWorker;
   readonly write?: typeof writeGenerated;
   readonly acquireLock?: (outFile: string) => OutputLock;
 }
@@ -46,7 +47,8 @@ export class TypeGenerator {
   private epoch = 0;
   private lock: OutputLock | undefined;
   private readonly timeoutMs: number;
-  private workerTimer: (() => void) | undefined;
+  private workerDeadline: { cancel: () => void; expired: () => boolean } | undefined;
+  private workerAbort: AbortController | undefined;
   private writerAbort: AbortController | undefined;
   private writeBlocked: Error | undefined;
   private retiring: { worker: TypegenWorker; exit: () => void } | undefined;
@@ -80,26 +82,41 @@ export class TypeGenerator {
       return;
     }
     if (!this.worker) {
-      const worker = this.operations.createWorker ? this.operations.createWorker() : new Worker(new URL('./worker.js', import.meta.url));
+      const controller = new AbortController();
+      let worker: TypegenWorker;
+      try {
+        worker = this.operations.createWorker ? this.operations.createWorker(controller.signal) : new Worker(new URL('./worker.js', import.meta.url));
+      } catch (error) { controller.abort(error); throw error; }
       this.worker = worker;
+      this.workerAbort = controller;
       worker.on('message', (result: WorkerResult) => {
-        if (this.worker === worker && result.generation === this.active?.generation) {
-          this.clearWorkerTimer();
-          this.queueResult(result);
-        }
+        const deadline = this.workerDeadline;
+        if (this.worker !== worker || !deadline || result.generation !== this.active?.generation) return;
+        // A queued worker message can run before an expired timer callback.
+        if (deadline.expired()) { this.fail(deadlineError('Typegen worker', this.timeoutMs)); return; }
+        this.clearWorkerTimer();
+        this.queueResult(result);
       });
       worker.on('error', error => { if (this.worker === worker) this.fail(error); });
       worker.on('exit', code => {
         if (this.retiring?.worker === worker) { this.retiring.exit(); return; }
         if (this.worker === worker && !this.stopped) {
+          const error = new Error(`Typegen worker exited (${code}).`);
           this.worker = undefined;
-          this.fail(new Error(`Typegen worker exited (${code}).`));
+          this.workerAbort = undefined;
+          this.fail(error);
+          controller.abort(error);
         }
       });
     }
     this.worker.ref();
-    this.workerTimer = (this.operations.schedule ?? schedule)(this.timeoutMs,
-      () => this.fail(deadlineError('Typegen worker', this.timeoutMs)));
+    const later = this.operations.schedule ?? schedule;
+    const now = this.operations.now ?? (later === schedule ? () => performance.now() : undefined);
+    const startedAt = now?.() ?? 0;
+    this.workerDeadline = {
+      cancel: later(this.timeoutMs, () => this.fail(deadlineError('Typegen worker', this.timeoutMs))),
+      expired: () => now !== undefined && now() - startedAt >= this.timeoutMs,
+    };
     this.worker.postMessage({ generation: this.active.generation, schemas: this.active.schemas.map(s => ({
       namespace: s.namespace, keys: s.keys,
       ...(s.richTextTags === undefined ? {} : { richTextTags: s.richTextTags }),
@@ -187,9 +204,15 @@ export class TypeGenerator {
     for (const waiter of this.waiters) waiter.reject(failure);
     this.waiters.clear();
   }
-  private clearWorkerTimer() { this.workerTimer?.(); this.workerTimer = undefined; }
+  private clearWorkerTimer() {
+    const deadline = this.workerDeadline;
+    this.workerDeadline = undefined;
+    deadline?.cancel();
+  }
 
   private terminate(worker: TypegenWorker, cause?: Error) {
+    const controller = this.workerAbort;
+    this.workerAbort = undefined;
     let exit!: () => void;
     const exited = new Promise<void>(resolve => { exit = resolve; });
     const retirement = { worker, exit };
@@ -213,6 +236,7 @@ export class TypeGenerator {
     });
     this.terminations.add(pending);
     void pending.then(() => { this.terminations.delete(pending); });
+    controller?.abort(cause ?? new Error('Type generator is stopped.'));
   }
   stop(): Promise<void> {
     if (this.stopping) return this.stopping;
