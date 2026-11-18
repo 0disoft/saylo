@@ -393,6 +393,64 @@ for (const scenario of ['first mkdir fails', 'second mkdir fails', 'cancel after
   });
 }
 
+test('directory apply publishes only files whose source still matches at publication', async t => {
+  for (const changed of ['already published', 'about to publish']) await t.test(changed, async t => {
+    const f = await fixture(t);
+    const outDir = path.join(f.root, 'output');
+    const plan = await planDirectoryMigration({ fromDir: path.join(f.root, 'locales'), outDir, escapeValue: false });
+    const [first, second] = plan.files;
+    const edited = changed === 'already published' ? first : second;
+    const pending = applyDirectoryMigration(plan, {
+      async write(file, value, options) {
+        if (file === second.targetFile) await writeFile(edited.sourceFile, '{"title":"Changed after preflight"}');
+        return writeCatalogOutput(file, value, options);
+      },
+    });
+
+    if (edited === first) {
+      assert.deepEqual((await pending).writtenFiles, [first.targetFile, second.targetFile]);
+    } else {
+      await assert.rejects(pending, error => {
+        assert.ok(error instanceof DirectoryMigrationApplyError);
+        assert.match(error.message, /Input changed after preflight/);
+        assert.deepEqual(error.writtenFiles, [first.targetFile]);
+        assert.deepEqual(error.report.checkpoint.entries.map(entry => entry.status), ['written', 'ready']);
+        return true;
+      });
+    }
+    const expected = edited === first ? [first, second] : [first];
+    assert.deepEqual(await filesBelow(outDir), expected.map(file => path.relative(outDir, file.targetFile)).sort());
+    assert.deepEqual(JSON.parse(await readFile(first.targetFile, 'utf8')), { ...first.catalog });
+  });
+});
+
+test('directory apply cleans the staged output on a publish-time read error or cancellation', async t => {
+  for (const cancelled of [false, true]) await t.test(cancelled ? 'abort' : 'read error', async t => {
+    const f = await fixture(t);
+    const outDir = path.join(f.root, 'output');
+    const plan = await planDirectoryMigration({ fromDir: path.join(f.root, 'locales'), outDir, escapeValue: false });
+    const [first, second] = plan.files;
+    const controller = new AbortController();
+    const cause = Object.assign(new Error(cancelled ? 'cancelled by caller' : 'read failed'), { code: 'EIO' });
+    let secondReads = 0;
+    await assert.rejects(applyDirectoryMigration(plan, {
+      signal: controller.signal,
+      async readSource(file, signal) {
+        assert.equal(signal, controller.signal);
+        if (file === second.sourceFile && ++secondReads === 2) {
+          assert.ok((await filesBelow(outDir)).some(name => name.endsWith('.tmp')));
+          if (!cancelled) throw cause;
+          controller.abort(cause);
+        }
+        return readFile(file, 'utf8');
+      },
+    }), error => error instanceof DirectoryMigrationApplyError &&
+      error.cause?.cause === cause && error.writtenFiles.length === 1 && error.writtenFiles[0] === first.targetFile);
+    assert.deepEqual(await filesBelow(outDir), [path.relative(outDir, first.targetFile)]);
+    assert.equal(secondReads, 2);
+  });
+});
+
 test('an injected later-file failure reports the completed checkpoint and removes locks and staging files', async t => {
   const f = await fixture(t);
   const plan = await planDirectoryMigration({

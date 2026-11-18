@@ -68,6 +68,7 @@ export interface DirectoryMigrationOptions {
 export interface DirectoryMigrationApplyOptions {
   readonly signal?: AbortSignal;
   readonly write?: typeof writeCatalogOutput;
+  readonly readSource?: (file: string, signal?: AbortSignal) => Promise<string>;
   /** Creates one output locale directory exclusively. Defaults to fs.mkdir. */
   readonly createDirectory?: (directory: string) => Promise<void>;
 }
@@ -246,14 +247,20 @@ export async function planDirectoryMigration(options: DirectoryMigrationOptions)
   };
 }
 
-async function assertSourcesCurrent(plan: DirectoryMigrationPlan, signal?: AbortSignal): Promise<void> {
-  for (const file of plan.files) {
+async function assertSourceCurrent(file: DirectoryMigrationFile,
+  readSource: NonNullable<DirectoryMigrationApplyOptions['readSource']>, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
+  const info = await lstat(file.sourceFile);
+  signal?.throwIfAborted();
+  if (!info.isFile() || info.isSymbolicLink()) throw new Error('Input changed type after preflight: ' + file.sourceFile);
+  let source: string;
+  try { source = await readSource(file.sourceFile, signal); }
+  catch (error) {
     signal?.throwIfAborted();
-    const info = await lstat(file.sourceFile);
-    if (!info.isFile() || info.isSymbolicLink()) throw new Error('Input changed type after preflight: ' + file.sourceFile);
-    if (hash(await readFile(file.sourceFile, 'utf8')) !== file.sourceHash)
-      throw new Error('Input changed after preflight: ' + file.sourceFile);
+    throw error;
   }
+  signal?.throwIfAborted();
+  if (hash(source) !== file.sourceHash) throw new Error('Input changed after preflight: ' + file.sourceFile);
 }
 
 async function ensureOutputDirectories(plan: DirectoryMigrationPlan, created: string[],
@@ -292,6 +299,8 @@ function reportFor(plan: DirectoryMigrationPlan, writtenFiles: readonly string[]
 export async function applyDirectoryMigration(plan: DirectoryMigrationPlan,
   options: DirectoryMigrationApplyOptions = {}): Promise<DirectoryMigrationReport> {
   if (plan.blocked) throw new Error('Cannot apply a blocked directory migration.');
+  const { signal, readSource = (file, activeSignal) =>
+    readFile(file, activeSignal ? { encoding: 'utf8', signal: activeSignal } : 'utf8') } = options;
   const outDir = await assertRootDirectory(plan.outDir, '--out-dir');
   const lockFile = path.join(outDir, '.saylo-migrate.lock');
   assertSafePath(outDir, lockFile);
@@ -305,7 +314,7 @@ export async function applyDirectoryMigration(plan: DirectoryMigrationPlan,
     try { lock = await open(lockFile, 'wx', 0o600); }
     catch (cause) { throw new Error('Cannot acquire directory migration lock: ' + lockFile + '. Verify its owner has stopped before removing a stale lock.', { cause }); }
     await lock.writeFile(JSON.stringify({ pid: process.pid }));
-    await assertSourcesCurrent(plan, options.signal);
+    for (const file of plan.files) await assertSourceCurrent(file, readSource, signal);
     for (const file of plan.files) {
       const problem = await outputIssue(outDir, file.targetFile);
       if (problem) throw new Error(problem.message + ' ' + (problem.file ?? file.targetFile));
@@ -317,6 +326,7 @@ export async function applyDirectoryMigration(plan: DirectoryMigrationPlan,
       try {
         writtenFiles.push(...await (options.write ?? writeCatalogOutput)(file.targetFile, file.catalog!, {
           protectedFiles: sourceFiles, ...(options.signal === undefined ? {} : { signal: options.signal }),
+          beforePublish: () => assertSourceCurrent(file, readSource, signal),
         }));
       } catch (error) {
         if (error instanceof CatalogOutputError)

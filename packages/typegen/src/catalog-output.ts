@@ -10,6 +10,8 @@ export interface CatalogOutputOptions {
   readonly localesDir?: string;
   readonly protectedFiles?: readonly string[];
   readonly signal?: AbortSignal;
+  /** Validate inputs after staging, immediately before the final path checks. */
+  readonly beforePublish?: () => Promise<void>;
   readonly publish?: typeof link;
 }
 const inside = (root: string, file: string) => {
@@ -56,6 +58,10 @@ async function writeArtifact(filename: string, value: unknown, options: CatalogO
     if (errors.length === 1) throw errors[0];
     if (errors.length > 1) throw new AggregateError(errors, 'Output staging and handle cleanup failed', { cause: errors[0] });
     options.signal?.throwIfAborted();
+    if (options.beforePublish) {
+      await options.beforePublish();
+      options.signal?.throwIfAborted();
+    }
     assertSafePath(parent, temp); assertSafePath(parent, target);
     // Same-directory hard link creates the final name exclusively; rename could overwrite a racing writer.
     await (options.publish ?? link)(temp, target);
