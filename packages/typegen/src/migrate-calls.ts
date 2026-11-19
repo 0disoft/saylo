@@ -92,6 +92,7 @@ const unsafeCallOptions = new Set([
   'postProcess', 'replace', 'returnDetails', 'returnEmptyString', 'returnNull', 'returnObjects',
   'shouldUnescape', 'skipInterpolation', 'tDescription', 'value',
 ]);
+const MAX_TRANSLATION_CALL_ARGUMENTS = 2;
 
 function hash(source: string): string {
   return createHash('sha256').update(source).digest('hex');
@@ -147,11 +148,23 @@ function importName(node: AstNode): string | undefined {
   return undefined;
 }
 
-function location(source: string, offset: number): { line: number; column: number } {
-  const before = source.slice(0, offset);
-  const line = before.split(/\r\n|\r|\n/).length;
-  const lastBreak = Math.max(before.lastIndexOf('\n'), before.lastIndexOf('\r'));
-  return { line, column: offset - lastBreak };
+function sourceLocation(source: string) {
+  let lineStarts: number[] | undefined;
+  return (offset: number) => {
+    if (!lineStarts) {
+      lineStarts = [0];
+      for (const newline of source.matchAll(/\r\n?|\n/g)) lineStarts.push(newline.index + newline[0].length);
+    }
+    // A prefix ending between CR and LF already counts the CR as a line break.
+    const end = source[offset] === '\n' && source[offset - 1] === '\r' ? offset + 1 : offset;
+    let low = 0, high = lineStarts.length;
+    while (low + 1 < high) {
+      const middle = Math.floor((low + high) / 2);
+      if (lineStarts[middle]! <= end) low = middle;
+      else high = middle;
+    }
+    return { line: low + 1, column: end - lineStarts[low]! + 1 };
+  };
 }
 function declarationOffsets(node: AstNode, name: string): number[] {
   const offsets: number[] = [];
@@ -190,10 +203,6 @@ function assignsName(node: AstNode, name: string): boolean {
     return names.includes(name);
   }
   return node.type === 'UpdateExpression' && node.argument?.type === 'Identifier' && node.argument.name === name;
-}
-
-function issueFor(source: string, file: string, offset: number, code: string, message: string): CallRewriteIssue {
-  return { code, file, message, ...location(source, offset) };
 }
 
 function hookBinding(node: AstNode, useTranslationImported: boolean): { safe: boolean; namespace: string | undefined; offset: number; message?: string } | undefined {
@@ -258,25 +267,24 @@ async function sourceFiles(root: string, issues: CallRewriteIssue[], signal?: Ab
   return files.sort();
 }
 
-function rewriteFile(source: string, file: string, namespace: string, targets: ReadonlyMap<string, string>): {
-  changes: CallRewriteChange[];
-  issues: CallRewriteIssue[];
-  nextSource: string | undefined;
-} {
-  if (!/from\s+['"](?:react-i18next|i18next)['"]/.test(source)) return { changes: [], issues: [], nextSource: undefined };
-  let ast: AstNode;
-  try {
-    ast = parse(source, { sourceType: 'unambiguous', plugins: parserPlugins(path.extname(file)), attachComment: false }) as unknown as AstNode;
-  } catch (error) {
-    return { changes: [], issues: [{
-      code: 'CALL_SOURCE_PARSE', file,
-      message: 'Source could not be parsed safely: ' + (error instanceof Error ? error.message : String(error)),
-      line: 1, column: 1,
-    }], nextSource: undefined };
+type IssueAt = (offset: number, code: string, message: string) => CallRewriteIssue;
+type SafeBinding = { readonly offset: number; readonly namespace?: string };
+type Replacement = { readonly start: number; readonly end: number; readonly target: string };
+
+function* translationImports(node: AstNode) {
+  const moduleName = node.source?.value;
+  if (moduleName !== 'i18next' && moduleName !== 'react-i18next') return;
+  const name = moduleName === 'i18next' ? 't' : 'useTranslation';
+  for (const specifier of node.specifiers as readonly AstNode[]) {
+    if (specifier.type !== 'ImportSpecifier' || importName(specifier.imported) !== name) continue;
+    yield { moduleName, aliased: specifier.local?.name !== name, offset: specifier.start ?? node.start ?? 0 };
   }
+}
+
+function collectCalls(ast: AstNode, issueFor: IssueAt) {
   let tFromI18next = false, useTranslationImported = false;
   const tDeclarations: number[] = [], useTranslationDeclarations: number[] = [];
-  const safeBindings: { kind: 'i18next' | 'hook'; offset: number; namespace?: string }[] = [];
+  const safeBindings: SafeBinding[] = [];
   const calls: AstNode[] = [];
   const issues: CallRewriteIssue[] = [];
   let tAssigned = false, useTranslationAssigned = false;
@@ -285,26 +293,17 @@ function rewriteFile(source: string, file: string, namespace: string, targets: R
     tDeclarations.push(...declarationOffsets(node, 't'));
     useTranslationDeclarations.push(...declarationOffsets(node, 'useTranslation'));
     if (node.type === 'ImportDeclaration' && typeof node.source?.value === 'string') {
-      const moduleName = node.source.value as string;
-      for (const specifier of node.specifiers as AstNode[]) {
-        if (specifier.type !== 'ImportSpecifier') continue;
-        const imported = importName(specifier.imported);
-        const local = specifier.local?.name as string | undefined;
-        if (moduleName === 'i18next' && imported === 't' && local !== 't') {
-          issues.push(issueFor(source, file, specifier.start ?? node.start ?? 0, 'CALL_IMPORT_ALIAS',
-            'Aliased i18next t imports require manual call-site migration.'));
+      for (const { moduleName, aliased, offset } of translationImports(node)) {
+        if (aliased) {
+          issues.push(issueFor(offset, 'CALL_IMPORT_ALIAS', moduleName === 'i18next'
+            ? 'Aliased i18next t imports require manual call-site migration.'
+            : 'Aliased react-i18next useTranslation imports require manual call-site migration.'));
+          continue;
         }
-        if (moduleName === 'react-i18next' && imported === 'useTranslation' && local !== 'useTranslation') {
-          issues.push(issueFor(source, file, specifier.start ?? node.start ?? 0, 'CALL_IMPORT_ALIAS',
-            'Aliased react-i18next useTranslation imports require manual call-site migration.'));
-        }
-        if (moduleName === 'i18next' && imported === 't' && local === 't') {
+        if (moduleName === 'i18next') {
           tFromI18next = true;
-          safeBindings.push({ kind: 'i18next', offset: node.start ?? 0 });
-        }
-        if (moduleName === 'react-i18next' && imported === 'useTranslation' && local === 'useTranslation') {
-          useTranslationImported = true;
-        }
+          safeBindings.push({ offset: node.start ?? 0 });
+        } else useTranslationImported = true;
       }
       return;
     }
@@ -313,98 +312,130 @@ function rewriteFile(source: string, file: string, namespace: string, targets: R
     if (node.type === 'CallExpression' && node.callee?.type === 'Identifier' && node.callee.name === 't') calls.push(node);
     if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression' &&
         node.callee.property?.type === 'Identifier' && node.callee.property.name === 't') {
-      issues.push(issueFor(source, file, node.start ?? 0, 'CALL_MEMBER_UNSUPPORTED',
+      issues.push(issueFor(node.start ?? 0, 'CALL_MEMBER_UNSUPPORTED',
         'Member .t() calls require manual call-site migration.'));
     }
     if (node.type === 'OptionalCallExpression' && node.callee?.type === 'Identifier' && node.callee.name === 't') {
-      issues.push(issueFor(source, file, node.start ?? 0, 'CALL_OPTIONAL_UNSUPPORTED', 'Optional t() calls require manual migration.'));
+      issues.push(issueFor(node.start ?? 0, 'CALL_OPTIONAL_UNSUPPORTED', 'Optional t() calls require manual migration.'));
     }
   });
 
-  if (!tFromI18next && !useTranslationImported) return { changes: [], issues, nextSource: undefined };
+  return { tFromI18next, useTranslationImported, tDeclarations, useTranslationDeclarations, safeBindings, calls, issues,
+    tAssigned, useTranslationAssigned };
+}
+
+function collectHookBindings(ast: AstNode, issueFor: IssueAt) {
+  const bindings: SafeBinding[] = [], issues: CallRewriteIssue[] = [];
+  const offsets = new Set<number>();
   walk(ast, node => {
-    const binding = hookBinding(node, useTranslationImported);
+    const binding = hookBinding(node, true);
     if (!binding) return;
-    if (!binding.safe) {
-      issues.push(issueFor(source, file, binding.offset, 'CALL_HOOK_MANUAL', binding.message!));
-      return;
-    }
-    if (!safeBindings.some(item => item.kind === 'hook' && item.offset === binding.offset))
-      safeBindings.push({ kind: 'hook', offset: binding.offset, ...(binding.namespace === undefined ? {} : { namespace: binding.namespace }) });
+    if (!binding.safe) { issues.push(issueFor(binding.offset, 'CALL_HOOK_MANUAL', binding.message!)); return; }
+    if (offsets.has(binding.offset)) return;
+    offsets.add(binding.offset);
+    bindings.push({ offset: binding.offset, ...(binding.namespace === undefined ? {} : { namespace: binding.namespace }) });
   });
-  if (tAssigned) issues.push(issueFor(source, file, 0, 'CALL_BINDING_ASSIGNED', 'The t binding is reassigned and cannot be rewritten safely.'));
+  return { bindings, issues };
+}
+
+function bindingIssues(collected: ReturnType<typeof collectCalls>, safeBindings: readonly SafeBinding[], namespace: string,
+  issueFor: IssueAt): CallRewriteIssue[] {
+  const { tAssigned, useTranslationImported, useTranslationAssigned, useTranslationDeclarations, tDeclarations, calls } = collected;
+  const issues: CallRewriteIssue[] = [];
+  if (tAssigned) issues.push(issueFor(0, 'CALL_BINDING_ASSIGNED', 'The t binding is reassigned and cannot be rewritten safely.'));
   if (useTranslationImported && (useTranslationAssigned || useTranslationDeclarations.length > 1))
-    issues.push(issueFor(source, file, useTranslationDeclarations[1] ?? 0, 'CALL_USE_TRANSLATION_SHADOWED',
+    issues.push(issueFor(useTranslationDeclarations[1] ?? 0, 'CALL_USE_TRANSLATION_SHADOWED',
       'useTranslation is shadowed or reassigned and cannot be rewritten safely.'));
-  if (tDeclarations.length > 1) issues.push(issueFor(source, file, tDeclarations[1]!, 'CALL_BINDING_SHADOWED',
+  if (tDeclarations.length > 1) issues.push(issueFor(tDeclarations[1]!, 'CALL_BINDING_SHADOWED',
     'Multiple t bindings require manual disambiguation.'));
-  if (calls.length && safeBindings.length === 0) issues.push(issueFor(source, file, calls[0]!.start ?? 0, 'CALL_BINDING_UNSAFE', 'Direct t() calls require an unambiguous i18next or useTranslation binding.'));
-  if (safeBindings.length > 1) issues.push(issueFor(source, file, safeBindings[1]!.offset, 'CALL_BINDING_AMBIGUOUS', 'Multiple safe-looking t bindings require manual disambiguation.'));
+  if (calls.length && safeBindings.length === 0) issues.push(issueFor(calls[0]!.start ?? 0, 'CALL_BINDING_UNSAFE', 'Direct t() calls require an unambiguous i18next or useTranslation binding.'));
+  if (safeBindings.length > 1) issues.push(issueFor(safeBindings[1]!.offset, 'CALL_BINDING_AMBIGUOUS', 'Multiple safe-looking t bindings require manual disambiguation.'));
   for (const binding of safeBindings) {
     if (binding.namespace !== undefined && binding.namespace !== namespace)
-      issues.push(issueFor(source, file, binding.offset, 'CALL_HOOK_NAMESPACE', 'useTranslation namespace ' + binding.namespace + ' does not match --namespace ' + namespace + '.'));
+      issues.push(issueFor(binding.offset, 'CALL_HOOK_NAMESPACE', 'useTranslation namespace ' + binding.namespace + ' does not match --namespace ' + namespace + '.'));
   }
+  return issues;
+}
 
-  const changes: CallRewriteChange[] = [];
-  if (!issues.length && tDeclarations.length === 1 && safeBindings.length === 1) {
-    for (const call of calls) {
-      const argument = call.arguments?.[0] as AstNode | undefined;
-      const callArguments = call.arguments as AstNode[] | undefined;
-      if (!argument || argument.type === 'SpreadElement') {
-        issues.push(issueFor(source, file, call.start ?? 0, 'CALL_KEY_DYNAMIC', 't() without one literal key requires manual migration.'));
-        continue;
-      }
-      if (argument.type !== 'StringLiteral') {
-        issues.push(issueFor(source, file, call.start ?? 0, 'CALL_KEY_DYNAMIC', 'Dynamic t() keys require manual migration.'));
-        continue;
-      }
-      if ((callArguments?.length ?? 0) > 1) {
-        const value = callArguments?.[1];
-        const unsafe = !value || value.type !== 'ObjectExpression' ||
-          (value.properties as AstNode[]).some(property => {
-            if (property.type !== 'ObjectProperty' || property.computed) return true;
-            const option = property.key?.type === 'Identifier' ? property.key.name as string
-              : property.key?.type === 'StringLiteral' ? property.key.value as string : undefined;
-            return option === undefined || unsafeCallOptions.has(option) || option.startsWith('defaultValue');
-          });
-        if (unsafe) {
-          issues.push(issueFor(source, file, argument.end ?? call.start ?? 0, 'CALL_ARGUMENTS_UNSUPPORTED',
-            't() options can change key or namespace semantics; only an inline object with interpolation values is safe.'));
-          continue;
-        }
-        if ((callArguments?.length ?? 0) > 2) {
-          issues.push(issueFor(source, file, argument.end ?? call.start ?? 0, 'CALL_ARGUMENTS_UNSUPPORTED',
-            't() with defaultValue and options requires manual call-site migration.'));
-          continue;
-        }
-      }
-      const key = argument.value as string;
-      const prefix = namespace + ':';
-      const already = key.startsWith(prefix);
-      const target = already ? (targets.get(key.slice(prefix.length)) === undefined ? undefined : key) : targets.get(key);
-      if (!target) {
-        issues.push(issueFor(source, file, argument.start ?? call.start ?? 0, 'CALL_KEY_UNMAPPED',
-          'Key ' + key + ' has no converted message in namespace ' + namespace + '.'));
-        continue;
-      }
-      if (target === key) continue;
-      changes.push({ file, before: key, after: target, ...location(source, argument.start ?? call.start ?? 0) });
-    }
+function isSafeInterpolationOptions(node: AstNode | undefined): boolean {
+  if (node?.type !== 'ObjectExpression') return false;
+  return (node.properties as AstNode[]).every(property => {
+    if (property.type !== 'ObjectProperty' || property.computed) return false;
+    const option = property.key ? importName(property.key) : undefined;
+    return option !== undefined && !unsafeCallOptions.has(option) && !option.startsWith('defaultValue');
+  });
+}
+
+function classifyCall(call: AstNode, namespace: string, targets: ReadonlyMap<string, string>, issueFor: IssueAt) {
+  const args = (call.arguments as readonly AstNode[] | undefined) ?? [];
+  const argument = args[0];
+  const callStart = call.start ?? 0;
+  if (!argument || argument.type === 'SpreadElement')
+    return { issue: issueFor(callStart, 'CALL_KEY_DYNAMIC', 't() without one literal key requires manual migration.') };
+  if (argument.type !== 'StringLiteral')
+    return { issue: issueFor(callStart, 'CALL_KEY_DYNAMIC', 'Dynamic t() keys require manual migration.') };
+  const optionsOffset = argument.end ?? callStart;
+  if (args.length > 1 && !isSafeInterpolationOptions(args[1]))
+    return { issue: issueFor(optionsOffset, 'CALL_ARGUMENTS_UNSUPPORTED',
+      't() options can change key or namespace semantics; only an inline object with interpolation values is safe.') };
+  if (args.length > MAX_TRANSLATION_CALL_ARGUMENTS)
+    return { issue: issueFor(optionsOffset, 'CALL_ARGUMENTS_UNSUPPORTED',
+      't() with defaultValue and options requires manual call-site migration.') };
+  const key = argument.value as string;
+  const prefix = namespace + ':';
+  const replacement = targets.get(key);
+  const target = key.startsWith(prefix) ? (targets.has(key.slice(prefix.length)) ? key : undefined) : replacement;
+  if (!target)
+    return { issue: issueFor(argument.start ?? callStart, 'CALL_KEY_UNMAPPED',
+      'Key ' + key + ' has no converted message in namespace ' + namespace + '.') };
+  return { key, target, argument, replacement };
+}
+
+function rewriteLiterals(source: string, replacements: readonly Replacement[]): string {
+  const chunks: string[] = [];
+  let cursor = 0;
+  // Literal token ranges are disjoint, even when their calls are nested.
+  for (const { start, end, target } of [...replacements].sort((a, b) => a.start - b.start)) {
+    chunks.push(source.slice(cursor, start), JSON.stringify(target));
+    cursor = end;
+  }
+  chunks.push(source.slice(cursor));
+  return chunks.join('');
+}
+
+function rewriteFile(source: string, file: string, namespace: string, targets: ReadonlyMap<string, string>) {
+  if (!/from\s+['"](?:react-i18next|i18next)['"]/.test(source)) return { changes: [], issues: [], nextSource: undefined };
+  let ast: AstNode;
+  try {
+    ast = parse(source, { sourceType: 'unambiguous', plugins: parserPlugins(path.extname(file)), attachComment: false }) as unknown as AstNode;
+  } catch (error) {
+    return { changes: [], issues: [{ code: 'CALL_SOURCE_PARSE', file,
+      message: 'Source could not be parsed safely: ' + (error instanceof Error ? error.message : String(error)),
+      line: 1, column: 1 }], nextSource: undefined };
+  }
+  const location = sourceLocation(source);
+  const issueFor: IssueAt = (offset, code, message) => ({ code, file, message, ...location(offset) });
+  const collected = collectCalls(ast, issueFor);
+  const { calls, issues, safeBindings, tDeclarations, tFromI18next, useTranslationImported } = collected;
+  if (!tFromI18next && !useTranslationImported) return { changes: [], issues, nextSource: undefined };
+  const hooks = useTranslationImported ? collectHookBindings(ast, issueFor) : undefined;
+  const bindings = hooks ? [...safeBindings, ...hooks.bindings] : safeBindings;
+  if (hooks) issues.push(...hooks.issues);
+  issues.push(...bindingIssues(collected, bindings, namespace, issueFor));
+  if (issues.length || tDeclarations.length !== 1 || bindings.length !== 1)
+    return { changes: [], issues, nextSource: undefined };
+
+  const changes: CallRewriteChange[] = [], replacements: Replacement[] = [];
+  for (const call of calls) {
+    const result = classifyCall(call, namespace, targets, issueFor);
+    if (result.issue) { issues.push(result.issue); continue; }
+    const { argument, key, target, replacement } = result;
+    if (target !== key) changes.push({ file, before: key, after: target, ...location(argument.start ?? call.start ?? 0) });
+    if (replacement && replacement !== key && argument.start !== null && argument.end !== null)
+      replacements.push({ start: argument.start, end: argument.end, target: replacement });
   }
   if (issues.length || !changes.length) return { changes: [], issues, nextSource: undefined };
-  let nextSource = source;
-  const replacements: { start: number; end: number; target: string }[] = [];
-  walk(ast, node => {
-    if (node.type !== 'CallExpression' || node.callee?.type !== 'Identifier' || node.callee.name !== 't') return;
-    const argument = node.arguments?.[0] as AstNode | undefined;
-    if (!argument || argument.type !== 'StringLiteral' || argument.start === null || argument.end === null) return;
-    const key = argument.value as string;
-    const target = targets.get(key);
-    if (target && target !== key) replacements.push({ start: argument.start, end: argument.end, target });
-  });
-  for (const replacement of replacements.sort((a, b) => b.start - a.start))
-    nextSource = nextSource.slice(0, replacement.start) + JSON.stringify(replacement.target) + nextSource.slice(replacement.end);
-  return { changes, issues: [], nextSource };
+  return { changes, issues, nextSource: rewriteLiterals(source, replacements) };
 }
 
 /** Plan an opt-in, literal-only call rewrite without changing imports or hook/provider wiring. */

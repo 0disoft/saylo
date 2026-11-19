@@ -233,6 +233,28 @@ test('opt-in call rewrite changes literal keys only and leaves hook wiring intac
   assert.ok(report.writtenFiles.some(file => file.endsWith('shop.tsx')));
 });
 
+test('call rewrite preserves source bytes outside validated literal ranges', async t => {
+  const f = await fixture(t);
+  const sourceDir = path.join(f.root, 'src');
+  const file = path.join(sourceDir, 'nested.ts');
+  const original = [
+    "import { t } from 'i18next';",
+    "// t('inner') is a comment",
+    "const emoji = '💬'; const value = t('outer', { text: t('inner') });",
+    "export const existing = t('shop:inner');",
+  ].join('\r\n');
+  await writeFile(file, original);
+  const targets = Object.freeze(['outer', 'inner']);
+  const plan = await planCallRewrite(Object.freeze({ sourceDir, namespace: 'shop', targets }));
+  assert.deepEqual(plan.issues, []);
+  assert.deepEqual(plan.changes.map(({ before, after, line, column }) => [before, after, line, column]), [
+    ['outer', 'shop:outer', 3, 37], ['inner', 'shop:inner', 3, 56],
+  ]);
+  assert.equal(plan.guards[0].after, original.replace("t('outer'", 't("shop:outer"')
+    .replace("text: t('inner')", 'text: t("shop:inner")'));
+  assert.equal(await readFile(file, 'utf8'), original);
+});
+
 test('unsafe t() options and unknown prefixed keys block every rewrite', async t => {
   const f = await fixture(t);
   const options = path.join(f.root, 'src', 'options.ts');
