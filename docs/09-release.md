@@ -1,10 +1,10 @@
 # 09. Release
 
-Stable `0.1.3` is published under `latest` for core, React, Svelte, Vue, typegen and Vite. All six package versions carry npm provenance and their registry integrity values match the approved CI manifest. See the [0.1.3 release record](../releases/0.1.3.md). Recheck the approved artifacts with `npm run verify:registry:stable`. Historical alpha records below retain their original versions and evidence.
+Stable `0.1.4` is published under `latest` for core, React, Svelte, Vue, typegen and Vite. All six package versions carry npm provenance and their registry integrity values match the approved CI manifest. See the [0.1.4 release record](../releases/0.1.4.md). Recheck the approved artifacts with `npm run verify:registry:stable`. Historical alpha records below retain their original versions and evidence.
 
 ## Historical publication records
 
-These dated alpha records describe earlier releases. The current release uses `0.1.3` and `latest`.
+These dated alpha records describe earlier releases. The current release uses `0.1.4` and `latest`.
 
 Alpha.8 was published on 2026-10-26. The [release record](../releases/0.1.0-alpha.8.md), [CI run](https://github.com/0disoft/saylo/actions/runs/40217372424), and [approved manifest](../releases/0.1.0-alpha.8.json) record publication of all five packages and registry download integrity. Existing calls remain compatible. Vue remains private; the earlier results below are historical evidence.
 
@@ -50,7 +50,7 @@ On 2026-10-06, four packages were published as `0.1.0-alpha.1` with dist-tag `al
 ## Local verification commands
 
 ```sh
-npm run release:check -- --version 0.1.3 --tag latest
+npm run release:check -- --version 0.1.4 --tag latest
 npm run check
 npm run release:pack
 ```
@@ -67,10 +67,10 @@ Compare the published artifacts with `npm run verify:registry`. The current comm
 
 | Input | Value |
 | --- | --- |
-| `version` | Exact committed version string. Default `0.1.3` |
+| `version` | Exact committed version string. Default `0.1.4` |
 | `dist_tag` | `alpha`, `next`, or `latest`. Default `latest` |
 | `publish` | boolean. Default `false` |
-| `verify_oidc` | boolean. Default `false`. When `true`, verify the OIDC token exchange for all six release-target Trusted Publishers before validation or publication; all six exchanges passed in release run 44173674083 |
+| `verify_oidc` | boolean. Default `false`. When `true`, verify the OIDC token exchange for all six release-target Trusted Publishers before validation or publication; all six exchanges passed in release run 44522926893 |
 
 A single job runs only on Ubuntu, Node 24, npm 11, on `main`, in repository `0disoft/saylo`. Its environment is `npm-release`; permissions are `contents: read` and `id-token: write`. The sequence is `release:check` → optional OIDC verification → `npm ci` → `audit:dependencies` → `check` → `release:pack` → `release:publish` (dry run) → artifact upload. It publishes with `release:publish --publish` only when `publish` is true. Publish order is core → react → svelte → vue → typegen → vite, and it uses no registry secret such as `NPM_TOKEN`.
 
@@ -87,8 +87,8 @@ The latest candidate reconciled 973 inputs at `b39b3fd` and passed all 256 tests
 To review the next version without bumping the original, first commit related changes, then run:
 
 ```sh
-npm run release:candidate -- --version 0.1.4
-npm run release:candidate:verify -- --candidate .release/candidate-0.1.4-<generated-suffix>
+npm run release:candidate -- --version 0.1.5
+npm run release:candidate:verify -- --candidate .release/candidate-0.1.5-<generated-suffix>
 ```
 
 The first command archives the committed HEAD at `.release/candidate-<version>-<suffix>/source.zip` and extracts it into `source/`. In that copy, only the six public package versions/default tags, internal dependencies, and workspace lockfile entries are changed to the proposed version. Original package.json, lockfile, and existing `.release/npm` are retained. It does not create a candidate if tracked files have uncommitted changes or Git symlinks exist. Untracked files are excluded. The command selects `latest` for a stable candidate and `alpha` for a prerelease candidate.
