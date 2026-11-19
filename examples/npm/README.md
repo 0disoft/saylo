@@ -10,12 +10,12 @@ A standalone example that installs the published npm packages as-is and uses the
 
 | Kind | Package |
 | --- | --- |
-| dependencies | `@0disoft/saylo-core@alpha` |
-| devDependencies | `@0disoft/saylo-vite@alpha`, `vite@8` |
+| dependencies | `@0disoft/saylo-core@0.1.4` |
+| devDependencies | `@0disoft/saylo-vite@0.1.4`, `vite@8` |
 
 This example is an independent `private` package that does not belong to the root workspace. It does not use `workspaces` and installs the actual packages published on the npm registry without `file:`, `workspace:`, or alias links. A root build is therefore not required.
 
-`package.json` uses the `alpha` tag. The current lockfile pins core, Vite, and Vite's transitive dependency typegen to `0.1.0-alpha.4`. `npm ci --workspaces=false` reproduces this lockfile. After the tag moves, run `npm update @0disoft/saylo-core @0disoft/saylo-vite --workspaces=false` to install new published builds.
+`package.json` pins Saylo core and the Vite plugin to `0.1.4`. The lockfile also resolves the plugin's transitive typegen dependency to `0.1.4`. Run `npm ci --workspaces=false` to reproduce the install. To upgrade later, install matching versions of core and the Vite plugin together.
 
 ## Run
 

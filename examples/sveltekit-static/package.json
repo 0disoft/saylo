@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@0disoft/saylo-core": "^0.1.0-alpha.8",
-    "@0disoft/saylo-svelte": "^0.1.0-alpha.8"
+    "@0disoft/saylo-core": "0.1.4",
+    "@0disoft/saylo-svelte": "0.1.4"
   },
   "devDependencies": {
-    "@0disoft/saylo-typegen": "^0.1.0-alpha.8",
-    "@0disoft/saylo-vite": "^0.1.0-alpha.8",
+    "@0disoft/saylo-typegen": "0.1.4",
+    "@0disoft/saylo-vite": "0.1.4",
     "@sveltejs/adapter-static": "4",
     "@sveltejs/kit": "3",
     "@sveltejs/vite-plugin-svelte": "7",
