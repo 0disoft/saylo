@@ -111,6 +111,32 @@ test('changed/deleted sources and competing translations are preserved only as e
   assert.ok(result.report.diagnostics.some(issue => issue.code === 'UNKNOWN_MESSAGE'));
 });
 
+test('overlapping refresh conflicts keep priority and sort by escaped identity', async t => {
+  const f = await fixture(t);
+  const escaped = 'key"', plain = 'keyA';
+  await f.write('ko', { [escaped]: 'Source', [plain]: 'Source' });
+  await f.write('en', { [escaped]: 'Before', [plain]: 'Before' });
+  const initial = await f.inspect();
+  const work = createTranslationWorkfile(initial.inspection, initial.report);
+  const previous = freeze({ ...work, entries: [...work.entries].reverse().map(entry => ({ ...entry, translation: 'Draft' })) });
+
+  await f.write('ko', { [escaped]: 'Changed', [plain]: 'Changed' });
+  await f.write('en', { [escaped]: 'Concurrent', [plain]: 'Concurrent' });
+  const changed = await f.refresh(previous, { checkLocales: ['en'] });
+  assert.deepEqual(changed.conflicts.map(({ code, previous }) => [code, key(previous)]), [
+    ['SOURCE_CONFLICT', 'en/common/keyA'], ['SOURCE_CONFLICT', 'en/common/key"'],
+    ['UNKNOWN_TARGET', 'fr/common/keyA'], ['UNKNOWN_TARGET', 'fr/common/key"'],
+  ]);
+  assert.equal(changed.conflicts[0].current.originalTranslation, 'Concurrent');
+
+  await f.write('ko', { [plain]: 'Changed' });
+  const removed = await f.refresh(previous, { checkLocales: ['en'] });
+  assert.equal(removed.conflicts.find(conflict => key(conflict.previous) === 'en/common/key"').code, 'SOURCE_REMOVED');
+  assert.deepEqual(removed.conflicts.find(conflict => key(conflict.previous) === 'fr/common/key"'), {
+    code: 'UNKNOWN_TARGET', previous: find(previous, 'fr', escaped), current: null,
+  });
+});
+
 test('a removed source namespace leaves drafts in removal conflicts and orphan catalogs untouched', async t => {
   const f = await fixture(t);
   await rm(path.join(f.config.localesDir, 'ko/common.json'));
