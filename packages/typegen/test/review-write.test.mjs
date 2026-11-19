@@ -28,8 +28,34 @@ async function fixture(t) {
   const work = createTranslationWorkfile(inspected.inspection, report);
   const plan = planReviewApproval(inspected.inspection, inspected.report, work, ledger);
   const clean = async () => assert.ok(!(await readdir(root)).some(name => name.includes('.saylo-review')));
-  return { root, plan, ledger, clean };
+  return { root, plan, ledger, clean, inspection: inspected.inspection, report: inspected.report, work };
 }
+
+test('approval plans read only the relevant source hashes and keep conflict precedence', async t => {
+  const f = await fixture(t);
+  const base = f.inspection.files.find(file => file.catalog.locale === 'ko');
+  const message = base.catalog.messages.title;
+  let unrelatedReads = 0;
+  const unrelated = Object.freeze({ ...message,
+    get richTextTags() { unrelatedReads++; return message.richTextTags; } });
+  const extra = Object.freeze({ ...base, catalog: Object.freeze({ ...base.catalog, namespace: 'unrelated',
+    messages: Object.freeze({ title: unrelated }) }) });
+  const inspection = Object.freeze({ ...f.inspection, files: Object.freeze([...f.inspection.files, extra]) });
+  const draft = f.work.entries[0];
+  const entries = Object.freeze([
+    Object.freeze({ ...draft, locale: 'unknown', sourceHash: 'stale', translation: 'stale' }),
+    Object.freeze({ ...draft, sourceHash: 'stale', translation: 'stale' }),
+    Object.freeze({ ...draft, translation: 'stale' }),
+    Object.freeze({ ...draft }),
+  ]);
+  const ledger = Object.freeze({ ...f.ledger, approvals: Object.freeze({ ...f.ledger.approvals, entries: Object.freeze([]) }) });
+  const plan = planReviewApproval(inspection, f.report, Object.freeze({ ...f.work, entries }), ledger);
+  assert.deepEqual(plan.report.diagnostics.map(issue => issue.code), ['UNKNOWN_TARGET', 'SOURCE_CONFLICT', 'TRANSLATION_CONFLICT']);
+  assert.equal(plan.report.blocked, true);
+  assert.deepEqual(plan.approvals, f.plan.approvals);
+  assert.deepEqual(plan.guards, f.plan.guards);
+  assert.equal(unrelatedReads, 0);
+});
 
 test('source or translation edits during approval staging cannot commit a stale approval', async t => {
   for (const locale of ['ko', 'en']) {

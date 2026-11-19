@@ -1,11 +1,12 @@
-import { createReviewBaseline } from './catalog-review.js';
+import path from 'node:path';
+import type { ParsedMessage } from '@0disoft/saylo-core';
+import { reviewSourceHash } from './catalog-review.js';
 import { approvalIdentity, translationHash, validReviewAttribution } from './catalog-approvals.js';
 import type { ApprovalFile, ReviewApproval, ReviewApprovals } from './catalog-approvals.js';
-import type { CatalogInspection } from './catalog-files.js';
+import type { CatalogFile, CatalogInspection } from './catalog-files.js';
 import type { CatalogCheckReport } from './catalog-audit.js';
 import type { ImportGuard } from './catalog-import.js';
-import type { TranslationWorkfile } from './catalog-workfile.js';
-import path from 'node:path';
+import type { TranslationWorkEntry, TranslationWorkfile } from './catalog-workfile.js';
 
 export interface ApprovalReport {
   readonly format: 'saylo-review-approval/v1';
@@ -23,44 +24,67 @@ export interface ApprovalPlan {
   readonly report: ApprovalReport;
 }
 
+type Attribution = Pick<ReviewApproval, 'reviewer' | 'reviewedAt'>;
+const APPROVAL_NON_BLOCKING_ISSUES = new Set(['MISSING_MESSAGE', 'MISSING_NAMESPACE', 'UNKNOWN_MESSAGE', 'NAMESPACE_MISMATCH']);
+const pairKey = (locale: string, namespace: string) => JSON.stringify([locale, namespace]);
+
+function validApprovalPath(root: string, file: string): boolean {
+  const relative = path.relative(root, path.resolve(file));
+  return file.endsWith('.json') && (path.isAbsolute(relative) || relative === '..' || relative.startsWith(`..${path.sep}`));
+}
+
+function selectApproval(entry: TranslationWorkEntry, targets: ReadonlySet<string>, bases: ReadonlyMap<string, CatalogFile>,
+  pairs: ReadonlyMap<string, CatalogFile>, hashSource: (message: ParsedMessage) => string, attribution: Attribution) {
+  const { locale, namespace, id, translation } = entry;
+  if (translation === null) return;
+  const fail = (code: string, message: string) => ({ error: { code, message: `${locale} ${namespace}:${id}: ${message}` } });
+  if (!targets.has(locale)) return fail('UNKNOWN_TARGET', 'Locale is not a current review target.');
+  const base = bases.get(namespace);
+  const source = base && Object.hasOwn(base.catalog.messages, id) ? base.catalog.messages[id] : undefined;
+  if (!base || !source || hashSource(source) !== entry.sourceHash || source.source !== entry.source)
+    return fail('SOURCE_CONFLICT', 'Source or rich contract differs from the reviewed workfile. Export fresh work.');
+  const target = pairs.get(pairKey(locale, namespace));
+  const message = target?.catalog.messages[id];
+  if (!target || !message || message.source !== translation)
+    return fail('TRANSLATION_CONFLICT', 'Current translation differs from the reviewed workfile. Import or export fresh work first.');
+  const approved: ReviewApproval = { locale, namespace, id, sourceHash: entry.sourceHash, translationHash: translationHash(message), ...attribution };
+  return { base, target, approved };
+}
+
 /** The workfile pins the human-reviewed text; approval never edits a translation or a source baseline. */
 export function planReviewApproval(input: CatalogInspection, checked: CatalogCheckReport, work: TranslationWorkfile, ledger: ApprovalFile,
-  attribution: { readonly reviewer?: string; readonly reviewedAt?: string } = {}): ApprovalPlan {
+  attribution: Attribution = {}): ApprovalPlan {
   if (!validReviewAttribution(attribution)) throw new TypeError('Review attribution requires reviewer and a canonical ISO reviewedAt timestamp.');
   const diagnostics: { code: string; message: string }[] = checked.diagnostics.filter(issue => issue.severity === 'error' &&
-    !['MISSING_MESSAGE', 'MISSING_NAMESPACE', 'UNKNOWN_MESSAGE', 'NAMESPACE_MISMATCH'].includes(issue.code))
+    !APPROVAL_NON_BLOCKING_ISSUES.has(issue.code))
     .map(issue => ({ code: issue.code, message: `${issue.sourceName}: ${issue.message}` }));
   const changes: ReviewApproval[] = [], guards = new Map<string, ImportGuard>();
-  const relative = path.relative(input.root, path.resolve(ledger.file));
-  if (!ledger.file.endsWith('.json') || (!path.isAbsolute(relative) && relative !== '..' && !relative.startsWith(`..${path.sep}`)))
+  if (!validApprovalPath(input.root, ledger.file))
     diagnostics.push({ code: 'INVALID_REVIEW_PATH', message: 'Review approvals require a .json file outside the locales directory.' });
-  const hashes = createReviewBaseline(input, checked.baseLocale).messages;
+  const targets = new Set(checked.locales);
   const bases = new Map(input.files.filter(file => file.catalog.locale === checked.baseLocale).map(file => [file.catalog.namespace, file]));
-  const pairs = new Map(input.files.map(file => [JSON.stringify([file.catalog.locale, file.catalog.namespace]), file]));
+  const pairs = new Map(input.files.map(file => [pairKey(file.catalog.locale, file.catalog.namespace), file]));
   const entries = new Map(ledger.approvals.entries.map(entry => [approvalIdentity(entry), entry]));
+  const hashes = new Map<ParsedMessage, string>();
+  const hashSource = (message: ParsedMessage) => {
+    const cached = hashes.get(message);
+    if (cached !== undefined) return cached;
+    const hash = reviewSourceHash(message);
+    hashes.set(message, hash);
+    return hash;
+  };
   for (const entry of work.entries) {
-    if (entry.translation === null) continue;
-    const key = `${entry.namespace}:${entry.id}`, sourceHash = hashes[key];
-    const base = bases.get(entry.namespace);
-    const fail = (code: string, message: string) => diagnostics.push({ code, message: `${entry.locale} ${key}: ${message}` });
-    if (!checked.locales.includes(entry.locale)) { fail('UNKNOWN_TARGET', 'Locale is not a current review target.'); continue; }
-    if (!base || !sourceHash || entry.sourceHash !== sourceHash || base.catalog.messages[entry.id]?.source !== entry.source) {
-      fail('SOURCE_CONFLICT', 'Source or rich contract differs from the reviewed workfile. Export fresh work.'); continue;
-    }
-    const target = pairs.get(JSON.stringify([entry.locale, entry.namespace]));
-    const message = target?.catalog.messages[entry.id];
-    if (!message || message.source !== entry.translation) {
-      fail('TRANSLATION_CONFLICT', 'Current translation differs from the reviewed workfile. Import or export fresh work first.'); continue;
-    }
-    const approved: ReviewApproval = { locale: entry.locale, namespace: entry.namespace, id: entry.id,
-      sourceHash, translationHash: translationHash(message), ...attribution };
+    const selected = selectApproval(entry, targets, bases, pairs, hashSource, attribution);
+    if (!selected) continue;
+    if ('error' in selected) { diagnostics.push(selected.error); continue; }
+    const { base, target, approved } = selected;
     const identity = approvalIdentity(approved), previous = entries.get(identity);
     if (previous?.sourceHash === approved.sourceHash && previous.translationHash === approved.translationHash) continue;
     entries.set(identity, approved); changes.push(approved);
     guards.set(base.file, { file: base.file, source: base.source });
-    guards.set(target!.file, { file: target!.file, source: target!.source });
+    guards.set(target.file, { file: target.file, source: target.source });
   }
-  const sorted = [...entries.values()].sort((a, b) => approvalIdentity(a) < approvalIdentity(b) ? -1 : approvalIdentity(a) > approvalIdentity(b) ? 1 : 0);
+  const sorted = [...entries.keys()].sort().map(key => entries.get(key)!);
   return { root: input.root, ledger, guards: [...guards.values()],
     approvals: { format: 'saylo-review-approvals/v1', baseLocale: checked.baseLocale, entries: sorted },
     report: { format: 'saylo-review-approval/v1', dryRun: true, blocked: diagnostics.length > 0, changes, diagnostics, writtenFiles: [] } };
