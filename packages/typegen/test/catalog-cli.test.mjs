@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { planCatalogSync } from '../dist/catalog-sync.js';
 
 const cli = fileURLToPath(new URL('../dist/catalog-cli.js', import.meta.url));
 async function fixture(t, settings = {}) {
@@ -331,6 +332,24 @@ test('sync previews untranslated additions, preserves orphans and never edits ca
   assert.ok(!plan.changes.some(change => change.locale === 'en-US' && change.id === 'empty'));
   assert.deepEqual(await f.snapshot(), before);
   assert.equal(f.run(['sync', '--dry-run', '--json']).stdout, result.stdout);
+});
+
+test('sync keeps serialized key order and stable ties with read-only inputs', () => {
+  const ids = ['aa', 'a\\', 'a\n', '2', '10', 'a', 'a"'];
+  const messages = Object.freeze(Object.fromEntries(ids.map(id => [id, Object.freeze({ source: 'Source' })])));
+  const base = Object.freeze({ locale: 'ko', namespace: 'common', messages });
+  const translated = Object.freeze({ locale: 'en', namespace: 'common', sourceName: 'en/common.json',
+    messages: Object.freeze({ a: Object.freeze({ source: 'Translation' }) }) });
+  const files = Object.freeze([Object.freeze({ catalog: base }), Object.freeze({ catalog: translated })]);
+  const diagnostics = Object.freeze(['SOURCE_ADDED', 'SOURCE_CHANGED'].map(code =>
+    Object.freeze({ code, severity: 'warning', locale: 'en', namespace: 'common', id: 'a' })));
+  const report = Object.freeze({ baseLocale: 'ko', locales: Object.freeze(['ko', 'en']), diagnostics });
+  const plan = planCatalogSync(Object.freeze({ files, localeDirectories: new Map() }), report);
+  assert.deepEqual(plan.changes.map(({ id, reason }) => [id, reason]), [
+    ['10', 'MISSING_MESSAGE'], ['2', 'MISSING_MESSAGE'], ['a', 'SOURCE_ADDED'], ['a', 'SOURCE_CHANGED'],
+    ['a"', 'MISSING_MESSAGE'], ['a\\', 'MISSING_MESSAGE'], ['a\n', 'MISSING_MESSAGE'], ['aa', 'MISSING_MESSAGE'],
+  ]);
+  assert.equal(plan.blocked, false);
 });
 
 test('source checkpoints detect changed and added sources without treating a snapshot as translation approval', async t => {
